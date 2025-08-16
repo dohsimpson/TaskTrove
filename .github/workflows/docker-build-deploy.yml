@@ -1,0 +1,129 @@
+name: Docker Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - github-actions  # For testing workflow changes
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      EXISTS: ${{ steps.check-version.outputs.EXISTS }}
+      VERSION: ${{ steps.package-version.outputs.VERSION }}
+      IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+    
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Get version from package.json
+        id: package-version
+        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if version exists
+        id: check-version
+        run: |
+          if docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.package-version.outputs.VERSION }} 2>/dev/null; then
+            echo "EXISTS=true" >> $GITHUB_OUTPUT
+            echo "Version v${{ steps.package-version.outputs.VERSION }} already exists"
+          else
+            echo "EXISTS=false" >> $GITHUB_OUTPUT
+            echo "Version v${{ steps.package-version.outputs.VERSION }} is new"
+          fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=dev
+            type=raw,value=v${{ steps.package-version.outputs.VERSION }},enable=${{ steps.check-version.outputs.EXISTS == 'false' }}
+            type=raw,value=latest,enable=${{ steps.check-version.outputs.EXISTS == 'false' }}
+            type=raw,value=demo,enable=${{ steps.check-version.outputs.EXISTS == 'false' }}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+  deploy-demo:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: success()
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Deploy to demo instance
+        uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        with:
+          args: rollout restart -n ${{ secrets.KUBE_NAMESPACE }} deployment/${{ secrets.KUBE_DEPLOYMENT }}
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: needs.build-and-push.outputs.EXISTS == 'false'
+    
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build-and-push.outputs.VERSION }}
+        run: |
+          # Create release with auto-generated notes
+          gh release create "v$VERSION" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="TaskTrove v$VERSION" \
+              --generate-notes \
+              --notes-start-tag=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo "")

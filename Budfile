@@ -9,7 +9,7 @@ help() {
   echo "Commands:"
   echo "  dev                 Start dev server"
   echo "  run <script>        Run pnpm script"
-  echo "  docker-build [tag]  Build Docker image"
+  echo "  docker-build [tag]  Build multi-platform Docker image (AMD64/ARM64)"
 }
 
 dev() {
@@ -25,7 +25,16 @@ run() {
 }
 
 docker-build() {
-  docker build -t "${1:-dohsimpson/tasktrove:latest}" .
+  local tag="${1:-dohsimpson/tasktrove:latest}"
+  echo "Building multi-platform Docker image: $tag"
+  echo "Platforms: linux/amd64, linux/arm64"
+  
+  # Build and push multi-platform image using default builder
+  docker buildx build \
+    --platform linux/amd64,linux/arm64 \
+    --tag "$tag" \
+    --push \
+    .
 }
 
 docker-run() {

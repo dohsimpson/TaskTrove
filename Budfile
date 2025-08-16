@@ -29,16 +29,24 @@ docker-build() {
   echo "Building multi-platform Docker image: $tag"
   echo "Platforms: linux/amd64, linux/arm64"
   
-  # Build and push multi-platform image using default builder
+  # Build multi-platform image using default builder
   docker buildx build \
     --platform linux/amd64,linux/arm64 \
     --tag "$tag" \
-    --push \
     .
+}
+
+docker-push() {
+  local tag="${1:-dohsimpson/tasktrove:latest}"
+  docker push "$tag"
 }
 
 docker-run() {
   docker run -it --rm -p 3000:3000 -v ./data:/app/data dohsimpson/tasktrove
+}
+
+rollout() {
+  kubie exec k3s unsafe kubectl rollout restart deployment tasktrove-demo
 }
 
 # Show help when no arguments are provided

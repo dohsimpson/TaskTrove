@@ -25,3 +25,9 @@ docs
 plans
 *.md
 !README.md
+Budfile
+CLAUDE.md
+/plans/
+/dev-data/
+/data/
+/coverage/

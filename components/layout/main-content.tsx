@@ -24,6 +24,7 @@ import { KanbanBoard } from "@/components/views/kanban-board"
 import { CalendarView } from "@/components/views/calendar-view"
 import { AnalyticsDashboard } from "@/components/analytics/analytics-dashboard"
 import { TaskEmptyState } from "@/components/task/task-empty-state"
+import { PermissionChecker } from "@/components/startup/permission-checker"
 
 interface MainContentProps {
   onVoiceCommand: (command: VoiceCommand) => void
@@ -162,6 +163,7 @@ export function MainContent({}: MainContentProps) {
 
   return (
     <div className={`flex-1 flex flex-col transition-all duration-300`}>
+      <PermissionChecker />
       <div className="flex-1 flex flex-col">{renderContent()}</div>
     </div>
   )

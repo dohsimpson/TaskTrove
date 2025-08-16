@@ -1,10 +1,19 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { AlertTriangle, RefreshCw, FileText, AlertCircle } from "lucide-react"
+import { AlertTriangle, RefreshCw, FileText } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { DEFAULT_DATA_DIR } from "@/lib/constants/defaults"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface HealthCheckResponse {
   status: "healthy" | "error" | "needs_initialization"
@@ -24,6 +33,7 @@ export function PermissionChecker() {
   const [healthStatus, setHealthStatus] = useState<HealthCheckResponse | null>(null)
   const [isChecking, setIsChecking] = useState(true)
   const [isInitializing, setIsInitializing] = useState(false)
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
 
   const checkHealth = async () => {
     setIsChecking(true)
@@ -99,70 +109,113 @@ export function PermissionChecker() {
   // Show data file initialization prompt
   if (healthStatus?.status === "needs_initialization") {
     return (
-      <Alert className="mb-4 border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950">
-        <FileText className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-        <AlertTitle className="text-yellow-800 dark:text-yellow-200">
-          📂 First Time Setup
-        </AlertTitle>
-        <AlertDescription className="mt-2 space-y-4 text-yellow-700 dark:text-yellow-300">
-          <div>
-            <strong>Welcome to TaskTrove!</strong> This appears to be your first time running the
-            application.
-          </div>
-
-          <div className="text-sm">{healthStatus.dataFileCheck?.details}</div>
-
-          <div className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-md text-sm">
-            <div className="font-medium mb-2 flex items-center">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              Important Notes:
+      <>
+        <Alert className="mb-4 border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950">
+          <FileText className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+          <AlertTitle className="text-yellow-800 dark:text-yellow-200">
+            First Time Setup Required
+          </AlertTitle>
+          <AlertDescription className="mt-2 text-yellow-700 dark:text-yellow-300">
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm">
+                  ⚠️ Warning: Initializing will create a new data file and may permanently overwrite
+                  existing TaskTrove data. Back up your data first if you have any existing tasks,
+                  projects, or settings.
+                </p>
+                <p className="text-sm mt-1">
+                  <a
+                    href="https://docs.tasktrove.io/troubleshooting"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-yellow-600 dark:hover:text-yellow-200"
+                  >
+                    Troubleshooting Guide
+                  </a>
+                  {" • "}
+                  <a
+                    href="https://docs.tasktrove.io/backup"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-yellow-600 dark:hover:text-yellow-200"
+                  >
+                    Backup guide
+                  </a>
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowConfirmDialog(true)}
+                  disabled={isInitializing || isChecking}
+                  size="sm"
+                  variant="outline"
+                >
+                  {isInitializing ? (
+                    <>
+                      <RefreshCw className="h-3 w-3 mr-2 animate-spin" />
+                      Initializing...
+                    </>
+                  ) : (
+                    "Initialize"
+                  )}
+                </Button>
+                <Button
+                  onClick={checkHealth}
+                  disabled={isChecking || isInitializing}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  {isChecking ? (
+                    <>
+                      <RefreshCw className="h-3 w-3 animate-spin" />
+                      <span>Checking...</span>
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-3 w-3" />
+                      <span>Recheck</span>
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-            <ul className="space-y-1 list-disc list-inside">
-              <li>This will create a new data.json file in your {DEFAULT_DATA_DIR} directory</li>
-              <li>This will only work if no data file currently exists (safe initialization)</li>
-              <li>Your data should be stored in the mounted volume for persistence</li>
-            </ul>
-          </div>
+          </AlertDescription>
+        </Alert>
 
-          <div className="flex gap-2 pt-2">
-            <Button
-              onClick={() => initializeDataFile()}
-              disabled={isInitializing || isChecking}
-              size="sm"
-            >
-              {isInitializing ? (
-                <>
-                  <RefreshCw className="h-3 w-3 mr-2 animate-spin" />
-                  Initializing...
-                </>
-              ) : (
-                <>
-                  <FileText className="h-3 w-3 mr-2" />
+        <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirm Data Initialization</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will create a new data file for TaskTrove. If you have existing TaskTrove data,
+                it may be permanently overwritten and cannot be recovered.
+                <br />
+                <br />
+                <strong>Make sure you have backed up any existing data before proceeding.</strong>
+                <br />
+                <br />
+                Are you sure you want to continue?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction asChild>
+                <Button
+                  variant="outline"
+                  className="border border-red-600 text-red-600 hover:text-red-700 bg-transparent hover:bg-transparent cursor-pointer"
+                  onClick={() => {
+                    setShowConfirmDialog(false)
+                    initializeDataFile()
+                  }}
+                >
                   Initialize Data File
-                </>
-              )}
-            </Button>
-            <Button
-              onClick={checkHealth}
-              disabled={isChecking || isInitializing}
-              variant="outline"
-              size="sm"
-            >
-              {isChecking ? (
-                <>
-                  <RefreshCw className="h-3 w-3 mr-2 animate-spin" />
-                  Checking...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-3 w-3 mr-2" />
-                  Retry Check
-                </>
-              )}
-            </Button>
-          </div>
-        </AlertDescription>
-      </Alert>
+                </Button>
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
     )
   }
 
@@ -171,53 +224,36 @@ export function PermissionChecker() {
     return (
       <Alert variant="destructive" className="mb-4">
         <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>🚨 TaskTrove Permission Error</AlertTitle>
-        <AlertDescription className="mt-2 space-y-4">
-          <div>
-            <strong>Unable to start TaskTrove properly.</strong>
-          </div>
-
-          {healthStatus.errors && (
-            <div className="space-y-2">
-              {healthStatus.errors.map((error, index) => (
-                <div key={index} className="border-l-2 border-red-400 pl-4">
-                  <div className="font-medium">
-                    ❌ {error.path}: {error.error}
-                  </div>
-                  <div className="text-sm text-muted-foreground mt-1">{error.details}</div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="bg-red-50 dark:bg-red-950 p-3 rounded-md text-sm">
-            <div className="font-medium mb-2">💡 Common solutions:</div>
-            <ul className="space-y-1 list-disc list-inside">
-              <li>Check that volumes are properly mounted</li>
-              <li>Ensure the host directory has correct permissions (chmod 755)</li>
-              <li>Verify the container user ID matches the host user ID</li>
-            </ul>
-
-            <div className="mt-3">
-              <div className="font-medium">📚 Docker run example:</div>
-              <code className="block mt-1 bg-black text-green-400 p-2 rounded text-xs">
-                docker run -v ./{DEFAULT_DATA_DIR}:/app/{DEFAULT_DATA_DIR} -p 3000:3000
-                dohsimpson/tasktrove
-              </code>
-            </div>
-          </div>
-
-          <div className="pt-2">
-            <Button onClick={checkHealth} disabled={isChecking} variant="outline" size="sm">
+        <AlertTitle className="font-bold">Permission Error</AlertTitle>
+        <AlertDescription className="mt-2 flex flex-col">
+          <div className="space-y-3">
+            <span className="text-sm">
+              Unable to access data directory. Check volume mounts and permissions.{" "}
+              <a
+                href="https://docs.tasktrove.io/troubleshooting"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-red-300"
+              >
+                Troubleshooting Guide
+              </a>
+            </span>
+            <Button
+              onClick={checkHealth}
+              disabled={isChecking}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
               {isChecking ? (
                 <>
-                  <RefreshCw className="h-3 w-3 mr-2 animate-spin" />
-                  Checking...
+                  <RefreshCw className="h-3 w-3 animate-spin" />
+                  <span>Checking...</span>
                 </>
               ) : (
                 <>
-                  <RefreshCw className="h-3 w-3 mr-2" />
-                  Retry Check
+                  <RefreshCw className="h-3 w-3" />
+                  <span>Recheck</span>
                 </>
               )}
             </Button>

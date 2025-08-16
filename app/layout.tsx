@@ -6,7 +6,6 @@ import { HydrateWrapper } from "@/providers/hydrate-wrapper"
 // import { ThemeProvider } from '@/components/theme/theme-provider'
 import { ThemeProvider } from "next-themes"
 import { Toaster } from "@/components/ui/custom/toaster"
-import { PermissionChecker } from "@/components/startup/permission-checker"
 
 export const metadata: Metadata = {
   title: "TaskTrove",
@@ -25,7 +24,6 @@ export default function RootLayout({
         <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem>
           <JotaiProvider>
             <HydrateWrapper>
-              <PermissionChecker />
               <MainLayoutWrapper>{children}</MainLayoutWrapper>
             </HydrateWrapper>
           </JotaiProvider>

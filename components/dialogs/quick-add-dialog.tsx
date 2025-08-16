@@ -466,7 +466,7 @@ export function QuickAddDialog() {
   return (
     <Dialog open={open} onOpenChange={handleCloseDialog}>
       <DialogContentWithoutOverlay
-        className="sm:max-w-[600px] p-5 pb-4 border shadow-2xl"
+        className="w-[95vw] max-w-[420px] sm:max-w-[520px] md:max-w-[600px] p-3 sm:p-5 pb-3 sm:pb-4 border shadow-2xl"
         showCloseButton={false}
       >
         <VisuallyHidden>
@@ -492,14 +492,14 @@ export function QuickAddDialog() {
               placeholder="Description"
               value={newTask.description ?? ""}
               onChange={(e) => updateNewTask({ updateRequest: { description: e.target.value } })}
-              className="border-0 shadow-none focus-visible:ring-0 placeholder:text-gray-400 resize-none p-2 bg-muted/50 min-h-24"
+              className="border-0 shadow-none focus-visible:ring-0 placeholder:text-gray-400 resize-none p-2 bg-muted/50 min-h-16 sm:min-h-24"
               rows={2}
             />
           </div>
 
           {/* Quick Actions Bar */}
-          <div className="flex items-center justify-between gap-2 py-3 border-b">
-            <div className="flex items-center gap-1">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-2 sm:py-3 border-b">
+            <div className="flex items-center gap-1 flex-wrap">
               {/* Priority */}
               <TaskPriorityPopover
                 onUpdate={(priority) => handleManualPrioritySelect(priority)}
@@ -510,14 +510,21 @@ export function QuickAddDialog() {
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "h-8 px-2 gap-1",
+                    "h-8 px-2 gap-1 text-xs sm:text-sm min-w-0",
                     newTask.priority && newTask.priority < 4
                       ? getPriorityTextColor(newTask.priority)
                       : "text-muted-foreground",
                   )}
                 >
-                  <Flag className="h-3 w-3" />
-                  {newTask.priority && newTask.priority < 4 ? `P${newTask.priority}` : "Priority"}
+                  <Flag className="h-3 w-3 flex-shrink-0" />
+                  <span
+                    className={cn(
+                      "whitespace-nowrap",
+                      newTask.priority && newTask.priority < 4 ? "" : "hidden sm:inline",
+                    )}
+                  >
+                    {newTask.priority && newTask.priority < 4 ? `P${newTask.priority}` : "Priority"}
+                  </span>
                 </Button>
               </TaskPriorityPopover>
 
@@ -527,24 +534,31 @@ export function QuickAddDialog() {
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "h-8 px-2 gap-1",
+                    "h-8 px-2 gap-1 text-xs sm:text-sm min-w-0",
                     newTask.dueDate
                       ? getDueDateTextColor(newTask.dueDate, false)
                       : "text-muted-foreground",
                   )}
                 >
                   {newTask.recurring ? (
-                    <Repeat className="h-3 w-3" />
+                    <Repeat className="h-3 w-3 flex-shrink-0" />
                   ) : newTask.dueDate && isPast(newTask.dueDate) && !isToday(newTask.dueDate) ? (
-                    <AlertTriangle className="h-3 w-3 text-red-500" />
+                    <AlertTriangle className="h-3 w-3 text-red-500 flex-shrink-0" />
                   ) : (
-                    <Calendar className="h-3 w-3" />
+                    <Calendar className="h-3 w-3 flex-shrink-0" />
                   )}
-                  {newTask.recurring
-                    ? getRRuleDisplayText(newTask.recurring)
-                    : newTask.dueDate
-                      ? format(newTask.dueDate, "MMM d")
-                      : "Date"}
+                  <span
+                    className={cn(
+                      "whitespace-nowrap",
+                      newTask.recurring || newTask.dueDate ? "" : "hidden sm:inline",
+                    )}
+                  >
+                    {newTask.recurring
+                      ? getRRuleDisplayText(newTask.recurring)
+                      : newTask.dueDate
+                        ? format(newTask.dueDate, "MMM d")
+                        : "Date"}
+                  </span>
                 </Button>
               </TaskSchedulePopover>
 
@@ -558,17 +572,28 @@ export function QuickAddDialog() {
                 align="start"
                 contentClassName="w-64 p-4"
               >
-                <Button variant="ghost" size="sm" className="h-8 px-2 gap-1 text-muted-foreground">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
+                >
                   {(() => {
                     const selectedProjectId = newTask.projectId ?? currentProject
                     const project = projects.find((p) => p.id === selectedProjectId)
                     return (
                       <>
                         <Folder
-                          className="h-3 w-3"
+                          className="h-3 w-3 flex-shrink-0"
                           style={{ color: project?.color || undefined }}
                         />
-                        {project ? project.name : "Project"}
+                        <span
+                          className={cn(
+                            "whitespace-nowrap truncate max-w-16 sm:max-w-24",
+                            project && project.id !== INBOX_PROJECT_ID ? "" : "hidden sm:inline",
+                          )}
+                        >
+                          {project ? project.name : "Project"}
+                        </span>
                       </>
                     )
                   })()}
@@ -581,9 +606,13 @@ export function QuickAddDialog() {
                 onAddLabel={handleAddLabel}
                 onRemoveLabel={handleRemoveLabel}
               >
-                <Button variant="ghost" size="sm" className="h-8 px-2 gap-1 text-muted-foreground">
-                  <Tag className="h-3 w-3" />
-                  Label
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
+                >
+                  <Tag className="h-3 w-3 flex-shrink-0" />
+                  <span className="hidden sm:inline whitespace-nowrap">Label</span>
                 </Button>
               </LabelManagementPopover>
 
@@ -599,9 +628,11 @@ export function QuickAddDialog() {
             </div>
 
             {/* NLP Toggle */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mt-2 sm:mt-0 flex-shrink-0">
               <div className="flex items-center gap-1">
-                <span className="text-xs text-muted-foreground">Smart Parsing</span>
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  Smart Parsing
+                </span>
                 <HelpPopover
                   content="Smart Parsing is an experimental feature that automatically detects and extracts task details from your input. It can identify priorities (P1-P4), due dates (tomorrow, next week, etc.), project names (#project), labels (@label), and recurring patterns (daily, weekly)."
                   side="left"
@@ -669,10 +700,14 @@ export function QuickAddDialog() {
 
           {/* Bottom Section */}
           <div className="flex items-center justify-end gap-3 pt-2">
-            <Button variant="ghost" onClick={handleCloseDialog}>
+            <Button variant="ghost" onClick={handleCloseDialog} className="text-xs sm:text-sm">
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={!parsed?.title && !input.trim()}>
+            <Button
+              onClick={handleSubmit}
+              disabled={!parsed?.title && !input.trim()}
+              className="text-xs sm:text-sm"
+            >
               Add task
             </Button>
           </div>

@@ -601,7 +601,18 @@ describe("QuickAddDialog", () => {
     renderDialog()
 
     const dialogContent = screen.getByTestId("dialog-content")
-    expect(dialogContent).toHaveClass("sm:max-w-[600px]", "p-5", "pb-4", "border", "shadow-2xl")
+    expect(dialogContent).toHaveClass(
+      "w-[95vw]",
+      "max-w-[420px]",
+      "sm:max-w-[520px]",
+      "md:max-w-[600px]",
+      "p-3",
+      "sm:p-5",
+      "pb-3",
+      "sm:pb-4",
+      "border",
+      "shadow-2xl",
+    )
   })
 
   it("shows description textarea", () => {
@@ -1896,6 +1907,85 @@ describe("QuickAddDialog", () => {
       // Test with completed task (should be muted regardless of date)
       const completedColor = getDueDateTextColor(overdueDate, true)
       expect(completedColor).toBe("text-muted-foreground")
+    })
+  })
+
+  describe("Responsive Design", () => {
+    it("has responsive container classes for proper mobile layout", () => {
+      renderDialog()
+
+      const dialogContent = screen.getByTestId("dialog-content")
+      expect(dialogContent).toHaveClass(
+        "w-[95vw]",
+        "max-w-[420px]",
+        "sm:max-w-[520px]",
+        "md:max-w-[600px]",
+        "p-3",
+        "sm:p-5",
+      )
+    })
+
+    it("has flex-wrap on quick actions bar to prevent overflow", () => {
+      renderDialog()
+
+      // Find the quick actions bar container
+      const quickActionsBar = screen
+        .getByTestId("dialog-content")
+        .querySelector(".flex.flex-col.sm\\:flex-row")
+      expect(quickActionsBar).toHaveClass("flex-col", "sm:flex-row")
+
+      // Find the buttons container within it
+      const buttonsContainer = quickActionsBar?.querySelector(".flex.items-center.gap-1")
+      expect(buttonsContainer).toHaveClass("flex-wrap")
+    })
+
+    it("uses conditional visibility classes for button text", () => {
+      renderDialog()
+
+      // Check that buttons have the smart visibility logic in their HTML structure
+      const dialogContent = screen.getByTestId("dialog-content")
+
+      // Priority button text should have conditional classes
+      const prioritySpan = dialogContent.querySelector("span[class*='whitespace-nowrap']")
+      expect(prioritySpan).toBeInTheDocument()
+
+      // Should have responsive text sizing
+      const buttons = dialogContent.querySelectorAll(
+        "button[class*='text-xs'][class*='sm:text-sm']",
+      )
+      expect(buttons.length).toBeGreaterThan(0)
+    })
+
+    it("has proper responsive button layout and text overflow protection", () => {
+      renderDialog()
+
+      const dialogContent = screen.getByTestId("dialog-content")
+
+      // Find buttons with overflow protection classes
+      const buttonsWithMinWidth = dialogContent.querySelectorAll("button[class*='min-w-0']")
+      expect(buttonsWithMinWidth.length).toBeGreaterThan(0)
+
+      // Find text with truncation classes
+      const truncatedText = dialogContent.querySelector(
+        "span[class*='truncate'][class*='max-w-16']",
+      )
+      expect(truncatedText).toBeInTheDocument()
+
+      // Should have responsive max width
+      expect(truncatedText).toHaveClass("max-w-16", "sm:max-w-24")
+    })
+
+    it("has proper spacing and sizing for mobile viewports", () => {
+      renderDialog()
+
+      const dialogContent = screen.getByTestId("dialog-content")
+
+      // Check mobile-first responsive padding
+      expect(dialogContent).toHaveClass("p-3", "sm:p-5", "pb-3", "sm:pb-4")
+
+      // Find textarea and check it has responsive min-height
+      const textarea = screen.getByPlaceholderText("Description")
+      expect(textarea).toHaveClass("min-h-16", "sm:min-h-24")
     })
   })
 

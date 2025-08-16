@@ -176,7 +176,7 @@ cp data/data.json ~/tasktrove-backup-$(date +%Y%m%d).json
 
 ## 📜 Pricing & License
 
-For Pricing, see [TaskTrove.com](https://tasktrove.io/#pricing).
+For Pricing, see [pricing](https://tasktrove.io/#pricing).
 
 See [`LICENSE.md`](./LICENSE.md) for complete license terms.
 

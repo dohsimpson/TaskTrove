@@ -47,7 +47,7 @@ jobs:
       - name: Check if version exists
         id: check-version
         run: |
-          if docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.package-version.outputs.VERSION }} 2>/dev/null; then
+          if docker manifest inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.package-version.outputs.VERSION }} >/dev/null 2>&1; then
             echo "EXISTS=true" >> $GITHUB_OUTPUT
             echo "Version v${{ steps.package-version.outputs.VERSION }} already exists"
           else
@@ -91,7 +91,7 @@ jobs:
   deploy-demo:
     runs-on: ubuntu-latest
     needs: build-and-push
-    if: success()
+    if: needs.build-and-push.outputs.EXISTS == 'false'
     
     steps:
       - name: Checkout repository

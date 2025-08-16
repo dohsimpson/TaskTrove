@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# Check for unstaged files (modified) and untracked files (new)
+unstaged_files=$(git diff --name-only)
+untracked_files=$(git ls-files --others --exclude-standard)
+
+if [ -n "$unstaged_files" ] || [ -n "$untracked_files" ]; then
+  # Generate hash of current staged state + unstaged state + untracked state for uniqueness
+  staged_hash=$(git diff --cached --name-status | shasum -a 256 | cut -d' ' -f1)
+  unstaged_hash=$(git diff --name-status | shasum -a 256 | cut -d' ' -f1)
+  untracked_hash=$(echo "$untracked_files" | shasum -a 256 | cut -d' ' -f1)
+  current_state="${staged_hash}_${unstaged_hash}_${untracked_hash}"
+  
+  # Handle both regular .git directory and worktree setups
+  if [ -d ".git" ]; then
+    git_dir=".git"
+  else
+    git_dir=$(git rev-parse --git-dir)
+  fi
+  marker_file="${git_dir}/husky-warned-$$"
+  current_time=$(date +%s)
+  
+  # Clean up stale markers (older than 5 minutes)
+  find "${git_dir}" -name "husky-warned-*" -type f 2>/dev/null | while read -r file; do
+    if [ -f "$file" ]; then
+      file_time=$(stat -f %m "$file" 2>/dev/null || stat -c %Y "$file" 2>/dev/null)
+      if [ $((current_time - file_time)) -gt 300 ]; then
+        rm -f "$file"
+      fi
+    fi
+  done
+  
+  # Check if we've already warned about this exact state
+  warned_about_this_state=false
+  for existing_marker in "${git_dir}"/husky-warned-*; do
+    if [ -f "$existing_marker" ] && [ "$(cat "$existing_marker" 2>/dev/null)" = "$current_state" ]; then
+      warned_about_this_state=true
+      rm -f "$existing_marker"  # Remove it since we're proceeding
+      break
+    fi
+  done
+  
+  if [ "$warned_about_this_state" = false ]; then
+    echo "⚠️  Warning: You have files that won't be included in this commit:"
+    if [ -n "$unstaged_files" ]; then
+      echo "   Modified but unstaged files:"
+      echo "$unstaged_files" | sed 's/^/     /'
+    fi
+    if [ -n "$untracked_files" ]; then
+      echo "   New/untracked files:"
+      echo "$untracked_files" | sed 's/^/     /'
+    fi
+    echo "   If you want to commit anyway, run the commit command again."
+    echo "   Or stage your changes with 'git add' first."
+    
+    # Store the current state to allow retry
+    echo "$current_state" > "$marker_file"
+    exit 1
+  else
+    echo "ℹ️  Proceeding with commit (ignoring unstaged files as requested)..."
+  fi
+fi
+
+# Cleanup function to remove our marker on script exit
+cleanup() {
+  # Handle both regular .git directory and worktree setups
+  if [ -d ".git" ]; then
+    git_dir=".git"
+  else
+    git_dir=$(git rev-parse --git-dir)
+  fi
+  rm -f "${git_dir}/husky-warned-$$"
+}
+trap cleanup EXIT
+
+npx lint-staged
+pnpm check

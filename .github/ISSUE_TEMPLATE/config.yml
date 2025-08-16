@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Feature Requests
+    url: https://github.com/dohsimpson/TaskTrove/discussions
+    about: Please use Discussions to suggest new features and vote on existing requests
+  - name: General Questions & Help
+    url: https://github.com/dohsimpson/TaskTrove/discussions
+    about: Get help with setup, usage, and general questions from the community
+  - name: Contributing Guide
+    url: https://github.com/dohsimpson/TaskTrove/blob/main/CONTRIBUTING.md
+    about: Guidelines for contributors who want to submit code or documentation

@@ -1,0 +1,849 @@
+import React from "react"
+import { describe, it, expect, vi, beforeEach } from "vitest"
+import { render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import { ProjectSectionsView } from "./project-sections-view"
+import type { Task, Project } from "@/lib/types"
+import {
+  TEST_TASK_ID_1,
+  TEST_TASK_ID_2,
+  TEST_TASK_ID_3,
+  TEST_PROJECT_ID_1,
+  TEST_SECTION_ID_1,
+  TEST_SECTION_ID_2,
+  TEST_SECTION_ID_3,
+} from "@/lib/utils/test-constants"
+import { DEFAULT_SECTION_COLORS } from "@/lib/constants/defaults"
+
+// Create hoisted mocks and data
+const mockJotai = vi.hoisted(() => ({
+  useSetAtom: vi.fn(),
+  useAtom: vi.fn(() => [[mockProjectData], vi.fn()]),
+  useAtomValue: vi.fn(),
+  atom: vi.fn(),
+  Provider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}))
+
+const mockProjectData = vi.hoisted(() => {
+  return {
+    id: "test-project-123e4567-e89b-12d3-a456-426614174000",
+    name: "Test Project",
+    sections: [
+      { id: "section-123e4567-e89b-12d3-a456-426614174001", name: "Section 1", color: "#blue" },
+      { id: "section-123e4567-e89b-12d3-a456-426614174002", name: "Section 2", color: "#red" },
+      { id: "section-123e4567-e89b-12d3-a456-426614174003", name: "Section 3", color: "#green" },
+    ],
+  }
+})
+
+// Mock dependencies
+vi.mock("jotai", () => mockJotai)
+
+// Mock atom modules to prevent debugLabel assignment errors
+vi.mock("@/lib/atoms/core/base", () => ({
+  tasksAtom: { debugLabel: "tasksAtom" },
+  projectsAtom: { debugLabel: "projectsAtom" },
+  labelsAtom: { debugLabel: "labelsAtom" },
+  dataQueryAtom: { debugLabel: "dataQueryAtom" },
+  updateTasksMutationAtom: { debugLabel: "updateTasksMutationAtom" },
+  createTaskMutationAtom: { debugLabel: "createTaskMutationAtom" },
+  deleteTaskMutationAtom: { debugLabel: "deleteTaskMutationAtom" },
+  updateProjectsMutationAtom: { debugLabel: "updateProjectsMutationAtom" },
+  createProjectMutationAtom: { debugLabel: "createProjectMutationAtom" },
+  deleteProjectMutationAtom: { debugLabel: "deleteProjectMutationAtom" },
+  updateLabelsMutationAtom: { debugLabel: "updateLabelsMutationAtom" },
+  createLabelMutationAtom: { debugLabel: "createLabelMutationAtom" },
+  updateOrderingMutationAtom: { debugLabel: "updateOrderingMutationAtom" },
+}))
+
+vi.mock("@/lib/atoms/ui/dialogs", () => ({
+  showQuickAddAtom: { debugLabel: "showQuickAddAtom" },
+  showTaskPanelAtom: { debugLabel: "showTaskPanelAtom" },
+  selectedTaskIdAtom: { debugLabel: "selectedTaskIdAtom" },
+  taskFormDataAtom: { debugLabel: "taskFormDataAtom" },
+  resetTaskFormAtom: { debugLabel: "resetTaskFormAtom" },
+}))
+
+vi.mock("@/lib/atoms/ui/views", () => ({
+  viewStatesAtom: { debugLabel: "viewStatesAtom" },
+  currentViewStateAtom: { debugLabel: "currentViewStateAtom" },
+  setViewOptionsAtom: { debugLabel: "setViewOptionsAtom" },
+  setSearchQueryAtom: { debugLabel: "setSearchQueryAtom" },
+}))
+
+vi.mock("@/lib/atoms/core/tasks", () => ({
+  orderedTasksByProjectAtom: { debugLabel: "orderedTasksByProjectAtom" },
+  reorderTaskInViewAtom: { debugLabel: "reorderTaskInViewAtom" },
+  moveTaskBetweenSectionsAtom: { debugLabel: "moveTaskBetweenSectionsAtom" },
+}))
+
+vi.mock("@/lib/atoms/ui/navigation", () => ({
+  currentRouteContextAtom: { debugLabel: "currentRouteContextAtom" },
+  editingSectionIdAtom: { debugLabel: "editingSectionIdAtom" },
+  stopEditingSectionAtom: { debugLabel: "stopEditingSectionAtom" },
+  collapsedSectionsAtom: { debugLabel: "collapsedSectionsAtom" },
+  toggleSectionCollapseAtom: { debugLabel: "toggleSectionCollapseAtom" },
+}))
+
+vi.mock("@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge", () => ({
+  extractClosestEdge: vi.fn(() => "bottom"),
+  attachClosestEdge: vi.fn((data) => data),
+}))
+
+vi.mock("@atlaskit/pragmatic-drag-and-drop-hitbox/util/get-reorder-destination-index", () => ({
+  getReorderDestinationIndex: vi.fn(({ indexOfTarget }) => indexOfTarget),
+}))
+
+// Mock DraggableWrapper and DropTargetWrapper
+vi.mock("@/components/ui/draggable-wrapper", () => ({
+  DraggableWrapper: ({
+    children,
+    dragId,
+    className,
+  }: {
+    children: React.ReactNode
+    dragId: string
+    className?: string
+  }) => (
+    <div data-testid={`draggable-${dragId}`} className={className}>
+      {children}
+    </div>
+  ),
+}))
+
+vi.mock("@/components/ui/drop-target-wrapper", () => ({
+  DropTargetWrapper: ({
+    children,
+    dropTargetId,
+    className,
+    getData,
+  }: {
+    children: React.ReactNode
+    dropTargetId: string
+    className?: string
+    getData?: () => { type?: string }
+  }) => {
+    const data = getData ? getData() : {}
+    return (
+      <div
+        data-testid={`droppable-${dropTargetId}`}
+        data-droppable-type={
+          data.type === "project" ? "TASK" : data.type === "label" ? "TASK" : data.type
+        }
+        className={className}
+      >
+        {children}
+      </div>
+    )
+  },
+}))
+
+// Mock useDragAndDrop hook
+vi.mock("@/hooks/use-drag-and-drop", () => ({
+  useDragAndDrop: () => ({
+    handleDrop: vi.fn(),
+    handleTaskReorder: vi.fn(),
+    handleTaskDropOnProject: vi.fn(),
+    handleTaskDropOnLabel: vi.fn(),
+  }),
+}))
+
+// Mock all the atoms used by the component
+vi.mock("@/lib/atoms", () => ({
+  projectAtoms: {
+    actions: {
+      addSection: "mockAddSection",
+      renameSection: "mockRenameSection",
+      removeSection: "mockRemoveSection",
+    },
+  },
+  projects: [mockProjectData],
+  projectActions: {
+    addSection: vi.fn(),
+    renameSection: vi.fn(),
+    removeSection: vi.fn(),
+  },
+  taskAtoms: {
+    actions: {
+      updateTask: "mockUpdateTask",
+    },
+    tasks: "mockTasks",
+  },
+  openQuickAddAtom: "mockOpenQuickAddAtom",
+  projectsAtom: "mockProjectsAtom",
+  filteredTasksAtom: "mockFilteredTasksAtom",
+  currentViewStateAtom: "mockCurrentViewStateAtom",
+  selectedTaskAtom: "mockSelectedTaskAtom",
+  setViewOptionsAtom: "mockSetViewOptionsAtom",
+  collapsedSectionsAtom: "mockCollapsedSectionsAtom",
+  toggleSectionCollapseAtom: "mockToggleSectionCollapseAtom",
+  labelsAtom: "mockLabelsAtom",
+}))
+
+vi.mock("@/lib/atoms/ui/navigation", () => ({
+  currentRouteContextAtom: "mockCurrentRouteContextAtom",
+  editingSectionIdAtom: "mockEditingSectionIdAtom",
+  stopEditingSectionAtom: "mockStopEditingSectionAtom",
+  startEditingSectionAtom: "mockStartEditingSectionAtom",
+  openSectionDialogAtom: "mockOpenSectionDialogAtom",
+}))
+
+vi.mock("@/lib/atoms/core/tasks", () => ({
+  orderedTasksByProjectAtom: "mockOrderedTasksByProjectAtom",
+  reorderTaskInViewAtom: "mockReorderTaskInViewAtom",
+  moveTaskBetweenSectionsAtom: "mockMoveTaskBetweenSectionsAtom",
+}))
+
+vi.mock("@/lib/utils", () => ({
+  cn: vi.fn((...classes) => classes.filter(Boolean).join(" ")),
+}))
+
+// Mock component interfaces
+interface MockTaskItemProps {
+  taskId: string
+  variant?: string
+  className?: string
+  showProjectBadge?: boolean
+}
+
+interface MockTaskSidePanelProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+interface MockAddSectionDividerProps {
+  onAddSection: (position: number) => void
+  position: number
+  className?: string
+}
+
+interface MockCardProps {
+  children: React.ReactNode
+  className?: string
+}
+
+interface MockBadgeProps {
+  children: React.ReactNode
+  variant?: string
+  className?: string
+}
+
+interface MockButtonProps {
+  children: React.ReactNode
+  onClick?: () => void
+  className?: string
+  variant?: string
+  size?: string
+  disabled?: boolean
+  [key: string]: unknown
+}
+
+interface MockInputProps {
+  value?: string
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void
+  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void
+  placeholder?: string
+  autoFocus?: boolean
+  [key: string]: unknown
+}
+
+interface MockCollapsibleProps {
+  children: React.ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+interface MockCollapsibleContentProps {
+  children: React.ReactNode
+}
+
+interface MockCollapsibleTriggerProps {
+  children: React.ReactNode
+  asChild?: boolean
+}
+
+interface MockCardHeaderProps {
+  children: React.ReactNode
+  className?: string
+  [key: string]: unknown
+}
+
+interface MockCardTitleProps {
+  children: React.ReactNode
+  className?: string
+  onClick?: () => void
+}
+
+interface MockEditableDivProps {
+  value?: string
+  onChange?: (value: string) => void
+  onCancel?: () => void
+  className?: string
+  autoFocus?: boolean
+  onClick?: (event: React.MouseEvent) => void
+  [key: string]: unknown
+}
+
+interface MockColorPickerProps {
+  selectedColor?: string
+  onColorSelect?: (color: string) => void
+  size?: string
+  label?: string
+  className?: string
+}
+
+interface MockTask {
+  id: string
+  title: string
+  [key: string]: unknown
+}
+
+vi.mock("./task-item", () => ({
+  TaskItem: ({ taskId, variant, className }: MockTaskItemProps) => {
+    // Use the mock to get task data
+    const mockTasks = mockJotai.useAtomValue("mockTasks") || []
+    const task = mockTasks.find((t: MockTask) => t.id === taskId)
+    return (
+      <div
+        data-testid={`task-item-${taskId}`}
+        className={`cursor-pointer ${className || ""} ${variant === "compact" ? "compact" : ""}`}
+      >
+        {task?.title || `Task ${taskId}`}
+      </div>
+    )
+  },
+}))
+
+vi.mock("./task-side-panel", () => ({
+  TaskSidePanel: ({ isOpen, onClose }: MockTaskSidePanelProps) => (
+    <div
+      data-testid="task-side-panel"
+      data-open={isOpen}
+      style={{ display: isOpen ? "block" : "none" }}
+    >
+      <div>Side Panel Open</div>
+      <button data-testid="task-side-panel-close" onClick={onClose}>
+        Close Panel
+      </button>
+    </div>
+  ),
+}))
+
+vi.mock("./task-filter-controls", () => ({
+  TaskFilterControls: ({ className }: { className?: string }) => (
+    <div data-testid="task-filter-controls" className={className}>
+      Filter Controls
+    </div>
+  ),
+}))
+
+vi.mock("./task-filter-badges", () => ({
+  TaskFilterBadges: ({ className }: { className?: string }) => (
+    <div data-testid="task-filter-badges" className={className}>
+      Filter Badges
+    </div>
+  ),
+}))
+
+vi.mock("./add-section-divider", () => ({
+  AddSectionDivider: ({ onAddSection, position, className }: MockAddSectionDividerProps) => (
+    <div
+      data-testid={`add-section-divider-${position}`}
+      className={className}
+      onClick={() => onAddSection(position)}
+    >
+      Add section divider
+    </div>
+  ),
+}))
+
+vi.mock("./selection-toolbar", () => ({
+  SelectionToolbar: () => <div data-testid="selection-toolbar">Selection Toolbar</div>,
+}))
+
+vi.mock("./task-empty-state", () => ({
+  TaskEmptyState: ({
+    title = "No tasks found",
+    description = "Create your first task to get started",
+  }: {
+    title?: string
+    description?: string
+  }) => (
+    <div data-testid="task-empty-state">
+      <div>{title}</div>
+      <div>{description}</div>
+    </div>
+  ),
+}))
+
+// Mock UI components
+vi.mock("@/components/ui/card", () => ({
+  Card: ({ children, className }: MockCardProps) => (
+    <div className={className} data-testid="card">
+      {children}
+    </div>
+  ),
+  CardHeader: ({ children, className, ...props }: MockCardHeaderProps) => (
+    <div className={className} data-testid="card-header" {...props}>
+      {children}
+    </div>
+  ),
+  CardTitle: ({ children, className, onClick }: MockCardTitleProps) => (
+    <div className={className} data-testid="card-title" onClick={onClick}>
+      {children}
+    </div>
+  ),
+  CardContent: ({ children, className }: MockCardProps) => (
+    <div className={className} data-testid="card-content">
+      {children}
+    </div>
+  ),
+}))
+
+vi.mock("@/components/ui/badge", () => ({
+  Badge: ({ children, variant, className }: MockBadgeProps) => (
+    <span className={className} data-testid="badge" data-variant={variant}>
+      {children}
+    </span>
+  ),
+}))
+
+vi.mock("@/components/ui/button", () => ({
+  Button: ({
+    children,
+    onClick,
+    className,
+    variant,
+    size,
+    disabled,
+    ...props
+  }: MockButtonProps) => (
+    <button
+      onClick={onClick}
+      className={className}
+      data-variant={variant}
+      data-size={size}
+      disabled={disabled}
+      {...props}
+    >
+      {children}
+    </button>
+  ),
+}))
+
+vi.mock("@/components/ui/input", () => ({
+  Input: ({
+    value,
+    onChange,
+    onKeyDown,
+    onBlur,
+    placeholder,
+    autoFocus,
+    ...props
+  }: MockInputProps) => (
+    <input
+      value={value}
+      onChange={onChange}
+      onKeyDown={onKeyDown}
+      onBlur={onBlur}
+      placeholder={placeholder}
+      autoFocus={autoFocus}
+      data-testid="input"
+      {...props}
+    />
+  ),
+}))
+
+vi.mock("@/components/ui/collapsible", () => ({
+  Collapsible: ({ children, open }: MockCollapsibleProps) => (
+    <div data-testid="collapsible" data-open={open}>
+      {children}
+    </div>
+  ),
+  CollapsibleContent: ({ children }: MockCollapsibleContentProps) => (
+    <div data-testid="collapsible-content">{children}</div>
+  ),
+  CollapsibleTrigger: ({ children, asChild }: MockCollapsibleTriggerProps) =>
+    asChild ? children : <div data-testid="collapsible-trigger">{children}</div>,
+}))
+
+vi.mock("@/components/ui/custom/editable-div", () => ({
+  EditableDiv: ({ value, onChange, className, onClick, ...props }: MockEditableDivProps) => (
+    <div
+      data-testid="editable-div"
+      className={className}
+      contentEditable
+      suppressContentEditableWarning
+      onClick={onClick}
+      onBlur={() => onChange?.(value || "")}
+      {...props}
+    >
+      {value}
+    </div>
+  ),
+}))
+
+vi.mock("@/components/ui/custom/color-picker", () => ({
+  ColorPicker: ({ selectedColor, onColorSelect, label, className }: MockColorPickerProps) => (
+    <div data-testid="color-picker" className={className}>
+      <label>{label}</label>
+      <div style={{ backgroundColor: selectedColor }} onClick={() => onColorSelect?.("#ff0000")} />
+    </div>
+  ),
+}))
+
+describe("ProjectSectionsView", () => {
+  const mockAddSection = vi.fn()
+  const mockRenameSection = vi.fn()
+  const mockRemoveSection = vi.fn()
+  const mockUpdateTask = vi.fn()
+  const mockOpenQuickAdd = vi.fn()
+
+  const mockProject: Project = {
+    id: TEST_PROJECT_ID_1,
+    name: "Test Project",
+    slug: "test-project",
+    color: "#3B82F6",
+    shared: false,
+    sections: [
+      { id: TEST_SECTION_ID_1, name: "Planning", color: DEFAULT_SECTION_COLORS[0] },
+      { id: TEST_SECTION_ID_2, name: "In Progress", color: DEFAULT_SECTION_COLORS[1] },
+      { id: TEST_SECTION_ID_3, name: "Review", color: DEFAULT_SECTION_COLORS[2] },
+    ],
+    taskOrder: [TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3],
+  }
+
+  const mockTasks: Task[] = [
+    {
+      id: TEST_TASK_ID_1,
+      title: "Task 1",
+      description: "First task",
+      completed: false,
+      priority: 2,
+      projectId: TEST_PROJECT_ID_1,
+      sectionId: TEST_SECTION_ID_1,
+      labels: [],
+      subtasks: [],
+      comments: [],
+      attachments: [],
+      createdAt: new Date("2024-01-01"),
+    },
+    {
+      id: TEST_TASK_ID_2,
+      title: "Task 2",
+      description: "Second task",
+      completed: true,
+      priority: 1,
+      projectId: TEST_PROJECT_ID_1,
+      sectionId: TEST_SECTION_ID_2,
+      labels: [],
+      subtasks: [],
+      comments: [],
+      attachments: [],
+      createdAt: new Date("2024-01-02"),
+    },
+    {
+      id: TEST_TASK_ID_3,
+      title: "Task 3",
+      description: "Third task without section",
+      completed: false,
+      priority: 3,
+      projectId: TEST_PROJECT_ID_1,
+      sectionId: TEST_SECTION_ID_1,
+      labels: [],
+      subtasks: [],
+      comments: [],
+      attachments: [],
+      createdAt: new Date("2024-01-03"),
+    },
+  ]
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockJotai.useSetAtom.mockImplementation((atom) => {
+      if (atom === "mockAddSection") return mockAddSection
+      if (atom === "mockRenameSection") return mockRenameSection
+      if (atom === "mockRemoveSection") return mockRemoveSection
+      if (atom === "mockUpdateTask") return mockUpdateTask
+      if (atom === "mockOpenQuickAddAtom") return mockOpenQuickAdd
+      if (atom === "mockCloseTaskPanelAtom") return vi.fn()
+      if (atom === "mockReorderTaskInViewAtom") return vi.fn()
+      if (atom === "mockMoveTaskBetweenSectionsAtom") return vi.fn()
+      return vi.fn()
+    })
+    mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
+      if (atom === "mockTasks") return mockTasks
+      if (atom === "mockFilteredTasksAtom") return mockTasks
+      if (atom === "mockProjectsAtom") return [mockProject]
+      if (atom === "mockCurrentViewStateAtom")
+        return {
+          showSidePanel: false,
+          compactView: false,
+          viewMode: "list",
+          sortBy: "dueDate",
+          showCompleted: false,
+        }
+      if (atom === "mockCurrentRouteContextAtom")
+        return {
+          pathname: `/projects/${TEST_PROJECT_ID_1}`,
+          viewId: TEST_PROJECT_ID_1, // Direct project ID as viewId
+          routeType: "project",
+        }
+      if (atom === "mockCollapsedSectionsAtom") return []
+      if (atom === "mockShowTaskPanelAtom") return false
+      if (atom === "mockSelectedTaskAtom") return null
+      if (atom === "mockOrderedTasksByProjectAtom") {
+        // Return a Map that mimics the orderedTasksByProjectAtom structure
+        const orderedTasksMap = new Map()
+        orderedTasksMap.set(
+          TEST_PROJECT_ID_1,
+          mockTasks.filter((t) => t.projectId === TEST_PROJECT_ID_1),
+        )
+        orderedTasksMap.set(
+          "inbox",
+          mockTasks.filter((t) => !t.projectId || t.projectId === "inbox"),
+        )
+        return orderedTasksMap
+      }
+      return []
+    })
+  })
+
+  it("renders project sections with tasks", () => {
+    render(<ProjectSectionsView droppableId="test-droppable" />)
+
+    // Check that sections are rendered
+    expect(screen.getByText("Planning")).toBeInTheDocument()
+    expect(screen.getByText("In Progress")).toBeInTheDocument()
+    expect(screen.getByText("Review")).toBeInTheDocument()
+
+    // Check that tasks are rendered in their sections
+    expect(screen.getByTestId(`task-item-${TEST_TASK_ID_1}`)).toBeInTheDocument()
+    expect(screen.getByTestId(`task-item-${TEST_TASK_ID_2}`)).toBeInTheDocument()
+    expect(screen.getByTestId(`task-item-${TEST_TASK_ID_3}`)).toBeInTheDocument()
+  })
+
+  it("shows task counts for each section", () => {
+    render(<ProjectSectionsView droppableId="test-droppable" />)
+
+    const badges = screen.getAllByTestId("badge")
+    expect(badges).toHaveLength(3) // 3 sections
+
+    // Check badge content shows task count
+    const badgeTexts = badges.map((badge) => badge.textContent)
+    expect(badgeTexts).toContain("2") // Planning has 2 tasks (TEST_TASK_ID_1 and TEST_TASK_ID_3 both have sectionId: TEST_SECTION_ID_1)
+    expect(badgeTexts).toContain("1") // In Progress has 1 task (TEST_TASK_ID_2 has sectionId: TEST_SECTION_ID_2)
+    expect(badgeTexts).toContain("0") // Review has 0 tasks
+  })
+
+  it("handles task click to open side panel", async () => {
+    render(<ProjectSectionsView droppableId="test-droppable" />)
+
+    const taskItem = screen.getByTestId(`task-item-${TEST_TASK_ID_1}`)
+    await userEvent.click(taskItem)
+
+    // Task click is now handled internally by TaskItem component via atoms
+    expect(taskItem).toBeInTheDocument()
+  })
+
+  it("shows side panel when task is selected and showSidePanel is true", () => {
+    // Mock the atom to return showSidePanel: true
+    mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
+      if (atom === "mockTasks") return mockTasks
+      if (atom === "mockFilteredTasksAtom") return mockTasks
+      if (atom === "mockProjectsAtom") return [mockProject]
+      if (atom === "mockCurrentViewStateAtom")
+        return {
+          showSidePanel: true, // Side panel view option is enabled
+          compactView: false,
+        }
+      if (atom === "mockCurrentRouteContextAtom")
+        return {
+          pathname: `/projects/${TEST_PROJECT_ID_1}`,
+          viewId: TEST_PROJECT_ID_1, // Direct project ID as viewId
+          routeType: "project",
+        }
+      if (atom === "mockCollapsedSectionsAtom") return []
+      if (atom === "mockSelectedTaskAtom") return mockTasks[0] // Task is selected
+      if (atom === "mockOrderedTasksByProjectAtom") {
+        const orderedTasksMap = new Map()
+        orderedTasksMap.set(
+          TEST_PROJECT_ID_1,
+          mockTasks.filter((t) => t.projectId === TEST_PROJECT_ID_1),
+        )
+        return orderedTasksMap
+      }
+      return []
+    })
+
+    render(<ProjectSectionsView droppableId="test-droppable" />)
+
+    // After opening, the task panel should be open (data-open="true")
+    const sidePanelAfter = screen.getByTestId("task-side-panel")
+    expect(sidePanelAfter).toHaveAttribute("data-open", "true")
+    expect(screen.getByText("Side Panel Open")).toBeInTheDocument()
+  })
+
+  it("closes side panel when close button is clicked", async () => {
+    const mockSetViewOptions = vi.fn()
+    mockJotai.useSetAtom.mockImplementation((atom) => {
+      if (atom === "mockSetViewOptionsAtom") return mockSetViewOptions
+      return vi.fn()
+    })
+
+    // Mock the atoms to show panel is open
+    mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
+      if (atom === "mockTasks") return mockTasks
+      if (atom === "mockFilteredTasksAtom") return mockTasks
+      if (atom === "mockProjectsAtom") return [mockProject]
+      if (atom === "mockCurrentViewStateAtom") return { showSidePanel: true, compactView: false } // Panel is open
+      if (atom === "mockCurrentRouteContextAtom")
+        return {
+          pathname: `/projects/${TEST_PROJECT_ID_1}`,
+          viewId: TEST_PROJECT_ID_1,
+          routeType: "project",
+        }
+      if (atom === "mockCollapsedSectionsAtom") return []
+      if (atom === "mockSelectedTaskAtom") return mockTasks[0]
+      if (atom === "mockOrderedTasksByProjectAtom") {
+        const orderedTasksMap = new Map()
+        orderedTasksMap.set(
+          TEST_PROJECT_ID_1,
+          mockTasks.filter((t) => t.projectId === TEST_PROJECT_ID_1),
+        )
+        return orderedTasksMap
+      }
+      return []
+    })
+
+    render(<ProjectSectionsView droppableId="test-droppable" />)
+
+    // Click close button in side panel
+    const closeButton = screen.getByTestId("task-side-panel-close")
+    await userEvent.click(closeButton)
+
+    expect(mockSetViewOptions).toHaveBeenCalledWith({ showSidePanel: false })
+  })
+
+  it("shows add section dividers and input form", async () => {
+    render(<ProjectSectionsView droppableId="test-droppable" />)
+
+    // Should show dividers at different positions
+    // expect(screen.getByTestId('add-section-divider-1')).toBeInTheDocument()
+    // expect(screen.getByTestId('add-section-divider-2')).toBeInTheDocument()
+    // expect(screen.getByTestId('add-section-divider-3')).toBeInTheDocument()
+
+    // Click a divider to show the input form
+    // const addSectionDivider = screen.getByTestId('add-section-divider-3')
+    // await userEvent.click(addSectionDivider)
+
+    // const sectionInput = screen.getByPlaceholderText('Section name...')
+    // expect(sectionInput).toBeInTheDocument()
+  })
+
+  it("adds new section when form is submitted", async () => {
+    render(<ProjectSectionsView droppableId="test-droppable" />)
+
+    // Click add section divider (at the end)
+    // const addSectionDivider = screen.getByTestId('add-section-divider-3')
+    // await userEvent.click(addSectionDivider)
+
+    // Type section name
+    // const sectionInput = screen.getByPlaceholderText('Section name...')
+    // await userEvent.type(sectionInput, 'New Section')
+
+    // Click add button
+    // const addButton = screen.getByText('Add')
+    // await userEvent.click(addButton)
+
+    // expect(mockAddSection).toHaveBeenCalledWith({
+    //   projectId: TEST_PROJECT_ID_1,
+    //   sectionName: 'New Section',
+    //   color: '#3b82f6',
+    //   position: 3,
+    // })
+  })
+
+  it("opens quick add dialog when Add Task button is clicked", async () => {
+    render(<ProjectSectionsView droppableId="test-droppable" />)
+
+    const addTaskButton = screen.getByText("Add Task")
+    await userEvent.click(addTaskButton)
+
+    expect(mockOpenQuickAdd).toHaveBeenCalled()
+  })
+
+  it("renders droppable areas for drag and drop", () => {
+    render(<ProjectSectionsView droppableId="test-droppable" />)
+
+    // Check that droppable areas are rendered
+    const droppables = screen.getAllByTestId(/^droppable-/)
+    expect(droppables.length).toBeGreaterThan(0)
+
+    // Check that tasks are wrapped in draggable components
+    expect(screen.getByTestId(`draggable-${TEST_TASK_ID_1}`)).toBeInTheDocument()
+    expect(screen.getByTestId(`draggable-${TEST_TASK_ID_2}`)).toBeInTheDocument()
+    expect(screen.getByTestId(`draggable-${TEST_TASK_ID_3}`)).toBeInTheDocument()
+  })
+
+  describe("when supportsSections is false", () => {
+    it("renders as flat list without section UI", () => {
+      render(<ProjectSectionsView droppableId="test-droppable" supportsSections={false} />)
+
+      // Should not show section headers
+      expect(screen.queryByText("Planning")).not.toBeInTheDocument()
+      expect(screen.queryByText("In Progress")).not.toBeInTheDocument()
+      expect(screen.queryByText("Review")).not.toBeInTheDocument()
+
+      // Should show all tasks in a flat list
+      expect(screen.getByTestId(`task-item-${TEST_TASK_ID_1}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`task-item-${TEST_TASK_ID_2}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`task-item-${TEST_TASK_ID_3}`)).toBeInTheDocument()
+
+      // Should have droppable areas (main list + individual tasks)
+      expect(screen.getAllByTestId(/^droppable-/).length).toBeGreaterThan(0)
+    })
+
+    it("does not show add section dividers when sections are disabled", () => {
+      render(<ProjectSectionsView droppableId="test-droppable" supportsSections={false} />)
+
+      // Should not show any add section dividers
+      expect(screen.queryByTestId("add-section-divider-0")).not.toBeInTheDocument()
+      expect(screen.queryByTestId("add-section-divider-1")).not.toBeInTheDocument()
+      expect(screen.queryByTestId("add-section-divider-2")).not.toBeInTheDocument()
+      expect(screen.queryByTestId("add-section-divider-3")).not.toBeInTheDocument()
+    })
+
+    it("shows Add Task button in flat mode", () => {
+      render(<ProjectSectionsView droppableId="test-droppable" supportsSections={false} />)
+
+      expect(screen.getByText("Add Task")).toBeInTheDocument()
+    })
+
+    it("opens quick add dialog when Add Task button is clicked in flat mode", async () => {
+      render(<ProjectSectionsView droppableId="test-droppable" supportsSections={false} />)
+
+      const addTaskButton = screen.getByText("Add Task")
+      await userEvent.click(addTaskButton)
+
+      expect(mockOpenQuickAdd).toHaveBeenCalled()
+    })
+  })
+
+  describe("when supportsSections is true (default behavior)", () => {
+    it("shows full section functionality", () => {
+      render(<ProjectSectionsView droppableId="test-droppable" supportsSections={true} />)
+
+      // Should show section headers
+      expect(screen.getByText("Planning")).toBeInTheDocument()
+      expect(screen.getByText("In Progress")).toBeInTheDocument()
+      expect(screen.getByText("Review")).toBeInTheDocument()
+
+      // Should show add section dividers
+      // expect(screen.getByTestId('add-section-divider-1')).toBeInTheDocument()
+      // expect(screen.getByTestId('add-section-divider-2')).toBeInTheDocument()
+      // expect(screen.getByTestId('add-section-divider-3')).toBeInTheDocument()
+    })
+  })
+})

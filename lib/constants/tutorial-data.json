@@ -1,0 +1,214 @@
+{
+  "tasks": [
+    {
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "title": "👋 Welcome to TaskTrove!",
+      "description": "Quick 3-minute tour of TaskTrove's unique features: You can show details of this task by clicking on it to open the side panel. Complete the subtasks in the side panel first, then mark this step as complete.",
+      "completed": false,
+      "priority": 1,
+      "projectId": "550e8400-e29b-41d4-a716-446655440000",
+      "sectionId": "6ba7b810-9dad-41d1-8696-f01c6a84b1a0",
+      "labels": ["6ba7b811-9dad-41d1-8696-f01c6a84b1a1"],
+      "subtasks": [
+        {
+          "id": "f47ac10c-58cc-4372-a567-0e02b2c3d47a",
+          "title": "Click on the task to see the detail side panel",
+          "completed": false,
+          "order": 1
+        },
+        {
+          "id": "f47ac10d-58cc-4372-a567-0e02b2c3d47b",
+          "title": "Collapse the side panel by clicking the X button on header, or press ESC key",
+          "completed": false,
+          "order": 2
+        },
+        {
+          "id": "f47ac10d-58cc-4372-a567-0e02b2c3d47c",
+          "title": "Complete this task by clicking the circle checkbox on the title of the task, or press SPACE key",
+          "completed": false,
+          "order": 3
+        }
+      ],
+      "comments": [
+        {
+          "id": "f47ac110-58cc-4372-a567-0e02b2c3d47e",
+          "content": "🎯 TaskTrove is a Task List Management Tool. It is built with self-hosting and privacy in mind.",
+          "createdAt": "2024-01-01T09:00:00.000Z"
+        }
+      ],
+      "attachments": [],
+      "createdAt": "2024-01-01T09:00:00.000Z",
+      "order": 1
+    },
+    {
+      "id": "f47ac111-58cc-4372-a567-0e02b2c3d47f",
+      "title": "⚡ Try Smart Task Creation",
+      "description": "TaskTrove supports natural language parsing for creating tasks. Try the examples below to see the magic!",
+      "completed": false,
+      "priority": 1,
+      "projectId": "550e8400-e29b-41d4-a716-446655440000",
+      "sectionId": "6ba7b810-9dad-41d1-8696-f01c6a84b1a0",
+      "labels": ["6ba7b811-9dad-41d1-8696-f01c6a84b1a1"],
+      "subtasks": [
+        {
+          "id": "f47ac112-58cc-4372-a567-0e02b2c3d480",
+          "title": "Click the add button from the sidebar on the left and try: 'Call dentist #personal @important tomorrow 2pm P1'",
+          "completed": false,
+          "order": 1
+        },
+        {
+          "id": "f47ac113-58cc-4372-a567-0e02b2c3d481",
+          "title": "Try: 'Team standup P2 every Monday 10am' to create a recurring task",
+          "completed": false,
+          "order": 2
+        }
+      ],
+      "comments": [
+        {
+          "id": "f47ac116-58cc-4372-a567-0e02b2c3d484",
+          "content": "🚀 TaskTrove automatically creates projects, labels, sets priorities, due dates, times, and even recurring patterns - all from natural language!",
+          "createdAt": "2024-01-01T09:15:00.000Z"
+        }
+      ],
+      "attachments": [],
+      "createdAt": "2024-01-01T09:15:00.000Z",
+      "order": 2
+    },
+    {
+      "id": "f47ac117-58cc-4372-a567-0e02b2c3d485",
+      "title": "🎨 Discover Flexible Project Workflows",
+      "description": "TaskTrove projects have customizable sections that work as both lists and kanban boards.",
+      "completed": false,
+      "priority": 1,
+      "projectId": "550e8400-e29b-41d4-a716-446655440000",
+      "sectionId": "6ba7b820-9dad-41d1-8696-f01c6a84b1b0",
+      "labels": ["6ba7b811-9dad-41d1-8696-f01c6a84b1a1"],
+      "subtasks": [
+        {
+          "id": "f47ac118-58cc-4372-a567-0e02b2c3d901",
+          "title": "From the left sidebar, click \"TaskTrove Tour\" under project.",
+          "completed": false,
+          "order": 1
+        },
+        {
+          "id": "f47ac118-58cc-4372-a567-0e02b2c3d902",
+          "title": "Notice this project has sections: Getting Started → In Progress → Done",
+          "completed": false,
+          "order": 2
+        },
+        {
+          "id": "f47ac118-58cc-4372-a567-0e02b2c3d903",
+          "title": "Try dragging a task to a different section to move it around",
+          "completed": false,
+          "order": 3
+        },
+        {
+          "id": "f47ac118-58cc-4372-a567-0e02b2c3d904",
+          "title": "Try create a new section by hovering over an existing section's title, and open the context menu -> Add section",
+          "completed": false,
+          "order": 4
+        },
+        {
+          "id": "f47ac119-58cc-4372-a567-0e02b2c3d905",
+          "title": "Click the view options button on the top right corner of the screen (the button that looks like 3 dials). Select Kanban view",
+          "completed": false,
+          "order": 5
+        }
+      ],
+      "comments": [
+        {
+          "id": "f47ac11c-58cc-4372-a567-0e02b2c3d48a",
+          "content": "🔥 Each project can have custom sections with colors, and switch between list/kanban views. Each view remembers its own settings!",
+          "createdAt": "2024-01-01T09:30:00.000Z"
+        }
+      ],
+      "attachments": [],
+      "createdAt": "2024-01-01T09:30:00.000Z",
+      "order": 3
+    },
+    {
+      "id": "f47ac11d-58cc-4372-a567-0e02b2c3d48b",
+      "title": "🎯 Master Quick Organization",
+      "description": "TaskTrove's drag-and-drop sidebar makes organizing tasks incredibly fast. Try it!",
+      "completed": false,
+      "priority": 1,
+      "projectId": "550e8400-e29b-41d4-a716-446655440000",
+      "sectionId": "6ba7b830-9dad-41d1-8696-f01c6a84b1c0",
+      "labels": ["6ba7b811-9dad-41d1-8696-f01c6a84b1a1"],
+      "subtasks": [
+        {
+          "id": "f47ac11e-58cc-4372-a567-0e02b2c3d48c",
+          "title": "Drag any task to a project in the sidebar to move it",
+          "completed": false,
+          "order": 1
+        },
+        {
+          "id": "f47ac11f-58cc-4372-a567-0e02b2c3d48d",
+          "title": "Drag a task to a label in the sidebar to tag it",
+          "completed": false,
+          "order": 2
+        },
+        {
+          "id": "f47ac120-58cc-4372-a567-0e02b2c3d48e",
+          "title": "Complete this task to finish your TaskTrove tour! 🎉",
+          "completed": false,
+          "order": 3
+        }
+      ],
+      "comments": [
+        {
+          "id": "f47ac123-58cc-4372-a567-0e02b2c3d491",
+          "content": "🎉 You're all set! TaskTrove has many more features to discover, explore around. And if you want to get excited, check out our roadmap (on TaskTrove github repo -> Projects -> TaskTrove Roadmap) and see what's coming next! Welcome aboard!",
+          "createdAt": "2024-01-01T10:01:00.000Z"
+        }
+      ],
+      "attachments": [],
+      "createdAt": "2024-01-01T10:00:00.000Z",
+      "order": 4
+    }
+  ],
+  "projects": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "🧙‍♂️ TaskTrove Tour",
+      "slug": "tasktrove-tour",
+      "color": "#8B5CF6",
+      "shared": false,
+      "sections": [
+        {
+          "id": "6ba7b810-9dad-41d1-8696-f01c6a84b1a0",
+          "name": "Getting Started",
+          "color": "#10B981"
+        },
+        {
+          "id": "6ba7b820-9dad-41d1-8696-f01c6a84b1b0",
+          "name": "In Progress",
+          "color": "#F59E0B"
+        },
+        {
+          "id": "6ba7b830-9dad-41d1-8696-f01c6a84b1c0",
+          "name": "Done",
+          "color": "#10B981"
+        }
+      ],
+      "taskOrder": [
+        "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+        "f47ac111-58cc-4372-a567-0e02b2c3d47f",
+        "f47ac117-58cc-4372-a567-0e02b2c3d485",
+        "f47ac11d-58cc-4372-a567-0e02b2c3d48b"
+      ]
+    }
+  ],
+  "labels": [
+    {
+      "id": "6ba7b811-9dad-41d1-8696-f01c6a84b1a1",
+      "name": "tour",
+      "slug": "tour",
+      "color": "#8B5CF6"
+    }
+  ],
+  "ordering": {
+    "projects": ["550e8400-e29b-41d4-a716-446655440000"],
+    "labels": ["6ba7b811-9dad-41d1-8696-f01c6a84b1a1"]
+  }
+}

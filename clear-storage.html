@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Clear TaskTrove Storage</title>
+  </head>
+  <body>
+    <h1>Clear TaskTrove LocalStorage</h1>
+    <button onclick="clearStorage()">Clear All TaskTrove Data</button>
+    <div id="result"></div>
+
+    <script>
+      function clearStorage() {
+        const keys = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key && key.startsWith("tasktrove-")) {
+            keys.push(key)
+          }
+        }
+
+        keys.forEach((key) => {
+          localStorage.removeItem(key)
+          console.log("Removed:", key)
+        })
+
+        document.getElementById("result").innerHTML =
+          `Cleared ${keys.length} items: ${keys.join(", ")}`
+      }
+
+      // Show current storage
+      function showStorage() {
+        const keys = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key && key.startsWith("tasktrove-")) {
+            keys.push(key + ": " + localStorage.getItem(key).substring(0, 50) + "...")
+          }
+        }
+        console.log("Current TaskTrove storage:", keys)
+      }
+
+      showStorage()
+    </script>
+  </body>
+</html>

@@ -1,0 +1,161 @@
+"use client"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { DeleteConfirmDialog } from "@/components/dialogs/delete-confirm-dialog"
+import {
+  MoreHorizontal,
+  Trash2,
+  // Timer, // Commented out since pomodoro timer is disabled
+  Edit3,
+} from "lucide-react"
+import { cn } from "@/lib/utils"
+import type { Task } from "@/lib/types"
+// import { openPomodoroAtom } from "@/lib/atoms/ui/dialogs" // Commented out since pomodoro timer is disabled
+
+interface TaskActionsMenuProps {
+  task: Task
+  isVisible: boolean
+  onDeleteClick: () => void
+  onEditClick?: () => void
+  variant?: "full" | "compact" | "kanban"
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+export function TaskActionsMenu({
+  task,
+  isVisible,
+  onDeleteClick,
+  onEditClick,
+  variant = "full",
+  open,
+  onOpenChange,
+}: TaskActionsMenuProps) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  // const openPomodoro = useSetAtom(openPomodoroAtom) // Commented out since pomodoro timer is disabled
+
+  // Use controlled or uncontrolled state
+  const isOpen = open !== undefined ? open : internalOpen
+  const setIsOpen = onOpenChange || setInternalOpen
+
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true)
+    setIsOpen(false)
+  }
+
+  const handleConfirmDelete = () => {
+    onDeleteClick()
+    setShowDeleteConfirm(false)
+  }
+
+  const handleEditClick = () => {
+    onEditClick?.()
+    setIsOpen(false)
+  }
+
+  // const handleTimerClick = () => {
+  //   openPomodoro(task)
+  //   setIsOpen(false)
+  // } // Commented out since pomodoro timer is disabled
+
+  if (variant === "compact" || variant === "kanban") {
+    return (
+      <>
+        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className={cn(
+                "h-5 w-5 p-0 m-0 flex-shrink-0 flex items-center justify-center",
+                isVisible ? "flex" : "hidden",
+              )}
+              data-action="menu"
+            >
+              <MoreHorizontal className="h-3.5 w-3.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-32">
+            {onEditClick && (
+              <DropdownMenuItem onClick={handleEditClick}>
+                <Edit3 className="h-3.5 w-3.5 mr-2" />
+                Edit
+              </DropdownMenuItem>
+            )}
+            {/* <DropdownMenuItem onClick={handleTimerClick}>
+              <Timer className="h-3.5 w-3.5 mr-2" />
+              Start timer
+            </DropdownMenuItem> */}
+            <DropdownMenuItem
+              onClick={handleDeleteClick}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-2" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DeleteConfirmDialog
+          open={showDeleteConfirm}
+          onOpenChange={setShowDeleteConfirm}
+          onConfirm={handleConfirmDelete}
+          entityType="task"
+          entityName={task.title}
+        />
+      </>
+    )
+  }
+
+  // Full variant (original implementation)
+  return (
+    <>
+      <div className={cn("flex items-center gap-1 h-5", isVisible ? "block" : "hidden")}>
+        {/* Delete Button */}
+        <Button
+          variant="ghost"
+          className="text-red-600 hover:text-red-700 cursor-pointer h-full w-5"
+          onClick={handleDeleteClick}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+
+        {/* More Actions Menu */}
+        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="cursor-pointer h-full w-5">
+              <MoreHorizontal className="h-3.5 w-3.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {onEditClick && (
+              <DropdownMenuItem onClick={handleEditClick}>
+                <Edit3 className="h-4 w-4 mr-2" />
+                Edit
+              </DropdownMenuItem>
+            )}
+            {/* <DropdownMenuItem onClick={handleTimerClick}>
+              <Timer className="h-4 w-4 mr-2" />
+              Start timer
+            </DropdownMenuItem> */}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <DeleteConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        onConfirm={handleConfirmDelete}
+        entityType="task"
+        entityName={task.title}
+      />
+    </>
+  )
+}

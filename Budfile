@@ -25,7 +25,7 @@ run() {
 }
 
 docker-build() {
-  local tag="${1:-dohsimpson/tasktrove:latest}"
+  local tag="${1:-ghcr.io/dohsimpson/tasktrove:latest}"
   echo "Building multi-platform Docker image: $tag"
   echo "Platforms: linux/amd64, linux/arm64"
   
@@ -37,12 +37,12 @@ docker-build() {
 }
 
 docker-push() {
-  local tag="${1:-dohsimpson/tasktrove:latest}"
+  local tag="${1:-ghcr.io/dohsimpson/tasktrove:latest}"
   docker push "$tag"
 }
 
 docker-run() {
-  docker run -it --rm -p 3000:3000 -v ./data:/app/data dohsimpson/tasktrove
+  docker run -it --rm -p 3000:3000 -v ./data:/app/data ghcr.io/dohsimpson/tasktrove
 }
 
 rollout() {

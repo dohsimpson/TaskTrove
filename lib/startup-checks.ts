@@ -175,6 +175,6 @@ export function formatPermissionErrors(
     "   • Verify the container user ID matches the host user ID",
     "",
     "📚 Docker run example:",
-    `   docker run -v ./${DEFAULT_DATA_DIR}:/app/${DEFAULT_DATA_DIR} -p 3000:3000 dohsimpson/tasktrove`,
+    `   docker run -v ./${DEFAULT_DATA_DIR}:/app/${DEFAULT_DATA_DIR} -p 3000:3000 ghcr.io/dohsimpson/tasktrove`,
   ].join("\n")
 }

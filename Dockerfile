@@ -25,6 +25,9 @@ RUN --mount=type=cache,target=/app/.next/cache \
 FROM node:22-alpine AS runner
 WORKDIR /app
 
+# Add ghcr.io label for repo association
+LABEL org.opencontainers.image.source=https://github.com/dohsimpson/TaskTrove
+
 ENV NODE_ENV=production
 COPY --from=builder /app/public ./public
 

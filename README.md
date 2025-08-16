@@ -38,7 +38,7 @@
 
 ```bash
 # Quick start
-docker run -p 3000:3000 -v ./data:/app/data -d --name tasktrove dohsimpson/tasktrove
+docker run -p 3000:3000 -v ./data:/app/data -d --name tasktrove ghcr.io/dohsimpson/tasktrove
 ```
 
 ### Docker Compose

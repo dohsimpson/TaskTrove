@@ -1,6 +1,6 @@
 services:
   tasktrove:
-    image: dohsimpson/tasktrove:latest
+    image: ghcr.io/dohsimpson/tasktrove:latest
     container_name: tasktrove
     ports:
       - "3000:3000"

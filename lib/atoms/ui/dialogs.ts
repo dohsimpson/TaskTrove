@@ -98,6 +98,12 @@ export const showLabelDialogAtom = atom<boolean>(false)
 showLabelDialogAtom.debugLabel = "showLabelDialogAtom"
 
 /**
+ * Settings Dialog - Controls the settings configuration dialog
+ */
+export const showSettingsDialogAtom = atom<boolean>(false)
+showSettingsDialogAtom.debugLabel = "showSettingsDialogAtom"
+
+/**
  * Selected Task ID - Currently selected task ID for viewing/editing
  */
 export const selectedTaskIdAtom = atom<string | null>(null)
@@ -228,6 +234,7 @@ export const closeAllDialogsAtom = atom(null, (get, set) => {
   set(showLabelDialogAtom, false)
   set(showSectionDialogAtom, false)
   set(showSearchDialogAtom, false)
+  set(showSettingsDialogAtom, false)
 
   // Clear all selections
   set(selectedTaskIdAtom, null)
@@ -250,7 +257,8 @@ export const isAnyDialogOpenAtom = atom<boolean>((get) => {
     get(showProjectDialogAtom) ||
     get(showLabelDialogAtom) ||
     get(showSectionDialogAtom) ||
-    get(showSearchDialogAtom)
+    get(showSearchDialogAtom) ||
+    get(showSettingsDialogAtom)
   )
 })
 isAnyDialogOpenAtom.debugLabel = "isAnyDialogOpenAtom"
@@ -291,6 +299,22 @@ export const toggleNlpAtom = atom(null, (get, set) => {
   set(nlpEnabledAtom, !currentValue)
 })
 toggleNlpAtom.debugLabel = "toggleNlpAtom"
+
+/**
+ * Opens the settings dialog
+ */
+export const openSettingsDialogAtom = atom(null, (get, set) => {
+  set(showSettingsDialogAtom, true)
+})
+openSettingsDialogAtom.debugLabel = "openSettingsDialogAtom"
+
+/**
+ * Closes the settings dialog
+ */
+export const closeSettingsDialogAtom = atom(null, (get, set) => {
+  set(showSettingsDialogAtom, false)
+})
+closeSettingsDialogAtom.debugLabel = "closeSettingsDialogAtom"
 
 // =============================================================================
 // QUICK ADD AUTOCOMPLETE STATE
@@ -424,6 +448,7 @@ export const baseDialogAtoms = {
   showPomodoro: showPomodoroAtom,
   showProjectDialog: showProjectDialogAtom,
   showSearchDialog: showSearchDialogAtom,
+  showSettingsDialog: showSettingsDialogAtom,
   selectedTaskId: selectedTaskIdAtom,
   selectedTask: selectedTaskAtom,
   selectedTasks: selectedTasksAtom,
@@ -442,6 +467,8 @@ export const dialogActionAtoms = {
   closeTaskPanel: closeTaskPanelAtom,
   openPomodoro: openPomodoroAtom,
   closePomodoro: closePomodoroAtom,
+  openSettingsDialog: openSettingsDialogAtom,
+  closeSettingsDialog: closeSettingsDialogAtom,
   toggleTaskSelection: toggleTaskSelectionAtom,
   clearSelectedTasks: clearSelectedTasksAtom,
   closeAllDialogs: closeAllDialogsAtom,

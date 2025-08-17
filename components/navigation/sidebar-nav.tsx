@@ -58,6 +58,7 @@ import {
   editingLabelIdAtom,
   stopEditingLabelAtom,
 } from "@/lib/atoms/ui/navigation"
+import { openSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
 
 export function SidebarNav() {
   // Get data from atoms instead of props
@@ -71,6 +72,7 @@ export function SidebarNav() {
   const openQuickAdd = useSetAtom(openQuickAddAtom)
   const openProjectDialog = useSetAtom(openProjectDialogAtom)
   const openLabelDialog = useSetAtom(openLabelDialogAtom)
+  const openSettingsDialog = useSetAtom(openSettingsDialogAtom)
 
   // Card button styles for quick actions
   const CARD_BUTTON_STYLES =
@@ -119,9 +121,7 @@ export function SidebarNav() {
       id: "settings",
       label: "Settings",
       icon: <Settings className="h-4 w-4" />,
-      href: "/settings",
-      comingSoon: true,
-      featureName: "Advanced Settings",
+      onClick: openSettingsDialog,
     },
     {
       id: "shortcuts",
@@ -265,7 +265,12 @@ export function SidebarNav() {
               <SidebarMenu>
                 {moreNavItems.map((item) => (
                   <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton asChild disabled={item.comingSoon}>
+                    <SidebarMenuButton
+                      asChild={!item.onClick}
+                      disabled={item.comingSoon}
+                      onClick={item.onClick}
+                      className="cursor-pointer"
+                    >
                       {item.comingSoon ? (
                         <ComingSoonWrapper
                           disabled={true}
@@ -276,6 +281,11 @@ export function SidebarNav() {
                             <span>{item.label}</span>
                           </div>
                         </ComingSoonWrapper>
+                      ) : item.onClick ? (
+                        <div className="flex items-center gap-2 w-full">
+                          {item.icon}
+                          <span>{item.label}</span>
+                        </div>
                       ) : (
                         <Link href={item.href}>
                           {item.icon}

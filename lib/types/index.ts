@@ -1039,6 +1039,186 @@ export interface NotificationSettings {
 }
 
 // =============================================================================
+// USER SETTINGS TYPES
+// =============================================================================
+
+/**
+ * Appearance and theme settings
+ */
+export interface AppearanceSettings {
+  /** Theme preference */
+  theme: "light" | "dark" | "system"
+  /** Custom color scheme */
+  colorScheme?: string
+  /** Interface density */
+  density: "compact" | "comfortable" | "spacious"
+  /** Font size multiplier */
+  fontScale: number
+  /** Sidebar position */
+  sidebarPosition: "left" | "right"
+  /** Language preference */
+  language: string
+  /** High contrast mode */
+  highContrast: boolean
+  /** Reduced motion preference */
+  reducedMotion: boolean
+  /** Show task metadata by default */
+  showTaskMetadata: boolean
+  /** Priority colors enabled */
+  priorityColors: boolean
+  /** Date format preference */
+  dateFormat: "MM/dd/yyyy" | "dd/MM/yyyy" | "yyyy-MM-dd"
+}
+
+/**
+ * Behavior and preference settings
+ */
+export interface BehaviorSettings {
+  /** Default view on app launch */
+  startView: StandardViewId | "lastViewed"
+  /** First day of week */
+  weekStartDay: 0 | 1 | 2 | 3 | 4 | 5 | 6 // 0 = Sunday, 1 = Monday, etc.
+  /** Working days of the week */
+  workingDays: number[]
+  /** Time format preference */
+  timeFormat: "12h" | "24h"
+  /** System locale */
+  systemLocale: string
+  /** Default task priority */
+  defaultTaskPriority: TaskPriority
+  /** Auto-assign new tasks to current project */
+  autoAssignToCurrentProject: boolean
+  /** Auto-focus title field when creating tasks */
+  autoFocusTaskTitle: boolean
+  /** Default project for new tasks */
+  defaultProjectId?: ProjectId
+  /** Enable keyboard shortcuts */
+  keyboardShortcuts: boolean
+  /** Confirmation dialogs */
+  confirmations: {
+    deleteTask: boolean
+    deleteProject: boolean
+    deleteLabel: boolean
+    markAllComplete: boolean
+  }
+}
+
+/**
+ * Data management and sync settings
+ */
+export interface DataSettings {
+  /** Auto backup configuration */
+  autoBackup: {
+    enabled: boolean
+    frequency: "daily" | "weekly" | "monthly"
+    maxBackups: number
+    includeCompleted: boolean
+  }
+  /** Export preferences */
+  exportPreferences: {
+    format: "json" | "csv" | "markdown"
+    includeMetadata: boolean
+    includeComments: boolean
+    includeSubtasks: boolean
+  }
+  /** Local storage limits */
+  storage: {
+    maxCacheSizeMB: number
+    clearCacheOnStartup: boolean
+    retentionDays: number
+  }
+  /** Sync configuration */
+  sync: SyncConfig
+}
+
+/**
+ * Integration settings
+ */
+export interface IntegrationSettings {
+  /** Calendar sync settings */
+  calendar: {
+    enabled: boolean
+    provider?: "google" | "outlook" | "apple"
+    syncDirection: "oneWay" | "twoWay"
+    defaultCalendarId?: string
+    syncCompletedTasks: boolean
+  }
+  /** Task import configurations */
+  imports: {
+    lastImportDate?: Date
+    supportedSources: string[]
+    autoDetectDuplicates: boolean
+  }
+  /** Third-party services */
+  services: {
+    webhooks: {
+      enabled: boolean
+      endpoints: string[]
+    }
+    apiKeys: Record<string, string>
+  }
+}
+
+/**
+ * Productivity and analytics settings
+ */
+export interface ProductivitySettings {
+  /** Pomodoro timer configuration */
+  pomodoro: {
+    workDuration: number // minutes
+    shortBreakDuration: number // minutes
+    longBreakDuration: number // minutes
+    longBreakInterval: number // number of sessions
+    autoStartBreaks: boolean
+    autoStartWork: boolean
+    soundEnabled: boolean
+  }
+  /** Goal tracking settings */
+  goals: {
+    dailyTaskTarget: number
+    weeklyTaskTarget: number
+    trackingEnabled: boolean
+    showProgress: boolean
+  }
+  /** Analytics preferences */
+  analytics: {
+    dataCollection: boolean
+    showMetrics: boolean
+    metricVisibility: {
+      productivity: boolean
+      streak: boolean
+      timeSpent: boolean
+      completion: boolean
+    }
+  }
+  /** Focus mode settings */
+  focusMode: {
+    enabled: boolean
+    hideDistractions: boolean
+    minimalUI: boolean
+    blockNotifications: boolean
+  }
+}
+
+/**
+ * Complete user settings configuration
+ */
+export interface UserSettings {
+  /** Appearance and theme settings */
+  appearance: AppearanceSettings
+  /** Behavior and preference settings */
+  behavior: BehaviorSettings
+  /** Notification settings */
+  notifications: NotificationSettings
+  /** Data management and sync settings */
+  data: DataSettings
+  /** Integration settings */
+  integrations: IntegrationSettings
+  /** Productivity and analytics settings */
+  productivity: ProductivitySettings
+}
+
+// =============================================================================
 // SYNC AND PERFORMANCE TYPES
 // =============================================================================
 

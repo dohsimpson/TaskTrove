@@ -21,7 +21,7 @@ import {
   toggleKeyboardShortcutsAtom,
   updateBehaviorSettingsAtom,
 } from "@/lib/atoms/ui/user-settings-atom"
-import type { BehaviorSettings } from "@/lib/types"
+import type { BehaviorSettings, TaskPriority } from "@/lib/types"
 
 export function BehaviorForm() {
   const settings = useAtomValue(behaviorSettingsAtom)
@@ -30,6 +30,22 @@ export function BehaviorForm() {
   const updateDefaultPriority = useSetAtom(updateDefaultPriorityAtom)
   const toggleKeyboardShortcuts = useSetAtom(toggleKeyboardShortcutsAtom)
   const updateSettings = useSetAtom(updateBehaviorSettingsAtom)
+
+  const handleWeekStartDayChange = (value: string) => {
+    const day = parseInt(value)
+    if (day >= 0 && day <= 6) {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      updateWeekStartDay(day as 0 | 1 | 2 | 3 | 4 | 5 | 6)
+    }
+  }
+
+  const handleDefaultPriorityChange = (value: string) => {
+    const priority = parseInt(value)
+    if (priority >= 1 && priority <= 4) {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      updateDefaultPriority(priority as TaskPriority)
+    }
+  }
 
   const weekDayOptions = [
     { value: 0, label: "Sunday" },
@@ -118,7 +134,7 @@ export function BehaviorForm() {
             <Label>Week Start Day</Label>
             <Select
               value={settings.weekStartDay.toString()}
-              onValueChange={(value) => updateWeekStartDay(parseInt(value))}
+              onValueChange={handleWeekStartDayChange}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -197,7 +213,7 @@ export function BehaviorForm() {
             <Label>Default Task Priority</Label>
             <Select
               value={settings.defaultTaskPriority.toString()}
-              onValueChange={(value) => updateDefaultPriority(parseInt(value))}
+              onValueChange={handleDefaultPriorityChange}
             >
               <SelectTrigger>
                 <SelectValue />

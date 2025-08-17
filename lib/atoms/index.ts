@@ -103,6 +103,22 @@ export { keyboardContextAtoms } from "./ui/keyboard-context"
  */
 export { selectionAtoms } from "./ui/selection"
 
+/**
+ * User settings management atoms
+ * Contains user preferences, settings persistence, and configuration
+ */
+export * from "./ui/user-settings-atom"
+
+/**
+ * Core settings atoms from settings module
+ */
+export {
+  settingsAtom,
+  updateSettingsAtom,
+  settingsQueryAtom,
+  updateSettingsMutationAtom,
+} from "./core/settings"
+
 // =============================================================================
 // CONVENIENCE RE-EXPORTS FOR COMMON ATOMS
 // =============================================================================

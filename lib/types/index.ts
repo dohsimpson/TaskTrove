@@ -1218,6 +1218,24 @@ export interface UserSettings {
   productivity: ProductivitySettings
 }
 
+/**
+ * Partial user settings for updates - allows nested partials
+ */
+export interface PartialUserSettings {
+  /** Appearance and theme settings */
+  appearance?: Partial<AppearanceSettings>
+  /** Behavior and preference settings */
+  behavior?: Partial<BehaviorSettings>
+  /** Notification settings */
+  notifications?: Partial<NotificationSettings>
+  /** Data management and sync settings */
+  data?: Partial<DataSettings>
+  /** Integration settings */
+  integrations?: Partial<IntegrationSettings>
+  /** Productivity and analytics settings */
+  productivity?: Partial<ProductivitySettings>
+}
+
 // =============================================================================
 // SYNC AND PERFORMANCE TYPES
 // =============================================================================
@@ -1727,6 +1745,276 @@ export type VoiceCommand = z.infer<typeof VoiceCommandSchema>
 /**
  * Type guard to check if a value is a valid priority
  */
+// =============================================================================
+// SETTINGS SCHEMAS
+// =============================================================================
+
+/**
+ * Notification channels schema
+ */
+export const NotificationChannelsSchema = z.object({
+  push: z.boolean(),
+  email: z.boolean(),
+  desktop: z.boolean(),
+  mobile: z.boolean(),
+})
+
+/**
+ * Notification schedule schema
+ */
+export const NotificationScheduleSchema = z.object({
+  quietHours: z.object({
+    enabled: z.boolean(),
+    start: z.string(),
+    end: z.string(),
+  }),
+  weekends: z.boolean(),
+  holidays: z.boolean(),
+})
+
+/**
+ * Notification types schema
+ */
+export const NotificationTypesSchema = z.object({
+  reminders: z.boolean(),
+  deadlines: z.boolean(),
+  collaboration: z.boolean(),
+  achievements: z.boolean(),
+  system: z.boolean(),
+})
+
+/**
+ * Notification frequency schema
+ */
+export const NotificationFrequencySchema = z.object({
+  immediate: z.boolean(),
+  digest: z.enum(["never", "daily", "weekly"]),
+  digestTime: z.string(),
+})
+
+/**
+ * Notification sound schema
+ */
+export const NotificationSoundSchema = z.object({
+  enabled: z.boolean(),
+  volume: z.number().min(0).max(100),
+})
+
+/**
+ * Appearance settings schema
+ */
+export const AppearanceSettingsSchema = z.object({
+  theme: z.enum(["light", "dark", "system"]),
+  colorScheme: z.string().optional(),
+  density: z.enum(["compact", "comfortable", "spacious"]),
+  fontScale: z.number().min(0.8).max(1.5),
+  sidebarPosition: z.enum(["left", "right"]),
+  language: z.string(),
+  highContrast: z.boolean(),
+  reducedMotion: z.boolean(),
+  showTaskMetadata: z.boolean(),
+  priorityColors: z.boolean(),
+  dateFormat: z.enum(["MM/dd/yyyy", "dd/MM/yyyy", "yyyy-MM-dd"]),
+})
+
+/**
+ * Behavior settings schema
+ */
+export const BehaviorSettingsSchema = z.object({
+  startView: z.union([
+    z.enum(["inbox", "today", "upcoming", "completed", "all", "analytics", "search"]),
+    z.literal("lastViewed"),
+  ]),
+  weekStartDay: z.union([
+    z.literal(0),
+    z.literal(1),
+    z.literal(2),
+    z.literal(3),
+    z.literal(4),
+    z.literal(5),
+    z.literal(6),
+  ]),
+  workingDays: z.array(z.number().min(0).max(6)),
+  timeFormat: z.enum(["12h", "24h"]),
+  systemLocale: z.string(),
+  defaultTaskPriority: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]),
+  autoAssignToCurrentProject: z.boolean(),
+  autoFocusTaskTitle: z.boolean(),
+  defaultProjectId: ProjectIdSchema.optional(),
+  keyboardShortcuts: z.boolean(),
+  confirmations: z.object({
+    deleteTask: z.boolean(),
+    deleteProject: z.boolean(),
+    deleteLabel: z.boolean(),
+    markAllComplete: z.boolean(),
+  }),
+})
+
+/**
+ * Notification settings schema
+ */
+export const NotificationSettingsSchema = z.object({
+  enabled: z.boolean(),
+  channels: NotificationChannelsSchema,
+  schedule: NotificationScheduleSchema,
+  types: NotificationTypesSchema,
+  frequency: NotificationFrequencySchema,
+  sound: NotificationSoundSchema,
+})
+
+/**
+ * Data settings schema
+ */
+export const DataSettingsSchema = z.object({
+  autoBackup: z.object({
+    enabled: z.boolean(),
+    frequency: z.enum(["daily", "weekly", "monthly"]),
+    maxBackups: z.number().min(1).max(50),
+    includeCompleted: z.boolean(),
+  }),
+  exportPreferences: z.object({
+    format: z.enum(["json", "csv", "markdown"]),
+    includeMetadata: z.boolean(),
+    includeComments: z.boolean(),
+    includeSubtasks: z.boolean(),
+  }),
+  storage: z.object({
+    maxCacheSizeMB: z.number().min(10).max(1000),
+    clearCacheOnStartup: z.boolean(),
+    retentionDays: z.number().min(1).max(365),
+  }),
+  sync: z.object({
+    autoSync: z.boolean(),
+    syncInterval: z.number().min(60000).max(3600000), // 1 minute to 1 hour in ms
+    syncOnFocus: z.boolean(),
+    syncOnReconnect: z.boolean(),
+    maxRetries: z.number().min(1).max(10),
+    retryDelay: z.number().min(100).max(10000),
+  }),
+})
+
+/**
+ * Integration settings schema
+ */
+export const IntegrationSettingsSchema = z.object({
+  calendar: z.object({
+    enabled: z.boolean(),
+    provider: z.enum(["google", "outlook", "apple"]).optional(),
+    syncDirection: z.enum(["oneWay", "twoWay"]),
+    defaultCalendarId: z.string().optional(),
+    syncCompletedTasks: z.boolean(),
+  }),
+  imports: z.object({
+    lastImportDate: flexibleDateTimeSchema.optional(),
+    supportedSources: z.array(z.string()),
+    autoDetectDuplicates: z.boolean(),
+  }),
+  services: z.object({
+    webhooks: z.object({
+      enabled: z.boolean(),
+      endpoints: z.array(z.string()),
+    }),
+    apiKeys: z.record(z.string(), z.string()),
+  }),
+})
+
+/**
+ * Productivity settings schema
+ */
+export const ProductivitySettingsSchema = z.object({
+  pomodoro: z.object({
+    workDuration: z.number().min(1).max(120),
+    shortBreakDuration: z.number().min(1).max(30),
+    longBreakDuration: z.number().min(5).max(60),
+    longBreakInterval: z.number().min(2).max(10),
+    autoStartBreaks: z.boolean(),
+    autoStartWork: z.boolean(),
+    soundEnabled: z.boolean(),
+  }),
+  goals: z.object({
+    dailyTaskTarget: z.number().min(1).max(50),
+    weeklyTaskTarget: z.number().min(1).max(500),
+    trackingEnabled: z.boolean(),
+    showProgress: z.boolean(),
+  }),
+  analytics: z.object({
+    dataCollection: z.boolean(),
+    showMetrics: z.boolean(),
+    metricVisibility: z.object({
+      productivity: z.boolean(),
+      streak: z.boolean(),
+      timeSpent: z.boolean(),
+      completion: z.boolean(),
+    }),
+  }),
+  focusMode: z.object({
+    enabled: z.boolean(),
+    hideDistractions: z.boolean(),
+    minimalUI: z.boolean(),
+    blockNotifications: z.boolean(),
+  }),
+})
+
+/**
+ * Complete user settings schema
+ */
+export const UserSettingsSchema = z.object({
+  appearance: AppearanceSettingsSchema,
+  behavior: BehaviorSettingsSchema,
+  notifications: NotificationSettingsSchema,
+  data: DataSettingsSchema,
+  integrations: IntegrationSettingsSchema,
+  productivity: ProductivitySettingsSchema,
+})
+
+/**
+ * Schema for partial user settings updates
+ */
+export const PartialUserSettingsSchema = z.object({
+  appearance: AppearanceSettingsSchema.partial().optional(),
+  behavior: BehaviorSettingsSchema.partial().optional(),
+  notifications: NotificationSettingsSchema.partial().optional(),
+  data: DataSettingsSchema.partial().optional(),
+  integrations: IntegrationSettingsSchema.partial().optional(),
+  productivity: ProductivitySettingsSchema.partial().optional(),
+})
+
+/**
+ * Settings file schema for disk storage
+ */
+export const SettingsFileSchema = z.object({
+  userSettings: UserSettingsSchema,
+  version: z.string().default("1.0.0"),
+  lastModified: flexibleDateTimeSchema,
+})
+
+/**
+ * Settings file serialization schema
+ */
+export const SettingsFileSerializationSchema = z.object({
+  userSettings: UserSettingsSchema,
+  version: z.string().default("1.0.0"),
+  lastModified: flexibleDateTimeSerializationSchema,
+})
+
+// Settings API request/response schemas
+export const UpdateSettingsRequestSchema = z.object({
+  settings: PartialUserSettingsSchema,
+})
+
+export const SettingsResponseSchema = z.object({
+  success: z.boolean(),
+  settings: UserSettingsSchema,
+  message: z.string(),
+})
+// Generated types for settings
+export type SettingsFile = z.infer<typeof SettingsFileSchema>
+export type SettingsFileSerialization = z.infer<typeof SettingsFileSerializationSchema>
+export type UpdateSettingsRequest = z.infer<typeof UpdateSettingsRequestSchema>
+export type SettingsResponse = z.infer<typeof SettingsResponseSchema>
+
+// =============================================================================
+
 export function isValidPriority(value: unknown): value is 1 | 2 | 3 | 4 {
   return typeof value === "number" && value >= 1 && value <= 4
 }

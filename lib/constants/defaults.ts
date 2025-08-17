@@ -205,6 +205,7 @@ export const DEFAULT_DATA_DIR = "data"
 
 /** Default data file path */
 export const DEFAULT_DATA_FILE_PATH = "data/data.json"
+export const DEFAULT_SETTINGS_FILE_PATH = "data/settings.json"
 
 // =============================================================================
 // MIGRATION DEFAULTS

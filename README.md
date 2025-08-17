@@ -2,14 +2,18 @@
 
 # TaskTrove
 
+<img width="3400" height="920" alt="tasktrove-banner" src="https://github.com/user-attachments/assets/52c06cfe-2757-40d0-bb17-a6fed1b74f96" />
+
+
+<br />
+<br />
+
 [![License](https://img.shields.io/badge/License-Sustainable%20Use-blue)](./LICENSE.md)
 [![Self-Hosted](https://img.shields.io/badge/Self--Hosted-✅-green)](./selfhost/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)](./selfhost/)
 [![Demo](https://img.shields.io/badge/Demo-Try%20Now-orange)](https://demo.tasktrove.io)
 
-### Self-hosted task management that respects your privacy
-
-[Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Development](#-development)
+[🌐 Website](https://tasktrove.io) • [Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Development](#-development)
 
 | Light Theme                                                                                                  | Dark Theme                                                                                               | Mobile View                                                                                                 |
 | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |

@@ -27,149 +27,20 @@ export const settingsQueryAtom = atomWithQuery(() => ({
     // Check if we're in a test environment
     if (typeof window === "undefined" || process.env.NODE_ENV === "test") {
       log.info({ module: "test" }, "Test environment: Using default settings")
+      // Minimal settings for test environment - only imports supported
       return {
         userSettings: {
-          appearance: {
-            theme: "system",
-            density: "comfortable",
-            fontScale: 1.0,
-            sidebarPosition: "left",
-            language: "en",
-            highContrast: false,
-            reducedMotion: false,
-            showTaskMetadata: true,
-            priorityColors: true,
-            dateFormat: "MM/dd/yyyy",
-          },
-          behavior: {
-            startView: "inbox",
-            weekStartDay: 1,
-            workingDays: [1, 2, 3, 4, 5],
-            timeFormat: "12h",
-            systemLocale: "en-US",
-            defaultTaskPriority: 3,
-            autoAssignToCurrentProject: false,
-            autoFocusTaskTitle: true,
-            keyboardShortcuts: true,
-            confirmations: {
-              deleteTask: true,
-              deleteProject: true,
-              deleteLabel: true,
-              markAllComplete: true,
-            },
-          },
-          notifications: {
-            enabled: true,
-            channels: {
-              push: true,
-              email: false,
-              desktop: true,
-              mobile: false,
-            },
-            schedule: {
-              quietHours: {
-                enabled: true,
-                start: "22:00",
-                end: "08:00",
-              },
-              weekends: false,
-              holidays: false,
-            },
-            types: {
-              reminders: true,
-              deadlines: true,
-              collaboration: true,
-              achievements: true,
-              system: false,
-            },
-            frequency: {
-              immediate: true,
-              digest: "never",
-              digestTime: "18:00",
-            },
-            sound: {
-              enabled: true,
-              volume: 50,
-            },
-          },
-          data: {
-            autoBackup: {
-              enabled: false,
-              frequency: "weekly",
-              maxBackups: 5,
-              includeCompleted: false,
-            },
-            exportPreferences: {
-              format: "json",
-              includeMetadata: true,
-              includeComments: true,
-              includeSubtasks: true,
-            },
-            storage: {
-              maxCacheSizeMB: 50,
-              clearCacheOnStartup: false,
-              retentionDays: 30,
-            },
-            sync: {
-              autoSync: true,
-              syncInterval: 300000,
-              syncOnFocus: true,
-              syncOnReconnect: true,
-              maxRetries: 3,
-              retryDelay: 1000,
-            },
-          },
           integrations: {
-            calendar: {
-              enabled: false,
-              syncDirection: "oneWay",
-              syncCompletedTasks: false,
-            },
             imports: {
-              supportedSources: ["todoist", "ticktick", "asana", "trello"],
-              autoDetectDuplicates: true,
-            },
-            services: {
-              webhooks: {
-                enabled: false,
-                endpoints: [],
-              },
-              apiKeys: {},
+              supportedSources: ["ticktick", "todoist", "asana", "trello"],
             },
           },
-          productivity: {
-            pomodoro: {
-              workDuration: 25,
-              shortBreakDuration: 5,
-              longBreakDuration: 15,
-              longBreakInterval: 4,
-              autoStartBreaks: false,
-              autoStartWork: false,
-              soundEnabled: true,
-            },
-            goals: {
-              dailyTaskTarget: 5,
-              weeklyTaskTarget: 25,
-              trackingEnabled: true,
-              showProgress: true,
-            },
-            analytics: {
-              dataCollection: true,
-              showMetrics: true,
-              metricVisibility: {
-                productivity: true,
-                streak: true,
-                timeSpent: true,
-                completion: true,
-              },
-            },
-            focusMode: {
-              enabled: false,
-              hideDistractions: true,
-              minimalUI: true,
-              blockNotifications: true,
-            },
-          },
+          // Future settings will be added here when implemented
+          // appearance: { ... },
+          // behavior: { ... },
+          // notifications: { ... },
+          // data: { ... },
+          // productivity: { ... },
         },
         version: "1.0.0",
         lastModified: new Date(),
@@ -267,149 +138,19 @@ export const settingsAtom = atom((get) => {
   if ("data" in result && result.data) {
     return result.data.userSettings
   }
-  // Return default settings if query is loading or failed
+  // Return minimal default settings - only imports supported
   return {
-    appearance: {
-      theme: "system" as const,
-      density: "comfortable" as const,
-      fontScale: 1.0,
-      sidebarPosition: "left" as const,
-      language: "en",
-      highContrast: false,
-      reducedMotion: false,
-      showTaskMetadata: true,
-      priorityColors: true,
-      dateFormat: "MM/dd/yyyy" as const,
-    },
-    behavior: {
-      startView: "inbox" as const,
-      weekStartDay: 1 as const,
-      workingDays: [1, 2, 3, 4, 5],
-      timeFormat: "12h" as const,
-      systemLocale: "en-US",
-      defaultTaskPriority: 3 as const,
-      autoAssignToCurrentProject: false,
-      autoFocusTaskTitle: true,
-      keyboardShortcuts: true,
-      confirmations: {
-        deleteTask: true,
-        deleteProject: true,
-        deleteLabel: true,
-        markAllComplete: true,
-      },
-    },
-    notifications: {
-      enabled: true,
-      channels: {
-        push: true,
-        email: false,
-        desktop: true,
-        mobile: false,
-      },
-      schedule: {
-        quietHours: {
-          enabled: true,
-          start: "22:00",
-          end: "08:00",
-        },
-        weekends: false,
-        holidays: false,
-      },
-      types: {
-        reminders: true,
-        deadlines: true,
-        collaboration: true,
-        achievements: true,
-        system: false,
-      },
-      frequency: {
-        immediate: true,
-        digest: "never" as const,
-        digestTime: "18:00",
-      },
-      sound: {
-        enabled: true,
-        volume: 50,
-      },
-    },
-    data: {
-      autoBackup: {
-        enabled: false,
-        frequency: "weekly" as const,
-        maxBackups: 5,
-        includeCompleted: false,
-      },
-      exportPreferences: {
-        format: "json" as const,
-        includeMetadata: true,
-        includeComments: true,
-        includeSubtasks: true,
-      },
-      storage: {
-        maxCacheSizeMB: 50,
-        clearCacheOnStartup: false,
-        retentionDays: 30,
-      },
-      sync: {
-        autoSync: true,
-        syncInterval: 300000,
-        syncOnFocus: true,
-        syncOnReconnect: true,
-        maxRetries: 3,
-        retryDelay: 1000,
-      },
-    },
     integrations: {
-      calendar: {
-        enabled: false,
-        syncDirection: "oneWay" as const,
-        syncCompletedTasks: false,
-      },
       imports: {
-        supportedSources: ["todoist", "ticktick", "asana", "trello"],
-        autoDetectDuplicates: true,
-      },
-      services: {
-        webhooks: {
-          enabled: false,
-          endpoints: [],
-        },
-        apiKeys: {},
+        supportedSources: ["ticktick", "todoist", "asana", "trello"],
       },
     },
-    productivity: {
-      pomodoro: {
-        workDuration: 25,
-        shortBreakDuration: 5,
-        longBreakDuration: 15,
-        longBreakInterval: 4,
-        autoStartBreaks: false,
-        autoStartWork: false,
-        soundEnabled: true,
-      },
-      goals: {
-        dailyTaskTarget: 5,
-        weeklyTaskTarget: 25,
-        trackingEnabled: true,
-        showProgress: true,
-      },
-      analytics: {
-        dataCollection: true,
-        showMetrics: true,
-        metricVisibility: {
-          productivity: true,
-          streak: true,
-          timeSpent: true,
-          completion: true,
-        },
-      },
-      focusMode: {
-        enabled: false,
-        hideDistractions: true,
-        minimalUI: true,
-        blockNotifications: true,
-      },
-    },
+    // Future settings will be added here when implemented:
+    // appearance: { ... },
+    // behavior: { ... },
+    // notifications: { ... },
+    // data: { ... },
+    // productivity: { ... },
   }
 })
 settingsAtom.debugLabel = "settingsAtom"

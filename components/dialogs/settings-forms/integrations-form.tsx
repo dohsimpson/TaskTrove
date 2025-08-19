@@ -5,17 +5,19 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Switch } from "@/components/ui/switch"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
+// Unused UI components (for future calendar/webhook features):
+// import { Switch } from "@/components/ui/switch"
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import { Calendar, Link, Upload, Trash2, Plus, ExternalLink } from "lucide-react"
+import { Upload, ExternalLink, FileText } from "lucide-react"
+// Future icons (not used yet): import { Calendar, Link, Trash2, Plus } from "lucide-react"
+import { SiTodoist, SiTrello, SiAsana, SiTicktick } from "@icons-pack/react-simple-icons"
 import {
   integrationSettingsAtom,
   updateIntegrationSettingsAtom,
@@ -26,88 +28,179 @@ export function IntegrationsForm() {
   const settings = useAtomValue(integrationSettingsAtom)
   const updateSettings = useSetAtom(updateIntegrationSettingsAtom)
 
-  const handleCalendarUpdate = (field: keyof typeof settings.calendar, value: string | boolean) => {
-    updateSettings({
-      calendar: {
-        ...settings.calendar,
-        [field]: value,
-      },
-    })
-  }
+  // Calendar functionality not implemented yet
+  // const handleCalendarUpdate = (field: keyof typeof settings.calendar, value: string | boolean) => {
+  //   updateSettings({
+  //     calendar: {
+  //       ...settings.calendar,
+  //       [field]: value,
+  //     },
+  //   })
+  // }
 
   const handleImportsUpdate = (
-    field: keyof typeof settings.imports,
-    value: string[] | boolean | Date,
+    field: "lastImportDate" | "supportedSources",
+    value: string[] | Date,
   ) => {
-    updateSettings({
-      imports: {
-        ...settings.imports,
-        [field]: value,
-      },
-    })
-  }
-
-  const handleWebhooksUpdate = (
-    field: keyof typeof settings.services.webhooks,
-    value: boolean | string[],
-  ) => {
-    updateSettings({
-      services: {
-        ...settings.services,
-        webhooks: {
-          ...settings.services.webhooks,
-          [field]: value,
+    if (field === "lastImportDate") {
+      updateSettings({
+        imports: {
+          lastImportDate: value instanceof Date ? value : new Date(),
+          supportedSources: ["ticktick", "todoist", "asana", "trello"] as const,
         },
-      },
-    })
-  }
-
-  const addWebhookEndpoint = () => {
-    const url = prompt("Enter webhook URL:")
-    if (url && url.trim()) {
-      const currentEndpoints = settings.services.webhooks.endpoints
-      if (!currentEndpoints.includes(url.trim())) {
-        handleWebhooksUpdate("endpoints", [...currentEndpoints, url.trim()])
-        toast({
-          title: "Webhook Added",
-          description: "The webhook endpoint has been added successfully.",
-        })
-      }
+      })
+    } else {
+      updateSettings({
+        imports: {
+          lastImportDate:
+            "lastImportDate" in settings.imports ? settings.imports.lastImportDate : undefined,
+          supportedSources: Array.isArray(value)
+            ? value.filter((source): source is "ticktick" | "todoist" | "asana" | "trello" =>
+                ["ticktick", "todoist", "asana", "trello"].includes(source),
+              )
+            : [],
+        },
+      })
     }
   }
 
-  const removeWebhookEndpoint = (url: string) => {
-    const currentEndpoints = settings.services.webhooks.endpoints
-    handleWebhooksUpdate(
-      "endpoints",
-      currentEndpoints.filter((endpoint) => endpoint !== url),
-    )
-    toast({
-      title: "Webhook Removed",
-      description: "The webhook endpoint has been removed.",
-    })
-  }
+  // Webhooks functionality not implemented yet
+  // const handleWebhooksUpdate = (
+  //   field: keyof typeof settings.services.webhooks,
+  //   value: boolean | string[],
+  // ) => {
+  //   updateSettings({
+  //     services: {
+  //       ...settings.services,
+  //       webhooks: {
+  //         ...settings.services.webhooks,
+  //         [field]: value,
+  //       },
+  //     },
+  //   })
+  // }
 
-  const connectCalendar = (provider: "google" | "outlook" | "apple") => {
-    // Placeholder for calendar connection logic
-    toast({
-      title: "Calendar Connection",
-      description: `Calendar connection for ${provider} is not yet implemented.`,
-    })
-  }
+  // Webhook management not implemented yet
+  // const addWebhookEndpoint = () => {
+  //   const url = prompt("Enter webhook URL:")
+  //   if (url && url.trim()) {
+  //     const currentEndpoints = settings.services.webhooks.endpoints
+  //     if (!currentEndpoints.find(endpoint => endpoint === url.trim())) {
+  //       handleWebhooksUpdate("endpoints", [...currentEndpoints, url.trim()])
+  //       toast({
+  //         title: "Webhook Added",
+  //         description: "The webhook endpoint has been added successfully.",
+  //       })
+  //     }
+  //   }
+  // }
+
+  // Webhook management not implemented yet
+  // const removeWebhookEndpoint = (url: string) => {
+  //   const currentEndpoints = settings.services.webhooks.endpoints
+  //   handleWebhooksUpdate(
+  //     "endpoints",
+  //     currentEndpoints.filter((endpoint) => endpoint !== url),
+  //   )
+  //   toast({
+  //     title: "Webhook Removed",
+  //     description: "The webhook endpoint has been removed.",
+  //   })
+  // }
+
+  // Calendar connection not implemented yet
+  // const connectCalendar = (provider: "google" | "outlook" | "apple") => {
+  //   // Placeholder for calendar connection logic
+  //   toast({
+  //     title: "Calendar Connection",
+  //     description: `Calendar connection for ${provider} is not yet implemented.`,
+  //   })
+  // }
 
   const importFromService = (service: string) => {
-    // Placeholder for import logic
+    // Open migration site in new tab
+    const migrationUrl = `${
+      process.env.NODE_ENV === "production"
+        ? "https://migration.tasktrove.com"
+        : "http://localhost:3001"
+    }?source=${service}`
+
+    window.open(migrationUrl, "_blank")
+
     toast({
-      title: "Import Tasks",
-      description: `Task import from ${service} is not yet implemented.`,
+      title: "Migration Assistant Opened",
+      description: `A new tab opened with instructions for ${service}. Follow the steps to export your data, then return here to upload the converted file.`,
     })
+  }
+
+  const getProviderIcon = (source: string) => {
+    switch (source.toLowerCase()) {
+      case "todoist":
+        return <SiTodoist className="w-4 h-4" />
+      case "trello":
+        return <SiTrello className="w-4 h-4" />
+      case "asana":
+        return <SiAsana className="w-4 h-4" />
+      case "ticktick":
+        return <SiTicktick className="w-4 h-4" />
+      default:
+        return <ExternalLink className="w-4 h-4" />
+    }
+  }
+
+  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      const content = await file.text()
+      const importData = JSON.parse(content)
+
+      // Basic validation of import file structure
+      if (!importData.tasks || !importData.projects || !importData.labels) {
+        throw new Error("Invalid import file format. Expected tasks, projects, and labels.")
+      }
+
+      // Send import data to backend API
+      const response = await fetch("/api/import", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(importData),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Import failed: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+
+      // Update last import date
+      handleImportsUpdate("lastImportDate", new Date())
+
+      toast({
+        title: "✅ Import Completed!",
+        description: `Successfully imported ${result.importedTasks || 0} tasks, ${result.importedProjects || 0} projects, and ${result.importedLabels || 0} labels into TaskTrove.`,
+      })
+    } catch (error) {
+      console.error("Import error:", error)
+      toast({
+        title: "Import Failed",
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred during import.",
+        variant: "destructive",
+      })
+    }
+
+    // Reset file input
+    event.target.value = ""
   }
 
   return (
     <div className="space-y-6">
-      {/* Calendar Integration */}
-      <Card>
+      {/* Calendar Integration - Not implemented yet */}
+      {/* <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
@@ -116,98 +209,9 @@ export function IntegrationsForm() {
           <CardDescription>Sync your tasks with external calendar applications.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Enable Calendar Sync</Label>
-              <p className="text-sm text-muted-foreground">
-                Synchronize tasks with your calendar app
-              </p>
-            </div>
-            <Switch
-              checked={settings.calendar.enabled}
-              onCheckedChange={(checked) => handleCalendarUpdate("enabled", checked)}
-            />
-          </div>
-
-          {settings.calendar.enabled && (
-            <>
-              <div className="space-y-2">
-                <Label>Calendar Provider</Label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <Button
-                    variant={settings.calendar.provider === "google" ? "default" : "outline"}
-                    onClick={() => connectCalendar("google")}
-                    className="w-full"
-                  >
-                    Google Calendar
-                  </Button>
-                  <Button
-                    variant={settings.calendar.provider === "outlook" ? "default" : "outline"}
-                    onClick={() => connectCalendar("outlook")}
-                    className="w-full"
-                  >
-                    Outlook
-                  </Button>
-                  <Button
-                    variant={settings.calendar.provider === "apple" ? "default" : "outline"}
-                    onClick={() => connectCalendar("apple")}
-                    className="w-full"
-                  >
-                    Apple Calendar
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Sync Direction</Label>
-                <Select
-                  value={settings.calendar.syncDirection}
-                  onValueChange={(value) => handleCalendarUpdate("syncDirection", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="oneWay">One-way (TaskTrove → Calendar)</SelectItem>
-                    <SelectItem value="twoWay">Two-way (Bidirectional sync)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Sync Completed Tasks</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Include completed tasks in calendar sync
-                  </p>
-                </div>
-                <Switch
-                  checked={settings.calendar.syncCompletedTasks}
-                  onCheckedChange={(checked) => handleCalendarUpdate("syncCompletedTasks", checked)}
-                />
-              </div>
-
-              {settings.calendar.provider && (
-                <div className="p-3 bg-muted rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-sm">
-                        {settings.calendar.provider === "google" && "Google Calendar"}
-                        {settings.calendar.provider === "outlook" && "Microsoft Outlook"}
-                        {settings.calendar.provider === "apple" && "Apple Calendar"}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {settings.calendar.defaultCalendarId || "No calendar selected"}
-                      </p>
-                    </div>
-                    <Badge variant="secondary">Connected</Badge>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
+          ... calendar sync UI ...
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Task Import */}
       <Card>
@@ -219,51 +223,92 @@ export function IntegrationsForm() {
           <CardDescription>Import tasks from other task management applications.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Auto-detect Duplicates</Label>
-              <p className="text-sm text-muted-foreground">
-                Automatically detect and skip duplicate tasks during import
-              </p>
-            </div>
-            <Switch
-              checked={settings.imports.autoDetectDuplicates}
-              onCheckedChange={(checked) => handleImportsUpdate("autoDetectDuplicates", checked)}
-            />
-          </div>
-
-          <Separator />
-
           <div className="space-y-3">
-            <Label>Supported Import Sources</Label>
+            <Label className="text-base font-semibold">Step 1: Export Your Data</Label>
+            <p className="text-sm text-muted-foreground">
+              Click your task management service below to open the migration assistant. Follow the
+              instructions to export and convert your data to TaskTrove format.
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {settings.imports.supportedSources.map((source) => (
                 <Button
                   key={source}
                   variant="outline"
                   onClick={() => importFromService(source)}
-                  className="w-full justify-between"
+                  className="w-full justify-between h-12"
                 >
-                  <span className="capitalize">{source}</span>
+                  <div className="flex items-center gap-3">
+                    {getProviderIcon(source)}
+                    <div className="text-left">
+                      <div className="font-medium capitalize">{source}</div>
+                      <div className="text-xs text-muted-foreground">Export & convert data</div>
+                    </div>
+                  </div>
                   <ExternalLink className="w-4 h-4" />
                 </Button>
               ))}
             </div>
           </div>
 
-          {settings.imports.lastImportDate && (
+          <Separator />
+
+          <div className="space-y-3">
+            <Label className="text-base font-semibold">Step 2: Upload Converted File</Label>
+            <p className="text-sm text-muted-foreground">
+              After using the migration assistant above, you'll download a JSON file. Upload that
+              file here to import your tasks, projects, and labels into TaskTrove.
+            </p>
+            <div className="flex items-center gap-3">
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleFileImport}
+                className="hidden"
+                id="import-file"
+              />
+              <label htmlFor="import-file">
+                <Button asChild variant="outline" className="h-12">
+                  <span className="flex items-center gap-3">
+                    <FileText className="w-5 h-5" />
+                    <div className="text-left">
+                      <div className="font-medium">Choose JSON File</div>
+                      <div className="text-xs text-muted-foreground">Upload converted data</div>
+                    </div>
+                  </span>
+                </Button>
+              </label>
+            </div>
+            <div className="p-3 bg-muted rounded-lg border">
+              <div className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold mt-0.5">
+                  !
+                </div>
+                <div className="text-sm">
+                  <div className="font-medium">Important:</div>
+                  <div className="text-muted-foreground">
+                    Only upload the JSON file you downloaded from the migration assistant. Regular
+                    exports from other apps won't work.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {"lastImportDate" in settings.imports && settings.imports.lastImportDate && (
             <div className="p-3 bg-muted rounded-lg">
               <p className="text-sm">
                 <span className="font-medium">Last import:</span>{" "}
-                {settings.imports.lastImportDate.toLocaleDateString()}
+                {"lastImportDate" in settings.imports && settings.imports.lastImportDate
+                  ? settings.imports.lastImportDate.toLocaleDateString()
+                  : ""}
               </p>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Third-party Services */}
-      <Card>
+      {/* Third-party Services - Not implemented yet */}
+      {/* <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Link className="w-5 h-5" />
@@ -274,106 +319,9 @@ export function IntegrationsForm() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Webhooks */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Webhooks</Label>
-                <p className="text-sm text-muted-foreground">Send task events to external URLs</p>
-              </div>
-              <Switch
-                checked={settings.services.webhooks.enabled}
-                onCheckedChange={(checked) => handleWebhooksUpdate("enabled", checked)}
-              />
-            </div>
-
-            {settings.services.webhooks.enabled && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm">Webhook Endpoints</Label>
-                  <Button size="sm" onClick={addWebhookEndpoint}>
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add
-                  </Button>
-                </div>
-
-                {settings.services.webhooks.endpoints.length === 0 ? (
-                  <p className="text-sm text-muted-foreground italic">
-                    No webhook endpoints configured
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {settings.services.webhooks.endpoints.map((endpoint, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-2 bg-muted rounded"
-                      >
-                        <span className="text-sm font-mono truncate flex-1 mr-2">{endpoint}</span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => removeWebhookEndpoint(endpoint)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          <Separator />
-
-          {/* API Keys */}
-          <div className="space-y-3">
-            <Label>API Keys</Label>
-            <p className="text-sm text-muted-foreground">
-              Store API keys for external service integrations (coming soon).
-            </p>
-            <div className="p-4 bg-muted rounded-lg text-center">
-              <p className="text-sm text-muted-foreground">
-                API key management will be available in a future update.
-              </p>
-            </div>
-          </div>
+          ... webhooks and API keys UI ...
         </CardContent>
-      </Card>
-
-      {/* Integration Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Integration Status</CardTitle>
-          <CardDescription>Overview of your connected services and integrations.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Calendar Sync</span>
-              <Badge variant={settings.calendar.enabled ? "default" : "secondary"}>
-                {settings.calendar.enabled ? "Active" : "Inactive"}
-              </Badge>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Webhooks</span>
-              <Badge variant={settings.services.webhooks.enabled ? "default" : "secondary"}>
-                {settings.services.webhooks.enabled
-                  ? `${settings.services.webhooks.endpoints.length} endpoint(s)`
-                  : "Inactive"}
-              </Badge>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Import Sources</span>
-              <Badge variant="secondary">
-                {settings.imports.supportedSources.length} available
-              </Badge>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      </Card> */}
     </div>
   )
 }

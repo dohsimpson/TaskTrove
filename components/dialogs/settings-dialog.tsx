@@ -6,14 +6,6 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb"
-import {
   SidebarProvider,
   Sidebar,
   SidebarContent,
@@ -23,14 +15,18 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { Palette, Settings, Bell, Database, Link, Target, X } from "lucide-react"
+import { Link, X } from "lucide-react"
+// Future icons (not used yet):
+// import { Palette, Settings, Bell, Database, Target, Code } from "lucide-react"
 import { showSettingsDialogAtom, closeSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
-import { AppearanceForm } from "./settings-forms/appearance-form"
-import { BehaviorForm } from "./settings-forms/behavior-form"
-import { NotificationsForm } from "./settings-forms/notifications-form"
-import { DataForm } from "./settings-forms/data-form"
 import { IntegrationsForm } from "./settings-forms/integrations-form"
-import { ProductivityForm } from "./settings-forms/productivity-form"
+// Future form imports (not used yet):
+// import { AppearanceForm } from "./settings-forms/appearance-form"
+// import { BehaviorForm } from "./settings-forms/behavior-form"
+// import { NotificationsForm } from "./settings-forms/notifications-form"
+// import { DataForm } from "./settings-forms/data-form"
+// import { ProductivityForm } from "./settings-forms/productivity-form"
+// import { ApiForm } from "./settings-forms/api-form"
 
 // Settings category configuration
 interface SettingsCategory {
@@ -40,67 +36,78 @@ interface SettingsCategory {
   description: string
 }
 
+// Only show integrations for now - other categories will be added later
 const settingsCategories: SettingsCategory[] = [
   {
-    id: "appearance",
-    title: "Appearance",
-    icon: Palette,
-    description: "Themes, colors, and visual preferences",
-  },
-  {
-    id: "behavior",
-    title: "Behavior",
-    icon: Settings,
-    description: "App behavior and default preferences",
-  },
-  {
-    id: "notifications",
-    title: "Notifications",
-    icon: Bell,
-    description: "Notification settings and sound preferences",
-  },
-  {
-    id: "data",
-    title: "Data & Sync",
-    icon: Database,
-    description: "Backup, export, and synchronization settings",
-  },
-  {
     id: "integrations",
-    title: "Integrations",
+    title: "Import & Export",
     icon: Link,
-    description: "Calendar sync and third-party integrations",
+    description: "Import tasks from other providers and export your data",
   },
-  {
-    id: "productivity",
-    title: "Productivity",
-    icon: Target,
-    description: "Pomodoro, goals, and analytics settings",
-  },
+  // Future settings categories (not implemented yet):
+  // {
+  //   id: "appearance",
+  //   title: "Appearance",
+  //   icon: Palette,
+  //   description: "Themes, colors, and visual preferences",
+  // },
+  // {
+  //   id: "behavior",
+  //   title: "Behavior",
+  //   icon: Settings,
+  //   description: "App behavior and default preferences",
+  // },
+  // {
+  //   id: "notifications",
+  //   title: "Notifications",
+  //   icon: Bell,
+  //   description: "Notification settings and sound preferences",
+  // },
+  // {
+  //   id: "data",
+  //   title: "Data & Sync",
+  //   icon: Database,
+  //   description: "Backup, export, and synchronization settings",
+  // },
+  // {
+  //   id: "productivity",
+  //   title: "Productivity",
+  //   icon: Target,
+  //   description: "Pomodoro, goals, and analytics settings",
+  // },
+  // {
+  //   id: "api",
+  //   title: "API & Developers",
+  //   icon: Code,
+  //   description: "API keys, webhooks, and developer tools",
+  // },
 ]
 
 export function SettingsDialog() {
   const open = useAtomValue(showSettingsDialogAtom)
   const closeDialog = useSetAtom(closeSettingsDialogAtom)
-  const [activeCategory, setActiveCategory] = useState("appearance")
+  const [activeCategory, setActiveCategory] = useState("integrations")
 
   // Get active category info
   const activeCategoryInfo = settingsCategories.find((cat) => cat.id === activeCategory)
 
   const renderCategoryContent = () => {
     switch (activeCategory) {
-      case "appearance":
-        return <AppearanceForm />
-      case "behavior":
-        return <BehaviorForm />
-      case "notifications":
-        return <NotificationsForm />
-      case "data":
-        return <DataForm />
       case "integrations":
         return <IntegrationsForm />
-      case "productivity":
-        return <ProductivityForm />
+      // Future forms (not implemented yet):
+      // case "appearance":
+      //   return <AppearanceForm />
+      // case "behavior":
+      //   return <BehaviorForm />
+      // case "notifications":
+      //   return <NotificationsForm />
+      // case "data":
+      //   return <DataForm />
+      // case "productivity":
+      //   return <ProductivityForm />
+      // case "api":
+      //   return <ApiForm />
       default:
         return null
     }
@@ -156,19 +163,11 @@ export function SettingsDialog() {
               {/* Header */}
               <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
                 <div className="flex items-center gap-2 flex-1">
-                  <Breadcrumb>
-                    <BreadcrumbList>
-                      <BreadcrumbItem className="hidden md:block">
-                        <BreadcrumbLink href="#" onClick={(e) => e.preventDefault()}>
-                          Settings
-                        </BreadcrumbLink>
-                      </BreadcrumbItem>
-                      <BreadcrumbSeparator className="hidden md:block" />
-                      <BreadcrumbItem>
-                        <BreadcrumbPage>{activeCategoryInfo?.title}</BreadcrumbPage>
-                      </BreadcrumbItem>
-                    </BreadcrumbList>
-                  </Breadcrumb>
+                  <h1 className="text-xl font-semibold">{activeCategoryInfo?.title}</h1>
+                  <span className="text-sm text-muted-foreground">·</span>
+                  <span className="text-sm text-muted-foreground">
+                    {activeCategoryInfo?.description}
+                  </span>
                 </div>
                 <Button
                   variant="ghost"

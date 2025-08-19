@@ -101,112 +101,20 @@ async function updateSettings(
     return createErrorResponse("Failed to read current settings", "File reading failed", 500)
   }
 
-  // Merge partial settings with current settings
+  // Merge partial settings with current settings (simplified to only integrations)
   const updatedSettings: UserSettings = {
-    appearance: {
-      ...currentSettingsFile.userSettings.appearance,
-      ...partialSettings.appearance,
-    },
-    behavior: {
-      ...currentSettingsFile.userSettings.behavior,
-      ...partialSettings.behavior,
-    },
-    notifications: {
-      ...currentSettingsFile.userSettings.notifications,
-      ...partialSettings.notifications,
-      channels: {
-        ...currentSettingsFile.userSettings.notifications.channels,
-        ...partialSettings.notifications?.channels,
-      },
-      schedule: {
-        ...currentSettingsFile.userSettings.notifications.schedule,
-        ...partialSettings.notifications?.schedule,
-        quietHours: {
-          ...currentSettingsFile.userSettings.notifications.schedule.quietHours,
-          ...partialSettings.notifications?.schedule?.quietHours,
-        },
-      },
-      types: {
-        ...currentSettingsFile.userSettings.notifications.types,
-        ...partialSettings.notifications?.types,
-      },
-      frequency: {
-        ...currentSettingsFile.userSettings.notifications.frequency,
-        ...partialSettings.notifications?.frequency,
-      },
-      sound: {
-        ...currentSettingsFile.userSettings.notifications.sound,
-        ...partialSettings.notifications?.sound,
-      },
-    },
-    data: {
-      ...currentSettingsFile.userSettings.data,
-      ...partialSettings.data,
-      autoBackup: {
-        ...currentSettingsFile.userSettings.data.autoBackup,
-        ...partialSettings.data?.autoBackup,
-      },
-      exportPreferences: {
-        ...currentSettingsFile.userSettings.data.exportPreferences,
-        ...partialSettings.data?.exportPreferences,
-      },
-      storage: {
-        ...currentSettingsFile.userSettings.data.storage,
-        ...partialSettings.data?.storage,
-      },
-      sync: {
-        ...currentSettingsFile.userSettings.data.sync,
-        ...partialSettings.data?.sync,
-      },
-    },
     integrations: {
-      ...currentSettingsFile.userSettings.integrations,
-      ...partialSettings.integrations,
-      calendar: {
-        ...currentSettingsFile.userSettings.integrations.calendar,
-        ...partialSettings.integrations?.calendar,
-      },
       imports: {
         ...currentSettingsFile.userSettings.integrations.imports,
         ...partialSettings.integrations?.imports,
       },
-      services: {
-        ...currentSettingsFile.userSettings.integrations.services,
-        ...partialSettings.integrations?.services,
-        webhooks: {
-          ...currentSettingsFile.userSettings.integrations.services.webhooks,
-          ...partialSettings.integrations?.services?.webhooks,
-        },
-        apiKeys: {
-          ...currentSettingsFile.userSettings.integrations.services.apiKeys,
-          ...partialSettings.integrations?.services?.apiKeys,
-        },
-      },
     },
-    productivity: {
-      ...currentSettingsFile.userSettings.productivity,
-      ...partialSettings.productivity,
-      pomodoro: {
-        ...currentSettingsFile.userSettings.productivity.pomodoro,
-        ...partialSettings.productivity?.pomodoro,
-      },
-      goals: {
-        ...currentSettingsFile.userSettings.productivity.goals,
-        ...partialSettings.productivity?.goals,
-      },
-      analytics: {
-        ...currentSettingsFile.userSettings.productivity.analytics,
-        ...partialSettings.productivity?.analytics,
-        metricVisibility: {
-          ...currentSettingsFile.userSettings.productivity.analytics.metricVisibility,
-          ...partialSettings.productivity?.analytics?.metricVisibility,
-        },
-      },
-      focusMode: {
-        ...currentSettingsFile.userSettings.productivity.focusMode,
-        ...partialSettings.productivity?.focusMode,
-      },
-    },
+    // Future settings will be merged here when implemented:
+    // appearance: { ... },
+    // behavior: { ... },
+    // notifications: { ... },
+    // data: { ... },
+    // productivity: { ... },
   }
 
   // Create updated settings file

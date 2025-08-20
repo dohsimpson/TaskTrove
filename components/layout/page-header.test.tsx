@@ -52,6 +52,10 @@ vi.mock("@/components/ui/sidebar", () => ({
 
 // Mock Jotai atoms with comprehensive atom values
 vi.mock("jotai", () => ({
+  atom: vi.fn((initialValue) => ({
+    init: initialValue,
+    debugLabel: `atom_${Math.random()}`,
+  })),
   useAtom: vi.fn(() => [
     {
       title: "Today",

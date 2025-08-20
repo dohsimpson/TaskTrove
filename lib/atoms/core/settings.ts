@@ -1,181 +1,240 @@
 /**
- * Settings-specific atoms for managing user settings persistence
+ * Settings management atoms for TaskTrove Jotai migration
+ *
+ * This file contains all settings-related atoms following the same patterns
+ * as tasks, projects, and labels. Uses base atoms and adds settings-specific
+ * functionality with consistent error handling, logging, and toast notifications.
  */
 
 import { atom } from "jotai"
-import { atomWithQuery, atomWithMutation } from "jotai-tanstack-query"
-import { toast } from "sonner"
-import { log } from "@/lib/utils/logger"
-import {
-  UserSettings,
-  PartialUserSettings,
-  UpdateSettingsRequest,
-  SettingsResponse,
-  SettingsFile,
-  SettingsFileSchema,
-  UpdateSettingsRequestSchema,
-  SettingsResponseSchema,
-} from "@/lib/types"
-import { queryClientAtom } from "jotai-tanstack-query"
+import { handleAtomError } from "../utils"
+import { recordOperationAtom } from "./history"
+import { log } from "../../utils/logger"
+import { playSound } from "../../utils/audio"
+import { settingsAtom, settingsQueryAtom, updateSettingsMutationAtom } from "./base"
+import type { UserSettings, PartialUserSettings } from "../../types"
+
+// Use the same supported sources constant from base.ts
+const SUPPORTED_IMPORT_SOURCES = ["ticktick", "todoist", "asana", "trello"] as const
 
 /**
- * Query atom for fetching settings from API
+ * Core settings management atoms for TaskTrove's Jotai migration
+ *
+ * This file contains the atomic state management for settings, following
+ * the same patterns established by tasks, projects, and labels for
+ * consistent behavior across the application.
  */
-export const settingsQueryAtom = atomWithQuery(() => ({
-  queryKey: ["settings"],
-  queryFn: async (): Promise<SettingsFile> => {
-    // Check if we're in a test environment
-    if (typeof window === "undefined" || process.env.NODE_ENV === "test") {
-      log.info({ module: "test" }, "Test environment: Using default settings")
-      // Minimal settings for test environment - only imports supported
-      return {
-        userSettings: {
-          integrations: {
-            imports: {
-              supportedSources: ["ticktick", "todoist", "asana", "trello"],
-            },
-          },
-          // Future settings will be added here when implemented
-          // appearance: { ... },
-          // behavior: { ... },
-          // notifications: { ... },
-          // data: { ... },
-          // productivity: { ... },
-        },
-        version: "1.0.0",
-        lastModified: new Date(),
-      }
-    }
 
-    const response = await fetch("/api/settings")
+// =============================================================================
+// BASE ATOMS
+// =============================================================================
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch settings: ${response.statusText}`)
-    }
+// settingsAtom now imported from './base' to avoid circular dependencies
 
-    const data = await response.json()
-    const parsedResult = SettingsFileSchema.safeParse(data, { reportInput: true })
-
-    if (!parsedResult.success) {
-      console.error(parsedResult.error)
-      throw new Error(`Failed to parse settings: ${parsedResult.error.message}`)
-    }
-
-    return parsedResult.data
-  },
-  staleTime: 5000, // Consider data fresh for 5 seconds
-  refetchOnMount: false,
-  refetchOnWindowFocus: false,
-  refetchInterval: false,
-}))
-settingsQueryAtom.debugLabel = "settingsQueryAtom"
+// =============================================================================
+// WRITE-ONLY ACTION ATOMS
+// =============================================================================
 
 /**
- * Mutation atom for updating settings
- */
-export const updateSettingsMutationAtom = atomWithMutation(() => ({
-  mutationFn: async (variables: UpdateSettingsRequest): Promise<SettingsResponse> => {
-    // Test environment check
-    if (typeof window === "undefined" || process.env.NODE_ENV === "test") {
-      log.info({ module: "test" }, "Test environment: Simulating settings update")
-      return {
-        success: true,
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        settings: variables.settings as UserSettings, // In test, just return what was sent
-        message: "Settings updated successfully (test mode)",
-      }
-    }
-
-    // Input validation
-    const serialized = UpdateSettingsRequestSchema.safeParse(variables, { reportInput: true })
-    if (!serialized.success) {
-      throw new Error(
-        `Failed to serialize settings update data: ${serialized.error?.message || "Unknown validation error"}`,
-      )
-    }
-
-    // API request
-    const response = await fetch("/api/settings", {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(serialized.data),
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`Failed to update settings: ${response.statusText} - ${errorText}`)
-    }
-
-    // Response validation
-    const data = await response.json()
-    const responseValidation = SettingsResponseSchema.safeParse(data, { reportInput: true })
-    if (!responseValidation.success) {
-      throw new Error(
-        `Failed to parse settings update response: ${responseValidation.error?.message || "Unknown validation error"}`,
-      )
-    }
-
-    return responseValidation.data
-  },
-  onSuccess: () => {
-    log.info({ module: "settings" }, "Settings updated via API")
-    toast.success("Settings updated successfully")
-  },
-  onError: (error: Error) => {
-    log.error({ error, module: "settings" }, "Failed to update settings via API")
-    toast.error(`Failed to update settings: ${error.message}`)
-  },
-}))
-updateSettingsMutationAtom.debugLabel = "updateSettingsMutationAtom"
-
-/**
- * Base settings atom - provides read access to current settings
- */
-export const settingsAtom = atom((get) => {
-  const result = get(settingsQueryAtom)
-  if ("data" in result && result.data) {
-    return result.data.userSettings
-  }
-  // Return minimal default settings - only imports supported
-  return {
-    integrations: {
-      imports: {
-        supportedSources: ["ticktick", "todoist", "asana", "trello"],
-      },
-    },
-    // Future settings will be added here when implemented:
-    // appearance: { ... },
-    // behavior: { ... },
-    // notifications: { ... },
-    // data: { ... },
-    // productivity: { ... },
-  }
-})
-settingsAtom.debugLabel = "settingsAtom"
-
-/**
- * Action atom for updating settings
+ * Updates settings with new data
+ * Uses the update settings mutation to persist to API
+ * Plays confirmation sound when settings are updated
+ * History tracking enabled and tracks operation for undo/redo
  */
 export const updateSettingsAtom = atom(
   null,
   async (get, set, partialSettings: PartialUserSettings) => {
     try {
-      const updateMutation = get(updateSettingsMutationAtom)
+      // Get the update settings mutation
+      const updateSettingsMutation = get(updateSettingsMutationAtom)
 
-      await updateMutation.mutateAsync({ settings: partialSettings })
+      // Execute the mutation - this will handle optimistic updates and API persistence
+      await updateSettingsMutation.mutateAsync({ settings: partialSettings })
 
-      // Invalidate settings query to refetch fresh data
-      // This ensures the UI reflects the latest server state
-      const queryClient = get(queryClientAtom)
-      queryClient.invalidateQueries({ queryKey: ["settings"] })
+      // Record the operation for undo/redo feedback
+      const settingsKeys = Object.keys(partialSettings).join(", ")
+      set(recordOperationAtom, `Updated settings: ${settingsKeys}`)
 
-      log.info({ module: "settings" }, "Settings updated, invalidating query cache")
+      // Play settings update sound
+      playSound("confirm").catch((error) => {
+        log.warn({ error, module: "settings" }, "Failed to play settings update sound")
+      })
+
+      log.info({ settingsKeys, module: "settings" }, "Settings updated")
     } catch (error) {
-      log.error({ error, module: "settings" }, "Error in updateSettingsAtom")
-      throw error
+      handleAtomError(error, "updateSettingsAtom")
+      throw error // Re-throw so the UI can handle the error
     }
   },
 )
 updateSettingsAtom.debugLabel = "updateSettingsAtom"
+
+// =============================================================================
+// DERIVED READ ATOMS
+// =============================================================================
+
+/**
+ * Integration settings (simplified read access)
+ */
+export const integrationSettingsAtom = atom((get) => {
+  try {
+    const settings = get(settingsAtom)
+    return settings.integrations
+  } catch (error) {
+    handleAtomError(error, "integrationSettingsAtom")
+    return {
+      imports: {
+        supportedSources: [...SUPPORTED_IMPORT_SOURCES],
+      },
+    }
+  }
+})
+integrationSettingsAtom.debugLabel = "integrationSettingsAtom"
+
+/**
+ * Import settings (specific to imports functionality)
+ */
+export const importSettingsAtom = atom((get) => {
+  try {
+    const integrationSettings = get(integrationSettingsAtom)
+    return integrationSettings.imports
+  } catch (error) {
+    handleAtomError(error, "importSettingsAtom")
+    return {
+      supportedSources: [...SUPPORTED_IMPORT_SOURCES],
+    }
+  }
+})
+importSettingsAtom.debugLabel = "importSettingsAtom"
+
+/**
+ * Settings file metadata (version, lastModified)
+ */
+export const settingsMetadataAtom = atom((get) => {
+  try {
+    const result = get(settingsQueryAtom)
+    if ("data" in result && result.data) {
+      return {
+        version: result.data.version,
+        lastModified: result.data.lastModified,
+      }
+    }
+    return {
+      version: "1.0.0",
+      lastModified: new Date(),
+    }
+  } catch (error) {
+    handleAtomError(error, "settingsMetadataAtom")
+    return {
+      version: "1.0.0",
+      lastModified: new Date(),
+    }
+  }
+})
+settingsMetadataAtom.debugLabel = "settingsMetadataAtom"
+
+// =============================================================================
+// UTILITY ATOMS
+// =============================================================================
+
+/**
+ * Checks if a specific source is supported for imports
+ */
+export const isImportSourceSupportedAtom = atom((get) => {
+  const importSettings = get(importSettingsAtom)
+  return (source: string): boolean => {
+    try {
+      // Type-safe check without assertion
+      return importSettings.supportedSources.some((supportedSource) => supportedSource === source)
+    } catch (error) {
+      handleAtomError(error, "isImportSourceSupportedAtom")
+      return false
+    }
+  }
+})
+isImportSourceSupportedAtom.debugLabel = "isImportSourceSupportedAtom"
+
+/**
+ * Updates specific integration settings
+ */
+export const updateIntegrationSettingsAtom = atom(
+  null,
+  (get, set, integrationUpdates: Partial<UserSettings["integrations"]>) => {
+    try {
+      const currentSettings = get(settingsAtom)
+      const updatedSettings: PartialUserSettings = {
+        integrations: {
+          imports: {
+            ...currentSettings.integrations.imports,
+            ...integrationUpdates.imports,
+          },
+        },
+      }
+      set(updateSettingsAtom, updatedSettings)
+    } catch (error) {
+      handleAtomError(error, "updateIntegrationSettingsAtom")
+    }
+  },
+)
+updateIntegrationSettingsAtom.debugLabel = "updateIntegrationSettingsAtom"
+
+/**
+ * Updates import settings specifically
+ */
+export const updateImportSettingsAtom = atom(
+  null,
+  (get, set, importUpdates: Partial<UserSettings["integrations"]["imports"]>) => {
+    try {
+      const currentSettings = get(settingsAtom)
+      const updatedSettings: PartialUserSettings = {
+        integrations: {
+          imports: {
+            ...currentSettings.integrations.imports,
+            ...importUpdates,
+          },
+        },
+      }
+      set(updateSettingsAtom, updatedSettings)
+    } catch (error) {
+      handleAtomError(error, "updateImportSettingsAtom")
+    }
+  },
+)
+updateImportSettingsAtom.debugLabel = "updateImportSettingsAtom"
+
+// =============================================================================
+// EXPORT STRUCTURE
+// =============================================================================
+
+/**
+ * Organized export of all settings-related atoms
+ * Provides clear separation between different types of atoms
+ */
+export const settingsAtoms = {
+  // Base state atoms
+  settings: settingsAtom,
+
+  // Action atoms (write-only)
+  actions: {
+    updateSettings: updateSettingsAtom,
+    updateIntegrationSettings: updateIntegrationSettingsAtom,
+    updateImportSettings: updateImportSettingsAtom,
+    updateSettingsMutation: updateSettingsMutationAtom,
+  },
+
+  // Derived read atoms
+  derived: {
+    integrationSettings: integrationSettingsAtom,
+    importSettings: importSettingsAtom,
+    settingsMetadata: settingsMetadataAtom,
+    isImportSourceSupported: isImportSourceSupportedAtom,
+  },
+
+  // Query atoms (for direct access if needed)
+  queries: {
+    settingsQuery: settingsQueryAtom,
+  },
+}
+
+// Individual exports for backward compatibility
+export { settingsAtom, settingsQueryAtom, updateSettingsMutationAtom } from "./base"

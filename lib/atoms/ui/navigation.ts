@@ -48,7 +48,6 @@ function isStandardViewId(id: string): id is StandardViewId {
     "all",
     "analytics",
     "search",
-    "settings",
     "shortcuts",
     "profile",
     "debug",
@@ -541,12 +540,6 @@ function generatePageInfo(
         title: "Analytics",
         description: "Task completion insights and statistics",
         iconType: "analytics",
-      }
-    case "settings":
-      return {
-        title: "Settings",
-        description: "Application preferences and configuration",
-        iconType: "settings",
       }
     case "all":
       return {

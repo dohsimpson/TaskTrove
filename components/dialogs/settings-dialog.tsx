@@ -127,9 +127,6 @@ export function SettingsDialog() {
               <SidebarContent>
                 <div className="p-4">
                   <h2 className="text-lg font-semibold">Settings</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Configure your TaskTrove experience
-                  </p>
                 </div>
                 <Separator />
                 <SidebarGroup>

@@ -44,10 +44,6 @@ vi.mock("@/components/pages/search-page", () => ({
   ),
 }))
 
-vi.mock("@/components/pages/settings/settings-page", () => ({
-  SettingsPage: () => <div data-testid="settings-page">Settings Page</div>,
-}))
-
 vi.mock("@/components/debug/sound-suite-tester", () => ({
   SoundSuiteTester: () => <div data-testid="sound-suite-tester">Sound Suite Tester</div>,
 }))
@@ -125,15 +121,6 @@ describe("RouteContent", () => {
     render(<RouteContent {...defaultProps} />)
 
     expect(screen.getByTestId("search-page")).toBeInTheDocument()
-    expect(screen.queryByTestId("main-content")).not.toBeInTheDocument()
-  })
-
-  it("renders settings page for settings route", () => {
-    vi.mocked(useAtomValue).mockReturnValue("/settings")
-
-    render(<RouteContent {...defaultProps} />)
-
-    expect(screen.getByTestId("settings-page")).toBeInTheDocument()
     expect(screen.queryByTestId("main-content")).not.toBeInTheDocument()
   })
 

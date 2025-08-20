@@ -4,12 +4,12 @@ import {
   SettingsFileSerializationSchema,
   SettingsFileSerialization,
   UpdateSettingsRequestSchema,
-  SettingsResponse,
+  UpdateSettingsResponse,
   ErrorResponse,
   UserSettings,
 } from "@/lib/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
-import { safeReadSettingsFile, safeWriteSettingsFile } from "@/lib/utils/safe-settings-operations"
+import { safeReadSettingsFile, safeWriteSettingsFile } from "@/lib/utils/safe-file-operations"
 import {
   withApiLogging,
   logBusinessEvent,
@@ -81,7 +81,7 @@ export const GET = withMutexProtection(
  */
 async function updateSettings(
   request: EnhancedRequest,
-): Promise<NextResponse<SettingsResponse | ErrorResponse>> {
+): Promise<NextResponse<UpdateSettingsResponse | ErrorResponse>> {
   // Validate request body
   const validation = await validateRequestBody(request, UpdateSettingsRequestSchema)
   if (!validation.success) {
@@ -145,13 +145,13 @@ async function updateSettings(
     request.context,
   )
 
-  const response: SettingsResponse = {
+  const response: UpdateSettingsResponse = {
     success: true,
     settings: updatedSettings,
     message: "Settings updated successfully",
   }
 
-  return NextResponse.json<SettingsResponse>(response)
+  return NextResponse.json<UpdateSettingsResponse>(response)
 }
 
 export const PATCH = withMutexProtection(

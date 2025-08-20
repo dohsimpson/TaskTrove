@@ -215,22 +215,6 @@ export function getHelpContent(routeName: string, title: string): HelpContent | 
         ),
       }
 
-    case "settings":
-      return {
-        title: "Settings",
-        content: (
-          <div className="space-y-2">
-            <p>Customize TaskTrove to fit your workflow preferences.</p>
-            <ul className="list-disc pl-4 space-y-1">
-              <li>Adjust appearance and theme settings</li>
-              <li>Configure notification preferences</li>
-              <li>Set up keyboard shortcuts</li>
-              <li>Manage data import and export options</li>
-            </ul>
-          </div>
-        ),
-      }
-
     default:
       // Handle project pages and label pages
       if (title.startsWith("#")) {
@@ -267,7 +251,6 @@ export function getHelpContent(routeName: string, title: string): HelpContent | 
         "filters",
         "analytics",
         "search",
-        "settings",
       ]
       if (!commonRoutes.includes(normalizedRoute) && title !== "TaskTrove") {
         return {

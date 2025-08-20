@@ -4,7 +4,6 @@ import { useAtomValue } from "jotai"
 import { pathnameAtom } from "@/lib/atoms/ui/navigation"
 import { MainContent } from "@/components/layout/main-content"
 import { SearchPage } from "@/components/pages/search-page"
-import { SettingsPage } from "@/components/pages/settings/settings-page"
 import { SoundSuiteTester } from "../debug/sound-suite-tester"
 import { Task, VoiceCommand } from "@/lib/types"
 // No longer using custom hooks - migrated to Jotai atoms
@@ -22,10 +21,6 @@ export function RouteContent({ onVoiceCommand, onTaskClick }: RouteContentProps)
   // Handle search page
   if (pathname === "/search") {
     return <SearchPage onTaskClick={onTaskClick} />
-  }
-
-  if (pathname === "/settings") {
-    return <SettingsPage />
   }
 
   // Handle debug page (development only)

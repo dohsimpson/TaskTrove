@@ -1,11 +1,11 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { dynamicPageInfoAtom, currentRouteContextAtom } from "@/lib/atoms/ui/navigation"
 import { tasksAtom } from "@/lib/atoms"
 import { openQuickAddAtom, openProjectDialogAtom } from "@/lib/atoms/ui/navigation"
+import { openSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
 
 import { Button } from "@/components/ui/button"
 import { useSidebar } from "@/components/ui/sidebar"
@@ -53,7 +53,6 @@ export function PageHeader({
   actions = [],
   className,
 }: PageHeaderProps) {
-  const router = useRouter()
   const { theme, setTheme } = useTheme()
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -64,6 +63,7 @@ export function PageHeader({
   const tasks = useAtomValue(tasksAtom)
   const openQuickAdd = useSetAtom(openQuickAddAtom)
   const openProjectDialog = useSetAtom(openProjectDialogAtom)
+  const openSettingsDialog = useSetAtom(openSettingsDialogAtom)
 
   // Theme toggle function
   const toggleTheme = () => {
@@ -109,8 +109,6 @@ export function PageHeader({
         return <Clock {...iconProps} />
       case "analytics":
         return <TrendingUp {...iconProps} />
-      case "settings":
-        return <Monitor {...iconProps} />
       case "project":
         return <Folder {...iconProps} />
       case "label":
@@ -301,7 +299,7 @@ export function PageHeader({
         onQuickAdd={openQuickAdd}
         onAdvancedSearch={onAdvancedSearch}
         onCreateProject={openProjectDialog}
-        onSettings={() => router.push("/settings")}
+        onSettings={openSettingsDialog}
       />
     </header>
   )

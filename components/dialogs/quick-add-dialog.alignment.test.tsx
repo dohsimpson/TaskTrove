@@ -357,6 +357,16 @@ vi.mock("@/lib/types", () => ({
   OrderingSerializationSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
   },
+  // Settings-related schemas
+  UpdateSettingsResponseSchema: {
+    safeParse: vi.fn().mockReturnValue({
+      success: true,
+      data: { success: true, settings: {}, message: "Mock response" },
+    }),
+  },
+  UpdateSettingsRequestSchema: {
+    safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
+  },
 }))
 
 vi.mock("@/lib/utils/logger", () => ({

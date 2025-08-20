@@ -40,7 +40,6 @@ function isStandardViewId(id: string): id is StandardViewId {
     "all",
     "analytics",
     "search",
-    "settings",
     "shortcuts",
     "profile",
     "debug",
@@ -232,12 +231,6 @@ const dynamicPageInfoAtom = atom((get) => {
         description: "Task completion insights and statistics",
         iconType: "analytics",
       }
-    case "settings":
-      return {
-        title: "Settings",
-        description: "Application preferences and configuration",
-        iconType: "settings",
-      }
     case "all":
       return { title: "All Tasks", description: "All tasks across all projects", iconType: "all" }
     case "completed":
@@ -322,18 +315,6 @@ describe("dynamicPageInfoAtom", () => {
         title: "Analytics",
         description: "Task completion insights and statistics",
         iconType: "analytics",
-      })
-    })
-
-    it("should provide info for settings route", () => {
-      store.set(setPathnameAtom, "/settings")
-
-      const pageInfo = store.get(dynamicPageInfoAtom)
-
-      expect(pageInfo).toEqual({
-        title: "Settings",
-        description: "Application preferences and configuration",
-        iconType: "settings",
       })
     })
   })
@@ -599,7 +580,6 @@ describe("dynamicPageInfoAtom", () => {
         { pathname: "/inbox", expectedTitle: "Inbox" },
         { pathname: "/upcoming", expectedTitle: "Upcoming" },
         { pathname: "/analytics", expectedTitle: "Analytics" },
-        { pathname: "/settings", expectedTitle: "Settings" },
       ]
 
       for (const { pathname, expectedTitle } of testCases) {

@@ -59,6 +59,7 @@ export function CommandPalette({
   onQuickAdd,
   onAdvancedSearch,
   onCreateProject,
+  onSettings,
 }: CommandPaletteProps) {
   const router = useRouter()
   const { theme, setTheme } = useTheme()
@@ -103,7 +104,7 @@ export function CommandPalette({
       icon: Settings,
       label: "Settings",
       shortcut: "⌘,",
-      action: () => router.push("/settings"),
+      action: () => onSettings?.(),
     },
   ]
 

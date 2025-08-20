@@ -702,6 +702,12 @@ export type StandardViewId =
   | "all"
   | "analytics"
   | "search"
+  | "shortcuts"
+  | "profile"
+  | "debug"
+  | "projects"
+  | "labels"
+  | "filters"
 
 /**
  * All possible view identifiers for routing and view state management
@@ -1887,7 +1893,6 @@ export const DataSettingsSchema = z.object({}).optional()
  */
 export const IntegrationSettingsSchema = z.object({
   imports: z.object({
-    lastImportDate: flexibleDateTimeSchema.optional(),
     supportedSources: z.array(z.enum(["ticktick", "todoist", "asana", "trello"])),
   }),
   // Future features (not stored in settings.json yet):
@@ -1996,16 +2001,14 @@ export const UpdateSettingsRequestSchema = z.object({
   settings: PartialUserSettingsSchema,
 })
 
-export const SettingsResponseSchema = z.object({
-  success: z.boolean(),
+export const UpdateSettingsResponseSchema = ApiResponseSchema.extend({
   settings: UserSettingsSchema,
-  message: z.string(),
 })
 // Generated types for settings
 export type SettingsFile = z.infer<typeof SettingsFileSchema>
 export type SettingsFileSerialization = z.infer<typeof SettingsFileSerializationSchema>
 export type UpdateSettingsRequest = z.infer<typeof UpdateSettingsRequestSchema>
-export type SettingsResponse = z.infer<typeof SettingsResponseSchema>
+export type UpdateSettingsResponse = z.infer<typeof UpdateSettingsResponseSchema>
 export type IntegrationSettings = z.infer<typeof IntegrationSettingsSchema>
 export type UserSettings = z.infer<typeof UserSettingsSchema>
 export type PartialUserSettings = z.infer<typeof PartialUserSettingsSchema>

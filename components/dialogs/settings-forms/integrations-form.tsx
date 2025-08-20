@@ -4,6 +4,7 @@ import React from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 // Unused UI components (for future calendar/webhook features):
 // import { Switch } from "@/components/ui/switch"
@@ -26,7 +27,8 @@ import { toast } from "@/components/ui/use-toast"
 
 export function IntegrationsForm() {
   const settings = useAtomValue(integrationSettingsAtom)
-  const updateSettings = useSetAtom(updateIntegrationSettingsAtom)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const updateSettings = useSetAtom(updateIntegrationSettingsAtom) // Will be used for future calendar/webhook features
 
   // Calendar functionality not implemented yet
   // const handleCalendarUpdate = (field: keyof typeof settings.calendar, value: string | boolean) => {
@@ -37,32 +39,6 @@ export function IntegrationsForm() {
   //     },
   //   })
   // }
-
-  const handleImportsUpdate = (
-    field: "lastImportDate" | "supportedSources",
-    value: string[] | Date,
-  ) => {
-    if (field === "lastImportDate") {
-      updateSettings({
-        imports: {
-          lastImportDate: value instanceof Date ? value : new Date(),
-          supportedSources: ["ticktick", "todoist", "asana", "trello"] as const,
-        },
-      })
-    } else {
-      updateSettings({
-        imports: {
-          lastImportDate:
-            "lastImportDate" in settings.imports ? settings.imports.lastImportDate : undefined,
-          supportedSources: Array.isArray(value)
-            ? value.filter((source): source is "ticktick" | "todoist" | "asana" | "trello" =>
-                ["ticktick", "todoist", "asana", "trello"].includes(source),
-              )
-            : [],
-        },
-      })
-    }
-  }
 
   // Webhooks functionality not implemented yet
   // const handleWebhooksUpdate = (
@@ -118,17 +94,13 @@ export function IntegrationsForm() {
   // }
 
   const importFromService = (service: string) => {
-    // Open migration site in new tab
-    const migrationUrl = `${
-      process.env.NODE_ENV === "production"
-        ? "https://migration.tasktrove.com"
-        : "http://localhost:3001"
-    }?source=${service}`
+    // Open import site in new tab
+    const migrationUrl = `https://import.tasktrove.io?source=${service}`
 
     window.open(migrationUrl, "_blank")
 
     toast({
-      title: "Migration Assistant Opened",
+      title: "Import Assistant Opened",
       description: `A new tab opened with instructions for ${service}. Follow the steps to export your data, then return here to upload the converted file.`,
     })
   }
@@ -176,9 +148,6 @@ export function IntegrationsForm() {
 
       const result = await response.json()
 
-      // Update last import date
-      handleImportsUpdate("lastImportDate", new Date())
-
       toast({
         title: "✅ Import Completed!",
         description: `Successfully imported ${result.importedTasks || 0} tasks, ${result.importedProjects || 0} projects, and ${result.importedLabels || 0} labels into TaskTrove.`,
@@ -219,6 +188,7 @@ export function IntegrationsForm() {
           <CardTitle className="flex items-center gap-2">
             <Upload className="w-5 h-5" />
             Task Import
+            <Badge variant="secondary">Experimental</Badge>
           </CardTitle>
           <CardDescription>Import tasks from other task management applications.</CardDescription>
         </CardHeader>
@@ -226,7 +196,7 @@ export function IntegrationsForm() {
           <div className="space-y-3">
             <Label className="text-base font-semibold">Step 1: Export Your Data</Label>
             <p className="text-sm text-muted-foreground">
-              Click your task management service below to open the migration assistant. Follow the
+              Click your task management service below to open the import assistant. Follow the
               instructions to export and convert your data to TaskTrove format.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -241,7 +211,6 @@ export function IntegrationsForm() {
                     {getProviderIcon(source)}
                     <div className="text-left">
                       <div className="font-medium capitalize">{source}</div>
-                      <div className="text-xs text-muted-foreground">Export & convert data</div>
                     </div>
                   </div>
                   <ExternalLink className="w-4 h-4" />
@@ -255,9 +224,23 @@ export function IntegrationsForm() {
           <div className="space-y-3">
             <Label className="text-base font-semibold">Step 2: Upload Converted File</Label>
             <p className="text-sm text-muted-foreground">
-              After using the migration assistant above, you'll download a JSON file. Upload that
-              file here to import your tasks, projects, and labels into TaskTrove.
+              After using the import assistant above, you'll download a JSON file. Upload that file
+              here to import your tasks, projects, and labels into TaskTrove.
             </p>
+            <div className="p-3 bg-muted rounded-lg border">
+              <div className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold mt-0.5">
+                  !
+                </div>
+                <div className="text-sm">
+                  <div className="font-medium">Important:</div>
+                  <div className="text-muted-foreground">
+                    Only upload the JSON file you downloaded from the import assistant. Regular
+                    exports from other apps won't work.
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className="flex items-center gap-3">
               <input
                 type="file"
@@ -278,32 +261,7 @@ export function IntegrationsForm() {
                 </Button>
               </label>
             </div>
-            <div className="p-3 bg-muted rounded-lg border">
-              <div className="flex items-start gap-2">
-                <div className="w-5 h-5 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold mt-0.5">
-                  !
-                </div>
-                <div className="text-sm">
-                  <div className="font-medium">Important:</div>
-                  <div className="text-muted-foreground">
-                    Only upload the JSON file you downloaded from the migration assistant. Regular
-                    exports from other apps won't work.
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
-
-          {"lastImportDate" in settings.imports && settings.imports.lastImportDate && (
-            <div className="p-3 bg-muted rounded-lg">
-              <p className="text-sm">
-                <span className="font-medium">Last import:</span>{" "}
-                {"lastImportDate" in settings.imports && settings.imports.lastImportDate
-                  ? settings.imports.lastImportDate.toLocaleDateString()
-                  : ""}
-              </p>
-            </div>
-          )}
         </CardContent>
       </Card>
 

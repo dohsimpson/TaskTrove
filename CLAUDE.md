@@ -43,6 +43,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - If there are legitimate test failures unrelated to your changes, **ISOLATE AND FIX THEM** first
 - Only commit when the codebase is in a clean, working state
 
+**Commit Message Format:**
+
+Follow Conventional Commits Standard: `<type>[scope]: <description>` (e.g., `feat(auth): add OAuth integration`, `fix: resolve memory leak in task loader`).
+
 **Testing:**
 
 - `pnpm test:changed` - **PREFERRED**: Run only tests for changed files (faster feedback during development)

@@ -435,6 +435,114 @@ describe("Enhanced Natural Language Parser - Edge Cases", () => {
       })
     })
 
+    describe("Date Shorthand Patterns", () => {
+      it('should parse "tod" as today', () => {
+        const result = parseEnhancedNaturalLanguage("task tod")
+        expect(result.dueDate).toBeDefined()
+        expect(result.title).toBe("task")
+
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        expect(result.dueDate?.getTime()).toBe(today.getTime())
+      })
+
+      it('should parse "tmr" as tomorrow', () => {
+        const result = parseEnhancedNaturalLanguage("task tmr")
+        expect(result.dueDate).toBeDefined()
+        expect(result.title).toBe("task")
+
+        const tomorrow = new Date()
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        tomorrow.setHours(0, 0, 0, 0)
+        expect(result.dueDate?.getTime()).toBe(tomorrow.getTime())
+      })
+
+      it('should handle "tod" at different positions', () => {
+        const result1 = parseEnhancedNaturalLanguage("tod task")
+        expect(result1.dueDate).toBeDefined()
+        expect(result1.title).toBe("task")
+
+        const result2 = parseEnhancedNaturalLanguage("important task tod")
+        expect(result2.dueDate).toBeDefined()
+        expect(result2.title).toBe("important task")
+      })
+
+      it('should handle "tmr" at different positions', () => {
+        const result1 = parseEnhancedNaturalLanguage("tmr task")
+        expect(result1.dueDate).toBeDefined()
+        expect(result1.title).toBe("task")
+
+        const result2 = parseEnhancedNaturalLanguage("important task tmr")
+        expect(result2.dueDate).toBeDefined()
+        expect(result2.title).toBe("important task")
+      })
+
+      it("should handle mixed shorthand and full date patterns correctly", () => {
+        // Test that "tod" doesn't conflict with "today"
+        const result1 = parseEnhancedNaturalLanguage("meeting tod")
+        expect(result1.dueDate).toBeDefined()
+        expect(result1.title).toBe("meeting")
+
+        const result2 = parseEnhancedNaturalLanguage("meeting today")
+        expect(result2.dueDate).toBeDefined()
+        expect(result2.title).toBe("meeting")
+
+        // Both should resolve to the same date
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        expect(result1.dueDate?.getTime()).toBe(today.getTime())
+        expect(result2.dueDate?.getTime()).toBe(today.getTime())
+      })
+
+      it("should take the last date pattern when mixed with shorthand", () => {
+        const result1 = parseEnhancedNaturalLanguage("task today tmr")
+        expect(result1.dueDate).toBeDefined()
+        expect(result1.title).toBe("task")
+
+        // Should use "tmr" (tomorrow) as it appears last
+        const tomorrow = new Date()
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        tomorrow.setHours(0, 0, 0, 0)
+        expect(result1.dueDate?.getTime()).toBe(tomorrow.getTime())
+
+        const result2 = parseEnhancedNaturalLanguage("task tmr today")
+        expect(result2.dueDate).toBeDefined()
+        expect(result2.title).toBe("task")
+
+        // Should use "today" as it appears last
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        expect(result2.dueDate?.getTime()).toBe(today.getTime())
+      })
+
+      it("should work with other metadata", () => {
+        const result = parseEnhancedNaturalLanguage("urgent meeting #work @client p1 tod 9AM")
+        expect(result.dueDate).toBeDefined()
+        expect(result.title).toBe("urgent meeting")
+        expect(result.project).toBe("work")
+        expect(result.labels).toEqual(["client"])
+        expect(result.priority).toBe(1)
+        expect(result.time).toBe("9AM")
+
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        expect(result.dueDate?.getTime()).toBe(today.getTime())
+      })
+
+      it("should respect disabled sections for shorthand patterns", () => {
+        const disabledSections = new Set(["tod"])
+        const result = parseEnhancedNaturalLanguage("task tod tmr", disabledSections)
+        expect(result.dueDate).toBeDefined()
+        expect(result.title).toBe("task tod")
+
+        // Should use "tmr" since "tod" is disabled
+        const tomorrow = new Date()
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        tomorrow.setHours(0, 0, 0, 0)
+        expect(result.dueDate?.getTime()).toBe(tomorrow.getTime())
+      })
+    })
+
     describe("Weekend Patterns", () => {
       it('should parse "this weekend" correctly', () => {
         const result = parseEnhancedNaturalLanguage("task this weekend")

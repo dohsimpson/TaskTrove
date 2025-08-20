@@ -242,6 +242,8 @@ export function generateHighlightingPatterns(): HighlightingPattern[] {
   const dateCaptures = [
     // Static patterns from DATE_PATTERNS
     ...DATE_PATTERNS.map((p) => p.display.toLowerCase()),
+    "tod",
+    "tmr",
     // "This [shorthand]" weekday patterns (these should come before bare shorthands for precedence)
     "this mon",
     "this tue",
@@ -264,7 +266,7 @@ export function generateHighlightingPatterns(): HighlightingPattern[] {
     "in \\d+ months?",
     // Absolute date patterns
     "(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|january|february|march|april|may|june|july|august|september|october|november|december)\\s+\\d{1,2}",
-    "\\d{1,2}\/\\d{1,2}",
+    "\\d{1,2}/\\d{1,2}",
     "\\d{1,2}-\\d{1,2}",
   ]
   const dateRegex = new RegExp(

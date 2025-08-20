@@ -129,12 +129,12 @@ const EXCLAMATION_PATTERNS = [
 // Enhanced date patterns
 const DATE_PATTERNS: StaticDatePattern[] = [
   {
-    pattern: new RegExp(`${WORD_BOUNDARY_START}(today)${WORD_BOUNDARY_END}`, "gi"),
+    pattern: new RegExp(`${WORD_BOUNDARY_START}(today|tod)${WORD_BOUNDARY_END}`, "gi"),
     getValue: () => new Date(),
     display: "Today",
   },
   {
-    pattern: new RegExp(`${WORD_BOUNDARY_START}(tomorrow)${WORD_BOUNDARY_END}`, "gi"),
+    pattern: new RegExp(`${WORD_BOUNDARY_START}(tomorrow|tmr)${WORD_BOUNDARY_END}`, "gi"),
     getValue: () => addDays(new Date(), 1),
     display: "Tomorrow",
   },
@@ -1175,7 +1175,9 @@ export function getDurationDisplay(duration: string): string {
 // Export pattern constants for use in autocomplete suggestions
 export const DATE_SUGGESTIONS = [
   { value: "today", display: "Today", icon: "📅" },
+  { value: "tod", display: "Today", icon: "📅" },
   { value: "tomorrow", display: "Tomorrow", icon: "📅" },
+  { value: "tmr", display: "Tomorrow", icon: "📅" },
   { value: "next week", display: "Next week", icon: "📅" },
   { value: "next month", display: "Next month", icon: "📅" },
   { value: "this friday", display: "This Friday", icon: "📅" },

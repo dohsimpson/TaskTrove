@@ -74,6 +74,30 @@ describe("Shared Patterns", () => {
       expect(matchesParserPattern("random text", "date")).toBe(false)
     })
 
+    it("should correctly highlight 'tod' shorthand as date pattern", () => {
+      const patterns = generateHighlightingPatterns()
+      const datePattern = patterns.find((p) => p.type === "date")
+
+      const testText = "task tod"
+      const matches = testText.match(datePattern?.regex || /./)
+      expect(matches).toBeTruthy()
+
+      const matchedWord = matches?.[0]?.trim() || ""
+      expect(matchedWord).toBe("tod")
+    })
+
+    it("should correctly highlight 'tmr' shorthand as date pattern", () => {
+      const patterns = generateHighlightingPatterns()
+      const datePattern = patterns.find((p) => p.type === "date")
+
+      const testText = "task tmr"
+      const matches = testText.match(datePattern?.regex || /./)
+      expect(matches).toBeTruthy()
+
+      const matchedWord = matches?.[0]?.trim() || ""
+      expect(matchedWord).toBe("tmr")
+    })
+
     it("should correctly identify shorthand weekday patterns for highlighting", () => {
       const patterns = generateHighlightingPatterns()
       const datePattern = patterns.find((p) => p.type === "date")

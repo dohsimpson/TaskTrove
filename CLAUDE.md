@@ -47,6 +47,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Follow Conventional Commits Standard: `<type>[scope]: <description>` (e.g., `feat(auth): add OAuth integration`, `fix: resolve memory leak in task loader`).
 
+**Allowed change types:** `build:`, `chore:`, `ci:`, `docs:`, `style:`, `refactor:`, `perf:`, `test:`, `fix:`, `feat:`
+
 **Testing:**
 
 - `pnpm test:changed` - **PREFERRED**: Run only tests for changed files (faster feedback during development)

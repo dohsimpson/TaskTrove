@@ -314,7 +314,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                     onDrop={handleTaskDrop}
                     getData={() => ({
                       type: "task-list",
-                      sectionId: parseInt(column.id),
+                      sectionId: column.id,
                       projectId: project?.id,
                     })}
                     className="space-y-3 h-full min-h-[200px] pb-4"
@@ -330,7 +330,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                               type: "task-drop-target",
                               dropTargetId: `task-${task.id}`,
                               taskId: task.id,
-                              sectionId: parseInt(column.id),
+                              sectionId: column.id,
                             }
 
                             if (args?.input && args?.element && isDragInput(args.input)) {
@@ -350,7 +350,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                             getData={() => ({
                               type: "task",
                               taskId: task.id,
-                              sectionId: parseInt(column.id),
+                              sectionId: column.id,
                               projectId: task.projectId,
                             })}
                           >

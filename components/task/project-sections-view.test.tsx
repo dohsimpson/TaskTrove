@@ -117,11 +117,31 @@ vi.mock("@/components/ui/drop-target-wrapper", () => ({
     dropTargetId,
     className,
     getData,
+    onDragEnter,
+    onDragLeave,
+    onDrag,
+    onDrop,
   }: {
     children: React.ReactNode
     dropTargetId: string
     className?: string
     getData?: () => { type?: string }
+    onDragEnter?: (data: {
+      source: { data: Record<string, unknown> }
+      location: { current: { dropTargets: Array<{ data: Record<string, unknown> }> } }
+    }) => void
+    onDragLeave?: (data: {
+      source: { data: Record<string, unknown> }
+      location: { current: { dropTargets: Array<{ data: Record<string, unknown> }> } }
+    }) => void
+    onDrag?: (data: {
+      source: { data: Record<string, unknown> }
+      location: { current: { dropTargets: Array<{ data: Record<string, unknown> }> } }
+    }) => void
+    onDrop?: (data: {
+      source: { data: Record<string, unknown> }
+      location: { current: { dropTargets: Array<{ data: Record<string, unknown> }> } }
+    }) => void
   }) => {
     const data = getData ? getData() : {}
     return (
@@ -131,6 +151,10 @@ vi.mock("@/components/ui/drop-target-wrapper", () => ({
           data.type === "project" ? "TASK" : data.type === "label" ? "TASK" : data.type
         }
         className={className}
+        data-has-drag-enter={!!onDragEnter}
+        data-has-drag-leave={!!onDragLeave}
+        data-has-drag={!!onDrag}
+        data-has-drop={!!onDrop}
       >
         {children}
       </div>
@@ -196,6 +220,15 @@ vi.mock("@/lib/atoms/core/tasks", () => ({
 
 vi.mock("@/lib/utils", () => ({
   cn: vi.fn((...classes) => classes.filter(Boolean).join(" ")),
+}))
+
+// Mock TaskShadow component
+vi.mock("@/components/ui/custom/task-shadow", () => ({
+  TaskShadow: ({ height, className }: { height: number; className?: string }) => (
+    <div data-testid="task-shadow" className={className} data-height={height}>
+      Shadow placeholder
+    </div>
+  ),
 }))
 
 // Mock component interfaces
@@ -844,6 +877,121 @@ describe("ProjectSectionsView", () => {
       // expect(screen.getByTestId('add-section-divider-1')).toBeInTheDocument()
       // expect(screen.getByTestId('add-section-divider-2')).toBeInTheDocument()
       // expect(screen.getByTestId('add-section-divider-3')).toBeInTheDocument()
+    })
+  })
+
+  describe("collapsed sections", () => {
+    it("makes collapsed sections drop targets", () => {
+      // Mock collapsed sections atom to include the first section
+      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
+        if (atom === "mockTasks") return mockTasks
+        if (atom === "mockFilteredTasksAtom") return mockTasks
+        if (atom === "mockProjectsAtom") return [mockProject]
+        if (atom === "mockCurrentViewStateAtom")
+          return {
+            showSidePanel: false,
+            compactView: false,
+            viewMode: "list",
+            sortBy: "dueDate",
+            showCompleted: false,
+          }
+        if (atom === "mockCurrentRouteContextAtom")
+          return {
+            pathname: `/projects/${TEST_PROJECT_ID_1}`,
+            viewId: TEST_PROJECT_ID_1,
+            routeType: "project",
+          }
+        if (atom === "mockCollapsedSectionsAtom") return [TEST_SECTION_ID_1] // First section is collapsed
+        if (atom === "mockShowTaskPanelAtom") return false
+        if (atom === "mockSelectedTaskAtom") return null
+        if (atom === "mockOrderedTasksByProjectAtom") {
+          const orderedTasksMap = new Map()
+          orderedTasksMap.set(
+            TEST_PROJECT_ID_1,
+            mockTasks.filter((t) => t.projectId === TEST_PROJECT_ID_1),
+          )
+          return orderedTasksMap
+        }
+        return []
+      })
+
+      render(<ProjectSectionsView droppableId="test-droppable" />)
+
+      // Check that the first section (collapsed) has a droppable wrapper
+      expect(screen.getByText("Planning")).toBeInTheDocument()
+
+      // Verify the first collapsible shows it's closed (collapsed)
+      const collapsibles = screen.getAllByTestId("collapsible")
+      expect(collapsibles[0]).toHaveAttribute("data-open", "false")
+
+      // Verify we have droppable areas for sections (collapsed section should have a drop target)
+      const droppables = screen.getAllByTestId(/^droppable-test-droppable-section-/)
+      expect(droppables.length).toBeGreaterThan(0)
+
+      // Verify collapsed section has drag handlers (there should be two: one for collapsed header, one for expanded content)
+      const collapsedSectionDroppables = screen.getAllByTestId(
+        "droppable-test-droppable-section-00000000-0000-4000-8000-000000000001",
+      )
+      expect(collapsedSectionDroppables.length).toBeGreaterThan(0)
+
+      // At least one should have drag handlers
+      const hasDropHandlers = collapsedSectionDroppables.some(
+        (droppable) =>
+          droppable.getAttribute("data-has-drag-enter") === "true" &&
+          droppable.getAttribute("data-has-drag-leave") === "true" &&
+          droppable.getAttribute("data-has-drop") === "true",
+      )
+      expect(hasDropHandlers).toBe(true)
+    })
+
+    it("renders drop targets for both collapsed and expanded sections", () => {
+      // Mock mixed collapsed/expanded state
+      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
+        if (atom === "mockTasks") return mockTasks
+        if (atom === "mockFilteredTasksAtom") return mockTasks
+        if (atom === "mockProjectsAtom") return [mockProject]
+        if (atom === "mockCurrentViewStateAtom")
+          return {
+            showSidePanel: false,
+            compactView: false,
+            viewMode: "list",
+            sortBy: "dueDate",
+            showCompleted: false,
+          }
+        if (atom === "mockCurrentRouteContextAtom")
+          return {
+            pathname: `/projects/${TEST_PROJECT_ID_1}`,
+            viewId: TEST_PROJECT_ID_1,
+            routeType: "project",
+          }
+        if (atom === "mockCollapsedSectionsAtom") return [TEST_SECTION_ID_1, TEST_SECTION_ID_3] // First and third sections collapsed
+        if (atom === "mockShowTaskPanelAtom") return false
+        if (atom === "mockSelectedTaskAtom") return null
+        if (atom === "mockOrderedTasksByProjectAtom") {
+          const orderedTasksMap = new Map()
+          orderedTasksMap.set(
+            TEST_PROJECT_ID_1,
+            mockTasks.filter((t) => t.projectId === TEST_PROJECT_ID_1),
+          )
+          return orderedTasksMap
+        }
+        return []
+      })
+
+      render(<ProjectSectionsView droppableId="test-droppable" />)
+
+      // All sections should have section names visible
+      expect(screen.getByText("Planning")).toBeInTheDocument()
+      expect(screen.getByText("In Progress")).toBeInTheDocument()
+      expect(screen.getByText("Review")).toBeInTheDocument()
+
+      // Should have drop targets for all sections (collapsed and expanded)
+      const droppables = screen.getAllByTestId(/^droppable-/)
+      expect(droppables.length).toBeGreaterThan(0)
+
+      // Verify collapsible states
+      const collapsibles = screen.getAllByTestId("collapsible")
+      expect(collapsibles).toHaveLength(3)
     })
   })
 })

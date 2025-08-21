@@ -34,10 +34,11 @@ export function DraggableWrapper({
 
     return draggable({
       element,
-      getInitialData: () => ({
+      getInitialData: ({ element }) => ({
         type: "draggable-item",
         dragId,
         index,
+        rect: element.getBoundingClientRect(),
         ...getData?.(),
       }),
       onDragStart: () => {

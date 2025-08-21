@@ -39,16 +39,22 @@ interface DropTargetWrapperProps {
   canDrop?: (data: CanDropEventData) => boolean
   getData?: (() => Record<string, unknown>) | ((args?: GetDataArgs) => Record<string, unknown>)
   dropTargetId?: string
+  onDragEnter?: (data: DropEventData) => void
+  onDragLeave?: (data: DropEventData) => void
+  onDrag?: (data: DropEventData) => void
 }
 
 export function DropTargetWrapper({
   children,
   className,
-  dropClassName = "bg-blue-50 border-2 border-blue-300 border-dashed",
+  dropClassName = "",
   onDrop,
   canDrop,
   getData,
   dropTargetId,
+  onDragEnter: onDragEnterProp,
+  onDragLeave: onDragLeaveProp,
+  onDrag: onDragProp,
 }: DropTargetWrapperProps) {
   const ref = useRef<HTMLDivElement>(null)
   const [isDropTarget, setIsDropTarget] = useState(false)
@@ -69,14 +75,23 @@ export function DropTargetWrapper({
           : {}),
       }),
       canDrop: canDrop ? ({ source }) => canDrop({ source }) : undefined,
-      onDragEnter: () => setIsDropTarget(true),
-      onDragLeave: () => setIsDropTarget(false),
+      onDragEnter: ({ source, location }) => {
+        setIsDropTarget(true)
+        onDragEnterProp?.({ source, location })
+      },
+      onDragLeave: ({ source, location }) => {
+        setIsDropTarget(false)
+        onDragLeaveProp?.({ source, location })
+      },
+      onDrag: ({ source, location }) => {
+        onDragProp?.({ source, location })
+      },
       onDrop: ({ source, location }) => {
         setIsDropTarget(false)
         onDrop({ source, location })
       },
     })
-  }, [onDrop, canDrop, getData, dropTargetId])
+  }, [onDrop, canDrop, getData, dropTargetId, onDragEnterProp, onDragLeaveProp, onDragProp])
 
   return (
     <div ref={ref} className={cn(className, isDropTarget && dropClassName)}>

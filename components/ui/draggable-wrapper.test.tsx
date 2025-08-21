@@ -1,11 +1,19 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen } from "@/test-utils"
+import { render, screen, act } from "@/test-utils"
 import { DraggableWrapper } from "./draggable-wrapper"
 
 // Mock the pragmatic drag and drop module
+let mockDraggableConfig: {
+  getInitialData?: (args: { element: unknown }) => Record<string, unknown>
+  onDragStart?: () => void
+  onDrop?: () => void
+} | null = null
 vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", () => ({
-  draggable: vi.fn(() => vi.fn()),
+  draggable: vi.fn((config) => {
+    mockDraggableConfig = config
+    return vi.fn()
+  }),
 }))
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -15,6 +23,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 describe("DraggableWrapper", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockDraggableConfig = null
   })
 
   it("renders children correctly", () => {
@@ -95,5 +104,81 @@ describe("DraggableWrapper", () => {
     )
 
     expect(screen.getByText("Test Content")).toBeInTheDocument()
+  })
+
+  it("includes element rect in drag data", () => {
+    const getData = vi.fn(() => ({ type: "task" }))
+    const mockElement = {
+      getBoundingClientRect: vi.fn(() => ({
+        x: 10,
+        y: 20,
+        width: 100,
+        height: 50,
+        top: 20,
+        right: 110,
+        bottom: 70,
+        left: 10,
+      })),
+    }
+
+    render(
+      <TestWrapper>
+        <DraggableWrapper dragId="test-item" index={0} getData={getData}>
+          <div>Test Content</div>
+        </DraggableWrapper>
+      </TestWrapper>,
+    )
+
+    // Verify draggable was configured
+    expect(mockDraggableConfig).toBeTruthy()
+
+    // Simulate getInitialData being called with an element
+    const initialData = mockDraggableConfig?.getInitialData?.({ element: mockElement })
+
+    // Verify rect is included in the data
+    expect(initialData).toHaveProperty("rect")
+    expect(initialData?.rect).toEqual({
+      x: 10,
+      y: 20,
+      width: 100,
+      height: 50,
+      top: 20,
+      right: 110,
+      bottom: 70,
+      left: 10,
+    })
+    expect(initialData).toHaveProperty("dragId", "test-item")
+    expect(initialData).toHaveProperty("index", 0)
+    expect(initialData).toHaveProperty("type", "task")
+  })
+
+  it("handles drag state changes", () => {
+    const onDragStart = vi.fn()
+    const onDrop = vi.fn()
+
+    render(
+      <TestWrapper>
+        <DraggableWrapper dragId="test-item" index={0} onDragStart={onDragStart} onDrop={onDrop}>
+          <div>Test Content</div>
+        </DraggableWrapper>
+      </TestWrapper>,
+    )
+
+    // Verify draggable was configured with callbacks
+    expect(mockDraggableConfig).toBeTruthy()
+    expect(mockDraggableConfig?.onDragStart).toBeDefined()
+    expect(mockDraggableConfig?.onDrop).toBeDefined()
+
+    // Simulate drag start
+    act(() => {
+      mockDraggableConfig?.onDragStart?.()
+    })
+    expect(onDragStart).toHaveBeenCalledWith({ dragId: "test-item", index: 0 })
+
+    // Simulate drop
+    act(() => {
+      mockDraggableConfig?.onDrop?.()
+    })
+    expect(onDrop).toHaveBeenCalled()
   })
 })

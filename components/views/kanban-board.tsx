@@ -18,6 +18,7 @@ import { TaskIdSchema, ProjectIdSchema } from "@/lib/types"
 import { createSectionId } from "@/lib/types"
 import { TaskItem } from "@/components/task/task-item"
 import { SelectionToolbar } from "@/components/task/selection-toolbar"
+import { TaskShadow } from "@/components/ui/custom/task-shadow"
 import { DEFAULT_SECTION_COLOR } from "@/lib/constants/defaults"
 import {
   extractClosestEdge,
@@ -72,6 +73,20 @@ interface KanbanBoardProps {
 export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
   // const { handleDrop: _handleDrop } = useDragAndDrop() // unused
   const [columns, setColumns] = useState<KanbanColumn[]>([])
+
+  // Track drag state for shadow rendering per column
+  const [columnDragStates, setColumnDragStates] = useState<
+    Map<
+      string,
+      {
+        isDraggingOver: boolean
+        draggedTaskRect?: { height: number }
+        closestEdge?: "top" | "bottom"
+        targetTaskId?: string
+        isOverChildTask?: boolean
+      }
+    >
+  >(new Map())
 
   // Add required atoms for drag and drop
   const orderedTasksByProject = useAtomValue(orderedTasksByProjectAtom)
@@ -311,12 +326,68 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                     dropTargetId={
                       project ? `task-list-project-${project.id}-section-${column.id}` : column.id
                     }
-                    onDrop={handleTaskDrop}
+                    onDrop={(data) => {
+                      handleTaskDrop(data)
+                      // Clean up drag state on drop
+                      setColumnDragStates(new Map())
+                    }}
                     getData={() => ({
                       type: "task-list",
                       sectionId: column.id,
                       projectId: project?.id,
                     })}
+                    onDragEnter={({ source, location }) => {
+                      if (source.data.type === "task" && source.data.rect) {
+                        const innerMost = location.current.dropTargets[0]
+                        const isOverChildTask = Boolean(
+                          innerMost && innerMost.data.type === "task-drop-target",
+                        )
+
+                        // Validate rect is a DOMRect-like object
+                        const rect = source.data.rect
+                        if (typeof rect === "object" && rect !== null && "height" in rect) {
+                          const height = rect.height
+                          if (typeof height === "number") {
+                            setColumnDragStates((prev) => {
+                              const newMap = new Map(prev)
+                              newMap.set(column.id, {
+                                isDraggingOver: true,
+                                draggedTaskRect: { height },
+                                isOverChildTask,
+                              })
+                              return newMap
+                            })
+                          }
+                        }
+                      }
+                    }}
+                    onDrag={({ source, location }) => {
+                      if (source.data.type === "task" && source.data.rect) {
+                        const innerMost = location.current.dropTargets[0]
+                        const isOverChildTask = Boolean(
+                          innerMost && innerMost.data.type === "task-drop-target",
+                        )
+
+                        setColumnDragStates((prev) => {
+                          const newMap = new Map(prev)
+                          const current = newMap.get(column.id)
+                          if (current?.isDraggingOver) {
+                            newMap.set(column.id, {
+                              ...current,
+                              isOverChildTask,
+                            })
+                          }
+                          return newMap
+                        })
+                      }
+                    }}
+                    onDragLeave={() => {
+                      setColumnDragStates((prev) => {
+                        const newMap = new Map(prev)
+                        newMap.delete(column.id)
+                        return newMap
+                      })
+                    }}
                     className="space-y-3 h-full min-h-[200px] pb-4"
                   >
                     <div className="space-y-3">
@@ -324,7 +395,11 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                         <DropTargetWrapper
                           key={task.id}
                           dropTargetId={`task-${task.id}`}
-                          onDrop={handleTaskDrop}
+                          onDrop={(data) => {
+                            handleTaskDrop(data)
+                            // Clean up drag state on drop
+                            setColumnDragStates(new Map())
+                          }}
                           getData={(args?: { input?: unknown; element?: HTMLElement }) => {
                             const baseData = {
                               type: "task-drop-target",
@@ -343,7 +418,70 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
 
                             return baseData
                           }}
+                          onDragEnter={({ source, location }) => {
+                            if (source.data.type === "task" && source.data.taskId !== task.id) {
+                              const innerMost = location.current.dropTargets[0]
+                              const closestEdge = extractClosestEdge(innerMost?.data)
+
+                              const rect = source.data.rect
+                              if (typeof rect === "object" && rect !== null && "height" in rect) {
+                                const height = rect.height
+                                if (typeof height === "number") {
+                                  setColumnDragStates((prev) => {
+                                    const newMap = new Map(prev)
+                                    newMap.set(column.id, {
+                                      isDraggingOver: true,
+                                      draggedTaskRect: { height },
+                                      closestEdge:
+                                        closestEdge === "top" || closestEdge === "bottom"
+                                          ? closestEdge
+                                          : undefined,
+                                      targetTaskId: task.id,
+                                      isOverChildTask: true,
+                                    })
+                                    return newMap
+                                  })
+                                }
+                              }
+                            }
+                          }}
+                          onDrag={({ source, location }) => {
+                            if (source.data.type === "task" && source.data.taskId !== task.id) {
+                              const innerMost = location.current.dropTargets[0]
+                              const closestEdge = extractClosestEdge(innerMost?.data)
+
+                              setColumnDragStates((prev) => {
+                                const newMap = new Map(prev)
+                                const current = newMap.get(column.id)
+                                if (current) {
+                                  newMap.set(column.id, {
+                                    ...current,
+                                    closestEdge:
+                                      closestEdge === "top" || closestEdge === "bottom"
+                                        ? closestEdge
+                                        : undefined,
+                                    targetTaskId: task.id,
+                                  })
+                                }
+                                return newMap
+                              })
+                            }
+                          }}
                         >
+                          {/* Render shadow above task if dragging over this task and closest edge is top */}
+                          {(() => {
+                            const dragState = columnDragStates.get(column.id)
+                            return dragState?.isDraggingOver &&
+                              dragState?.targetTaskId === task.id &&
+                              dragState?.closestEdge === "top" &&
+                              dragState?.draggedTaskRect ? (
+                              <TaskShadow
+                                height={dragState.draggedTaskRect.height}
+                                className="mb-3"
+                              />
+                            ) : null
+                          })()}
+
                           <DraggableWrapper
                             dragId={task.id}
                             index={index}
@@ -356,8 +494,32 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                           >
                             <TaskItem taskId={task.id} variant="kanban" showProjectBadge={false} />
                           </DraggableWrapper>
+
+                          {/* Render shadow below task if dragging over this task and closest edge is bottom */}
+                          {(() => {
+                            const dragState = columnDragStates.get(column.id)
+                            return dragState?.isDraggingOver &&
+                              dragState?.targetTaskId === task.id &&
+                              dragState?.closestEdge === "bottom" &&
+                              dragState?.draggedTaskRect ? (
+                              <TaskShadow
+                                height={dragState.draggedTaskRect.height}
+                                className="mb-3"
+                              />
+                            ) : null
+                          })()}
                         </DropTargetWrapper>
                       ))}
+
+                      {/* Render shadow at bottom of column if dragging over column but not over any task */}
+                      {(() => {
+                        const dragState = columnDragStates.get(column.id)
+                        return dragState?.isDraggingOver &&
+                          !dragState?.targetTaskId &&
+                          dragState?.draggedTaskRect ? (
+                          <TaskShadow height={dragState.draggedTaskRect.height} className="mb-3" />
+                        ) : null
+                      })()}
                     </div>
                   </DropTargetWrapper>
                 </CardContent>

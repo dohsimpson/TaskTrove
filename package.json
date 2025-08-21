@@ -17,6 +17,8 @@
     "test:coverage": "vitest run --coverage",
     "check": "tsgo --noEmit && pnpm lint && pnpm test",
     "docker:build": "docker build -t tasktrove .",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
     "prepare": "husky"
   },
   "dependencies": {
@@ -85,6 +87,7 @@
     "zod": "^4.0.14"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.6",
     "@next/bundle-analyzer": "^15.4.6",
     "@tailwindcss/postcss": "^4.1.11",
     "@tanstack/react-query-devtools": "^5.83.0",

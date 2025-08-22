@@ -2,7 +2,13 @@
 
 import { Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { MailIcon } from "@/components/ui/custom/animated-icons"
 
 interface ComingSoonModalProps {
@@ -21,6 +27,9 @@ export function ComingSoonModal({ isOpen, onClose, featureName }: ComingSoonModa
       <DialogContent className="sm:max-w-md bg-gradient-to-br from-background to-muted/30">
         <DialogHeader className="sr-only">
           <DialogTitle>{featureName} is coming soon</DialogTitle>
+          <DialogDescription>
+            This feature is currently under development. Join our mailing list to stay updated.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="text-center space-y-6 pt-2">

@@ -7,6 +7,20 @@ export default defineConfig({
     setupFiles: ["./test-setup.ts"],
     globals: true,
     pool: "threads",
+    onConsoleLog(log: string, type: "stdout" | "stderr"): boolean | void {
+      // Only filter out happy-dom internal teardown abort errors
+      const isHappyDomAbort =
+        log.includes("happy-dom") &&
+        log.includes("AsyncTaskManager") &&
+        (log.includes("AbortError") || log.includes("The operation was aborted"))
+
+      if (isHappyDomAbort) {
+        return false // Suppress only happy-dom teardown abort errors
+      }
+
+      // Let all other logs through, including legitimate test errors
+      return undefined
+    },
     // poolOptions: {
     //   threads: {
     //     singleThread: false,

@@ -962,10 +962,9 @@ describe("QuickAddDialog", () => {
         // Change the input text (but still no parsed project)
         await act(async () => {
           fireEvent.change(input, { target: { value: "Buy groceries tomorrow" } })
+          // Wait for debounced parsing to complete
+          await new Promise((resolve) => setTimeout(resolve, 200))
         })
-
-        // Wait a bit to ensure no unwanted clearing happens
-        await new Promise((resolve) => setTimeout(resolve, 200))
 
         // Verify that project was NOT cleared (mockUpdateTask should not be called with projectId: undefined)
         const clearingCalls = mockUpdateTask.mock.calls.filter(
@@ -1087,10 +1086,9 @@ describe("QuickAddDialog", () => {
         // Change the input text (but still no parsed labels)
         await act(async () => {
           fireEvent.change(input, { target: { value: "Buy groceries tomorrow" } })
+          // Wait for debounced parsing to complete
+          await new Promise((resolve) => setTimeout(resolve, 200))
         })
-
-        // Wait a bit to ensure no unwanted clearing happens
-        await new Promise((resolve) => setTimeout(resolve, 200))
 
         // Verify that labels were NOT cleared
         const clearingCalls = mockUpdateTask.mock.calls.filter(
@@ -1215,10 +1213,9 @@ describe("QuickAddDialog", () => {
         // Change the input text (but still no parsed priority)
         await act(async () => {
           fireEvent.change(input, { target: { value: "Buy groceries tomorrow" } })
+          // Wait for debounced parsing to complete
+          await new Promise((resolve) => setTimeout(resolve, 200))
         })
-
-        // Wait a bit to ensure no unwanted clearing happens
-        await new Promise((resolve) => setTimeout(resolve, 200))
 
         // Verify that priority was NOT cleared
         const clearingCalls = mockUpdateTask.mock.calls.filter(
@@ -1419,10 +1416,9 @@ describe("QuickAddDialog", () => {
         // Change the input text (but still no parsed due date)
         await act(async () => {
           fireEvent.change(input, { target: { value: "Buy groceries later" } })
+          // Wait for debounced parsing to complete
+          await new Promise((resolve) => setTimeout(resolve, 200))
         })
-
-        // Wait a bit to ensure no unwanted clearing happens
-        await new Promise((resolve) => setTimeout(resolve, 200))
 
         // Verify that due date was NOT cleared
         const clearingCalls = mockUpdateTask.mock.calls.filter(
@@ -1624,10 +1620,9 @@ describe("QuickAddDialog", () => {
         // Change the input text (but still no parsed recurring)
         await act(async () => {
           fireEvent.change(input, { target: { value: "Water plants tomorrow" } })
+          // Wait for debounced parsing to complete
+          await new Promise((resolve) => setTimeout(resolve, 200))
         })
-
-        // Wait a bit to ensure no unwanted clearing happens
-        await new Promise((resolve) => setTimeout(resolve, 200))
 
         // Verify that recurring pattern was NOT cleared
         const clearingCalls = mockUpdateTask.mock.calls.filter(
@@ -1769,10 +1764,9 @@ describe("QuickAddDialog", () => {
       // Type new text that would normally be parsed
       await act(async () => {
         fireEvent.change(input, { target: { value: "Buy groceries p2" } })
+        // Wait for debounce delay
+        await new Promise((resolve) => setTimeout(resolve, 200))
       })
-
-      // Wait for debounce delay
-      await new Promise((resolve) => setTimeout(resolve, 200))
 
       // Verify parsing was called but results were ignored (NLP disabled)
       // Note: The parser may still be called due to debouncing, but results should be ignored

@@ -1,7 +1,12 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import { Dialog, DialogContentWithoutOverlay, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContentWithoutOverlay,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Search, Flag, Calendar, FolderOpen, Hash, ArrowRight, Loader2, X } from "lucide-react"
 import { useAtomValue, useSetAtom } from "jotai"
@@ -144,6 +149,9 @@ export function SearchDialog() {
         showCloseButton={false}
       >
         <DialogTitle className="sr-only">Search Tasks</DialogTitle>
+        <DialogDescription className="sr-only">
+          Search for tasks by title, project, or labels
+        </DialogDescription>
 
         {/* Search Input */}
         <div className="flex items-center border-b px-4 py-3">

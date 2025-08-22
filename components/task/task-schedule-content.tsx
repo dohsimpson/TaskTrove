@@ -313,6 +313,52 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
             </div>
           </div>
 
+          {/* Recurring Mode Toggle */}
+          {task.recurring && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Calculate next due date from
+              </label>
+              <div className="flex gap-2">
+                <Button
+                  variant={!task.recurringMode ? "default" : "outline"}
+                  size="sm"
+                  className="flex-1 text-xs"
+                  onClick={() => {
+                    const updates = { recurringMode: undefined }
+                    if (!taskId) {
+                      updateQuickAddTask({ updateRequest: updates })
+                    } else {
+                      updateTask({ updateRequest: { id: taskId, ...updates } })
+                    }
+                  }}
+                >
+                  Due date
+                </Button>
+                <Button
+                  variant={task.recurringMode === "completedAt" ? "default" : "outline"}
+                  size="sm"
+                  className="flex-1 text-xs"
+                  onClick={() => {
+                    const updates = { recurringMode: "completedAt" as const }
+                    if (!taskId) {
+                      updateQuickAddTask({ updateRequest: updates })
+                    } else {
+                      updateTask({ updateRequest: { id: taskId, ...updates } })
+                    }
+                  }}
+                >
+                  Completion date
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500">
+                {!task.recurringMode
+                  ? "Next occurrence calculated from original due date"
+                  : "Next occurrence calculated from when task was completed"}
+              </p>
+            </div>
+          )}
+
           {task.recurring && (
             <Button
               variant="ghost"

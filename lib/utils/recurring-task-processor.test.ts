@@ -674,3 +674,273 @@ describe("Edge Cases and Error Handling", () => {
     }
   })
 })
+
+describe("recurringMode functionality", () => {
+  const baseTask: Task = {
+    id: createTaskId("550e8400-e29b-41d4-a716-446655440010"),
+    title: "Recurring mode test task",
+    completed: true,
+    dueDate: new Date("2024-01-15T14:00:00.000Z"), // Monday
+    completedAt: new Date("2024-01-17T16:30:00.000Z"), // Wednesday
+    recurring: "RRULE:FREQ=WEEKLY",
+    createdAt: new Date("2024-01-01T00:00:00.000Z"),
+    status: "active" satisfies Task["status"],
+    priority: 2,
+    labels: [],
+    projectId: undefined,
+    subtasks: [],
+    comments: [],
+    attachments: [],
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("should use due date when recurringMode is undefined (default behavior)", () => {
+    const taskWithoutMode = { ...baseTask }
+    delete taskWithoutMode.recurringMode // Ensure it's undefined
+
+    const nextTask = generateNextTaskInstance(taskWithoutMode)
+
+    expect(nextTask).not.toBeNull()
+    if (nextTask) {
+      // Should calculate from due date (Monday): next Monday
+      expect(nextTask.dueDate).toEqual(new Date("2024-01-22T14:00:00.000Z"))
+    }
+  })
+
+  it("should use completion date when recurringMode is 'completedAt'", () => {
+    const taskWithCompletedAtMode = {
+      ...baseTask,
+      recurringMode: "completedAt" as const,
+    }
+
+    const nextTask = generateNextTaskInstance(taskWithCompletedAtMode)
+
+    expect(nextTask).not.toBeNull()
+    if (nextTask) {
+      // Should calculate from completion date (Wednesday): next Wednesday
+      expect(nextTask.dueDate).toEqual(new Date("2024-01-24T16:30:00.000Z"))
+    }
+  })
+
+  it("should fallback to due date when recurringMode is 'completedAt' but completedAt is missing", () => {
+    const taskWithoutCompletedAt = {
+      ...baseTask,
+      recurringMode: "completedAt" as const,
+      completedAt: undefined,
+    }
+
+    const nextTask = generateNextTaskInstance(taskWithoutCompletedAt)
+
+    expect(nextTask).not.toBeNull()
+    if (nextTask) {
+      // Should fallback to due date calculation
+      expect(nextTask.dueDate).toEqual(new Date("2024-01-22T14:00:00.000Z"))
+    }
+  })
+
+  it("should work with daily recurring pattern using completion date", () => {
+    const dailyTask = {
+      ...baseTask,
+      recurring: "RRULE:FREQ=DAILY",
+      recurringMode: "completedAt" as const,
+      dueDate: new Date("2024-01-15T09:00:00.000Z"), // Monday 9 AM
+      completedAt: new Date("2024-01-16T14:30:00.000Z"), // Tuesday 2:30 PM
+    }
+
+    const nextTask = generateNextTaskInstance(dailyTask)
+
+    expect(nextTask).not.toBeNull()
+    if (nextTask) {
+      // Should calculate from completion date: Tuesday + 1 day = Wednesday 2:30 PM
+      expect(nextTask.dueDate).toEqual(new Date("2024-01-17T14:30:00.000Z"))
+    }
+  })
+
+  it("should work with monthly recurring pattern using completion date", () => {
+    const monthlyTask = {
+      ...baseTask,
+      recurring: "RRULE:FREQ=MONTHLY",
+      recurringMode: "completedAt" as const,
+      dueDate: new Date("2024-01-31T10:00:00.000Z"), // January 31st
+      completedAt: new Date("2024-02-05T15:45:00.000Z"), // February 5th
+    }
+
+    const nextTask = generateNextTaskInstance(monthlyTask)
+
+    expect(nextTask).not.toBeNull()
+    if (nextTask) {
+      // Should calculate from completion date: February 5th + 1 month = March 5th
+      expect(nextTask.dueDate).toEqual(new Date("2024-03-05T15:45:00.000Z"))
+    }
+  })
+
+  it("should preserve recurringMode in the new task instance", () => {
+    const taskWithMode = {
+      ...baseTask,
+      recurringMode: "completedAt" as const,
+    }
+
+    const nextTask = generateNextTaskInstance(taskWithMode)
+
+    expect(nextTask).not.toBeNull()
+    if (nextTask) {
+      expect(nextTask.recurringMode).toBe("completedAt")
+    }
+  })
+
+  it("should not have recurringMode in new task when original had undefined", () => {
+    const taskWithoutMode = { ...baseTask }
+    delete taskWithoutMode.recurringMode
+
+    const nextTask = generateNextTaskInstance(taskWithoutMode)
+
+    expect(nextTask).not.toBeNull()
+    if (nextTask) {
+      expect(nextTask.recurringMode).toBeUndefined()
+    }
+  })
+
+  describe("recurringMode completedAt - early completion bug prevention", () => {
+    it("should never move schedule backwards when completing early", () => {
+      // Bug scenario: Daily task due tomorrow, completed today
+      // Without fix: next due = today + 1 day = tomorrow (stuck!)
+      // With fix: next due = max(today, tomorrow) + 1 day = day after tomorrow
+
+      const tomorrow = new Date("2024-08-23T09:00:00.000Z")
+      const today = new Date("2024-08-22T10:00:00.000Z")
+      const dayAfterTomorrow = new Date("2024-08-24T09:00:00.000Z")
+
+      const task: Task = {
+        id: createTaskId("550e8400-e29b-41d4-a716-446655440001"),
+        title: "Daily workout",
+        completed: true,
+        completedAt: today, // Completed early (today)
+        dueDate: tomorrow, // Originally due tomorrow
+        recurring: "RRULE:FREQ=DAILY",
+        recurringMode: "completedAt",
+        createdAt: new Date("2024-08-20T00:00:00.000Z"),
+        status: "completed",
+        priority: 2,
+        labels: [],
+        projectId: undefined,
+        subtasks: [],
+        comments: [],
+        attachments: [],
+      }
+
+      const nextTask = generateNextTaskInstance(task)
+
+      expect(nextTask).not.toBeNull()
+      if (nextTask) {
+        // Should advance to day after tomorrow, not get stuck at tomorrow
+        expect(nextTask.dueDate).toEqual(dayAfterTomorrow)
+        expect(nextTask.completed).toBe(false)
+        expect(nextTask.completedAt).toBeUndefined()
+        expect(nextTask.recurringMode).toBe("completedAt")
+      }
+    })
+
+    it("should use completion date when completing on time", () => {
+      const today = new Date("2024-08-22T09:00:00.000Z")
+      const completionTime = new Date("2024-08-22T10:00:00.000Z") // Later same day
+      const tomorrow = new Date("2024-08-23T10:00:00.000Z") // Preserves completion time
+
+      const task: Task = {
+        id: createTaskId("550e8400-e29b-41d4-a716-446655440001"),
+        title: "Daily workout",
+        completed: true,
+        completedAt: completionTime,
+        dueDate: today, // Due today
+        recurring: "RRULE:FREQ=DAILY",
+        recurringMode: "completedAt",
+        createdAt: new Date("2024-08-20T00:00:00.000Z"),
+        status: "completed",
+        priority: 2,
+        labels: [],
+        projectId: undefined,
+        subtasks: [],
+        comments: [],
+        attachments: [],
+      }
+
+      const nextTask = generateNextTaskInstance(task)
+
+      expect(nextTask).not.toBeNull()
+      if (nextTask) {
+        // Should use completion date as reference (both are same day, so next day)
+        expect(nextTask.dueDate).toEqual(tomorrow)
+        expect(nextTask.recurringMode).toBe("completedAt")
+      }
+    })
+
+    it("should use completion date when completing late", () => {
+      const yesterday = new Date("2024-08-21T09:00:00.000Z")
+      const today = new Date("2024-08-22T10:00:00.000Z")
+      const tomorrow = new Date("2024-08-23T10:00:00.000Z") // Preserves completion time
+
+      const task: Task = {
+        id: createTaskId("550e8400-e29b-41d4-a716-446655440001"),
+        title: "Daily workout",
+        completed: true,
+        completedAt: today, // Completed late (today)
+        dueDate: yesterday, // Was due yesterday
+        recurring: "RRULE:FREQ=DAILY",
+        recurringMode: "completedAt",
+        createdAt: new Date("2024-08-20T00:00:00.000Z"),
+        status: "completed",
+        priority: 2,
+        labels: [],
+        projectId: undefined,
+        subtasks: [],
+        comments: [],
+        attachments: [],
+      }
+
+      const nextTask = generateNextTaskInstance(task)
+
+      expect(nextTask).not.toBeNull()
+      if (nextTask) {
+        // Should use completion date (today) as reference → tomorrow
+        expect(nextTask.dueDate).toEqual(tomorrow)
+        expect(nextTask.recurringMode).toBe("completedAt")
+      }
+    })
+
+    it("should work correctly with weekly recurring tasks", () => {
+      // Weekly task due next Monday, completed this Friday (early completion)
+      const nextMonday = new Date("2024-08-26T09:00:00.000Z") // Monday
+      const thisFriday = new Date("2024-08-23T10:00:00.000Z") // Friday (3 days early)
+      const mondayAfterNext = new Date("2024-09-02T09:00:00.000Z") // Monday + 1 week
+
+      const task: Task = {
+        id: createTaskId("550e8400-e29b-41d4-a716-446655440001"),
+        title: "Weekly report",
+        completed: true,
+        completedAt: thisFriday,
+        dueDate: nextMonday,
+        recurring: "RRULE:FREQ=WEEKLY",
+        recurringMode: "completedAt",
+        createdAt: new Date("2024-08-20T00:00:00.000Z"),
+        status: "completed",
+        priority: 2,
+        labels: [],
+        projectId: undefined,
+        subtasks: [],
+        comments: [],
+        attachments: [],
+      }
+
+      const nextTask = generateNextTaskInstance(task)
+
+      expect(nextTask).not.toBeNull()
+      if (nextTask) {
+        // Should use max(Friday, Monday) = Monday as reference → Monday + 1 week
+        expect(nextTask.dueDate).toEqual(mondayAfterNext)
+        expect(nextTask.recurringMode).toBe("completedAt")
+      }
+    })
+  })
+})

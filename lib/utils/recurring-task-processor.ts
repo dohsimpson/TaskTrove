@@ -347,8 +347,16 @@ export function generateNextTaskInstance(completedTask: Task): Task | null {
     nextRecurringPattern = completedTask.recurring.replace(/COUNT=\d+/, `COUNT=${newCount}`)
   }
 
-  const currentDueDate = new Date(completedTask.dueDate)
-  const nextDueDate = calculateNextDueDate(completedTask.recurring, currentDueDate)
+  // Determine the reference date for calculating next occurrence
+  const referenceDate =
+    completedTask.recurringMode === "completedAt" && completedTask.completedAt
+      ? // Use Math.max to prevent infinite loop when completing tasks early.
+        // Example: Daily task due tomorrow, completed today → use tomorrow as reference, not today.
+        // This ensures we never move the schedule backwards and get stuck in a loop.
+        new Date(Math.max(completedTask.completedAt.getTime(), completedTask.dueDate.getTime()))
+      : new Date(completedTask.dueDate)
+
+  const nextDueDate = calculateNextDueDate(completedTask.recurring, referenceDate)
 
   if (!nextDueDate) {
     return null // No next occurrence (e.g., reached UNTIL date)

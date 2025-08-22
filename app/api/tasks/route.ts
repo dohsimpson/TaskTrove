@@ -278,9 +278,10 @@ async function updateTasks(
         hasDueDate: !!originalTask.dueDate,
       })
 
-      // Use the original task (before completion) to generate next instance
+      // Create completed task with current timestamp for recurring processing
       try {
-        const nextInstance = processRecurringTaskCompletion(originalTask)
+        const completedTask = { ...originalTask, completed: true, completedAt: new Date() }
+        const nextInstance = processRecurringTaskCompletion(completedTask)
 
         console.log(
           "Next instance result:",

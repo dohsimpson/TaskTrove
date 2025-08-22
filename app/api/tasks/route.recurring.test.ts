@@ -122,8 +122,14 @@ describe("API Route - Recurring Tasks Integration", () => {
     expect(responseData.message).toContain("1 recurring instance(s) created")
     expect(responseData.taskIds).toContain(originalTask.id)
 
-    // Verify the original task was processed for recurring completion
-    expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledWith(originalTask)
+    // Verify the completed task (with completedAt) was processed for recurring completion
+    expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ...originalTask,
+        completed: true,
+        completedAt: expect.any(Date),
+      }),
+    )
 
     // Verify both updated task and new instance were saved
     expect(mockWriteDataFile).toHaveBeenCalledWith(
@@ -198,10 +204,14 @@ describe("API Route - Recurring Tasks Integration", () => {
     expect(responseData.taskIds).toHaveLength(2)
     expect(responseData.message).toContain("2 recurring instance(s) created")
 
-    // Verify both tasks were processed
+    // Verify both tasks were processed (with completedAt timestamps)
     expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledTimes(2)
-    expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledWith(task1)
-    expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledWith(task2)
+    expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledWith(
+      expect.objectContaining({ ...task1, completed: true, completedAt: expect.any(Date) }),
+    )
+    expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledWith(
+      expect.objectContaining({ ...task2, completed: true, completedAt: expect.any(Date) }),
+    )
 
     // Verify business events were logged for both
     expect(mockLogBusinessEvent).toHaveBeenCalledWith(
@@ -246,7 +256,13 @@ describe("API Route - Recurring Tasks Integration", () => {
     expect(responseData.message).toBe("1 task(s) updated successfully")
     expect(responseData.taskIds).toHaveLength(1)
 
-    expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledWith(nonRecurringTask)
+    expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ...nonRecurringTask,
+        completed: true,
+        completedAt: expect.any(Date),
+      }),
+    )
 
     // Should not log recurring instance creation event
     expect(mockLogBusinessEvent).not.toHaveBeenCalledWith(
@@ -363,8 +379,16 @@ describe("API Route - Recurring Tasks Integration", () => {
 
     // Should only process the task that's being completed and has recurring
     expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledTimes(2)
-    expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledWith(recurringTask)
-    expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledWith(nonRecurringTask)
+    expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledWith(
+      expect.objectContaining({ ...recurringTask, completed: true, completedAt: expect.any(Date) }),
+    )
+    expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ...nonRecurringTask,
+        completed: true,
+        completedAt: expect.any(Date),
+      }),
+    )
   })
 
   it("should handle errors in recurring task processing gracefully", async () => {
@@ -532,5 +556,86 @@ describe("API Route - Recurring Tasks Integration", () => {
     expect(responseData.taskIds).toContain(recurringTaskWithMetadata.id)
     expect(responseData.success).toBe(true)
     expect(responseData.message).toContain("recurring instance(s) created")
+  })
+
+  it("should pass completed task with completedAt timestamp to recurring processor for recurringMode completedAt", async () => {
+    const originalTask = createMockTask({
+      id: createTaskId("550e8400-e29b-41d4-a716-446655440001"),
+      title: "Workout recurring task",
+      dueDate: new Date("2024-08-13T09:00:00.000Z"), // Original due date Aug 13
+      recurring: "RRULE:FREQ=DAILY",
+      recurringMode: "completedAt", // Key: this task uses completion date for next calculation
+      completed: false,
+      completedAt: undefined,
+    })
+
+    const nextInstance = createMockTask({
+      id: createTaskId("550e8400-e29b-41d4-a716-446655440000"),
+      title: "Workout recurring task",
+      dueDate: new Date("2024-08-23T09:00:00.000Z"), // Next due date should be based on completion date, not original due date
+      recurring: "RRULE:FREQ=DAILY",
+      recurringMode: "completedAt",
+      completed: false,
+      completedAt: undefined,
+    })
+
+    const mockDataFile = createMockDataFile([originalTask])
+
+    mockReadDataFile.mockResolvedValue(mockDataFile)
+    mockProcessRecurringTaskCompletion.mockReturnValue(nextInstance)
+
+    const request = new NextRequest("http://localhost:3000/api/tasks", {
+      method: "PATCH",
+      body: JSON.stringify([
+        {
+          id: originalTask.id,
+          completed: true,
+          // Note: completedAt is set by the API, not passed in the request
+        },
+      ]),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    const response = await PATCH(request)
+    const responseData = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(responseData.success).toBe(true)
+    expect(responseData.message).toContain("1 recurring instance(s) created")
+
+    // CRITICAL: Verify the recurring processor receives the completed task WITH completedAt timestamp
+    // This prevents the bug where originalTask (without completedAt) was passed instead
+    expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ...originalTask,
+        completed: true,
+        completedAt: expect.any(Date), // Must have completedAt for recurringMode: "completedAt" to work
+        recurringMode: "completedAt", // Verify the mode is preserved
+      }),
+    )
+
+    // Verify the completedAt timestamp was set to a recent time (within last few seconds)
+    const callArgs = mockProcessRecurringTaskCompletion.mock.calls[0][0]
+    expect(callArgs.completedAt).toBeDefined()
+    if (callArgs.completedAt) {
+      const completedAtTime = callArgs.completedAt.getTime()
+      const now = Date.now()
+      expect(completedAtTime).toBeGreaterThan(now - 5000) // Within last 5 seconds
+      expect(completedAtTime).toBeLessThanOrEqual(now)
+    }
+
+    // Verify business event logging includes the completion timestamp
+    expect(mockLogBusinessEvent).toHaveBeenCalledWith(
+      "recurring_task_instance_created",
+      expect.objectContaining({
+        parentTaskId: originalTask.id,
+        newTaskId: nextInstance.id,
+        recurringPattern: originalTask.recurring,
+        nextDueDate: nextInstance.dueDate,
+      }),
+      undefined,
+    )
   })
 })

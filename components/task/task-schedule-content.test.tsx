@@ -454,7 +454,7 @@ describe("TaskScheduleContent", () => {
       expect(screen.getByText("Pick Date")).toBeInTheDocument()
 
       // Go back
-      const backButton = screen.getByRole("button", { name: "" }) // ChevronLeft button
+      const backButton = screen.getByLabelText("Go back")
       fireEvent.click(backButton)
 
       expect(screen.getByText("Schedule")).toBeInTheDocument()

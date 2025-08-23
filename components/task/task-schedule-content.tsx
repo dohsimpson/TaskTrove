@@ -21,6 +21,7 @@ import {
   ArrowRight,
   Repeat,
   RotateCcw,
+  X,
 } from "lucide-react"
 import { format } from "date-fns"
 import type { CreateTaskRequest, Task, TaskId } from "@/lib/types"
@@ -29,11 +30,12 @@ import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
 import { useAtomValue, useSetAtom } from "jotai"
 import { tasksAtom, updateTaskAtom } from "@/lib/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
+import { HelpPopover } from "@/components/ui/help-popover"
 
 interface TaskScheduleContentProps {
   taskId?: TaskId
   onModeChange?: (mode: "quick" | "calendar" | "recurring") => void
-  onClose?: () => void
+  onClose?: () => void // close the popover
   isNewTask?: boolean
 }
 
@@ -84,8 +86,6 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
     } else {
       updateTask({ updateRequest: { id: taskId, ...updates } })
     }
-
-    onClose?.()
   }
 
   // Helper function to get display text for RRULE
@@ -204,17 +204,29 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
   if (showCalendar) {
     return (
       <div className="p-3">
-        <div className="flex items-center gap-2 border-b pb-2 mb-3">
+        <div className="flex items-center justify-between border-b pb-2 mb-3">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+              onClick={() => setShowCalendar(false)}
+              aria-label="Go back"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <CalendarIcon className="h-4 w-4 text-purple-600" />
+            <span className="font-medium text-sm">Pick Date</span>
+          </div>
           <Button
             variant="ghost"
             size="sm"
             className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-            onClick={() => setShowCalendar(false)}
+            onClick={onClose}
+            aria-label="Close"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <X className="h-4 w-4" />
           </Button>
-          <CalendarIcon className="h-4 w-4 text-purple-600" />
-          <span className="font-medium text-sm">Pick Date</span>
         </div>
 
         <div className="flex justify-center">
@@ -235,17 +247,29 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
   if (showRecurring) {
     return (
       <div className="p-3">
-        <div className="flex items-center gap-2 border-b pb-2 mb-3">
+        <div className="flex items-center justify-between border-b pb-2 mb-3">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+              onClick={() => setShowRecurring(false)}
+              aria-label="Go back"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Repeat className="h-4 w-4 text-green-600" />
+            <span className="font-medium text-sm">Make Recurring</span>
+          </div>
           <Button
             variant="ghost"
             size="sm"
             className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-            onClick={() => setShowRecurring(false)}
+            onClick={onClose}
+            aria-label="Close"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <X className="h-4 w-4" />
           </Button>
-          <Repeat className="h-4 w-4 text-green-600" />
-          <span className="font-medium text-sm">Make Recurring</span>
         </div>
 
         <div className="space-y-3">
@@ -316,12 +340,15 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
           {/* Recurring Mode Toggle */}
           {task.recurring && (
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Calculate next due date from
-              </label>
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Calculate next due date from
+                </label>
+                <HelpPopover content="Choose how the next due date is calculated: 'Due date' calculates from the original due date, 'Completion date' calculates from when the task was actually completed. For example, if you have a weekly task that is due on Monday, but you complete it on Tuesday. When using the former option, the next task will be created for next Monday. Using the latter option, next Tuesday." />
+              </div>
               <div className="flex gap-2">
                 <Button
-                  variant={task.recurringMode === "dueDate" ? "default" : "outline"}
+                  variant={task.recurringMode !== "completedAt" ? "default" : "outline"}
                   size="sm"
                   className="flex-1 text-xs"
                   onClick={() => {
@@ -351,11 +378,6 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
                   Completion date
                 </Button>
               </div>
-              <p className="text-xs text-gray-500">
-                {task.recurringMode === "dueDate"
-                  ? "Next occurrence calculated from original due date"
-                  : "Next occurrence calculated from when task was completed"}
-              </p>
             </div>
           )}
 
@@ -385,9 +407,20 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
 
   return (
     <div className="p-3">
-      <div className="flex items-center gap-2 border-b pb-2 mb-2">
-        <Clock className="h-4 w-4 text-blue-600" />
-        <span className="font-medium text-sm">Schedule</span>
+      <div className="flex items-center justify-between border-b pb-2 mb-2">
+        <div className="flex items-center gap-2">
+          <Clock className="h-4 w-4 text-blue-600" />
+          <span className="font-medium text-sm">Schedule</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </div>
 
       <div className="flex gap-1 mb-2">

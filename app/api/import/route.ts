@@ -16,6 +16,9 @@ interface ImportResponse {
   importedProjects: number
   importedLabels: number
   duplicatesSkipped: number
+  duplicateTasksSkipped: number
+  duplicateProjectsSkipped: number
+  duplicateLabelsSkipped: number
   message: string
 }
 
@@ -62,12 +65,16 @@ async function importData(
     let importedProjects = 0
     let importedLabels = 0
     let duplicatesSkipped = 0
+    let duplicateTasksSkipped = 0
+    let duplicateProjectsSkipped = 0
+    let duplicateLabelsSkipped = 0
 
     // Import labels first (no dependencies)
     for (const label of importData.labels) {
       const existingLabel = mergedData.labels.find((l) => l.id === label.id)
       if (existingLabel) {
         duplicatesSkipped++
+        duplicateLabelsSkipped++
         log.debug({ labelId: label.id }, "Skipping duplicate label")
       } else {
         mergedData.labels.push(label)
@@ -81,6 +88,7 @@ async function importData(
       const existingProject = mergedData.projects.find((p) => p.id === project.id)
       if (existingProject) {
         duplicatesSkipped++
+        duplicateProjectsSkipped++
         log.debug({ projectId: project.id }, "Skipping duplicate project")
       } else {
         mergedData.projects.push(project)
@@ -94,6 +102,7 @@ async function importData(
       const existingTask = mergedData.tasks.find((t) => t.id === task.id)
       if (existingTask) {
         duplicatesSkipped++
+        duplicateTasksSkipped++
         log.debug({ taskId: task.id }, "Skipping duplicate task")
       } else {
         // Verify referenced entities exist
@@ -159,6 +168,9 @@ async function importData(
       importedProjects,
       importedLabels,
       duplicatesSkipped,
+      duplicateTasksSkipped,
+      duplicateProjectsSkipped,
+      duplicateLabelsSkipped,
       message: `Successfully imported ${importedTasks} tasks, ${importedProjects} projects, and ${importedLabels} labels. ${duplicatesSkipped} duplicates were skipped.`,
     }
 

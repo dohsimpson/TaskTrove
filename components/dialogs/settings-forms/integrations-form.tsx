@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -16,19 +16,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 //   SelectValue,
 // } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import { Upload, ExternalLink, FileText } from "lucide-react"
+import { Upload, ExternalLink, CheckCircle2, XCircle, Loader2 } from "lucide-react"
 // Future icons (not used yet): import { Calendar, Link, Trash2, Plus } from "lucide-react"
 import { SiTodoist, SiTrello, SiAsana, SiTicktick } from "@icons-pack/react-simple-icons"
 import {
   integrationSettingsAtom,
   updateIntegrationSettingsAtom,
 } from "@/lib/atoms/ui/user-settings-atom"
-import { toast } from "@/components/ui/use-toast"
+import { queryClientAtom } from "@/lib/atoms/core/base"
+
+type UploadStatus = "idle" | "uploading" | "success" | "error"
+
+interface UploadResult {
+  importedTasks: number
+  importedProjects: number
+  importedLabels: number
+  duplicatesSkipped?: number
+  duplicateTasksSkipped?: number
+  duplicateProjectsSkipped?: number
+  duplicateLabelsSkipped?: number
+}
 
 export function IntegrationsForm() {
   const settings = useAtomValue(integrationSettingsAtom)
+  const queryClient = useAtomValue(queryClientAtom)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const updateSettings = useSetAtom(updateIntegrationSettingsAtom) // Will be used for future calendar/webhook features
+
+  // Upload state
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle")
+  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   // Calendar functionality not implemented yet
   // const handleCalendarUpdate = (field: keyof typeof settings.calendar, value: string | boolean) => {
@@ -98,11 +116,6 @@ export function IntegrationsForm() {
     const migrationUrl = `https://import.tasktrove.io?source=${service}`
 
     window.open(migrationUrl, "_blank")
-
-    toast({
-      title: "Import Assistant Opened",
-      description: `A new tab opened with instructions for ${service}. Follow the steps to export your data, then return here to upload the converted file.`,
-    })
   }
 
   const getProviderIcon = (source: string) => {
@@ -123,6 +136,11 @@ export function IntegrationsForm() {
   const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
+
+    // Reset states
+    setUploadStatus("uploading")
+    setUploadResult(null)
+    setUploadError(null)
 
     try {
       const content = await file.text()
@@ -148,18 +166,28 @@ export function IntegrationsForm() {
 
       const result = await response.json()
 
-      toast({
-        title: "✅ Import Completed!",
-        description: `Successfully imported ${result.importedTasks || 0} tasks, ${result.importedProjects || 0} projects, and ${result.importedLabels || 0} labels into TaskTrove.`,
+      // Set success state
+      setUploadStatus("success")
+      setUploadResult({
+        importedTasks: result.importedTasks || 0,
+        importedProjects: result.importedProjects || 0,
+        importedLabels: result.importedLabels || 0,
+        duplicatesSkipped: result.duplicatesSkipped || 0,
+        duplicateTasksSkipped: result.duplicateTasksSkipped || 0,
+        duplicateProjectsSkipped: result.duplicateProjectsSkipped || 0,
+        duplicateLabelsSkipped: result.duplicateLabelsSkipped || 0,
       })
+
+      // Invalidate queries to refresh the UI with imported data
+      queryClient.invalidateQueries({ queryKey: ["tasks"] })
     } catch (error) {
       console.error("Import error:", error)
-      toast({
-        title: "Import Failed",
-        description:
-          error instanceof Error ? error.message : "An unknown error occurred during import.",
-        variant: "destructive",
-      })
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred during import."
+
+      // Set error state
+      setUploadStatus("error")
+      setUploadError(errorMessage)
     }
 
     // Reset file input
@@ -248,18 +276,90 @@ export function IntegrationsForm() {
                 onChange={handleFileImport}
                 className="hidden"
                 id="import-file"
+                disabled={uploadStatus === "uploading"}
               />
               <label htmlFor="import-file">
-                <Button asChild variant="outline" className="h-12">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-12"
+                  disabled={uploadStatus === "uploading"}
+                >
                   <span className="flex items-center gap-3">
-                    <FileText className="w-5 h-5" />
-                    <div className="text-left">
-                      <div className="font-medium">Choose JSON File</div>
-                      <div className="text-xs text-muted-foreground">Upload converted data</div>
+                    {uploadStatus === "uploading" ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Upload className="w-5 h-5" />
+                    )}
+                    <div className="font-medium">
+                      {uploadStatus === "uploading" ? "Uploading..." : "Upload JSON File"}
                     </div>
                   </span>
                 </Button>
               </label>
+
+              {/* Status indicator */}
+              {uploadStatus === "success" && uploadResult && (
+                <div className="flex items-center gap-2 text-green-600">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <div className="text-sm">
+                    <div className="font-medium">Import successful!</div>
+                    <div className="text-xs text-muted-foreground">
+                      {(() => {
+                        const parts = []
+
+                        if (uploadResult.importedTasks > 0)
+                          parts.push(`${uploadResult.importedTasks} tasks`)
+                        if (uploadResult.importedProjects > 0)
+                          parts.push(`${uploadResult.importedProjects} projects`)
+                        if (uploadResult.importedLabels > 0)
+                          parts.push(`${uploadResult.importedLabels} labels`)
+
+                        let message =
+                          parts.length > 0 ? parts.join(", ") + " imported" : "No new items"
+
+                        // Detailed duplicates breakdown
+                        const duplicateParts = []
+                        if (
+                          uploadResult.duplicateTasksSkipped &&
+                          uploadResult.duplicateTasksSkipped > 0
+                        ) {
+                          duplicateParts.push(`${uploadResult.duplicateTasksSkipped} tasks`)
+                        }
+                        if (
+                          uploadResult.duplicateProjectsSkipped &&
+                          uploadResult.duplicateProjectsSkipped > 0
+                        ) {
+                          duplicateParts.push(`${uploadResult.duplicateProjectsSkipped} projects`)
+                        }
+                        if (
+                          uploadResult.duplicateLabelsSkipped &&
+                          uploadResult.duplicateLabelsSkipped > 0
+                        ) {
+                          duplicateParts.push(`${uploadResult.duplicateLabelsSkipped} labels`)
+                        }
+
+                        if (duplicateParts.length > 0) {
+                          const duplicatesMessage = `${duplicateParts.join(", ")} already existed`
+                          message += ` • ${duplicatesMessage}`
+                        }
+
+                        return message
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {uploadStatus === "error" && uploadError && (
+                <div className="flex items-center gap-2 text-red-600">
+                  <XCircle className="w-5 h-5" />
+                  <div className="text-sm">
+                    <div className="font-medium">Import failed</div>
+                    <div className="text-xs text-muted-foreground">{uploadError}</div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>

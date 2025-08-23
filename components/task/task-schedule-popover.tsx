@@ -19,25 +19,18 @@ export function TaskSchedulePopover({
   onOpenChange,
 }: TaskSchedulePopoverProps) {
   const [open, setOpen] = useState(false)
-  const [mode, setMode] = useState<"quick" | "calendar" | "recurring">("quick")
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen)
     onOpenChange?.(newOpen)
-
-    // Reset to quick mode when closing
-    if (!newOpen) {
-      setMode("quick")
-    }
   }
 
-  const handleModeChange = (newMode: "quick" | "calendar" | "recurring") => {
-    setMode(newMode)
+  const handleModeChange = () => {
+    // Mode changes handled internally by TaskScheduleContent
   }
 
   const handleClose = () => {
     setOpen(false)
-    setMode("quick")
   }
 
   return (
@@ -51,7 +44,7 @@ export function TaskSchedulePopover({
           onClose={handleClose}
         />
       }
-      className={mode === "calendar" ? "w-72 p-0" : mode === "recurring" ? "w-80 p-0" : "w-64 p-0"}
+      className="w-72 p-0"
       triggerClassName={className}
       align="start"
     >

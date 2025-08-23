@@ -229,17 +229,15 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
           </Button>
         </div>
 
-        <div className="flex justify-center">
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={handleCustomDateSelect}
-            className="rounded-md border-0 h-[280px] p-1"
-            classNames={{
-              week: "flex w-full mt-1",
-            }}
-          />
-        </div>
+        <Calendar
+          mode="single"
+          selected={selectedDate}
+          onSelect={handleCustomDateSelect}
+          className="rounded-md border-0 w-full"
+          classNames={{
+            week: "flex w-full mt-1",
+          }}
+        />
       </div>
     )
   }

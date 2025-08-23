@@ -88,7 +88,9 @@ const getRRuleDisplayText = (rrule: string): string => {
 }
 
 // Custom hook for debounced parsing with NLP toggle support
-const useDebouncedParse = (text: string, disabledSections: Set<string>, delay: number = 150) => {
+// Careful when setting delay, parsing will not complete if form is submitted before timeout, and stale data will be used.
+// Setting delay to 0 causes parsing to be scheduled as soon as possible, from experience this will be enough to prevent said bug.
+const useDebouncedParse = (text: string, disabledSections: Set<string>, delay: number = 0) => {
   const [parsed, setParsed] = useState<ParsedTask | null>(null)
 
   // Get NLP enabled state from atom

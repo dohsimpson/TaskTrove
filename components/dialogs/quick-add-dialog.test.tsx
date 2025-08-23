@@ -1,4 +1,5 @@
 import React from "react"
+import { flushSync } from "react-dom"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import { QuickAddDialog } from "./quick-add-dialog"
@@ -1288,6 +1289,8 @@ describe("QuickAddDialog", () => {
         // Step 3: Change input text to include parsed P1 priority
         await act(async () => {
           fireEvent.change(input, { target: { value: "Buy groceries p1" } })
+          // Allow immediate parsing (delay=0) to complete
+          await new Promise((resolve) => setTimeout(resolve, 5))
         })
 
         // Verify that parsed P1 priority overrides manually selected P2
@@ -1494,6 +1497,8 @@ describe("QuickAddDialog", () => {
         // Step 3: Change input text to include parsed due date
         await act(async () => {
           fireEvent.change(input, { target: { value: "Buy groceries tomorrow" } })
+          // Allow immediate parsing (delay=0) to complete
+          await new Promise((resolve) => setTimeout(resolve, 5))
         })
 
         // Verify that parsed due date overrides manually selected date
@@ -1695,6 +1700,10 @@ describe("QuickAddDialog", () => {
         // Step 3: Change input text to include parsed weekly recurring pattern
         await act(async () => {
           fireEvent.change(input, { target: { value: "Water plants weekly" } })
+          // Allow immediate parsing (delay=0) to complete
+          await new Promise((resolve) => setTimeout(resolve, 5))
+          // Ensure all synchronous React updates are flushed
+          flushSync(() => {})
         })
 
         // Verify that parsed weekly pattern overrides manually selected daily pattern

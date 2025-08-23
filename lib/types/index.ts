@@ -591,7 +591,7 @@ export const TaskSchema = z.object({
   /** Recurring pattern using RRULE format (RFC 5545) */
   recurring: z.string().optional().superRefine(validateRRule),
   /** Mode for calculating next due date in recurring tasks (defaults to "dueDate") */
-  recurringMode: z.union([z.literal("dueDate"), z.literal("completedAt")]).default("dueDate"),
+  recurringMode: z.union([z.literal("dueDate"), z.literal("completedAt")]),
   /** Whether the task is marked as favorite */
   favorite: z.boolean().optional(),
   /** Time spent on task in minutes */

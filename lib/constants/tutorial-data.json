@@ -38,7 +38,8 @@
       ],
       "attachments": [],
       "createdAt": "2024-01-01T09:00:00.000Z",
-      "order": 1
+      "order": 1,
+      "recurringMode": "dueDate"
     },
     {
       "id": "f47ac111-58cc-4372-a567-0e02b2c3d47f",
@@ -72,7 +73,8 @@
       ],
       "attachments": [],
       "createdAt": "2024-01-01T09:15:00.000Z",
-      "order": 2
+      "order": 2,
+      "recurringMode": "dueDate"
     },
     {
       "id": "f47ac117-58cc-4372-a567-0e02b2c3d485",
@@ -124,7 +126,8 @@
       ],
       "attachments": [],
       "createdAt": "2024-01-01T09:30:00.000Z",
-      "order": 3
+      "order": 3,
+      "recurringMode": "dueDate"
     },
     {
       "id": "f47ac11d-58cc-4372-a567-0e02b2c3d48b",
@@ -164,7 +167,8 @@
       ],
       "attachments": [],
       "createdAt": "2024-01-01T10:00:00.000Z",
-      "order": 4
+      "order": 4,
+      "recurringMode": "dueDate"
     }
   ],
   "projects": [

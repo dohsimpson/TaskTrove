@@ -35,6 +35,7 @@ export function createMockTask(overrides: Partial<Task> = {}): Task {
     createdAt: new Date(),
     status: "active",
     order: 0,
+    recurringMode: "dueDate",
   }
 
   return { ...defaultTask, ...overrides }

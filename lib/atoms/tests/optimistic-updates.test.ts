@@ -59,6 +59,7 @@ const mockTask: Task = {
   comments: [],
   attachments: [],
   createdAt: new Date("2024-01-01T12:00:00Z"),
+  recurringMode: "dueDate",
   status: "active",
   order: 0,
 }
@@ -69,6 +70,7 @@ const mockCompletedTask: Task = {
   title: "Completed Test Task",
   completed: true,
   completedAt: new Date("2024-01-01T14:00:00Z"),
+  recurringMode: "dueDate",
 }
 
 beforeEach(() => {

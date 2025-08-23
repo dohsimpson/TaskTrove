@@ -31,6 +31,7 @@ import {
   DEFAULT_TASK_COMMENTS,
   DEFAULT_TASK_ATTACHMENTS,
   DEFAULT_TASK_STATUS,
+  DEFAULT_RECURRING_MODE,
 } from "../../constants/defaults"
 import { handleAtomError } from "../utils"
 import { currentViewAtom, currentViewStateAtom, viewStatesAtom } from "../ui/views"
@@ -873,6 +874,7 @@ export const addTaskToViewAtom = atom(
         order: 0,
         ...params.taskData,
         title: params.taskData.title || DEFAULT_TASK_TITLE,
+        recurringMode: params.taskData.recurringMode || DEFAULT_RECURRING_MODE,
       }
 
       // Add task to tasks array

@@ -84,6 +84,7 @@ describe("PageFooter Popover Tests", () => {
       comments: [],
       attachments: [],
       status: "completed",
+      recurringMode: "dueDate",
     },
     {
       id: TEST_TASK_ID_2,
@@ -98,6 +99,7 @@ describe("PageFooter Popover Tests", () => {
       comments: [],
       attachments: [],
       status: "completed",
+      recurringMode: "dueDate",
     },
   ]
 
@@ -115,6 +117,7 @@ describe("PageFooter Popover Tests", () => {
       comments: [],
       attachments: [],
       status: "active",
+      recurringMode: "dueDate",
     },
     {
       id: TEST_TASK_ID_2,
@@ -129,6 +132,7 @@ describe("PageFooter Popover Tests", () => {
       comments: [],
       attachments: [],
       status: "active",
+      recurringMode: "dueDate",
     },
     {
       id: TEST_TASK_ID_3,
@@ -144,6 +148,7 @@ describe("PageFooter Popover Tests", () => {
       comments: [],
       attachments: [],
       status: "completed",
+      recurringMode: "dueDate",
     },
   ]
 

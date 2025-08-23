@@ -205,6 +205,7 @@ describe("SubtaskContent", () => {
     comments: [],
     attachments: [],
     createdAt: new Date(),
+    recurringMode: "dueDate",
     status: "active" as const,
     order: 0,
     favorite: false,

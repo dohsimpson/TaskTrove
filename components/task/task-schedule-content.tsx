@@ -321,11 +321,11 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
               </label>
               <div className="flex gap-2">
                 <Button
-                  variant={!task.recurringMode ? "default" : "outline"}
+                  variant={task.recurringMode === "dueDate" ? "default" : "outline"}
                   size="sm"
                   className="flex-1 text-xs"
                   onClick={() => {
-                    const updates = { recurringMode: undefined }
+                    const updates = { recurringMode: "dueDate" as const }
                     if (!taskId) {
                       updateQuickAddTask({ updateRequest: updates })
                     } else {
@@ -352,7 +352,7 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
                 </Button>
               </div>
               <p className="text-xs text-gray-500">
-                {!task.recurringMode
+                {task.recurringMode === "dueDate"
                   ? "Next occurrence calculated from original due date"
                   : "Next occurrence calculated from when task was completed"}
               </p>

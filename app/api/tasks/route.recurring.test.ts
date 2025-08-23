@@ -73,6 +73,7 @@ describe("API Route - Recurring Tasks Integration", () => {
     subtasks: [],
     comments: [],
     attachments: [],
+    recurringMode: "dueDate",
     ...overrides,
   })
 

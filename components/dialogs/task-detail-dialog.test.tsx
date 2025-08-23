@@ -130,6 +130,7 @@ describe("TaskDetailDialog", () => {
     createdAt: new Date("2022-01-01"),
     status: "active",
     order: 0,
+    recurringMode: "dueDate",
   }
 
   beforeEach(() => {

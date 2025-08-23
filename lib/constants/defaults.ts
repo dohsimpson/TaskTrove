@@ -32,6 +32,9 @@ export const DEFAULT_TASK_SUBTASKS: Subtask[] = []
 export const DEFAULT_TASK_COMMENTS: TaskComment[] = []
 export const DEFAULT_TASK_ATTACHMENTS: string[] = []
 
+/** Default recurring mode */
+export const DEFAULT_RECURRING_MODE = "dueDate"
+
 // =============================================================================
 // PROJECT DEFAULTS
 // =============================================================================

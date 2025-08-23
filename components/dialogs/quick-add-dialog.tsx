@@ -43,7 +43,7 @@ import {
   parseRRule,
   createTaskId,
 } from "@/lib/types"
-import { MOCK_UUID, PLACEHOLDER_TASK_INPUT } from "@/lib/constants/defaults"
+import { DEFAULT_RECURRING_MODE, MOCK_UUID, PLACEHOLDER_TASK_INPUT } from "@/lib/constants/defaults"
 import { format, isToday, isPast } from "date-fns"
 import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
 import { log } from "@/lib/utils/logger"
@@ -459,6 +459,7 @@ export function QuickAddDialog() {
     createdAt: new Date(),
     favorite: newTask.favorite,
     recurring: newTask.recurring,
+    recurringMode: newTask.recurringMode ?? DEFAULT_RECURRING_MODE,
     energyLevel: newTask.energyLevel,
     timeSpent: newTask.timeSpent,
   }

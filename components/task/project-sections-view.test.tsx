@@ -560,6 +560,7 @@ describe("ProjectSectionsView", () => {
       subtasks: [],
       comments: [],
       attachments: [],
+      recurringMode: "dueDate",
       createdAt: new Date("2024-01-01"),
     },
     {
@@ -574,6 +575,7 @@ describe("ProjectSectionsView", () => {
       subtasks: [],
       comments: [],
       attachments: [],
+      recurringMode: "dueDate",
       createdAt: new Date("2024-01-02"),
     },
     {
@@ -588,6 +590,7 @@ describe("ProjectSectionsView", () => {
       subtasks: [],
       comments: [],
       attachments: [],
+      recurringMode: "dueDate",
       createdAt: new Date("2024-01-03"),
     },
   ]

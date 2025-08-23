@@ -90,6 +90,7 @@ describe("TaskScheduleContent", () => {
     comments: [],
     attachments: [],
     createdAt: new Date(),
+    recurringMode: "dueDate",
   }
 
   const mockOnClose = vi.fn()

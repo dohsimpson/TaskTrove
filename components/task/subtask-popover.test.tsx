@@ -372,6 +372,7 @@ const mockTaskWithSubtasks: Task = {
   comments: [],
   attachments: [],
   createdAt: new Date(),
+  recurringMode: "dueDate",
   favorite: false,
   recurring: undefined,
   projectId: undefined,

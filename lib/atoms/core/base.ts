@@ -79,6 +79,7 @@ import {
   DEFAULT_TASK_COMMENTS,
   DEFAULT_TASK_ATTACHMENTS,
   DEFAULT_LABEL_COLORS,
+  DEFAULT_RECURRING_MODE,
 } from "../../constants/defaults"
 
 // Define supported sources constant to ensure type consistency
@@ -517,6 +518,7 @@ export const createTaskMutationAtom = createMutation<CreateTaskResponse, CreateT
           ? taskData.dueDate
           : new Date(taskData.dueDate)
         : undefined,
+      recurringMode: taskData.recurringMode || DEFAULT_RECURRING_MODE,
     }
   },
   optimisticUpdateFn: (taskData: CreateTaskRequest, oldData: DataFile, optimisticTask?: Task) => {

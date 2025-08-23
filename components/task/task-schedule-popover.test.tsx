@@ -38,6 +38,7 @@ describe("TaskSchedulePopover", () => {
     comments: [],
     attachments: [],
     createdAt: new Date(),
+    recurringMode: "dueDate",
   }
 
   beforeEach(() => {

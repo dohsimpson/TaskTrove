@@ -310,6 +310,7 @@ describe("safe-file-operations", () => {
           comments: [],
           attachments: [],
           createdAt: new Date("2024-01-15T10:00:00Z"),
+          recurringMode: "dueDate",
           projectId: TEST_PROJECT_ID_1,
           sectionId: TEST_SECTION_ID_1,
         },

@@ -288,6 +288,7 @@ describe.skip("KanbanBoard", () => {
     attachments: [],
     sectionId: TEST_SECTION_ID_1,
     createdAt: new Date(),
+    recurringMode: "dueDate",
     order: 1,
     ...overrides,
   })

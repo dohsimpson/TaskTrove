@@ -23,6 +23,7 @@ const mockTask: Task = {
   projectId: undefined,
   sectionId: TEST_SECTION_ID_1,
   createdAt: new Date("2024-01-01"),
+  recurringMode: "dueDate",
 }
 
 const defaultProps = {

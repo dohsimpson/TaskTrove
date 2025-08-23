@@ -257,6 +257,7 @@ describe("createMutation Function", () => {
           id: createTaskId(uuidv4()),
           title: "Optimistic Task",
           completed: false,
+          recurringMode: "dueDate",
         }
 
         const mockOptimisticUpdateFn = (
@@ -298,6 +299,7 @@ describe("createMutation Function", () => {
               comments: DEFAULT_TASK_COMMENTS,
               attachments: DEFAULT_TASK_ATTACHMENTS,
               createdAt: new Date("2023-01-01"),
+              recurringMode: "dueDate",
             },
           ],
           projects: [],
@@ -360,6 +362,7 @@ describe("createMutation Function", () => {
               comments: DEFAULT_TASK_COMMENTS,
               attachments: DEFAULT_TASK_ATTACHMENTS,
               createdAt: new Date("2023-01-01"),
+              recurringMode: "dueDate",
             },
           ],
           projects: [],
@@ -473,6 +476,7 @@ describe("createMutation Function", () => {
             id: createTaskId(uuidv4()),
             title: variables.title,
             completed: false,
+            recurringMode: "dueDate",
           })),
           responseSchema: { safeParse: vi.fn().mockReturnValue({ success: true, data: {} }) },
           serializationSchema: { parse: vi.fn().mockReturnValue({}) },
@@ -510,6 +514,7 @@ describe("createMutation Function", () => {
               comments: DEFAULT_TASK_COMMENTS,
               attachments: DEFAULT_TASK_ATTACHMENTS,
               createdAt: new Date("2023-01-01"),
+              recurringMode: "dueDate",
             },
             {
               id: TEST_TASK_ID_2,
@@ -521,6 +526,7 @@ describe("createMutation Function", () => {
               comments: DEFAULT_TASK_COMMENTS,
               attachments: DEFAULT_TASK_ATTACHMENTS,
               createdAt: new Date("2023-01-01"),
+              recurringMode: "dueDate",
             },
           ],
           projects: [
@@ -582,6 +588,7 @@ describe("createMutation Function", () => {
             id: createTaskId(uuidv4()),
             title: `Task ${i}`,
             completed: i % 2 === 0,
+            recurringMode: "dueDate",
             priority: getValidPriority(i),
             labels: DEFAULT_TASK_LABELS,
             subtasks: DEFAULT_TASK_SUBTASKS,
@@ -632,6 +639,7 @@ describe("createMutation Function", () => {
           comments: DEFAULT_TASK_COMMENTS,
           attachments: DEFAULT_TASK_ATTACHMENTS,
           createdAt: new Date("2023-01-01"),
+          recurringMode: "dueDate",
         }
 
         const startTime = performance.now()
@@ -658,6 +666,7 @@ describe("createMutation Function", () => {
               labels: DEFAULT_TASK_LABELS,
               comments: DEFAULT_TASK_COMMENTS,
               createdAt: new Date("2023-01-01"),
+              recurringMode: "dueDate",
               subtasks: [{ id: TEST_SUBTASK_ID_1, title: "Subtask 1", completed: false }],
               attachments: ["att-1"],
             },

@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event"
 import { v4 as uuidv4 } from "uuid"
 import { CalendarView } from "./calendar-view"
 import { createTaskId } from "@/lib/types"
-import type { TaskPriority } from "@/lib/types"
+import type { Task, TaskPriority } from "@/lib/types"
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
@@ -225,7 +225,7 @@ vi.mock("@/components/task/selection-toolbar", () => ({
 }))
 
 describe("CalendarView", () => {
-  const mockTasks = [
+  const mockTasks: Task[] = [
     {
       id: TEST_TASK_ID_1,
       title: "Task 1",
@@ -238,6 +238,7 @@ describe("CalendarView", () => {
       comments: [],
       attachments: [],
       createdAt: new Date(),
+      recurringMode: "dueDate",
     },
     {
       id: TEST_TASK_ID_2,
@@ -251,6 +252,7 @@ describe("CalendarView", () => {
       comments: [],
       attachments: [],
       createdAt: new Date(),
+      recurringMode: "dueDate",
     },
     {
       id: TEST_TASK_ID_3,
@@ -264,20 +266,9 @@ describe("CalendarView", () => {
       comments: [],
       attachments: [],
       createdAt: new Date(),
+      recurringMode: "dueDate",
     },
-  ] satisfies Array<{
-    id: typeof TEST_TASK_ID_1 | typeof TEST_TASK_ID_2 | typeof TEST_TASK_ID_3
-    title: string
-    priority: TaskPriority
-    dueDate: Date
-    completed: boolean
-    labels: Array<typeof TEST_LABEL_ID_1 | typeof TEST_LABEL_ID_2>
-    sectionId: typeof TEST_SECTION_ID_1
-    subtasks: Array<never>
-    comments: Array<never>
-    attachments: Array<never>
-    createdAt: Date
-  }>
+  ]
 
   const defaultProps = {
     tasks: mockTasks,
@@ -477,7 +468,7 @@ describe("CalendarView", () => {
   })
 
   it("shows more tasks indicator when there are more than 3 tasks", () => {
-    const manyTasks = [
+    const manyTasks: Task[] = [
       {
         id: TEST_TASK_ID_1,
         title: "Task 1",
@@ -490,6 +481,7 @@ describe("CalendarView", () => {
         comments: [],
         attachments: [],
         createdAt: new Date(),
+        recurringMode: "dueDate",
       },
       {
         id: TEST_TASK_ID_2,
@@ -503,6 +495,7 @@ describe("CalendarView", () => {
         comments: [],
         attachments: [],
         createdAt: new Date(),
+        recurringMode: "dueDate",
       },
       {
         id: TEST_TASK_ID_3,
@@ -516,6 +509,7 @@ describe("CalendarView", () => {
         comments: [],
         attachments: [],
         createdAt: new Date(),
+        recurringMode: "dueDate",
       },
       {
         id: createTaskId("12345678-1234-4234-8234-123456789ab4"),
@@ -529,6 +523,7 @@ describe("CalendarView", () => {
         comments: [],
         attachments: [],
         createdAt: new Date(),
+        recurringMode: "dueDate",
       },
       {
         id: createTaskId("12345678-1234-4234-8234-123456789ab5"),
@@ -542,20 +537,9 @@ describe("CalendarView", () => {
         comments: [],
         attachments: [],
         createdAt: new Date(),
+        recurringMode: "dueDate",
       },
-    ] satisfies Array<{
-      id: ReturnType<typeof createTaskId>
-      title: string
-      priority: TaskPriority
-      dueDate: Date
-      completed: boolean
-      labels: Array<never>
-      sectionId: typeof TEST_SECTION_ID_1
-      subtasks: Array<never>
-      comments: Array<never>
-      attachments: Array<never>
-      createdAt: Date
-    }>
+    ]
 
     render(<CalendarView {...defaultProps} tasks={manyTasks} />)
 
@@ -621,7 +605,7 @@ describe("CalendarView", () => {
     it("applies correct colors for different priorities", () => {
       const priorities: TaskPriority[] = [1, 2, 3, 4]
       priorities.forEach((priority) => {
-        const task = {
+        const task: Task = {
           id: createTaskId(`${uuidv4()}`),
           title: `Priority ${priority} Task`,
           priority: priority satisfies TaskPriority,
@@ -633,18 +617,7 @@ describe("CalendarView", () => {
           comments: [],
           attachments: [],
           createdAt: new Date(),
-        } satisfies {
-          id: ReturnType<typeof createTaskId>
-          title: string
-          priority: TaskPriority
-          dueDate: Date
-          completed: boolean
-          labels: Array<never>
-          sectionId: typeof TEST_SECTION_ID_1
-          subtasks: Array<never>
-          comments: Array<never>
-          attachments: Array<never>
-          createdAt: Date
+          recurringMode: "dueDate",
         }
 
         const { unmount } = render(<CalendarView {...defaultProps} tasks={[task]} />)

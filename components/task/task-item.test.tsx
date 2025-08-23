@@ -658,6 +658,7 @@ describe("TaskItem", () => {
     recurring: "weekly",
     favorite: true,
     createdAt: new Date(),
+    recurringMode: "dueDate",
   }
 
   const mockProjects = [
@@ -782,6 +783,7 @@ describe("TaskItem", () => {
         subtasks: [],
         attachments: [],
         createdAt: new Date(),
+        recurringMode: "dueDate",
       }
 
       // Register the task so it can be found by ID
@@ -1524,6 +1526,7 @@ describe("TaskItem", () => {
         subtasks: [],
         attachments: [],
         createdAt: new Date(),
+        recurringMode: "dueDate",
       }
 
       // Register the task so it can be found by ID
@@ -2474,6 +2477,7 @@ describe("TaskItem", () => {
       comments: [],
       attachments: [],
       createdAt: new Date(),
+      recurringMode: "dueDate",
       status: "active",
       order: 0,
     }
@@ -2492,6 +2496,7 @@ describe("TaskItem", () => {
       comments: [],
       attachments: [],
       createdAt: new Date(),
+      recurringMode: "dueDate",
       status: "active",
       order: 0,
     }

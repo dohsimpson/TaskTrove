@@ -282,6 +282,7 @@ describe("Keyboard Manager System", () => {
           comments: [],
           attachments: [],
           createdAt: new Date(),
+          recurringMode: "dueDate" as const,
         },
       }
       const noTaskContext = { ...mockContext, selectedTask: null }

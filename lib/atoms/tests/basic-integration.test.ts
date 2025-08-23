@@ -397,6 +397,7 @@ describe("TaskTrove Jotai Atoms Integration Tests", () => {
         comments: [],
         attachments: [],
         createdAt: new Date(),
+        recurringMode: "dueDate",
       }
 
       // TODO: Fix test setup for React Query architecture
@@ -453,6 +454,7 @@ describe("TaskTrove Jotai Atoms Integration Tests", () => {
           updateRequest: {
             id: createTaskId("12345678-1234-4234-8234-123456789abc"),
             title: "Updated Title",
+            recurringMode: "dueDate",
           },
         })
       }).not.toThrow()

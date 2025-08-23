@@ -270,6 +270,7 @@ describe("generateNextTaskInstance", () => {
     dueDate: new Date("2024-01-15T09:00:00.000Z"),
     recurring: "RRULE:FREQ=DAILY",
     createdAt: new Date("2024-01-01T00:00:00.000Z"),
+    recurringMode: "dueDate",
     status: "completed" satisfies Task["status"],
     priority: 2 satisfies TaskPriority,
     labels: [],
@@ -417,6 +418,7 @@ describe("shouldGenerateNextInstance", () => {
       comments: [],
       attachments: [],
       createdAt: new Date(),
+      recurringMode: "dueDate",
       recurring: "RRULE:FREQ=DAILY",
       dueDate: new Date(),
     }
@@ -437,6 +439,7 @@ describe("shouldGenerateNextInstance", () => {
       comments: [],
       attachments: [],
       createdAt: new Date(),
+      recurringMode: "dueDate",
       recurring: undefined,
       dueDate: new Date(),
     }
@@ -457,6 +460,7 @@ describe("shouldGenerateNextInstance", () => {
       comments: [],
       attachments: [],
       createdAt: new Date(),
+      recurringMode: "dueDate",
       recurring: "RRULE:FREQ=DAILY",
       dueDate: undefined,
     }
@@ -477,6 +481,7 @@ describe("shouldGenerateNextInstance", () => {
       comments: [],
       attachments: [],
       createdAt: new Date(),
+      recurringMode: "dueDate",
       recurring: "",
       dueDate: new Date(),
     }
@@ -493,6 +498,7 @@ describe("processRecurringTaskCompletion", () => {
     dueDate: new Date("2024-01-15T14:00:00.000Z"),
     recurring: "RRULE:FREQ=WEEKLY",
     createdAt: new Date("2024-01-01T00:00:00.000Z"),
+    recurringMode: "dueDate",
     status: "active" satisfies Task["status"],
     priority: 2,
     labels: [],
@@ -663,6 +669,7 @@ describe("Edge Cases and Error Handling", () => {
       comments: [],
       attachments: [],
       createdAt: new Date(),
+      recurringMode: "dueDate",
       dueDate: new Date("2024-01-15T10:00:00.000Z"),
       recurring: "RRULE:FREQ=DAILY",
     }
@@ -684,6 +691,7 @@ describe("recurringMode functionality", () => {
     completedAt: new Date("2024-01-17T16:30:00.000Z"), // Wednesday
     recurring: "RRULE:FREQ=WEEKLY",
     createdAt: new Date("2024-01-01T00:00:00.000Z"),
+    recurringMode: "dueDate",
     status: "active" satisfies Task["status"],
     priority: 2,
     labels: [],
@@ -697,11 +705,10 @@ describe("recurringMode functionality", () => {
     vi.clearAllMocks()
   })
 
-  it("should use due date when recurringMode is undefined (default behavior)", () => {
-    const taskWithoutMode = { ...baseTask }
-    delete taskWithoutMode.recurringMode // Ensure it's undefined
+  it("should use due date when recurringMode is 'dueDate' (default behavior)", () => {
+    const taskWithDueDateMode = { ...baseTask, recurringMode: "dueDate" as const }
 
-    const nextTask = generateNextTaskInstance(taskWithoutMode)
+    const nextTask = generateNextTaskInstance(taskWithDueDateMode)
 
     expect(nextTask).not.toBeNull()
     if (nextTask) {
@@ -791,15 +798,14 @@ describe("recurringMode functionality", () => {
     }
   })
 
-  it("should not have recurringMode in new task when original had undefined", () => {
-    const taskWithoutMode = { ...baseTask }
-    delete taskWithoutMode.recurringMode
+  it("should preserve recurringMode 'dueDate' in new task", () => {
+    const taskWithDueDateMode = { ...baseTask, recurringMode: "dueDate" as const }
 
-    const nextTask = generateNextTaskInstance(taskWithoutMode)
+    const nextTask = generateNextTaskInstance(taskWithDueDateMode)
 
     expect(nextTask).not.toBeNull()
     if (nextTask) {
-      expect(nextTask.recurringMode).toBeUndefined()
+      expect(nextTask.recurringMode).toBe("dueDate")
     }
   })
 

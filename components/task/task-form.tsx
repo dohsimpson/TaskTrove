@@ -50,6 +50,8 @@ export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
     sectionId: task?.sectionId || createSectionId("00000000-0000-0000-0000-000000000000"),
     labels: task?.labels || [],
     recurring: task?.recurring,
+    ...(task?.recurringMode &&
+      task.recurringMode !== "dueDate" && { recurringMode: task.recurringMode }),
   })
 
   const [newLabel, setNewLabel] = useState("")

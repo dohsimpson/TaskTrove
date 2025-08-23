@@ -78,6 +78,7 @@ const mockDataFile: DataFile = {
       createdAt: new Date(),
       completedAt: undefined,
       dueDate: undefined,
+      recurringMode: "dueDate",
     },
     {
       id: createTaskId("22222222-2222-4222-8222-222222222222"),
@@ -96,6 +97,7 @@ const mockDataFile: DataFile = {
       createdAt: new Date(),
       completedAt: new Date(),
       dueDate: undefined,
+      recurringMode: "dueDate",
     },
   ],
   projects: [

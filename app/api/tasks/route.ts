@@ -36,6 +36,7 @@ import {
   DEFAULT_TASK_ATTACHMENTS,
   DEFAULT_TASK_STATUS,
   DEFAULT_SECTION_ID,
+  DEFAULT_RECURRING_MODE,
 } from "@/lib/constants/defaults"
 import { processRecurringTaskCompletion } from "@/lib/utils/recurring-task-processor"
 
@@ -126,6 +127,7 @@ async function createTask(
     sectionId: validation.data.sectionId ?? createSectionId(DEFAULT_SECTION_ID),
     projectId: validation.data.projectId ?? INBOX_PROJECT_ID,
     dueDate: validation.data.dueDate, // Use the provided due date
+    recurringMode: validation.data.recurringMode ?? DEFAULT_RECURRING_MODE,
   }
 
   const fileData = await withFileOperationLogging(

@@ -151,6 +151,7 @@ export function TaskItem({
         createdAt: new Date(),
         status: subtask.completed ? "completed" : "active",
         order: subtask.order || 0,
+        recurringMode: "dueDate",
       }
     }
   }

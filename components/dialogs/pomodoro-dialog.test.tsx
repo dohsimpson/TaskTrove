@@ -27,6 +27,7 @@ const createMockTask = (overrides: Partial<Task> = {}): Task => ({
   subtasks: [],
   comments: [],
   attachments: [],
+  recurringMode: "dueDate",
   ...overrides,
 })
 

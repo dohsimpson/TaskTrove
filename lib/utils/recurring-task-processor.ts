@@ -160,15 +160,15 @@ function dateMatchesRecurringPattern(date: Date, rrule: string, referenceDate: D
 export function calculateNextDueDate(
   rrule: string,
   fromDate: Date,
-  includingToday: boolean = false,
+  includeFromDate: boolean = false,
 ): Date | null {
   const parsed = parseRRule(rrule)
   if (!parsed) {
     return null
   }
 
-  // If includingToday is true and fromDate is today, check if today matches the pattern
-  if (includingToday) {
+  // If includeFromDate is true and fromDate is today, check if today matches the pattern
+  if (includeFromDate) {
     const today = new Date()
     // Compare dates in UTC to avoid timezone issues
     const fromDateUTC = new Date(

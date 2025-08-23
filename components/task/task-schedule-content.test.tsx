@@ -435,6 +435,70 @@ describe("TaskScheduleContent", () => {
 
       expect(screen.getByText("Current: Daily")).toBeInTheDocument()
     })
+
+    it("should preserve existing due date when making task recurring", () => {
+      const futureDate = new Date("2024-01-20")
+      const taskWithDueDate = { ...mockTask, dueDate: futureDate }
+
+      renderWithTasks(
+        [taskWithDueDate],
+        <TaskScheduleContent
+          taskId={taskWithDueDate.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      fireEvent.click(screen.getByText("Make recurring"))
+      fireEvent.click(screen.getByText("Weekly"))
+
+      // Should preserve the original due date by only updating recurring pattern
+      expect(mockUpdateTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          updateRequest: expect.objectContaining({
+            id: TEST_TASK_ID_1,
+            recurring: "RRULE:FREQ=WEEKLY",
+            // dueDate should NOT be included - we preserve existing by not updating it
+          }),
+        }),
+      )
+
+      // Verify dueDate is not in the update request (preserving existing)
+      expect(mockUpdateTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          updateRequest: expect.not.objectContaining({
+            dueDate: expect.anything(),
+          }),
+        }),
+      )
+    })
+
+    it("should calculate due date for tasks without existing due date when making recurring", () => {
+      const taskWithoutDueDate = { ...mockTask, dueDate: undefined }
+
+      renderWithTasks(
+        [taskWithoutDueDate],
+        <TaskScheduleContent
+          taskId={taskWithoutDueDate.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      fireEvent.click(screen.getByText("Make recurring"))
+      fireEvent.click(screen.getByText("Daily"))
+
+      // Should calculate a new due date for tasks without one
+      expect(mockUpdateTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          updateRequest: expect.objectContaining({
+            id: TEST_TASK_ID_1,
+            recurring: "RRULE:FREQ=DAILY",
+            dueDate: expect.any(Date), // Should get a calculated due date
+          }),
+        }),
+      )
+    })
   })
 
   describe("Calendar Mode", () => {
@@ -583,7 +647,16 @@ describe("TaskScheduleContent", () => {
         expect.objectContaining({
           updateRequest: expect.objectContaining({
             recurring: "RRULE:FREQ=WEEKLY",
-            dueDate: expect.any(Date),
+            // dueDate should NOT be included - we preserve existing by not updating it
+          }),
+        }),
+      )
+
+      // Verify dueDate is not in the update request (preserving existing)
+      expect(mockUpdateQuickAddTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          updateRequest: expect.not.objectContaining({
+            dueDate: expect.anything(),
           }),
         }),
       )

@@ -136,6 +136,8 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
   }
 
   const handleRecurringSelect = (type: string) => {
+    if (!task) return
+
     let rrule: string
 
     switch (type) {
@@ -165,15 +167,20 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
         return
     }
 
-    // Calculate the next due date based on the recurring pattern
-    const nextDueDate = calculateNextDueDate(rrule, new Date(), true)
-
-    // Update both recurring pattern and due date
-    if (nextDueDate) {
-      handleUpdate(taskId, nextDueDate, type, rrule)
-    } else {
-      // Fallback: just set recurring pattern without due date
+    // If task already has a due date, preserve it and just add recurring pattern
+    // If no due date, calculate one based on the recurring pattern
+    if (task.dueDate) {
+      // Keep existing due date, just add recurring pattern
       handleUpdate(taskId, undefined, type, rrule)
+    } else {
+      // Calculate a due date for tasks without one
+      const nextDueDate = calculateNextDueDate(rrule, new Date(), true)
+      if (nextDueDate) {
+        handleUpdate(taskId, nextDueDate, type, rrule)
+      } else {
+        // Fallback: just set recurring pattern without due date
+        handleUpdate(taskId, undefined, type, rrule)
+      }
     }
   }
 

@@ -344,37 +344,18 @@ vi.mock("@/components/task/label-management-popover", () => ({
 }))
 
 // Mock the enhanced natural language parser
-vi.mock("@/lib/utils/enhanced-natural-language-parser", () => ({
-  parseEnhancedNaturalLanguage: vi.fn((text: string) => {
-    if (text.trim()) {
-      return {
-        title: text,
-        originalText: text,
-        priority: undefined,
-        dueDate: undefined,
-        project: undefined,
-        labels: [],
-        time: undefined,
-        duration: undefined,
-        recurring: undefined,
-      }
-    }
-    return null
-  }),
-  getPriorityColor: vi.fn(() => "bg-red-500"),
-  getPriorityDisplay: vi.fn(() => "High"),
-  getDateDisplay: vi.fn(() => "Today"),
-  getRecurringDisplay: vi.fn((rrule: string) => {
-    if (rrule === "RRULE:FREQ=DAILY") return "Daily"
-    if (rrule === "RRULE:FREQ=WEEKLY") return "Weekly"
-    if (rrule === "RRULE:FREQ=MONTHLY") return "Monthly"
-    return "Recurring"
-  }),
-  getTimeDisplay: vi.fn(() => "3:00 PM"),
-  getDurationDisplay: vi.fn(() => "30 min"),
-  DATE_SUGGESTIONS: [],
-  TIME_SUGGESTIONS: [],
-}))
+// Note: We're using the real enhanced-natural-language-parser implementation
+// Individual tests that need deterministic behavior will mock it locally
+vi.mock("@/lib/utils/enhanced-natural-language-parser", async () => {
+  const actual = await vi.importActual<
+    typeof import("@/lib/utils/enhanced-natural-language-parser")
+  >("@/lib/utils/enhanced-natural-language-parser")
+  return {
+    ...actual,
+    // Override parseEnhancedNaturalLanguage to be mockable per test
+    parseEnhancedNaturalLanguage: vi.fn(actual.parseEnhancedNaturalLanguage),
+  }
+})
 
 // Mock the EnhancedHighlightedInput component
 vi.mock("@/components/ui/enhanced-highlighted-input", () => ({
@@ -1438,12 +1419,24 @@ describe("QuickAddDialog", () => {
         const manualDate = new Date("2022-01-20")
         const parsedDate = new Date("2022-01-15")
 
-        // First mock: return no due date (for manual selection step)
-        // Second mock: return parsed due date (should override manual selection)
-        vi.mocked(parseEnhancedNaturalLanguage)
-          .mockImplementationOnce(() => ({
-            title: "Buy groceries",
-            originalText: "Buy groceries",
+        // Mock parser to return different values based on input text
+        vi.mocked(parseEnhancedNaturalLanguage).mockImplementation((text: string) => {
+          if (text === "Buy groceries tomorrow") {
+            return {
+              title: "Buy groceries",
+              originalText: "Buy groceries tomorrow",
+              priority: undefined,
+              dueDate: parsedDate,
+              project: undefined,
+              labels: [],
+              time: undefined,
+              duration: undefined,
+              recurring: undefined,
+            }
+          }
+          return {
+            title: text,
+            originalText: text,
             priority: undefined,
             dueDate: undefined,
             project: undefined,
@@ -1451,18 +1444,8 @@ describe("QuickAddDialog", () => {
             time: undefined,
             duration: undefined,
             recurring: undefined,
-          }))
-          .mockImplementationOnce(() => ({
-            title: "Buy groceries",
-            originalText: "Buy groceries tomorrow",
-            priority: undefined,
-            dueDate: parsedDate,
-            project: undefined,
-            labels: [],
-            time: undefined,
-            duration: undefined,
-            recurring: undefined,
-          }))
+          }
+        })
 
         render(<QuickAddDialog />)
 
@@ -1641,12 +1624,24 @@ describe("QuickAddDialog", () => {
           "@/lib/utils/enhanced-natural-language-parser"
         )
 
-        // First mock: return no recurring pattern (for manual selection step)
-        // Second mock: return parsed weekly pattern (should override manual daily selection)
-        vi.mocked(parseEnhancedNaturalLanguage)
-          .mockImplementationOnce(() => ({
-            title: "Water plants",
-            originalText: "Water plants",
+        // Mock parser to return different values based on input text
+        vi.mocked(parseEnhancedNaturalLanguage).mockImplementation((text: string) => {
+          if (text === "Water plants weekly") {
+            return {
+              title: "Water plants",
+              originalText: "Water plants weekly",
+              priority: undefined,
+              dueDate: undefined,
+              project: undefined,
+              labels: [],
+              time: undefined,
+              duration: undefined,
+              recurring: "RRULE:FREQ=WEEKLY",
+            }
+          }
+          return {
+            title: text,
+            originalText: text,
             priority: undefined,
             dueDate: undefined,
             project: undefined,
@@ -1654,18 +1649,8 @@ describe("QuickAddDialog", () => {
             time: undefined,
             duration: undefined,
             recurring: undefined,
-          }))
-          .mockImplementationOnce(() => ({
-            title: "Water plants",
-            originalText: "Water plants weekly",
-            priority: undefined,
-            dueDate: undefined,
-            project: undefined,
-            labels: [],
-            time: undefined,
-            duration: undefined,
-            recurring: "RRULE:FREQ=WEEKLY",
-          }))
+          }
+        })
 
         render(<QuickAddDialog />)
 

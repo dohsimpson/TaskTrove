@@ -156,7 +156,7 @@ describe("calculateNextDueDate", () => {
     expect(nextDate).toBeNull()
   })
 
-  describe("includingToday flag", () => {
+  describe("includeFromDate flag", () => {
     // Mock the current date to be consistent across tests
     const mockToday = new Date("2024-01-20T15:30:00.000Z")
 
@@ -179,14 +179,14 @@ describe("calculateNextDueDate", () => {
     it("should not affect calculation when fromDate is in the past", () => {
       const pastDate = new Date("2024-01-19T10:00:00.000Z")
       const nextDate = calculateNextDueDate("RRULE:FREQ=DAILY", pastDate, true)
-      // Should return next day regardless of includingToday flag
+      // Should return next day regardless of includeFromDate flag
       expect(nextDate).toEqual(new Date("2024-01-20T10:00:00.000Z"))
     })
 
     it("should not affect calculation when fromDate is in the future", () => {
       const futureDate = new Date("2024-01-22T10:00:00.000Z")
       const nextDate = calculateNextDueDate("RRULE:FREQ=DAILY", futureDate, true)
-      // Should return next day regardless of includingToday flag
+      // Should return next day regardless of includeFromDate flag
       expect(nextDate).toEqual(new Date("2024-01-23T10:00:00.000Z"))
     })
 
@@ -211,7 +211,7 @@ describe("calculateNextDueDate", () => {
       expect(nextDate).toEqual(new Date("2024-01-20T12:00:00.000Z"))
     })
 
-    it("should ignore includingToday flag when set to false", () => {
+    it("should ignore includeFromDate flag when set to false", () => {
       const todayDate = new Date("2024-01-20T10:00:00.000Z")
       const nextDate = calculateNextDueDate("RRULE:FREQ=DAILY", todayDate, false)
       // Should return tomorrow (normal behavior)
@@ -245,7 +245,7 @@ describe("calculateNextDueDate", () => {
       expect(nextDate).toEqual(new Date("2024-01-20T16:00:00.000Z"))
     })
 
-    it("should handle UNTIL constraint with includingToday", () => {
+    it("should handle UNTIL constraint with includeFromDate", () => {
       const todayDate = new Date("2024-01-20T10:00:00.000Z")
       const nextDate = calculateNextDueDate("RRULE:FREQ=DAILY;UNTIL=20240120", todayDate, true)
       // Should return today since it's within the UNTIL constraint

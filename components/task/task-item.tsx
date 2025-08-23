@@ -396,7 +396,7 @@ export function TaskItem({
               )}
 
               {/* Due Date/Recurring - Show all dates and recurring in compact variant */}
-              {shouldShowSchedule && (
+              {shouldShowSchedule ? (
                 <TaskSchedulePopover taskId={task.id}>
                   {(() => {
                     const isOverdue =
@@ -438,6 +438,15 @@ export function TaskItem({
                     )
                   })()}
                 </TaskSchedulePopover>
+              ) : (
+                variant === "compact" &&
+                isHovered && (
+                  <TaskSchedulePopover taskId={task.id}>
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground transition-colors">
+                      <Calendar className="h-3 w-3" />
+                    </span>
+                  </TaskSchedulePopover>
+                )
               )}
 
               {/* Actions Menu - always visible */}

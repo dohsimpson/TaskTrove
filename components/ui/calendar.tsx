@@ -105,7 +105,9 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        Root: ({ className, ...props }) => {
+        Root: ({ className, rootRef, ...props }) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const _ = rootRef // Extract rootRef to prevent it from being passed to DOM
           return <div data-slot="calendar" className={cn(className)} {...props} />
         },
         Chevron: ({ className, orientation, ...props }) => {

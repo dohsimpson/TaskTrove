@@ -151,7 +151,6 @@ const mockDataFile: DataFile = {
       createLabelId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"),
     ],
   },
-  taskGroups: [],
   projectGroups: [],
   labelGroups: [],
 }

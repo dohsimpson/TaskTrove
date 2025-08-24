@@ -81,7 +81,6 @@ describe("createMutation Function", () => {
           projects: [],
           labels: [{ id: createLabelId(uuidv4()), name: "Work", slug: "work", color: "#ef4444" }],
           ordering: { projects: [], labels: [] },
-          taskGroups: [],
           projectGroups: [],
           labelGroups: [],
         }
@@ -117,7 +116,6 @@ describe("createMutation Function", () => {
           ],
           labels: [],
           ordering: { projects: [], labels: [] },
-          taskGroups: [],
           projectGroups: [],
           labelGroups: [],
         }
@@ -179,7 +177,6 @@ describe("createMutation Function", () => {
           projects: [],
           labels: [],
           ordering: { projects: [], labels: [] },
-          taskGroups: [],
           projectGroups: [],
           labelGroups: [],
         })
@@ -205,7 +202,6 @@ describe("createMutation Function", () => {
           projects: [],
           labels: [],
           ordering: { projects: [], labels: [] },
-          taskGroups: [],
           projectGroups: [],
           labelGroups: [],
         })
@@ -263,7 +259,6 @@ describe("createMutation Function", () => {
           projects: [],
           labels: [],
           ordering: { projects: [], labels: [] },
-          taskGroups: [],
           projectGroups: [],
           labelGroups: [],
         }
@@ -320,7 +315,6 @@ describe("createMutation Function", () => {
           projects: [],
           labels: [],
           ordering: { projects: [], labels: [] },
-          taskGroups: [],
           projectGroups: [],
           labelGroups: [],
         }
@@ -386,7 +380,6 @@ describe("createMutation Function", () => {
           projects: [],
           labels: [],
           ordering: { projects: [], labels: [] },
-          taskGroups: [],
           projectGroups: [],
           labelGroups: [],
         }
@@ -563,7 +556,6 @@ describe("createMutation Function", () => {
           ],
           labels: [],
           ordering: { projects: [TEST_PROJECT_ID_1], labels: [] },
-          taskGroups: [],
           projectGroups: [],
           labelGroups: [],
         }
@@ -639,7 +631,6 @@ describe("createMutation Function", () => {
             projects: Array.from({ length: 50 }, () => createProjectId(uuidv4())),
             labels: Array.from({ length: 20 }, () => createLabelId(uuidv4())),
           },
-          taskGroups: [],
           projectGroups: [],
           labelGroups: [],
         }
@@ -701,7 +692,6 @@ describe("createMutation Function", () => {
           projects: [],
           labels: [],
           ordering: { projects: [], labels: [] },
-          taskGroups: [],
           projectGroups: [],
           labelGroups: [],
         }

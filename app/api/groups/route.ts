@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import {
   Group,
-  TaskGroup,
   ProjectGroup,
   LabelGroup,
   DeleteGroupRequestSchema,
@@ -78,16 +77,15 @@ export const GET = withMutexProtection(
  * Utility function to find a group by ID in any tree
  */
 function findGroupInTrees(
-  taskGroups: TaskGroup[],
   projectGroups: ProjectGroup[],
   labelGroups: LabelGroup[],
   groupId: GroupId,
-): { group: Group; tree: "task" | "project" | "label"; parent?: Group } | null {
+): { group: Group; tree: "project" | "label"; parent?: Group } | null {
   function searchInTree(
     groups: Group[],
-    treeType: "task" | "project" | "label",
+    treeType: "project" | "label",
     parent?: Group,
-  ): { group: Group; tree: "task" | "project" | "label"; parent?: Group } | null {
+  ): { group: Group; tree: "project" | "label"; parent?: Group } | null {
     for (const group of groups) {
       if (group.id === groupId) {
         return { group, tree: treeType, parent }
@@ -104,11 +102,7 @@ function findGroupInTrees(
     return null
   }
 
-  return (
-    searchInTree(taskGroups, "task") ||
-    searchInTree(projectGroups, "project") ||
-    searchInTree(labelGroups, "label")
-  )
+  return searchInTree(projectGroups, "project") || searchInTree(labelGroups, "label")
 }
 
 /**
@@ -140,7 +134,6 @@ async function createGroup(
 
   // Find parent group in appropriate tree
   const parentResult = findGroupInTrees(
-    fileData.taskGroups || [],
     fileData.projectGroups || [],
     fileData.labelGroups || [],
     parentId,
@@ -168,18 +161,7 @@ async function createGroup(
   const newGroupId = createGroupId(uuidv4())
   let newGroup: Group
 
-  if (parentGroup.type === "task") {
-    const newTaskGroup: TaskGroup = {
-      type: "task",
-      id: newGroupId,
-      name,
-      description,
-      color: color ?? DEFAULT_LABEL_COLORS[0],
-      items: [],
-    }
-    parentGroup.items.push(newTaskGroup)
-    newGroup = newTaskGroup
-  } else if (parentGroup.type === "project") {
+  if (parentGroup.type === "project") {
     const newProjectGroup: ProjectGroup = {
       type: "project",
       id: newGroupId,
@@ -225,7 +207,6 @@ async function createGroup(
       type: newGroup.type,
       parentId: parentId,
       totalGroups: {
-        task: fileData.taskGroups?.length || 0,
         project: fileData.projectGroups?.length || 0,
         label: fileData.labelGroups?.length || 0,
       },
@@ -285,7 +266,6 @@ async function updateGroups(
 
   for (const update of updates) {
     const groupResult = findGroupInTrees(
-      fileData.taskGroups || [],
       fileData.projectGroups || [],
       fileData.labelGroups || [],
       update.id,
@@ -330,7 +310,6 @@ async function updateGroups(
         type: group.type,
       })),
       totalGroups: {
-        task: fileData.taskGroups?.length || 0,
         project: fileData.projectGroups?.length || 0,
         label: fileData.labelGroups?.length || 0,
       },
@@ -371,9 +350,7 @@ function removeGroupFromTree(groups: Group[], groupId: GroupId): boolean {
 
     if (removeGroupFromTree(nestedGroups, groupId)) {
       // Update the items array to reflect the removal using discriminated union narrowing
-      if (group.type === "task") {
-        group.items = group.items.filter((item) => !isGroup<Group>(item) || item.id !== groupId)
-      } else if (group.type === "project") {
+      if (group.type === "project") {
         group.items = group.items.filter((item) => !isGroup<Group>(item) || item.id !== groupId)
       } else if (group.type === "label") {
         group.items = group.items.filter((item) => !isGroup<Group>(item) || item.id !== groupId)
@@ -415,7 +392,6 @@ async function deleteGroup(
   // Try to remove from each tree
   let deleted = false
   deleted =
-    removeGroupFromTree(fileData.taskGroups || [], groupId) ||
     removeGroupFromTree(fileData.projectGroups || [], groupId) ||
     removeGroupFromTree(fileData.labelGroups || [], groupId)
 
@@ -438,7 +414,6 @@ async function deleteGroup(
       groupId,
       deletedCount,
       remainingGroups: {
-        task: fileData.taskGroups?.length || 0,
         project: fileData.projectGroups?.length || 0,
         label: fileData.labelGroups?.length || 0,
       },

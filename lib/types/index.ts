@@ -675,12 +675,6 @@ interface IBaseGroup {
   color?: string
 }
 
-/** Task Group interface - can contain TaskIds or other TaskGroups */
-export interface ITaskGroup extends IBaseGroup {
-  type: "task"
-  items: (TaskId | ITaskGroup)[]
-}
-
 /** Project Group interface - can contain ProjectIds or other ProjectGroups */
 export interface IProjectGroup extends IBaseGroup {
   type: "project"
@@ -697,9 +691,7 @@ export interface ILabelGroup extends IBaseGroup {
  * Generic type guard to check if an item is a specific Group type (vs a string ID)
  * In group items arrays, items can only be either string IDs or Group objects
  */
-export function isGroup<T extends ITaskGroup | IProjectGroup | ILabelGroup>(
-  item: unknown,
-): item is T {
+export function isGroup<T extends IProjectGroup | ILabelGroup>(item: unknown): item is T {
   return typeof item === "object" && item !== null && "id" in item
 }
 
@@ -707,44 +699,6 @@ export function isGroup<T extends ITaskGroup | IProjectGroup | ILabelGroup>(
  * Recursive Group schemas with proper TypeScript typing
  * Uses z.ZodType<Interface> pattern for type safety with recursive schemas
  */
-
-// Task Group Schema with manual typing
-// eslint-disable-next-line prefer-const
-let TaskGroupSchema: z.ZodType<ITaskGroup>
-export { TaskGroupSchema }
-TaskGroupSchema = z
-  .object({
-    type: z.literal("task"),
-    id: GroupIdSchema,
-    name: z.string(),
-    description: z.string().optional(),
-    color: z.string().optional(),
-    items: z.array(z.union([TaskIdSchema, z.lazy(() => TaskGroupSchema)])),
-  })
-  .refine(
-    (group) => {
-      // Prevent circular reference by checking if group contains itself as direct child
-      const childGroups = group.items.filter(isGroup<ITaskGroup>)
-      return !childGroups.some((childGroup) => childGroup.id === group.id)
-    },
-    {
-      message: "Group cannot contain itself as a direct child (circular reference)",
-      path: ["items"],
-    },
-  )
-  .refine(
-    (group) => {
-      // Ensure items are either all IDs or all groups, not mixed
-      if (group.items.length === 0) return true
-      const hasGroups = group.items.some((item) => isGroup<ITaskGroup>(item))
-      const hasIds = group.items.some((item) => !isGroup<ITaskGroup>(item))
-      return !(hasGroups && hasIds)
-    },
-    {
-      message: "Items must be either all IDs or all groups, not mixed",
-      path: ["items"],
-    },
-  )
 
 // Project Group Schema with manual typing
 // eslint-disable-next-line prefer-const
@@ -825,7 +779,7 @@ LabelGroupSchema = z
 /**
  * Group schema - union of all group types
  */
-export const GroupSchema = z.union([TaskGroupSchema, ProjectGroupSchema, LabelGroupSchema])
+export const GroupSchema = z.union([ProjectGroupSchema, LabelGroupSchema])
 
 // Base serialization schema for Group (colocated with GroupSchema for high correlation)
 export const GroupSerializationSchema = GroupSchema
@@ -835,7 +789,6 @@ export const DataFileSchema = z.object({
   projects: z.array(ProjectSchema),
   labels: z.array(LabelSchema),
   ordering: OrderingSchema,
-  taskGroups: z.array(TaskGroupSchema).default([]),
   projectGroups: z.array(ProjectGroupSchema).default([]),
   labelGroups: z.array(LabelGroupSchema).default([]),
 })
@@ -845,7 +798,6 @@ export const DataFileSerializationSchema = z.object({
   projects: z.array(ProjectSerializationSchema),
   labels: z.array(LabelSerializationSchema),
   ordering: OrderingSerializationSchema,
-  taskGroups: z.array(GroupSerializationSchema).default([]),
   projectGroups: z.array(GroupSerializationSchema).default([]),
   labelGroups: z.array(GroupSerializationSchema).default([]),
 })
@@ -863,10 +815,9 @@ export type Task = z.infer<typeof TaskSchema>
 export type Project = z.infer<typeof ProjectSchema>
 export type Label = z.infer<typeof LabelSchema>
 // Export types that use the interface definitions for better type inference
-export type TaskGroup = ITaskGroup
 export type ProjectGroup = IProjectGroup
 export type LabelGroup = ILabelGroup
-export type Group = TaskGroup | ProjectGroup | LabelGroup
+export type Group = ProjectGroup | LabelGroup
 export type DataFile = z.infer<typeof DataFileSchema>
 export type TaskSerialization = z.infer<typeof TaskSerializationSchema>
 export type TaskArraySerialization = z.infer<typeof TaskArraySerializationSchema>

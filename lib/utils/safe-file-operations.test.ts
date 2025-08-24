@@ -343,7 +343,6 @@ describe("safe-file-operations", () => {
         projects: [],
         labels: [],
       },
-      taskGroups: [],
       projectGroups: [],
       labelGroups: [],
     }
@@ -397,7 +396,6 @@ describe("safe-file-operations", () => {
         projects: [],
         labels: [],
       },
-      taskGroups: [],
       projectGroups: [],
       labelGroups: [],
     }

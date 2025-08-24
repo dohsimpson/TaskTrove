@@ -34,6 +34,7 @@ import { PlusIcon, type PlusIconHandle } from "@/components/ui/plus"
 import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
 import { ProjectContextMenu } from "./project-context-menu"
 import { LabelContextMenu } from "./label-context-menu"
+import { ProjectGroupItem } from "./project-group-item"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { useSetAtom, useAtom, useAtomValue } from "jotai"
@@ -46,6 +47,7 @@ import {
   projectActions,
   updateLabel,
 } from "@/lib/atoms"
+import { rootProjectGroupsAtom, ungroupedProjectsAtom } from "@/lib/atoms/core/groups"
 import type { Project, Label } from "@/lib/types"
 import {
   openSearchAtom,
@@ -66,6 +68,8 @@ export function SidebarNav() {
   const [labels] = useAtom(sortedLabels)
   const [taskCountsData] = useAtom(taskCounts)
   const pathname = useAtomValue(pathnameAtom)
+  const projectGroups = useAtomValue(rootProjectGroupsAtom)
+  const ungroupedProjects = useAtomValue(ungroupedProjectsAtom)
 
   // Get action atoms
   const openSearch = useSetAtom(openSearchAtom)
@@ -212,7 +216,18 @@ export function SidebarNav() {
           <CollapsibleContent>
             <SidebarGroupContent>
               <SidebarMenu>
-                {projects?.map((project) => (
+                {/* Render project groups with hierarchical structure */}
+                {projectGroups?.map((group) => (
+                  <ProjectGroupItem
+                    key={group.id}
+                    group={group}
+                    depth={0}
+                    projects={projects || []}
+                  />
+                ))}
+
+                {/* Render individual projects not in any group */}
+                {ungroupedProjects?.map((project) => (
                   <ProjectMenuItem key={project.id} project={project} />
                 ))}
               </SidebarMenu>

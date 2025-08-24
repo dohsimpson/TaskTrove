@@ -17,6 +17,7 @@ import {
   updateProjectGroupMutationAtom,
   deleteProjectGroupMutationAtom,
 } from "./base"
+import { visibleProjectsAtom } from "./projects"
 
 // Base query atom to fetch all groups data
 export const groupsQueryAtom = atomWithQuery(() => ({
@@ -205,6 +206,15 @@ export const projectsInGroupsAtom = atom((get) => {
 
   extractProjectIds(projectGroups)
   return Array.from(projectIds)
+})
+// Get projects that are NOT in any group
+// TODO: this is a temporary workaround until we have automatic migration figured out, ideally, no project should be without a group
+export const ungroupedProjectsAtom = atom((get) => {
+  const allVisibleProjects = get(visibleProjectsAtom)
+  const projectsInGroups = get(projectsInGroupsAtom)
+  const projectsInGroupsSet = new Set(projectsInGroups)
+
+  return allVisibleProjects.filter((project) => !projectsInGroupsSet.has(project.id))
 })
 
 // Project-Group relationship management atoms

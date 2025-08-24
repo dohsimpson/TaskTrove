@@ -64,6 +64,11 @@ export const VoiceCommandIdSchema = z.uuid().brand("VoiceCommandId")
  */
 export const SectionIdSchema = z.string().uuid().brand("SectionId")
 
+/**
+ * Group ID - string type that must be a UUID
+ */
+export const GroupIdSchema = z.uuid().brand("GroupId")
+
 // Inferred types for IDs
 export type TaskId = z.infer<typeof TaskIdSchema>
 export type ProjectId = z.infer<typeof ProjectIdSchema>
@@ -75,6 +80,7 @@ export type TeamId = z.infer<typeof TeamIdSchema>
 export type NotificationId = z.infer<typeof NotificationIdSchema>
 export type VoiceCommandId = z.infer<typeof VoiceCommandIdSchema>
 export type SectionId = z.infer<typeof SectionIdSchema>
+export type GroupId = z.infer<typeof GroupIdSchema>
 
 /** Task priority type (1=highest, 4=lowest) */
 export type TaskPriority = 1 | 2 | 3 | 4
@@ -90,6 +96,7 @@ export const createTeamId = (id: string): TeamId => TeamIdSchema.parse(id)
 export const createNotificationId = (id: string): NotificationId => NotificationIdSchema.parse(id)
 export const createVoiceCommandId = (id: string): VoiceCommandId => VoiceCommandIdSchema.parse(id)
 export const createSectionId = (id: string): SectionId => SectionIdSchema.parse(id)
+export const createGroupId = (id: string): GroupId => GroupIdSchema.parse(id)
 
 // =============================================================================
 // CONSTANTS
@@ -655,6 +662,72 @@ export const LabelSchema = z.object({
 // Base serialization schema for Label (colocated with LabelSchema for high correlation)
 export const LabelSerializationSchema = LabelSchema
 
+/**
+ * Generic schema factory for creating recursive group schemas
+ * Each group can contain items of a specific type OR other groups of the same type
+ */
+function createRecursiveGroupSchema<ItemIdSchema extends z.ZodTypeAny>(
+  itemIdSchema: ItemIdSchema,
+  groupType: "task" | "project" | "label",
+): z.ZodLazy<z.ZodTypeAny> {
+  /** z.lazy is used in Zod v4 to define recursive schemas. It allows you to reference a schema within its own definition */
+  const recursiveSchema: z.ZodLazy<z.ZodTypeAny> = z.lazy(() =>
+    z
+      .object({
+        /** Group type - determines what kind of items this group contains */
+        type: z.literal(groupType),
+        /** Unique identifier for the group */
+        id: GroupIdSchema,
+        /** Group name */
+        name: z.string(),
+        /** Optional group description */
+        description: z.string().optional(),
+        /** Group color (hex code) */
+        color: z.string().optional(),
+        /** Array of items - can contain item IDs or other groups of the same type */
+        items: z.array(z.union([itemIdSchema, recursiveSchema])),
+      })
+      .refine(
+        (group) => {
+          // Prevent circular self-references by checking if any direct child group has the same ID
+          const childGroups = group.items.filter(
+            (item): item is { id: string } =>
+              typeof item === "object" && item !== null && "id" in item,
+          )
+          return !childGroups.some((childGroup) => childGroup.id === group.id)
+        },
+        {
+          message: "Group cannot contain itself as a direct child (circular reference)",
+          path: ["items"],
+        },
+      ),
+  )
+  return recursiveSchema
+}
+
+/**
+ * Task Group schema - recursive schema that can contain TaskIds or other TaskGroups
+ */
+export const TaskGroupSchema = createRecursiveGroupSchema(TaskIdSchema, "task")
+
+/**
+ * Project Group schema - recursive schema that can contain ProjectIds or other ProjectGroups
+ */
+export const ProjectGroupSchema = createRecursiveGroupSchema(ProjectIdSchema, "project")
+
+/**
+ * Label Group schema - recursive schema that can contain LabelIds or other LabelGroups
+ */
+export const LabelGroupSchema = createRecursiveGroupSchema(LabelIdSchema, "label")
+
+/**
+ * Group schema - union of all group types
+ */
+export const GroupSchema = z.union([TaskGroupSchema, ProjectGroupSchema, LabelGroupSchema])
+
+// Base serialization schema for Group (colocated with GroupSchema for high correlation)
+export const GroupSerializationSchema = GroupSchema
+
 export const DataFileSchema = z.object({
   tasks: z.array(TaskSchema),
   projects: z.array(ProjectSchema),
@@ -681,11 +754,16 @@ export type Ordering = z.infer<typeof OrderingSchema>
 export type Task = z.infer<typeof TaskSchema>
 export type Project = z.infer<typeof ProjectSchema>
 export type Label = z.infer<typeof LabelSchema>
+export type TaskGroup = z.infer<typeof TaskGroupSchema>
+export type ProjectGroup = z.infer<typeof ProjectGroupSchema>
+export type LabelGroup = z.infer<typeof LabelGroupSchema>
+export type Group = z.infer<typeof GroupSchema>
 export type DataFile = z.infer<typeof DataFileSchema>
 export type TaskSerialization = z.infer<typeof TaskSerializationSchema>
 export type TaskArraySerialization = z.infer<typeof TaskArraySerializationSchema>
 export type ProjectSerialization = z.infer<typeof ProjectSerializationSchema>
 export type LabelSerialization = z.infer<typeof LabelSerializationSchema>
+export type GroupSerialization = z.infer<typeof GroupSerializationSchema>
 export type OrderingSerialization = z.infer<typeof OrderingSerializationSchema>
 export type DataFileSerialization = z.infer<typeof DataFileSerializationSchema>
 

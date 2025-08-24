@@ -83,12 +83,11 @@ describe("GET /api/groups", () => {
           description: "Tasks related to work",
           color: "#3b82f6",
           items: [
-            TEST_TASK_ID_1,
             {
               type: "task",
               id: TEST_GROUP_ID_2,
               name: "Urgent Tasks",
-              items: [],
+              items: [TEST_TASK_ID_1],
             },
           ],
         },
@@ -118,7 +117,7 @@ describe("GET /api/groups", () => {
     expect(data.projectGroups).toHaveLength(1)
     expect(data.labelGroups).toHaveLength(0)
     expect(data.taskGroups[0].name).toBe("Work Tasks")
-    expect(data.taskGroups[0].items).toHaveLength(2)
+    expect(data.taskGroups[0].items).toHaveLength(1)
   })
 
   it("should handle file read failure", async () => {

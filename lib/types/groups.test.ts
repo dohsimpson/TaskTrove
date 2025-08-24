@@ -77,7 +77,7 @@ describe("Group Schemas", () => {
         expect(() => TaskGroupSchema.parse(taskGroup)).not.toThrow()
       })
 
-      it("should validate TaskGroup with mixed TaskIds and TaskGroups", () => {
+      it("should reject TaskGroup with mixed TaskIds and TaskGroups", () => {
         const nestedTaskGroup: TaskGroup = {
           type: "task",
           id: groupId2,
@@ -85,14 +85,16 @@ describe("Group Schemas", () => {
           items: [taskId2],
         }
 
-        const taskGroup: TaskGroup = {
+        const taskGroup = {
           type: "task",
           id: groupId1,
           name: "Mixed Task Group",
           items: [taskId1, nestedTaskGroup],
         }
 
-        expect(() => TaskGroupSchema.parse(taskGroup)).not.toThrow()
+        expect(() => TaskGroupSchema.parse(taskGroup)).toThrow(
+          /Items must be either all IDs or all groups, not mixed/,
+        )
       })
 
       it("should validate TaskGroup with empty items", () => {
@@ -118,7 +120,7 @@ describe("Group Schemas", () => {
           type: "task",
           id: groupId2,
           name: "Level 2",
-          items: [level3, taskId2],
+          items: [level3],
         }
 
         const level1: TaskGroup = {
@@ -213,7 +215,7 @@ describe("Group Schemas", () => {
         expect(() => ProjectGroupSchema.parse(projectGroup)).not.toThrow()
       })
 
-      it("should validate ProjectGroup with mixed ProjectIds and ProjectGroups", () => {
+      it("should reject ProjectGroup with mixed ProjectIds and ProjectGroups", () => {
         const nestedProjectGroup: ProjectGroup = {
           type: "project",
           id: groupId2,
@@ -221,14 +223,16 @@ describe("Group Schemas", () => {
           items: [projectId2],
         }
 
-        const projectGroup: ProjectGroup = {
+        const projectGroup = {
           type: "project",
           id: groupId1,
           name: "Mixed Project Group",
           items: [projectId1, nestedProjectGroup],
         }
 
-        expect(() => ProjectGroupSchema.parse(projectGroup)).not.toThrow()
+        expect(() => ProjectGroupSchema.parse(projectGroup)).toThrow(
+          /Items must be either all IDs or all groups, not mixed/,
+        )
       })
     })
 
@@ -277,7 +281,7 @@ describe("Group Schemas", () => {
         expect(() => LabelGroupSchema.parse(labelGroup)).not.toThrow()
       })
 
-      it("should validate LabelGroup with mixed LabelIds and LabelGroups", () => {
+      it("should reject LabelGroup with mixed LabelIds and LabelGroups", () => {
         const nestedLabelGroup: LabelGroup = {
           type: "label",
           id: groupId2,
@@ -285,14 +289,16 @@ describe("Group Schemas", () => {
           items: [labelId2],
         }
 
-        const labelGroup: LabelGroup = {
+        const labelGroup = {
           type: "label",
           id: groupId1,
           name: "Mixed Label Group",
           items: [labelId1, nestedLabelGroup],
         }
 
-        expect(() => LabelGroupSchema.parse(labelGroup)).not.toThrow()
+        expect(() => LabelGroupSchema.parse(labelGroup)).toThrow(
+          /Items must be either all IDs or all groups, not mixed/,
+        )
       })
     })
 
@@ -360,6 +366,286 @@ describe("Group Schemas", () => {
     })
   })
 
+  describe("Homogeneous Items Validation", () => {
+    describe("TaskGroup homogeneous validation", () => {
+      it("should allow empty items array", () => {
+        const taskGroup = {
+          type: "task",
+          id: groupId1,
+          name: "Empty Group",
+          items: [],
+        }
+
+        expect(() => TaskGroupSchema.parse(taskGroup)).not.toThrow()
+      })
+
+      it("should allow only TaskIds", () => {
+        const taskGroup = {
+          type: "task",
+          id: groupId1,
+          name: "IDs Only Group",
+          items: [taskId1, taskId2],
+        }
+
+        expect(() => TaskGroupSchema.parse(taskGroup)).not.toThrow()
+      })
+
+      it("should allow only TaskGroups", () => {
+        const nestedGroup1: TaskGroup = {
+          type: "task",
+          id: groupId2,
+          name: "Nested 1",
+          items: [taskId1],
+        }
+
+        const nestedGroup2: TaskGroup = {
+          type: "task",
+          id: createGroupId("77777777-7777-4777-8777-777777777777"),
+          name: "Nested 2",
+          items: [taskId2],
+        }
+
+        const taskGroup = {
+          type: "task",
+          id: groupId1,
+          name: "Groups Only",
+          items: [nestedGroup1, nestedGroup2],
+        }
+
+        expect(() => TaskGroupSchema.parse(taskGroup)).not.toThrow()
+      })
+
+      it("should reject mixed TaskIds and TaskGroups", () => {
+        const nestedGroup: TaskGroup = {
+          type: "task",
+          id: groupId2,
+          name: "Nested Group",
+          items: [taskId2],
+        }
+
+        const mixedGroup = {
+          type: "task",
+          id: groupId1,
+          name: "Mixed Group",
+          items: [taskId1, nestedGroup], // Mixed: ID + Group
+        }
+
+        expect(() => TaskGroupSchema.parse(mixedGroup)).toThrow(
+          /Items must be either all IDs or all groups, not mixed/,
+        )
+      })
+
+      it("should reject mixed in reverse order", () => {
+        const nestedGroup: TaskGroup = {
+          type: "task",
+          id: groupId2,
+          name: "Nested Group",
+          items: [taskId2],
+        }
+
+        const mixedGroup = {
+          type: "task",
+          id: groupId1,
+          name: "Mixed Group",
+          items: [nestedGroup, taskId1], // Mixed: Group + ID
+        }
+
+        expect(() => TaskGroupSchema.parse(mixedGroup)).toThrow(
+          /Items must be either all IDs or all groups, not mixed/,
+        )
+      })
+    })
+
+    describe("ProjectGroup homogeneous validation", () => {
+      it("should allow only ProjectIds", () => {
+        const projectGroup = {
+          type: "project",
+          id: groupId1,
+          name: "IDs Only Group",
+          items: [projectId1, projectId2],
+        }
+
+        expect(() => ProjectGroupSchema.parse(projectGroup)).not.toThrow()
+      })
+
+      it("should allow only ProjectGroups", () => {
+        const nestedGroup1: ProjectGroup = {
+          type: "project",
+          id: groupId2,
+          name: "Nested 1",
+          items: [projectId1],
+        }
+
+        const nestedGroup2: ProjectGroup = {
+          type: "project",
+          id: createGroupId("88888888-8888-4888-8888-888888888888"),
+          name: "Nested 2",
+          items: [projectId2],
+        }
+
+        const projectGroup = {
+          type: "project",
+          id: groupId1,
+          name: "Groups Only",
+          items: [nestedGroup1, nestedGroup2],
+        }
+
+        expect(() => ProjectGroupSchema.parse(projectGroup)).not.toThrow()
+      })
+
+      it("should reject mixed ProjectIds and ProjectGroups", () => {
+        const nestedGroup: ProjectGroup = {
+          type: "project",
+          id: groupId2,
+          name: "Nested Group",
+          items: [projectId2],
+        }
+
+        const mixedGroup = {
+          type: "project",
+          id: groupId1,
+          name: "Mixed Group",
+          items: [projectId1, nestedGroup], // Mixed: ID + Group
+        }
+
+        expect(() => ProjectGroupSchema.parse(mixedGroup)).toThrow(
+          /Items must be either all IDs or all groups, not mixed/,
+        )
+      })
+    })
+
+    describe("LabelGroup homogeneous validation", () => {
+      it("should allow only LabelIds", () => {
+        const labelGroup = {
+          type: "label",
+          id: groupId1,
+          name: "IDs Only Group",
+          items: [labelId1, labelId2],
+        }
+
+        expect(() => LabelGroupSchema.parse(labelGroup)).not.toThrow()
+      })
+
+      it("should allow only LabelGroups", () => {
+        const nestedGroup1: LabelGroup = {
+          type: "label",
+          id: groupId2,
+          name: "Nested 1",
+          items: [labelId1],
+        }
+
+        const nestedGroup2: LabelGroup = {
+          type: "label",
+          id: createGroupId("99999999-9999-4999-8999-999999999999"),
+          name: "Nested 2",
+          items: [labelId2],
+        }
+
+        const labelGroup = {
+          type: "label",
+          id: groupId1,
+          name: "Groups Only",
+          items: [nestedGroup1, nestedGroup2],
+        }
+
+        expect(() => LabelGroupSchema.parse(labelGroup)).not.toThrow()
+      })
+
+      it("should reject mixed LabelIds and LabelGroups", () => {
+        const nestedGroup: LabelGroup = {
+          type: "label",
+          id: groupId2,
+          name: "Nested Group",
+          items: [labelId2],
+        }
+
+        const mixedGroup = {
+          type: "label",
+          id: groupId1,
+          name: "Mixed Group",
+          items: [labelId1, nestedGroup], // Mixed: ID + Group
+        }
+
+        expect(() => LabelGroupSchema.parse(mixedGroup)).toThrow(
+          /Items must be either all IDs or all groups, not mixed/,
+        )
+      })
+    })
+
+    describe("Complex homogeneous validation scenarios", () => {
+      it("should handle deeply nested homogeneous groups", () => {
+        const level3: TaskGroup = {
+          type: "task",
+          id: createGroupId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"),
+          name: "Level 3",
+          items: [taskId1, taskId2], // All IDs
+        }
+
+        const level2: TaskGroup = {
+          type: "task",
+          id: createGroupId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"),
+          name: "Level 2",
+          items: [level3], // All Groups (only one, but still homogeneous)
+        }
+
+        const level1: TaskGroup = {
+          type: "task",
+          id: groupId1,
+          name: "Level 1",
+          items: [level2], // All Groups
+        }
+
+        expect(() => TaskGroupSchema.parse(level1)).not.toThrow()
+      })
+
+      it("should reject mixed items in nested structure", () => {
+        const validNestedGroup: TaskGroup = {
+          type: "task",
+          id: groupId2,
+          name: "Valid Nested",
+          items: [taskId2], // All IDs - valid
+        }
+
+        const invalidParentGroup = {
+          type: "task",
+          id: groupId1,
+          name: "Invalid Parent",
+          items: [taskId1, validNestedGroup], // Mixed: ID + Group - invalid
+        }
+
+        expect(() => TaskGroupSchema.parse(invalidParentGroup)).toThrow(
+          /Items must be either all IDs or all groups, not mixed/,
+        )
+      })
+
+      it("should validate single item groups as homogeneous", () => {
+        const singleIdGroup = {
+          type: "task",
+          id: groupId1,
+          name: "Single ID",
+          items: [taskId1], // Single ID is homogeneous
+        }
+
+        const singleGroupGroup = {
+          type: "task",
+          id: groupId2,
+          name: "Single Group",
+          items: [
+            {
+              type: "task" as const,
+              id: createGroupId("cccccccc-cccc-4ccc-8ccc-cccccccccccc"),
+              name: "Nested",
+              items: [taskId2],
+            },
+          ], // Single group is homogeneous
+        }
+
+        expect(() => TaskGroupSchema.parse(singleIdGroup)).not.toThrow()
+        expect(() => TaskGroupSchema.parse(singleGroupGroup)).not.toThrow()
+      })
+    })
+  })
+
   describe("Edge cases", () => {
     it("should handle complex nested structures", () => {
       // Create a complex nested task structure
@@ -368,12 +654,11 @@ describe("Group Schemas", () => {
         id: createGroupId("88888888-8888-4888-8888-888888888888"),
         name: "Deep Tasks",
         items: [
-          taskId1,
           {
             type: "task",
             id: createGroupId("99999999-9999-4999-8999-999999999999"),
             name: "Even Deeper",
-            items: [taskId2],
+            items: [taskId1, taskId2],
           },
         ],
       }
@@ -446,12 +731,11 @@ describe("Group Schemas", () => {
         id: groupId1,
         name: "Parent",
         items: [
-          taskId1,
           {
             type: "task",
             id: groupId2,
             name: "Child",
-            items: [taskId2], // No circular reference in data, just testing schema structure
+            items: [taskId1, taskId2], // No circular reference in data, just testing schema structure
           },
         ],
       }
@@ -474,7 +758,7 @@ describe("Group Schemas", () => {
           type: "task",
           id: createGroupId(`bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb${i.toString().padStart(2, "0")}`),
           name: `Level ${i}`,
-          items: [currentGroup, taskId2],
+          items: [currentGroup],
         }
       }
 

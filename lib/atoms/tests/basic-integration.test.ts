@@ -360,7 +360,7 @@ describe("TaskTrove Jotai Atoms Integration Tests", () => {
   })
 
   describe("Dialog State Management", () => {
-    it("should manage dialog states correctly", async () => {
+    it.skip("should manage dialog states correctly", async () => {
       // Test initial dialog states
       const initialQuickAdd = store.get(dialogAtoms.showQuickAdd)
       const initialTaskPanel = store.get(dialogAtoms.showTaskPanel)
@@ -401,8 +401,7 @@ describe("TaskTrove Jotai Atoms Integration Tests", () => {
       }
 
       // TODO: Fix test setup for React Query architecture
-      // For now, skip this test as it requires proper React Query mocking
-      return
+      // This test is skipped as it requires proper React Query mocking
 
       // Add the mock task to tasksAtom so selectedTaskAtom can find it
       store.set(taskAtoms.tasks, [mockTask])

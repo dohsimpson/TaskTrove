@@ -676,22 +676,22 @@ interface IBaseGroup {
 }
 
 /** Project Group interface - can contain ProjectIds or other ProjectGroups */
-export interface IProjectGroup extends IBaseGroup {
+export interface ProjectGroup extends IBaseGroup {
   type: "project"
-  items: (ProjectId | IProjectGroup)[]
+  items: (ProjectId | ProjectGroup)[]
 }
 
 /** Label Group interface - can contain LabelIds or other LabelGroups */
-export interface ILabelGroup extends IBaseGroup {
+export interface LabelGroup extends IBaseGroup {
   type: "label"
-  items: (LabelId | ILabelGroup)[]
+  items: (LabelId | LabelGroup)[]
 }
 
 /**
  * Generic type guard to check if an item is a specific Group type (vs a string ID)
  * In group items arrays, items can only be either string IDs or Group objects
  */
-export function isGroup<T extends IProjectGroup | ILabelGroup>(item: unknown): item is T {
+export function isGroup<T extends ProjectGroup | LabelGroup>(item: unknown): item is T {
   return typeof item === "object" && item !== null && "id" in item
 }
 
@@ -702,7 +702,7 @@ export function isGroup<T extends IProjectGroup | ILabelGroup>(item: unknown): i
 
 // Project Group Schema with manual typing
 // eslint-disable-next-line prefer-const
-let ProjectGroupSchema: z.ZodType<IProjectGroup>
+let ProjectGroupSchema: z.ZodType<ProjectGroup>
 export { ProjectGroupSchema }
 ProjectGroupSchema = z
   .object({
@@ -716,7 +716,7 @@ ProjectGroupSchema = z
   .refine(
     (group) => {
       // Prevent circular reference by checking if group contains itself as direct child
-      const childGroups = group.items.filter(isGroup<IProjectGroup>)
+      const childGroups = group.items.filter(isGroup<ProjectGroup>)
       return !childGroups.some((childGroup) => childGroup.id === group.id)
     },
     {
@@ -728,8 +728,8 @@ ProjectGroupSchema = z
     (group) => {
       // Ensure items are either all IDs or all groups, not mixed
       if (group.items.length === 0) return true
-      const hasGroups = group.items.some((item) => isGroup<IProjectGroup>(item))
-      const hasIds = group.items.some((item) => !isGroup<IProjectGroup>(item))
+      const hasGroups = group.items.some((item) => isGroup<ProjectGroup>(item))
+      const hasIds = group.items.some((item) => !isGroup<ProjectGroup>(item))
       return !(hasGroups && hasIds)
     },
     {
@@ -740,7 +740,7 @@ ProjectGroupSchema = z
 
 // Label Group Schema with manual typing
 // eslint-disable-next-line prefer-const
-let LabelGroupSchema: z.ZodType<ILabelGroup>
+let LabelGroupSchema: z.ZodType<LabelGroup>
 export { LabelGroupSchema }
 LabelGroupSchema = z
   .object({
@@ -754,7 +754,7 @@ LabelGroupSchema = z
   .refine(
     (group) => {
       // Prevent circular reference by checking if group contains itself as direct child
-      const childGroups = group.items.filter(isGroup<ILabelGroup>)
+      const childGroups = group.items.filter(isGroup<LabelGroup>)
       return !childGroups.some((childGroup) => childGroup.id === group.id)
     },
     {
@@ -766,8 +766,8 @@ LabelGroupSchema = z
     (group) => {
       // Ensure items are either all IDs or all groups, not mixed
       if (group.items.length === 0) return true
-      const hasGroups = group.items.some((item) => isGroup<ILabelGroup>(item))
-      const hasIds = group.items.some((item) => !isGroup<ILabelGroup>(item))
+      const hasGroups = group.items.some((item) => isGroup<LabelGroup>(item))
+      const hasIds = group.items.some((item) => !isGroup<LabelGroup>(item))
       return !(hasGroups && hasIds)
     },
     {
@@ -814,9 +814,6 @@ export type Ordering = z.infer<typeof OrderingSchema>
 export type Task = z.infer<typeof TaskSchema>
 export type Project = z.infer<typeof ProjectSchema>
 export type Label = z.infer<typeof LabelSchema>
-// Export types that use the interface definitions for better type inference
-export type ProjectGroup = IProjectGroup
-export type LabelGroup = ILabelGroup
 export type Group = ProjectGroup | LabelGroup
 export type DataFile = z.infer<typeof DataFileSchema>
 export type TaskSerialization = z.infer<typeof TaskSerializationSchema>

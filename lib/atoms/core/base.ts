@@ -67,6 +67,20 @@ import {
   UpdateSettingsRequestSchema,
   UserSettings,
   PartialUserSettings,
+  // Group-related types
+  ProjectGroup,
+  GroupId,
+  CreateGroupRequest,
+  CreateGroupResponseSchema,
+  UpdateGroupRequest,
+  UpdateGroupResponseSchema,
+  DeleteGroupRequest,
+  DeleteGroupResponseSchema,
+  CreateGroupRequestSchema,
+  GroupUpdateUnionSchema,
+  DeleteGroupRequestSchema,
+  createGroupId,
+  isGroup,
 } from "../../types"
 import {
   DEFAULT_TASK_PRIORITY,
@@ -715,6 +729,149 @@ export const deleteLabelMutationAtom = createMutation<
 })
 deleteLabelMutationAtom.debugLabel = "deleteLabelMutationAtom"
 deleteProjectMutationAtom.debugLabel = "deleteProjectMutationAtom"
+
+// =============================================================================
+// GROUP CRUD MUTATION ATOMS
+// =============================================================================
+
+// Mutation atom for creating project groups
+export const createProjectGroupMutationAtom = createMutation({
+  method: "POST",
+  operationName: "Created group",
+  responseSchema: CreateGroupResponseSchema,
+  serializationSchema: CreateGroupRequestSchema,
+  apiEndpoint: "/api/groups",
+  queryKey: ["groups"],
+  logModule: "groups",
+  testResponseFactory: () => ({
+    success: true,
+    groupIds: [createGroupId(uuidv4())],
+    message: "Group created successfully (test mode)",
+  }),
+  optimisticDataFactory: (request: CreateGroupRequest): ProjectGroup => {
+    if (request.type !== "project") {
+      throw new Error("Create project group mutation received non-project group request")
+    }
+    return {
+      type: "project",
+      id: createGroupId(uuidv4()),
+      name: request.name,
+      description: request.description,
+      color: request.color,
+      items: [],
+    }
+  },
+  optimisticUpdateFn: (
+    request: CreateGroupRequest,
+    oldData: DataFile,
+    optimisticGroup?: ProjectGroup,
+  ) => {
+    if (!optimisticGroup) throw new Error("Optimistic group not provided")
+
+    return {
+      ...oldData,
+      projectGroups: [...(oldData.projectGroups || []), optimisticGroup],
+    }
+  },
+})
+createProjectGroupMutationAtom.debugLabel = "createProjectGroupMutationAtom"
+
+// Mutation atom for updating project groups
+export const updateProjectGroupMutationAtom = createMutation({
+  method: "PATCH",
+  operationName: "Updated group",
+  responseSchema: UpdateGroupResponseSchema,
+  serializationSchema: GroupUpdateUnionSchema,
+  apiEndpoint: "/api/groups",
+  queryKey: ["groups"],
+  logModule: "groups",
+  testResponseFactory: (request: UpdateGroupRequest) => ({
+    success: true,
+    groups: [
+      {
+        type: "project" as const,
+        id: request.id,
+        name: request.name || "Updated Group",
+        description: request.description,
+        color: request.color,
+        items: [],
+      },
+    ],
+    count: 1,
+    message: "Group updated successfully (test mode)",
+  }),
+  optimisticUpdateFn: (request: UpdateGroupRequest, oldData: DataFile) => {
+    const updateRequest = Array.isArray(request) ? request : [request]
+
+    return {
+      ...oldData,
+      projectGroups:
+        oldData.projectGroups?.map((group) => {
+          const update = updateRequest.find((u) => u.id === group.id)
+          if (!update) return group
+
+          return {
+            ...group,
+            ...(update.name && { name: update.name }),
+            ...(update.description && { description: update.description }),
+            ...(update.color && { color: update.color }),
+          }
+        }) || [],
+    }
+  },
+})
+updateProjectGroupMutationAtom.debugLabel = "updateProjectGroupMutationAtom"
+
+// Mutation atom for deleting project groups
+export const deleteProjectGroupMutationAtom = createMutation({
+  method: "DELETE",
+  operationName: "Deleted group",
+  responseSchema: DeleteGroupResponseSchema,
+  serializationSchema: DeleteGroupRequestSchema,
+  apiEndpoint: "/api/groups",
+  queryKey: ["groups"],
+  logModule: "groups",
+  testResponseFactory: (request: DeleteGroupRequest) => ({
+    success: true,
+    deletedCount: 1,
+    groupIds: [request.id],
+    message: "Group deleted successfully (test mode)",
+  }),
+  optimisticUpdateFn: (request: DeleteGroupRequest, oldData: DataFile) => {
+    // Remove the group and all its children recursively
+    function removeGroupRecursively(groups: ProjectGroup[], targetId: GroupId): ProjectGroup[] {
+      return groups
+        .filter((group) => group.id !== targetId)
+        .map((group) => ({
+          ...group,
+          items: group.items
+            .filter((item) => {
+              if (typeof item === "string") return true // Keep project IDs
+              return isGroup(item) && item.id !== targetId // Remove matching groups
+            })
+            .map((item) => {
+              if (typeof item === "string") return item
+              if (isGroup(item)) {
+                return {
+                  ...item,
+                  items: item.items.filter((childItem) => {
+                    if (typeof childItem === "string") return true
+                    return isGroup(childItem) && childItem.id !== targetId
+                  }),
+                }
+              }
+              return item
+            }),
+        }))
+    }
+
+    return {
+      ...oldData,
+      projectGroups: removeGroupRecursively(oldData.projectGroups || [], request.id),
+    }
+  },
+})
+deleteProjectGroupMutationAtom.debugLabel = "deleteProjectGroupMutationAtom"
 
 export const tasksAtom = atom(
   (get) => {

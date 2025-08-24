@@ -252,6 +252,10 @@ vi.mock("@/lib/types", () => ({
   createLabelId: vi.fn((id) => id),
   createSubtaskId: vi.fn((id) => id),
   createTaskId: vi.fn((id) => id),
+  createSectionId: vi.fn((id) => id),
+  createGroupId: vi.fn((id) => id),
+  createCommentId: vi.fn((id) => id),
+  createVoiceCommandId: vi.fn((id) => id),
   // Mock Zod schemas used by mutation atoms
   UpdateTaskResponseSchema: {
     safeParse: vi.fn().mockReturnValue({
@@ -283,6 +287,12 @@ vi.mock("@/lib/types", () => ({
       data: { labelIds: [], success: true, message: "Mock response" },
     }),
   },
+  CreateGroupResponseSchema: {
+    safeParse: vi.fn().mockReturnValue({
+      success: true,
+      data: { labelIds: [], success: true, message: "Mock response" },
+    }),
+  },
   LabelCreateSerializationSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
   },
@@ -291,6 +301,9 @@ vi.mock("@/lib/types", () => ({
   },
   DeleteTaskRequestSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: "mock-id" }),
+  },
+  CreateGroupRequestSchema: {
+    safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
   },
   TaskArraySerializationSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: [] }),
@@ -366,6 +379,26 @@ vi.mock("@/lib/types", () => ({
   },
   UpdateSettingsRequestSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
+  },
+  UpdateGroupResponseSchema: {
+    safeParse: vi.fn().mockReturnValue({
+      success: true,
+      data: { labelIds: [], success: true, message: "Mock response" },
+    }),
+  },
+  GroupUpdateUnionSchema: {
+    safeParse: vi
+      .fn()
+      .mockReturnValue({ success: true, data: { success: true, message: "Mock response" } }),
+  },
+  DeleteGroupResponseSchema: {
+    safeParse: vi.fn().mockReturnValue({
+      success: true,
+      data: { labelIds: [], success: true, message: "Mock response" },
+    }),
+  },
+  DeleteGroupRequestSchema: {
+    safeParse: vi.fn().mockReturnValue({ success: true, data: "mock-id" }),
   },
 }))
 

@@ -50,6 +50,12 @@ export { projectAtoms } from "./core/projects"
 export { labelAtoms } from "./core/labels"
 
 /**
+ * Group management atoms
+ * Contains all group-related state, nesting operations, and project-group relationships
+ */
+export * from "./core/groups"
+
+/**
  * Ordering management atoms
  * Contains project and label ordering using simple arrays
  */
@@ -229,6 +235,9 @@ export {
   deleteTaskMutationAtom,
   deleteProjectMutationAtom,
   updateTasksMutationAtom,
+  createProjectGroupMutationAtom,
+  updateProjectGroupMutationAtom,
+  deleteProjectGroupMutationAtom,
 } from "./core/base"
 
 // Project atoms

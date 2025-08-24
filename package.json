@@ -10,7 +10,7 @@
     "start": "next start",
     "typecheck": "tsgo --noEmit",
     "typecheck:watch": "tsgo --noEmit --watch",
-    "test": "vitest run --run --reporter=dot --no-coverage",
+    "test": "vitest run --reporter=dot --no-coverage",
     "test:changed": "vitest run --run --changed --reporter=dot --no-coverage",
     "test:file": "vitest run --run",
     "test:watch": "vitest --watch",

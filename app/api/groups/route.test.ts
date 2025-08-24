@@ -103,7 +103,7 @@ describe("GET /api/groups", () => {
 
     expect(data).toEqual({
       error: "Failed to read data file",
-      success: false,
+      message: "File reading or validation failed",
     })
   })
 })
@@ -117,7 +117,14 @@ describe("POST /api/groups", () => {
       tasks: [],
       labels: [],
       ordering: { projects: [], labels: [] },
-      projectGroups: [],
+      projectGroups: [
+        {
+          type: "project",
+          id: TEST_GROUP_ID_3,
+          name: "Parent Project Group",
+          items: [],
+        },
+      ],
       labelGroups: [],
     }
 
@@ -129,7 +136,7 @@ describe("POST /api/groups", () => {
     const newProjectGroup = {
       type: "project",
       name: "New Project Group",
-      items: [TEST_PROJECT_ID_1],
+      parentId: TEST_GROUP_ID_3,
     }
 
     const request = new NextRequest("http://localhost:3000/api/groups", {
@@ -141,11 +148,11 @@ describe("POST /api/groups", () => {
     const response = await POST(request)
     const data = await response.json()
 
-    expect(response.status).toBe(201)
+    expect(response.status).toBe(200)
     expect(data.success).toBe(true)
-    expect(data.group).toBeDefined()
-    expect(data.group.type).toBe("project")
-    expect(data.group.name).toBe("New Project Group")
+    expect(data.groupIds).toBeDefined()
+    expect(data.groupIds).toHaveLength(1)
+    expect(data.message).toBe("Group created successfully")
     expect(mockSafeWriteDataFile).toHaveBeenCalled()
   })
 
@@ -155,7 +162,7 @@ describe("POST /api/groups", () => {
     const newGroup = {
       type: "project",
       name: "Test Group",
-      items: [],
+      parentId: TEST_GROUP_ID_3,
     }
 
     const request = new NextRequest("http://localhost:3000/api/groups", {
@@ -168,8 +175,8 @@ describe("POST /api/groups", () => {
     const data = await response.json()
 
     expect(response.status).toBe(500)
-    expect(data.success).toBe(false)
     expect(data.error).toBe("Failed to save data")
+    expect(data.message).toBe("File writing failed")
   })
 })
 
@@ -215,12 +222,14 @@ describe("PATCH /api/groups", () => {
 
     expect(response.status).toBe(200)
     expect(data.success).toBe(true)
-    expect(data.group).toBeDefined()
-    expect(data.group.name).toBe("Updated Project Group")
+    expect(data.groups).toBeDefined()
+    expect(data.groups).toHaveLength(1)
+    expect(data.groups[0].name).toBe("Updated Project Group")
+    expect(data.count).toBe(1)
     expect(mockSafeWriteDataFile).toHaveBeenCalled()
   })
 
-  it("should return 404 for non-existent group", async () => {
+  it("should return success with count 0 for non-existent group", async () => {
     const updates = {
       id: createGroupId("99999999-9999-4999-8999-999999999999"),
       name: "Non-existent Group",
@@ -235,9 +244,11 @@ describe("PATCH /api/groups", () => {
     const response = await PATCH(request)
     const data = await response.json()
 
-    expect(response.status).toBe(404)
-    expect(data.success).toBe(false)
-    expect(data.error).toBe("Group not found")
+    expect(response.status).toBe(200)
+    expect(data.success).toBe(true)
+    expect(data.groups).toHaveLength(0)
+    expect(data.count).toBe(0)
+    expect(data.message).toBe("0 group(s) updated successfully")
   })
 })
 
@@ -266,49 +277,59 @@ describe("DELETE /api/groups", () => {
   })
 
   it("should delete an existing project group", async () => {
-    const request = new NextRequest(
-      `http://localhost:3000/api/groups?id=${TEST_GROUP_ID_3}`,
-      {
-        method: "DELETE",
-      },
-    )
+    const deleteRequest = {
+      id: TEST_GROUP_ID_3,
+    }
+
+    const request = new NextRequest("http://localhost:3000/api/groups", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(deleteRequest),
+    })
 
     const response = await DELETE(request)
     const data = await response.json()
 
     expect(response.status).toBe(200)
     expect(data.success).toBe(true)
-    expect(data.message).toBe("Group deleted successfully")
+    expect(data.groupIds).toEqual([TEST_GROUP_ID_3])
+    expect(data.message).toBe("1 group(s) deleted successfully")
     expect(mockSafeWriteDataFile).toHaveBeenCalled()
   })
 
-  it("should return 404 for non-existent group", async () => {
+  it("should return success with count 0 for non-existent group", async () => {
     const nonExistentId = createGroupId("99999999-9999-4999-8999-999999999999")
-    const request = new NextRequest(
-      `http://localhost:3000/api/groups?id=${nonExistentId}`,
-      {
-        method: "DELETE",
-      },
-    )
+    const deleteRequest = {
+      id: nonExistentId,
+    }
+
+    const request = new NextRequest("http://localhost:3000/api/groups", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(deleteRequest),
+    })
 
     const response = await DELETE(request)
     const data = await response.json()
 
-    expect(response.status).toBe(404)
-    expect(data.success).toBe(false)
-    expect(data.error).toBe("Group not found")
+    expect(response.status).toBe(200)
+    expect(data.success).toBe(true)
+    expect(data.groupIds).toEqual([nonExistentId])
+    expect(data.message).toBe("0 group(s) deleted successfully")
   })
 
   it("should return 400 for missing group ID", async () => {
     const request = new NextRequest("http://localhost:3000/api/groups", {
       method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}), // Empty body missing required id field
     })
 
     const response = await DELETE(request)
     const data = await response.json()
 
     expect(response.status).toBe(400)
-    expect(data.success).toBe(false)
-    expect(data.error).toBe("Group ID is required")
+    expect(data.error).toBe("Validation failed")
+    expect(data.message).toBeDefined()
   })
 })

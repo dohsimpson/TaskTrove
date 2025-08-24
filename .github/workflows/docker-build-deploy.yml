@@ -116,14 +116,46 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Extract changelog for version
+        id: changelog
+        env:
+          VERSION: ${{ needs.build-and-push.outputs.VERSION }}
+        run: |
+          # Extract release notes from CHANGELOG.md using same approach as HabitTrove
+          notes=$(awk -v version="$VERSION" '
+            /^## / && $0 ~ version {flag=1;next}
+            /^## / && flag {exit}
+            flag' CHANGELOG.md)
+          
+          if [ -z "$notes" ]; then
+            echo "No changelog found for version $VERSION, using auto-generated notes"
+            echo "USE_AUTO_NOTES=true" >> $GITHUB_OUTPUT
+          else
+            # Save changelog section to output
+            echo "RELEASE_NOTES<<EOF" >> $GITHUB_OUTPUT
+            echo "$notes" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "USE_AUTO_NOTES=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.build-and-push.outputs.VERSION }}
+          USE_AUTO_NOTES: ${{ steps.changelog.outputs.USE_AUTO_NOTES }}
+          RELEASE_NOTES: ${{ steps.changelog.outputs.RELEASE_NOTES }}
         run: |
-          # Create release with auto-generated notes
-          gh release create "v$VERSION" \
-              --repo="$GITHUB_REPOSITORY" \
-              --title="TaskTrove v$VERSION" \
-              --generate-notes \
-              --notes-start-tag=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo "")
+          if [ "$USE_AUTO_NOTES" = "true" ]; then
+            # Fallback to auto-generated notes if no changelog found
+            gh release create "v$VERSION" \
+                --repo="$GITHUB_REPOSITORY" \
+                --title="TaskTrove v$VERSION" \
+                --generate-notes \
+                --notes-start-tag=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo "")
+          else
+            # Use changelog content
+            gh release create "v$VERSION" \
+                --repo="$GITHUB_REPOSITORY" \
+                --title="TaskTrove v$VERSION" \
+                --notes="$RELEASE_NOTES"
+          fi

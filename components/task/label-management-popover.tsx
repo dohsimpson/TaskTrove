@@ -6,7 +6,8 @@ import { LabelContent } from "./label-content"
 import type { Task, LabelId } from "@/lib/types"
 
 interface LabelManagementPopoverProps {
-  task: Task
+  taskId?: string
+  task?: Task // Deprecated - use taskId instead
   onAddLabel: (labelName?: string) => void
   onRemoveLabel: (labelId: LabelId) => void
   children: React.ReactNode
@@ -15,6 +16,7 @@ interface LabelManagementPopoverProps {
 }
 
 export function LabelManagementPopover({
+  taskId,
   task,
   onAddLabel,
   onRemoveLabel,
@@ -29,8 +31,8 @@ export function LabelManagementPopover({
     setOpen(newOpen)
     onOpenChange?.(newOpen)
 
-    // Auto-start adding if no labels exist when opening
-    if (newOpen && task.labels.length === 0) {
+    // Auto-start adding if no labels exist when opening (for existing tasks only)
+    if (newOpen && task && task.labels && task.labels.length === 0) {
       setIsAdding(true)
     }
 
@@ -43,8 +45,8 @@ export function LabelManagementPopover({
   const handleAddingChange = (adding: boolean) => {
     setIsAdding(adding)
 
-    // Close popover if canceling add and no labels exist
-    if (!adding && task.labels.length === 0) {
+    // Close popover if canceling add and no labels exist (for existing tasks only)
+    if (!adding && task && task.labels && task.labels.length === 0) {
       setOpen(false)
     }
   }
@@ -55,6 +57,7 @@ export function LabelManagementPopover({
       onOpenChange={handleOpenChange}
       content={
         <LabelContent
+          taskId={taskId}
           task={task}
           onAddLabel={onAddLabel}
           onRemoveLabel={onRemoveLabel}
@@ -63,8 +66,9 @@ export function LabelManagementPopover({
           initialIsAdding={isAdding}
         />
       }
-      className="w-64 p-0"
-      align="end"
+      side="bottom"
+      align="start"
+      className="w-80 p-0 max-h-[400px] overflow-hidden"
     >
       <div className={className}>{children}</div>
     </ContentPopover>

@@ -6,13 +6,20 @@ import { SubtaskContent } from "./subtask-content"
 import type { Task } from "@/lib/types"
 
 interface SubtaskPopoverProps {
-  task: Task
+  taskId?: string
+  task?: Task // Deprecated - use taskId instead
   children: React.ReactNode
   className?: string
   onOpenChange?: (open: boolean) => void
 }
 
-export function SubtaskPopover({ task, children, className, onOpenChange }: SubtaskPopoverProps) {
+export function SubtaskPopover({
+  taskId,
+  task,
+  children,
+  className,
+  onOpenChange,
+}: SubtaskPopoverProps) {
   const [open, setOpen] = useState(false)
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -22,7 +29,8 @@ export function SubtaskPopover({ task, children, className, onOpenChange }: Subt
 
   const handleAddingChange = (adding: boolean) => {
     // Close popover if canceling add and no subtasks exist
-    if (!adding && task.subtasks.length === 0) {
+    // Note: For quick-add mode, we'll check the quickAddTaskAtom inside SubtaskContent
+    if (!adding) {
       setOpen(false)
     }
   }
@@ -31,10 +39,17 @@ export function SubtaskPopover({ task, children, className, onOpenChange }: Subt
     <ContentPopover
       open={open}
       onOpenChange={handleOpenChange}
-      content={<SubtaskContent task={task} mode="popover" onAddingChange={handleAddingChange} />}
-      className="w-80 p-0"
-      triggerClassName={className}
+      content={
+        <SubtaskContent
+          taskId={taskId}
+          task={task}
+          mode="popover"
+          onAddingChange={handleAddingChange}
+        />
+      }
+      side="bottom"
       align="start"
+      className={className}
     >
       {children}
     </ContentPopover>

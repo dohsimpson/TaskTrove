@@ -118,6 +118,9 @@ vi.mock("lucide-react", () => ({
   Sparkles: () => <span data-testid="sparkles-icon">✨</span>,
   AlertTriangle: () => <span data-testid="alert-triangle-icon">⚠️</span>,
   HelpCircle: () => <span data-testid="help-circle-icon">?</span>,
+  MoreHorizontal: () => <span data-testid="more-horizontal-icon">⋯</span>,
+  CheckSquare: () => <span data-testid="check-square-icon">☑️</span>,
+  MessageSquare: () => <span data-testid="message-square-icon">💬</span>,
 }))
 
 vi.mock("@radix-ui/react-visually-hidden", () => ({

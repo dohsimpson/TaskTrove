@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { useSetAtom } from "jotai"
+import { useAtomValue, useSetAtom } from "jotai"
 import { v4 as uuidv4 } from "uuid"
 import { TaskItem } from "./task-item"
 import { Progress } from "@/components/ui/progress"
@@ -9,26 +9,46 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CheckSquare } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { updateTaskAtom } from "@/lib/atoms"
-import type { Task, Subtask } from "@/lib/types"
+import { updateTaskAtom, tasksAtom } from "@/lib/atoms"
+import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
+import type { Task, Subtask, CreateTaskRequest } from "@/lib/types"
 import { createSubtaskId, createTaskId } from "@/lib/types"
 
 interface SubtaskContentProps {
-  task: Task
+  taskId?: string // Optional for quick-add mode
+  task?: Task // Deprecated - use taskId instead
   mode?: "inline" | "popover"
   className?: string
   onAddingChange?: (isAdding: boolean) => void
 }
 
 export function SubtaskContent({
-  task,
+  taskId,
+  task: legacyTask,
   mode = "inline",
   className,
   onAddingChange,
 }: SubtaskContentProps) {
+  const allTasks = useAtomValue(tasksAtom)
   const updateTask = useSetAtom(updateTaskAtom)
+  const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
+  const newTask = useAtomValue(quickAddTaskAtom)
+  const isNewTask = !taskId && !legacyTask
+
+  // Get the task data - either from quick-add atom, legacy prop, or find by ID
+  const task: Task | CreateTaskRequest | undefined = (() => {
+    if (legacyTask) return legacyTask // Legacy prop support
+    if (isNewTask) return newTask // Quick-add mode
+    return allTasks.find((t: Task) => t.id === taskId) // Existing task mode
+  })()
+
   const [isAddingSubtask, setIsAddingSubtask] = useState(false)
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("")
+
+  if (!task) {
+    console.warn("Task not found", taskId)
+    return null
+  }
 
   const handleAddSubtask = () => {
     if (!newSubtaskTitle.trim()) return
@@ -37,11 +57,19 @@ export function SubtaskContent({
       id: createSubtaskId(uuidv4()),
       title: newSubtaskTitle.trim(),
       completed: false,
-      order: task.subtasks.length,
+      order: task.subtasks?.length || 0,
     }
 
-    const updatedSubtasks = [...task.subtasks, newSubtask]
-    updateTask({ updateRequest: { id: task.id, subtasks: updatedSubtasks } })
+    const updatedSubtasks = [...(task.subtasks || []), newSubtask]
+
+    // Update appropriate atom based on context
+    if (isNewTask) {
+      updateQuickAddTask({ updateRequest: { subtasks: updatedSubtasks } })
+    } else if (legacyTask) {
+      updateTask({ updateRequest: { id: legacyTask.id, subtasks: updatedSubtasks } })
+    } else if (taskId) {
+      updateTask({ updateRequest: { id: createTaskId(taskId), subtasks: updatedSubtasks } })
+    }
 
     setNewSubtaskTitle("")
     setIsAddingSubtask(false)
@@ -69,8 +97,8 @@ export function SubtaskContent({
     }
   }
 
-  const completedSubtasks = task.subtasks.filter((s) => s.completed).length
-  const totalSubtasks = task.subtasks.length
+  const completedSubtasks = task.subtasks?.filter((s) => s.completed).length || 0
+  const totalSubtasks = task.subtasks?.length || 0
   const progressPercentage = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0
 
   return (
@@ -106,13 +134,13 @@ export function SubtaskContent({
       {totalSubtasks > 0 && (
         <div className="space-y-1 max-h-64 overflow-y-auto">
           {task.subtasks
-            .sort((a, b) => (a.order || 0) - (b.order || 0))
+            ?.sort((a, b) => (a.order || 0) - (b.order || 0))
             .map((subtask) => (
               <TaskItem
                 key={subtask.id}
                 taskId={createTaskId(String(subtask.id))}
                 variant="subtask"
-                parentTask={task}
+                parentTask={isNewTask ? undefined : task} // Don't pass parentTask for new tasks (quick-add will use quickAddTaskAtom)
                 showDeleteButton={true}
               />
             ))}

@@ -51,7 +51,8 @@ import {
 } from "@/lib/atoms"
 import { sortedLabelsAtom, addLabelAtom, labelsFromIdsAtom } from "@/lib/atoms/core/labels"
 import { sortedProjectsAtom } from "@/lib/atoms"
-import type { Task, TaskId, TaskPriority, Subtask, LabelId } from "@/lib/types"
+import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
+import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } from "@/lib/types"
 import { INBOX_PROJECT_ID, createTaskId, createLabelId } from "@/lib/types"
 
 // Responsive width for metadata columns to ensure consistent alignment
@@ -88,7 +89,7 @@ interface TaskItemProps {
   showProjectBadge?: boolean
   variant?: "default" | "compact" | "kanban" | "calendar" | "subtask"
   // Subtask-specific props
-  parentTask?: Task // Parent task for subtask operations - kept for subtask variant
+  parentTask?: Task | CreateTaskRequest // Parent task for subtask operations - can be CreateTaskRequest in quick-add
   showDeleteButton?: boolean
 }
 
@@ -127,31 +128,39 @@ export function TaskItem({
   const enterSelectionMode = useSetAtom(enterSelectionModeAtom)
   const addLabel = useSetAtom(addLabelAtom)
 
+  // Quick-add atoms for subtask handling in new tasks
+  const quickAddTask = useAtomValue(quickAddTaskAtom)
+  const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
+
   // Find the task after getting all atoms
   let task = allTasks.find((t: Task) => t.id === taskId)
 
   // Special handling for subtasks - if not found in main tasks atom but variant is subtask
-  if (!task && variant === "subtask" && parentTask) {
-    const subtask = parentTask.subtasks.find((s) => String(s.id) === String(taskId))
-    if (subtask) {
-      // Convert Subtask to Task-like object for rendering
-      task = {
-        id: createTaskId(String(subtask.id)), // Convert SubtaskId to TaskId for rendering
-        title: subtask.title,
-        completed: subtask.completed,
-        description: "",
-        priority: 4 satisfies TaskPriority,
-        dueDate: undefined,
-        projectId: INBOX_PROJECT_ID,
-        sectionId: parentTask.sectionId,
-        labels: [],
-        subtasks: [],
-        comments: [],
-        attachments: [],
-        createdAt: new Date(),
-        status: subtask.completed ? "completed" : "active",
-        order: subtask.order || 0,
-        recurringMode: "dueDate",
+  if (!task && variant === "subtask") {
+    // Get parent task from either prop or quick-add atom
+    const parent = parentTask || quickAddTask
+    if (parent) {
+      const subtask = parent.subtasks?.find((s) => String(s.id) === String(taskId))
+      if (subtask) {
+        // Convert Subtask to Task-like object for rendering
+        task = {
+          id: createTaskId(String(subtask.id)), // Convert SubtaskId to TaskId for rendering
+          title: subtask.title,
+          completed: subtask.completed,
+          description: "",
+          priority: 4 satisfies TaskPriority,
+          dueDate: undefined,
+          projectId: INBOX_PROJECT_ID,
+          sectionId: "sectionId" in parent ? parent.sectionId : undefined,
+          labels: [],
+          subtasks: [],
+          comments: [],
+          attachments: [],
+          createdAt: new Date(),
+          status: subtask.completed ? "completed" : "active",
+          order: subtask.order || 0,
+          recurringMode: "dueDate",
+        }
       }
     }
   }
@@ -181,34 +190,60 @@ export function TaskItem({
 
   const taskProject = getTaskProject()
 
+  // Helper function to update subtasks in the appropriate context (existing task vs quick-add)
+  const updateSubtasks = (updatedSubtasks: Subtask[]) => {
+    const parent = parentTask || quickAddTask
+    if (!parent) return
+
+    if (parentTask && "id" in parentTask) {
+      // Existing task - update global state
+      updateTask({ updateRequest: { id: parentTask.id, subtasks: updatedSubtasks } })
+    } else {
+      // Quick-add context - update quick-add atom
+      updateQuickAddTask({ updateRequest: { subtasks: updatedSubtasks } })
+    }
+  }
+
   // Subtask handlers for variant="subtask"
   const handleSubtaskToggle = () => {
-    if (variant !== "subtask" || !parentTask) return
+    if (variant !== "subtask") return
 
-    const updatedSubtasks = parentTask.subtasks.map((subtask) =>
+    const parent = parentTask || quickAddTask
+    if (!parent || !parent.subtasks) return
+
+    const updatedSubtasks = parent.subtasks.map((subtask) =>
       String(subtask.id) === String(task.id)
         ? { ...subtask, completed: !subtask.completed }
         : subtask,
     )
-    updateTask({ updateRequest: { id: parentTask.id, subtasks: updatedSubtasks } })
+
+    updateSubtasks(updatedSubtasks)
   }
 
   const handleSubtaskDelete = () => {
-    if (variant !== "subtask" || !parentTask) return
+    if (variant !== "subtask") return
 
-    const updatedSubtasks = parentTask.subtasks.filter(
+    const parent = parentTask || quickAddTask
+    if (!parent || !parent.subtasks) return
+
+    const updatedSubtasks = parent.subtasks.filter(
       (subtask) => String(subtask.id) !== String(task.id),
     )
-    updateTask({ updateRequest: { id: parentTask.id, subtasks: updatedSubtasks } })
+
+    updateSubtasks(updatedSubtasks)
   }
 
   const handleSubtaskTitleUpdate = (newTitle: string) => {
-    if (variant !== "subtask" || !parentTask) return
+    if (variant !== "subtask") return
 
-    const updatedSubtasks = parentTask.subtasks.map((subtask) =>
+    const parent = parentTask || quickAddTask
+    if (!parent || !parent.subtasks) return
+
+    const updatedSubtasks = parent.subtasks.map((subtask) =>
       String(subtask.id) === String(task.id) ? { ...subtask, title: newTitle.trim() } : subtask,
     )
-    updateTask({ updateRequest: { id: parentTask.id, subtasks: updatedSubtasks } })
+
+    updateSubtasks(updatedSubtasks)
   }
 
   const formatDueDate = (date: Date) => {

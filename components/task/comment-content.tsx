@@ -6,11 +6,17 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { formatDistanceToNow } from "date-fns"
-import type { Task, TaskComment } from "@/lib/types"
+import { useAtomValue, useSetAtom } from "jotai"
+import { v4 as uuidv4 } from "uuid"
+import { updateTaskAtom, tasksAtom } from "@/lib/atoms"
+import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
+import type { Task, TaskComment, CreateTaskRequest } from "@/lib/types"
+import { createCommentId, createTaskId } from "@/lib/types"
 
 interface CommentContentProps {
-  task: Task
-  onAddComment: (content: string) => void
+  taskId?: string // Optional for quick-add mode
+  task?: Task // Deprecated - use taskId instead
+  onAddComment?: (content: string) => void // Optional callback - if not provided, will update atoms directly
   onViewAll?: () => void
   mode?: "inline" | "popover"
   className?: string
@@ -52,54 +58,36 @@ function CommentItem({
 }
 
 export function CommentContent({
-  task,
+  taskId,
+  task: legacyTask,
   onAddComment,
   onViewAll,
   mode = "inline",
   className,
   onAddingChange,
 }: CommentContentProps) {
+  const allTasks = useAtomValue(tasksAtom)
+  const updateTask = useSetAtom(updateTaskAtom)
+  const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
+  const newTask = useAtomValue(quickAddTaskAtom)
+  const isNewTask = !taskId && !legacyTask
+
+  // Get the task data - either from quick-add atom, legacy prop, or find by ID
+  const task: Task | CreateTaskRequest | undefined = (() => {
+    if (legacyTask) return legacyTask // Legacy prop support
+    if (isNewTask) return newTask // Quick-add mode
+    return allTasks.find((t: Task) => t.id === taskId) // Existing task mode
+  })()
+
   const [isAddingComment, setIsAddingComment] = useState(false)
   const [newComment, setNewComment] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-  // Get recent comments for display
-  const displayComments =
-    mode === "inline"
-      ? task.comments.slice(-3).reverse() // Show last 3 in reverse order for inline
-      : task.comments.slice().reverse() // Show all in reverse order for popover
-
-  const hasMoreComments = mode === "inline" && task.comments.length > 3
-
-  const handleAddComment = () => {
-    if (newComment.trim()) {
-      onAddComment(newComment.trim())
-      setNewComment("")
-      setIsAddingComment(false)
-      onAddingChange?.(false)
-    }
-  }
-
-  const handleStartAdding = () => {
-    setIsAddingComment(true)
-    onAddingChange?.(true)
-  }
 
   const handleCancelAdding = useCallback(() => {
     setNewComment("")
     setIsAddingComment(false)
     onAddingChange?.(false)
   }, [onAddingChange])
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault()
-      handleAddComment()
-    }
-    if (e.key === "Escape") {
-      handleCancelAdding()
-    }
-  }
 
   // Auto-focus textarea when adding
   useEffect(() => {
@@ -130,6 +118,67 @@ export function CommentContent({
     }
   }, [isAddingComment, handleCancelAdding])
 
+  if (!task) {
+    console.warn("Task not found", taskId)
+    return null
+  }
+
+  // Get recent comments for display
+  const displayComments =
+    mode === "inline"
+      ? task.comments?.slice(-3).reverse() || [] // Show last 3 in reverse order for inline
+      : task.comments?.slice().reverse() || [] // Show all in reverse order for popover
+
+  const hasMoreComments = mode === "inline" && (task.comments?.length || 0) > 3
+
+  const handleAddComment = () => {
+    if (!newComment.trim()) return
+
+    // If callback provided, use it (for existing components)
+    if (onAddComment) {
+      onAddComment(newComment.trim())
+    } else {
+      // Otherwise, handle the update directly
+      const newTaskComment: TaskComment = {
+        id: createCommentId(uuidv4()),
+        content: newComment.trim(),
+        createdAt: new Date(),
+      }
+
+      const updatedComments = [...(task.comments || []), newTaskComment]
+
+      // Update appropriate atom based on context
+      if (isNewTask) {
+        updateQuickAddTask({ updateRequest: { comments: updatedComments } })
+      } else if (legacyTask) {
+        updateTask({ updateRequest: { id: legacyTask.id, comments: updatedComments } })
+      } else if (taskId) {
+        updateTask({ updateRequest: { id: createTaskId(taskId), comments: updatedComments } })
+      }
+    }
+
+    setNewComment("")
+    setIsAddingComment(false)
+    onAddingChange?.(false)
+  }
+
+  const handleStartAdding = () => {
+    setIsAddingComment(true)
+    onAddingChange?.(true)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault()
+      handleAddComment()
+    }
+    if (e.key === "Escape") {
+      handleCancelAdding()
+    }
+  }
+
+  const commentsLength = task.comments?.length || 0
+
   return (
     <div className={cn("space-y-3", mode === "popover" && "p-4", className)}>
       {/* Header - Show title for popover header only */}
@@ -138,13 +187,13 @@ export function CommentContent({
           <div className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium text-sm">
-              {task.comments.length > 0 ? `Comments (${task.comments.length})` : "Add Comment"}
+              {commentsLength > 0 ? `Comments (${commentsLength})` : "Add Comment"}
             </span>
           </div>
-          {task.comments.length > 0 && (
+          {commentsLength > 0 && (
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
-                {task.comments.length} comment{task.comments.length !== 1 ? "s" : ""}
+                {commentsLength} comment{commentsLength !== 1 ? "s" : ""}
               </span>
               {hasMoreComments && (
                 <Button
@@ -173,6 +222,19 @@ export function CommentContent({
           {displayComments.map((comment) => (
             <CommentItem key={comment.id} comment={comment} mode={mode} />
           ))}
+          {/* View all button for inline mode when there are more comments */}
+          {hasMoreComments && (
+            <div className="pt-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onViewAll}
+                className="h-5 px-2 text-xs text-blue-600 hover:text-blue-700"
+              >
+                View all
+              </Button>
+            </div>
+          )}
         </div>
       )}
 

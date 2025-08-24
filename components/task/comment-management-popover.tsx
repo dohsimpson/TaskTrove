@@ -6,14 +6,16 @@ import { CommentContent } from "./comment-content"
 import type { Task } from "@/lib/types"
 
 interface CommentManagementPopoverProps {
-  task: Task
-  onAddComment: (content: string) => void
+  taskId?: string
+  task?: Task // Deprecated - use taskId instead
+  onAddComment?: (content: string) => void // Optional - if not provided, CommentContent will handle updates directly
   children: React.ReactNode
   className?: string
   onOpenChange?: (open: boolean) => void
 }
 
 export function CommentManagementPopover({
+  taskId,
   task,
   onAddComment,
   children,
@@ -27,8 +29,8 @@ export function CommentManagementPopover({
     setOpen(newOpen)
     onOpenChange?.(newOpen)
 
-    // Auto-start adding if no comments exist when opening
-    if (newOpen && task.comments.length === 0) {
+    // Auto-start adding if no comments exist when opening (for existing tasks only)
+    if (newOpen && task && task.comments.length === 0) {
       setIsAdding(true)
     }
 
@@ -41,8 +43,8 @@ export function CommentManagementPopover({
   const handleAddingChange = (adding: boolean) => {
     setIsAdding(adding)
 
-    // Close popover if canceling add and no comments exist
-    if (!adding && task.comments.length === 0) {
+    // Close popover if canceling add and no comments exist (for existing tasks only)
+    if (!adding && task && task.comments.length === 0) {
       setOpen(false)
     }
   }
@@ -53,16 +55,18 @@ export function CommentManagementPopover({
       onOpenChange={handleOpenChange}
       content={
         <CommentContent
+          taskId={taskId}
           task={task}
           onAddComment={onAddComment}
           mode="popover"
           onAddingChange={handleAddingChange}
         />
       }
-      className="w-96 p-0 max-h-[500px] overflow-hidden"
+      side="bottom"
       align="start"
+      className={className}
     >
-      <div className={className}>{children}</div>
+      {children}
     </ContentPopover>
   )
 }

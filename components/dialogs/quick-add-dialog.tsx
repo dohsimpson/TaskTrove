@@ -8,7 +8,18 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { EnhancedHighlightedInput } from "@/components/ui/enhanced-highlighted-input"
-import { Calendar, Tag, Repeat, X, Folder, Flag, AlertTriangle } from "lucide-react"
+import {
+  Calendar,
+  Tag,
+  Repeat,
+  X,
+  Folder,
+  Flag,
+  AlertTriangle,
+  MoreHorizontal,
+  CheckSquare,
+  MessageSquare,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { useAtomValue, useSetAtom } from "jotai"
@@ -28,10 +39,11 @@ import { TaskSchedulePopover } from "@/components/task/task-schedule-popover"
 import { LabelManagementPopover } from "@/components/task/label-management-popover"
 import { TaskProjectPopover } from "@/components/task/task-project-popover"
 import { TaskPriorityPopover } from "@/components/task/task-priority-popover"
+import { SubtaskPopover } from "@/components/task/subtask-popover"
+import { CommentManagementPopover } from "@/components/task/comment-management-popover"
 import { HelpPopover } from "@/components/ui/help-popover"
 import {
   INBOX_PROJECT_ID,
-  Task,
   CreateTaskRequest,
   type ProjectId,
   type LabelId,
@@ -41,9 +53,8 @@ import {
   createLabelId,
   createProjectId,
   parseRRule,
-  createTaskId,
 } from "@/lib/types"
-import { DEFAULT_RECURRING_MODE, MOCK_UUID, PLACEHOLDER_TASK_INPUT } from "@/lib/constants/defaults"
+import { PLACEHOLDER_TASK_INPUT } from "@/lib/constants/defaults"
 import { format, isToday, isPast } from "date-fns"
 import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
 import { log } from "@/lib/utils/logger"
@@ -136,6 +147,7 @@ export function QuickAddDialog() {
 
   // UI-only state (stays local)
   const [input, setInput] = useState("")
+  const [showAdvancedRow, setShowAdvancedRow] = useState(false)
 
   // Track whether values were set by parsing (to avoid clearing manually selected values)
   const projectSetByParsingRef = useRef(false)
@@ -435,6 +447,7 @@ export function QuickAddDialog() {
   const handleCloseDialog = () => {
     setInput("")
     resetNewTask()
+    setShowAdvancedRow(false)
     // Reset all tracking flags
     projectSetByParsingRef.current = false
     prioritySetByParsingRef.current = false
@@ -442,28 +455,6 @@ export function QuickAddDialog() {
     recurringSetByParsingRef.current = false
     labelsSetByParsingRef.current = false
     closeDialog()
-  }
-
-  // Create mock task for popovers TODO: remove this
-  const mockTask: Task = {
-    id: createTaskId(MOCK_UUID),
-    title: input || "New Task",
-    description: newTask.description,
-    completed: false,
-    priority: newTask.priority ?? 4,
-    dueDate: newTask.dueDate === null ? undefined : newTask.dueDate,
-    dueTime: newTask.dueTime,
-    projectId: newTask.projectId ?? currentProject,
-    labels: newTask.labels ?? [],
-    subtasks: newTask.subtasks ?? [],
-    comments: [],
-    attachments: newTask.attachments ?? [],
-    createdAt: new Date(),
-    favorite: newTask.favorite,
-    recurring: newTask.recurring,
-    recurringMode: newTask.recurringMode ?? DEFAULT_RECURRING_MODE,
-    energyLevel: newTask.energyLevel,
-    timeSpent: newTask.timeSpent,
   }
 
   return (
@@ -501,7 +492,7 @@ export function QuickAddDialog() {
           </div>
 
           {/* Quick Actions Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-2 sm:py-3 border-b">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2 sm:pt-3 pb-1">
             <div className="flex items-center gap-1 flex-wrap">
               {/* Priority */}
               <TaskPriorityPopover
@@ -604,11 +595,7 @@ export function QuickAddDialog() {
               </TaskProjectPopover>
 
               {/* Add Label */}
-              <LabelManagementPopover
-                task={mockTask}
-                onAddLabel={handleAddLabel}
-                onRemoveLabel={handleRemoveLabel}
-              >
+              <LabelManagementPopover onAddLabel={handleAddLabel} onRemoveLabel={handleRemoveLabel}>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -619,15 +606,15 @@ export function QuickAddDialog() {
                 </Button>
               </LabelManagementPopover>
 
-              {/* Favorite */}
-              {/* <Button */}
-              {/*   variant="ghost" */}
-              {/*   size="sm" */}
-              {/*   className={cn("h-8 px-2", isFavorite ? "text-yellow-500" : "text-muted-foreground")} */}
-              {/*   onClick={() => setIsFavorite(!isFavorite)} */}
-              {/* > */}
-              {/*   <Star className={cn("h-3 w-3", isFavorite && "fill-current")} /> */}
-              {/* </Button> */}
+              {/* Expansion Toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-muted-foreground"
+                onClick={() => setShowAdvancedRow(!showAdvancedRow)}
+              >
+                <MoreHorizontal className="h-3 w-3" />
+              </Button>
             </div>
 
             {/* NLP Toggle */}
@@ -652,6 +639,35 @@ export function QuickAddDialog() {
               </div>
             </div>
           </div>
+
+          {/* Advanced Row - Second row of options */}
+          {showAdvancedRow && (
+            <div className="flex items-center gap-1 flex-wrap py-1">
+              {/* Subtasks */}
+              <SubtaskPopover onOpenChange={() => {}}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
+                >
+                  <CheckSquare className="h-3 w-3 flex-shrink-0" />
+                  <span className="hidden sm:inline whitespace-nowrap">Subtasks</span>
+                </Button>
+              </SubtaskPopover>
+
+              {/* Comments */}
+              <CommentManagementPopover onOpenChange={() => {}}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
+                >
+                  <MessageSquare className="h-3 w-3 flex-shrink-0" />
+                  <span className="hidden sm:inline whitespace-nowrap">Comments</span>
+                </Button>
+              </CommentManagementPopover>
+            </div>
+          )}
 
           {/* Labels Display */}
           {newTask.labels && newTask.labels.length > 0 && (

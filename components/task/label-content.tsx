@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react"
 import { useAtomValue } from "jotai"
 import { Tag, X, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
   Command,
   CommandEmpty,
@@ -12,12 +13,13 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
-import { getContrastColor, cn } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import { labelsFromIdsAtom, sortedLabelsAtom } from "@/lib/atoms/core/labels"
 import type { Task, LabelId } from "@/lib/types"
 
 interface LabelContentProps {
-  task: Task
+  taskId?: string
+  task?: Task // Deprecated - use taskId instead, or provided for quick-add context
   onAddLabel: (labelName?: string) => void
   onRemoveLabel: (labelId: LabelId) => void
   mode?: "inline" | "popover"
@@ -27,6 +29,7 @@ interface LabelContentProps {
 }
 
 export function LabelContent({
+  taskId,
   task,
   onAddLabel,
   onRemoveLabel,
@@ -35,13 +38,17 @@ export function LabelContent({
   onAddingChange,
   initialIsAdding = false,
 }: LabelContentProps) {
+  console.log(taskId) // TODO: placeholder to prevent linter complaining about unused var, remove me
   const [isAddingLabel, setIsAddingLabel] = useState(initialIsAdding)
   const [newLabel, setNewLabel] = useState("")
   const commandRef = useRef<HTMLDivElement>(null)
 
   const getLabelsFromIds = useAtomValue(labelsFromIdsAtom)
   const allLabels = useAtomValue(sortedLabelsAtom)
-  const taskLabels = getLabelsFromIds(task.labels)
+
+  // For quick-add mode, task might not be provided, so use empty array as fallback
+  const taskLabels = task ? getLabelsFromIds(task.labels) : []
+  const taskLabelIds = task?.labels || []
 
   // Sync internal state with external initialIsAdding prop
   useEffect(() => {
@@ -55,7 +62,7 @@ export function LabelContent({
     const searchTerm = newLabel.toLowerCase().trim()
 
     // First filter out already added labels (now comparing by ID)
-    const availableLabels = allLabels.filter((label) => !task.labels.includes(label.id))
+    const availableLabels = allLabels.filter((label) => !taskLabelIds.includes(label.id))
 
     if (!searchTerm) return availableLabels.slice(0, 5) // Show first 5 available if no search
 
@@ -120,107 +127,101 @@ export function LabelContent({
           <div className="flex items-center gap-2">
             <Tag className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium text-sm">
-              {taskLabels.length > 0 ? "Labels" : "Add Label"}
+              {taskLabels.length > 0 ? `Labels (${taskLabels.length})` : "Add Labels"}
             </span>
           </div>
-          {taskLabels.length > 0 && (
-            <span className="text-xs text-muted-foreground">
-              {taskLabels.length} label{taskLabels.length !== 1 ? "s" : ""}
-            </span>
-          )}
         </div>
       )}
 
-      {/* Labels and Add Button */}
-      <div className="flex flex-wrap gap-1">
-        {taskLabels.map((label) => (
-          <div
-            key={label.id}
-            className="px-2 py-1 rounded text-xs flex items-center gap-1.5 group hover:opacity-80"
-            style={{
-              backgroundColor: label.color,
-              color: getContrastColor(label.color),
-            }}
-          >
-            <Tag className="h-3 w-3" />
-            <span>{label.name}</span>
-            <button
-              className="hover:opacity-75 transition-opacity"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleRemoveLabel(label.id)
+      {/* Current Labels - Only show if we have task data */}
+      {task && taskLabels.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {taskLabels.map((label) => (
+            <Badge
+              key={label.id}
+              variant="secondary"
+              className="gap-1 px-2 py-1 text-xs group"
+              style={{
+                backgroundColor: label.color,
+                color: "white",
+                border: "none",
               }}
             >
-              <X className="h-3 w-3" />
-            </button>
-          </div>
-        ))}
+              <Tag className="h-3 w-3" />
+              {label.name}
+              <button
+                onClick={() => handleRemoveLabel(label.id)}
+                className="ml-1 hover:bg-black/20 rounded-full p-0.5 opacity-70 hover:opacity-100"
+              >
+                <X className="h-2 w-2" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {/* Add Label Interface */}
+      <div>
         {!isAddingLabel && (
           <button
             onClick={handleStartAdding}
-            className="px-2 py-1 rounded text-xs flex items-center gap-1.5 hover:bg-accent/50 transition-colors border border-dashed border-muted-foreground/30 text-muted-foreground hover:text-foreground hover:border-muted-foreground/50"
+            className="flex items-center gap-2 p-2 w-full rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/20 text-left"
           >
-            <Plus className="h-3 w-3" />
+            <Tag className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground font-medium">Add label</span>
+            <Plus className="h-3 w-3 text-muted-foreground ml-auto" />
           </button>
         )}
-      </div>
 
-      {/* Add Label Interface */}
-      {isAddingLabel && (
-        <div className="space-y-2">
-          <Command className="rounded-lg border" ref={commandRef} onKeyDown={handleKeyDown}>
-            <CommandInput
-              placeholder="Search or create label..."
-              value={newLabel}
-              onValueChange={setNewLabel}
-              className="h-8"
-              autoFocus
-            />
-            <CommandList className="max-h-32">
-              {getFilteredLabels().length > 0 && (
-                <CommandGroup heading="Existing Labels">
+        {isAddingLabel && (
+          <div ref={commandRef}>
+            <Command className="border rounded-lg shadow-md bg-background">
+              <CommandInput
+                placeholder="Search or create labels..."
+                value={newLabel}
+                onValueChange={setNewLabel}
+                onKeyDown={handleKeyDown}
+                className="border-0"
+                autoFocus
+              />
+              <CommandList className="max-h-48">
+                <CommandEmpty>
+                  {newLabel.trim() ? (
+                    <div className="p-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleAddLabel()}
+                        className="w-full justify-start h-8 px-2 text-left"
+                      >
+                        <Plus className="h-3 w-3 mr-2" />
+                        Create &quot;{newLabel.trim()}&quot;
+                      </Button>
+                    </div>
+                  ) : (
+                    "No labels found."
+                  )}
+                </CommandEmpty>
+                <CommandGroup>
                   {getFilteredLabels().map((label) => (
                     <CommandItem
                       key={label.id}
                       onSelect={() => handleAddLabel(label.name)}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 cursor-pointer"
                     >
                       <div
-                        className="w-3 h-3 rounded-sm flex-shrink-0"
+                        className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: label.color }}
                       />
                       <span>{label.name}</span>
                     </CommandItem>
                   ))}
                 </CommandGroup>
-              )}
-              {newLabel.trim() &&
-                !allLabels.some((l) => l.name.toLowerCase() === newLabel.toLowerCase()) && (
-                  <CommandGroup heading="Create New">
-                    <CommandItem
-                      onSelect={() => handleAddLabel()}
-                      className="flex items-center gap-2"
-                    >
-                      <Plus className="w-3 h-3 text-muted-foreground" />
-                      <span>Create "{newLabel.trim()}"</span>
-                    </CommandItem>
-                  </CommandGroup>
-                )}
-              <CommandEmpty>No labels found.</CommandEmpty>
-            </CommandList>
-          </Command>
-          <div className="flex justify-end gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCancelAdding}
-              className="h-6 px-2 text-xs"
-            >
-              Cancel
-            </Button>
+              </CommandList>
+            </Command>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

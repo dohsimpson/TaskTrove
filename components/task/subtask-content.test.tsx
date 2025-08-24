@@ -83,12 +83,19 @@ vi.mock("@/lib/atoms", () => ({
   toggleTaskPanelAtom: vi.fn(),
   toggleTaskSelectionAtom: vi.fn(),
   sortedProjectsAtom: vi.fn(),
+  tasksAtom: vi.fn(),
 }))
 
 vi.mock("@/lib/atoms/core/labels", () => ({
   sortedLabelsAtom: vi.fn(),
   addLabelAtom: vi.fn(),
   labelsFromIdsAtom: vi.fn(),
+}))
+
+// Mock dialog atoms
+vi.mock("@/lib/atoms/ui/dialogs", () => ({
+  quickAddTaskAtom: vi.fn(),
+  updateQuickAddTaskAtom: vi.fn(),
 }))
 
 // Mock UI components

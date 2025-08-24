@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 import { format } from "date-fns"
 import type { CreateTaskRequest, Task, TaskId } from "@/lib/types"
+import { formatTaskDateTime } from "@/lib/utils/task-date-formatter"
 import { CommonRRules, buildRRule, RRuleFrequency, parseRRule } from "@/lib/types"
 import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
 import { useAtomValue, useSetAtom } from "jotai"
@@ -499,7 +500,8 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
           {task.dueDate && (
             <div className="text-xs text-gray-500 flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              Due: {format(task.dueDate, "MMM d")}
+              Due:{" "}
+              {formatTaskDateTime(task, { format: "compact" }) || format(task.dueDate, "MMM d")}
             </div>
           )}
           {task.recurring && (

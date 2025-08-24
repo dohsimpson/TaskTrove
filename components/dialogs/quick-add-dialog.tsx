@@ -56,6 +56,7 @@ import {
 } from "@/lib/types"
 import { PLACEHOLDER_TASK_INPUT } from "@/lib/constants/defaults"
 import { format, isToday, isPast } from "date-fns"
+import { formatTaskDateTimeBadge } from "@/lib/utils/task-date-formatter"
 import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
 import { log } from "@/lib/utils/logger"
 import {
@@ -550,7 +551,7 @@ export function QuickAddDialog() {
                     {newTask.recurring
                       ? getRRuleDisplayText(newTask.recurring)
                       : newTask.dueDate
-                        ? format(newTask.dueDate, "MMM d")
+                        ? formatTaskDateTimeBadge(newTask) || format(newTask.dueDate, "MMM d")
                         : "Date"}
                   </span>
                 </Button>

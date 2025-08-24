@@ -26,6 +26,7 @@ import {
 import { cn } from "@/lib/utils"
 import { format, isToday, isTomorrow } from "date-fns"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { formatTaskDateTime } from "@/lib/utils/task-date-formatter"
 import { TaskSchedulePopover } from "./task-schedule-popover"
 import { PriorityPopover } from "./priority-popover"
 import { ProjectPopover } from "./project-popover"
@@ -129,11 +130,12 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
             )}
             <span className="font-medium">
               {task.dueDate
-                ? isToday(task.dueDate)
-                  ? "Today"
-                  : isTomorrow(task.dueDate)
-                    ? "Tomorrow"
-                    : format(task.dueDate, "MMM d, yyyy")
+                ? formatTaskDateTime(task, { format: "full" }) ||
+                  (isToday(task.dueDate)
+                    ? "Today"
+                    : isTomorrow(task.dueDate)
+                      ? "Tomorrow"
+                      : format(task.dueDate, "MMM d, yyyy"))
                 : "Add due date"}
             </span>
           </div>

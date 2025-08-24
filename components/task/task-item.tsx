@@ -22,8 +22,9 @@ import {
   Tag,
   AlertTriangle,
 } from "lucide-react"
-import { format, isToday, isTomorrow, isPast } from "date-fns"
+import { isToday, isPast } from "date-fns"
 import { cn, getContrastColor } from "@/lib/utils"
+import { formatTaskDateTimeBadge } from "@/lib/utils/task-date-formatter"
 import {
   getPriorityColor,
   getPriorityTextColor,
@@ -246,10 +247,8 @@ export function TaskItem({
     updateSubtasks(updatedSubtasks)
   }
 
-  const formatDueDate = (date: Date) => {
-    if (isToday(date)) return "Today"
-    if (isTomorrow(date)) return "Tomorrow"
-    return format(date, "MMM d")
+  const formatDueDate = (task: { dueDate?: Date | null; dueTime?: Date | null }) => {
+    return formatTaskDateTimeBadge(task) || ""
   }
 
   // Compact variant specific helpers
@@ -467,7 +466,7 @@ export function TaskItem({
                         {scheduleIcons.secondaryIcon === "repeat" && (
                           <Repeat className="h-3 w-3" data-testid="repeat-icon" />
                         )}
-                        {task.dueDate && formatDueDate(task.dueDate)}
+                        {task.dueDate && formatDueDate(task)}
                         {scheduleIcons.showRecurringOnly && "Recurring"}
                       </span>
                     )
@@ -715,7 +714,7 @@ export function TaskItem({
                         <Repeat className="h-3 w-3" data-testid="repeat-icon" />
                       )}
                       {task.dueDate
-                        ? formatDueDate(task.dueDate)
+                        ? formatDueDate(task)
                         : scheduleIcons.showRecurringOnly
                           ? "Recurring"
                           : ""}
@@ -1199,7 +1198,7 @@ export function TaskItem({
                       <Repeat className="h-3 w-3" data-testid="repeat-icon" />
                     )}
                     {task.dueDate
-                      ? formatDueDate(task.dueDate)
+                      ? formatDueDate(task)
                       : scheduleIcons.showRecurringOnly
                         ? "Recurring"
                         : ""}

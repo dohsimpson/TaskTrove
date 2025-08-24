@@ -5,12 +5,13 @@ import { Calendar, Flag, Tag, Folder, X, AlertTriangle, Repeat } from "lucide-re
 import { format, isPast, isToday } from "date-fns"
 import { cn } from "@/lib/utils"
 import { getScheduleIcons } from "@/lib/color-utils"
+import { formatTaskDateTimeBadge } from "@/lib/utils/task-date-formatter"
 
 interface ParsedTask {
   title: string
-  dueDate?: Date
-  dueTime?: string
-  priority?: number
+  dueDate?: Date | null
+  dueTime?: Date | null
+  priority?: 1 | 2 | 3 | 4
   labels: string[]
   project?: string
   recurring?: string
@@ -67,13 +68,14 @@ export function MetadataPills({
           className="inline-flex items-center gap-1 h-6 px-2 text-xs hover:bg-gray-200 transition-colors group"
         >
           {(() => {
-            const isOverdue =
+            const isOverdue = Boolean(
               parsedTask.dueDate &&
-              isPast(parsedTask.dueDate) &&
-              !isToday(parsedTask.dueDate) &&
-              !parsedTask.completed
+                isPast(parsedTask.dueDate) &&
+                !isToday(parsedTask.dueDate) &&
+                !parsedTask.completed,
+            )
             const scheduleIcons = getScheduleIcons(
-              parsedTask.dueDate,
+              parsedTask.dueDate || undefined,
               parsedTask.recurring,
               parsedTask.completed,
               isOverdue,
@@ -87,14 +89,16 @@ export function MetadataPills({
                 {scheduleIcons.primaryIcon === "repeat" && <Repeat className="w-3 h-3" />}
                 {scheduleIcons.secondaryIcon === "repeat" && <Repeat className="w-3 h-3" />}
                 <span>
-                  {parsedTask.dueDate ? (
-                    <>
-                      {format(parsedTask.dueDate, "MMM d")}
-                      {parsedTask.dueTime && ` at ${parsedTask.dueTime}`}
-                    </>
-                  ) : scheduleIcons.showRecurringOnly ? (
-                    "Recurring"
-                  ) : null}
+                  {parsedTask.dueDate
+                    ? formatTaskDateTimeBadge(parsedTask) || (
+                        <>
+                          {format(parsedTask.dueDate, "MMM d")}
+                          {parsedTask.dueTime && ` at ${parsedTask.dueTime}`}
+                        </>
+                      )
+                    : scheduleIcons.showRecurringOnly
+                      ? "Recurring"
+                      : null}
                 </span>
               </>
             )

@@ -85,6 +85,9 @@ describe("PATCH /api/projects", () => {
       tasks: [],
       labels: [],
       ordering: { projects: [], labels: [] },
+      taskGroups: [],
+      projectGroups: [],
+      labelGroups: [],
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)
@@ -335,6 +338,9 @@ describe("POST /api/projects", () => {
       tasks: [],
       labels: [],
       ordering: { projects: [], labels: [] },
+      taskGroups: [],
+      projectGroups: [],
+      labelGroups: [],
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)
@@ -477,6 +483,9 @@ describe("DELETE /api/projects", () => {
       tasks: [],
       labels: [],
       ordering: { projects: [], labels: [] },
+      taskGroups: [],
+      projectGroups: [],
+      labelGroups: [],
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)

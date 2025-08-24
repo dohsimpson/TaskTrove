@@ -68,6 +68,9 @@ describe("PATCH /api/ordering", () => {
         projects: [TEST_PROJECT_ID_1, TEST_PROJECT_ID_2],
         labels: [TEST_LABEL_ID_1, TEST_LABEL_ID_2],
       },
+      taskGroups: [],
+      projectGroups: [],
+      labelGroups: [],
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)

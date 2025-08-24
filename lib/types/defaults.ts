@@ -11,4 +11,7 @@ export const DEFAULT_EMPTY_DATA_FILE: DataFile = {
     projects: [],
     labels: [],
   },
+  taskGroups: [],
+  projectGroups: [],
+  labelGroups: [],
 }

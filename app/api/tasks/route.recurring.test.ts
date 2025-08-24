@@ -85,6 +85,9 @@ describe("API Route - Recurring Tasks Integration", () => {
       projects: [],
       labels: [],
     },
+    taskGroups: [],
+    projectGroups: [],
+    labelGroups: [],
   })
 
   it("should generate recurring task instance when completing a recurring task", async () => {

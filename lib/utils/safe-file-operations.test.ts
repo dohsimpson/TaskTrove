@@ -343,6 +343,9 @@ describe("safe-file-operations", () => {
         projects: [],
         labels: [],
       },
+      taskGroups: [],
+      projectGroups: [],
+      labelGroups: [],
     }
 
     it("should successfully read a valid data file", async () => {
@@ -394,6 +397,9 @@ describe("safe-file-operations", () => {
         projects: [],
         labels: [],
       },
+      taskGroups: [],
+      projectGroups: [],
+      labelGroups: [],
     }
 
     it("should successfully write a valid data file", async () => {

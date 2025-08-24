@@ -151,6 +151,9 @@ const mockDataFile: DataFile = {
       createLabelId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"),
     ],
   },
+  taskGroups: [],
+  projectGroups: [],
+  labelGroups: [],
 }
 
 describe("PATCH /api/tasks - Task Updates Only", () => {

@@ -75,6 +75,9 @@ describe("PATCH /api/labels", () => {
         },
       ],
       ordering: { projects: [], labels: [TEST_LABEL_ID_1, TEST_LABEL_ID_2] },
+      taskGroups: [],
+      projectGroups: [],
+      labelGroups: [],
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)
@@ -282,6 +285,9 @@ describe("DELETE /api/labels", () => {
         },
       ],
       ordering: { projects: [], labels: [TEST_LABEL_ID_1, TEST_LABEL_ID_2] },
+      taskGroups: [],
+      projectGroups: [],
+      labelGroups: [],
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)
@@ -395,6 +401,9 @@ describe("POST /api/labels", () => {
         },
       ],
       ordering: { projects: [], labels: [TEST_LABEL_ID_1] },
+      taskGroups: [],
+      projectGroups: [],
+      labelGroups: [],
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)

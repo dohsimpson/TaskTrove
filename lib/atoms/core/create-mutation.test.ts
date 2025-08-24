@@ -81,6 +81,9 @@ describe("createMutation Function", () => {
           projects: [],
           labels: [{ id: createLabelId(uuidv4()), name: "Work", slug: "work", color: "#ef4444" }],
           ordering: { projects: [], labels: [] },
+          taskGroups: [],
+          projectGroups: [],
+          labelGroups: [],
         }
 
         const labelData = { name: "Work", color: "#10b981" }
@@ -114,6 +117,9 @@ describe("createMutation Function", () => {
           ],
           labels: [],
           ordering: { projects: [], labels: [] },
+          taskGroups: [],
+          projectGroups: [],
+          labelGroups: [],
         }
 
         const projectData = { name: "My Project", color: "#10b981" }
@@ -173,6 +179,9 @@ describe("createMutation Function", () => {
           projects: [],
           labels: [],
           ordering: { projects: [], labels: [] },
+          taskGroups: [],
+          projectGroups: [],
+          labelGroups: [],
         })
 
         const mockOptimisticDataFactory = vi.fn().mockReturnValue({
@@ -196,6 +205,9 @@ describe("createMutation Function", () => {
           projects: [],
           labels: [],
           ordering: { projects: [], labels: [] },
+          taskGroups: [],
+          projectGroups: [],
+          labelGroups: [],
         })
 
         // Act & Assert - Test mutation configuration
@@ -251,6 +263,9 @@ describe("createMutation Function", () => {
           projects: [],
           labels: [],
           ordering: { projects: [], labels: [] },
+          taskGroups: [],
+          projectGroups: [],
+          labelGroups: [],
         }
 
         const optimisticTask = {
@@ -305,6 +320,9 @@ describe("createMutation Function", () => {
           projects: [],
           labels: [],
           ordering: { projects: [], labels: [] },
+          taskGroups: [],
+          projectGroups: [],
+          labelGroups: [],
         }
 
         const mockOptimisticUpdateFn = (
@@ -368,6 +386,9 @@ describe("createMutation Function", () => {
           projects: [],
           labels: [],
           ordering: { projects: [], labels: [] },
+          taskGroups: [],
+          projectGroups: [],
+          labelGroups: [],
         }
 
         // Act - Simulate rollback scenario
@@ -542,6 +563,9 @@ describe("createMutation Function", () => {
           ],
           labels: [],
           ordering: { projects: [TEST_PROJECT_ID_1], labels: [] },
+          taskGroups: [],
+          projectGroups: [],
+          labelGroups: [],
         }
 
         // Act - Complex update operation
@@ -615,6 +639,9 @@ describe("createMutation Function", () => {
             projects: Array.from({ length: 50 }, () => createProjectId(uuidv4())),
             labels: Array.from({ length: 20 }, () => createLabelId(uuidv4())),
           },
+          taskGroups: [],
+          projectGroups: [],
+          labelGroups: [],
         }
 
         // Act - Perform optimistic update on large dataset
@@ -674,6 +701,9 @@ describe("createMutation Function", () => {
           projects: [],
           labels: [],
           ordering: { projects: [], labels: [] },
+          taskGroups: [],
+          projectGroups: [],
+          labelGroups: [],
         }
 
         // Act - Optimistic update should not mutate original data

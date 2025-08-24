@@ -142,6 +142,9 @@ const EMPTY_CACHE_DATA: DataFile = {
   projects: [],
   labels: [],
   ordering: { projects: [], labels: [] },
+  taskGroups: [],
+  projectGroups: [],
+  labelGroups: [],
 }
 
 /**

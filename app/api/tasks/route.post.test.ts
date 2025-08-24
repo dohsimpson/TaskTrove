@@ -49,6 +49,9 @@ const mockDataFile = {
   projects: [],
   labels: [],
   ordering: { projects: [], labels: [] },
+  taskGroups: [],
+  projectGroups: [],
+  labelGroups: [],
 }
 
 describe("POST /api/tasks - Task Creation", () => {

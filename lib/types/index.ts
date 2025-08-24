@@ -663,62 +663,125 @@ export const LabelSchema = z.object({
 export const LabelSerializationSchema = LabelSchema
 
 /**
- * Generic schema factory for creating recursive group schemas
- * Each group can contain items of a specific type OR other groups of the same type
+ * TypeScript interfaces for recursive Group types
+ * Define interfaces first to provide proper type information for z.ZodType
  */
-function createRecursiveGroupSchema<ItemIdSchema extends z.ZodTypeAny>(
-  itemIdSchema: ItemIdSchema,
-  groupType: "task" | "project" | "label",
-): z.ZodLazy<z.ZodTypeAny> {
-  /** z.lazy is used in Zod v4 to define recursive schemas. It allows you to reference a schema within its own definition */
-  const recursiveSchema: z.ZodLazy<z.ZodTypeAny> = z.lazy(() =>
-    z
-      .object({
-        /** Group type - determines what kind of items this group contains */
-        type: z.literal(groupType),
-        /** Unique identifier for the group */
-        id: GroupIdSchema,
-        /** Group name */
-        name: z.string(),
-        /** Optional group description */
-        description: z.string().optional(),
-        /** Group color (hex code) */
-        color: z.string().optional(),
-        /** Array of items - can contain item IDs or other groups of the same type */
-        items: z.array(z.union([itemIdSchema, recursiveSchema])),
-      })
-      .refine(
-        (group) => {
-          // Prevent circular self-references by checking if any direct child group has the same ID
-          const childGroups = group.items.filter(
-            (item): item is { id: string } =>
-              typeof item === "object" && item !== null && "id" in item,
-          )
-          return !childGroups.some((childGroup) => childGroup.id === group.id)
-        },
-        {
-          message: "Group cannot contain itself as a direct child (circular reference)",
-          path: ["items"],
-        },
-      ),
-  )
-  return recursiveSchema
+
+/** Base interface for all group types */
+interface IBaseGroup {
+  id: GroupId
+  name: string
+  description?: string
+  color?: string
+}
+
+/** Task Group interface - can contain TaskIds or other TaskGroups */
+export interface ITaskGroup extends IBaseGroup {
+  type: "task"
+  items: (TaskId | ITaskGroup)[]
+}
+
+/** Project Group interface - can contain ProjectIds or other ProjectGroups */
+export interface IProjectGroup extends IBaseGroup {
+  type: "project"
+  items: (ProjectId | IProjectGroup)[]
+}
+
+/** Label Group interface - can contain LabelIds or other LabelGroups */
+export interface ILabelGroup extends IBaseGroup {
+  type: "label"
+  items: (LabelId | ILabelGroup)[]
 }
 
 /**
- * Task Group schema - recursive schema that can contain TaskIds or other TaskGroups
+ * Generic type guard to check if an item is a specific Group type (vs a string ID)
+ * In group items arrays, items can only be either string IDs or Group objects
  */
-export const TaskGroupSchema = createRecursiveGroupSchema(TaskIdSchema, "task")
+export function isGroup<T extends ITaskGroup | IProjectGroup | ILabelGroup>(
+  item: unknown,
+): item is T {
+  return typeof item === "object" && item !== null && "id" in item
+}
 
 /**
- * Project Group schema - recursive schema that can contain ProjectIds or other ProjectGroups
+ * Recursive Group schemas with proper TypeScript typing
+ * Uses z.ZodType<Interface> pattern for type safety with recursive schemas
  */
-export const ProjectGroupSchema = createRecursiveGroupSchema(ProjectIdSchema, "project")
 
-/**
- * Label Group schema - recursive schema that can contain LabelIds or other LabelGroups
- */
-export const LabelGroupSchema = createRecursiveGroupSchema(LabelIdSchema, "label")
+// Task Group Schema with manual typing
+// eslint-disable-next-line prefer-const
+let TaskGroupSchema: z.ZodType<ITaskGroup>
+export { TaskGroupSchema }
+TaskGroupSchema = z
+  .object({
+    type: z.literal("task"),
+    id: GroupIdSchema,
+    name: z.string(),
+    description: z.string().optional(),
+    color: z.string().optional(),
+    items: z.array(z.union([TaskIdSchema, z.lazy(() => TaskGroupSchema)])),
+  })
+  .refine(
+    (group) => {
+      // Prevent circular reference by checking if group contains itself as direct child
+      const childGroups = group.items.filter(isGroup<ITaskGroup>)
+      return !childGroups.some((childGroup) => childGroup.id === group.id)
+    },
+    {
+      message: "Group cannot contain itself as a direct child (circular reference)",
+      path: ["items"],
+    },
+  )
+
+// Project Group Schema with manual typing
+// eslint-disable-next-line prefer-const
+let ProjectGroupSchema: z.ZodType<IProjectGroup>
+export { ProjectGroupSchema }
+ProjectGroupSchema = z
+  .object({
+    type: z.literal("project"),
+    id: GroupIdSchema,
+    name: z.string(),
+    description: z.string().optional(),
+    color: z.string().optional(),
+    items: z.array(z.union([ProjectIdSchema, z.lazy(() => ProjectGroupSchema)])),
+  })
+  .refine(
+    (group) => {
+      // Prevent circular reference by checking if group contains itself as direct child
+      const childGroups = group.items.filter(isGroup<IProjectGroup>)
+      return !childGroups.some((childGroup) => childGroup.id === group.id)
+    },
+    {
+      message: "Group cannot contain itself as a direct child (circular reference)",
+      path: ["items"],
+    },
+  )
+
+// Label Group Schema with manual typing
+// eslint-disable-next-line prefer-const
+let LabelGroupSchema: z.ZodType<ILabelGroup>
+export { LabelGroupSchema }
+LabelGroupSchema = z
+  .object({
+    type: z.literal("label"),
+    id: GroupIdSchema,
+    name: z.string(),
+    description: z.string().optional(),
+    color: z.string().optional(),
+    items: z.array(z.union([LabelIdSchema, z.lazy(() => LabelGroupSchema)])),
+  })
+  .refine(
+    (group) => {
+      // Prevent circular reference by checking if group contains itself as direct child
+      const childGroups = group.items.filter(isGroup<ILabelGroup>)
+      return !childGroups.some((childGroup) => childGroup.id === group.id)
+    },
+    {
+      message: "Group cannot contain itself as a direct child (circular reference)",
+      path: ["items"],
+    },
+  )
 
 /**
  * Group schema - union of all group types
@@ -733,6 +796,9 @@ export const DataFileSchema = z.object({
   projects: z.array(ProjectSchema),
   labels: z.array(LabelSchema),
   ordering: OrderingSchema,
+  taskGroups: z.array(TaskGroupSchema).default([]),
+  projectGroups: z.array(ProjectGroupSchema).default([]),
+  labelGroups: z.array(LabelGroupSchema).default([]),
 })
 
 export const DataFileSerializationSchema = z.object({
@@ -740,6 +806,9 @@ export const DataFileSerializationSchema = z.object({
   projects: z.array(ProjectSerializationSchema),
   labels: z.array(LabelSerializationSchema),
   ordering: OrderingSerializationSchema,
+  taskGroups: z.array(GroupSerializationSchema).default([]),
+  projectGroups: z.array(GroupSerializationSchema).default([]),
+  labelGroups: z.array(GroupSerializationSchema).default([]),
 })
 
 // =============================================================================
@@ -754,10 +823,11 @@ export type Ordering = z.infer<typeof OrderingSchema>
 export type Task = z.infer<typeof TaskSchema>
 export type Project = z.infer<typeof ProjectSchema>
 export type Label = z.infer<typeof LabelSchema>
-export type TaskGroup = z.infer<typeof TaskGroupSchema>
-export type ProjectGroup = z.infer<typeof ProjectGroupSchema>
-export type LabelGroup = z.infer<typeof LabelGroupSchema>
-export type Group = z.infer<typeof GroupSchema>
+// Export types that use the interface definitions for better type inference
+export type TaskGroup = ITaskGroup
+export type ProjectGroup = IProjectGroup
+export type LabelGroup = ILabelGroup
+export type Group = TaskGroup | ProjectGroup | LabelGroup
 export type DataFile = z.infer<typeof DataFileSchema>
 export type TaskSerialization = z.infer<typeof TaskSerializationSchema>
 export type TaskArraySerialization = z.infer<typeof TaskArraySerializationSchema>
@@ -1766,6 +1836,68 @@ export type UpdateProjectResponse = z.infer<typeof UpdateProjectResponseSchema>
 export type DeleteProjectResponse = z.infer<typeof DeleteProjectResponseSchema>
 export type UpdateLabelResponse = z.infer<typeof UpdateLabelResponseSchema>
 export type DeleteLabelResponse = z.infer<typeof DeleteLabelResponseSchema>
+
+// =============================================================================
+// GROUP API SCHEMAS
+// =============================================================================
+
+// Group Request Schemas
+export const CreateGroupRequestSchema = z.object({
+  /** Group type - determines what kind of items this group contains */
+  type: z.literal("task").or(z.literal("project")).or(z.literal("label")),
+  /** Group name */
+  name: z.string(),
+  /** Optional group description */
+  description: z.string().optional(),
+  /** Group color (hex code) */
+  color: z.string().optional(),
+  /** Parent group ID - where to add this new group */
+  parentId: GroupIdSchema,
+})
+
+export const UpdateGroupRequestSchema = z.object({
+  /** Group ID to update */
+  id: GroupIdSchema,
+  /** Updated group name */
+  name: z.string().optional(),
+  /** Updated group description */
+  description: z.string().optional(),
+  /** Updated group color */
+  color: z.string().optional(),
+})
+
+export const GroupUpdateUnionSchema = z.union([
+  UpdateGroupRequestSchema,
+  UpdateGroupRequestSchema.array(),
+])
+
+export const DeleteGroupRequestSchema = z.object({
+  /** Group ID to delete */
+  id: GroupIdSchema,
+})
+
+// Group Response Schemas
+export const CreateGroupResponseSchema = ApiResponseSchema.extend({
+  groupIds: z.array(GroupIdSchema),
+})
+
+export const UpdateGroupResponseSchema = ApiResponseSchema.extend({
+  groups: z.array(GroupSchema).optional(),
+  count: z.number().optional(),
+})
+
+export const DeleteGroupResponseSchema = ApiResponseSchema.extend({
+  groupIds: z.array(GroupIdSchema),
+})
+
+// Group Request/Response Types
+export type CreateGroupRequest = z.infer<typeof CreateGroupRequestSchema>
+export type UpdateGroupRequest = z.infer<typeof UpdateGroupRequestSchema>
+export type GroupUpdateUnion = z.infer<typeof GroupUpdateUnionSchema>
+export type DeleteGroupRequest = z.infer<typeof DeleteGroupRequestSchema>
+export type CreateGroupResponse = z.infer<typeof CreateGroupResponseSchema>
+export type UpdateGroupResponse = z.infer<typeof UpdateGroupResponseSchema>
+export type DeleteGroupResponse = z.infer<typeof DeleteGroupResponseSchema>
 export type OrderingUpdateResponse = z.infer<typeof OrderingUpdateResponseSchema>
 export type DeleteTaskResponse = z.infer<typeof DeleteTaskResponseSchema>
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>

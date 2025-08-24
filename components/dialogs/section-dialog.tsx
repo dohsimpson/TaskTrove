@@ -12,8 +12,10 @@ export function SectionDialog() {
       contextAtom={sectionDialogContextAtom}
       closeAtom={closeSectionDialogAtom}
       addAtom={addProjectSectionAtPositionAtom}
-      customValidation={(name, context) => !!name.trim() && !!context.insertPosition?.projectId}
-      transformData={(name, color, context) => {
+      customValidation={(name, description, context) =>
+        !!name.trim() && !!context.insertPosition?.projectId
+      }
+      transformData={(name, color, description, context) => {
         if (!context.insertPosition?.projectId) {
           throw new Error("Project ID is required for sections")
         }

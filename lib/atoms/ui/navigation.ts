@@ -5,9 +5,11 @@ import {
   showProjectDialogAtom,
   showLabelDialogAtom,
   showSectionDialogAtom,
+  showProjectGroupDialogAtom,
   projectDialogContextAtom,
   labelDialogContextAtom,
   sectionDialogContextAtom,
+  projectGroupDialogContextAtom,
 } from "../ui/dialogs"
 import {
   INBOX_PROJECT_ID,
@@ -264,6 +266,53 @@ export const toggleSectionDialogAtom = atom(null, (get, set) => {
 toggleSectionDialogAtom.debugLabel = "toggleSectionDialogAtom"
 
 // =============================================================================
+// PROJECT GROUP DIALOG ACTIONS
+// =============================================================================
+
+/**
+ * Opens the project group dialog
+ */
+export const openProjectGroupDialogAtom = atom(
+  null,
+  (get, set, options?: { mode?: "create" | "edit"; groupId?: string; parentId?: string }) => {
+    // Set the dialog context
+    if (options?.mode === "edit" && options.groupId) {
+      set(projectGroupDialogContextAtom, {
+        mode: "edit",
+        groupId: options.groupId,
+      })
+    } else if (options?.parentId) {
+      set(projectGroupDialogContextAtom, {
+        mode: "create",
+        parentId: options.parentId,
+      })
+    } else {
+      set(projectGroupDialogContextAtom, { mode: "create" })
+    }
+
+    set(showProjectGroupDialogAtom, true)
+  },
+)
+openProjectGroupDialogAtom.debugLabel = "openProjectGroupDialogAtom"
+
+/**
+ * Closes the project group dialog
+ */
+export const closeProjectGroupDialogAtom = atom(null, (get, set) => {
+  set(showProjectGroupDialogAtom, false)
+})
+closeProjectGroupDialogAtom.debugLabel = "closeProjectGroupDialogAtom"
+
+/**
+ * Toggles the project group dialog
+ */
+export const toggleProjectGroupDialogAtom = atom(null, (get, set) => {
+  const current = get(showProjectGroupDialogAtom)
+  set(showProjectGroupDialogAtom, !current)
+})
+toggleProjectGroupDialogAtom.debugLabel = "toggleProjectGroupDialogAtom"
+
+// =============================================================================
 // GLOBAL DIALOG ACTIONS
 // =============================================================================
 
@@ -276,6 +325,7 @@ export const closeAllDialogsAtom = atom(null, (get, set) => {
   set(showProjectDialogAtom, false)
   set(showLabelDialogAtom, false)
   set(showSectionDialogAtom, false)
+  set(showProjectGroupDialogAtom, false)
 })
 closeAllDialogsAtom.debugLabel = "closeAllDialogsAtom"
 

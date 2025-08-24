@@ -132,6 +132,81 @@ async function createGroup(
 
   const { type, name, description, color, parentId } = validation.data
 
+  // Handle root-level groups (no parent)
+  if (!parentId) {
+    // Create new group at root level
+    const newGroupId = createGroupId(uuidv4())
+    let newGroup: Group
+
+    if (type === "project") {
+      const newProjectGroup: ProjectGroup = {
+        type: "project",
+        id: newGroupId,
+        name,
+        description,
+        color: color ?? DEFAULT_LABEL_COLORS[0],
+        items: [],
+      }
+      // Add to root projectGroups array
+      if (!fileData.projectGroups) {
+        fileData.projectGroups = []
+      }
+      fileData.projectGroups.push(newProjectGroup)
+      newGroup = newProjectGroup
+    } else if (type === "label") {
+      const newLabelGroup: LabelGroup = {
+        type: "label",
+        id: newGroupId,
+        name,
+        description,
+        color: color ?? DEFAULT_LABEL_COLORS[0],
+        items: [],
+      }
+      // Add to root labelGroups array
+      if (!fileData.labelGroups) {
+        fileData.labelGroups = []
+      }
+      fileData.labelGroups.push(newLabelGroup)
+      newGroup = newLabelGroup
+    } else {
+      return createErrorResponse("Invalid group type", `Unsupported group type: ${type}`, 400)
+    }
+
+    const writeSuccess = await withPerformanceLogging(
+      () => safeWriteDataFile({ data: fileData }),
+      "write-groups-data-file",
+      request.context,
+      500, // 500ms threshold for slow file writes
+    )
+
+    if (!writeSuccess) {
+      return createErrorResponse("Failed to save data", "File writing failed", 500)
+    }
+
+    logBusinessEvent(
+      "group_created",
+      {
+        groupId: newGroup.id,
+        name: newGroup.name,
+        type: newGroup.type,
+        parentId: null,
+        totalGroups: {
+          project: fileData.projectGroups?.length || 0,
+          label: fileData.labelGroups?.length || 0,
+        },
+      },
+      request.context,
+    )
+
+    const response: CreateGroupResponse = {
+      success: true,
+      groupIds: [newGroup.id],
+      message: "Group created successfully",
+    }
+
+    return NextResponse.json<CreateGroupResponse>(response)
+  }
+
   // Find parent group in appropriate tree
   const parentResult = findGroupInTrees(
     fileData.projectGroups || [],

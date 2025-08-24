@@ -12,7 +12,7 @@ export function LabelDialog() {
       contextAtom={labelDialogContextAtom}
       closeAtom={closeLabelDialogAtom}
       addAtom={addLabelAtom}
-      transformData={(name, color, context) => ({
+      transformData={(name, color, description, context) => ({
         name: name.trim(),
         color,
         insertPosition:

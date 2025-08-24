@@ -89,7 +89,7 @@ export const addProjectGroupAtom = atom(
       name: string
       description?: string
       color?: string
-      parentId: GroupId
+      parentId?: GroupId
     },
   ) => {
     const mutation = get(createProjectGroupMutationAtom)

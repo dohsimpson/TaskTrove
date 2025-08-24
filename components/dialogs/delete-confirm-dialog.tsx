@@ -12,7 +12,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-export type DeleteEntityType = "task" | "project" | "label" | "section" | "history" | "bulk"
+export type DeleteEntityType =
+  | "task"
+  | "project"
+  | "label"
+  | "section"
+  | "history"
+  | "bulk"
+  | "group"
 
 type DeleteMessageConfig = {
   task: {
@@ -43,6 +50,11 @@ type DeleteMessageConfig = {
   bulk: {
     title: string
     description: (count: number) => string
+    confirmText: string
+  }
+  group: {
+    title: string
+    description: (name: string) => string
     confirmText: string
   }
 }
@@ -95,6 +107,12 @@ const DELETE_MESSAGES: DeleteMessageConfig = {
     description: (count: number) =>
       `Are you sure you want to delete ${count} task${count === 1 ? "" : "s"}? This action cannot be undone.`,
     confirmText: "Delete Tasks",
+  },
+  group: {
+    title: "Delete Group",
+    description: (name: string) =>
+      `Are you sure you want to delete "${name}"? This action cannot be undone and will remove the group and all its subgroups. Projects and tasks within the group will not be deleted.`,
+    confirmText: "Delete Group",
   },
 }
 

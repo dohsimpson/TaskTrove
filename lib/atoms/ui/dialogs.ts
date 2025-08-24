@@ -104,6 +104,24 @@ export const showSettingsDialogAtom = atom<boolean>(false)
 showSettingsDialogAtom.debugLabel = "showSettingsDialogAtom"
 
 /**
+ * Project Group Dialog - Controls the project group creation/edit dialog
+ */
+export const showProjectGroupDialogAtom = atom<boolean>(false)
+showProjectGroupDialogAtom.debugLabel = "showProjectGroupDialogAtom"
+
+/**
+ * Project Group Dialog Context - Tracks insertion position and related group info
+ */
+type ProjectGroupDialogContext = {
+  mode: "create" | "edit"
+  groupId?: string
+  parentId?: string
+}
+
+export const projectGroupDialogContextAtom = atom<ProjectGroupDialogContext>({ mode: "create" })
+projectGroupDialogContextAtom.debugLabel = "projectGroupDialogContextAtom"
+
+/**
  * Selected Task ID - Currently selected task ID for viewing/editing
  */
 export const selectedTaskIdAtom = atom<string | null>(null)
@@ -235,6 +253,7 @@ export const closeAllDialogsAtom = atom(null, (get, set) => {
   set(showSectionDialogAtom, false)
   set(showSearchDialogAtom, false)
   set(showSettingsDialogAtom, false)
+  set(showProjectGroupDialogAtom, false)
 
   // Clear all selections
   set(selectedTaskIdAtom, null)
@@ -258,7 +277,8 @@ export const isAnyDialogOpenAtom = atom<boolean>((get) => {
     get(showLabelDialogAtom) ||
     get(showSectionDialogAtom) ||
     get(showSearchDialogAtom) ||
-    get(showSettingsDialogAtom)
+    get(showSettingsDialogAtom) ||
+    get(showProjectGroupDialogAtom)
   )
 })
 isAnyDialogOpenAtom.debugLabel = "isAnyDialogOpenAtom"

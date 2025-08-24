@@ -12,7 +12,7 @@ export function ProjectDialog() {
       contextAtom={projectDialogContextAtom}
       closeAtom={closeProjectDialogAtom}
       addAtom={addProjectAtom}
-      transformData={(name, color, context) => ({
+      transformData={(name, color, description, context) => ({
         name: name.trim(),
         color,
         insertPosition:

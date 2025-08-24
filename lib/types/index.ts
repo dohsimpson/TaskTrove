@@ -1838,8 +1838,8 @@ export const CreateGroupRequestSchema = z.object({
   description: z.string().optional(),
   /** Group color (hex code) */
   color: z.string().optional(),
-  /** Parent group ID - where to add this new group */
-  parentId: GroupIdSchema,
+  /** Parent group ID - where to add this new group (optional for root level) */
+  parentId: GroupIdSchema.optional(),
 })
 
 export const UpdateGroupRequestSchema = z.object({

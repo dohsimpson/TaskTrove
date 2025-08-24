@@ -35,7 +35,7 @@ import { SearchDialog } from "@/components/search/search-dialog"
 import { SettingsDialog } from "@/components/dialogs/settings-dialog"
 import { RouteContent } from "@/components/layout/route-content"
 import { useTheme } from "next-themes"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import {
   // Task atoms
   taskActions,
@@ -262,10 +262,7 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
     const currentIndex = getCurrentThemeIndex()
     const nextTheme = themes[(currentIndex + 1) % themes.length]
     setTheme(nextTheme)
-    toast({
-      title: "Theme changed",
-      description: `Switched to ${nextTheme} theme.`,
-    })
+    toast.success(`Switched to ${nextTheme} theme`)
   }, [theme, setTheme])
 
   // Register global keyboard shortcuts through the unified system

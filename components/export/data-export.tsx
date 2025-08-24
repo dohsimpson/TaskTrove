@@ -26,7 +26,7 @@ import {
   FileSpreadsheet,
   File,
 } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 interface ExportOptions {
   format: "json" | "csv" | "pdf" | "xlsx"
@@ -122,42 +122,24 @@ export function DataExport({
   const handleExport = async () => {
     try {
       await onStartExport(exportOptions)
-      toast({
-        title: "Export started",
-        description: "Your data export has been queued for processing.",
-      })
+      toast.success("Your data export has been queued for processing.")
     } catch {
-      toast({
-        title: "Export failed",
-        description: "Unable to start data export. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Unable to start data export. Please try again.")
     }
   }
 
   const handleImport = async () => {
     if (!selectedFile) {
-      toast({
-        title: "No file selected",
-        description: "Please select a file to import.",
-        variant: "destructive",
-      })
+      toast.error("Please select a file to import.")
       return
     }
 
     try {
       await onStartImport(selectedFile, importOptions)
       setSelectedFile(null)
-      toast({
-        title: "Import started",
-        description: "Your data import has been queued for processing.",
-      })
+      toast.success("Your data import has been queued for processing.")
     } catch {
-      toast({
-        title: "Import failed",
-        description: "Unable to start data import. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Unable to start data import. Please try again.")
     }
   }
 

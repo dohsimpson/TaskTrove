@@ -29,7 +29,7 @@ import {
   Flag,
   FolderPlus,
 } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 interface Task {
   id: string
@@ -152,7 +152,7 @@ export function CommandPalette({
       label: "Light Theme",
       action: () => {
         setTheme("light")
-        toast({ title: "Theme changed", description: "Switched to light theme." })
+        toast.success("Switched to light theme")
       },
     },
     {
@@ -160,7 +160,7 @@ export function CommandPalette({
       label: "Dark Theme",
       action: () => {
         setTheme("dark")
-        toast({ title: "Theme changed", description: "Switched to dark theme." })
+        toast.success("Switched to dark theme")
       },
     },
     {
@@ -168,7 +168,7 @@ export function CommandPalette({
       label: "System Theme",
       action: () => {
         setTheme("system")
-        toast({ title: "Theme changed", description: "Switched to system theme." })
+        toast.success("Switched to system theme")
       },
     },
   ]
@@ -205,7 +205,7 @@ export function CommandPalette({
                 onSelect={() =>
                   runCommand(() => {
                     // You can implement task navigation here
-                    toast({ title: "Task selected", description: task.title })
+                    toast.info(`Selected task: ${task.title}`)
                   })
                 }
               >

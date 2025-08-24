@@ -28,7 +28,7 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 // Type guard to check if a value is a Record<string, unknown>
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -179,11 +179,7 @@ export function NotificationCenter({
     const audio = new Audio("/notification-sound.mp3")
     audio.volume = settings.sound.volume / 100
     audio.play().catch(() => {
-      toast({
-        title: "Sound test failed",
-        description: "Unable to play notification sound",
-        variant: "destructive",
-      })
+      toast.error("Unable to play notification sound")
     })
     setTimeout(() => setSoundTest(false), 1000)
   }

@@ -38,7 +38,7 @@ import {
   Target,
   TrendingUp,
 } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 interface TeamMember {
   id: string
@@ -177,10 +177,7 @@ export function TeamManagement({
         },
       })
       setShowCreateDialog(false)
-      toast({
-        title: "Team created",
-        description: `"${newTeam.name}" team has been created successfully.`,
-      })
+      toast.success(`"${newTeam.name}" team has been created successfully.`)
     }
   }
 
@@ -190,10 +187,7 @@ export function TeamManagement({
       setInviteEmail("")
       setInviteRole("member")
       setShowInviteDialog(false)
-      toast({
-        title: "Invitation sent",
-        description: `Invited ${inviteEmail} to join the team as ${inviteRole}.`,
-      })
+      toast.success(`Invited ${inviteEmail} to join the team as ${inviteRole}.`)
     }
   }
 

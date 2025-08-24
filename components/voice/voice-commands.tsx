@@ -19,7 +19,7 @@ import {
   AlertTriangle,
   Headphones,
 } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { log } from "@/lib/utils/logger"
 import { VoiceCommand, createVoiceCommandId } from "@/lib/types"
 
@@ -204,11 +204,7 @@ export function VoiceCommands({
         }
       } catch {
         command.result = "Failed to execute command"
-        toast({
-          title: "Command failed",
-          description: `Unable to execute: ${command.phrase}`,
-          variant: "destructive",
-        })
+        toast.error(`Unable to execute: ${command.phrase}`)
       }
     },
     [onExecuteCommand, settings.voiceFeedback, speak, detectAction],
@@ -243,11 +239,7 @@ export function VoiceCommands({
         if (recognitionRef.current) {
           recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
             log.error({ error: event.error, module: "voice" }, "Speech recognition error")
-            toast({
-              title: "Voice recognition error",
-              description: "Unable to process voice command. Please try again.",
-              variant: "destructive",
-            })
+            toast.error("Unable to process voice command. Please try again.")
           }
 
           recognitionRef.current.onend = () => {
@@ -275,10 +267,7 @@ export function VoiceCommands({
       setNewCommandPhrase("")
       setNewCommandAction("")
       setTrainingMode(false)
-      toast({
-        title: "Command trained",
-        description: "New voice command has been added successfully.",
-      })
+      toast.success("New voice command has been added successfully.")
     }
   }
 

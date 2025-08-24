@@ -25,7 +25,7 @@ import {
   Award,
   Filter,
 } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 interface ReportData {
   productivity: {
@@ -192,32 +192,20 @@ export function AdvancedReports({
   const handleGenerateReport = async () => {
     try {
       await onGenerateReport(reportConfig)
-      toast({
-        title: "Report generated",
-        description: "Your report has been generated successfully.",
-      })
+      toast.success("Your report has been generated successfully.")
     } catch {
-      toast({
-        title: "Report generation failed",
-        description: "Unable to generate report. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Unable to generate report. Please try again.")
     }
   }
 
   const handleScheduleReport = async () => {
     try {
       await onScheduleReport(reportConfig)
-      toast({
-        title: "Report scheduled",
-        description: `Report will be sent ${reportConfig.scheduling.frequency} to ${reportConfig.scheduling.recipients.length} recipients.`,
-      })
+      toast.success(
+        `Report will be sent ${reportConfig.scheduling.frequency} to ${reportConfig.scheduling.recipients.length} recipients.`,
+      )
     } catch {
-      toast({
-        title: "Scheduling failed",
-        description: "Unable to schedule report. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Unable to schedule report. Please try again.")
     }
   }
 

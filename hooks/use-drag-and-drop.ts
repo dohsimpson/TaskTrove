@@ -4,7 +4,7 @@ import { useCallback } from "react"
 import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder"
 import { useAtom } from "jotai"
 import { tasks, taskActions, projectDerived } from "@/lib/atoms"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Task, Project, createProjectId, createLabelId, TaskId } from "@/lib/types"
 
 interface DragResult {
@@ -53,19 +53,12 @@ export function useDragAndDrop() {
       const targetProject = projectsData.find((p: Project) => p.id === targetProjectId)
 
       if (!task || !targetProject) {
-        toast({
-          title: "Error",
-          description: "Task or project not found",
-          variant: "destructive",
-        })
+        toast.error("Task or project not found")
         return
       }
 
       if (task.projectId === targetProjectId) {
-        toast({
-          title: "Info",
-          description: "Task is already in this project",
-        })
+        toast.info("Task is already in this project")
         return
       }
 
@@ -73,10 +66,7 @@ export function useDragAndDrop() {
         updateRequest: { id: taskId, projectId: createProjectId(targetProjectId) },
       })
 
-      toast({
-        title: "Task moved",
-        description: `Moved task to ${targetProject.name}`,
-      })
+      toast.success(`Moved task to ${targetProject.name}`)
     },
     [tasksData, projectsData, updateTask],
   )
@@ -86,20 +76,13 @@ export function useDragAndDrop() {
       const task = tasksData.find((t: Task) => t.id === taskId)
 
       if (!task) {
-        toast({
-          title: "Error",
-          description: "Task not found",
-          variant: "destructive",
-        })
+        toast.error("Task not found")
         return
       }
 
       const labelId = createLabelId(targetLabelId)
       if (task.labels.includes(labelId)) {
-        toast({
-          title: "Info",
-          description: "Task already has this label",
-        })
+        toast.info("Task already has this label")
         return
       }
 
@@ -108,10 +91,7 @@ export function useDragAndDrop() {
         updateRequest: { id: taskId, labels: updatedLabels },
       })
 
-      toast({
-        title: "Label added",
-        description: `Added label to task`,
-      })
+      toast.success("Added label to task")
     },
     [tasksData, updateTask],
   )
@@ -164,10 +144,7 @@ export function useDragAndDrop() {
             updateRequest: { id: taskId as TaskId, dueDate: targetDate },
           })
 
-          toast({
-            title: "Task moved",
-            description: `Updated task due date`,
-          })
+          toast.success("Updated task due date")
         }
         return
       }

@@ -18,7 +18,7 @@ import {
   Database,
   Smartphone,
 } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 interface SyncConflict {
   id: string
@@ -98,16 +98,9 @@ export function SyncManager({
   const handleManualSync = async () => {
     try {
       await onSync()
-      toast({
-        title: "Sync completed",
-        description: "All changes have been synchronized",
-      })
+      toast.success("All changes have been synchronized")
     } catch {
-      toast({
-        title: "Sync failed",
-        description: "Unable to sync changes. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Unable to sync changes. Please try again.")
     }
   }
 

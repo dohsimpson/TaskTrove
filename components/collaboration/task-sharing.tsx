@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Share2, Users, MessageSquare, Bell, Copy, Mail, X, Crown, Shield, Eye } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import type { TaskId } from "@/lib/types"
 
 interface Collaborator {
@@ -80,10 +80,7 @@ export function TaskSharing({
       onInvite(inviteEmail, inviteRole, inviteMessage)
       setInviteEmail("")
       setInviteMessage("")
-      toast({
-        title: "Invitation sent",
-        description: `Invited ${inviteEmail} as ${inviteRole}`,
-      })
+      toast.success(`Invited ${inviteEmail} as ${inviteRole}`)
     }
   }
 
@@ -99,10 +96,7 @@ export function TaskSharing({
   const copyShareLink = () => {
     const shareLink = `${window.location.origin}/tasks/${taskId}`
     navigator.clipboard.writeText(shareLink)
-    toast({
-      title: "Link copied",
-      description: "Share link copied to clipboard",
-    })
+    toast.success("Share link copied to clipboard")
   }
 
   const getRoleIcon = (role: string) => {

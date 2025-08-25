@@ -1987,6 +1987,103 @@ describe("TaskItem", () => {
       expect(screen.queryByText("Test description")).not.toBeInTheDocument()
       expect(screen.queryByText("Add description...")).not.toBeInTheDocument()
     })
+
+    describe("Responsive Layout", () => {
+      it("uses responsive flex classes for single row on large screens, double row on mobile", () => {
+        render(
+          <Provider>
+            <TaskItem taskId={mockTask.id} variant="compact" />
+          </Provider>,
+        )
+
+        // Find the main layout container
+        const container = screen.getByText("Test Task").closest("[data-task-focused]")
+        const layoutContainer = container?.querySelector(
+          ".flex.flex-col.md\\:flex-row.md\\:items-center.gap-2",
+        )
+
+        expect(layoutContainer).toBeInTheDocument()
+        expect(layoutContainer).toHaveClass(
+          "flex",
+          "flex-col",
+          "md:flex-row",
+          "md:items-center",
+          "gap-2",
+        )
+      })
+
+      it("shows essential metadata only on larger screens (desktop-only)", () => {
+        render(
+          <Provider>
+            <TaskItem taskId={mockTask.id} variant="compact" />
+          </Provider>,
+        )
+
+        // Find the container with essential metadata that should only show on desktop
+        const container = screen.getByText("Test Task").closest("[data-task-focused]")
+        const desktopOnlyMetadata = container?.querySelector(
+          ".hidden.md\\:flex.items-center.gap-1.text-xs.flex-shrink-0",
+        )
+
+        expect(desktopOnlyMetadata).toBeInTheDocument()
+        expect(desktopOnlyMetadata).toHaveClass(
+          "hidden",
+          "md:flex",
+          "items-center",
+          "gap-1",
+          "text-xs",
+          "flex-shrink-0",
+        )
+      })
+
+      it("contains secondary metadata section that flows responsively", () => {
+        const taskWithMetadata = {
+          ...mockTask,
+          subtasks: [
+            {
+              id: TEST_SUBTASK_ID_1,
+              title: "Subtask 1",
+              completed: false,
+              order: 0,
+            },
+          ],
+          comments: [{ id: TEST_COMMENT_ID_1, content: "Test comment", createdAt: new Date() }],
+        }
+        registerTask(taskWithMetadata)
+
+        render(
+          <Provider>
+            <TaskItem taskId={taskWithMetadata.id} variant="compact" />
+          </Provider>,
+        )
+
+        // Find the secondary metadata container
+        const container = screen.getByText("Test Task").closest("[data-task-focused]")
+        const secondaryMetadata = container?.querySelector(
+          ".flex.items-center.justify-between.text-xs.text-muted-foreground.md\\:flex-shrink-0.md\\:justify-start.gap-2",
+        )
+
+        expect(secondaryMetadata).toBeInTheDocument()
+        expect(secondaryMetadata).toHaveClass(
+          "flex",
+          "items-center",
+          "justify-between",
+          "text-xs",
+          "text-muted-foreground",
+          "md:flex-shrink-0",
+          "md:justify-start",
+          "gap-2",
+        )
+
+        // Verify it contains subtasks and comments metadata
+        expect(
+          secondaryMetadata?.querySelector("[data-testid='subtask-popover']"),
+        ).toBeInTheDocument()
+        expect(
+          secondaryMetadata?.querySelector("[data-testid='comment-management-popover']"),
+        ).toBeInTheDocument()
+      })
+    })
   })
 
   describe("Kanban Variant", () => {

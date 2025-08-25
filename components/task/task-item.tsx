@@ -329,252 +329,250 @@ export function TaskItem({
         onContextMenu={handleContextMenu}
         data-task-focused={isSelected}
       >
-        {/* Main content area - flexible layout for small screens */}
+        {/* Main content area - responsive layout */}
         <div className="p-2">
-          {/* First row - checkboxes, title, and essential actions */}
-          <div className="flex items-center gap-2 mb-1">
-            {/* Selection Checkbox */}
-            {isSelectionMode && (
+          {/* Single row on larger screens (md+), two rows on mobile/tablet */}
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
+            {/* Left section - checkboxes and title */}
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              {/* Selection Checkbox */}
+              {isSelectionMode && (
+                <TaskCheckbox
+                  checked={isSelected}
+                  onCheckedChange={() => toggleTaskSelection(taskId)}
+                />
+              )}
+
+              {/* Task Completion Checkbox */}
               <TaskCheckbox
-                checked={isSelected}
-                onCheckedChange={() => toggleTaskSelection(taskId)}
+                checked={task.completed}
+                onCheckedChange={() => toggleTask(task.id)}
+                data-action="toggle"
               />
-            )}
 
-            {/* Task Completion Checkbox */}
-            <TaskCheckbox
-              checked={task.completed}
-              onCheckedChange={() => toggleTask(task.id)}
-              data-action="toggle"
-            />
+              {/* Title - constrained width to prevent overflow */}
+              <div className="flex-1 min-w-0 max-w-full">
+                <EditableDiv
+                  as="span"
+                  value={task.title}
+                  onChange={(newTitle) => {
+                    if (newTitle.trim() && newTitle !== task.title) {
+                      updateTask({ updateRequest: { id: task.id, title: newTitle.trim() } })
+                    }
+                  }}
+                  className={cn(
+                    "text-sm cursor-text hover:bg-accent px-1 py-0.5 rounded transition-colors truncate block w-fit",
+                    "max-w-full md:max-w-[200px] lg:max-w-[300px]", // Responsive max-width
+                    task.completed ? "line-through text-muted-foreground" : "text-foreground",
+                  )}
+                  data-action="edit"
+                  allowEmpty={false}
+                />
+              </div>
 
-            {/* Title - flexible width */}
-            <div className="flex-1 min-w-0">
-              <EditableDiv
-                as="span"
-                value={task.title}
-                onChange={(newTitle) => {
-                  if (newTitle.trim() && newTitle !== task.title) {
-                    updateTask({ updateRequest: { id: task.id, title: newTitle.trim() } })
-                  }
-                }}
-                className={cn(
-                  "text-sm cursor-text hover:bg-accent px-1 py-0.5 rounded transition-colors truncate block w-fit",
-                  // Allow title to take more space, only limit on very small screens
-                  "max-w-full sm:max-w-md",
-                  task.completed ? "line-through text-muted-foreground" : "text-foreground",
+              {/* Essential metadata on larger screens only - shown with title */}
+              <div className="hidden md:flex items-center gap-1 text-xs flex-shrink-0">
+                {/* Favorite Star */}
+                {task.favorite && (
+                  <Star className="h-3 w-3 text-yellow-500 fill-current flex-shrink-0" />
                 )}
-                data-action="edit"
-                allowEmpty={false}
-              />
-            </div>
 
-            {/* Essential metadata */}
-            <div className="flex items-center gap-1 flex-shrink-0">
-              {/* Favorite Star */}
-              {task.favorite && (
-                <Star className="h-3 w-3 text-yellow-500 fill-current flex-shrink-0" />
-              )}
+                {/* Priority Flag - Show for P1-P3 in compact variant or add priority on hover */}
+                {shouldShowPriority ? (
+                  <PriorityPopover task={task}>
+                    <Flag
+                      className={cn(
+                        "h-3 w-3 flex-shrink-0 cursor-pointer hover:opacity-100",
+                        task.priority === 1
+                          ? "text-red-500"
+                          : task.priority === 2
+                            ? "text-orange-500"
+                            : "text-blue-500",
+                      )}
+                    />
+                  </PriorityPopover>
+                ) : (
+                  <PriorityPopover task={task}>
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground transition-colors opacity-70 hover:opacity-100">
+                      <Flag className="h-3 w-3" />
+                    </span>
+                  </PriorityPopover>
+                )}
 
-              {/* Priority Flag - Show for P1-P3 in compact variant or add priority on hover */}
-              {shouldShowPriority ? (
-                <PriorityPopover task={task}>
-                  <Flag
-                    className={cn(
-                      "h-3 w-3 flex-shrink-0 cursor-pointer hover:opacity-100",
-                      task.priority === 1
-                        ? "text-red-500"
-                        : task.priority === 2
-                          ? "text-orange-500"
-                          : "text-blue-500",
-                    )}
-                  />
-                </PriorityPopover>
-              ) : (
-                <PriorityPopover task={task}>
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground transition-colors opacity-70 hover:opacity-100">
-                    <Flag className="h-3 w-3" />
-                  </span>
-                </PriorityPopover>
-              )}
-
-              {/* Due Date/Recurring - Show all dates and recurring in compact variant */}
-              {shouldShowSchedule ? (
-                <TaskSchedulePopover taskId={task.id}>
-                  {(() => {
-                    const isOverdue =
-                      task.dueDate &&
-                      isPast(task.dueDate) &&
-                      !isToday(task.dueDate) &&
-                      !task.completed
-                    const scheduleIcons = getScheduleIcons(
-                      task.dueDate,
-                      task.recurring,
-                      task.completed,
-                      isOverdue,
-                    )
-                    return (
-                      <span
-                        className={cn(
-                          "flex items-center gap-1 cursor-pointer hover:opacity-100 text-xs flex-shrink-0",
-                          getDueDateTextColor(task.dueDate, task.completed, variant),
-                        )}
-                      >
-                        {scheduleIcons.primaryIcon === "overdue" && (
-                          <AlertTriangle
-                            className="h-3 w-3 text-red-500"
-                            data-testid="alert-triangle-icon"
-                          />
-                        )}
-                        {scheduleIcons.primaryIcon === "calendar" && (
-                          <Calendar className="h-3 w-3" data-testid="calendar-icon" />
-                        )}
-                        {scheduleIcons.primaryIcon === "repeat" && (
-                          <Repeat className="h-3 w-3" data-testid="repeat-icon" />
-                        )}
-                        {scheduleIcons.secondaryIcon === "repeat" && (
-                          <Repeat className="h-3 w-3" data-testid="repeat-icon" />
-                        )}
-                        {task.dueDate && formatDueDate(task)}
-                        {scheduleIcons.showRecurringOnly && "Recurring"}
-                      </span>
-                    )
-                  })()}
-                </TaskSchedulePopover>
-              ) : (
-                variant === "compact" && (
+                {/* Due Date/Recurring - Show all dates and recurring in compact variant */}
+                {shouldShowSchedule ? (
+                  <TaskSchedulePopover taskId={task.id}>
+                    {(() => {
+                      const isOverdue =
+                        task.dueDate &&
+                        isPast(task.dueDate) &&
+                        !isToday(task.dueDate) &&
+                        !task.completed
+                      const scheduleIcons = getScheduleIcons(
+                        task.dueDate,
+                        task.recurring,
+                        task.completed,
+                        isOverdue,
+                      )
+                      return (
+                        <span
+                          className={cn(
+                            "flex items-center gap-1 cursor-pointer hover:opacity-100 text-xs flex-shrink-0",
+                            getDueDateTextColor(task.dueDate, task.completed, variant),
+                          )}
+                        >
+                          {scheduleIcons.primaryIcon === "overdue" && (
+                            <AlertTriangle
+                              className="h-3 w-3 text-red-500"
+                              data-testid="alert-triangle-icon"
+                            />
+                          )}
+                          {scheduleIcons.primaryIcon === "calendar" && (
+                            <Calendar className="h-3 w-3" data-testid="calendar-icon" />
+                          )}
+                          {scheduleIcons.primaryIcon === "repeat" && (
+                            <Repeat className="h-3 w-3" data-testid="repeat-icon" />
+                          )}
+                          {scheduleIcons.secondaryIcon === "repeat" && (
+                            <Repeat className="h-3 w-3" data-testid="repeat-icon" />
+                          )}
+                          {task.dueDate && formatDueDate(task)}
+                          {scheduleIcons.showRecurringOnly && "Recurring"}
+                        </span>
+                      )
+                    })()}
+                  </TaskSchedulePopover>
+                ) : (
                   <TaskSchedulePopover taskId={task.id}>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground transition-colors opacity-70 hover:opacity-100">
                       <Calendar className="h-3 w-3" />
                     </span>
                   </TaskSchedulePopover>
-                )
-              )}
+                )}
 
-              {/* Actions Menu - always visible */}
-              <TaskActionsMenu
-                task={task}
-                isVisible={actionsMenuVisible}
-                onDeleteClick={() => deleteTask(task.id)}
-                variant="compact"
-                open={actionsMenuOpen}
-                onOpenChange={handleActionsMenuChange}
-              />
-            </div>
-          </div>
-
-          {/* Second row - metadata that wraps on small screens */}
-          <div className="flex items-center justify-between text-xs text-muted-foreground min-h-[20px]">
-            {/* Left side - Interactive metadata */}
-            <div className="flex items-center gap-2 flex-wrap min-h-[16px]">
-              {/* Subtasks */}
-              <SubtaskPopover task={task}>
-                <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
-                  <CheckSquare className="h-3 w-3" />
-                  {task.subtasks.length > 0 && (
-                    <>
-                      {task.subtasks.filter((s: Subtask) => s.completed).length}/
-                      {task.subtasks.length}
-                    </>
-                  )}
-                </span>
-              </SubtaskPopover>
-
-              {/* Comments */}
-              <CommentManagementPopover
-                task={task}
-                onAddComment={(content) => addComment({ taskId: task.id, content })}
-                onOpenChange={(open) => {
-                  if (!open) return
-                  // TODO: Handle onViewAll functionality if needed
-                }}
-              >
-                <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
-                  <MessageSquare className="h-3 w-3" />
-                  {task.comments.length > 0 && task.comments.length}
-                </span>
-              </CommentManagementPopover>
-
-              {/* Labels - Show if present */}
-              {task.labels.length > 0 && (
-                <LabelManagementPopover
+                {/* Actions Menu - always visible */}
+                <TaskActionsMenu
                   task={task}
-                  onAddLabel={handleAddLabel}
-                  onRemoveLabel={handleRemoveLabel}
-                >
-                  <div className="flex items-center gap-1 flex-wrap cursor-pointer">
-                    {getLabelsFromIds(task.labels)
-                      .slice(0, labelsExpanded ? task.labels.length : 2)
-                      .map((label) => (
-                        <Badge
-                          key={label.id}
-                          variant="secondary"
-                          className="text-xs px-1 py-0 h-4 hover:opacity-100"
-                          style={{
-                            backgroundColor: label.color,
-                            color: getContrastColor(label.color),
-                            border: "none",
-                          }}
-                          title={label.name}
-                        >
-                          {labelsExpanded ? label.name : label.name.slice(0, 8)}
-                        </Badge>
-                      ))}
-                    {task.labels.length > 2 && !labelsExpanded && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs px-1 py-0 h-4 cursor-pointer hover:bg-accent transition-colors"
-                        title={`+${task.labels.length - 2} more labels`}
-                        data-action="labels"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setLabelsExpanded(true)
-                        }}
-                      >
-                        +{task.labels.length - 2}
-                      </Badge>
-                    )}
-                  </div>
-                </LabelManagementPopover>
-              )}
-
-              {/* Add Label */}
-              {task.labels.length === 0 && (
-                <LabelManagementPopover
-                  task={task}
-                  onAddLabel={handleAddLabel}
-                  onRemoveLabel={handleRemoveLabel}
-                >
-                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors opacity-70 hover:opacity-100">
-                    <Tag className="h-3 w-3" />
-                  </span>
-                </LabelManagementPopover>
-              )}
+                  isVisible={actionsMenuVisible}
+                  onDeleteClick={() => deleteTask(task.id)}
+                  variant="compact"
+                  open={actionsMenuOpen}
+                  onOpenChange={handleActionsMenuChange}
+                />
+              </div>
             </div>
 
-            {/* Right side - Project info */}
-            <div className="flex items-center gap-1 flex-shrink-0">
-              {/* Project Badge - Now clickable with project picker */}
-              {showProjectBadge && taskProject && (
-                <ProjectPopover task={task}>
+            {/* Right section - secondary metadata that flows to second row on mobile */}
+            <div className="flex items-center justify-between text-xs text-muted-foreground md:flex-shrink-0 md:justify-start gap-2">
+              {/* Interactive metadata */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* Subtasks */}
+                <SubtaskPopover task={task}>
                   <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
-                    <Folder
-                      className="h-2 w-2 flex-shrink-0"
-                      style={{ color: taskProject.color }}
-                    />
-                    <span className="truncate max-w-24">{taskProject.name}</span>
+                    <CheckSquare className="h-3 w-3" />
+                    {task.subtasks.length > 0 && (
+                      <>
+                        {task.subtasks.filter((s: Subtask) => s.completed).length}/
+                        {task.subtasks.length}
+                      </>
+                    )}
                   </span>
-                </ProjectPopover>
-              )}
+                </SubtaskPopover>
 
-              {/* Add Project - Show when no project is set */}
-              {showProjectBadge && !taskProject && allProjects.length > 0 && (
-                <ProjectPopover task={task}>
-                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors opacity-70 hover:opacity-100">
-                    <Folder className="h-3 w-3" />
+                {/* Comments */}
+                <CommentManagementPopover
+                  task={task}
+                  onAddComment={(content) => addComment({ taskId: task.id, content })}
+                  onOpenChange={(open) => {
+                    if (!open) return
+                    // TODO: Handle onViewAll functionality if needed
+                  }}
+                >
+                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
+                    <MessageSquare className="h-3 w-3" />
+                    {task.comments.length > 0 && task.comments.length}
                   </span>
-                </ProjectPopover>
-              )}
+                </CommentManagementPopover>
+
+                {/* Labels - Show if present, limited on smaller screens */}
+                {task.labels.length > 0 && (
+                  <LabelManagementPopover
+                    task={task}
+                    onAddLabel={handleAddLabel}
+                    onRemoveLabel={handleRemoveLabel}
+                  >
+                    <div className="flex items-center gap-1 flex-wrap cursor-pointer">
+                      {getLabelsFromIds(task.labels)
+                        .slice(0, labelsExpanded ? task.labels.length : 1) // Show only 1 label by default
+                        .map((label) => (
+                          <Badge
+                            key={label.id}
+                            variant="secondary"
+                            className="text-xs px-1 py-0 h-4 hover:opacity-100"
+                            style={{
+                              backgroundColor: label.color,
+                              color: getContrastColor(label.color),
+                              border: "none",
+                            }}
+                            title={label.name}
+                          >
+                            {label.name.slice(0, 6)} {/* Shorter label text */}
+                          </Badge>
+                        ))}
+                      {task.labels.length > 1 && !labelsExpanded && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs px-1 py-0 h-4 cursor-pointer hover:bg-accent transition-colors"
+                          title={`+${task.labels.length - 1} more labels`}
+                          data-action="labels"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setLabelsExpanded(true)
+                          }}
+                        >
+                          +{task.labels.length - 1}
+                        </Badge>
+                      )}
+                    </div>
+                  </LabelManagementPopover>
+                )}
+
+                {/* Add Label */}
+                {task.labels.length === 0 && (
+                  <LabelManagementPopover
+                    task={task}
+                    onAddLabel={handleAddLabel}
+                    onRemoveLabel={handleRemoveLabel}
+                  >
+                    <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors opacity-70 hover:opacity-100">
+                      <Tag className="h-3 w-3" />
+                    </span>
+                  </LabelManagementPopover>
+                )}
+
+                {/* Project info */}
+                {showProjectBadge && taskProject && (
+                  <ProjectPopover task={task}>
+                    <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
+                      <Folder
+                        className="h-2 w-2 flex-shrink-0"
+                        style={{ color: taskProject.color }}
+                      />
+                      <span className="truncate max-w-16">{taskProject.name}</span>{" "}
+                      {/* Shorter project name */}
+                    </span>
+                  </ProjectPopover>
+                )}
+
+                {/* Add Project - Show when no project is set */}
+                {showProjectBadge && !taskProject && allProjects.length > 0 && (
+                  <ProjectPopover task={task}>
+                    <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors opacity-70 hover:opacity-100">
+                      <Folder className="h-3 w-3" />
+                    </span>
+                  </ProjectPopover>
+                )}
+              </div>
             </div>
           </div>
         </div>

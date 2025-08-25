@@ -72,12 +72,12 @@ import {
   GroupId,
   CreateGroupRequest,
   CreateGroupResponseSchema,
-  UpdateGroupRequest,
+  UpdateProjectGroupRequest,
+  UpdateProjectGroupRequestSchema,
   UpdateGroupResponseSchema,
   DeleteGroupRequest,
   DeleteGroupResponseSchema,
   CreateGroupRequestSchema,
-  GroupUpdateUnionSchema,
   DeleteGroupRequestSchema,
   createGroupId,
   isGroup,
@@ -781,26 +781,28 @@ export const updateProjectGroupMutationAtom = createMutation({
   method: "PATCH",
   operationName: "Updated group",
   responseSchema: UpdateGroupResponseSchema,
-  serializationSchema: GroupUpdateUnionSchema,
+  serializationSchema: UpdateProjectGroupRequestSchema,
   apiEndpoint: "/api/groups",
   queryKey: ["groups"],
   logModule: "groups",
-  testResponseFactory: (request: UpdateGroupRequest) => ({
-    success: true,
-    groups: [
-      {
-        type: "project" as const,
-        id: request.id,
-        name: request.name || "Updated Group",
-        description: request.description,
-        color: request.color,
-        items: [],
-      },
-    ],
-    count: 1,
-    message: "Group updated successfully (test mode)",
-  }),
-  optimisticUpdateFn: (request: UpdateGroupRequest, oldData: DataFile) => {
+  testResponseFactory: (request: UpdateProjectGroupRequest) => {
+    return {
+      success: true,
+      groups: [
+        {
+          type: "project" as const,
+          id: request.id,
+          name: request.name || "Updated Group",
+          description: request.description,
+          color: request.color,
+          items: request.items || [],
+        },
+      ],
+      count: 1,
+      message: "Group updated successfully (test mode)",
+    }
+  },
+  optimisticUpdateFn: (request: UpdateProjectGroupRequest, oldData: DataFile) => {
     const updateRequest = Array.isArray(request) ? request : [request]
 
     return {
@@ -815,6 +817,7 @@ export const updateProjectGroupMutationAtom = createMutation({
             ...(update.name && { name: update.name }),
             ...(update.description && { description: update.description }),
             ...(update.color && { color: update.color }),
+            ...(update.items && { items: update.items }),
           }
         }) || [],
     }

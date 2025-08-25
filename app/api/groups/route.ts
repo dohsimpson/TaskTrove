@@ -346,22 +346,39 @@ async function updateGroups(
       update.id,
     )
 
-    if (groupResult) {
-      // Update group properties in-place
-      const group = groupResult.group
-      if (update.name !== undefined) {
-        group.name = update.name
-      }
-      if (update.description !== undefined) {
-        group.description = update.description
-      }
-      if (update.color !== undefined) {
-        group.color = update.color
-      }
-
-      updatedGroups.push(group)
-      updatedGroupIds.push(update.id)
+    if (!groupResult) {
+      return createErrorResponse(`Group not found: ${update.id}`, "GROUP_NOT_FOUND", 404)
     }
+
+    const group = groupResult.group
+
+    // Type consistency check - verify client type matches stored type
+    if (group.type !== update.type) {
+      return createErrorResponse(
+        `Type mismatch: group ${update.id} is type "${group.type}" but update specifies "${update.type}"`,
+        "TYPE_MISMATCH",
+        400,
+      )
+    }
+
+    // Update group properties in-place
+    if (update.name !== undefined) {
+      group.name = update.name
+    }
+    if (update.description !== undefined) {
+      group.description = update.description
+    }
+    if (update.color !== undefined) {
+      group.color = update.color
+    }
+    if (update.items !== undefined) {
+      // Direct assignment - items already validated by discriminated union
+      // Type consistency was already validated above
+      group.items = update.items
+    }
+
+    updatedGroups.push(group)
+    updatedGroupIds.push(update.id)
   }
 
   const writeSuccess = await withPerformanceLogging(
@@ -383,6 +400,7 @@ async function updateGroups(
         id: group.id,
         name: group.name,
         type: group.type,
+        itemsCount: group.items.length,
       })),
       totalGroups: {
         project: fileData.projectGroups?.length || 0,

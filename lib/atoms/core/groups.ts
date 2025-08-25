@@ -6,7 +6,7 @@ import type {
   ProjectId,
   DataFileSerialization,
   CreateGroupRequest,
-  UpdateGroupRequest,
+  UpdateProjectGroupRequest,
   DeleteGroupRequest,
 } from "@/lib/types"
 import { isGroup } from "@/lib/types"
@@ -117,15 +117,18 @@ export const updateProjectGroupAtom = atom(
       name?: string
       description?: string
       color?: string
+      items?: (ProjectId | ProjectGroup)[]
     },
   ) => {
     const mutation = get(updateProjectGroupMutationAtom)
 
-    const request: UpdateGroupRequest = {
+    const request: UpdateProjectGroupRequest = {
       id: updateData.id,
+      type: "project", // Required type field for discriminated union
       name: updateData.name,
       description: updateData.description,
       color: updateData.color,
+      items: updateData.items,
     }
 
     return await mutation.mutateAsync(request)
@@ -238,19 +241,16 @@ export const addProjectToGroupAtom = atom(
         return
       }
 
-      // Since the API doesn't have a specific endpoint for adding projects to groups,
-      // we need to update the group's items array through a group update
-      // This is a limitation that could be improved with a dedicated endpoint
+      // Create the updated items array with the new project
+      const updatedItems: (ProjectId | ProjectGroup)[] = [...targetGroup.items, projectId]
 
-      // For now, we'll handle this by updating the group with the new items
-      // This approach requires careful handling to avoid race conditions
-      log.info(
-        { projectId, groupId },
-        "Adding project to group - this requires manual group items management",
-      )
+      // Update the group via the API
+      await set(updateProjectGroupAtom, {
+        id: groupId,
+        items: updatedItems,
+      })
 
-      // TODO: Implement a more robust solution with dedicated API endpoints
-      // or handle the items array updates more carefully
+      log.info({ projectId, groupId }, "Project successfully added to group")
     } catch (error) {
       log.error({ error, projectId, groupId }, "Failed to add project to group")
       throw error
@@ -290,12 +290,19 @@ export const removeProjectFromGroupAtom = atom(
         return
       }
 
+      // Create updated items array without the project
+      const updatedItems = containingGroup.items.filter((item) => item !== projectId)
+
+      // Update the group via the API
+      await set(updateProjectGroupAtom, {
+        id: containingGroup.id,
+        items: updatedItems,
+      })
+
       log.info(
         { projectId, groupId: containingGroup.id },
-        "Removing project from group - requires manual group items management",
+        "Project successfully removed from group",
       )
-
-      // TODO: Implement proper removal logic with API integration
     } catch (error) {
       log.error({ error, projectId }, "Failed to remove project from group")
       throw error

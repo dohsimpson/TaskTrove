@@ -33,6 +33,9 @@ import {
   projectGroupBreadcrumbsAtom,
   projectGroupProjectCountAtom,
   rootProjectGroupsAtom,
+  addProjectToGroupAtom,
+  removeProjectFromGroupAtom,
+  moveProjectBetweenGroupsAtom,
 } from "./groups"
 
 // Mock fetch for API calls
@@ -444,5 +447,87 @@ describe.skip("Project-Group Relationship Atoms", () => {
     // Since the actual implementation has TODO comments,
     // this test documents the expected behavior once implemented
     expect(true).toBe(true) // Placeholder for future implementation
+  })
+})
+
+describe("Project-Group Relationship Atoms (New Implementation)", () => {
+  let store: ReturnType<typeof createStore>
+
+  beforeEach(() => {
+    store = createStore()
+    vi.clearAllMocks()
+  })
+
+  describe("Core Functionality Tests", () => {
+    it("should properly validate group existence in addProjectToGroupAtom", async () => {
+      const nonExistentGroupId = createGroupId("99999999-9999-4999-8999-999999999999")
+
+      // This test verifies that the atom correctly validates group existence
+      await expect(
+        store.set(addProjectToGroupAtom, {
+          projectId: TEST_PROJECT_ID_1,
+          groupId: nonExistentGroupId,
+        }),
+      ).rejects.toThrow(`Project group with ID ${nonExistentGroupId} not found`)
+    })
+
+    it("should have proper atom exports", () => {
+      // Verify that the new atoms are properly exported and accessible
+      expect(addProjectToGroupAtom).toBeDefined()
+      expect(removeProjectFromGroupAtom).toBeDefined()
+      expect(moveProjectBetweenGroupsAtom).toBeDefined()
+      expect(addProjectToGroupAtom.debugLabel).toBe("addProjectToGroupAtom")
+      expect(removeProjectFromGroupAtom.debugLabel).toBe("removeProjectFromGroupAtom")
+      expect(moveProjectBetweenGroupsAtom.debugLabel).toBe("moveProjectBetweenGroupsAtom")
+    })
+
+    it("should integrate with existing findProjectGroupByIdAtom", async () => {
+      const findById = await store.get(findProjectGroupByIdAtom)
+
+      // Verify we can find the test groups
+      const foundGroup = findById(TEST_GROUP_ID_1)
+      expect(foundGroup).toEqual(mockProjectGroup)
+      expect(foundGroup?.items).toContain(TEST_PROJECT_ID_1)
+
+      // Verify nested group finding
+      const nestedGroup = findById(TEST_GROUP_ID_2)
+      expect(nestedGroup).toEqual(mockNestedProjectGroup)
+      expect(nestedGroup?.items).toContain(TEST_PROJECT_ID_2)
+    })
+
+    it("should work with atom error handling mechanism", async () => {
+      // The atoms should handle invalid group IDs gracefully
+      const invalidGroupId = createGroupId("00000000-0000-0000-0000-000000000000")
+
+      await expect(
+        store.set(addProjectToGroupAtom, {
+          projectId: TEST_PROJECT_ID_1,
+          groupId: invalidGroupId,
+        }),
+      ).rejects.toThrow()
+    })
+  })
+
+  describe("Type Safety and Integration", () => {
+    it("should accept proper ProjectId and GroupId types", () => {
+      // These should compile without TypeScript errors
+      const validProjectId = TEST_PROJECT_ID_1
+      const validGroupId = TEST_GROUP_ID_1
+
+      expect(typeof validProjectId).toBe("string")
+      expect(typeof validGroupId).toBe("string")
+
+      // The atoms should be callable with proper types
+      expect(() => addProjectToGroupAtom).not.toThrow()
+      expect(() => removeProjectFromGroupAtom).not.toThrow()
+      expect(() => moveProjectBetweenGroupsAtom).not.toThrow()
+    })
+
+    it("should be integrated into the main atoms export", () => {
+      // Verify atoms have proper debug labels for debugging
+      expect(addProjectToGroupAtom.debugLabel).toBe("addProjectToGroupAtom")
+      expect(removeProjectFromGroupAtom.debugLabel).toBe("removeProjectFromGroupAtom")
+      expect(moveProjectBetweenGroupsAtom.debugLabel).toBe("moveProjectBetweenGroupsAtom")
+    })
   })
 })

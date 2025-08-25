@@ -403,6 +403,9 @@ vi.mock("@/lib/types", () => ({
   DeleteGroupRequestSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: "mock-id" }),
   },
+  UpdateProjectGroupRequestSchema: {
+    safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
+  },
 }))
 
 vi.mock("@/lib/utils/logger", () => ({

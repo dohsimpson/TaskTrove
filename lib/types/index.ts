@@ -1842,16 +1842,42 @@ export const CreateGroupRequestSchema = z.object({
   parentId: GroupIdSchema.optional(),
 })
 
-export const UpdateGroupRequestSchema = z.object({
+// Type-specific update schemas with required type field
+export const UpdateProjectGroupRequestSchema = z.object({
   /** Group ID to update */
   id: GroupIdSchema,
+  /** Group type - must be "project" */
+  type: z.literal("project"),
   /** Updated group name */
   name: z.string().optional(),
   /** Updated group description */
   description: z.string().optional(),
   /** Updated group color */
   color: z.string().optional(),
+  /** Updated group items - allows updating the project assignments */
+  items: z.array(z.union([ProjectIdSchema, z.lazy(() => ProjectGroupSchema)])).optional(),
 })
+
+export const UpdateLabelGroupRequestSchema = z.object({
+  /** Group ID to update */
+  id: GroupIdSchema,
+  /** Group type - must be "label" */
+  type: z.literal("label"),
+  /** Updated group name */
+  name: z.string().optional(),
+  /** Updated group description */
+  description: z.string().optional(),
+  /** Updated group color */
+  color: z.string().optional(),
+  /** Updated group items - allows updating the label assignments */
+  items: z.array(z.union([LabelIdSchema, z.lazy(() => LabelGroupSchema)])).optional(),
+})
+
+// Discriminated union - Zod automatically validates based on type field
+export const UpdateGroupRequestSchema = z.discriminatedUnion("type", [
+  UpdateProjectGroupRequestSchema,
+  UpdateLabelGroupRequestSchema,
+])
 
 export const GroupUpdateUnionSchema = z.union([
   UpdateGroupRequestSchema,
@@ -1879,6 +1905,8 @@ export const DeleteGroupResponseSchema = ApiResponseSchema.extend({
 
 // Group Request/Response Types
 export type CreateGroupRequest = z.infer<typeof CreateGroupRequestSchema>
+export type UpdateProjectGroupRequest = z.infer<typeof UpdateProjectGroupRequestSchema>
+export type UpdateLabelGroupRequest = z.infer<typeof UpdateLabelGroupRequestSchema>
 export type UpdateGroupRequest = z.infer<typeof UpdateGroupRequestSchema>
 export type GroupUpdateUnion = z.infer<typeof GroupUpdateUnionSchema>
 export type DeleteGroupRequest = z.infer<typeof DeleteGroupRequestSchema>

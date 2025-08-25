@@ -207,6 +207,7 @@ describe("PATCH /api/groups", () => {
   it("should update an existing project group", async () => {
     const updates = {
       id: TEST_GROUP_ID_3,
+      type: "project",
       name: "Updated Project Group",
       description: "Updated description",
     }
@@ -232,6 +233,7 @@ describe("PATCH /api/groups", () => {
   it("should return success with count 0 for non-existent group", async () => {
     const updates = {
       id: createGroupId("99999999-9999-4999-8999-999999999999"),
+      type: "project",
       name: "Non-existent Group",
     }
 
@@ -244,11 +246,9 @@ describe("PATCH /api/groups", () => {
     const response = await PATCH(request)
     const data = await response.json()
 
-    expect(response.status).toBe(200)
-    expect(data.success).toBe(true)
-    expect(data.groups).toHaveLength(0)
-    expect(data.count).toBe(0)
-    expect(data.message).toBe("0 group(s) updated successfully")
+    expect(response.status).toBe(404)
+    expect(data.error).toBe("Group not found: 99999999-9999-4999-8999-999999999999")
+    expect(data.message).toBe("GROUP_NOT_FOUND")
   })
 })
 

@@ -1,58 +1,29 @@
 import { atom } from "jotai"
-import { atomWithQuery } from "jotai-tanstack-query"
 import type {
   GroupId,
   ProjectGroup,
   ProjectId,
-  DataFileSerialization,
   CreateGroupRequest,
   UpdateProjectGroupRequest,
   DeleteGroupRequest,
 } from "@/lib/types"
 import { isGroup } from "@/lib/types"
-import { TEST_GROUPS_DATA } from "@/lib/utils/test-constants"
 import { log } from "@/lib/utils/logger"
 import {
   createProjectGroupMutationAtom,
   updateProjectGroupMutationAtom,
   deleteProjectGroupMutationAtom,
+  dataQueryAtom,
 } from "./base"
 import { visibleProjectsAtom } from "./projects"
 
-// Base query atom to fetch all groups data
-export const groupsQueryAtom = atomWithQuery(() => ({
-  queryKey: ["groups"],
-  queryFn: async (): Promise<DataFileSerialization> => {
-    // Check if we're in a test environment first
-    if (typeof window === "undefined" || process.env.NODE_ENV === "test") {
-      log.info({ module: "test" }, "Test environment: Using test groups data")
-      // Return the test data immediately
-      return Promise.resolve(TEST_GROUPS_DATA)
-    }
-
-    const response = await fetch("/api/groups")
-    if (!response.ok) {
-      throw new Error(`Failed to fetch groups: ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    return data
-  },
-  staleTime: 1000,
-  refetchOnMount: false,
-  refetchOnWindowFocus: false,
-  refetchInterval: false,
-  // Add test-specific configuration
-  enabled: typeof window !== "undefined" && process.env.NODE_ENV !== "test",
-  initialData:
-    typeof window === "undefined" || process.env.NODE_ENV === "test" ? TEST_GROUPS_DATA : undefined,
-}))
+// Groups data comes from dataQueryAtom, following same pattern as projectsAtom
 
 // Derived atoms for each group type
 export const allGroupsAtom = atom((get) => {
-  const result = get(groupsQueryAtom)
+  const result = get(dataQueryAtom)
 
-  // Handle TanStack Query result structure
+  // Handle TanStack Query result structure - follow same pattern as projectsAtom
   if ("data" in result && result.data) {
     return {
       projectGroups: result.data.projectGroups ?? [],

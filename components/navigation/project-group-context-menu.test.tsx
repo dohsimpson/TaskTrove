@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { screen, fireEvent } from "@testing-library/react"
 import { render } from "@/test-utils/render-with-providers"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
-import { groupsQueryAtom } from "@/lib/atoms/core/groups"
+import { dataQueryAtom } from "@/lib/atoms/core/base"
 import { createGroupId } from "@/lib/types"
 
 // Mock component interfaces
@@ -137,7 +137,19 @@ describe("ProjectGroupContextMenu", () => {
   }
 
   const defaultAtomValues: Array<[unknown, unknown]> = [
-    [groupsQueryAtom, { data: { projectGroups: [mockProjectGroup], labelGroups: [] } }],
+    [
+      dataQueryAtom,
+      {
+        data: {
+          tasks: [],
+          projects: [],
+          labels: [],
+          projectGroups: [mockProjectGroup],
+          labelGroups: [],
+          ordering: { projects: [], labels: [] },
+        },
+      },
+    ],
   ]
 
   beforeEach(() => {
@@ -207,7 +219,21 @@ describe("ProjectGroupContextMenu", () => {
         isVisible={true}
       />,
       {
-        initialAtomValues: [[groupsQueryAtom, { data: { projectGroups: [], labelGroups: [] } }]],
+        initialAtomValues: [
+          [
+            dataQueryAtom,
+            {
+              data: {
+                tasks: [],
+                projects: [],
+                labels: [],
+                projectGroups: [],
+                labelGroups: [],
+                ordering: { projects: [], labels: [] },
+              },
+            },
+          ],
+        ],
       },
     )
 

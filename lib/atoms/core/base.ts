@@ -395,6 +395,30 @@ export const dataQueryAtom = atomWithQuery(() => ({
             color: "#3b82f6",
           },
         ],
+        projectGroups: [
+          {
+            type: "project" as const,
+            id: createGroupId("33333333-3333-4333-8333-333333333333"),
+            name: "All Projects",
+            items: [
+              {
+                type: "project" as const,
+                id: createGroupId("11111111-1111-4111-8111-111111111111"),
+                name: "Work Projects",
+                description: "Projects related to work",
+                color: "#3b82f6",
+                items: [createProjectId("44444444-4444-4444-8444-444444444444")],
+              },
+              {
+                type: "project" as const,
+                id: createGroupId("22222222-2222-4222-8222-222222222222"),
+                name: "Development",
+                items: [createProjectId("55555555-5555-4555-8555-555555555555")],
+              },
+            ],
+          },
+        ],
+        labelGroups: [],
         ordering: {
           projects: [
             INBOX_PROJECT_ID,

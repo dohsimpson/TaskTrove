@@ -59,31 +59,6 @@ import { INBOX_PROJECT_ID, createTaskId, createLabelId } from "@/lib/types"
 // Responsive width for metadata columns to ensure consistent alignment
 const METADATA_COLUMN_WIDTH = "w-auto sm:w-20 md:w-24"
 
-// Reusable component for hover fade elements
-function HoverFadeElement({
-  isVisible,
-  className,
-  children,
-  ...props
-}: {
-  isVisible: boolean
-  className?: string
-  children: React.ReactNode
-} & React.HTMLAttributes<HTMLSpanElement>) {
-  return (
-    <span
-      className={cn(
-        "transition-opacity duration-200",
-        isVisible ? "opacity-100" : "opacity-0",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-    </span>
-  )
-}
-
 interface TaskItemProps {
   taskId: TaskId
   className?: string
@@ -420,13 +395,11 @@ export function TaskItem({
                   />
                 </PriorityPopover>
               ) : (
-                isHovered && (
-                  <PriorityPopover task={task}>
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground transition-colors">
-                      <Flag className="h-3 w-3" />
-                    </span>
-                  </PriorityPopover>
-                )
+                <PriorityPopover task={task}>
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground transition-colors">
+                    <Flag className="h-3 w-3" />
+                  </span>
+                </PriorityPopover>
               )}
 
               {/* Due Date/Recurring - Show all dates and recurring in compact variant */}
@@ -473,8 +446,7 @@ export function TaskItem({
                   })()}
                 </TaskSchedulePopover>
               ) : (
-                variant === "compact" &&
-                isHovered && (
+                variant === "compact" && (
                   <TaskSchedulePopover taskId={task.id}>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground transition-colors">
                       <Calendar className="h-3 w-3" />
@@ -587,12 +559,7 @@ export function TaskItem({
                   onAddLabel={handleAddLabel}
                   onRemoveLabel={handleRemoveLabel}
                 >
-                  <span
-                    className={cn(
-                      "flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors",
-                      !isHovered && "opacity-0",
-                    )}
-                  >
+                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
                     <Tag className="h-3 w-3" />
                   </span>
                 </LabelManagementPopover>
@@ -614,8 +581,8 @@ export function TaskItem({
                 </ProjectPopover>
               )}
 
-              {/* Add Project - Show on hover when no project is set */}
-              {showProjectBadge && !taskProject && isHovered && allProjects.length > 0 && (
+              {/* Add Project - Show when no project is set */}
+              {showProjectBadge && !taskProject && allProjects.length > 0 && (
                 <ProjectPopover task={task}>
                   <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
                     <Folder className="h-3 w-3" />
@@ -723,16 +690,11 @@ export function TaskItem({
                 })()}
               </TaskSchedulePopover>
             ) : (
-              isHovered && (
-                <TaskSchedulePopover taskId={task.id}>
-                  <HoverFadeElement
-                    isVisible={isHovered}
-                    className="flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground"
-                  >
-                    <Calendar className="h-3 w-3" />
-                  </HoverFadeElement>
-                </TaskSchedulePopover>
-              )
+              <TaskSchedulePopover taskId={task.id}>
+                <span className="flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground">
+                  <Calendar className="h-3 w-3" />
+                </span>
+              </TaskSchedulePopover>
             )}
 
             {/* Priority flag */}
@@ -746,13 +708,11 @@ export function TaskItem({
                 />
               </PriorityPopover>
             ) : (
-              isHovered && (
-                <PriorityPopover task={task}>
-                  <HoverFadeElement isVisible={isHovered} className="flex items-center">
-                    <Flag className="h-3 w-3 cursor-pointer text-muted-foreground hover:text-foreground" />
-                  </HoverFadeElement>
-                </PriorityPopover>
-              )
+              <PriorityPopover task={task}>
+                <span className="flex items-center">
+                  <Flag className="h-3 w-3 cursor-pointer text-muted-foreground hover:text-foreground" />
+                </span>
+              </PriorityPopover>
             )}
 
             {/* Actions menu */}
@@ -878,47 +838,42 @@ export function TaskItem({
                 )}
               </>
             ) : (
-              isHovered && (
-                <LabelManagementPopover
-                  task={task}
-                  onAddLabel={(labelName) => {
-                    if (labelName) {
-                      const existingLabel = allLabels.find((l) => l.name === labelName)
-                      if (existingLabel) {
-                        updateTask({
-                          updateRequest: {
-                            id: task.id,
-                            labels: [...task.labels, existingLabel.id],
-                          },
-                        })
-                      } else {
-                        // Create a new label ID (this should ideally be handled by a label creation atom)
-                        const newLabelId = createLabelId(uuidv4())
-                        updateTask({
-                          updateRequest: { id: task.id, labels: [...task.labels, newLabelId] },
-                        })
-                      }
+              <LabelManagementPopover
+                task={task}
+                onAddLabel={(labelName) => {
+                  if (labelName) {
+                    const existingLabel = allLabels.find((l) => l.name === labelName)
+                    if (existingLabel) {
+                      updateTask({
+                        updateRequest: {
+                          id: task.id,
+                          labels: [...task.labels, existingLabel.id],
+                        },
+                      })
+                    } else {
+                      // Create a new label ID (this should ideally be handled by a label creation atom)
+                      const newLabelId = createLabelId(uuidv4())
+                      updateTask({
+                        updateRequest: { id: task.id, labels: [...task.labels, newLabelId] },
+                      })
                     }
-                  }}
-                  onRemoveLabel={(labelId: LabelId) => {
-                    updateTask({
-                      updateRequest: {
-                        id: task.id,
-                        labels: task.labels.filter((id: LabelId) => id !== labelId),
-                      },
-                    })
-                  }}
-                  onOpenChange={setLabelPopoverOpen}
-                >
-                  <HoverFadeElement
-                    isVisible={isHovered}
-                    className="flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground"
-                  >
-                    <Tag className="h-3 w-3" />
-                    <span className="text-xs">Add labels</span>
-                  </HoverFadeElement>
-                </LabelManagementPopover>
-              )
+                  }
+                }}
+                onRemoveLabel={(labelId: LabelId) => {
+                  updateTask({
+                    updateRequest: {
+                      id: task.id,
+                      labels: task.labels.filter((id: LabelId) => id !== labelId),
+                    },
+                  })
+                }}
+                onOpenChange={setLabelPopoverOpen}
+              >
+                <span className="flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground">
+                  <Tag className="h-3 w-3" />
+                  <span className="text-xs">Add labels</span>
+                </span>
+              </LabelManagementPopover>
             )}
           </div>
 
@@ -933,16 +888,11 @@ export function TaskItem({
                 </span>
               </SubtaskPopover>
             ) : (
-              isHovered && (
-                <SubtaskPopover task={task} onOpenChange={setSubtaskPopoverOpen}>
-                  <HoverFadeElement
-                    isVisible={isHovered}
-                    className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground"
-                  >
-                    <CheckSquare className="h-3 w-3" />
-                  </HoverFadeElement>
-                </SubtaskPopover>
-              )
+              <SubtaskPopover task={task} onOpenChange={setSubtaskPopoverOpen}>
+                <span className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground">
+                  <CheckSquare className="h-3 w-3" />
+                </span>
+              </SubtaskPopover>
             )}
 
             {/* Comments - show if present or on hover */}
@@ -957,19 +907,14 @@ export function TaskItem({
                 </span>
               </CommentManagementPopover>
             ) : (
-              isHovered && (
-                <CommentManagementPopover
-                  task={task}
-                  onAddComment={(content) => addComment({ taskId: task.id, content })}
-                >
-                  <HoverFadeElement
-                    isVisible={isHovered}
-                    className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground"
-                  >
-                    <MessageSquare className="h-3 w-3" />
-                  </HoverFadeElement>
-                </CommentManagementPopover>
-              )
+              <CommentManagementPopover
+                task={task}
+                onAddComment={(content) => addComment({ taskId: task.id, content })}
+              >
+                <span className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground">
+                  <MessageSquare className="h-3 w-3" />
+                </span>
+              </CommentManagementPopover>
             )}
 
             {/* Attachments - show if present */}
@@ -1205,12 +1150,11 @@ export function TaskItem({
                   </span>
                 </TaskSchedulePopover>,
               )
-            } else if (isHovered) {
-              // Show add due date button on hover
+            } else {
+              // Show add due date button
               leftMetadataItems.push(
                 <TaskSchedulePopover key="due-date" taskId={task.id}>
-                  <HoverFadeElement
-                    isVisible={isHovered}
+                  <span
                     className={cn(
                       "flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground",
                       METADATA_COLUMN_WIDTH,
@@ -1218,7 +1162,7 @@ export function TaskItem({
                   >
                     <Calendar className="h-3 w-3" />
                     <span className="text-xs">Add date</span>
-                  </HoverFadeElement>
+                  </span>
                 </TaskSchedulePopover>,
               )
             }
@@ -1238,12 +1182,11 @@ export function TaskItem({
                   </span>
                 </PriorityPopover>,
               )
-            } else if (isHovered) {
-              // Show add priority button on hover when priority is 4 (no priority)
+            } else {
+              // Show add priority button when priority is 4 (no priority)
               leftMetadataItems.push(
                 <PriorityPopover key="priority-hover" task={task}>
-                  <HoverFadeElement
-                    isVisible={isHovered}
+                  <span
                     className={cn(
                       "flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground",
                       METADATA_COLUMN_WIDTH,
@@ -1251,7 +1194,7 @@ export function TaskItem({
                   >
                     <Flag className="h-3 w-3" />
                     <span className="text-xs">Add priority</span>
-                  </HoverFadeElement>
+                  </span>
                 </PriorityPopover>,
               )
             }
@@ -1279,16 +1222,15 @@ export function TaskItem({
                   </span>
                 </CommentManagementPopover>,
               )
-            } else if (isHovered) {
-              // Show add comment button on hover when no comments exist
+            } else {
+              // Show add comment button when no comments exist
               leftMetadataItems.push(
                 <CommentManagementPopover
                   key="comments"
                   task={task}
                   onAddComment={(content) => addComment({ taskId: task.id, content })}
                 >
-                  <HoverFadeElement
-                    isVisible={isHovered}
+                  <span
                     className={cn(
                       "flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground whitespace-nowrap",
                       METADATA_COLUMN_WIDTH,
@@ -1296,41 +1238,38 @@ export function TaskItem({
                   >
                     <MessageSquare className="h-3 w-3" />
                     <span className="text-xs">Add comment</span>
-                  </HoverFadeElement>
+                  </span>
                 </CommentManagementPopover>,
               )
             }
 
-            // Subtasks - Show if present or add subtask on hover
-            if (task.subtasks.length > 0 || isHovered || subtaskPopoverOpen) {
-              const completed = task.subtasks.filter((s: Subtask) => s.completed).length
-              leftMetadataItems.push(
-                <SubtaskPopover key="subtasks" task={task} onOpenChange={setSubtaskPopoverOpen}>
-                  {task.subtasks.length > 0 ? (
-                    <span
-                      className={cn(
-                        "flex items-center gap-1 cursor-pointer hover:opacity-80",
-                        METADATA_COLUMN_WIDTH,
-                      )}
-                    >
-                      <CheckSquare className="h-3 w-3" />
-                      {completed}/{task.subtasks.length}
-                    </span>
-                  ) : (
-                    <HoverFadeElement
-                      isVisible={isHovered || subtaskPopoverOpen}
-                      className={cn(
-                        "flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground whitespace-nowrap",
-                        METADATA_COLUMN_WIDTH,
-                      )}
-                    >
-                      <CheckSquare className="h-3 w-3" />
-                      <span className="text-xs">Add subtask</span>
-                    </HoverFadeElement>
-                  )}
-                </SubtaskPopover>,
-              )
-            }
+            // Subtasks - Show if present or add subtask
+            const completed = task.subtasks.filter((s: Subtask) => s.completed).length
+            leftMetadataItems.push(
+              <SubtaskPopover key="subtasks" task={task} onOpenChange={setSubtaskPopoverOpen}>
+                {task.subtasks.length > 0 ? (
+                  <span
+                    className={cn(
+                      "flex items-center gap-1 cursor-pointer hover:opacity-80",
+                      METADATA_COLUMN_WIDTH,
+                    )}
+                  >
+                    <CheckSquare className="h-3 w-3" />
+                    {completed}/{task.subtasks.length}
+                  </span>
+                ) : (
+                  <span
+                    className={cn(
+                      "flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground whitespace-nowrap",
+                      METADATA_COLUMN_WIDTH,
+                    )}
+                  >
+                    <CheckSquare className="h-3 w-3" />
+                    <span className="text-xs">Add subtask</span>
+                  </span>
+                )}
+              </SubtaskPopover>,
+            )
 
             // Right side - Flexible width items
             // Labels - Now clickable with popover for editing
@@ -1360,8 +1299,8 @@ export function TaskItem({
                   </span>
                 </LabelManagementPopover>,
               )
-            } else if (isHovered) {
-              // Show add labels button on hover when no labels
+            } else {
+              // Show add labels button when no labels
               rightMetadataItems.push(
                 <LabelManagementPopover
                   key="labels"
@@ -1369,13 +1308,10 @@ export function TaskItem({
                   onAddLabel={handleAddLabel}
                   onRemoveLabel={handleRemoveLabel}
                 >
-                  <HoverFadeElement
-                    isVisible={isHovered}
-                    className="flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground"
-                  >
+                  <span className="flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground">
                     <Tag className="h-3 w-3" />
                     <span className="text-xs">Add label</span>
-                  </HoverFadeElement>
+                  </span>
                 </LabelManagementPopover>,
               )
             }
@@ -1400,11 +1336,10 @@ export function TaskItem({
                   </ProjectPopover>,
                 )
               } else if (allProjects.length > 0) {
-                // Always show project area to maintain consistent width, but fade when not hovered
+                // Always show project area to maintain consistent width
                 rightMetadataItems.push(
                   <ProjectPopover key="project-hover" task={task}>
-                    <HoverFadeElement
-                      isVisible={isHovered}
+                    <span
                       className={cn(
                         "flex items-center gap-1 cursor-pointer text-gray-400 hover:text-gray-600",
                         METADATA_COLUMN_WIDTH,
@@ -1412,7 +1347,7 @@ export function TaskItem({
                     >
                       <Folder className="h-3 w-3" />
                       <span className="text-xs truncate">Add project</span>
-                    </HoverFadeElement>
+                    </span>
                   </ProjectPopover>,
                 )
               } else {

@@ -1598,8 +1598,10 @@ describe("TaskItem", () => {
       )
 
       expect(screen.getByText("Empty Task")).toBeInTheDocument()
-      expect(screen.queryByTestId("flag-icon")).not.toBeInTheDocument()
-      expect(screen.queryByTestId("calendar-icon")).not.toBeInTheDocument()
+      // Flag icon should be present as "Add priority" button for P4 priority tasks
+      expect(screen.queryByTestId("flag-icon")).toBeInTheDocument()
+      // Calendar icon should be present as "Add date" button for tasks without due date
+      expect(screen.queryByTestId("calendar-icon")).toBeInTheDocument()
     })
 
     it("handles empty title gracefully", () => {
@@ -1945,12 +1947,12 @@ describe("TaskItem", () => {
           )
           expect(visibleFlag).toBeInTheDocument()
         } else {
-          // P4 should not show flag in compact variant
+          // P4 should show "Add priority" flag in compact variant
           const flagIcons = screen.queryAllByTestId("flag-icon")
           const visibleFlag = flagIcons.find(
             (icon) => !icon.closest('[data-testid="popover-sections"]'), // Exclude popover flags
           )
-          expect(visibleFlag).toBeUndefined()
+          expect(visibleFlag).toBeInTheDocument()
         }
 
         unmount()
@@ -3240,8 +3242,9 @@ describe("TaskItem", () => {
           </Provider>,
         )
 
-        // TaskSchedulePopover is not present when no schedule data exists
-        expect(screen.queryByTestId("task-schedule-popover")).not.toBeInTheDocument()
+        // TaskSchedulePopover should be present as "Add date" button when no schedule data exists
+        expect(screen.queryByTestId("task-schedule-popover")).toBeInTheDocument()
+        expect(screen.getByText("Add date")).toBeInTheDocument()
       })
 
       it("does not show TaskSchedulePopover for tasks without schedule", () => {
@@ -3258,8 +3261,9 @@ describe("TaskItem", () => {
           </Provider>,
         )
 
-        // TaskSchedulePopover only shows when there's a due date
-        expect(screen.queryByTestId("task-schedule-popover")).not.toBeInTheDocument()
+        // TaskSchedulePopover should show "Add date" button even when there's no due date
+        expect(screen.queryByTestId("task-schedule-popover")).toBeInTheDocument()
+        expect(screen.getByText("Add date")).toBeInTheDocument()
       })
 
       it("shows TaskSchedulePopover for recurring tasks without due date", () => {

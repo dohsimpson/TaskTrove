@@ -2012,23 +2012,22 @@ describe("TaskItem", () => {
         )
       })
 
-      it("shows essential metadata only on larger screens (desktop-only)", () => {
+      it("shows essential metadata in first row (star, priority, schedule, actions)", () => {
         render(
           <Provider>
             <TaskItem taskId={mockTask.id} variant="compact" />
           </Provider>,
         )
 
-        // Find the container with essential metadata that should only show on desktop
+        // Find the container with essential metadata in first row
         const container = screen.getByText("Test Task").closest("[data-task-focused]")
-        const desktopOnlyMetadata = container?.querySelector(
-          ".hidden.md\\:flex.items-center.gap-1.text-xs.flex-shrink-0",
+        const essentialMetadata = container?.querySelector(
+          ".flex.items-center.gap-1.text-xs.flex-shrink-0",
         )
 
-        expect(desktopOnlyMetadata).toBeInTheDocument()
-        expect(desktopOnlyMetadata).toHaveClass(
-          "hidden",
-          "md:flex",
+        expect(essentialMetadata).toBeInTheDocument()
+        expect(essentialMetadata).toHaveClass(
+          "flex",
           "items-center",
           "gap-1",
           "text-xs",
@@ -2060,7 +2059,7 @@ describe("TaskItem", () => {
         // Find the secondary metadata container
         const container = screen.getByText("Test Task").closest("[data-task-focused]")
         const secondaryMetadata = container?.querySelector(
-          ".flex.items-center.justify-between.text-xs.text-muted-foreground.md\\:flex-shrink-0.md\\:justify-start.gap-2",
+          ".flex.items-center.justify-between.text-xs.text-muted-foreground.min-h-\\[20px\\]",
         )
 
         expect(secondaryMetadata).toBeInTheDocument()
@@ -2070,9 +2069,7 @@ describe("TaskItem", () => {
           "justify-between",
           "text-xs",
           "text-muted-foreground",
-          "md:flex-shrink-0",
-          "md:justify-start",
-          "gap-2",
+          "min-h-[20px]",
         )
 
         // Verify it contains subtasks and comments metadata
@@ -2082,6 +2079,30 @@ describe("TaskItem", () => {
         expect(
           secondaryMetadata?.querySelector("[data-testid='comment-management-popover']"),
         ).toBeInTheDocument()
+      })
+
+      it("positions actions menu in essential metadata section (first row)", () => {
+        render(
+          <Provider>
+            <TaskItem taskId={mockTask.id} variant="compact" />
+          </Provider>,
+        )
+
+        // Find the main container
+        const container = screen.getByText("Test Task").closest("[data-task-focused]")
+        const actionsMenu = screen.getByTestId("task-actions-menu")
+
+        // The actions menu should be in the essential metadata section (first row)
+        const essentialMetadata = container?.querySelector(
+          ".flex.items-center.gap-1.text-xs.flex-shrink-0",
+        )
+        expect(essentialMetadata?.contains(actionsMenu)).toBe(true)
+
+        // Verify actions menu is not in the secondary metadata section
+        const secondaryMetadata = container?.querySelector(
+          ".flex.items-center.justify-between.text-xs.text-muted-foreground.min-h-\\[20px\\]",
+        )
+        expect(secondaryMetadata?.contains(actionsMenu)).toBe(false)
       })
     })
   })

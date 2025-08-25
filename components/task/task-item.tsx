@@ -370,8 +370,8 @@ export function TaskItem({
                 />
               </div>
 
-              {/* Essential metadata on larger screens only - shown with title */}
-              <div className="hidden md:flex items-center gap-1 text-xs flex-shrink-0">
+              {/* Essential metadata - always in first row */}
+              <div className="flex items-center gap-1 text-xs flex-shrink-0">
                 {/* Favorite Star */}
                 {task.favorite && (
                   <Star className="h-3 w-3 text-yellow-500 fill-current flex-shrink-0" />
@@ -450,7 +450,7 @@ export function TaskItem({
                   </TaskSchedulePopover>
                 )}
 
-                {/* Actions Menu - always visible */}
+                {/* Actions Menu - always in first row */}
                 <TaskActionsMenu
                   task={task}
                   isVisible={actionsMenuVisible}
@@ -462,10 +462,10 @@ export function TaskItem({
               </div>
             </div>
 
-            {/* Right section - secondary metadata that flows to second row on mobile */}
-            <div className="flex items-center justify-between text-xs text-muted-foreground md:flex-shrink-0 md:justify-start gap-2">
-              {/* Interactive metadata */}
-              <div className="flex items-center gap-2 flex-wrap">
+            {/* Second row - metadata that flows to second row on mobile */}
+            <div className="flex items-center justify-between text-xs text-muted-foreground min-h-[20px]">
+              {/* Left side - Interactive metadata (subtasks, comments) */}
+              <div className="flex items-center gap-2 flex-wrap min-h-[16px]">
                 {/* Subtasks */}
                 <SubtaskPopover task={task}>
                   <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
@@ -493,7 +493,10 @@ export function TaskItem({
                     {task.comments.length > 0 && task.comments.length}
                   </span>
                 </CommentManagementPopover>
+              </div>
 
+              {/* Right side - Labels and project info */}
+              <div className="flex items-center gap-1 flex-shrink-0">
                 {/* Labels - Show if present, limited on smaller screens */}
                 {task.labels.length > 0 && (
                   <LabelManagementPopover
@@ -550,7 +553,7 @@ export function TaskItem({
                   </LabelManagementPopover>
                 )}
 
-                {/* Project info */}
+                {/* Project Badge - Now clickable with project picker */}
                 {showProjectBadge && taskProject && (
                   <ProjectPopover task={task}>
                     <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
@@ -558,8 +561,7 @@ export function TaskItem({
                         className="h-2 w-2 flex-shrink-0"
                         style={{ color: taskProject.color }}
                       />
-                      <span className="truncate max-w-16">{taskProject.name}</span>{" "}
-                      {/* Shorter project name */}
+                      <span className="truncate max-w-24">{taskProject.name}</span>
                     </span>
                   </ProjectPopover>
                 )}

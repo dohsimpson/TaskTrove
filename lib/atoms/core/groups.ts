@@ -234,28 +234,9 @@ export const removeProjectFromGroupAtom = atom(
   null,
   async (get, set, { projectId }: { projectId: ProjectId }) => {
     try {
-      const projectGroups = get(projectGroupsAtom)
+      const findGroupContaining = get(findGroupContainingProjectAtom)
+      const containingGroup = findGroupContaining(projectId)
 
-      // Find which group contains this project
-      function findGroupContainingProject(groups: ProjectGroup[]): ProjectGroup | null {
-        for (const group of groups) {
-          if (group.items.includes(projectId)) {
-            return group
-          }
-
-          // Search in nested groups
-          const nestedGroups = group.items.filter(
-            (item): item is ProjectGroup => isGroup<ProjectGroup>(item) && item.type === "project",
-          )
-          const found = findGroupContainingProject(nestedGroups)
-          if (found) {
-            return found
-          }
-        }
-        return null
-      }
-
-      const containingGroup = findGroupContainingProject(projectGroups)
       if (!containingGroup) {
         log.info({ projectId }, "Project not found in any group")
         return
@@ -417,6 +398,34 @@ export const projectGroupProjectCountAtom = atom((get) => (groupId: GroupId): nu
   return countProjects(group)
 })
 
+// Find which group contains a specific project
+export const findGroupContainingProjectAtom = atom(
+  (get) =>
+    (projectId: ProjectId): ProjectGroup | null => {
+      const projectGroups = get(projectGroupsAtom)
+
+      function findGroupContainingProject(groups: ProjectGroup[]): ProjectGroup | null {
+        for (const group of groups) {
+          if (group.items.includes(projectId)) {
+            return group
+          }
+
+          // Search in nested groups
+          const nestedGroups = group.items.filter(
+            (item): item is ProjectGroup => isGroup<ProjectGroup>(item) && item.type === "project",
+          )
+          const found = findGroupContainingProject(nestedGroups)
+          if (found) {
+            return found
+          }
+        }
+        return null
+      }
+
+      return findGroupContainingProject(projectGroups)
+    },
+)
+
 // Get all root level project groups (groups without parents)
 export const rootProjectGroupsAtom = atom((get) => {
   const projectGroups = get(projectGroupsAtom)
@@ -439,4 +448,5 @@ moveProjectBetweenGroupsAtom.debugLabel = "moveProjectBetweenGroupsAtom"
 projectGroupTreeAtom.debugLabel = "projectGroupTreeAtom"
 projectGroupBreadcrumbsAtom.debugLabel = "projectGroupBreadcrumbsAtom"
 projectGroupProjectCountAtom.debugLabel = "projectGroupProjectCountAtom"
+findGroupContainingProjectAtom.debugLabel = "findGroupContainingProjectAtom"
 rootProjectGroupsAtom.debugLabel = "rootProjectGroupsAtom"

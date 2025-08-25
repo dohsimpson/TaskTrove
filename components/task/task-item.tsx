@@ -66,7 +66,6 @@ interface TaskItemProps {
   variant?: "default" | "compact" | "kanban" | "calendar" | "subtask"
   // Subtask-specific props
   parentTask?: Task | CreateTaskRequest // Parent task for subtask operations - can be CreateTaskRequest in quick-add
-  showDeleteButton?: boolean
 }
 
 export function TaskItem({
@@ -76,13 +75,10 @@ export function TaskItem({
   variant = "default",
   // Subtask-specific props
   parentTask,
-  showDeleteButton = false,
 }: TaskItemProps) {
   const [isHovered, setIsHovered] = useState(false)
   // Compact variant specific state
   const [labelsExpanded, setLabelsExpanded] = useState(false)
-  const [subtaskPopoverOpen, setSubtaskPopoverOpen] = useState(false)
-  const [, setLabelPopoverOpen] = useState(false)
   const [isDescriptionEditing, setIsDescriptionEditing] = useState(false)
   const [isDefaultDescriptionEditing, setIsDefaultDescriptionEditing] = useState(false)
 
@@ -472,13 +468,8 @@ export function TaskItem({
             {/* Left side - Interactive metadata */}
             <div className="flex items-center gap-2 flex-wrap min-h-[16px]">
               {/* Subtasks */}
-              <SubtaskPopover task={task} onOpenChange={setSubtaskPopoverOpen}>
-                <span
-                  className={cn(
-                    "flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors",
-                    !(task.subtasks.length > 0 || isHovered || subtaskPopoverOpen) && "opacity-0",
-                  )}
-                >
+              <SubtaskPopover task={task}>
+                <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
                   <CheckSquare className="h-3 w-3" />
                   {task.subtasks.length > 0 && (
                     <>
@@ -498,12 +489,7 @@ export function TaskItem({
                   // TODO: Handle onViewAll functionality if needed
                 }}
               >
-                <span
-                  className={cn(
-                    "flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors",
-                    !(task.comments.length > 0 || isHovered) && "opacity-0",
-                  )}
-                >
+                <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
                   <MessageSquare className="h-3 w-3" />
                   {task.comments.length > 0 && task.comments.length}
                 </span>
@@ -787,7 +773,6 @@ export function TaskItem({
                         },
                       })
                     }}
-                    onOpenChange={setLabelPopoverOpen}
                   >
                     <Badge
                       variant="outline"
@@ -826,7 +811,6 @@ export function TaskItem({
                         },
                       })
                     }}
-                    onOpenChange={setLabelPopoverOpen}
                   >
                     <Badge
                       variant="outline"
@@ -867,7 +851,6 @@ export function TaskItem({
                     },
                   })
                 }}
-                onOpenChange={setLabelPopoverOpen}
               >
                 <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
                   <Tag className="h-3 w-3" />
@@ -881,14 +864,14 @@ export function TaskItem({
           <div className="flex items-center gap-3 text-xs text-muted-foreground flex-shrink-0">
             {/* Subtasks - show if present or on hover */}
             {task.subtasks.length > 0 ? (
-              <SubtaskPopover task={task} onOpenChange={setSubtaskPopoverOpen}>
+              <SubtaskPopover task={task}>
                 <span className="flex items-center gap-1 cursor-pointer hover:opacity-100 text-foreground">
                   <CheckSquare className="h-3 w-3" />
                   {task.subtasks.filter((s: Subtask) => s.completed).length}/{task.subtasks.length}
                 </span>
               </SubtaskPopover>
             ) : (
-              <SubtaskPopover task={task} onOpenChange={setSubtaskPopoverOpen}>
+              <SubtaskPopover task={task}>
                 <span className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
                   <CheckSquare className="h-3 w-3" />
                 </span>
@@ -956,18 +939,14 @@ export function TaskItem({
     return (
       <div
         className={cn(
-          "group/task flex items-start gap-3 rounded-md transition-colors p-2 bg-muted/50 hover:bg-muted/70",
+          "group/task flex items-center gap-3 rounded-md transition-colors p-2 bg-muted/50 hover:bg-muted/70",
           task.completed && "opacity-60",
           className,
         )}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <TaskCheckbox
-          checked={task.completed}
-          onCheckedChange={() => handleSubtaskToggle()}
-          className="mt-0.5"
-        />
+        <TaskCheckbox checked={task.completed} onCheckedChange={() => handleSubtaskToggle()} />
         <EditableDiv
           as="span"
           value={task.title}
@@ -983,16 +962,14 @@ export function TaskItem({
           data-action="edit"
           allowEmpty={false}
         />
-        {showDeleteButton && isHovered && (
-          <Button
-            variant="link"
-            size="icon"
-            className="h-6 w-6 opacity-0 group-hover/task:opacity-100 transition-opacity hover:text-red-600 hover:no-underline"
-            onClick={handleSubtaskDelete}
-          >
-            <X className="h-3 w-3" />
-          </Button>
-        )}
+        <Button
+          variant="link"
+          size="icon"
+          className="h-6 w-6 hover:text-red-600 hover:no-underline"
+          onClick={handleSubtaskDelete}
+        >
+          <X className="h-3 w-3" />
+        </Button>
       </div>
     )
   }
@@ -1246,7 +1223,7 @@ export function TaskItem({
             // Subtasks - Show if present or add subtask
             const completed = task.subtasks.filter((s: Subtask) => s.completed).length
             leftMetadataItems.push(
-              <SubtaskPopover key="subtasks" task={task} onOpenChange={setSubtaskPopoverOpen}>
+              <SubtaskPopover key="subtasks" task={task}>
                 {task.subtasks.length > 0 ? (
                   <span
                     className={cn(

@@ -62,7 +62,6 @@ interface MockTaskItemProps {
   taskId: string
   variant?: string
   parentTask?: unknown
-  showDeleteButton?: boolean
   [key: string]: unknown
 }
 
@@ -171,23 +170,17 @@ vi.mock("./task-item", () => ({
   TaskItem: ({
     taskId,
     variant,
-    showDeleteButton,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     parentTask: _parentTask,
     ...props
   }: MockTaskItemProps) => (
-    <div
-      data-testid={`task-item-${taskId}`}
-      data-variant={variant}
-      data-show-delete={showDeleteButton}
-      {...props}
-    >
+    <div data-testid={`task-item-${taskId}`} data-variant={variant} {...props}>
       <span data-testid="task-title">Mock Task {taskId}</span>
       <div data-testid="flag-icon" />
       <div data-testid="calendar-icon" />
       <div data-testid="message-square-icon" />
       <div data-testid="paperclip-icon" />
-      {showDeleteButton && <button data-testid={`delete-button-${taskId}`}>×</button>}
+      <button data-testid={`delete-button-${taskId}`}>×</button>
     </div>
   ),
 }))
@@ -660,7 +653,7 @@ describe("SubtaskContent", () => {
   })
 
   describe("Subtask Deletion", () => {
-    it("passes showDeleteButton prop to TaskItem components", () => {
+    it("renders TaskItem components with delete buttons", () => {
       const subtasks = [
         createMockSubtask({ id: TEST_SUBTASK_ID_1, title: "Subtask 1" }),
         createMockSubtask({ id: TEST_SUBTASK_ID_2, title: "Subtask 2" }),
@@ -669,13 +662,13 @@ describe("SubtaskContent", () => {
 
       render(<SubtaskContent task={task} />)
 
-      // Check that both TaskItem components receive showDeleteButton=true
+      // Check that both TaskItem components are rendered
       const taskItems = screen.getAllByTestId(/task-item-/)
       expect(taskItems).toHaveLength(2)
 
-      taskItems.forEach((item) => {
-        expect(item).toHaveAttribute("data-show-delete", "true")
-      })
+      // Check that delete buttons are always present
+      expect(screen.getByTestId(`delete-button-${TEST_SUBTASK_ID_1}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`delete-button-${TEST_SUBTASK_ID_2}`)).toBeInTheDocument()
     })
 
     it("renders delete buttons for each subtask", () => {

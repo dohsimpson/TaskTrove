@@ -141,7 +141,6 @@ export function SubtaskContent({
                 taskId={createTaskId(String(subtask.id))}
                 variant="subtask"
                 parentTask={isNewTask ? undefined : task} // Don't pass parentTask for new tasks (quick-add will use quickAddTaskAtom)
-                showDeleteButton={true}
               />
             ))}
         </div>

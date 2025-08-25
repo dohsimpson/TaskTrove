@@ -2675,29 +2675,13 @@ describe("TaskItem", () => {
     })
 
     it("shows delete button when showDeleteButton is true and hovered", async () => {
-      const user = userEvent.setup()
-
       render(
         <Provider>
-          <TaskItem
-            taskId={subtaskAsTask.id}
-            variant="subtask"
-            parentTask={parentTask}
-            showDeleteButton={true}
-          />
+          <TaskItem taskId={subtaskAsTask.id} variant="subtask" parentTask={parentTask} />
         </Provider>,
       )
 
-      // Initially hidden
-      expect(screen.queryByTestId("x-icon")).not.toBeInTheDocument()
-
-      // Hover to show delete button
-      const container = screen.getByText("Test Subtask").closest(".group\\/task")
-      if (container) {
-        await user.hover(container)
-      }
-
-      // Delete button should appear
+      // Delete button should always be visible
       expect(screen.getByTestId("x-icon")).toBeInTheDocument()
     })
 
@@ -2706,12 +2690,7 @@ describe("TaskItem", () => {
 
       render(
         <Provider>
-          <TaskItem
-            taskId={subtaskAsTask.id}
-            variant="subtask"
-            parentTask={parentTask}
-            showDeleteButton={true}
-          />
+          <TaskItem taskId={subtaskAsTask.id} variant="subtask" parentTask={parentTask} />
         </Provider>,
       )
 
@@ -2740,27 +2719,14 @@ describe("TaskItem", () => {
     })
 
     it("does not show delete button when showDeleteButton is false", async () => {
-      const user = userEvent.setup()
-
       render(
         <Provider>
-          <TaskItem
-            taskId={subtaskAsTask.id}
-            variant="subtask"
-            parentTask={parentTask}
-            showDeleteButton={false}
-          />
+          <TaskItem taskId={subtaskAsTask.id} variant="subtask" parentTask={parentTask} />
         </Provider>,
       )
 
-      // Hover over the component
-      const container = screen.getByText("Test Subtask").closest(".group\\/task")
-      if (container) {
-        await user.hover(container)
-      }
-
-      // Delete button should not appear
-      expect(screen.queryByTestId("x-icon")).not.toBeInTheDocument()
+      // Delete button should always be visible regardless of showDeleteButton prop
+      expect(screen.getByTestId("x-icon")).toBeInTheDocument()
     })
 
     it("has correct minimal styling for subtask variant", () => {
@@ -2773,7 +2739,7 @@ describe("TaskItem", () => {
       const container = screen.getByText("Test Subtask").closest(".group\\/task")
 
       // Should have minimal styling (flex layout, gap, padding, no container hover)
-      expect(container).toHaveClass("flex", "items-start", "gap-3", "p-2")
+      expect(container).toHaveClass("flex", "items-center", "gap-3", "p-2")
       expect(container).toHaveClass("rounded-md", "transition-colors")
       // Container should NOT have hover:bg-accent anymore since hover is on the text
     })

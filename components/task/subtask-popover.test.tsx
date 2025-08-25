@@ -321,7 +321,6 @@ vi.mock("./task-item", () => ({
   TaskItem: ({
     taskId,
     variant,
-    showDeleteButton,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     parentTask: _parentTask,
     ...props
@@ -329,21 +328,15 @@ vi.mock("./task-item", () => ({
     taskId: string
     variant?: string
     parentTask?: unknown
-    showDeleteButton?: boolean
     [key: string]: unknown
   }) => (
-    <div
-      data-testid={`task-item-${taskId}`}
-      data-variant={variant}
-      data-show-delete={showDeleteButton}
-      {...props}
-    >
+    <div data-testid={`task-item-${taskId}`} data-variant={variant} {...props}>
       <span data-testid="task-title">Mock Task {taskId}</span>
       <div data-testid="flag-icon" />
       <div data-testid="calendar-icon" />
       <div data-testid="message-square-icon" />
       <div data-testid="paperclip-icon" />
-      {showDeleteButton && <button data-testid={`delete-button-${taskId}`}>×</button>}
+      <button data-testid={`delete-button-${taskId}`}>×</button>
     </div>
   ),
 }))
@@ -496,10 +489,10 @@ describe("SubtaskPopover", () => {
       expect(taskItem2).toHaveAttribute("data-variant", "subtask")
       expect(taskItem3).toHaveAttribute("data-variant", "subtask")
 
-      // All should have delete buttons enabled
-      expect(taskItem1).toHaveAttribute("data-show-delete", "true")
-      expect(taskItem2).toHaveAttribute("data-show-delete", "true")
-      expect(taskItem3).toHaveAttribute("data-show-delete", "true")
+      // All should have delete buttons always visible
+      expect(screen.getByTestId(`delete-button-${TEST_SUBTASK_ID_1}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`delete-button-${TEST_SUBTASK_ID_2}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`delete-button-${TEST_SUBTASK_ID_3}`)).toBeInTheDocument()
     })
 
     it("renders delete buttons for each subtask", () => {

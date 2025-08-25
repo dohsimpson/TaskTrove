@@ -2141,12 +2141,12 @@ describe("TaskItem", () => {
       const flagIcons = screen.getAllByTestId("flag-icon")
       const mainFlagIcon = flagIcons.find(
         (icon) =>
-          icon.classList.contains("cursor-pointer") && icon.classList.contains("hover:opacity-80"),
+          icon.classList.contains("cursor-pointer") && icon.classList.contains("hover:opacity-100"),
       )
       expect(mainFlagIcon).toBeInTheDocument()
       expect(mainFlagIcon).toHaveClass("text-orange-500") // Priority 2 = orange
       expect(mainFlagIcon).toHaveClass("cursor-pointer")
-      expect(mainFlagIcon).toHaveClass("hover:opacity-80")
+      expect(mainFlagIcon).toHaveClass("hover:opacity-100")
     })
 
     it("displays task completion checkbox in kanban variant", () => {
@@ -2174,7 +2174,7 @@ describe("TaskItem", () => {
       // Find the parent span that contains both the icon and the date text
       const dueDateElement = repeatIcon.parentElement
       expect(dueDateElement).toHaveClass("cursor-pointer")
-      expect(dueDateElement).toHaveClass("hover:opacity-80")
+      expect(dueDateElement).toHaveClass("hover:opacity-100")
     })
 
     it("displays interactive subtasks count in kanban variant", () => {
@@ -2193,7 +2193,7 @@ describe("TaskItem", () => {
       // Find the parent span that contains the subtask count
       const subtaskElement = subtaskIcon.parentElement
       expect(subtaskElement).toHaveClass("cursor-pointer")
-      expect(subtaskElement).toHaveClass("hover:opacity-80")
+      expect(subtaskElement).toHaveClass("hover:opacity-100")
     })
 
     it("displays interactive comments count in kanban variant", () => {
@@ -2212,7 +2212,7 @@ describe("TaskItem", () => {
       // Find the parent span that contains the comment count
       const commentElement = commentIcon.parentElement
       expect(commentElement).toHaveClass("cursor-pointer")
-      expect(commentElement).toHaveClass("hover:opacity-80")
+      expect(commentElement).toHaveClass("hover:opacity-100")
     })
 
     it("displays attachments count in kanban variant", () => {

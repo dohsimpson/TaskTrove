@@ -1380,37 +1380,53 @@ export function TaskItem({
               )
             }
 
-            // Project - Now clickable with project picker
-            if (showProjectBadge && taskProject) {
-              rightMetadataItems.push(
-                <ProjectPopover key="project" task={task}>
+            // Project - Now clickable with project picker (always show to maintain consistent width)
+            if (showProjectBadge) {
+              if (taskProject) {
+                rightMetadataItems.push(
+                  <ProjectPopover key="project" task={task}>
+                    <span
+                      className={cn(
+                        "flex items-center gap-1 cursor-pointer hover:opacity-80",
+                        METADATA_COLUMN_WIDTH,
+                      )}
+                    >
+                      <Folder
+                        className="h-3 w-3 flex-shrink-0"
+                        style={{ color: taskProject.color }}
+                      />
+                      <span className="truncate">{taskProject.name}</span>
+                    </span>
+                  </ProjectPopover>,
+                )
+              } else if (allProjects.length > 0) {
+                // Always show project area to maintain consistent width, but fade when not hovered
+                rightMetadataItems.push(
+                  <ProjectPopover key="project-hover" task={task}>
+                    <HoverFadeElement
+                      isVisible={isHovered}
+                      className={cn(
+                        "flex items-center gap-1 cursor-pointer text-gray-400 hover:text-gray-600",
+                        METADATA_COLUMN_WIDTH,
+                      )}
+                    >
+                      <Folder className="h-3 w-3" />
+                      <span className="text-xs truncate">Add project</span>
+                    </HoverFadeElement>
+                  </ProjectPopover>,
+                )
+              } else {
+                // Always maintain space even with no projects available
+                rightMetadataItems.push(
                   <span
-                    className={cn(
-                      "flex items-center gap-1 cursor-pointer hover:opacity-80",
-                      `min-${METADATA_COLUMN_WIDTH}`,
-                    )}
-                  >
-                    <Folder
-                      className="h-3 w-3 flex-shrink-0"
-                      style={{ color: taskProject.color }}
-                    />
-                    {taskProject.name}
-                  </span>
-                </ProjectPopover>,
-              )
-            } else if (showProjectBadge && !taskProject && isHovered && allProjects.length > 0) {
-              // Show add project button on hover when no project is set
-              rightMetadataItems.push(
-                <ProjectPopover key="project-hover" task={task}>
-                  <HoverFadeElement
-                    isVisible={isHovered}
-                    className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-gray-600"
+                    key="project-placeholder"
+                    className={cn("invisible", METADATA_COLUMN_WIDTH)}
                   >
                     <Folder className="h-3 w-3" />
-                    <span className="text-xs">Add project</span>
-                  </HoverFadeElement>
-                </ProjectPopover>,
-              )
+                    <span className="text-xs">Placeholder</span>
+                  </span>,
+                )
+              }
             }
 
             // Attachments (keeping on left for now)

@@ -113,73 +113,24 @@ export const deleteProjectGroupAtom = atom(null, async (get, set, groupId: Group
   return await mutation.mutateAsync(request)
 })
 
-// Utility function to find a project group by ID recursively
-function findProjectGroupById(groups: ProjectGroup[], groupId: GroupId): ProjectGroup | null {
-  for (const group of groups) {
-    if (group.id === groupId) {
-      return group
-    }
+// 🗑️ REMOVED: Old utility function - replaced by O(1) hash map lookup in groupAnalysisAtom
 
-    // Search in nested project groups
-    const nestedGroups = group.items.filter(
-      (item): item is ProjectGroup => isGroup<ProjectGroup>(item) && item.type === "project",
-    )
-    const found = findProjectGroupById(nestedGroups, groupId)
-    if (found) {
-      return found
-    }
-  }
-  return null
-}
-
-// Find project group by ID atom
+// 🚀 OPTIMIZED: O(n×d) → O(1) - Uses hash map index instead of recursive search
 export const findProjectGroupByIdAtom = atom((get) => (groupId: GroupId): ProjectGroup | null => {
-  const projectGroups = get(projectGroupsAtom)
-  return findProjectGroupById(projectGroups, groupId)
+  const analysis = get(groupAnalysisAtom)
+  return analysis.groupIndex.get(groupId) ?? null
 })
 
-// Flatten project groups into a flat array (for easier iteration)
+// 🚀 OPTIMIZED: O(n×d) → O(1) - Uses pre-computed flat list instead of recursive flattening
 export const flattenProjectGroupsAtom = atom((get) => {
-  const projectGroups = get(projectGroupsAtom)
-
-  function flatten(groups: ProjectGroup[]): ProjectGroup[] {
-    const result: ProjectGroup[] = []
-
-    for (const group of groups) {
-      result.push(group)
-
-      // Add nested project groups
-      const nestedGroups = group.items.filter(
-        (item): item is ProjectGroup => isGroup<ProjectGroup>(item) && item.type === "project",
-      )
-      result.push(...flatten(nestedGroups))
-    }
-
-    return result
-  }
-
-  return flatten(projectGroups)
+  const analysis = get(groupAnalysisAtom)
+  return analysis.flatGroups
 })
 
-// Get all project IDs that are direct members of any project group
+// 🚀 OPTIMIZED: O(n×m) → O(1) - Uses pre-computed project list instead of traversal
 export const projectsInGroupsAtom = atom((get) => {
-  const projectGroups = get(projectGroupsAtom)
-  const projectIds = new Set<ProjectId>()
-
-  function extractProjectIds(groups: ProjectGroup[]) {
-    for (const group of groups) {
-      for (const item of group.items) {
-        if (typeof item === "string") {
-          projectIds.add(item)
-        } else if (isGroup<ProjectGroup>(item) && item.type === "project") {
-          extractProjectIds([item])
-        }
-      }
-    }
-  }
-
-  extractProjectIds(projectGroups)
-  return Array.from(projectIds)
+  const analysis = get(groupAnalysisAtom)
+  return Array.from(analysis.projectToGroup.keys())
 })
 // Get projects that are NOT in any group
 // TODO: this is a temporary workaround until we have automatic migration figured out, ideally, no project should be without a group
@@ -336,93 +287,74 @@ export const projectGroupTreeAtom = atom((get) => {
   return buildTree(projectGroups)
 })
 
-// Get breadcrumb path for a specific project group
+// 🚀 OPTIMIZED: O(n×d²) → O(1) - Uses pre-computed paths instead of tree search
 export const projectGroupBreadcrumbsAtom = atom((get) => (groupId: GroupId): ProjectGroup[] => {
-  const tree = get(projectGroupTreeAtom)
-
-  interface TreeNode {
-    group: ProjectGroup
-    children: TreeNode[]
-    depth: number
-    path: GroupId[]
-  }
-
-  function findPath(
-    nodes: TreeNode[],
-    targetId: GroupId,
-    path: ProjectGroup[] = [],
-  ): ProjectGroup[] | null {
-    for (const node of nodes) {
-      const currentPath = [...path, node.group]
-
-      if (node.group.id === targetId) {
-        return currentPath
-      }
-
-      const found = findPath(node.children, targetId, currentPath)
-      if (found) {
-        return found
-      }
-    }
-    return null
-  }
-
-  return findPath(tree, groupId) ?? []
+  const analysis = get(groupAnalysisAtom)
+  return analysis.groupPaths.get(groupId) ?? []
 })
 
-// Count projects in a group and all its subgroups (recursive)
+// 🚀 OPTIMIZED: O(m×d) → O(1) - Uses pre-computed count instead of recursive counting
 export const projectGroupProjectCountAtom = atom((get) => (groupId: GroupId): number => {
-  const findGroupById = get(findProjectGroupByIdAtom)
-  const group = findGroupById(groupId)
+  const analysis = get(groupAnalysisAtom)
+  return analysis.groupCounts.get(groupId) ?? 0
+})
 
-  if (!group) {
-    return 0
-  }
+// 🚀 PERFORMANCE OPTIMIZATION: Single-pass analysis with O(1) lookups
+// This atom does ONE traversal and creates all indices we need, instead of 5+ separate traversals
+export const groupAnalysisAtom = atom((get) => {
+  const groups = get(projectGroupsAtom)
 
-  function countProjects(group: ProjectGroup): number {
-    let count = 0
+  // Pre-allocated maps for O(1) lookups
+  const groupIndex = new Map<GroupId, ProjectGroup>()
+  const projectToGroup = new Map<ProjectId, ProjectGroup>()
+  const groupCounts = new Map<GroupId, number>()
+  const flatGroups: ProjectGroup[] = []
+  const groupPaths = new Map<GroupId, ProjectGroup[]>()
 
+  // Single recursive traversal to populate all indices
+  function traverse(group: ProjectGroup, ancestors: ProjectGroup[] = []) {
+    // Add to flat list and group index
+    flatGroups.push(group)
+    groupIndex.set(group.id, group)
+    groupPaths.set(group.id, [...ancestors, group])
+
+    let projectCount = 0
+
+    // Process each item in the group
     for (const item of group.items) {
       if (typeof item === "string") {
         // It's a project ID
-        count++
+        projectToGroup.set(item, group)
+        projectCount++
       } else if (isGroup<ProjectGroup>(item) && item.type === "project") {
-        // It's a nested project group
-        count += countProjects(item)
+        // It's a nested group - traverse recursively
+        const nestedCount = traverse(item, [...ancestors, group])
+        projectCount += nestedCount
       }
     }
 
-    return count
+    groupCounts.set(group.id, projectCount)
+    return projectCount
   }
 
-  return countProjects(group)
+  // Single traversal for all groups
+  groups.forEach((group) => traverse(group))
+
+  return {
+    groupIndex, // O(1) group lookup by ID
+    projectToGroup, // O(1) project → containing group lookup
+    groupCounts, // O(1) group project count lookup
+    flatGroups, // Flattened group list
+    groupPaths, // O(1) breadcrumb paths lookup
+  }
 })
 
-// Find which group contains a specific project
+// 🚀 OPTIMIZED: O(n×m×d) → O(1) - Now uses hash map instead of linear search
 export const findGroupContainingProjectAtom = atom(
   (get) =>
     (projectId: ProjectId): ProjectGroup | null => {
-      const projectGroups = get(projectGroupsAtom)
-
-      function findGroupContainingProject(groups: ProjectGroup[]): ProjectGroup | null {
-        for (const group of groups) {
-          if (group.items.includes(projectId)) {
-            return group
-          }
-
-          // Search in nested groups
-          const nestedGroups = group.items.filter(
-            (item): item is ProjectGroup => isGroup<ProjectGroup>(item) && item.type === "project",
-          )
-          const found = findGroupContainingProject(nestedGroups)
-          if (found) {
-            return found
-          }
-        }
-        return null
-      }
-
-      return findGroupContainingProject(projectGroups)
+      const analysis = get(groupAnalysisAtom)
+      return analysis.projectToGroup.get(projectId) ?? null
     },
 )
 
@@ -448,5 +380,6 @@ moveProjectBetweenGroupsAtom.debugLabel = "moveProjectBetweenGroupsAtom"
 projectGroupTreeAtom.debugLabel = "projectGroupTreeAtom"
 projectGroupBreadcrumbsAtom.debugLabel = "projectGroupBreadcrumbsAtom"
 projectGroupProjectCountAtom.debugLabel = "projectGroupProjectCountAtom"
+groupAnalysisAtom.debugLabel = "groupAnalysisAtom"
 findGroupContainingProjectAtom.debugLabel = "findGroupContainingProjectAtom"
 rootProjectGroupsAtom.debugLabel = "rootProjectGroupsAtom"

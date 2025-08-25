@@ -8,11 +8,19 @@ import { TEST_PROJECT_ID_1, TEST_PROJECT_ID_2 } from "@/lib/utils/test-constants
 import type { ProjectGroup } from "@/lib/types"
 import { createGroupId, createProjectId } from "@/lib/types"
 
-// Mock the context menu component
+// Mock the context menu components
 vi.mock("./project-group-context-menu", () => ({
   ProjectGroupContextMenu: ({ groupId, isVisible }: { groupId: string; isVisible: boolean }) => (
     <div data-testid="project-group-context-menu" data-group-id={groupId} data-visible={isVisible}>
       Context Menu
+    </div>
+  ),
+}))
+
+vi.mock("./project-context-menu", () => ({
+  ProjectContextMenu: ({ projectId, isVisible }: { projectId: string; isVisible: boolean }) => (
+    <div data-testid="project-context-menu" data-project-id={projectId} data-visible={isVisible}>
+      Project Action Menu
     </div>
   ),
 }))
@@ -213,5 +221,21 @@ describe("ProjectGroupItem", () => {
 
     expect(screen.getByText("Project 1")).toBeInTheDocument()
     expect(screen.queryByText("123e4567-e89b-12d3-a456-426614174999")).not.toBeInTheDocument()
+  })
+
+  it("renders project context menus for projects within groups", () => {
+    render(
+      <SidebarProvider>
+        <ProjectGroupItem {...defaultProps} />
+      </SidebarProvider>,
+    )
+
+    // Should render project context menus for each project in the group
+    const projectContextMenus = screen.getAllByTestId("project-context-menu")
+    expect(projectContextMenus).toHaveLength(2)
+
+    // Check that each project has its own context menu with correct project ID
+    expect(projectContextMenus[0]).toHaveAttribute("data-project-id", TEST_PROJECT_ID_1)
+    expect(projectContextMenus[1]).toHaveAttribute("data-project-id", TEST_PROJECT_ID_2)
   })
 })

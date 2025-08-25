@@ -869,9 +869,9 @@ export function TaskItem({
                 }}
                 onOpenChange={setLabelPopoverOpen}
               >
-                <span className="flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
+                <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
                   <Tag className="h-3 w-3" />
-                  <span className="text-xs">Add labels</span>
+                  <span className="text-xs hidden group-hover:inline">Add labels</span>
                 </span>
               </LabelManagementPopover>
             )}
@@ -1156,12 +1156,12 @@ export function TaskItem({
                 <TaskSchedulePopover key="due-date" taskId={task.id}>
                   <span
                     className={cn(
-                      "flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
+                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
                     )}
                   >
                     <Calendar className="h-3 w-3" />
-                    <span className="text-xs">Add date</span>
+                    <span className="text-xs hidden group-hover:inline">Add date</span>
                   </span>
                 </TaskSchedulePopover>,
               )
@@ -1188,12 +1188,12 @@ export function TaskItem({
                 <PriorityPopover key="priority-hover" task={task}>
                   <span
                     className={cn(
-                      "flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
+                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
                     )}
                   >
                     <Flag className="h-3 w-3" />
-                    <span className="text-xs">Add priority</span>
+                    <span className="text-xs hidden group-hover:inline">Add priority</span>
                   </span>
                 </PriorityPopover>,
               )
@@ -1232,12 +1232,12 @@ export function TaskItem({
                 >
                   <span
                     className={cn(
-                      "flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground whitespace-nowrap opacity-70 hover:opacity-100",
+                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground whitespace-nowrap opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
                     )}
                   >
                     <MessageSquare className="h-3 w-3" />
-                    <span className="text-xs">Add comment</span>
+                    <span className="text-xs hidden group-hover:inline">Add comment</span>
                   </span>
                 </CommentManagementPopover>,
               )
@@ -1260,12 +1260,12 @@ export function TaskItem({
                 ) : (
                   <span
                     className={cn(
-                      "flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground whitespace-nowrap opacity-70 hover:opacity-100",
+                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground whitespace-nowrap opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
                     )}
                   >
                     <CheckSquare className="h-3 w-3" />
-                    <span className="text-xs">Add subtask</span>
+                    <span className="text-xs hidden group-hover:inline">Add subtask</span>
                   </span>
                 )}
               </SubtaskPopover>,
@@ -1308,9 +1308,9 @@ export function TaskItem({
                   onAddLabel={handleAddLabel}
                   onRemoveLabel={handleRemoveLabel}
                 >
-                  <span className="flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
+                  <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
                     <Tag className="h-3 w-3" />
-                    <span className="text-xs">Add label</span>
+                    <span className="text-xs hidden group-hover:inline">Add label</span>
                   </span>
                 </LabelManagementPopover>,
               )
@@ -1341,12 +1341,14 @@ export function TaskItem({
                   <ProjectPopover key="project-hover" task={task}>
                     <span
                       className={cn(
-                        "flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
+                        "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
                         METADATA_COLUMN_WIDTH,
                       )}
                     >
                       <Folder className="h-3 w-3" />
-                      <span className="text-xs truncate">Add project</span>
+                      <span className="text-xs truncate hidden group-hover:inline">
+                        Add project
+                      </span>
                     </span>
                   </ProjectPopover>,
                 )

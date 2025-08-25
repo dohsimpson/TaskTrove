@@ -56,9 +56,31 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
   const [customInterval, setCustomInterval] = useState<string>("1")
   const [customUnit, setCustomUnit] = useState<string>("days")
 
+  // Time selection state
+  const [selectedHour, setSelectedHour] = useState<string>(() => {
+    if (task?.dueTime) {
+      return task.dueTime.getHours().toString()
+    }
+    return "9"
+  })
+  const [selectedMinute, setSelectedMinute] = useState<string>(() => {
+    if (task?.dueTime) {
+      return task.dueTime.getMinutes().toString().padStart(2, "0")
+    }
+    return "00"
+  })
+  const [selectedAmPm, setSelectedAmPm] = useState<string>(() => {
+    if (task?.dueTime) {
+      return task.dueTime.getHours() >= 12 ? "PM" : "AM"
+    }
+    return "AM"
+  })
+  const [showTimeSelector, setShowTimeSelector] = useState(false)
+
   const handleUpdate = (
     taskId: TaskId | undefined,
     date: Date | undefined | null,
+    time: Date | undefined | null,
     type: string,
     recurring?: string,
   ) => {
@@ -67,16 +89,21 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
       switch (type) {
         case "remove":
           return { dueDate: isNewTask ? undefined : null }
+        case "remove-time":
+          return { dueTime: isNewTask ? undefined : null }
         case "remove-recurring":
           return { recurring: isNewTask ? undefined : null }
         default:
-          // Handle cases where both recurring and date need to be set
-          const updateObj: { recurring?: string; dueDate?: Date | null } = {}
+          // Handle cases where date, time, and recurring need to be set
+          const updateObj: { recurring?: string; dueDate?: Date | null; dueTime?: Date | null } = {}
           if (recurring !== undefined) {
             updateObj.recurring = recurring
           }
           if (date !== undefined) {
             updateObj.dueDate = date
+          }
+          if (time !== undefined) {
+            updateObj.dueTime = time
           }
           return updateObj
       }
@@ -88,6 +115,26 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
     } else {
       updateTask({ updateRequest: { id: taskId, ...updates } })
     }
+  }
+
+  // Helper function to create time Date object
+  const createTimeFromHourMinute = (hour: string, minute: string, ampm: string): Date => {
+    const time = new Date()
+    let hours = parseInt(hour)
+    if (ampm === "PM" && hours !== 12) {
+      hours += 12
+    } else if (ampm === "AM" && hours === 12) {
+      hours = 0
+    }
+    time.setHours(hours, parseInt(minute), 0, 0)
+    return time
+  }
+
+  // Handle time selection
+  const handleTimeUpdate = () => {
+    const newTime = createTimeFromHourMinute(selectedHour, selectedMinute, selectedAmPm)
+    handleUpdate(taskId, undefined, newTime, "time")
+    setShowTimeSelector(false)
   }
 
   // Helper function to get display text for RRULE
@@ -134,7 +181,11 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
       default:
         return
     }
-    handleUpdate(taskId, date, type, undefined)
+
+    // Only preserve existing time, don't set default time for quick dates
+    const preserveTime = task?.dueTime || undefined
+
+    handleUpdate(taskId, date, preserveTime, type, undefined)
   }
 
   const handleSkipToNext = () => {
@@ -142,7 +193,7 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
 
     const nextDueDate = calculateNextDueDate(task.recurring, task.dueDate, false)
     if (nextDueDate) {
-      handleUpdate(taskId, nextDueDate, "skip-to-next", undefined)
+      handleUpdate(taskId, nextDueDate, undefined, "skip-to-next", undefined)
     }
   }
 
@@ -172,7 +223,7 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
         }
         break
       case "remove":
-        handleUpdate(taskId, null, "remove-recurring", undefined)
+        handleUpdate(taskId, null, null, "remove-recurring", undefined)
         return
       default:
         return
@@ -181,23 +232,26 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
     // If task already has a due date, preserve it and just add recurring pattern
     // If no due date, calculate one based on the recurring pattern
     if (task.dueDate) {
-      // Keep existing due date, just add recurring pattern
-      handleUpdate(taskId, undefined, type, rrule)
+      // Keep existing due date and time, just add recurring pattern
+      handleUpdate(taskId, undefined, undefined, type, rrule)
     } else {
       // Calculate a due date for tasks without one
       const nextDueDate = calculateNextDueDate(rrule, new Date(), true)
       if (nextDueDate) {
-        handleUpdate(taskId, nextDueDate, type, rrule)
+        // Don't set default time when creating a new recurring task
+        handleUpdate(taskId, nextDueDate, undefined, type, rrule)
       } else {
         // Fallback: just set recurring pattern without due date
-        handleUpdate(taskId, undefined, type, rrule)
+        handleUpdate(taskId, undefined, undefined, type, rrule)
       }
     }
   }
 
   const handleCustomDateSelect = (date: Date | undefined) => {
     setSelectedDate(date)
-    handleUpdate(taskId, date, "custom")
+    // Only preserve existing time, don't set default time for custom dates
+    const preserveTime = task?.dueTime || undefined
+    handleUpdate(taskId, date, preserveTime, "custom")
   }
 
   const toggleCalendar = () => {
@@ -421,6 +475,84 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
     )
   }
 
+  if (showTimeSelector) {
+    return (
+      <div className="p-3">
+        <div className="flex items-center justify-between border-b pb-2 mb-3">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+              onClick={() => setShowTimeSelector(false)}
+              aria-label="Go back"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Clock className="h-4 w-4 text-blue-600" />
+            <span className="font-medium text-sm">Set Time</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex gap-2 items-center justify-center">
+            <Select value={selectedHour} onValueChange={setSelectedHour}>
+              <SelectTrigger className="w-16">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((hour) => (
+                  <SelectItem key={hour} value={hour.toString()}>
+                    {hour}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <span className="text-lg font-medium">:</span>
+            <Select value={selectedMinute} onValueChange={setSelectedMinute}>
+              <SelectTrigger className="w-16">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {["00", "15", "30", "45"].map((minute) => (
+                  <SelectItem key={minute} value={minute}>
+                    {minute}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedAmPm} onValueChange={setSelectedAmPm}>
+              <SelectTrigger className="w-16">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="AM">AM</SelectItem>
+                <SelectItem value="PM">PM</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1" onClick={() => setShowTimeSelector(false)}>
+              Cancel
+            </Button>
+            <Button className="flex-1" onClick={handleTimeUpdate}>
+              Set Time
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="p-3">
       <div className="flex items-center justify-between border-b pb-2 mb-2">
@@ -478,6 +610,14 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
         <Button
           variant="ghost"
           className="w-full justify-start text-sm h-8 hover:bg-gray-100 dark:hover:bg-gray-800"
+          onClick={() => setShowTimeSelector(true)}
+        >
+          <Clock className="h-4 w-4 mr-2 text-blue-600" />
+          Set time
+        </Button>
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-sm h-8 hover:bg-gray-100 dark:hover:bg-gray-800"
           onClick={toggleRecurring}
         >
           <Repeat className="h-4 w-4 mr-2 text-green-600" />
@@ -501,6 +641,16 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Remove date
+          </Button>
+        )}
+        {task.dueTime && (
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-sm h-8 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+            onClick={() => handleUpdate(taskId, undefined, null, "remove-time")}
+          >
+            <Clock className="h-4 w-4 mr-2" />
+            Remove time
           </Button>
         )}
         {task.recurring && (

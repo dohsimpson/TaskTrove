@@ -550,6 +550,127 @@ describe("TaskScheduleContent", () => {
     })
   })
 
+  describe("Time Selection Mode", () => {
+    it("should show Set time button in main schedule menu", () => {
+      renderWithTasks(
+        [mockTask],
+        <TaskScheduleContent
+          taskId={mockTask.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      expect(screen.getByText("Set time")).toBeInTheDocument()
+    })
+
+    it("should switch to time selector mode when Set time is clicked", () => {
+      renderWithTasks(
+        [mockTask],
+        <TaskScheduleContent
+          taskId={mockTask.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      fireEvent.click(screen.getByText("Set time"))
+
+      expect(screen.getByRole("button", { name: "Set Time" })).toBeInTheDocument()
+      expect(screen.getByText("Cancel")).toBeInTheDocument()
+    })
+
+    it("should call updateTask with dueTime when Set Time button is clicked", () => {
+      renderWithTasks(
+        [mockTask],
+        <TaskScheduleContent
+          taskId={mockTask.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      // Open time selector
+      fireEvent.click(screen.getByText("Set time"))
+
+      // Click Set Time button (the one that actually sets the time)
+      fireEvent.click(screen.getByRole("button", { name: "Set Time" }))
+
+      expect(mockUpdateTask).toHaveBeenCalledWith({
+        updateRequest: {
+          id: TEST_TASK_ID_1,
+          dueTime: expect.any(Date),
+        },
+      })
+    })
+
+    it("should show Remove time button when task has dueTime", () => {
+      const dueTime = new Date()
+      dueTime.setHours(14, 30, 0, 0) // 2:30 PM
+      const taskWithTime = { ...mockTask, dueTime }
+
+      renderWithTasks(
+        [taskWithTime],
+        <TaskScheduleContent
+          taskId={taskWithTime.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      expect(screen.getByText("Remove time")).toBeInTheDocument()
+    })
+
+    it("should call updateTask with dueTime: null when Remove time is clicked", () => {
+      const dueTime = new Date()
+      dueTime.setHours(14, 30, 0, 0) // 2:30 PM
+      const taskWithTime = { ...mockTask, dueTime }
+
+      renderWithTasks(
+        [taskWithTime],
+        <TaskScheduleContent
+          taskId={taskWithTime.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      fireEvent.click(screen.getByText("Remove time"))
+
+      expect(mockUpdateTask).toHaveBeenCalledWith({
+        updateRequest: {
+          id: TEST_TASK_ID_1,
+          dueTime: null,
+        },
+      })
+    })
+
+    it("should preserve existing time when setting new dates", () => {
+      const dueTime = new Date()
+      dueTime.setHours(14, 30, 0, 0) // 2:30 PM
+      const taskWithTime = { ...mockTask, dueTime }
+
+      renderWithTasks(
+        [taskWithTime],
+        <TaskScheduleContent
+          taskId={taskWithTime.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      fireEvent.click(screen.getByText("Today"))
+
+      expect(mockUpdateTask).toHaveBeenCalledWith({
+        updateRequest: {
+          id: TEST_TASK_ID_1,
+          dueDate: expect.any(Date),
+          dueTime: dueTime, // Should preserve existing time
+        },
+      })
+    })
+  })
+
   describe("Status Display", () => {
     it("should show remove date button when task has due date", () => {
       const dueDate = new Date("2024-01-15")

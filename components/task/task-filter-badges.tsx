@@ -72,11 +72,16 @@ export function TaskFilterBadges({ className }: TaskFilterBadgesProps) {
   }
 
   const removeLabelFilter = (labelName: string) => {
-    const currentLabels = activeFilters.labels || []
+    if (!Array.isArray(activeFilters.labels)) return
+    const currentLabels = activeFilters.labels
     const newLabels = currentLabels.filter((l) => l !== labelName)
     updateFilters({
-      labels: newLabels.length > 0 ? newLabels : undefined,
+      labels: newLabels.length > 0 ? newLabels : [],
     })
+  }
+
+  const removeNoLabelsFilter = () => {
+    updateFilters({ labels: [] })
   }
 
   const removeCompletionFilter = () => {
@@ -140,14 +145,23 @@ export function TaskFilterBadges({ className }: TaskFilterBadgesProps) {
       ))}
 
       {/* Label filters */}
-      {activeFilters.labels?.map((labelName) => (
+      {activeFilters.labels === null ? (
         <FilterBadge
-          key={`label-${labelName}`}
-          icon={<Tag className="w-3 h-3" style={{ color: getLabelColor(labelName) }} />}
-          label={labelName}
-          onRemove={() => removeLabelFilter(labelName)}
+          key="no-labels"
+          icon={<Tag className="w-3 h-3 text-muted-foreground" />}
+          label="No labels"
+          onRemove={removeNoLabelsFilter}
         />
-      ))}
+      ) : (
+        activeFilters.labels?.map((labelName) => (
+          <FilterBadge
+            key={`label-${labelName}`}
+            icon={<Tag className="w-3 h-3" style={{ color: getLabelColor(labelName) }} />}
+            label={labelName}
+            onRemove={() => removeLabelFilter(labelName)}
+          />
+        ))
+      )}
 
       {/* Due date filter */}
       {activeFilters.dueDateFilter && (

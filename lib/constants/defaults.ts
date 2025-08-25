@@ -80,7 +80,9 @@ export const DEFAULT_COMPACT_VIEW = false
 export const DEFAULT_SEARCH_QUERY = ""
 
 /** Default active filters */
-export const DEFAULT_ACTIVE_FILTERS = {}
+export const DEFAULT_ACTIVE_FILTERS = {
+  labels: [],
+}
 
 // =============================================================================
 // AUDIO/SOUND DEFAULTS

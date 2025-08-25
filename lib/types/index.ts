@@ -305,7 +305,7 @@ export const ViewStateSchema = z.object({
       /** Filter by project IDs */
       projectIds: z.array(ProjectIdSchema).optional(),
       /** Filter by label names */
-      labels: z.array(z.string()).optional(),
+      labels: z.array(z.string()).nullable(),
       /** Filter by priority levels */
       priorities: z
         .array(z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]))

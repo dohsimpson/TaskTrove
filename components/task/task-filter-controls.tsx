@@ -70,11 +70,17 @@ const tasksForCountsAtom = atom((get) => {
     }
 
     // Filter by labels
-    if (activeFilters.labels?.length) {
+    if (activeFilters.labels === null) {
+      // Show only tasks with NO labels
+      result = result.filter((task: Task) => task.labels.length === 0)
+    } else if (activeFilters.labels && activeFilters.labels.length > 0) {
+      // Show tasks with specific labels
+      const labelFilter = activeFilters.labels
       result = result.filter((task: Task) =>
-        task.labels.some((label: string) => activeFilters.labels?.includes(label) ?? false),
+        task.labels.some((label: string) => labelFilter.includes(label)),
       )
     }
+    // If activeFilters.labels is [], show all tasks (no filtering)
 
     // Filter by priorities
     if (activeFilters.priorities?.length) {
@@ -148,14 +154,24 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
     })
   }
 
+  const handleNoLabelsFilter = () => {
+    if (activeFilters.labels === null) {
+      // If "no labels" is currently active, turn it off (show all)
+      updateFilters({ labels: [] })
+    } else {
+      // Set to show only tasks with no labels
+      updateFilters({ labels: null })
+    }
+  }
+
   const handleLabelChange = (labelName: string, checked: boolean) => {
-    const currentLabels = activeFilters.labels || []
+    const currentLabels = Array.isArray(activeFilters.labels) ? activeFilters.labels : []
     const newLabels = checked
       ? [...currentLabels, labelName]
       : currentLabels.filter((l) => l !== labelName)
 
     updateFilters({
-      labels: newLabels.length > 0 ? newLabels : undefined,
+      labels: newLabels.length > 0 ? newLabels : [],
     })
   }
 
@@ -517,8 +533,22 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                     Labels
                   </Label>
                   <div className="space-y-1 max-h-40 overflow-y-auto">
+                    {/* No labels option */}
+                    <div
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 p-2.5",
+                        activeFilters.labels === null && "bg-accent",
+                      )}
+                      onClick={handleNoLabelsFilter}
+                    >
+                      <div className="w-3 h-3 rounded-full border border-muted-foreground/30" />
+                      <span className="text-sm font-medium flex-1 italic">No labels</span>
+                    </div>
+
                     {allLabels.map((label: LabelType) => {
-                      const isSelected = activeFilters.labels?.includes(label.name) || false
+                      const isSelected =
+                        Array.isArray(activeFilters.labels) &&
+                        activeFilters.labels.includes(label.name)
                       return (
                         <div
                           key={label.id}

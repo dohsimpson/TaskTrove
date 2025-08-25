@@ -561,11 +561,17 @@ export const filteredTasksAtom = atom((get) => {
       }
 
       // Filter by labels
-      if (activeFilters.labels?.length) {
+      if (activeFilters.labels === null) {
+        // Show only tasks with NO labels
+        result = result.filter((task: Task) => task.labels.length === 0)
+      } else if (activeFilters.labels && activeFilters.labels.length > 0) {
+        // Show tasks with specific labels
+        const labelFilter = activeFilters.labels
         result = result.filter((task: Task) =>
-          task.labels.some((label: LabelId) => activeFilters.labels?.includes(label) ?? false),
+          task.labels.some((label: LabelId) => labelFilter.includes(label)),
         )
       }
+      // If activeFilters.labels is [], show all tasks (no filtering)
 
       // Filter by priorities
       if (activeFilters.priorities?.length) {

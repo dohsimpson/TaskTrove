@@ -245,7 +245,7 @@ export const updateFiltersAtom = atom(
   null,
   (get, set, updates: Partial<NonNullable<ViewState["activeFilters"]>>) => {
     const currentViewState = get(currentViewStateAtom)
-    const currentFilters = currentViewState.activeFilters || {}
+    const currentFilters = currentViewState.activeFilters || DEFAULT_ACTIVE_FILTERS
     const newFilters = { ...currentFilters, ...updates }
     set(setActiveFiltersAtom, newFilters)
   },
@@ -363,7 +363,7 @@ collapsedSectionsAtom.debugLabel = "collapsedSectionsAtom"
  */
 export const activeFiltersAtom = atom<NonNullable<ViewState["activeFilters"]>>((get) => {
   const viewState = get(currentViewStateAtom)
-  return viewState.activeFilters || {}
+  return viewState.activeFilters || DEFAULT_ACTIVE_FILTERS
 })
 activeFiltersAtom.debugLabel = "activeFiltersAtom"
 
@@ -394,7 +394,14 @@ export const activeFilterCountAtom = atom<number>((get) => {
   let count = 0
 
   if (filters.projectIds?.length) count += filters.projectIds.length
-  if (filters.labels?.length) count += filters.labels.length
+
+  // Handle labels: null = 1 filter, array with length > 0 = array length
+  if (filters.labels === null) {
+    count += 1 // "no labels" filter is active
+  } else if (filters.labels && filters.labels.length > 0) {
+    count += filters.labels.length
+  }
+
   if (filters.priorities?.length) count += filters.priorities.length
   if (filters.completed !== undefined) count++
   if (filters.dueDateFilter && (filters.dueDateFilter.preset || filters.dueDateFilter.customRange))

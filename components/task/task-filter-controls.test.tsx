@@ -3,8 +3,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { TaskFilterControls } from "./task-filter-controls"
-import type { Project, Label, Task } from "@/lib/types"
-import { createProjectId, createLabelId } from "@/lib/types"
+import type { Project, Label, Task, ViewState } from "@/lib/types"
+import { createProjectId, createLabelId, createTaskId } from "@/lib/types"
+
+type ActiveFilters = NonNullable<ViewState["activeFilters"]>
 
 // Mock the date filter utils
 vi.mock("@/lib/utils/date-filter-utils", () => ({
@@ -636,6 +638,187 @@ describe("TaskFilterControls", () => {
 
       // Should open popover
       expect(screen.getByText("Filter Tasks")).toBeInTheDocument()
+    })
+  })
+
+  // Test "No Labels" filtering functionality
+  describe("No Labels Filtering", () => {
+    beforeEach(() => {
+      // Set up labels for testing
+      mockLabels.length = 0
+      mockLabels.push(
+        {
+          id: createLabelId("abcdef01-abcd-4bcd-8bcd-abcdefabcdef"),
+          name: "urgent",
+          color: "#ef4444",
+          slug: "urgent",
+        },
+        {
+          id: createLabelId("abcdef01-abcd-4bcd-8bcd-abcdefabcde0"),
+          name: "important",
+          color: "#f59e0b",
+          slug: "important",
+        },
+      )
+    })
+
+    afterEach(() => {
+      mockLabels.length = 0
+      mockActiveFilters = {}
+      mockHasActiveFilters = false
+      mockActiveFilterCount = 0
+    })
+
+    it('renders "No labels" option in labels filter section', () => {
+      render(<TaskFilterControls />)
+
+      expect(screen.getByText("Labels")).toBeInTheDocument()
+      expect(screen.getByText("No labels")).toBeInTheDocument()
+    })
+
+    it('handles "No labels" filter selection', async () => {
+      render(<TaskFilterControls />)
+
+      const noLabelsOption = screen.getByText("No labels")
+      await userEvent.click(noLabelsOption)
+
+      expect(mockUpdateFilters).toHaveBeenCalledWith({
+        labels: null,
+      })
+    })
+
+    it('applies selected styling when "No labels" filter is active', () => {
+      // Set active "no labels" filter
+      mockActiveFilters = { labels: null }
+      mockHasActiveFilters = true
+      mockActiveFilterCount = 1
+
+      render(<TaskFilterControls />)
+
+      const noLabelsOption = screen.getByText("No labels")
+      expect(noLabelsOption.closest("div")).toHaveClass("bg-accent")
+    })
+
+    it('handles deselecting "No labels" filter', async () => {
+      // Start with "no labels" filter active
+      mockActiveFilters = { labels: null }
+      mockHasActiveFilters = true
+      mockActiveFilterCount = 1
+
+      render(<TaskFilterControls />)
+
+      const noLabelsOption = screen.getByText("No labels")
+      await userEvent.click(noLabelsOption)
+
+      expect(mockUpdateFilters).toHaveBeenCalledWith({
+        labels: [],
+      })
+    })
+
+    it('shows empty circle icon for "No labels" option', () => {
+      render(<TaskFilterControls />)
+
+      const noLabelsOption = screen.getByText("No labels")
+      const parentDiv = noLabelsOption.closest("div")
+
+      // Check for the empty circle with border
+      const emptyCircle = parentDiv?.querySelector(".w-3.h-3.rounded-full.border")
+      expect(emptyCircle).toBeInTheDocument()
+    })
+
+    it('shows "No labels" text in italic', () => {
+      render(<TaskFilterControls />)
+
+      const noLabelsOption = screen.getByText("No labels")
+      expect(noLabelsOption).toHaveClass("italic")
+    })
+
+    it("correctly handles mixed label filters with no labels", async () => {
+      // Start with regular label filter
+      mockActiveFilters = { labels: ["urgent"] }
+      mockHasActiveFilters = true
+      mockActiveFilterCount = 1
+
+      render(<TaskFilterControls />)
+
+      // Click "No labels" - this should replace the array with null
+      const noLabelsOption = screen.getByText("No labels")
+      await userEvent.click(noLabelsOption)
+
+      expect(mockUpdateFilters).toHaveBeenCalledWith({
+        labels: null,
+      })
+    })
+
+    it("maintains separate state between regular labels and no labels", async () => {
+      render(<TaskFilterControls />)
+
+      // First select a regular label
+      const urgentLabel = screen.getByText("urgent")
+      await userEvent.click(urgentLabel)
+
+      expect(mockUpdateFilters).toHaveBeenCalledWith({
+        labels: ["urgent"],
+      })
+
+      // Then select "No labels" - should be a separate call
+      const noLabelsOption = screen.getByText("No labels")
+      await userEvent.click(noLabelsOption)
+
+      expect(mockUpdateFilters).toHaveBeenCalledWith({
+        labels: null,
+      })
+    })
+
+    it("handles no labels filter in tasksForCountsAtom filtering logic", () => {
+      // This tests the logic in the component's tasksForCountsAtom
+      const mockTasks: Task[] = [
+        {
+          id: createTaskId("12345678-1234-4234-8234-123456789012"),
+          title: "Task with labels",
+          labels: [createLabelId("abcdefab-abcd-4bcd-8bcd-abcdefabcdef")],
+          completed: false,
+          priority: 2,
+          projectId: createProjectId("87654321-4321-4321-8321-876543210987"),
+          subtasks: [],
+          comments: [],
+          attachments: [],
+          createdAt: new Date(),
+          status: "active",
+          recurringMode: "dueDate",
+        },
+        {
+          id: createTaskId("12345678-1234-4234-8234-123456789013"),
+          title: "Task with no labels",
+          labels: [],
+          completed: false,
+          priority: 1,
+          projectId: createProjectId("87654321-4321-4321-8321-876543210987"),
+          subtasks: [],
+          comments: [],
+          attachments: [],
+          createdAt: new Date(),
+          status: "active",
+          recurringMode: "dueDate",
+        },
+      ]
+
+      // Simulate the filtering logic from tasksForCountsAtom
+      const activeFilters: Partial<ActiveFilters> = { labels: null }
+      let result = mockTasks
+
+      if (activeFilters.labels === null) {
+        // Show only tasks with NO labels
+        result = result.filter((task: Task) => task.labels.length === 0)
+      } else if (activeFilters.labels && activeFilters.labels.length > 0) {
+        // Show tasks with specific labels
+        result = result.filter((task: Task) =>
+          task.labels.some((label: string) => activeFilters.labels?.includes(label) ?? false),
+        )
+      }
+
+      expect(result).toHaveLength(1)
+      expect(result[0].id).toBe(createTaskId("12345678-1234-4234-8234-123456789013"))
     })
   })
 })

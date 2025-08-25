@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -45,6 +45,27 @@ export function TaskActionsMenu({
   // Use controlled or uncontrolled state
   const isOpen = open !== undefined ? open : internalOpen
   const setIsOpen = onOpenChange || setInternalOpen
+
+  // Fix Radix UI pointer-events bug where body gets stuck with pointer-events: none
+  // When Radix components (DropdownMenu, Dialog, etc.) open, they set pointer-events: none
+  // on the body to prevent interactions outside the modal. However, this can sometimes
+  // persist after the component closes, making the entire page uninteractive.
+  // This affects third-party modals (like Stripe) and general page interactions.
+  // For fix, see: https://github.com/radix-ui/primitives/issues/2122#issuecomment-1666753771
+  useEffect(() => {
+    if (isOpen) {
+      // Pushing the change to the end of the call stack to ensure pointer events are restored
+      // after Radix has finished its setup, preventing the body from staying locked
+      const timer = setTimeout(() => {
+        document.body.style.pointerEvents = ""
+      }, 0)
+
+      return () => clearTimeout(timer)
+    } else {
+      // Explicitly restore pointer events when dropdown closes
+      document.body.style.pointerEvents = "auto"
+    }
+  }, [isOpen])
 
   const handleDeleteClick = () => {
     setShowDeleteConfirm(true)

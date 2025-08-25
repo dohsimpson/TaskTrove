@@ -450,15 +450,17 @@ export function TaskItem({
                   </TaskSchedulePopover>
                 )}
 
-                {/* Actions Menu - always in first row */}
-                <TaskActionsMenu
-                  task={task}
-                  isVisible={actionsMenuVisible}
-                  onDeleteClick={() => deleteTask(task.id)}
-                  variant="compact"
-                  open={actionsMenuOpen}
-                  onOpenChange={handleActionsMenuChange}
-                />
+                {/* Actions Menu - first row on smaller viewport */}
+                <div className="lg:hidden">
+                  <TaskActionsMenu
+                    task={task}
+                    isVisible={actionsMenuVisible}
+                    onDeleteClick={() => deleteTask(task.id)}
+                    variant="compact"
+                    open={actionsMenuOpen}
+                    onOpenChange={handleActionsMenuChange}
+                  />
+                </div>
               </div>
             </div>
 
@@ -574,6 +576,17 @@ export function TaskItem({
                     </span>
                   </ProjectPopover>
                 )}
+              </div>
+              {/* Actions Menu - second row on larger viewport */}
+              <div className="hidden lg:block">
+                <TaskActionsMenu
+                  task={task}
+                  isVisible={actionsMenuVisible}
+                  onDeleteClick={() => deleteTask(task.id)}
+                  variant="compact"
+                  open={actionsMenuOpen}
+                  onOpenChange={handleActionsMenuChange}
+                />
               </div>
             </div>
           </div>

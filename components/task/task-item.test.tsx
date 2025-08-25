@@ -2081,7 +2081,7 @@ describe("TaskItem", () => {
         ).toBeInTheDocument()
       })
 
-      it("positions actions menu in essential metadata section (first row)", () => {
+      it("positions actions menu in essential metadata section on mobile (first row)", () => {
         render(
           <Provider>
             <TaskItem taskId={mockTask.id} variant="compact" />
@@ -2090,19 +2090,53 @@ describe("TaskItem", () => {
 
         // Find the main container
         const container = screen.getByText("Test Task").closest("[data-task-focused]")
-        const actionsMenu = screen.getByTestId("task-actions-menu")
+        const actionMenus = screen.getAllByTestId("task-actions-menu")
 
-        // The actions menu should be in the essential metadata section (first row)
+        // There should be two action menus (mobile and desktop)
+        expect(actionMenus).toHaveLength(2)
+
+        // Find the mobile actions menu (lg:hidden)
+        const mobileActionsMenu = actionMenus.find((menu) => menu.closest(".lg\\:hidden"))
+        expect(mobileActionsMenu).toBeTruthy()
+
+        // The mobile actions menu should be in the essential metadata section (first row)
         const essentialMetadata = container?.querySelector(
           ".flex.items-center.gap-1.text-xs.flex-shrink-0",
         )
-        expect(essentialMetadata?.contains(actionsMenu)).toBe(true)
+        if (mobileActionsMenu && essentialMetadata) {
+          expect(essentialMetadata.contains(mobileActionsMenu)).toBe(true)
+        } else {
+          expect.fail("Mobile actions menu or essential metadata not found")
+        }
+      })
 
-        // Verify actions menu is not in the secondary metadata section
+      it("positions actions menu in secondary metadata section on desktop (second row)", () => {
+        render(
+          <Provider>
+            <TaskItem taskId={mockTask.id} variant="compact" />
+          </Provider>,
+        )
+
+        // Find the main container
+        const container = screen.getByText("Test Task").closest("[data-task-focused]")
+        const actionMenus = screen.getAllByTestId("task-actions-menu")
+
+        // There should be two action menus (mobile and desktop)
+        expect(actionMenus).toHaveLength(2)
+
+        // Find the desktop actions menu (hidden lg:block)
+        const desktopActionsMenu = actionMenus.find((menu) => menu.closest(".hidden.lg\\:block"))
+        expect(desktopActionsMenu).toBeTruthy()
+
+        // The desktop actions menu should be in the secondary metadata section (second row)
         const secondaryMetadata = container?.querySelector(
           ".flex.items-center.justify-between.text-xs.text-muted-foreground.min-h-\\[20px\\]",
         )
-        expect(secondaryMetadata?.contains(actionsMenu)).toBe(false)
+        if (desktopActionsMenu && secondaryMetadata) {
+          expect(secondaryMetadata.contains(desktopActionsMenu)).toBe(true)
+        } else {
+          expect.fail("Desktop actions menu or secondary metadata not found")
+        }
       })
     })
   })

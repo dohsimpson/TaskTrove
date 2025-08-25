@@ -96,11 +96,13 @@ class JotaiErrorBoundary extends Component<
             <div className="text-center max-w-md">
               <div className="mb-4 text-6xl">⚠️</div>
               <h2 className="text-xl font-semibold text-destructive mb-2">
-                State Management Error
+                Unexpected Application Error
               </h2>
               <p className="text-muted-foreground mb-4">
-                There was an error with the application state. This is usually temporary and can be
-                resolved by refreshing the page.
+                An unexpected crash occurred in TaskTrove. This is likely a bug. Please try
+                refreshing the page first. If that fails, try going to the home page to see if the
+                app loads there. If the problem persists, please check our GitHub issues to see if
+                it's already reported, or create a new issue if needed.
               </p>
               {process.env.NODE_ENV === "development" && this.state.error && (
                 <details className="mb-4 text-sm text-left">
@@ -113,19 +115,31 @@ class JotaiErrorBoundary extends Component<
                   </pre>
                 </details>
               )}
-              <div className="space-x-2">
-                <button
-                  onClick={() => window.location.reload()}
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-                >
-                  Refresh Page
-                </button>
-                <button
-                  onClick={() => this.setState({ hasError: false, error: undefined })}
-                  className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors"
-                >
-                  Try Again
-                </button>
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                  >
+                    Refresh Page
+                  </button>
+                  <a
+                    href="/"
+                    className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors inline-block"
+                  >
+                    Go to Home Page
+                  </a>
+                </div>
+                <div className="flex justify-center text-sm mt-2">
+                  <a
+                    href="https://github.com/dohsimpson/tasktrove/issues"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1 text-muted-foreground hover:text-foreground underline underline-offset-4"
+                  >
+                    Check GitHub Issues
+                  </a>
+                </div>
               </div>
             </div>
           </div>

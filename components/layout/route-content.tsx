@@ -55,5 +55,31 @@ export function RouteContent({ onVoiceCommand, onTaskClick }: RouteContentProps)
     )
   }
 
+  // Handle crash test page (development only)
+  if (pathname === "/crash") {
+    // Only show crash page in development environment
+    if (process.env.NODE_ENV !== "development") {
+      return (
+        <div className="container mx-auto py-16 px-4 max-w-2xl">
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl font-bold">Crash Test Not Available</h1>
+            <p className="text-muted-foreground">
+              Crash test is only available in development environment.
+            </p>
+          </div>
+        </div>
+      )
+    }
+
+    // This component will immediately crash to test the error boundary
+    const CrashTestComponent = () => {
+      throw new Error(
+        "Intentional crash to test TaskTrove error boundary - navigate away to recover",
+      )
+    }
+
+    return <CrashTestComponent />
+  }
+
   return <MainContent onVoiceCommand={onVoiceCommand} />
 }

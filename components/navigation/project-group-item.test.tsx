@@ -52,7 +52,6 @@ describe("ProjectGroupItem", () => {
 
   const defaultProps = {
     group: mockTestGroup,
-    depth: 0,
     projects: mockProjects,
   }
 
@@ -107,16 +106,16 @@ describe("ProjectGroupItem", () => {
     expect(screen.getByText("Project 2")).toBeInTheDocument()
   })
 
-  it("applies correct indentation based on depth", () => {
+  it("applies correct indentation for projects within groups", () => {
     render(
       <SidebarProvider>
-        <ProjectGroupItem {...defaultProps} depth={2} />
+        <ProjectGroupItem {...defaultProps} />
       </SidebarProvider>,
     )
 
-    // Group header should have 2 * 16px = 32px margin
-    const groupHeader = screen.getByText("Test Group").parentElement
-    expect(groupHeader).toHaveStyle({ marginLeft: "32px" })
+    // Projects within groups should have ml-6 class (24px margin) on the div containing the project content
+    const projectDiv = screen.getByText("Project 1").parentElement
+    expect(projectDiv).toHaveClass("ml-6")
   })
 
   it("renders context menu when visible", () => {
@@ -146,7 +145,7 @@ describe("ProjectGroupItem", () => {
     expect(screen.getByText("0")).toBeInTheDocument() // Task count should be 0
   })
 
-  it("handles nested project groups", () => {
+  it("ignores nested project groups (single-layer only)", () => {
     const nestedGroup: ProjectGroup = {
       id: createGroupId("123e4567-e89b-12d3-a456-426614174002"),
       name: "Nested Group",
@@ -167,22 +166,26 @@ describe("ProjectGroupItem", () => {
     )
 
     expect(screen.getByText("Test Group")).toBeInTheDocument()
-    expect(screen.getByText("Nested Group")).toBeInTheDocument()
+    // Nested groups should be ignored in simplified single-layer implementation
+    expect(screen.queryByText("Nested Group")).not.toBeInTheDocument()
+    // Only direct project IDs should be rendered
     expect(screen.getByText("Project 2")).toBeInTheDocument()
+    // Project 1 should not appear since it's inside the nested group that's ignored
+    expect(screen.queryByText("Project 1")).not.toBeInTheDocument()
   })
 
-  it("calculates task count correctly for nested groups", () => {
+  it("calculates task count correctly (ignoring nested groups)", () => {
     const nestedGroup: ProjectGroup = {
       id: createGroupId("123e4567-e89b-12d3-a456-426614174002"),
       name: "Nested Group",
       type: "project",
       color: "#f59e0b",
-      items: [TEST_PROJECT_ID_1], // 5 tasks
+      items: [TEST_PROJECT_ID_1], // This should be ignored
     }
 
     const groupWithNested: ProjectGroup = {
       ...mockTestGroup,
-      items: [nestedGroup, TEST_PROJECT_ID_2], // nested(5) + direct(3) = 8
+      items: [nestedGroup, TEST_PROJECT_ID_2], // Only TEST_PROJECT_ID_2 should count
     }
 
     render(
@@ -191,9 +194,9 @@ describe("ProjectGroupItem", () => {
       </SidebarProvider>,
     )
 
-    // Should show count badges for nested structure (will be multiple 0s)
+    // Should show count badge for the group and the single direct project (both will be 0 without real task data)
     const countBadges = screen.getAllByText("0")
-    expect(countBadges.length).toBeGreaterThan(0) // Multiple counts should be displayed
+    expect(countBadges.length).toBe(2) // One for group, one for the direct project
   })
 
   it("handles missing projects gracefully", () => {

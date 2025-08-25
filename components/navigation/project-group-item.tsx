@@ -11,16 +11,14 @@ import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
 import { pathnameAtom } from "@/lib/atoms/ui/navigation"
 import { projectTaskCountsAtom } from "@/lib/atoms"
-import { isGroup } from "@/lib/types"
 import type { ProjectGroup, ProjectId } from "@/lib/types"
 
 interface ProjectGroupItemProps {
   group: ProjectGroup
-  depth?: number
   projects: Array<{ id: ProjectId; name: string; slug: string; color: string }>
 }
 
-export function ProjectGroupItem({ group, depth = 0, projects }: ProjectGroupItemProps) {
+export function ProjectGroupItem({ group, projects }: ProjectGroupItemProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
   const pathname = useAtomValue(pathnameAtom)
@@ -33,35 +31,30 @@ export function ProjectGroupItem({ group, depth = 0, projects }: ProjectGroupIte
     handleMenuOpenChange,
   } = useContextMenuVisibility(isHovered)
 
-  // Calculate total task count for this group and all subgroups/projects
+  // Calculate total task count for projects in this group (simplified - no nested groups)
   const calculateGroupTaskCount = (groupItems: ProjectGroup["items"]): number => {
     let count = 0
     for (const item of groupItems) {
       if (typeof item === "string") {
         // It's a project ID
         count += projectTaskCounts[item] || 0
-      } else if (isGroup<ProjectGroup>(item) && item.type === "project") {
-        // It's a nested project group
-        count += calculateGroupTaskCount(item.items)
       }
+      // Note: We skip nested groups since we want single-layer groups only
     }
     return count
   }
 
   const taskCount = calculateGroupTaskCount(group.items)
 
-  // Get projects and nested groups from items
+  // Get only project IDs from items (ignore nested groups for simplicity)
   const projectIds = group.items.filter((item): item is ProjectId => typeof item === "string")
-  const nestedGroups = group.items.filter(
-    (item): item is ProjectGroup => isGroup<ProjectGroup>(item) && item.type === "project",
-  )
 
   // Find actual project objects for this group's direct projects
   const groupProjects = projectIds
     .map((projectId) => projects.find((p) => p.id === projectId))
     .filter((p): p is NonNullable<typeof p> => !!p)
 
-  const indentStyle = { marginLeft: `${depth * 16}px` }
+  const hasProjects = groupProjects.length > 0
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded)
@@ -81,9 +74,9 @@ export function ProjectGroupItem({ group, depth = 0, projects }: ProjectGroupIte
             onClick={toggleExpanded}
             className="w-full cursor-pointer"
           >
-            <div className="flex items-center gap-2 w-full" style={indentStyle}>
-              {/* Chevron for expand/collapse */}
-              {(nestedGroups.length > 0 || projectIds.length > 0) && (
+            <div className="flex items-center gap-2 w-full">
+              {/* Chevron for expand/collapse - only show if group has projects */}
+              {hasProjects && (
                 <span className="flex-shrink-0">
                   {isExpanded ? (
                     <ChevronDown className="h-3 w-3" />
@@ -93,9 +86,12 @@ export function ProjectGroupItem({ group, depth = 0, projects }: ProjectGroupIte
                 </span>
               )}
 
+              {/* Spacer for groups without projects to align with other items */}
+              {!hasProjects && <span className="w-3 h-3 flex-shrink-0" />}
+
               {/* Folder icon */}
               <span className="flex-shrink-0">
-                {isExpanded ? (
+                {isExpanded && hasProjects ? (
                   <FolderOpen className="h-4 w-4" style={{ color: group.color }} />
                 ) : (
                   <Folder className="h-4 w-4" style={{ color: group.color }} />
@@ -124,19 +120,9 @@ export function ProjectGroupItem({ group, depth = 0, projects }: ProjectGroupIte
         </div>
       </SidebarMenuItem>
 
-      {/* Group contents (when expanded) */}
-      {isExpanded && (
+      {/* Group contents (when expanded) - only show direct projects */}
+      {isExpanded && hasProjects && (
         <>
-          {/* Nested project groups */}
-          {nestedGroups.map((nestedGroup) => (
-            <ProjectGroupItem
-              key={nestedGroup.id}
-              group={nestedGroup}
-              depth={depth + 1}
-              projects={projects}
-            />
-          ))}
-
           {/* Direct projects in this group */}
           {groupProjects.map((project) => {
             const isActive = pathname === `/projects/${project.slug}`
@@ -146,10 +132,7 @@ export function ProjectGroupItem({ group, depth = 0, projects }: ProjectGroupIte
               <SidebarMenuItem key={project.id}>
                 <SidebarMenuButton asChild isActive={isActive}>
                   <Link href={`/projects/${project.slug}`}>
-                    <div
-                      className="flex items-center gap-2 w-full"
-                      style={{ marginLeft: `${(depth + 1) * 16}px` }}
-                    >
+                    <div className="flex items-center gap-2 w-full ml-6">
                       <Folder className="h-4 w-4" style={{ color: project.color }} />
                       <span className="flex-1 truncate">{project.name}</span>
                       <SidebarMenuBadge>{projectTaskCount}</SidebarMenuBadge>

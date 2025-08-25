@@ -216,14 +216,9 @@ export function SidebarNav() {
           <CollapsibleContent>
             <SidebarGroupContent>
               <SidebarMenu>
-                {/* Render project groups with hierarchical structure */}
+                {/* Render project groups with simplified single-layer structure */}
                 {projectGroups?.map((group) => (
-                  <ProjectGroupItem
-                    key={group.id}
-                    group={group}
-                    depth={0}
-                    projects={projects || []}
-                  />
+                  <ProjectGroupItem key={group.id} group={group} projects={projects || []} />
                 ))}
 
                 {/* Render individual projects not in any group */}

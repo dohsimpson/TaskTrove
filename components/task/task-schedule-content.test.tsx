@@ -4,6 +4,7 @@ import { TaskScheduleContent } from "./task-schedule-content"
 import type { Task } from "@/lib/types"
 import { INBOX_PROJECT_ID } from "@/lib/types"
 import { TEST_TASK_ID_1 } from "@/lib/utils/test-constants"
+import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
 
 // Mock jotai to provide test data
 let mockTasks: Task[] = []
@@ -782,6 +783,201 @@ describe("TaskScheduleContent", () => {
           }),
         }),
       )
+    })
+  })
+
+  describe("Skip to Next Occurrence", () => {
+    it("should show skip button only when task has both recurring pattern and due date", () => {
+      const dueDate = new Date("2024-01-15")
+      const taskWithBoth = {
+        ...mockTask,
+        dueDate,
+        recurring: "RRULE:FREQ=DAILY",
+      }
+
+      renderWithTasks(
+        [taskWithBoth],
+        <TaskScheduleContent
+          taskId={taskWithBoth.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      expect(screen.getByText("Skip to next occurrence")).toBeInTheDocument()
+    })
+
+    it("should not show skip button when task has no recurring pattern", () => {
+      const taskWithOnlyDueDate = {
+        ...mockTask,
+        dueDate: new Date("2024-01-15"),
+      }
+
+      renderWithTasks(
+        [taskWithOnlyDueDate],
+        <TaskScheduleContent
+          taskId={taskWithOnlyDueDate.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      expect(screen.queryByText("Skip to next occurrence")).not.toBeInTheDocument()
+    })
+
+    it("should not show skip button when task has no due date", () => {
+      const taskWithOnlyRecurring = {
+        ...mockTask,
+        recurring: "RRULE:FREQ=DAILY",
+      }
+
+      renderWithTasks(
+        [taskWithOnlyRecurring],
+        <TaskScheduleContent
+          taskId={taskWithOnlyRecurring.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      expect(screen.queryByText("Skip to next occurrence")).not.toBeInTheDocument()
+    })
+
+    it("should call updateTask with calculated next due date when skip button is clicked", () => {
+      const mockCalculateNextDueDateFn = vi.mocked(calculateNextDueDate)
+
+      const nextDate = new Date("2024-01-16")
+      mockCalculateNextDueDateFn.mockReturnValue(nextDate)
+
+      const dueDate = new Date("2024-01-15")
+      const taskWithBoth = {
+        ...mockTask,
+        dueDate,
+        recurring: "RRULE:FREQ=DAILY",
+      }
+
+      renderWithTasks(
+        [taskWithBoth],
+        <TaskScheduleContent
+          taskId={taskWithBoth.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      fireEvent.click(screen.getByText("Skip to next occurrence"))
+
+      // Should call calculateNextDueDate with correct parameters
+      expect(mockCalculateNextDueDateFn).toHaveBeenCalledWith("RRULE:FREQ=DAILY", dueDate, false)
+
+      // Should call updateTask with the calculated next date
+      expect(mockUpdateTask).toHaveBeenCalledWith({
+        updateRequest: {
+          id: TEST_TASK_ID_1,
+          dueDate: nextDate,
+        },
+      })
+    })
+
+    it("should handle weekly recurring pattern correctly", () => {
+      const mockCalculateNextDueDateFn = vi.mocked(calculateNextDueDate)
+
+      const nextDate = new Date("2024-01-22")
+      mockCalculateNextDueDateFn.mockReturnValue(nextDate)
+
+      const dueDate = new Date("2024-01-15") // Monday
+      const taskWithWeekly = {
+        ...mockTask,
+        dueDate,
+        recurring: "RRULE:FREQ=WEEKLY",
+      }
+
+      renderWithTasks(
+        [taskWithWeekly],
+        <TaskScheduleContent
+          taskId={taskWithWeekly.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      fireEvent.click(screen.getByText("Skip to next occurrence"))
+
+      expect(mockCalculateNextDueDateFn).toHaveBeenCalledWith("RRULE:FREQ=WEEKLY", dueDate, false)
+      expect(mockUpdateTask).toHaveBeenCalledWith({
+        updateRequest: {
+          id: TEST_TASK_ID_1,
+          dueDate: nextDate,
+        },
+      })
+    })
+
+    it("should handle case when calculateNextDueDate returns null", () => {
+      const mockCalculateNextDueDateFn = vi.mocked(calculateNextDueDate)
+      mockCalculateNextDueDateFn.mockReturnValue(null)
+
+      const dueDate = new Date("2024-01-15")
+      const taskWithBoth = {
+        ...mockTask,
+        dueDate,
+        recurring: "RRULE:FREQ=DAILY;UNTIL=20240115", // Past UNTIL date
+      }
+
+      renderWithTasks(
+        [taskWithBoth],
+        <TaskScheduleContent
+          taskId={taskWithBoth.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      fireEvent.click(screen.getByText("Skip to next occurrence"))
+
+      expect(mockCalculateNextDueDateFn).toHaveBeenCalledWith(
+        "RRULE:FREQ=DAILY;UNTIL=20240115",
+        dueDate,
+        false,
+      )
+      // Should not call updateTask when calculateNextDueDate returns null
+      expect(mockUpdateTask).not.toHaveBeenCalled()
+    })
+
+    it("should work with custom interval recurring patterns", () => {
+      const mockCalculateNextDueDateFn = vi.mocked(calculateNextDueDate)
+
+      const nextDate = new Date("2024-01-18")
+      mockCalculateNextDueDateFn.mockReturnValue(nextDate)
+
+      const dueDate = new Date("2024-01-15")
+      const taskWithCustomInterval = {
+        ...mockTask,
+        dueDate,
+        recurring: "RRULE:FREQ=DAILY;INTERVAL=3", // Every 3 days
+      }
+
+      renderWithTasks(
+        [taskWithCustomInterval],
+        <TaskScheduleContent
+          taskId={taskWithCustomInterval.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      fireEvent.click(screen.getByText("Skip to next occurrence"))
+
+      expect(mockCalculateNextDueDateFn).toHaveBeenCalledWith(
+        "RRULE:FREQ=DAILY;INTERVAL=3",
+        dueDate,
+        false,
+      )
+      expect(mockUpdateTask).toHaveBeenCalledWith({
+        updateRequest: {
+          id: TEST_TASK_ID_1,
+          dueDate: nextDate,
+        },
+      })
     })
   })
 })

@@ -22,6 +22,7 @@ import {
   Repeat,
   RotateCcw,
   X,
+  FastForward,
 } from "lucide-react"
 import { format } from "date-fns"
 import type { CreateTaskRequest, Task, TaskId } from "@/lib/types"
@@ -134,6 +135,15 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
         return
     }
     handleUpdate(taskId, date, type, undefined)
+  }
+
+  const handleSkipToNext = () => {
+    if (!task?.recurring || !task?.dueDate) return
+
+    const nextDueDate = calculateNextDueDate(task.recurring, task.dueDate, false)
+    if (nextDueDate) {
+      handleUpdate(taskId, nextDueDate, "skip-to-next", undefined)
+    }
   }
 
   const handleRecurringSelect = (type: string) => {
@@ -473,6 +483,16 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
           <Repeat className="h-4 w-4 mr-2 text-green-600" />
           Make recurring
         </Button>
+        {task.recurring && task.dueDate && (
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-sm h-8 hover:bg-gray-100 dark:hover:bg-gray-800"
+            onClick={handleSkipToNext}
+          >
+            <FastForward className="h-4 w-4 mr-2 text-blue-600" />
+            Skip to next occurrence
+          </Button>
+        )}
         {task.dueDate && (
           <Button
             variant="ghost"

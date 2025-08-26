@@ -78,7 +78,7 @@ export function ProjectDialog() {
     closeDialog()
   }
 
-  const capitalizedType = entityType === "projectGroup" ? "Project Group" : "Project"
+  const capitalizedType = entityType === "projectGroup" ? "Group" : "Project"
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
@@ -103,8 +103,8 @@ export function ProjectDialog() {
               <ToggleGroupItem value="project" aria-label="Project">
                 Project
               </ToggleGroupItem>
-              <ToggleGroupItem value="projectGroup" aria-label="Project Group">
-                Project Group
+              <ToggleGroupItem value="projectGroup" aria-label="Group">
+                Group
               </ToggleGroupItem>
             </ToggleGroup>
           </div>
@@ -115,7 +115,7 @@ export function ProjectDialog() {
             <Label htmlFor={`${entityType}-name`}>{capitalizedType} Name</Label>
             <Input
               id={`${entityType}-name`}
-              placeholder={`Enter ${entityType === "projectGroup" ? "project group" : "project"} name`}
+              placeholder={`Enter ${entityType === "projectGroup" ? "group" : "project"} name`}
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoFocus

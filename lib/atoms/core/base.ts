@@ -765,7 +765,6 @@ export const createProjectGroupMutationAtom = createMutation({
   responseSchema: CreateGroupResponseSchema,
   serializationSchema: CreateGroupRequestSchema,
   apiEndpoint: "/api/groups",
-  queryKey: ["groups"],
   logModule: "groups",
   testResponseFactory: () => ({
     success: true,
@@ -807,7 +806,6 @@ export const updateProjectGroupMutationAtom = createMutation({
   responseSchema: UpdateGroupResponseSchema,
   serializationSchema: UpdateProjectGroupRequestSchema,
   apiEndpoint: "/api/groups",
-  queryKey: ["groups"],
   logModule: "groups",
   testResponseFactory: (request: UpdateProjectGroupRequest) => {
     return {
@@ -856,7 +854,6 @@ export const deleteProjectGroupMutationAtom = createMutation({
   responseSchema: DeleteGroupResponseSchema,
   serializationSchema: DeleteGroupRequestSchema,
   apiEndpoint: "/api/groups",
-  queryKey: ["groups"],
   logModule: "groups",
   testResponseFactory: (request: DeleteGroupRequest) => ({
     success: true,

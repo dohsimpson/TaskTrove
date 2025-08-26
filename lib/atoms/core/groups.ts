@@ -113,21 +113,19 @@ export const deleteProjectGroupAtom = atom(null, async (get, set, groupId: Group
   return await mutation.mutateAsync(request)
 })
 
-// 🗑️ REMOVED: Old utility function - replaced by O(1) hash map lookup in groupAnalysisAtom
-
-// 🚀 OPTIMIZED: O(n×d) → O(1) - Uses hash map index instead of recursive search
+// Find project group by ID atom
 export const findProjectGroupByIdAtom = atom((get) => (groupId: GroupId): ProjectGroup | null => {
   const analysis = get(groupAnalysisAtom)
   return analysis.groupIndex.get(groupId) ?? null
 })
 
-// 🚀 OPTIMIZED: O(n×d) → O(1) - Uses pre-computed flat list instead of recursive flattening
+// Flatten project groups into a flat array (for easier iteration)
 export const flattenProjectGroupsAtom = atom((get) => {
   const analysis = get(groupAnalysisAtom)
   return analysis.flatGroups
 })
 
-// 🚀 OPTIMIZED: O(n×m) → O(1) - Uses pre-computed project list instead of traversal
+// Get all project IDs that are direct members of any project group
 export const projectsInGroupsAtom = atom((get) => {
   const analysis = get(groupAnalysisAtom)
   return Array.from(analysis.projectToGroup.keys())
@@ -287,47 +285,40 @@ export const projectGroupTreeAtom = atom((get) => {
   return buildTree(projectGroups)
 })
 
-// 🚀 OPTIMIZED: O(n×d²) → O(1) - Uses pre-computed paths instead of tree search
+// Get breadcrumb path for a specific project group
 export const projectGroupBreadcrumbsAtom = atom((get) => (groupId: GroupId): ProjectGroup[] => {
   const analysis = get(groupAnalysisAtom)
   return analysis.groupPaths.get(groupId) ?? []
 })
 
-// 🚀 OPTIMIZED: O(m×d) → O(1) - Uses pre-computed count instead of recursive counting
+// Count projects in a group and all its subgroups (recursive)
 export const projectGroupProjectCountAtom = atom((get) => (groupId: GroupId): number => {
   const analysis = get(groupAnalysisAtom)
   return analysis.groupCounts.get(groupId) ?? 0
 })
 
-// 🚀 PERFORMANCE OPTIMIZATION: Single-pass analysis with O(1) lookups
-// This atom does ONE traversal and creates all indices we need, instead of 5+ separate traversals
+// Central analysis atom that performs single traversal to build all indices
 export const groupAnalysisAtom = atom((get) => {
   const groups = get(projectGroupsAtom)
 
-  // Pre-allocated maps for O(1) lookups
   const groupIndex = new Map<GroupId, ProjectGroup>()
   const projectToGroup = new Map<ProjectId, ProjectGroup>()
   const groupCounts = new Map<GroupId, number>()
   const flatGroups: ProjectGroup[] = []
   const groupPaths = new Map<GroupId, ProjectGroup[]>()
 
-  // Single recursive traversal to populate all indices
   function traverse(group: ProjectGroup, ancestors: ProjectGroup[] = []) {
-    // Add to flat list and group index
     flatGroups.push(group)
     groupIndex.set(group.id, group)
     groupPaths.set(group.id, [...ancestors, group])
 
     let projectCount = 0
 
-    // Process each item in the group
     for (const item of group.items) {
       if (typeof item === "string") {
-        // It's a project ID
         projectToGroup.set(item, group)
         projectCount++
       } else if (isGroup<ProjectGroup>(item) && item.type === "project") {
-        // It's a nested group - traverse recursively
         const nestedCount = traverse(item, [...ancestors, group])
         projectCount += nestedCount
       }
@@ -337,19 +328,18 @@ export const groupAnalysisAtom = atom((get) => {
     return projectCount
   }
 
-  // Single traversal for all groups
   groups.forEach((group) => traverse(group))
 
   return {
-    groupIndex, // O(1) group lookup by ID
-    projectToGroup, // O(1) project → containing group lookup
-    groupCounts, // O(1) group project count lookup
-    flatGroups, // Flattened group list
-    groupPaths, // O(1) breadcrumb paths lookup
+    groupIndex,
+    projectToGroup,
+    groupCounts,
+    flatGroups,
+    groupPaths,
   }
 })
 
-// 🚀 OPTIMIZED: O(n×m×d) → O(1) - Now uses hash map instead of linear search
+// Find which group contains a specific project
 export const findGroupContainingProjectAtom = atom(
   (get) =>
     (projectId: ProjectId): ProjectGroup | null => {

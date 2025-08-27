@@ -69,6 +69,14 @@ export const SectionIdSchema = z.string().uuid().brand("SectionId")
  */
 export const GroupIdSchema = z.uuid().brand("GroupId")
 
+/**
+ * Version String - string type that must follow semantic versioning format (v\d.\d.\d)
+ */
+export const VersionStringSchema = z
+  .string()
+  .regex(/^v\d+\.\d+\.\d+$/, "Version must follow format v0.0.0")
+  .brand("VersionString")
+
 // Inferred types for IDs
 export type TaskId = z.infer<typeof TaskIdSchema>
 export type ProjectId = z.infer<typeof ProjectIdSchema>
@@ -81,6 +89,7 @@ export type NotificationId = z.infer<typeof NotificationIdSchema>
 export type VoiceCommandId = z.infer<typeof VoiceCommandIdSchema>
 export type SectionId = z.infer<typeof SectionIdSchema>
 export type GroupId = z.infer<typeof GroupIdSchema>
+export type VersionString = z.infer<typeof VersionStringSchema>
 
 /** Task priority type (1=highest, 4=lowest) */
 export type TaskPriority = 1 | 2 | 3 | 4
@@ -97,6 +106,8 @@ export const createNotificationId = (id: string): NotificationId => Notification
 export const createVoiceCommandId = (id: string): VoiceCommandId => VoiceCommandIdSchema.parse(id)
 export const createSectionId = (id: string): SectionId => SectionIdSchema.parse(id)
 export const createGroupId = (id: string): GroupId => GroupIdSchema.parse(id)
+export const createVersionString = (version: string): VersionString =>
+  VersionStringSchema.parse(version)
 
 // =============================================================================
 // CONSTANTS
@@ -791,6 +802,8 @@ export const DataFileSchema = z.object({
   ordering: OrderingSchema,
   projectGroups: z.array(ProjectGroupSchema).default([]),
   labelGroups: z.array(LabelGroupSchema).default([]),
+  // TODO: this field will become required from v0.10.0
+  version: VersionStringSchema.optional(),
 })
 
 export const DataFileSerializationSchema = z.object({
@@ -800,6 +813,7 @@ export const DataFileSerializationSchema = z.object({
   ordering: OrderingSerializationSchema,
   projectGroups: z.array(GroupSerializationSchema).default([]),
   labelGroups: z.array(GroupSerializationSchema).default([]),
+  version: VersionStringSchema.optional(),
 })
 
 // =============================================================================

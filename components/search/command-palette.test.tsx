@@ -1,16 +1,11 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen, fireEvent } from "@/test-utils"
 import { CommandPalette } from "./command-palette"
+import { mockNextNavigation } from "@/test-utils/mock-router"
 
-// Mock next/navigation
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-    pathname: "/",
-  }),
-}))
+// Mock Next.js router using centralized utilities
+mockNextNavigation()
 
 // Mock next-themes
 vi.mock("next-themes", () => ({

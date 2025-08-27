@@ -4,6 +4,7 @@ import { render, screen } from "@testing-library/react"
 import type { Task, Project } from "@/lib/types"
 import { createMockTask } from "@/lib/atoms/tests/test-helpers"
 import { TEST_TASK_ID_1, TEST_TASK_ID_2 } from "@/lib/utils/test-constants"
+import { mockNextNavigation, mockNavigation } from "@/test-utils/mock-router"
 
 // Mock component interfaces
 interface MockButtonProps {
@@ -58,10 +59,11 @@ interface MockMainLayoutWrapperProps {
   children: React.ReactNode
 }
 
-// Mock Next.js navigation - MainLayoutWrapper still uses usePathname as source of truth
-vi.mock("next/navigation", () => ({
-  usePathname: vi.fn(() => "/today"),
-}))
+// Mock Next.js navigation using centralized utilities - MainLayoutWrapper uses usePathname as source of truth
+mockNextNavigation()
+
+// Configure pathname to match original test behavior
+mockNavigation.setPathname("/today")
 
 // Mock Next.js themes
 vi.mock("next-themes", () => ({

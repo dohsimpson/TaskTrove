@@ -1,15 +1,12 @@
 import React from "react"
 import { describe, it, expect, vi } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen } from "@/test-utils"
 import { SidebarNav } from "./sidebar-nav"
 import { SidebarProvider } from "@/components/ui/sidebar"
+import { mockNextNavigation } from "@/test-utils/mock-router"
 
-// Mock Next.js router
-vi.mock("next/navigation", () => ({
-  useRouter: vi.fn(() => ({
-    push: vi.fn(),
-  })),
-}))
+// Mock Next.js router using centralized utilities
+mockNextNavigation()
 
 // Mock Jotai hooks with test data
 vi.mock("jotai", async (importOriginal) => {

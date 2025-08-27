@@ -1,17 +1,13 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@/test-utils"
-import { mockRouter } from "@/test-utils/mock-router"
+import { mockNextNavigation } from "@/test-utils/mock-router"
 import { DraggableProjectItem } from "./draggable-project-item"
 import type { Project } from "@/lib/types"
 import { createProjectId, createGroupId } from "@/lib/types"
 
-// Mock router must be before component imports
-vi.mock("next/navigation", () => ({
-  useRouter: () => mockRouter,
-  usePathname: () => mockRouter.pathname,
-  useSearchParams: () => new URLSearchParams(),
-}))
+// Mock Next.js router using centralized utilities
+mockNextNavigation()
 
 // Mock components
 vi.mock("./sidebar-drop-indicator", () => ({

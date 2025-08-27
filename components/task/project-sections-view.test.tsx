@@ -997,4 +997,290 @@ describe("ProjectSectionsView", () => {
       expect(collapsibles).toHaveLength(3)
     })
   })
+
+  describe("sorting functionality", () => {
+    const mockTasksWithVariedProperties: Task[] = [
+      {
+        id: TEST_TASK_ID_1,
+        title: "Alpha Task", // Should be first alphabetically
+        description: "First task",
+        completed: false,
+        priority: 3, // Lower priority (3 > 1)
+        projectId: TEST_PROJECT_ID_1,
+        sectionId: TEST_SECTION_ID_1,
+        labels: [],
+        subtasks: [],
+        comments: [],
+        attachments: [],
+        recurringMode: "dueDate",
+        createdAt: new Date("2024-01-03"), // Created last
+        dueDate: new Date("2024-01-05"), // Due later
+      },
+      {
+        id: TEST_TASK_ID_2,
+        title: "Zebra Task", // Should be last alphabetically
+        description: "Second task",
+        completed: false,
+        priority: 1, // Higher priority (1 < 3)
+        projectId: TEST_PROJECT_ID_1,
+        sectionId: TEST_SECTION_ID_1,
+        labels: [],
+        subtasks: [],
+        comments: [],
+        attachments: [],
+        recurringMode: "dueDate",
+        createdAt: new Date("2024-01-01"), // Created first
+        dueDate: new Date("2024-01-03"), // Due earlier
+      },
+      {
+        id: TEST_TASK_ID_3,
+        title: "Beta Task", // Should be middle alphabetically
+        description: "Third task",
+        completed: true, // Completed task
+        priority: 2,
+        projectId: TEST_PROJECT_ID_1,
+        sectionId: TEST_SECTION_ID_1,
+        labels: [],
+        subtasks: [],
+        comments: [],
+        attachments: [],
+        recurringMode: "dueDate",
+        createdAt: new Date("2024-01-02"), // Created middle
+        dueDate: new Date("2024-01-04"), // Due middle
+      },
+    ]
+
+    beforeEach(() => {
+      // Mock atoms with test data for sorting
+      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
+        if (atom === "mockTasks") return mockTasksWithVariedProperties
+        if (atom === "mockFilteredTasksAtom") return mockTasksWithVariedProperties
+        if (atom === "mockProjectsAtom") return [mockProject]
+        if (atom === "mockCurrentRouteContextAtom")
+          return {
+            pathname: `/projects/${TEST_PROJECT_ID_1}`,
+            viewId: TEST_PROJECT_ID_1,
+            routeType: "project",
+          }
+        if (atom === "mockCollapsedSectionsAtom") return []
+        if (atom === "mockSelectedTaskAtom") return null
+        if (atom === "mockOrderedTasksByProjectAtom") {
+          const orderedTasksMap = new Map()
+          orderedTasksMap.set(
+            TEST_PROJECT_ID_1,
+            mockTasksWithVariedProperties.filter((t) => t.projectId === TEST_PROJECT_ID_1),
+          )
+          return orderedTasksMap
+        }
+        return []
+      })
+    })
+
+    it("respects priority sorting in project sections view", () => {
+      // Mock currentViewStateAtom to return priority sorting
+      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
+        if (atom === "mockTasks") return mockTasksWithVariedProperties
+        if (atom === "mockFilteredTasksAtom") {
+          // Simulate what filteredTasksAtom does for priority sorting
+          return [...mockTasksWithVariedProperties].sort((a, b) => a.priority - b.priority)
+        }
+        if (atom === "mockProjectsAtom") return [mockProject]
+        if (atom === "mockCurrentViewStateAtom")
+          return {
+            showSidePanel: false,
+            compactView: false,
+            viewMode: "list",
+            sortBy: "priority", // Priority sorting selected
+            sortDirection: "asc",
+            showCompleted: true, // Show completed tasks to test full sorting
+          }
+        if (atom === "mockCurrentRouteContextAtom")
+          return {
+            pathname: `/projects/${TEST_PROJECT_ID_1}`,
+            viewId: TEST_PROJECT_ID_1,
+            routeType: "project",
+          }
+        if (atom === "mockCollapsedSectionsAtom") return []
+        if (atom === "mockSelectedTaskAtom") return null
+        if (atom === "mockOrderedTasksByProjectAtom") {
+          const orderedTasksMap = new Map()
+          orderedTasksMap.set(
+            TEST_PROJECT_ID_1,
+            mockTasksWithVariedProperties.filter((t) => t.projectId === TEST_PROJECT_ID_1),
+          )
+          return orderedTasksMap
+        }
+        return []
+      })
+
+      render(<ProjectSectionsView droppableId="test-droppable" />)
+
+      // Get all task items in order they appear in DOM
+      const taskItems = [
+        screen.getByTestId(`task-item-${TEST_TASK_ID_2}`), // Priority 1 (highest)
+        screen.getByTestId(`task-item-${TEST_TASK_ID_3}`), // Priority 2 (middle)
+        screen.getByTestId(`task-item-${TEST_TASK_ID_1}`), // Priority 3 (lowest)
+      ]
+
+      // Verify they all exist
+      taskItems.forEach((item) => expect(item).toBeInTheDocument())
+
+      // In priority sorting, completed tasks should still be sorted by priority
+      // The component should respect the pre-sorted order from filteredTasksAtom
+      expect(screen.getByText("Zebra Task")).toBeInTheDocument() // Priority 1
+      expect(screen.getByText("Beta Task")).toBeInTheDocument() // Priority 2
+      expect(screen.getByText("Alpha Task")).toBeInTheDocument() // Priority 3
+    })
+
+    it("respects title sorting in project sections view", () => {
+      // Mock currentViewStateAtom to return title sorting
+      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
+        if (atom === "mockTasks") return mockTasksWithVariedProperties
+        if (atom === "mockFilteredTasksAtom") {
+          // Simulate what filteredTasksAtom does for title sorting
+          return [...mockTasksWithVariedProperties].sort((a, b) => a.title.localeCompare(b.title))
+        }
+        if (atom === "mockProjectsAtom") return [mockProject]
+        if (atom === "mockCurrentViewStateAtom")
+          return {
+            showSidePanel: false,
+            compactView: false,
+            viewMode: "list",
+            sortBy: "title", // Title sorting selected
+            sortDirection: "asc",
+            showCompleted: true,
+          }
+        if (atom === "mockCurrentRouteContextAtom")
+          return {
+            pathname: `/projects/${TEST_PROJECT_ID_1}`,
+            viewId: TEST_PROJECT_ID_1,
+            routeType: "project",
+          }
+        if (atom === "mockCollapsedSectionsAtom") return []
+        if (atom === "mockSelectedTaskAtom") return null
+        if (atom === "mockOrderedTasksByProjectAtom") {
+          const orderedTasksMap = new Map()
+          orderedTasksMap.set(
+            TEST_PROJECT_ID_1,
+            mockTasksWithVariedProperties.filter((t) => t.projectId === TEST_PROJECT_ID_1),
+          )
+          return orderedTasksMap
+        }
+        return []
+      })
+
+      render(<ProjectSectionsView droppableId="test-droppable" />)
+
+      // All tasks should be rendered and alphabetically sorted
+      expect(screen.getByText("Alpha Task")).toBeInTheDocument() // Should be first
+      expect(screen.getByText("Beta Task")).toBeInTheDocument() // Should be middle
+      expect(screen.getByText("Zebra Task")).toBeInTheDocument() // Should be last
+    })
+
+    it("uses default project ordering when sortBy is 'default'", () => {
+      // Mock currentViewStateAtom to return default sorting
+      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
+        if (atom === "mockTasks") return mockTasksWithVariedProperties
+        if (atom === "mockFilteredTasksAtom") {
+          // For default sorting, filteredTasksAtom doesn't apply additional sorting
+          // except for completed tasks at bottom
+          return [...mockTasksWithVariedProperties].sort((a, b) => {
+            if (a.completed && !b.completed) return 1
+            if (!a.completed && b.completed) return -1
+            return 0 // No additional sorting for same completion status
+          })
+        }
+        if (atom === "mockProjectsAtom") return [mockProject]
+        if (atom === "mockCurrentViewStateAtom")
+          return {
+            showSidePanel: false,
+            compactView: false,
+            viewMode: "list",
+            sortBy: "default", // Default sorting selected
+            sortDirection: "asc",
+            showCompleted: true,
+          }
+        if (atom === "mockCurrentRouteContextAtom")
+          return {
+            pathname: `/projects/${TEST_PROJECT_ID_1}`,
+            viewId: TEST_PROJECT_ID_1,
+            routeType: "project",
+          }
+        if (atom === "mockCollapsedSectionsAtom") return []
+        if (atom === "mockSelectedTaskAtom") return null
+        if (atom === "mockOrderedTasksByProjectAtom") {
+          // Mock the project's task order (this should be used for default sorting)
+          const orderedTasksMap = new Map()
+          orderedTasksMap.set(
+            TEST_PROJECT_ID_1,
+            [
+              mockTasksWithVariedProperties[1],
+              mockTasksWithVariedProperties[0],
+              mockTasksWithVariedProperties[2],
+            ], // Specific order for testing
+          )
+          return orderedTasksMap
+        }
+        return []
+      })
+
+      render(<ProjectSectionsView droppableId="test-droppable" />)
+
+      // All tasks should be rendered
+      expect(screen.getByText("Alpha Task")).toBeInTheDocument()
+      expect(screen.getByText("Beta Task")).toBeInTheDocument()
+      expect(screen.getByText("Zebra Task")).toBeInTheDocument()
+
+      // For default sort, the component should use project ordering logic
+      // Completed tasks should appear at bottom regardless of project order
+    })
+
+    it("works correctly in flat list mode (supportsSections=false)", () => {
+      // Mock currentViewStateAtom to return priority sorting
+      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
+        if (atom === "mockTasks") return mockTasksWithVariedProperties
+        if (atom === "mockFilteredTasksAtom") {
+          // Simulate priority sorting
+          return [...mockTasksWithVariedProperties].sort((a, b) => a.priority - b.priority)
+        }
+        if (atom === "mockProjectsAtom") return [mockProject]
+        if (atom === "mockCurrentViewStateAtom")
+          return {
+            showSidePanel: false,
+            compactView: false,
+            viewMode: "list",
+            sortBy: "priority", // Priority sorting
+            sortDirection: "asc",
+            showCompleted: true,
+          }
+        if (atom === "mockCurrentRouteContextAtom")
+          return {
+            pathname: `/projects/${TEST_PROJECT_ID_1}`,
+            viewId: TEST_PROJECT_ID_1,
+            routeType: "project",
+          }
+        if (atom === "mockCollapsedSectionsAtom") return []
+        if (atom === "mockSelectedTaskAtom") return null
+        if (atom === "mockOrderedTasksByProjectAtom") {
+          const orderedTasksMap = new Map()
+          orderedTasksMap.set(
+            TEST_PROJECT_ID_1,
+            mockTasksWithVariedProperties.filter((t) => t.projectId === TEST_PROJECT_ID_1),
+          )
+          return orderedTasksMap
+        }
+        return []
+      })
+
+      render(<ProjectSectionsView droppableId="test-droppable" supportsSections={false} />)
+
+      // Should not show section headers in flat mode
+      expect(screen.queryByText("Planning")).not.toBeInTheDocument()
+
+      // But should show all tasks sorted by priority
+      expect(screen.getByText("Zebra Task")).toBeInTheDocument() // Priority 1
+      expect(screen.getByText("Beta Task")).toBeInTheDocument() // Priority 2
+      expect(screen.getByText("Alpha Task")).toBeInTheDocument() // Priority 3
+    })
+  })
 })

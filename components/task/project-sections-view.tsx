@@ -459,7 +459,7 @@ export function ProjectSectionsView({
 
   // Group tasks by section and order them using project taskOrder arrays
   const getOrderedTasksForSection = (sectionId: string | null) => {
-    // Filter tasks for this section from the passed tasks (maintains completion sorting)
+    // Filter tasks for this section from the passed tasks (already sorted by filteredTasksAtom)
     const sectionTasks = tasks.filter((task: Task) => {
       if (sectionId === null) {
         // For backward compatibility, treat null as default section
@@ -468,18 +468,23 @@ export function ProjectSectionsView({
       return task.sectionId === sectionId
     })
 
-    // Get project ordering for reference
+    // If user has selected a specific sort (not "default"), respect it fully
+    if (currentViewState.sortBy !== "default") {
+      return sectionTasks // tasks are already sorted by filteredTasksAtom
+    }
+
+    // For "default" sort, maintain the legacy behavior for better UX in project views:
+    // Use project ordering for incomplete tasks, keep completed tasks at bottom
     const projectId = project?.id || "inbox"
     const orderedProjectTasks = orderedTasksByProject.get(projectId) || []
     const projectTaskOrder = orderedProjectTasks.map((t) => t.id)
 
-    // Sort section tasks: maintain project order for incomplete tasks, but keep completed tasks at bottom
     const sortedTasks = sectionTasks.sort((a: Task, b: Task) => {
       // If completion status differs, completed tasks go to bottom (matches main-content.tsx)
       if (a.completed && !b.completed) return 1
       if (!a.completed && b.completed) return -1
 
-      // Both have same completion status, use project order
+      // Both have same completion status, use project order for "default" sort
       const aIndex = projectTaskOrder.indexOf(a.id)
       const bIndex = projectTaskOrder.indexOf(b.id)
 

@@ -24,10 +24,12 @@ import {
   reorderGroupAtom,
 } from "@/lib/atoms/core/groups"
 import { reorderProjectAtom } from "@/lib/atoms/core/ordering"
+import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
 import {
-  extractClosestEdge,
-  attachClosestEdge,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
+  attachInstruction,
+  extractInstruction,
+  type Instruction,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item"
 import type { Input as DragInputType } from "@atlaskit/pragmatic-drag-and-drop/types"
 import type { Project, GroupId } from "@/lib/types"
 import { useRouter } from "next/navigation"
@@ -50,7 +52,7 @@ export function DraggableProjectItem({
   const [dragState, setDragState] = useState<{
     isDraggingOver: boolean
     draggedItemRect?: { height: number }
-    closestEdge?: "top" | "bottom"
+    instruction?: Instruction | null
   } | null>(null)
 
   // State and actions
@@ -199,19 +201,18 @@ export function DraggableProjectItem({
         innerMost?.data.projectId === project.id
 
       if (isInnermostTarget) {
-        const closestEdge = extractClosestEdge(innerMost?.data)
+        const instruction = extractInstruction(innerMost?.data)
         setDragState((prev) =>
           prev
             ? {
                 ...prev,
-                closestEdge:
-                  closestEdge === "top" || closestEdge === "bottom" ? closestEdge : undefined,
+                instruction,
               }
             : null,
         )
       } else {
         // Clear indicator if not innermost target
-        setDragState((prev) => (prev ? { ...prev, closestEdge: undefined } : null))
+        setDragState((prev) => (prev ? { ...prev, instruction: null } : null))
       }
     }
   }
@@ -230,12 +231,14 @@ export function DraggableProjectItem({
             index,
             groupId,
           }
-          // Only use attachClosestEdge if we have proper input and element
+          // Use attachInstruction for proper zone detection
           if (args?.input && args?.element) {
-            return attachClosestEdge(baseData, {
+            return attachInstruction(baseData, {
               element: args.element,
               input: args.input,
-              allowedEdges: ["top", "bottom"],
+              currentLevel: isInGroup ? 1 : 0, // Projects in groups are at level 1
+              indentPerLevel: 0, // Not using indentation for sidebar
+              mode: "standard",
             })
           }
           return baseData
@@ -259,9 +262,9 @@ export function DraggableProjectItem({
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
-              {/* Drop indicator above - absolutely positioned to avoid layout shift */}
+              {/* Drop indicator above - show when reorder-above instruction */}
               {dragState?.isDraggingOver &&
-                dragState?.closestEdge === "top" &&
+                dragState?.instruction?.type === "reorder-above" &&
                 dragState?.draggedItemRect && (
                   <SidebarDropIndicator level={isInGroup ? 1 : 0} className="-top-1" />
                 )}
@@ -308,9 +311,9 @@ export function DraggableProjectItem({
                 />
               </div>
 
-              {/* Drop indicator below - absolutely positioned to avoid layout shift */}
+              {/* Drop indicator below - show when reorder-below instruction */}
               {dragState?.isDraggingOver &&
-                dragState?.closestEdge === "bottom" &&
+                dragState?.instruction?.type === "reorder-below" &&
                 dragState?.draggedItemRect && (
                   <SidebarDropIndicator level={isInGroup ? 1 : 0} className="-bottom-1" />
                 )}

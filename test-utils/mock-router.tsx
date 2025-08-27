@@ -28,13 +28,8 @@ export const MockRouter = ({
   children: ReactNode
   router?: typeof mockRouter
 }) => {
-  // Mock useRouter hook
-  vi.mock("next/navigation", () => ({
-    useRouter: () => router,
-    usePathname: () => router.pathname,
-    useSearchParams: () => new URLSearchParams(),
-  }))
-
+  // Note: vi.mock needs to be at module level, not inside components
+  // This component is for setting context, actual mocking should be done at test level
   return <>{children}</>
 }
 

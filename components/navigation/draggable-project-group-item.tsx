@@ -21,10 +21,12 @@ import {
   reorderGroupAtom,
 } from "@/lib/atoms/core/groups"
 import { reorderProjectAtom } from "@/lib/atoms/core/ordering"
+import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
 import {
-  extractClosestEdge,
-  attachClosestEdge,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
+  attachInstruction,
+  extractInstruction,
+  type Instruction,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item"
 import type { Input as DragInputType } from "@atlaskit/pragmatic-drag-and-drop/types"
 import type { ProjectGroup, ProjectId, Project } from "@/lib/types"
 
@@ -55,7 +57,7 @@ export function DraggableProjectGroupItem({
     isDraggingOver: boolean
     draggedItemRect?: { height: number }
     draggedItemType?: "project" | "group"
-    closestEdge?: "top" | "bottom"
+    instruction?: Instruction | null
   } | null>(null)
 
   // Context menu visibility with flicker prevention
@@ -219,19 +221,18 @@ export function DraggableProjectGroupItem({
         innerMost?.data.type === "sidebar-group-drop-target" && innerMost?.data.groupId === group.id
 
       if (isInnermostTarget) {
-        const closestEdge = extractClosestEdge(innerMost?.data)
+        const instruction = extractInstruction(innerMost?.data)
         setGroupDragState((prev) =>
           prev
             ? {
                 ...prev,
-                closestEdge:
-                  closestEdge === "top" || closestEdge === "bottom" ? closestEdge : undefined,
+                instruction,
               }
             : null,
         )
       } else {
         // Clear indicator if not innermost target
-        setGroupDragState((prev) => (prev ? { ...prev, closestEdge: undefined } : null))
+        setGroupDragState((prev) => (prev ? { ...prev, instruction: null } : null))
       }
     }
   }
@@ -250,12 +251,14 @@ export function DraggableProjectGroupItem({
             groupId: group.id,
             index,
           }
-          // Only use attachClosestEdge if we have proper input and element
+          // Use attachInstruction for proper zone detection
           if (args?.input && args?.element) {
-            return attachClosestEdge(baseData, {
+            return attachInstruction(baseData, {
               element: args.element,
               input: args.input,
-              allowedEdges: ["top", "bottom"],
+              currentLevel: 0, // Groups are at level 0
+              indentPerLevel: 0, // Not using indentation for sidebar
+              mode: "standard",
             })
           }
           return baseData
@@ -278,9 +281,9 @@ export function DraggableProjectGroupItem({
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
-              {/* Drop indicator above - absolutely positioned to avoid layout shift */}
+              {/* Drop indicator above - show when reorder-above instruction */}
               {groupDragState?.isDraggingOver &&
-                groupDragState?.closestEdge === "top" &&
+                groupDragState?.instruction?.type === "reorder-above" &&
                 groupDragState?.draggedItemRect && (
                   <SidebarDropIndicator level={0} className="-top-1" />
                 )}
@@ -289,9 +292,9 @@ export function DraggableProjectGroupItem({
                 onClick={toggleExpanded}
                 className={cn(
                   "w-full cursor-pointer transition-colors",
-                  // Subtle highlighting when dragging project over group
+                  // Subtle highlighting when make-child instruction (dropping INTO group)
                   groupDragState?.isDraggingOver &&
-                    groupDragState?.draggedItemType === "project" &&
+                    groupDragState?.instruction?.type === "make-child" &&
                     "bg-primary/10 border border-primary/20",
                 )}
               >
@@ -339,9 +342,9 @@ export function DraggableProjectGroupItem({
                 />
               </div>
 
-              {/* Drop indicator below group - absolutely positioned to avoid layout shift */}
+              {/* Drop indicator below group - show when reorder-below instruction */}
               {groupDragState?.isDraggingOver &&
-                groupDragState?.closestEdge === "bottom" &&
+                groupDragState?.instruction?.type === "reorder-below" &&
                 groupDragState?.draggedItemRect && (
                   <SidebarDropIndicator level={0} className="-bottom-1" />
                 )}

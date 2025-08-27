@@ -25,7 +25,6 @@ import {
   Tag,
   Settings,
   Keyboard,
-  Folder,
   Plus,
   ChevronDown,
 } from "lucide-react"
@@ -34,7 +33,14 @@ import { PlusIcon, type PlusIconHandle } from "@/components/ui/plus"
 import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
 import { ProjectContextMenu } from "./project-context-menu"
 import { LabelContextMenu } from "./label-context-menu"
-import { ProjectGroupItem } from "./project-group-item"
+import { DraggableProjectGroupItem } from "./draggable-project-group-item"
+import { DraggableProjectItem } from "./draggable-project-item"
+import {
+  useSidebarDragState,
+  extractSidebarInstruction,
+  executeSidebarInstruction,
+} from "@/hooks/use-sidebar-drag-state"
+import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { useSetAtom, useAtom, useAtomValue } from "jotai"
@@ -42,9 +48,7 @@ import {
   taskCounts,
   sortedLabels,
   visibleProjectsAtom,
-  projectTaskCountsAtom,
   labelTaskCountsAtom,
-  projectActions,
   updateLabel,
 } from "@/lib/atoms"
 import { rootProjectGroupsAtom, ungroupedProjectsAtom } from "@/lib/atoms/core/groups"
@@ -55,8 +59,6 @@ import {
   openProjectDialogAtom,
   openLabelDialogAtom,
   pathnameAtom,
-  editingProjectIdAtom,
-  stopEditingProjectAtom,
   editingLabelIdAtom,
   stopEditingLabelAtom,
 } from "@/lib/atoms/ui/navigation"
@@ -71,12 +73,48 @@ export function SidebarNav() {
   const projectGroups = useAtomValue(rootProjectGroupsAtom)
   const ungroupedProjects = useAtomValue(ungroupedProjectsAtom)
 
+  // Drag state management for sidebar
+  const { updateDragState, clearDragState, clearAllDragStates } = useSidebarDragState()
+
   // Get action atoms
   const openSearch = useSetAtom(openSearchAtom)
   const openQuickAdd = useSetAtom(openQuickAddAtom)
   const openProjectDialog = useSetAtom(openProjectDialogAtom)
   const openLabelDialog = useSetAtom(openLabelDialogAtom)
   const openSettingsDialog = useSetAtom(openSettingsDialogAtom)
+
+  // Root drop target handlers for ungrouped projects
+  const handleRootDrop = ({ source }: { source: { data: Record<string, unknown> } }) => {
+    console.log("🎯 Drop on root:", { source: source.data })
+
+    const sourceData = source.data
+    const dropTargetData = { type: "sidebar-root-drop-target" } // Root doesn't have complex target data
+
+    // Extract instruction following official pattern
+    const instruction = extractSidebarInstruction(sourceData, dropTargetData)
+
+    console.log("📍 Extracted root instruction:", instruction)
+
+    // Execute the instruction
+    executeSidebarInstruction(instruction)
+
+    clearAllDragStates()
+  }
+
+  const handleRootDragEnter = ({ source }: { source: { data: Record<string, unknown> } }) => {
+    const sourceData = source.data
+    if (sourceData.type === "sidebar-project" && sourceData.isInGroup) {
+      updateDragState("root", {
+        isDraggingOver: true,
+        draggedItemType: "project",
+        targetType: "root",
+      })
+    }
+  }
+
+  const handleRootDragLeave = () => {
+    clearDragState("root")
+  }
 
   // Card button styles for quick actions
   const CARD_BUTTON_STYLES =
@@ -216,15 +254,35 @@ export function SidebarNav() {
           <CollapsibleContent>
             <SidebarGroupContent>
               <SidebarMenu>
-                {/* Render project groups with simplified single-layer structure */}
-                {projectGroups?.map((group) => (
-                  <ProjectGroupItem key={group.id} group={group} projects={projects || []} />
+                {/* Render project groups with drag and drop support */}
+                {projectGroups?.map((group, index) => (
+                  <DraggableProjectGroupItem
+                    key={group.id}
+                    group={group}
+                    projects={projects || []}
+                    index={index}
+                  />
                 ))}
 
-                {/* Render individual projects not in any group */}
-                {ungroupedProjects?.map((project) => (
-                  <ProjectMenuItem key={project.id} project={project} />
-                ))}
+                {/* Drop zone for ungrouped projects */}
+                <DropTargetWrapper
+                  onDrop={handleRootDrop}
+                  onDragEnter={handleRootDragEnter}
+                  onDragLeave={handleRootDragLeave}
+                  getData={() => ({
+                    type: "sidebar-root-drop-target",
+                  })}
+                >
+                  {/* Render individual projects not in any group */}
+                  {ungroupedProjects?.map((project, index) => (
+                    <DraggableProjectItem
+                      key={project.id}
+                      project={project}
+                      index={index}
+                      isInGroup={false}
+                    />
+                  ))}
+                </DropTargetWrapper>
               </SidebarMenu>
             </SidebarGroupContent>
           </CollapsibleContent>
@@ -419,45 +477,6 @@ function SidebarMenuItemWithContext({
         </div>
       </div>
     </SidebarMenuItem>
-  )
-}
-
-// Project menu item component
-function ProjectMenuItem({ project }: { project: Project }) {
-  const pathname = useAtomValue(pathnameAtom)
-  const projectTaskCounts = useAtomValue(projectTaskCountsAtom)
-  const editingProjectId = useAtomValue(editingProjectIdAtom)
-  const stopEditing = useSetAtom(stopEditingProjectAtom)
-  const updateProject = useSetAtom(projectActions.updateProject)
-
-  const isActive = pathname === `/projects/${project.slug}`
-  const taskCount = projectTaskCounts[project.id] || 0
-  const isEditing = editingProjectId === project.id
-
-  const handleProjectNameChange = (newName: string) => {
-    if (newName.trim() && newName !== project.name) {
-      updateProject({ projectId: project.id, updates: { name: newName.trim() } })
-    }
-    stopEditing()
-  }
-
-  const handleCancelEdit = () => {
-    stopEditing()
-  }
-
-  return (
-    <SidebarMenuItemWithContext
-      href={`/projects/${project.slug}`}
-      isActive={isActive}
-      icon={<Folder className="h-4 w-4" style={{ color: project.color }} />}
-      name={project.name}
-      taskCount={taskCount}
-      contextMenuId={project.id}
-      contextMenuType="project"
-      isEditing={isEditing}
-      onNameChange={handleProjectNameChange}
-      onCancelEdit={handleCancelEdit}
-    />
   )
 }
 

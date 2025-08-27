@@ -4,6 +4,13 @@ import { render, screen } from "@testing-library/react"
 import { SidebarNav } from "./sidebar-nav"
 import { SidebarProvider } from "@/components/ui/sidebar"
 
+// Mock Next.js router
+vi.mock("next/navigation", () => ({
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+  })),
+}))
+
 // Mock Jotai hooks with test data
 vi.mock("jotai", async (importOriginal) => {
   const actual = await importOriginal()
@@ -69,6 +76,20 @@ vi.mock("jotai", async (importOriginal) => {
       if (atom.debugLabel === "ungroupedProjectsAtom") {
         return [{ id: "2", name: "Personal", color: "#00ff00", slug: "personal" }]
       }
+      if (atom.debugLabel === "allGroupsAtom") {
+        return {
+          projectGroups: [
+            {
+              id: "group-1",
+              name: "Work Projects",
+              type: "project",
+              color: "#3b82f6",
+              items: ["1"],
+            },
+          ],
+          labelGroups: [],
+        }
+      }
       // Handle other read-only atoms by returning their default values
       const atomStr = atom?.toString?.() || ""
       if (atomStr.includes("editingProject") || atom.debugLabel === "editingProjectIdAtom") {
@@ -125,6 +146,7 @@ vi.mock("@/lib/atoms/ui/navigation", () => ({
   openQuickAddAtom: { debugLabel: "openQuickAddAtom" },
   openProjectDialogAtom: { debugLabel: "openProjectDialogAtom" },
   openLabelDialogAtom: { debugLabel: "openLabelDialogAtom" },
+  openProjectGroupDialogAtom: { debugLabel: "openProjectGroupDialogAtom" },
   pathnameAtom: { debugLabel: "pathnameAtom" },
   editingProjectIdAtom: { debugLabel: "editingProjectIdAtom" },
   stopEditingProjectAtom: { debugLabel: "stopEditingProjectAtom" },
@@ -135,11 +157,14 @@ vi.mock("@/lib/atoms/ui/navigation", () => ({
 vi.mock("@/lib/atoms/core/groups", () => ({
   rootProjectGroupsAtom: { debugLabel: "rootProjectGroupsAtom" },
   ungroupedProjectsAtom: { debugLabel: "ungroupedProjectsAtom" },
+  allGroupsAtom: { debugLabel: "allGroupsAtom" },
+  updateProjectGroupAtom: { debugLabel: "updateProjectGroupAtom" },
+  deleteProjectGroupAtom: { debugLabel: "deleteProjectGroupAtom" },
 }))
 
 // Mock ProjectGroupItem component
-vi.mock("./project-group-item", () => ({
-  ProjectGroupItem: ({ group }: { group: { name: string }; projects: unknown[] }) => (
+vi.mock("./draggable-project-group-item", () => ({
+  DraggableProjectGroupItem: ({ group }: { group: { name: string }; projects: unknown[] }) => (
     <div data-testid="project-group-item">
       <span>{group.name}</span>
     </div>

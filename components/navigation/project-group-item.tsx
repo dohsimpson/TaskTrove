@@ -138,8 +138,6 @@ export function ProjectGroupItem({ group, projects }: ProjectGroupItemProps) {
     .map((projectId) => projects.find((p) => p.id === projectId))
     .filter((p): p is NonNullable<typeof p> => !!p)
 
-  const hasProjects = groupProjects.length > 0
-
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded)
   }
@@ -159,23 +157,18 @@ export function ProjectGroupItem({ group, projects }: ProjectGroupItemProps) {
             className="w-full cursor-pointer"
           >
             <div className="flex items-center gap-2 w-full">
-              {/* Chevron for expand/collapse - only show if group has projects */}
-              {hasProjects && (
-                <span className="flex-shrink-0">
-                  {isExpanded ? (
-                    <ChevronDown className="h-3 w-3" />
-                  ) : (
-                    <ChevronRight className="h-3 w-3" />
-                  )}
-                </span>
-              )}
-
-              {/* Spacer for groups without projects to align with other items */}
-              {!hasProjects && <span className="w-3 h-3 flex-shrink-0" />}
+              {/* Chevron for expand/collapse */}
+              <span className="flex-shrink-0">
+                {isExpanded ? (
+                  <ChevronDown className="h-3 w-3" />
+                ) : (
+                  <ChevronRight className="h-3 w-3" />
+                )}
+              </span>
 
               {/* Folder icon */}
               <span className="flex-shrink-0">
-                {isExpanded && hasProjects ? (
+                {isExpanded ? (
                   <FolderOpen className="h-4 w-4" style={{ color: group.color }} />
                 ) : (
                   <Folder className="h-4 w-4" style={{ color: group.color }} />
@@ -204,8 +197,8 @@ export function ProjectGroupItem({ group, projects }: ProjectGroupItemProps) {
         </div>
       </SidebarMenuItem>
 
-      {/* Group contents (when expanded) - only show direct projects */}
-      {isExpanded && hasProjects && (
+      {/* Group contents (when expanded) */}
+      {isExpanded && (
         <>
           {/* Direct projects in this group */}
           {groupProjects.map((project) => (

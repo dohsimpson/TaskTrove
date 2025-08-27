@@ -90,8 +90,6 @@ export function DraggableProjectGroupItem({
     .map((projectId) => projects.find((p) => p.id === projectId))
     .filter((p): p is Project => !!p)
 
-  const hasProjects = groupProjects.length > 0
-
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded)
   }
@@ -299,23 +297,18 @@ export function DraggableProjectGroupItem({
                 )}
               >
                 <div className="flex items-center gap-2 w-full">
-                  {/* Chevron for expand/collapse - only show if group has projects */}
-                  {hasProjects && (
-                    <span className="flex-shrink-0">
-                      {isExpanded ? (
-                        <ChevronDown className="h-3 w-3" />
-                      ) : (
-                        <ChevronRight className="h-3 w-3" />
-                      )}
-                    </span>
-                  )}
-
-                  {/* Spacer for groups without projects to align with other items */}
-                  {!hasProjects && <span className="w-3 h-3 flex-shrink-0" />}
+                  {/* Chevron for expand/collapse - always show for visual consistency */}
+                  <span className="flex-shrink-0">
+                    {isExpanded ? (
+                      <ChevronDown className="h-3 w-3" />
+                    ) : (
+                      <ChevronRight className="h-3 w-3" />
+                    )}
+                  </span>
 
                   {/* Folder icon */}
                   <span className="flex-shrink-0">
-                    {isExpanded && hasProjects ? (
+                    {isExpanded ? (
                       <FolderOpen className="h-4 w-4" style={{ color: group.color }} />
                     ) : (
                       <Folder className="h-4 w-4" style={{ color: group.color }} />
@@ -353,8 +346,8 @@ export function DraggableProjectGroupItem({
         </DraggableWrapper>
       </DropTargetWrapper>
 
-      {/* Group contents (when expanded) - only show direct projects */}
-      {isExpanded && hasProjects && (
+      {/* Group contents (when expanded) */}
+      {isExpanded && (
         <>
           {/* Direct projects in this group */}
           {groupProjects.map((project, projectIndex) => (

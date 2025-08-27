@@ -98,6 +98,7 @@ export function ProjectDialog() {
                   setEntityType(value)
                 }
               }}
+              variant="outline"
               className="justify-start"
             >
               <ToggleGroupItem value="project" aria-label="Project">

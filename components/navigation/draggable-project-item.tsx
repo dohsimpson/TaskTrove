@@ -10,16 +10,20 @@ import { SidebarDropIndicator } from "./sidebar-drop-indicator"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { ProjectContextMenu } from "./project-context-menu"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
-import {
-  extractSidebarInstruction,
-  executeSidebarInstruction,
-} from "@/hooks/use-sidebar-drag-state"
+import { extractSidebarInstruction } from "@/hooks/use-sidebar-drag-state"
 import {
   pathnameAtom,
   editingProjectIdAtom,
   stopEditingProjectAtom,
 } from "@/lib/atoms/ui/navigation"
 import { projectTaskCountsAtom, projectActions } from "@/lib/atoms"
+import {
+  reorderProjectWithinGroupAtom,
+  moveProjectToGroupAtom,
+  removeProjectFromGroupWithIndexAtom,
+  reorderGroupAtom,
+} from "@/lib/atoms/core/groups"
+import { reorderProjectAtom } from "@/lib/atoms/core/ordering"
 import {
   extractClosestEdge,
   attachClosestEdge,
@@ -57,6 +61,13 @@ export function DraggableProjectItem({
   const stopEditing = useSetAtom(stopEditingProjectAtom)
   const updateProject = useSetAtom(projectActions.updateProject)
 
+  // Drag and drop atom setters
+  const reorderProjectWithinGroup = useSetAtom(reorderProjectWithinGroupAtom)
+  const moveProjectToGroup = useSetAtom(moveProjectToGroupAtom)
+  const removeProjectFromGroupWithIndex = useSetAtom(removeProjectFromGroupWithIndexAtom)
+  const reorderGroup = useSetAtom(reorderGroupAtom)
+  const reorderProject = useSetAtom(reorderProjectAtom)
+
   // Computed values
   const isActive = pathname === `/projects/${project.slug}`
   const taskCount = projectTaskCounts[project.id] || 0
@@ -81,7 +92,7 @@ export function DraggableProjectItem({
   }
 
   // Drag and drop handlers
-  const handleDrop = ({
+  const handleDrop = async ({
     source,
     location,
   }: {
@@ -101,8 +112,58 @@ export function DraggableProjectItem({
 
     console.log("📍 Extracted instruction:", instruction)
 
-    // Execute the instruction
-    executeSidebarInstruction(instruction)
+    // Execute the instruction with actual atoms
+    if (instruction) {
+      try {
+        switch (instruction.type) {
+          case "reorder-project":
+            if (instruction.withinGroupId) {
+              // Reorder within a group
+              await reorderProjectWithinGroup({
+                groupId: instruction.withinGroupId,
+                projectId: instruction.projectId,
+                newIndex: instruction.toIndex,
+              })
+            } else {
+              // Reorder in ungrouped projects
+              await reorderProject({
+                projectId: instruction.projectId,
+                newIndex: instruction.toIndex,
+              })
+            }
+            break
+
+          case "move-project-to-group":
+            await moveProjectToGroup({
+              projectId: instruction.projectId,
+              fromGroupId: instruction.fromGroupId,
+              toGroupId: instruction.toGroupId,
+              insertIndex: instruction.insertIndex,
+            })
+            break
+
+          case "remove-project-from-group":
+            await removeProjectFromGroupWithIndex({
+              projectId: instruction.projectId,
+              insertIndex: instruction.insertIndex,
+            })
+            break
+
+          case "reorder-group":
+            await reorderGroup({
+              groupId: instruction.groupId,
+              fromIndex: instruction.fromIndex,
+              toIndex: instruction.toIndex,
+            })
+            break
+
+          default:
+            console.log("❓ Unknown instruction:", instruction)
+        }
+      } catch (error) {
+        console.error("🚨 Error executing drag and drop instruction:", error)
+      }
+    }
 
     setDragState(null)
   }

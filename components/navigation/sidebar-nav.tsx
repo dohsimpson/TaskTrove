@@ -35,11 +35,7 @@ import { ProjectContextMenu } from "./project-context-menu"
 import { LabelContextMenu } from "./label-context-menu"
 import { DraggableProjectGroupItem } from "./draggable-project-group-item"
 import { DraggableProjectItem } from "./draggable-project-item"
-import {
-  useSidebarDragState,
-  extractSidebarInstruction,
-  executeSidebarInstruction,
-} from "@/hooks/use-sidebar-drag-state"
+import { useSidebarDragState, extractSidebarInstruction } from "@/hooks/use-sidebar-drag-state"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
@@ -51,7 +47,15 @@ import {
   labelTaskCountsAtom,
   updateLabel,
 } from "@/lib/atoms"
-import { rootProjectGroupsAtom, ungroupedProjectsAtom } from "@/lib/atoms/core/groups"
+import {
+  rootProjectGroupsAtom,
+  ungroupedProjectsAtom,
+  reorderProjectWithinGroupAtom,
+  moveProjectToGroupAtom,
+  removeProjectFromGroupWithIndexAtom,
+  reorderGroupAtom,
+} from "@/lib/atoms/core/groups"
+import { reorderProjectAtom } from "@/lib/atoms/core/ordering"
 import type { Project, Label } from "@/lib/types"
 import {
   openSearchAtom,
@@ -76,6 +80,13 @@ export function SidebarNav() {
   // Drag state management for sidebar
   const { updateDragState, clearDragState, clearAllDragStates } = useSidebarDragState()
 
+  // Drag and drop atom setters
+  const reorderProjectWithinGroup = useSetAtom(reorderProjectWithinGroupAtom)
+  const moveProjectToGroup = useSetAtom(moveProjectToGroupAtom)
+  const removeProjectFromGroupWithIndex = useSetAtom(removeProjectFromGroupWithIndexAtom)
+  const reorderGroup = useSetAtom(reorderGroupAtom)
+  const reorderProject = useSetAtom(reorderProjectAtom)
+
   // Get action atoms
   const openSearch = useSetAtom(openSearchAtom)
   const openQuickAdd = useSetAtom(openQuickAddAtom)
@@ -84,7 +95,7 @@ export function SidebarNav() {
   const openSettingsDialog = useSetAtom(openSettingsDialogAtom)
 
   // Root drop target handlers for ungrouped projects
-  const handleRootDrop = ({ source }: { source: { data: Record<string, unknown> } }) => {
+  const handleRootDrop = async ({ source }: { source: { data: Record<string, unknown> } }) => {
     console.log("🎯 Drop on root:", { source: source.data })
 
     const sourceData = source.data
@@ -95,8 +106,58 @@ export function SidebarNav() {
 
     console.log("📍 Extracted root instruction:", instruction)
 
-    // Execute the instruction
-    executeSidebarInstruction(instruction)
+    // Execute the instruction with actual atoms
+    if (instruction) {
+      try {
+        switch (instruction.type) {
+          case "reorder-project":
+            if (instruction.withinGroupId) {
+              // Reorder within a group
+              await reorderProjectWithinGroup({
+                groupId: instruction.withinGroupId,
+                projectId: instruction.projectId,
+                newIndex: instruction.toIndex,
+              })
+            } else {
+              // Reorder in ungrouped projects
+              await reorderProject({
+                projectId: instruction.projectId,
+                newIndex: instruction.toIndex,
+              })
+            }
+            break
+
+          case "move-project-to-group":
+            await moveProjectToGroup({
+              projectId: instruction.projectId,
+              fromGroupId: instruction.fromGroupId,
+              toGroupId: instruction.toGroupId,
+              insertIndex: instruction.insertIndex,
+            })
+            break
+
+          case "remove-project-from-group":
+            await removeProjectFromGroupWithIndex({
+              projectId: instruction.projectId,
+              insertIndex: instruction.insertIndex,
+            })
+            break
+
+          case "reorder-group":
+            await reorderGroup({
+              groupId: instruction.groupId,
+              fromIndex: instruction.fromIndex,
+              toIndex: instruction.toIndex,
+            })
+            break
+
+          default:
+            console.log("❓ Unknown instruction:", instruction)
+        }
+      } catch (error) {
+        console.error("🚨 Error executing drag and drop instruction:", error)
+      }
+    }
 
     clearAllDragStates()
   }

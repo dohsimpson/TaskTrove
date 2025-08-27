@@ -248,6 +248,102 @@ export const moveProjectBetweenGroupsAtom = atom(
   },
 )
 
+// Move a project from one group to another with specific insertion index
+export const moveProjectToGroupAtom = atom(
+  null,
+  async (
+    get,
+    set,
+    {
+      projectId,
+      fromGroupId,
+      toGroupId,
+      insertIndex,
+    }: {
+      projectId: ProjectId
+      fromGroupId?: GroupId
+      toGroupId: GroupId
+      insertIndex: number
+    },
+  ) => {
+    try {
+      // If fromGroupId is provided, remove from that group first
+      if (fromGroupId) {
+        await set(removeProjectFromGroupAtom, { projectId })
+      }
+
+      // Get the target group and add project at specific index
+      const findGroupById = get(findProjectGroupByIdAtom)
+      const targetGroup = findGroupById(toGroupId)
+
+      if (!targetGroup) {
+        throw new Error(`Project group with ID ${toGroupId} not found`)
+      }
+
+      // Check if project is already in this group
+      if (targetGroup.items.includes(projectId)) {
+        log.info({ projectId, toGroupId }, "Project already in target group")
+        return
+      }
+
+      // Create the updated items array with project inserted at specific index
+      const updatedItems = [...targetGroup.items]
+      updatedItems.splice(insertIndex, 0, projectId)
+
+      // Update the group via the API
+      await set(updateProjectGroupAtom, {
+        id: toGroupId,
+        items: updatedItems,
+      })
+
+      log.info(
+        { projectId, fromGroupId, toGroupId, insertIndex },
+        "Project moved to group at specific index",
+      )
+    } catch (error) {
+      log.error(
+        { error, projectId, fromGroupId, toGroupId, insertIndex },
+        "Failed to move project to group at specific index",
+      )
+      throw error
+    }
+  },
+)
+
+// Remove a project from group with specific insertion index in ungrouped projects
+export const removeProjectFromGroupWithIndexAtom = atom(
+  null,
+  async (
+    get,
+    set,
+    {
+      projectId,
+      insertIndex,
+    }: {
+      projectId: ProjectId
+      insertIndex: number
+    },
+  ) => {
+    try {
+      // Remove from current group
+      await set(removeProjectFromGroupAtom, { projectId })
+
+      // For ungrouped projects, we would need to update the main project ordering
+      // This requires the reorderProjectAtom to handle insertion at specific index
+      const { reorderProjectAtom } = await import("./ordering")
+
+      // Get current ungrouped projects to calculate the right index
+      // Note: This is a simplification - in practice, we might need more sophisticated logic
+      await set(reorderProjectAtom, { projectId, newIndex: insertIndex })
+
+      log.info({ projectId, insertIndex }, "Project removed from group and reordered")
+    } catch (error) {
+      log.error({ error, projectId, insertIndex }, "Failed to remove project from group with index")
+      throw error
+    }
+  },
+)
+
 // Get the hierarchical tree structure of project groups
 export const projectGroupTreeAtom = atom((get) => {
   const projectGroups = get(projectGroupsAtom)
@@ -339,6 +435,122 @@ export const groupAnalysisAtom = atom((get) => {
   }
 })
 
+// Reorder projects within a group's items array
+export const reorderProjectWithinGroupAtom = atom(
+  null,
+  async (
+    get,
+    set,
+    {
+      groupId,
+      projectId,
+      newIndex,
+    }: {
+      groupId: GroupId
+      projectId: ProjectId
+      newIndex: number
+    },
+  ) => {
+    try {
+      const findGroupById = get(findProjectGroupByIdAtom)
+      const group = findGroupById(groupId)
+
+      if (!group) {
+        throw new Error(`Project group with ID ${groupId} not found`)
+      }
+
+      // Find current index of project in group items
+      const currentIndex = group.items.indexOf(projectId)
+      if (currentIndex === -1) {
+        throw new Error(`Project ${projectId} not found in group ${groupId}`)
+      }
+
+      if (currentIndex === newIndex) {
+        log.info({ projectId, groupId, currentIndex }, "Project already at target position")
+        return
+      }
+
+      // Create new items array with project moved to new position
+      const newItems = [...group.items]
+      const [movedProject] = newItems.splice(currentIndex, 1)
+      newItems.splice(newIndex, 0, movedProject)
+
+      // Update the group via the API
+      await set(updateProjectGroupAtom, {
+        id: groupId,
+        items: newItems,
+      })
+
+      log.info(
+        { projectId, groupId, fromIndex: currentIndex, toIndex: newIndex },
+        "Project successfully reordered within group",
+      )
+    } catch (error) {
+      log.error({ error, projectId, groupId, newIndex }, "Failed to reorder project within group")
+      throw error
+    }
+  },
+)
+
+// Reorder groups by updating the root groups array directly
+export const reorderGroupAtom = atom(
+  null,
+  async (
+    get,
+    set,
+    {
+      groupId,
+      fromIndex,
+      toIndex,
+    }: {
+      groupId: GroupId
+      fromIndex: number
+      toIndex: number
+    },
+  ) => {
+    try {
+      if (fromIndex === toIndex) {
+        log.info({ groupId, fromIndex }, "Group already at target position")
+        return
+      }
+
+      // Get current root groups
+      const rootGroups = get(rootProjectGroupsAtom)
+
+      // Validate the group exists at the expected index
+      if (fromIndex < 0 || fromIndex >= rootGroups.length || rootGroups[fromIndex].id !== groupId) {
+        throw new Error(`Group ${groupId} not found at index ${fromIndex}`)
+      }
+
+      if (toIndex < 0 || toIndex >= rootGroups.length) {
+        throw new Error(`Invalid target index ${toIndex}`)
+      }
+
+      // Create new groups array with group moved to new position
+      const newGroups = [...rootGroups]
+      const [movedGroup] = newGroups.splice(fromIndex, 1)
+      newGroups.splice(toIndex, 0, movedGroup)
+
+      // We'll need to update each group's position by updating the data directly
+      // Since groups are stored as an array in the data structure, we need to replace the entire array
+      // This would normally be handled by a dedicated groups reordering mutation
+      // For now, we'll need to call the data query invalidation to trigger a refetch
+
+      log.warn(
+        { groupId, fromIndex, toIndex },
+        "Group reordering not fully implemented - would need dedicated API endpoint",
+      )
+
+      // TODO: Implement actual group reordering through API
+      // This would require a new API endpoint or extending the existing groups API
+      throw new Error("Group reordering not yet implemented - requires API support")
+    } catch (error) {
+      log.error({ error, groupId, fromIndex, toIndex }, "Failed to reorder group")
+      throw error
+    }
+  },
+)
+
 // Find which group contains a specific project
 export const findGroupContainingProjectAtom = atom(
   (get) =>
@@ -367,6 +579,10 @@ projectsInGroupsAtom.debugLabel = "projectsInGroupsAtom"
 addProjectToGroupAtom.debugLabel = "addProjectToGroupAtom"
 removeProjectFromGroupAtom.debugLabel = "removeProjectFromGroupAtom"
 moveProjectBetweenGroupsAtom.debugLabel = "moveProjectBetweenGroupsAtom"
+moveProjectToGroupAtom.debugLabel = "moveProjectToGroupAtom"
+removeProjectFromGroupWithIndexAtom.debugLabel = "removeProjectFromGroupWithIndexAtom"
+reorderProjectWithinGroupAtom.debugLabel = "reorderProjectWithinGroupAtom"
+reorderGroupAtom.debugLabel = "reorderGroupAtom"
 projectGroupTreeAtom.debugLabel = "projectGroupTreeAtom"
 projectGroupBreadcrumbsAtom.debugLabel = "projectGroupBreadcrumbsAtom"
 projectGroupProjectCountAtom.debugLabel = "projectGroupProjectCountAtom"

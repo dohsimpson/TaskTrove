@@ -160,6 +160,14 @@ vi.mock("@/lib/atoms/core/groups", () => ({
   allGroupsAtom: { debugLabel: "allGroupsAtom" },
   updateProjectGroupAtom: { debugLabel: "updateProjectGroupAtom" },
   deleteProjectGroupAtom: { debugLabel: "deleteProjectGroupAtom" },
+  reorderProjectWithinGroupAtom: { debugLabel: "reorderProjectWithinGroupAtom" },
+  moveProjectToGroupAtom: { debugLabel: "moveProjectToGroupAtom" },
+  removeProjectFromGroupWithIndexAtom: { debugLabel: "removeProjectFromGroupWithIndexAtom" },
+  reorderGroupAtom: { debugLabel: "reorderGroupAtom" },
+}))
+
+vi.mock("@/lib/atoms/core/ordering", () => ({
+  reorderProjectAtom: { debugLabel: "reorderProjectAtom" },
 }))
 
 // Mock ProjectGroupItem component

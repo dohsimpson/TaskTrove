@@ -173,46 +173,72 @@ export function useSidebarDragState() {
 }
 
 // Execute instruction following official Pragmatic pattern
-export function executeSidebarInstruction(instruction: SidebarInstruction) {
+export async function executeSidebarInstruction(
+  instruction: SidebarInstruction,
+  atomStore: {
+    set: <T>(atom: any, value: T) => Promise<void>
+  },
+): Promise<void> {
   if (!instruction) return
 
-  switch (instruction.type) {
-    case "reorder-project":
-      console.log("📋 Mock Action: reorderProject", {
-        projectId: instruction.projectId,
-        fromIndex: instruction.fromIndex,
-        toIndex: instruction.toIndex,
-        context: instruction.withinGroupId || "ungrouped",
-      })
-      break
+  // Import the atoms we need - using dynamic imports to avoid circular dependencies
+  const {
+    reorderProjectWithinGroupAtom,
+    moveProjectToGroupAtom,
+    removeProjectFromGroupWithIndexAtom,
+    reorderGroupAtom,
+  } = await import("@/lib/atoms/core/groups")
+  const { reorderProjectAtom } = await import("@/lib/atoms/core/ordering")
 
-    case "move-project-to-group":
-      console.log("🔄 Mock Action: moveProjectToGroup", {
-        projectId: instruction.projectId,
-        fromGroupId: instruction.fromGroupId || "ungrouped",
-        toGroupId: instruction.toGroupId,
-        insertIndex: instruction.insertIndex,
-      })
-      break
+  try {
+    switch (instruction.type) {
+      case "reorder-project":
+        if (instruction.withinGroupId) {
+          // Reorder within a group
+          await atomStore.set(reorderProjectWithinGroupAtom, {
+            groupId: instruction.withinGroupId,
+            projectId: instruction.projectId,
+            newIndex: instruction.toIndex,
+          })
+        } else {
+          // Reorder in ungrouped projects
+          await atomStore.set(reorderProjectAtom, {
+            projectId: instruction.projectId,
+            newIndex: instruction.toIndex,
+          })
+        }
+        break
 
-    case "remove-project-from-group":
-      console.log("➖ Mock Action: removeProjectFromGroup", {
-        projectId: instruction.projectId,
-        fromGroupId: instruction.fromGroupId,
-        insertIndex: instruction.insertIndex,
-      })
-      break
+      case "move-project-to-group":
+        await atomStore.set(moveProjectToGroupAtom, {
+          projectId: instruction.projectId,
+          fromGroupId: instruction.fromGroupId,
+          toGroupId: instruction.toGroupId,
+          insertIndex: instruction.insertIndex,
+        })
+        break
 
-    case "reorder-group":
-      console.log("📁 Mock Action: reorderGroup", {
-        groupId: instruction.groupId,
-        fromIndex: instruction.fromIndex,
-        toIndex: instruction.toIndex,
-      })
-      break
+      case "remove-project-from-group":
+        await atomStore.set(removeProjectFromGroupWithIndexAtom, {
+          projectId: instruction.projectId,
+          insertIndex: instruction.insertIndex,
+        })
+        break
 
-    default:
-      console.log("❓ Unknown instruction:", instruction)
+      case "reorder-group":
+        await atomStore.set(reorderGroupAtom, {
+          groupId: instruction.groupId,
+          fromIndex: instruction.fromIndex,
+          toIndex: instruction.toIndex,
+        })
+        break
+
+      default:
+        console.log("❓ Unknown instruction:", instruction)
+    }
+  } catch (error) {
+    console.error("🚨 Error executing sidebar instruction:", error)
+    throw error
   }
 }
 

@@ -2,7 +2,7 @@
 
 import React from "react"
 import { useState } from "react"
-import { useAtomValue } from "jotai"
+import { useAtomValue, useSetAtom } from "jotai"
 import { ChevronDown, ChevronRight, Folder, FolderOpen } from "lucide-react"
 import { SidebarMenuItem, SidebarMenuButton, SidebarMenuBadge } from "@/components/ui/sidebar"
 import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
@@ -12,11 +12,15 @@ import { DraggableProjectItem } from "./draggable-project-item"
 import { cn } from "@/lib/utils"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
-import {
-  extractSidebarInstruction,
-  executeSidebarInstruction,
-} from "@/hooks/use-sidebar-drag-state"
+import { extractSidebarInstruction } from "@/hooks/use-sidebar-drag-state"
 import { projectTaskCountsAtom } from "@/lib/atoms"
+import {
+  reorderProjectWithinGroupAtom,
+  moveProjectToGroupAtom,
+  removeProjectFromGroupWithIndexAtom,
+  reorderGroupAtom,
+} from "@/lib/atoms/core/groups"
+import { reorderProjectAtom } from "@/lib/atoms/core/ordering"
 import {
   extractClosestEdge,
   attachClosestEdge,
@@ -38,6 +42,13 @@ export function DraggableProjectGroupItem({
   const [isExpanded, setIsExpanded] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
   const projectTaskCounts = useAtomValue(projectTaskCountsAtom)
+
+  // Drag and drop atom setters
+  const reorderProjectWithinGroup = useSetAtom(reorderProjectWithinGroupAtom)
+  const moveProjectToGroup = useSetAtom(moveProjectToGroupAtom)
+  const removeProjectFromGroupWithIndex = useSetAtom(removeProjectFromGroupWithIndexAtom)
+  const reorderGroup = useSetAtom(reorderGroupAtom)
+  const reorderProject = useSetAtom(reorderProjectAtom)
 
   // Local drag state for this group
   const [groupDragState, setGroupDragState] = useState<{
@@ -84,7 +95,7 @@ export function DraggableProjectGroupItem({
   }
 
   // Drag and drop handlers for group header
-  const handleGroupDrop = ({
+  const handleGroupDrop = async ({
     source,
     location,
   }: {
@@ -104,8 +115,58 @@ export function DraggableProjectGroupItem({
 
     console.log("📍 Extracted instruction:", instruction)
 
-    // Execute the instruction
-    executeSidebarInstruction(instruction)
+    // Execute the instruction with actual atoms
+    if (instruction) {
+      try {
+        switch (instruction.type) {
+          case "reorder-project":
+            if (instruction.withinGroupId) {
+              // Reorder within a group
+              await reorderProjectWithinGroup({
+                groupId: instruction.withinGroupId,
+                projectId: instruction.projectId,
+                newIndex: instruction.toIndex,
+              })
+            } else {
+              // Reorder in ungrouped projects
+              await reorderProject({
+                projectId: instruction.projectId,
+                newIndex: instruction.toIndex,
+              })
+            }
+            break
+
+          case "move-project-to-group":
+            await moveProjectToGroup({
+              projectId: instruction.projectId,
+              fromGroupId: instruction.fromGroupId,
+              toGroupId: instruction.toGroupId,
+              insertIndex: instruction.insertIndex,
+            })
+            break
+
+          case "remove-project-from-group":
+            await removeProjectFromGroupWithIndex({
+              projectId: instruction.projectId,
+              insertIndex: instruction.insertIndex,
+            })
+            break
+
+          case "reorder-group":
+            await reorderGroup({
+              groupId: instruction.groupId,
+              fromIndex: instruction.fromIndex,
+              toIndex: instruction.toIndex,
+            })
+            break
+
+          default:
+            console.log("❓ Unknown instruction:", instruction)
+        }
+      } catch (error) {
+        console.error("🚨 Error executing drag and drop instruction:", error)
+      }
+    }
 
     // Auto-expand group when project is added to it
     if (

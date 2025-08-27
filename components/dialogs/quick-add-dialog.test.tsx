@@ -2,6 +2,7 @@ import React from "react"
 import { flushSync } from "react-dom"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
+import { mockNextThemes } from "@/test-utils"
 import { QuickAddDialog } from "./quick-add-dialog"
 import type { Project, LabelId, TaskPriority } from "@/lib/types"
 import { createLabelId } from "@/lib/types"
@@ -252,10 +253,7 @@ vi.mock("jotai", async () => {
 })
 
 // Mock next-themes
-vi.mock("next-themes", () => ({
-  ThemeProvider: ({ children }: MockComponentProps) => children,
-  useTheme: () => ({ theme: "light", setTheme: vi.fn() }),
-}))
+mockNextThemes()
 
 // Mock the TaskPriorityPopover component
 vi.mock("@/components/task/task-priority-popover", () => ({

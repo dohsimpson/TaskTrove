@@ -9,19 +9,13 @@ import {
   viewStatesAtom,
 } from "@/lib/atoms/ui/views"
 import type { ViewId } from "@/lib/types"
+import { mockUseToast, mockNextThemes } from "@/test-utils"
 
 // Mock Next.js themes
-vi.mock("next-themes", () => ({
-  useTheme: vi.fn(() => ({
-    theme: "light",
-    setTheme: vi.fn(),
-  })),
-}))
+mockNextThemes()
 
 // Mock the toast hook
-vi.mock("@/hooks/use-toast", () => ({
-  toast: vi.fn(),
-}))
+mockUseToast()
 
 // Create a test component that uses the sidepanel functionality
 const TestSidePanelComponent: React.FC<{ initialView?: ViewId }> = ({ initialView = "inbox" }) => {

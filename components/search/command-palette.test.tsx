@@ -1,20 +1,20 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent } from "@/test-utils"
+import {
+  render,
+  screen,
+  fireEvent,
+  mockNextNavigation,
+  mockUseToast,
+  mockNextThemesWithWrapper,
+} from "@/test-utils"
 import { CommandPalette } from "./command-palette"
-import { mockNextNavigation } from "@/test-utils/mock-router"
 
 // Mock Next.js router using centralized utilities
 mockNextNavigation()
 
 // Mock next-themes
-vi.mock("next-themes", () => ({
-  useTheme: () => ({
-    theme: "light",
-    setTheme: vi.fn(),
-  }),
-  ThemeProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-}))
+mockNextThemesWithWrapper()
 
 // Mock cmdk components
 vi.mock("@/components/ui/command", () => ({
@@ -71,9 +71,7 @@ vi.mock("@/components/ui/command", () => ({
 }))
 
 // Mock use-toast
-vi.mock("@/hooks/use-toast", () => ({
-  toast: vi.fn(),
-}))
+mockUseToast()
 
 // Mock lucide-react icons
 vi.mock("lucide-react", () => ({

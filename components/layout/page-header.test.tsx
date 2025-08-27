@@ -1,30 +1,16 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
-import { mockNextNavigation } from "@/test-utils/mock-router"
+import { mockNextNavigation, mockUseToast, mockNextThemes } from "@/test-utils"
 
 // Mock Next.js router using centralized utilities
 mockNextNavigation()
 
 // Mock theme provider
-vi.mock("next-themes", () => {
-  const mockSetTheme = vi.fn()
-  return {
-    useTheme: vi.fn(() => ({
-      theme: "light",
-      setTheme: mockSetTheme,
-      themes: ["light", "dark", "system"],
-      systemTheme: "light",
-      resolvedTheme: "light",
-    })),
-    ThemeProvider: ({ children }: { children: React.ReactNode }) => children,
-  }
-})
+mockNextThemes() // Full comprehensive theme mock with all properties
 
 // Mock toast hook
-vi.mock("@/hooks/use-toast", () => ({
-  toast: vi.fn(),
-}))
+mockUseToast()
 
 // Mock help content
 vi.mock("@/lib/help-content", () => ({

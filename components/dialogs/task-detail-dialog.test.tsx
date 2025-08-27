@@ -1,6 +1,6 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent } from "@/test-utils"
+import { render, screen, fireEvent, mockNextThemes } from "@/test-utils"
 import { TaskDetailDialog } from "./task-detail-dialog"
 import type { Task } from "@/lib/types"
 import {
@@ -93,10 +93,7 @@ vi.mock("@/components/task/task-form", () => ({
 }))
 
 // Mock next-themes
-vi.mock("next-themes", () => ({
-  ThemeProvider: ({ children }: MockComponentProps) => children,
-  useTheme: () => ({ theme: "light", setTheme: vi.fn() }),
-}))
+mockNextThemes()
 
 // Mock window.matchMedia
 Object.defineProperty(window, "matchMedia", {

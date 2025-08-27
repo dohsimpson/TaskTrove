@@ -1,6 +1,6 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent } from "@/test-utils"
+import { render, screen, fireEvent, mockNextThemes } from "@/test-utils"
 import { DeleteConfirmDialog, DeleteEntityType } from "./delete-confirm-dialog"
 
 // Mock UI components
@@ -47,10 +47,7 @@ vi.mock("@/components/ui/button", () => ({
 }))
 
 // Mock next-themes
-vi.mock("next-themes", () => ({
-  ThemeProvider: ({ children }: MockComponentProps) => children,
-  useTheme: () => ({ theme: "light", setTheme: vi.fn() }),
-}))
+mockNextThemes()
 
 // Mock window.matchMedia
 Object.defineProperty(window, "matchMedia", {

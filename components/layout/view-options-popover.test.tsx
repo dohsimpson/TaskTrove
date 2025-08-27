@@ -2,20 +2,14 @@ import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { Provider } from "jotai"
+import { mockUseToast, mockNextThemes } from "@/test-utils"
 import { ViewOptionsPopover } from "./view-options-popover"
 
 // Mock next-themes
-vi.mock("next-themes", () => ({
-  useTheme: vi.fn(() => ({
-    theme: "light",
-    setTheme: vi.fn(),
-  })),
-}))
+mockNextThemes()
 
 // Mock toast hook
-vi.mock("@/hooks/use-toast", () => ({
-  toast: vi.fn(),
-}))
+mockUseToast()
 
 // Mock utils
 vi.mock("@/lib/utils", () => ({

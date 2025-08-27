@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react"
 import type { Task, Project } from "@/lib/types"
 import { createMockTask } from "@/lib/atoms/tests/test-helpers"
 import { TEST_TASK_ID_1, TEST_TASK_ID_2 } from "@/lib/utils/test-constants"
-import { mockNextNavigation, mockNavigation } from "@/test-utils/mock-router"
+import { mockNextNavigation, mockNavigation, mockUseToast, mockNextThemes } from "@/test-utils"
 
 // Mock component interfaces
 interface MockButtonProps {
@@ -66,17 +66,10 @@ mockNextNavigation()
 mockNavigation.setPathname("/today")
 
 // Mock Next.js themes
-vi.mock("next-themes", () => ({
-  useTheme: vi.fn(() => ({
-    theme: "light",
-    setTheme: vi.fn(),
-  })),
-}))
+mockNextThemes()
 
 // Mock the toast hook
-vi.mock("@/hooks/use-toast", () => ({
-  toast: vi.fn(),
-}))
+mockUseToast()
 
 // Mock all the imported atoms and components
 vi.mock("@/lib/atoms", () => ({

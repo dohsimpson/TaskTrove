@@ -2,7 +2,9 @@ import React, { ReactElement } from "react"
 import { render, RenderOptions } from "@testing-library/react"
 import { TestJotaiProvider } from "./jotai-mocks"
 import { MockRouter } from "./mock-router"
-import { ThemeProvider } from "next-themes"
+
+// Use a simple div wrapper instead of ThemeProvider for tests
+const TestThemeProvider = ({ children }: { children: React.ReactNode }) => <>{children}</>
 
 // Enhanced router configuration interface
 interface RouterConfig {
@@ -23,9 +25,9 @@ const AllTheProviders = ({
 }) => {
   return (
     <MockRouter {...routerConfig}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <TestThemeProvider>
         <TestJotaiProvider initialValues={initialAtomValues}>{children}</TestJotaiProvider>
-      </ThemeProvider>
+      </TestThemeProvider>
     </MockRouter>
   )
 }

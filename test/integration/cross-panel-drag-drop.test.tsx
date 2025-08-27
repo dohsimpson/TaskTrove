@@ -1,5 +1,6 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
+import { mockUseToast } from "@/test-utils"
 import { render, screen, fireEvent } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { TaskId, createTaskId } from "@/lib/types"
@@ -51,9 +52,7 @@ vi.mock("@/lib/atoms/core/labels", () => ({
 }))
 
 // Mock toast hook
-vi.mock("@/hooks/use-toast", () => ({
-  toast: vi.fn(),
-}))
+mockUseToast()
 
 // Mock logger
 vi.mock("@/lib/utils/logger", () => ({

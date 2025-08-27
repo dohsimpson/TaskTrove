@@ -79,6 +79,8 @@ import {
   DeleteGroupResponseSchema,
   CreateGroupRequestSchema,
   DeleteGroupRequestSchema,
+  BulkGroupUpdate,
+  BulkGroupUpdateSchema,
   createGroupId,
   isGroup,
 } from "../../types"
@@ -896,6 +898,38 @@ export const deleteProjectGroupMutationAtom = createMutation({
   },
 })
 deleteProjectGroupMutationAtom.debugLabel = "deleteProjectGroupMutationAtom"
+
+// Mutation atom for bulk group updates (reordering)
+export const bulkUpdateGroupsMutationAtom = createMutation({
+  method: "PATCH",
+  operationName: "Bulk updated groups",
+  responseSchema: UpdateGroupResponseSchema,
+  serializationSchema: BulkGroupUpdateSchema,
+  apiEndpoint: "/api/groups",
+  logModule: "groups",
+  testResponseFactory: (request: BulkGroupUpdate) => ({
+    success: true,
+    groups: request.groups,
+    count: request.groups.length,
+    message: `${request.groups.length} ${request.type} group(s) bulk updated successfully (test mode)`,
+  }),
+  optimisticUpdateFn: (request: BulkGroupUpdate, oldData: DataFile) => {
+    // Replace entire array based on type
+    if (request.type === "project") {
+      return {
+        ...oldData,
+        projectGroups: request.groups,
+      }
+    } else if (request.type === "label") {
+      return {
+        ...oldData,
+        labelGroups: request.groups,
+      }
+    }
+    return oldData
+  },
+})
+bulkUpdateGroupsMutationAtom.debugLabel = "bulkUpdateGroupsMutationAtom"
 
 export const tasksAtom = atom(
   (get) => {

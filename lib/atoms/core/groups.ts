@@ -13,6 +13,7 @@ import {
   createProjectGroupMutationAtom,
   updateProjectGroupMutationAtom,
   deleteProjectGroupMutationAtom,
+  bulkUpdateGroupsMutationAtom,
   dataQueryAtom,
 } from "./base"
 import { visibleProjectsAtom } from "./projects"
@@ -531,19 +532,17 @@ export const reorderGroupAtom = atom(
       const [movedGroup] = newGroups.splice(fromIndex, 1)
       newGroups.splice(toIndex, 0, movedGroup)
 
-      // We'll need to update each group's position by updating the data directly
-      // Since groups are stored as an array in the data structure, we need to replace the entire array
-      // This would normally be handled by a dedicated groups reordering mutation
-      // For now, we'll need to call the data query invalidation to trigger a refetch
+      // Use bulk update to replace the entire projectGroups array with new order
+      const bulkUpdateMutation = get(bulkUpdateGroupsMutationAtom)
+      await bulkUpdateMutation.mutateAsync({
+        type: "project",
+        groups: newGroups,
+      })
 
-      log.warn(
-        { groupId, fromIndex, toIndex },
-        "Group reordering not fully implemented - would need dedicated API endpoint",
+      log.info(
+        { groupId, fromIndex, toIndex, newGroupsCount: newGroups.length },
+        "Group successfully reordered using bulk update",
       )
-
-      // TODO: Implement actual group reordering through API
-      // This would require a new API endpoint or extending the existing groups API
-      throw new Error("Group reordering not yet implemented - requires API support")
     } catch (error) {
       log.error({ error, groupId, fromIndex, toIndex }, "Failed to reorder group")
       throw error

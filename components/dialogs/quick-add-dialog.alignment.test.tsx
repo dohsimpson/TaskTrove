@@ -389,6 +389,12 @@ vi.mock("@/lib/types", () => ({
       data: { labelIds: [], success: true, message: "Mock response" },
     }),
   },
+  BulkGroupUpdateSchema: {
+    safeParse: vi.fn().mockReturnValue({
+      success: true,
+      data: { type: "project", groups: [] },
+    }),
+  },
   GroupUpdateUnionSchema: {
     safeParse: vi
       .fn()

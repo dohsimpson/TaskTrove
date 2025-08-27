@@ -1884,6 +1884,22 @@ export const GroupUpdateUnionSchema = z.union([
   UpdateGroupRequestSchema.array(),
 ])
 
+// Bulk Group Update Schemas for reordering
+export const BulkProjectGroupUpdateSchema = z.object({
+  type: z.literal("project"),
+  groups: z.array(ProjectGroupSchema),
+})
+
+export const BulkLabelGroupUpdateSchema = z.object({
+  type: z.literal("label"),
+  groups: z.array(LabelGroupSchema),
+})
+
+export const BulkGroupUpdateSchema = z.discriminatedUnion("type", [
+  BulkProjectGroupUpdateSchema,
+  BulkLabelGroupUpdateSchema,
+])
+
 export const DeleteGroupRequestSchema = z.object({
   /** Group ID to delete */
   id: GroupIdSchema,
@@ -1909,6 +1925,9 @@ export type UpdateProjectGroupRequest = z.infer<typeof UpdateProjectGroupRequest
 export type UpdateLabelGroupRequest = z.infer<typeof UpdateLabelGroupRequestSchema>
 export type UpdateGroupRequest = z.infer<typeof UpdateGroupRequestSchema>
 export type GroupUpdateUnion = z.infer<typeof GroupUpdateUnionSchema>
+export type BulkProjectGroupUpdate = z.infer<typeof BulkProjectGroupUpdateSchema>
+export type BulkLabelGroupUpdate = z.infer<typeof BulkLabelGroupUpdateSchema>
+export type BulkGroupUpdate = z.infer<typeof BulkGroupUpdateSchema>
 export type DeleteGroupRequest = z.infer<typeof DeleteGroupRequestSchema>
 export type CreateGroupResponse = z.infer<typeof CreateGroupResponseSchema>
 export type UpdateGroupResponse = z.infer<typeof UpdateGroupResponseSchema>

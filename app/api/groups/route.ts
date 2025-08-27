@@ -14,6 +14,8 @@ import {
   ErrorResponse,
   GroupUpdateUnionSchema,
   GroupUpdateUnion,
+  BulkGroupUpdateSchema,
+  BulkGroupUpdate,
   GroupId,
 } from "@/lib/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
@@ -308,23 +310,101 @@ export const POST = withMutexProtection(
 /**
  * PATCH /api/groups
  *
- * Updates groups. Accepts an array of group updates or single update.
- * Updates group properties in-place within the tree structure.
- * Uses typed responses for consistency.
+ * Updates groups. Supports two modes:
+ * 1. Bulk update: Replace entire projectGroups or labelGroups array (for reordering)
+ * 2. Individual updates: Update specific group properties
  */
 async function updateGroups(
   request: EnhancedRequest,
 ): Promise<NextResponse<UpdateGroupResponse | ErrorResponse>> {
-  // Validate request body using the union schema
-  const validation = await validateRequestBody(request, GroupUpdateUnionSchema)
-  if (!validation.success) {
-    return validation.error
+  const requestBody = await request.json()
+
+  // Try bulk update first (for reordering)
+  const bulkValidation = BulkGroupUpdateSchema.safeParse(requestBody)
+  if (bulkValidation.success) {
+    return handleBulkGroupUpdate(bulkValidation.data, request)
   }
 
+  // Fallback to individual updates
+  const individualValidation = GroupUpdateUnionSchema.safeParse(requestBody)
+  if (!individualValidation.success) {
+    return createErrorResponse(
+      "Invalid request format",
+      "Request must be either bulk group update or individual group updates",
+      400,
+    )
+  }
+
+  return handleIndividualGroupUpdates(individualValidation.data, request)
+}
+
+/**
+ * Handle bulk group updates (replace entire array)
+ */
+async function handleBulkGroupUpdate(
+  bulkUpdate: BulkGroupUpdate,
+  request: EnhancedRequest,
+): Promise<NextResponse<UpdateGroupResponse | ErrorResponse>> {
+  const fileData = await withFileOperationLogging(
+    () => safeReadDataFile(),
+    "read-groups-data-file",
+    request.context,
+  )
+
+  if (!fileData) {
+    return createErrorResponse("Failed to update groups", "File reading or validation failed", 500)
+  }
+
+  // Replace entire array based on type
+  if (bulkUpdate.type === "project") {
+    fileData.projectGroups = bulkUpdate.groups
+  } else if (bulkUpdate.type === "label") {
+    fileData.labelGroups = bulkUpdate.groups
+  }
+
+  const writeSuccess = await withPerformanceLogging(
+    () => safeWriteDataFile({ data: fileData }),
+    "write-groups-data-file",
+    request.context,
+    500, // 500ms threshold for slow file writes
+  )
+
+  if (!writeSuccess) {
+    return createErrorResponse("Failed to save data", "File writing failed", 500)
+  }
+
+  logBusinessEvent(
+    "groups_bulk_updated",
+    {
+      type: bulkUpdate.type,
+      groupCount: bulkUpdate.groups.length,
+      totalGroups: {
+        project: fileData.projectGroups?.length || 0,
+        label: fileData.labelGroups?.length || 0,
+      },
+    },
+    request.context,
+  )
+
+  const response: UpdateGroupResponse = {
+    success: true,
+    groups: bulkUpdate.groups,
+    count: bulkUpdate.groups.length,
+    message: `${bulkUpdate.groups.length} ${bulkUpdate.type} group(s) updated successfully`,
+  }
+
+  return NextResponse.json<UpdateGroupResponse>(response)
+}
+
+/**
+ * Handle individual group updates (existing behavior)
+ */
+async function handleIndividualGroupUpdates(
+  requestData: GroupUpdateUnion,
+  request: EnhancedRequest,
+): Promise<NextResponse<UpdateGroupResponse | ErrorResponse>> {
   // Normalize to array format
-  const updates: GroupUpdateUnion = Array.isArray(validation.data)
-    ? validation.data
-    : [validation.data]
+  const updates: GroupUpdateUnion = Array.isArray(requestData) ? requestData : [requestData]
 
   const fileData = await withFileOperationLogging(
     () => safeReadDataFile(),

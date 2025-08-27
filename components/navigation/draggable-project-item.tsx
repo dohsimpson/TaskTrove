@@ -275,8 +275,8 @@ export function DraggableProjectItem({
                   }
                 }}
                 className={cn(
-                  "w-full cursor-pointer",
-                  isInGroup && "ml-6", // Add indentation for projects in groups
+                  "cursor-pointer",
+                  isInGroup ? "ml-6 w-[calc(100%-calc(var(--spacing)*6))]" : "w-full", // reduce width by same amount if indenting for nested project
                 )}
               >
                 <div className="flex items-center gap-2 w-full">

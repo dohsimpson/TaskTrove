@@ -534,40 +534,36 @@ describe("SubtaskPopover", () => {
   })
 
   describe("Add Subtask Functionality", () => {
-    it("shows add subtask button when subtasks exist", () => {
+    it("shows add subtask input when subtasks exist", () => {
       renderSubtaskPopover()
-      expect(screen.getByText("Add another subtask")).toBeInTheDocument()
+      expect(screen.getByTestId("subtask-input")).toBeInTheDocument()
+      expect(screen.getByPlaceholderText("Add another subtask...")).toBeInTheDocument()
     })
 
-    it("shows add subtask button when no subtasks exist", () => {
+    it("shows add subtask input when no subtasks exist", () => {
       renderSubtaskPopover(mockTaskWithoutSubtasks)
-      expect(screen.getByText("Add subtasks")).toBeInTheDocument()
+      expect(screen.getByTestId("subtask-input")).toBeInTheDocument()
+      expect(screen.getByPlaceholderText("Add subtasks...")).toBeInTheDocument()
     })
 
-    it("shows input field when add subtask button is clicked", async () => {
-      const user = userEvent.setup()
+    it("shows input field and submit button always available", async () => {
       renderSubtaskPopover()
 
-      const addButton = screen.getByText("Add another subtask")
-      await user.click(addButton)
-
-      expect(screen.getByTestId("input")).toBeInTheDocument()
-      expect(screen.getByPlaceholderText("Enter subtask title...")).toBeInTheDocument()
-      expect(screen.getByText("Cancel")).toBeInTheDocument()
-      expect(screen.getByText("Add")).toBeInTheDocument()
+      expect(screen.getByTestId("subtask-input")).toBeInTheDocument()
+      expect(screen.getByPlaceholderText("Add another subtask...")).toBeInTheDocument()
+      expect(screen.getByTestId("subtask-submit-button")).toBeInTheDocument()
+      // Submit button should be disabled when input is empty
+      expect(screen.getByTestId("subtask-submit-button")).toBeDisabled()
     })
 
     it("adds subtask when form is submitted", async () => {
       const user = userEvent.setup()
       renderSubtaskPopover()
 
-      const addButton = screen.getByText("Add another subtask")
-      await user.click(addButton)
-
-      const input = screen.getByTestId("input")
+      const input = screen.getByTestId("subtask-input")
       await user.type(input, "New subtask")
 
-      const submitButton = screen.getByText("Add")
+      const submitButton = screen.getByTestId("subtask-submit-button")
       await user.click(submitButton)
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
@@ -591,10 +587,7 @@ describe("SubtaskPopover", () => {
       const user = userEvent.setup()
       renderSubtaskPopover()
 
-      const addButton = screen.getByText("Add another subtask")
-      await user.click(addButton)
-
-      const input = screen.getByTestId("input")
+      const input = screen.getByTestId("subtask-input")
       await user.type(input, "New subtask")
       await user.keyboard("{Enter}")
 
@@ -612,46 +605,36 @@ describe("SubtaskPopover", () => {
       })
     })
 
-    it("cancels adding subtask when cancel button is clicked", async () => {
+    it("clears input after adding subtask", async () => {
       const user = userEvent.setup()
       renderSubtaskPopover()
 
-      const addButton = screen.getByText("Add another subtask")
-      await user.click(addButton)
-
-      const input = screen.getByTestId("input")
+      const input = screen.getByTestId("subtask-input")
       await user.type(input, "New subtask")
+      await user.keyboard("{Enter}")
 
-      const cancelButton = screen.getByText("Cancel")
-      await user.click(cancelButton)
-
-      expect(screen.queryByTestId("input")).not.toBeInTheDocument()
-      expect(mockUpdateTask).not.toHaveBeenCalled()
+      // Input should be cleared after adding
+      expect(input).toHaveValue("")
+      expect(mockUpdateTask).toHaveBeenCalled()
     })
 
-    it("cancels adding subtask when escape key is pressed", async () => {
+    it("does not add empty subtask when enter is pressed", async () => {
       const user = userEvent.setup()
       renderSubtaskPopover()
 
-      const addButton = screen.getByText("Add another subtask")
-      await user.click(addButton)
+      const input = screen.getByTestId("subtask-input")
+      // Try to submit empty input
+      await user.click(input)
+      await user.keyboard("{Enter}")
 
-      const input = screen.getByTestId("input")
-      await user.type(input, "New subtask")
-      await user.keyboard("{Escape}")
-
-      expect(screen.queryByTestId("input")).not.toBeInTheDocument()
+      // Should not add anything
       expect(mockUpdateTask).not.toHaveBeenCalled()
     })
 
     it("disables add button when input is empty", async () => {
-      const user = userEvent.setup()
       renderSubtaskPopover()
 
-      const addButton = screen.getByText("Add another subtask")
-      await user.click(addButton)
-
-      const submitButton = screen.getByText("Add")
+      const submitButton = screen.getByTestId("subtask-submit-button")
       expect(submitButton).toBeDisabled()
     })
 
@@ -659,13 +642,10 @@ describe("SubtaskPopover", () => {
       const user = userEvent.setup()
       renderSubtaskPopover()
 
-      const addButton = screen.getByText("Add another subtask")
-      await user.click(addButton)
-
-      const input = screen.getByTestId("input")
+      const input = screen.getByTestId("subtask-input")
       await user.type(input, "New subtask")
 
-      const submitButton = screen.getByText("Add")
+      const submitButton = screen.getByTestId("subtask-submit-button")
       expect(submitButton).not.toBeDisabled()
     })
   })

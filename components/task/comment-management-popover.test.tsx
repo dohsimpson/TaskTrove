@@ -58,25 +58,22 @@ interface MockCommentContentProps {
   task?: Task
   onAddComment?: (content: string) => void
   mode?: "inline" | "popover"
-  onAddingChange?: (isAdding: boolean) => void
 }
 
 vi.mock("./comment-content", () => ({
-  CommentContent: ({
-    taskId,
-    task,
-    onAddComment,
-    mode,
-    onAddingChange,
-  }: MockCommentContentProps) => (
+  CommentContent: ({ taskId, task, onAddComment, mode }: MockCommentContentProps) => (
     <div data-testid="comment-content">
       <div data-testid="comment-content-taskId">{taskId || "undefined"}</div>
       <div data-testid="comment-content-task">{task?.id || "undefined"}</div>
       <div data-testid="comment-content-mode">{mode}</div>
       <div data-testid="comment-content-comments-count">{task?.comments?.length || 0}</div>
-      <button onClick={() => onAddComment?.("test comment")}>Mock Add Comment</button>
-      <button onClick={() => onAddingChange?.(true)}>Mock Start Adding</button>
-      <button onClick={() => onAddingChange?.(false)}>Mock Stop Adding</button>
+      <input
+        data-testid="comment-input"
+        placeholder={task?.comments?.length ? "Add another comment..." : "Add comments..."}
+      />
+      <button data-testid="comment-submit-button" onClick={() => onAddComment?.("test comment")}>
+        Submit
+      </button>
     </div>
   ),
 }))
@@ -342,7 +339,7 @@ describe("CommentManagementPopover", () => {
   })
 
   describe("Adding State Management", () => {
-    it("resets adding state when popover closes", async () => {
+    it("shows consistent input state when popover closes and reopens", async () => {
       const user = userEvent.setup()
       const task = createMockTask({ comments: [] })
 
@@ -354,20 +351,21 @@ describe("CommentManagementPopover", () => {
 
       await user.click(screen.getByText("Open Comments"))
 
-      // Simulate starting to add
-      await user.click(screen.getByText("Mock Start Adding"))
+      // Input should be visible
+      expect(screen.getByTestId("comment-input")).toBeInTheDocument()
 
       // Close the popover
       await user.click(screen.getByText("Open Comments"))
 
-      // Reopen to verify state was reset
+      // Reopen to verify input is still available
       await user.click(screen.getByText("Open Comments"))
 
-      // The component should have reset its internal adding state
+      // Input should still be available and ready for use
       expect(screen.getByTestId("comment-content")).toBeInTheDocument()
+      expect(screen.getByTestId("comment-input")).toBeInTheDocument()
     })
 
-    it("closes popover when canceling add with no existing comments", async () => {
+    it("shows input field when opened with no existing comments", async () => {
       const user = userEvent.setup()
       const task = createMockTask({ comments: [] })
 
@@ -380,14 +378,12 @@ describe("CommentManagementPopover", () => {
       await user.click(screen.getByText("Open Comments"))
       expect(screen.getByTestId("popover-content")).toBeInTheDocument()
 
-      // Simulate canceling add
-      await user.click(screen.getByText("Mock Stop Adding"))
-
-      // Popover should close because task has no comments
-      expect(screen.queryByTestId("popover-content")).not.toBeInTheDocument()
+      // Input should be visible and ready for use
+      expect(screen.getByTestId("comment-input")).toBeInTheDocument()
+      expect(screen.getByTestId("comment-submit-button")).toBeInTheDocument()
     })
 
-    it("does not close popover when canceling add with existing comments", async () => {
+    it("shows comments and input field when opened with existing comments", async () => {
       const user = userEvent.setup()
       const task = createMockTask({
         comments: [createMockComment()],
@@ -402,14 +398,12 @@ describe("CommentManagementPopover", () => {
       await user.click(screen.getByText("Open Comments"))
       expect(screen.getByTestId("popover-content")).toBeInTheDocument()
 
-      // Simulate canceling add
-      await user.click(screen.getByText("Mock Stop Adding"))
-
-      // Popover should remain open because task has existing comments
-      expect(screen.getByTestId("popover-content")).toBeInTheDocument()
+      // Both existing comments and input should be visible
+      expect(screen.getByTestId("comment-content")).toBeInTheDocument()
+      expect(screen.getByTestId("comment-input")).toBeInTheDocument()
     })
 
-    it("does not close popover when canceling add in quick-add mode", async () => {
+    it("shows input field in quick-add mode", async () => {
       const user = userEvent.setup()
 
       render(
@@ -421,11 +415,9 @@ describe("CommentManagementPopover", () => {
       await user.click(screen.getByText("Open Comments"))
       expect(screen.getByTestId("popover-content")).toBeInTheDocument()
 
-      // Simulate canceling add
-      await user.click(screen.getByText("Mock Stop Adding"))
-
-      // Popover should remain open in quick-add mode (no task prop)
-      expect(screen.getByTestId("popover-content")).toBeInTheDocument()
+      // Input should be available for quick-add mode
+      expect(screen.getByTestId("comment-input")).toBeInTheDocument()
+      expect(screen.getByTestId("comment-submit-button")).toBeInTheDocument()
     })
   })
 
@@ -460,7 +452,7 @@ describe("CommentManagementPopover", () => {
       )
 
       await user.click(screen.getByText("Open Comments"))
-      await user.click(screen.getByText("Mock Add Comment"))
+      await user.click(screen.getByTestId("comment-submit-button"))
 
       expect(onAddComment).toHaveBeenCalledWith("test comment")
     })

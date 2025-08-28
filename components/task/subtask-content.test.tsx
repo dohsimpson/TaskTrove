@@ -320,47 +320,77 @@ describe("SubtaskContent", () => {
 
       expect(screen.queryByTestId("progress-bar")).not.toBeInTheDocument()
       expect(screen.queryByText(/completed/)).not.toBeInTheDocument()
-      expect(screen.getByText("Add subtasks")).toBeInTheDocument()
+      expect(screen.getByTestId("subtask-input")).toBeInTheDocument()
     })
   })
 
   describe("Adding Subtasks", () => {
-    it("shows add subtask interface when clicking add button", async () => {
+    it("shows add subtask interface always", async () => {
+      const task = createMockTask()
+
+      render(<SubtaskContent task={task} />)
+
+      expect(screen.getByTestId("subtask-input")).toBeInTheDocument()
+      expect(screen.getByPlaceholderText("Add subtasks...")).toBeInTheDocument()
+      expect(screen.getByTestId("subtask-submit-button")).toBeInTheDocument()
+    })
+
+    it("submit button is disabled when input is empty", async () => {
+      const task = createMockTask()
+
+      render(<SubtaskContent task={task} />)
+
+      const submitButton = screen.getByTestId("subtask-submit-button")
+      expect(submitButton).toBeDisabled()
+    })
+
+    it("submit button is enabled when input has text", async () => {
       const user = userEvent.setup()
       const task = createMockTask()
 
       render(<SubtaskContent task={task} />)
 
-      await user.click(screen.getByText("Add subtasks"))
+      const input = screen.getByTestId("subtask-input")
+      const submitButton = screen.getByTestId("subtask-submit-button")
 
-      expect(screen.getByTestId("subtask-input")).toBeInTheDocument()
-      expect(screen.getByPlaceholderText("Enter subtask title...")).toBeInTheDocument()
-      expect(screen.getByRole("button", { name: "Add" })).toBeInTheDocument()
-      expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument()
+      await user.type(input, "Test subtask")
+      expect(submitButton).not.toBeDisabled()
+    })
+
+    it("adds subtask when submit button is clicked", async () => {
+      const user = userEvent.setup()
+      const task = createMockTask()
+
+      render(<SubtaskContent task={task} />)
+
+      const input = screen.getByTestId("subtask-input")
+      const submitButton = screen.getByTestId("subtask-submit-button")
+
+      await user.type(input, "New subtask via button")
+      await user.click(submitButton)
+
+      expect(mockUpdateTask).toHaveBeenCalledWith({
+        updateRequest: {
+          id: task.id,
+          subtasks: [
+            {
+              id: expect.any(String),
+              title: "New subtask via button",
+              completed: false,
+              order: 0,
+            },
+          ],
+        },
+      })
     })
 
     it("shows different text when task already has subtasks", async () => {
-      const user = userEvent.setup()
       const subtasks = [createMockSubtask()]
       const task = createMockTask({ subtasks })
 
       render(<SubtaskContent task={task} />)
 
-      await user.click(screen.getByText("Add another subtask"))
-
       expect(screen.getByTestId("subtask-input")).toBeInTheDocument()
-    })
-
-    it("calls onAddingChange when starting to add", async () => {
-      const user = userEvent.setup()
-      const onAddingChange = vi.fn()
-      const task = createMockTask()
-
-      render(<SubtaskContent task={task} onAddingChange={onAddingChange} />)
-
-      await user.click(screen.getByText("Add subtasks"))
-
-      expect(onAddingChange).toHaveBeenCalledWith(true)
     })
 
     it("adds subtask when Add button is clicked", async () => {
@@ -369,9 +399,8 @@ describe("SubtaskContent", () => {
 
       render(<SubtaskContent task={task} />)
 
-      await user.click(screen.getByText("Add subtasks"))
       await user.type(screen.getByTestId("subtask-input"), "New Subtask")
-      await user.click(screen.getByRole("button", { name: "Add" }))
+      await user.keyboard("{Enter}")
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
@@ -394,7 +423,6 @@ describe("SubtaskContent", () => {
 
       render(<SubtaskContent task={task} />)
 
-      await user.click(screen.getByText("Add subtasks"))
       await user.type(screen.getByTestId("subtask-input"), "New Subtask")
       await user.keyboard("{Enter}")
 
@@ -413,44 +441,13 @@ describe("SubtaskContent", () => {
       })
     })
 
-    it("cancels adding when Cancel button is clicked", async () => {
-      const user = userEvent.setup()
-      const onAddingChange = vi.fn()
-      const task = createMockTask()
-
-      render(<SubtaskContent task={task} onAddingChange={onAddingChange} />)
-
-      await user.click(screen.getByText("Add subtasks"))
-      await user.type(screen.getByTestId("subtask-input"), "Some text")
-      await user.click(screen.getByRole("button", { name: "Cancel" }))
-
-      expect(screen.queryByTestId("subtask-input")).not.toBeInTheDocument()
-      expect(onAddingChange).toHaveBeenCalledWith(false)
-    })
-
-    it("cancels adding when Escape key is pressed", async () => {
-      const user = userEvent.setup()
-      const onAddingChange = vi.fn()
-      const task = createMockTask()
-
-      render(<SubtaskContent task={task} onAddingChange={onAddingChange} />)
-
-      await user.click(screen.getByText("Add subtasks"))
-      await user.type(screen.getByTestId("subtask-input"), "Some text")
-      await user.keyboard("{Escape}")
-
-      expect(screen.queryByTestId("subtask-input")).not.toBeInTheDocument()
-      expect(onAddingChange).toHaveBeenCalledWith(false)
-    })
-
     it("does not add empty subtask", async () => {
       const user = userEvent.setup()
       const task = createMockTask()
 
       render(<SubtaskContent task={task} />)
 
-      await user.click(screen.getByText("Add subtasks"))
-      await user.click(screen.getByRole("button", { name: "Add" }))
+      await user.keyboard("{Enter}")
 
       expect(mockUpdateTask).not.toHaveBeenCalled()
     })
@@ -461,9 +458,8 @@ describe("SubtaskContent", () => {
 
       render(<SubtaskContent task={task} />)
 
-      await user.click(screen.getByText("Add subtasks"))
       await user.type(screen.getByTestId("subtask-input"), "  New Subtask  ")
-      await user.click(screen.getByRole("button", { name: "Add" }))
+      await user.keyboard("{Enter}")
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
@@ -490,9 +486,8 @@ describe("SubtaskContent", () => {
 
       render(<SubtaskContent task={task} />)
 
-      await user.click(screen.getByText("Add another subtask"))
       await user.type(screen.getByTestId("subtask-input"), "New Subtask")
-      await user.click(screen.getByRole("button", { name: "Add" }))
+      await user.keyboard("{Enter}")
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
@@ -510,36 +505,35 @@ describe("SubtaskContent", () => {
       })
     })
 
-    it("disables Add button when input is empty", async () => {
+    it("prevents submission when input is empty", async () => {
       const user = userEvent.setup()
       const task = createMockTask()
 
       render(<SubtaskContent task={task} />)
 
-      await user.click(screen.getByText("Add subtasks"))
+      const input = screen.getByTestId("subtask-input")
 
-      const addButton = screen.getByRole("button", { name: "Add" })
-      expect(addButton).toBeDisabled()
+      // Try to submit empty input with Enter key
+      await user.click(input)
+      await user.keyboard("{Enter}")
 
-      await user.type(screen.getByTestId("subtask-input"), "Some text")
-      expect(addButton).not.toBeDisabled()
-
-      await user.clear(screen.getByTestId("subtask-input"))
-      expect(addButton).toBeDisabled()
+      // Should not create a subtask
+      expect(mockUpdateTask).not.toHaveBeenCalled()
     })
 
-    it("clears input and hides form after successful add", async () => {
+    it("clears input after successful add but keeps it visible", async () => {
       const user = userEvent.setup()
       const task = createMockTask()
 
       render(<SubtaskContent task={task} />)
 
-      await user.click(screen.getByText("Add subtasks"))
-      await user.type(screen.getByTestId("subtask-input"), "New Subtask")
-      await user.click(screen.getByRole("button", { name: "Add" }))
+      const input = screen.getByTestId("subtask-input")
+      await user.type(input, "New Subtask")
+      await user.keyboard("{Enter}")
 
-      expect(screen.queryByTestId("subtask-input")).not.toBeInTheDocument()
-      expect(screen.getByText("Add subtasks")).toBeInTheDocument()
+      // Input should still be visible but cleared
+      expect(screen.getByTestId("subtask-input")).toBeInTheDocument()
+      expect(input).toHaveValue("")
     })
   })
 
@@ -639,16 +633,19 @@ describe("SubtaskContent", () => {
       expect(screen.getAllByTestId(/task-item-/)).toHaveLength(20)
     })
 
-    it("focuses input when adding mode is activated", async () => {
+    it("input is always focusable", async () => {
       const user = userEvent.setup()
       const task = createMockTask()
 
       render(<SubtaskContent task={task} />)
 
-      await user.click(screen.getByText("Add subtasks"))
-
       const input = screen.getByTestId("subtask-input")
-      expect(input).toHaveAttribute("data-autofocus", "true")
+      expect(input).toBeInTheDocument()
+
+      // Should be able to focus and type
+      await user.click(input)
+      await user.type(input, "test")
+      expect(input).toHaveValue("test")
     })
   })
 

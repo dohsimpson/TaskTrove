@@ -27,26 +27,11 @@ export function SubtaskPopover({
     onOpenChange?.(newOpen)
   }
 
-  const handleAddingChange = (adding: boolean) => {
-    // Close popover if canceling add and no subtasks exist
-    // Note: For quick-add mode, we'll check the quickAddTaskAtom inside SubtaskContent
-    if (!adding) {
-      setOpen(false)
-    }
-  }
-
   return (
     <ContentPopover
       open={open}
       onOpenChange={handleOpenChange}
-      content={
-        <SubtaskContent
-          taskId={taskId}
-          task={task}
-          mode="popover"
-          onAddingChange={handleAddingChange}
-        />
-      }
+      content={<SubtaskContent taskId={taskId} task={task} mode="popover" />}
       side="bottom"
       align="start"
       className={className}

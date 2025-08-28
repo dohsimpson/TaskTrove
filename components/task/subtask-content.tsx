@@ -1,13 +1,13 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { v4 as uuidv4 } from "uuid"
 import { TaskItem } from "./task-item"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { CheckSquare } from "lucide-react"
+import { CheckSquare, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { updateTaskAtom, tasksAtom } from "@/lib/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
@@ -19,7 +19,6 @@ interface SubtaskContentProps {
   task?: Task // Deprecated - use taskId instead
   mode?: "inline" | "popover"
   className?: string
-  onAddingChange?: (isAdding: boolean) => void
 }
 
 export function SubtaskContent({
@@ -27,7 +26,6 @@ export function SubtaskContent({
   task: legacyTask,
   mode = "inline",
   className,
-  onAddingChange,
 }: SubtaskContentProps) {
   const allTasks = useAtomValue(tasksAtom)
   const updateTask = useSetAtom(updateTaskAtom)
@@ -42,8 +40,26 @@ export function SubtaskContent({
     return allTasks.find((t: Task) => t.id === taskId) // Existing task mode
   })()
 
-  const [isAddingSubtask, setIsAddingSubtask] = useState(false)
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("")
+  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false)
+  const subtasksContainerRef = useRef<HTMLDivElement>(null)
+
+  // Scroll to bottom when a new subtask is added
+  useEffect(() => {
+    if (shouldScrollToBottom && subtasksContainerRef.current) {
+      // Use longer timeout to ensure DOM is fully updated on slower devices
+      setTimeout(() => {
+        if (subtasksContainerRef.current) {
+          // Smooth animated scroll to bottom
+          subtasksContainerRef.current.scrollTo({
+            top: subtasksContainerRef.current.scrollHeight,
+            behavior: "smooth",
+          })
+        }
+        setShouldScrollToBottom(false)
+      }, 100)
+    }
+  }, [task?.subtasks?.length, shouldScrollToBottom])
 
   if (!task) {
     console.warn("Task not found", taskId)
@@ -72,28 +88,13 @@ export function SubtaskContent({
     }
 
     setNewSubtaskTitle("")
-    setIsAddingSubtask(false)
-    onAddingChange?.(false)
-  }
-
-  const handleCancelAddSubtask = () => {
-    setNewSubtaskTitle("")
-    setIsAddingSubtask(false)
-    onAddingChange?.(false)
-  }
-
-  const handleStartAdding = () => {
-    setIsAddingSubtask(true)
-    onAddingChange?.(true)
+    setShouldScrollToBottom(true)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault()
       handleAddSubtask()
-    }
-    if (e.key === "Escape") {
-      handleCancelAddSubtask()
     }
   }
 
@@ -132,7 +133,7 @@ export function SubtaskContent({
 
       {/* Subtasks List */}
       {totalSubtasks > 0 && (
-        <div className="space-y-1 max-h-64 overflow-y-auto">
+        <div ref={subtasksContainerRef} className="space-y-1 max-h-64 overflow-y-auto">
           {task.subtasks
             ?.sort((a, b) => (a.order || 0) - (b.order || 0))
             .map((subtask) => (
@@ -146,48 +147,25 @@ export function SubtaskContent({
         </div>
       )}
 
-      {/* Add New Subtask Section */}
-      <div>
-        {isAddingSubtask ? (
-          <div className="space-y-2">
-            <Input
-              placeholder="Enter subtask title..."
-              value={newSubtaskTitle}
-              onChange={(e) => setNewSubtaskTitle(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="text-sm"
-              autoFocus
-            />
-            <div className="flex justify-end gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCancelAddSubtask}
-                className="h-6 px-2 text-xs"
-              >
-                Cancel
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleAddSubtask}
-                disabled={!newSubtaskTitle.trim()}
-                className="h-6 px-2 text-xs"
-              >
-                Add
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div
-            className="flex items-center gap-3 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 p-2"
-            onClick={handleStartAdding}
-          >
-            <CheckSquare className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground font-medium flex-1">
-              {totalSubtasks > 0 ? "Add another subtask" : "Add subtasks"}
-            </span>
-          </div>
-        )}
+      {/* Add New Subtask Section - Always visible input with button */}
+      <div className="flex gap-2">
+        <Input
+          placeholder={totalSubtasks > 0 ? "Add another subtask..." : "Add subtasks..."}
+          value={newSubtaskTitle}
+          onChange={(e) => setNewSubtaskTitle(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className="text-sm flex-1"
+          data-testid="subtask-input"
+        />
+        <Button
+          onClick={handleAddSubtask}
+          disabled={!newSubtaskTitle.trim()}
+          size="sm"
+          className="h-9 px-3"
+          data-testid="subtask-submit-button"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   )

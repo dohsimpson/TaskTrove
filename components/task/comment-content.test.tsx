@@ -56,10 +56,10 @@ interface MockButtonProps {
   [key: string]: unknown
 }
 
-interface MockTextareaProps {
+interface MockInputProps {
   value?: string
-  onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
-  onKeyDown?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void
   placeholder?: string
   className?: string
   [key: string]: unknown
@@ -80,22 +80,16 @@ vi.mock("@/components/ui/button", () => ({
   ),
 }))
 
-vi.mock("@/components/ui/textarea", () => ({
-  Textarea: ({
-    value,
-    onChange,
-    onKeyDown,
-    placeholder,
-    className,
-    ...props
-  }: MockTextareaProps) => (
-    <textarea
+vi.mock("@/components/ui/input", () => ({
+  Input: ({ value, onChange, onKeyDown, placeholder, className, ...props }: MockInputProps) => (
+    <input
+      type="text"
       value={value}
       onChange={onChange}
       onKeyDown={onKeyDown}
       placeholder={placeholder}
       className={className}
-      data-testid="comment-textarea"
+      data-testid="comment-input"
       {...props}
     />
   ),
@@ -191,7 +185,7 @@ describe("CommentContent", () => {
       render(<CommentContent taskId={task.id} />)
 
       // Component should render without hook order errors - just check it renders
-      expect(screen.getByText("Add comment")).toBeInTheDocument()
+      expect(screen.getByTestId("comment-input")).toBeInTheDocument()
 
       // Cleanup
       mockAllTasks.length = 0
@@ -199,27 +193,17 @@ describe("CommentContent", () => {
 
     it("should handle useCallback hook properly", async () => {
       const user = userEvent.setup()
-      const onAddingChange = vi.fn()
       const task = createMockTask()
 
-      render(<CommentContent task={task} onAddingChange={onAddingChange} />)
+      render(<CommentContent task={task} />)
 
-      // Start adding comment to ensure useCallback hook is used
-      await user.click(screen.getByText("Add comment"))
+      // Input should always be visible
+      const input = screen.getByTestId("comment-input")
+      expect(input).toBeInTheDocument()
 
-      // Should call with true when starting
-      expect(onAddingChange).toHaveBeenCalledWith(true)
-
-      // Clear previous calls
-      onAddingChange.mockClear()
-
-      // Focus on the textarea and then press Escape to test the useCallback hook
-      const textarea = screen.getByTestId("comment-textarea")
-      await user.click(textarea)
-      await user.keyboard("{Escape}")
-
-      // Should call with false when cancelling (check the last call)
-      expect(onAddingChange).toHaveBeenLastCalledWith(false)
+      // Should be able to type in the input (tests useCallback for onChange)
+      await user.type(input, "Test comment")
+      expect(input).toHaveValue("Test comment")
     })
 
     it("should handle useEffect hooks properly without conditional calls", async () => {
@@ -228,11 +212,13 @@ describe("CommentContent", () => {
 
       render(<CommentContent task={task} />)
 
-      // Start adding to trigger useEffect hooks
-      await user.click(screen.getByText("Add comment"))
+      // Input should always be visible (no conditional rendering)
+      expect(screen.getByTestId("comment-input")).toBeInTheDocument()
 
-      // Verify component is in adding state (indicating useEffect ran)
-      expect(screen.getByTestId("comment-textarea")).toBeInTheDocument()
+      // Should be able to interact with input
+      const input = screen.getByTestId("comment-input")
+      await user.type(input, "Testing useEffect")
+      expect(input).toHaveValue("Testing useEffect")
     })
   })
 
@@ -260,7 +246,7 @@ describe("CommentContent", () => {
   })
 
   describe("Comments Display", () => {
-    it("shows last 3 comments in inline mode", () => {
+    it("shows all comments in scrollable container in inline mode", () => {
       const comments = [
         createMockComment({ id: TEST_COMMENT_ID_1, content: "Comment 1" }),
         createMockComment({ id: TEST_COMMENT_ID_2, content: "Comment 2" }),
@@ -278,12 +264,12 @@ describe("CommentContent", () => {
 
       render(<CommentContent task={task} mode="inline" />)
 
-      // Should show last 3 comments (3, 4, 5) in reverse order (5, 4, 3)
-      expect(screen.getByText("Comment 5")).toBeInTheDocument()
-      expect(screen.getByText("Comment 4")).toBeInTheDocument()
+      // Should show all comments in chronological order (1, 2, 3, 4, 5)
+      expect(screen.getByText("Comment 1")).toBeInTheDocument()
+      expect(screen.getByText("Comment 2")).toBeInTheDocument()
       expect(screen.getByText("Comment 3")).toBeInTheDocument()
-      expect(screen.queryByText("Comment 1")).not.toBeInTheDocument()
-      expect(screen.queryByText("Comment 2")).not.toBeInTheDocument()
+      expect(screen.getByText("Comment 4")).toBeInTheDocument()
+      expect(screen.getByText("Comment 5")).toBeInTheDocument()
     })
 
     it("shows all comments in popover mode", () => {
@@ -301,7 +287,7 @@ describe("CommentContent", () => {
       expect(screen.getByText("Comment 3")).toBeInTheDocument()
     })
 
-    it("shows view all link when more than 3 comments in inline mode", () => {
+    it("shows all comments without view all button in inline mode", () => {
       const comments = [
         createMockComment({
           id: createCommentId("550e8400-e29b-41d4-a716-446655440001"),
@@ -328,7 +314,14 @@ describe("CommentContent", () => {
 
       render(<CommentContent task={task} mode="inline" onViewAll={vi.fn()} />)
 
-      expect(screen.getByText("View all")).toBeInTheDocument()
+      // All comments should be visible
+      expect(screen.getByText("Comment 1")).toBeInTheDocument()
+      expect(screen.getByText("Comment 2")).toBeInTheDocument()
+      expect(screen.getByText("Comment 3")).toBeInTheDocument()
+      expect(screen.getByText("Comment 4")).toBeInTheDocument()
+      expect(screen.getByText("Comment 5")).toBeInTheDocument()
+      // No view all button should be present
+      expect(screen.queryByText("View all")).not.toBeInTheDocument()
     })
 
     it("displays add comment button when no comments", () => {
@@ -336,7 +329,7 @@ describe("CommentContent", () => {
 
       render(<CommentContent task={task} />)
 
-      expect(screen.getByText("Add comment")).toBeInTheDocument()
+      expect(screen.getByTestId("comment-input")).toBeInTheDocument()
     })
   })
 
@@ -365,9 +358,9 @@ describe("CommentContent", () => {
 
       render(<CommentContent />)
 
-      await user.click(screen.getByText("Add comment"))
-      await user.type(screen.getByTestId("comment-textarea"), "New comment")
-      await user.click(screen.getByRole("button", { name: "Add" }))
+      const input = screen.getByTestId("comment-input")
+      await user.type(input, "New comment")
+      await user.keyboard("{Enter}")
 
       expect(mockUpdateQuickAddTask).toHaveBeenCalledWith({
         updateRequest: {
@@ -389,9 +382,9 @@ describe("CommentContent", () => {
 
       render(<CommentContent taskId={task.id} />)
 
-      await user.click(screen.getByText("Add comment"))
-      await user.type(screen.getByTestId("comment-textarea"), "New comment")
-      await user.click(screen.getByRole("button", { name: "Add" }))
+      const input = screen.getByTestId("comment-input")
+      await user.type(input, "New comment")
+      await user.keyboard("{Enter}")
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
@@ -412,30 +405,62 @@ describe("CommentContent", () => {
   })
 
   describe("Adding Comments", () => {
-    it("shows add comment interface when clicking add button", async () => {
+    it("shows add comment interface always", async () => {
+      const task = createMockTask()
+
+      render(<CommentContent task={task} />)
+
+      expect(screen.getByTestId("comment-input")).toBeInTheDocument()
+      expect(screen.getByPlaceholderText("Add comments...")).toBeInTheDocument()
+      expect(screen.getByTestId("comment-submit-button")).toBeInTheDocument()
+    })
+
+    it("submit button is disabled when input is empty", async () => {
+      const task = createMockTask()
+
+      render(<CommentContent task={task} />)
+
+      const submitButton = screen.getByTestId("comment-submit-button")
+      expect(submitButton).toBeDisabled()
+    })
+
+    it("submit button is enabled when input has text", async () => {
       const user = userEvent.setup()
       const task = createMockTask()
 
       render(<CommentContent task={task} />)
 
-      await user.click(screen.getByText("Add comment"))
+      const input = screen.getByTestId("comment-input")
+      const submitButton = screen.getByTestId("comment-submit-button")
 
-      expect(screen.getByTestId("comment-textarea")).toBeInTheDocument()
-      expect(screen.getByPlaceholderText("Add your comment...")).toBeInTheDocument()
-      expect(screen.getByRole("button", { name: "Add" })).toBeInTheDocument()
-      expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument()
+      await user.type(input, "Test comment")
+      expect(submitButton).not.toBeDisabled()
     })
 
-    it("calls onAddingChange when starting to add", async () => {
+    it("adds comment when submit button is clicked", async () => {
       const user = userEvent.setup()
-      const onAddingChange = vi.fn()
       const task = createMockTask()
 
-      render(<CommentContent task={task} onAddingChange={onAddingChange} />)
+      render(<CommentContent task={task} />)
 
-      await user.click(screen.getByText("Add comment"))
+      const input = screen.getByTestId("comment-input")
+      const submitButton = screen.getByTestId("comment-submit-button")
 
-      expect(onAddingChange).toHaveBeenCalledWith(true)
+      await user.type(input, "New comment via button")
+      await user.click(submitButton)
+
+      expect(mockUpdateTask).toHaveBeenCalledWith({
+        updateRequest: {
+          id: task.id,
+          comments: [
+            {
+              id: expect.any(String),
+              content: "New comment via button",
+              createdAt: expect.any(Date),
+            },
+          ],
+        },
+      })
     })
 
     it("adds comment when Add button is clicked", async () => {
@@ -444,9 +469,9 @@ describe("CommentContent", () => {
 
       render(<CommentContent task={task} />)
 
-      await user.click(screen.getByText("Add comment"))
-      await user.type(screen.getByTestId("comment-textarea"), "New comment")
-      await user.click(screen.getByRole("button", { name: "Add" }))
+      const input = screen.getByTestId("comment-input")
+      await user.type(input, "New comment")
+      await user.keyboard("{Enter}")
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
@@ -468,41 +493,10 @@ describe("CommentContent", () => {
 
       render(<CommentContent task={task} />)
 
-      await user.click(screen.getByText("Add comment"))
-      await user.type(screen.getByTestId("comment-textarea"), "New comment")
-      await user.keyboard("{Meta>}{Enter}{/Meta}")
+      await user.type(screen.getByTestId("comment-input"), "New comment")
+      await user.keyboard("{Enter}")
 
       expect(mockUpdateTask).toHaveBeenCalled()
-    })
-
-    it("cancels adding when Cancel button is clicked", async () => {
-      const user = userEvent.setup()
-      const onAddingChange = vi.fn()
-      const task = createMockTask()
-
-      render(<CommentContent task={task} onAddingChange={onAddingChange} />)
-
-      await user.click(screen.getByText("Add comment"))
-      await user.type(screen.getByTestId("comment-textarea"), "Some text")
-      await user.click(screen.getByRole("button", { name: "Cancel" }))
-
-      expect(screen.queryByTestId("comment-textarea")).not.toBeInTheDocument()
-      expect(onAddingChange).toHaveBeenCalledWith(false)
-    })
-
-    it("cancels adding when Escape key is pressed", async () => {
-      const user = userEvent.setup()
-      const onAddingChange = vi.fn()
-      const task = createMockTask()
-
-      render(<CommentContent task={task} onAddingChange={onAddingChange} />)
-
-      await user.click(screen.getByText("Add comment"))
-      await user.type(screen.getByTestId("comment-textarea"), "Some text")
-      await user.keyboard("{Escape}")
-
-      expect(screen.queryByTestId("comment-textarea")).not.toBeInTheDocument()
-      expect(onAddingChange).toHaveBeenCalledWith(false)
     })
 
     it("does not add empty comment", async () => {
@@ -511,8 +505,10 @@ describe("CommentContent", () => {
 
       render(<CommentContent task={task} />)
 
-      await user.click(screen.getByText("Add comment"))
-      await user.click(screen.getByRole("button", { name: "Add" }))
+      // Try to submit empty input with Enter key
+      const input = screen.getByTestId("comment-input")
+      await user.click(input)
+      await user.keyboard("{Enter}")
 
       expect(mockUpdateTask).not.toHaveBeenCalled()
     })
@@ -523,9 +519,9 @@ describe("CommentContent", () => {
 
       render(<CommentContent task={task} />)
 
-      await user.click(screen.getByText("Add comment"))
-      await user.type(screen.getByTestId("comment-textarea"), "  New comment  ")
-      await user.click(screen.getByRole("button", { name: "Add" }))
+      const input = screen.getByTestId("comment-input")
+      await user.type(input, "  New comment  ")
+      await user.keyboard("{Enter}")
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
@@ -541,18 +537,19 @@ describe("CommentContent", () => {
       })
     })
 
-    it("clears input and hides form after successful add", async () => {
+    it("clears input after successful add but keeps it visible", async () => {
       const user = userEvent.setup()
       const task = createMockTask()
 
       render(<CommentContent task={task} />)
 
-      await user.click(screen.getByText("Add comment"))
-      await user.type(screen.getByTestId("comment-textarea"), "New comment")
-      await user.click(screen.getByRole("button", { name: "Add" }))
+      const input = screen.getByTestId("comment-input")
+      await user.type(input, "New comment")
+      await user.keyboard("{Enter}")
 
-      expect(screen.queryByTestId("comment-textarea")).not.toBeInTheDocument()
-      expect(screen.getByText("Add comment")).toBeInTheDocument()
+      // Input should still be visible but cleared
+      expect(screen.getByTestId("comment-input")).toBeInTheDocument()
+      expect(input).toHaveValue("")
     })
   })
 
@@ -574,12 +571,116 @@ describe("CommentContent", () => {
 
       render(<CommentContent task={task} onAddComment={onAddComment} />)
 
-      await user.click(screen.getByText("Add comment"))
-      await user.type(screen.getByTestId("comment-textarea"), "Callback comment")
-      await user.click(screen.getByRole("button", { name: "Add" }))
+      await user.type(screen.getByTestId("comment-input"), "Callback comment")
+      await user.keyboard("{Enter}")
 
       expect(onAddComment).toHaveBeenCalledWith("Callback comment")
       expect(mockUpdateTask).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("Comment Deletion", () => {
+    it("renders delete buttons for each comment", () => {
+      const commentId1 = createCommentId("550e8400-e29b-41d4-a716-446655440010")
+      const commentId2 = createCommentId("550e8400-e29b-41d4-a716-446655440011")
+      const comments = [
+        createMockComment({ id: commentId1, content: "First comment" }),
+        createMockComment({ id: commentId2, content: "Second comment" }),
+      ]
+      const task = createMockTask({ comments })
+
+      render(<CommentContent task={task} />)
+
+      expect(screen.getByTestId(`comment-delete-button-${commentId1}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`comment-delete-button-${commentId2}`)).toBeInTheDocument()
+    })
+
+    it("deletes comment when delete button is clicked", async () => {
+      const user = userEvent.setup()
+      const commentId1 = createCommentId("550e8400-e29b-41d4-a716-446655440010")
+      const commentId2 = createCommentId("550e8400-e29b-41d4-a716-446655440011")
+      const comments = [
+        createMockComment({ id: commentId1, content: "First comment" }),
+        createMockComment({ id: commentId2, content: "Second comment" }),
+      ]
+      const task = createMockTask({ comments })
+
+      render(<CommentContent task={task} />)
+
+      const deleteButton = screen.getByTestId(`comment-delete-button-${commentId1}`)
+      await user.click(deleteButton)
+
+      expect(mockUpdateTask).toHaveBeenCalledWith({
+        updateRequest: {
+          id: task.id,
+          comments: [comments[1]], // Only second comment should remain
+        },
+      })
+    })
+
+    it("handles deleting comment from quick-add task", async () => {
+      const user = userEvent.setup()
+      const commentId = createCommentId("550e8400-e29b-41d4-a716-446655440010")
+      const comments = [createMockComment({ id: commentId, content: "First comment" })]
+      const createTaskRequest = createMockCreateTaskRequest({ comments })
+
+      // Update the mock for quick-add mode
+      mockNewTask = createTaskRequest
+      mockAllTasks = []
+
+      render(<CommentContent />)
+
+      const deleteButton = screen.getByTestId(`comment-delete-button-${commentId}`)
+      await user.click(deleteButton)
+
+      expect(mockUpdateQuickAddTask).toHaveBeenCalledWith({
+        updateRequest: {
+          comments: [], // Comment should be removed
+        },
+      })
+    })
+
+    it("handles deleting comment from legacy task prop", async () => {
+      const user = userEvent.setup()
+      const commentId = createCommentId("550e8400-e29b-41d4-a716-446655440010")
+      const comments = [createMockComment({ id: commentId, content: "Legacy comment" })]
+      const task = createMockTask({ comments })
+
+      render(<CommentContent task={task} />)
+
+      const deleteButton = screen.getByTestId(`comment-delete-button-${commentId}`)
+      await user.click(deleteButton)
+
+      expect(mockUpdateTask).toHaveBeenCalledWith({
+        updateRequest: {
+          id: task.id,
+          comments: [], // Comment should be removed
+        },
+      })
+    })
+
+    it("removes comment from display after deletion", async () => {
+      const commentId1 = createCommentId("550e8400-e29b-41d4-a716-446655440010")
+      const commentId2 = createCommentId("550e8400-e29b-41d4-a716-446655440011")
+      const comments = [
+        createMockComment({ id: commentId1, content: "First comment" }),
+        createMockComment({ id: commentId2, content: "Second comment" }),
+      ]
+      const task = createMockTask({ comments })
+
+      const { rerender } = render(<CommentContent task={task} />)
+
+      // Both comments should be visible initially
+      expect(screen.getByText("First comment")).toBeInTheDocument()
+      expect(screen.getByText("Second comment")).toBeInTheDocument()
+
+      // Simulate deletion by updating task prop
+      const updatedTask = { ...task, comments: [comments[1]] }
+      rerender(<CommentContent task={updatedTask} />)
+
+      // Only second comment should remain
+      expect(screen.queryByText("First comment")).not.toBeInTheDocument()
+      expect(screen.getByText("Second comment")).toBeInTheDocument()
     })
   })
 })

@@ -1110,6 +1110,9 @@ export function parseEnhancedNaturalLanguage(
     if (dateValue) {
       parsed.dueDate = startOfDay(dateValue)
     }
+  } else if (!parsed.recurring && parsed.time) {
+    // If we have time but no date, set due date to today
+    parsed.dueDate = startOfDay(new Date())
   }
 
   // Remove all date matches from text (regardless of whether recurring pattern is present)
@@ -1121,6 +1124,46 @@ export function parseEnhancedNaturalLanguage(
   parsed.title = cleanText.replace(/\s+/g, " ").trim()
 
   return parsed
+}
+
+/**
+ * Converts a time string like "9AM", "2:30PM", "17:00" to HH:mm:ss format
+ */
+export function convertTimeToHHMMSS(timeString: string): string | null {
+  if (!timeString) return null
+
+  const cleanTime = timeString.trim().toUpperCase()
+
+  // Handle 24-hour format (e.g., "17:00", "09:30")
+  const twentyFourHourMatch = cleanTime.match(/^(\d{1,2}):(\d{2})$/)
+  if (twentyFourHourMatch) {
+    const hours = parseInt(twentyFourHourMatch[1], 10)
+    const minutes = parseInt(twentyFourHourMatch[2], 10)
+    if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+      return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`
+    }
+  }
+
+  // Handle AM/PM format (e.g., "9AM", "2:30PM", "11:45AM")
+  const ampmMatch = cleanTime.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/)
+  if (ampmMatch) {
+    let hours = parseInt(ampmMatch[1], 10)
+    const minutes = parseInt(ampmMatch[2] || "0", 10)
+    const ampm = ampmMatch[3]
+
+    // Convert to 24-hour format
+    if (ampm === "PM" && hours !== 12) {
+      hours += 12
+    } else if (ampm === "AM" && hours === 12) {
+      hours = 0
+    }
+
+    if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+      return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`
+    }
+  }
+
+  return null
 }
 
 // Utility functions for displaying parsed values

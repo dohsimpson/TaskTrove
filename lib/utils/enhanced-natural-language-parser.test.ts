@@ -524,8 +524,9 @@ describe("Enhanced Natural Language Parser - Edge Cases", () => {
         expect(result.priority).toBe(1)
         expect(result.time).toBe("9AM")
 
+        // dueDate should be today at start of day, time should be separate
         const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        today.setHours(0, 0, 0, 0) // start of day
         expect(result.dueDate?.getTime()).toBe(today.getTime())
       })
 

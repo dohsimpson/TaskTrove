@@ -61,6 +61,7 @@ import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
 import { log } from "@/lib/utils/logger"
 import {
   parseEnhancedNaturalLanguage,
+  convertTimeToHHMMSS,
   type ParsedTask,
 } from "@/lib/utils/enhanced-natural-language-parser"
 import { getPriorityTextColor, getDueDateTextColor } from "@/lib/color-utils"
@@ -154,6 +155,7 @@ export function QuickAddDialog() {
   const projectSetByParsingRef = useRef(false)
   const prioritySetByParsingRef = useRef(false)
   const dueDateSetByParsingRef = useRef(false)
+  const dueTimeSetByParsingRef = useRef(false)
   const recurringSetByParsingRef = useRef(false)
   const labelsSetByParsingRef = useRef(false)
 
@@ -183,6 +185,10 @@ export function QuickAddDialog() {
       if (dueDateSetByParsingRef.current) {
         dueDateSetByParsingRef.current = false
         updateNewTask({ updateRequest: { dueDate: undefined } })
+      }
+      if (dueTimeSetByParsingRef.current) {
+        dueTimeSetByParsingRef.current = false
+        updateNewTask({ updateRequest: { dueTime: undefined } })
       }
       if (recurringSetByParsingRef.current) {
         recurringSetByParsingRef.current = false
@@ -221,6 +227,24 @@ export function QuickAddDialog() {
       updateNewTask({ updateRequest: { dueDate: undefined } })
     }
   }, [parsed?.dueDate, updateNewTask])
+
+  useEffect(() => {
+    if (parsed?.time) {
+      dueTimeSetByParsingRef.current = true
+      // Convert time to Date object for the dueTime field
+      const timeDate = new Date()
+      const timeFormatted = convertTimeToHHMMSS(parsed.time)
+      if (timeFormatted) {
+        const [hours, minutes] = timeFormatted.split(":").map(Number)
+        timeDate.setHours(hours, minutes, 0, 0)
+        updateNewTask({ updateRequest: { dueTime: timeDate } })
+      }
+    } else if (!parsed?.time && dueTimeSetByParsingRef.current) {
+      // Only clear if the due time was previously set by parsing
+      dueTimeSetByParsingRef.current = false
+      updateNewTask({ updateRequest: { dueTime: undefined } })
+    }
+  }, [parsed?.time, updateNewTask])
 
   useEffect(() => {
     if (parsed?.recurring) {
@@ -453,6 +477,7 @@ export function QuickAddDialog() {
     projectSetByParsingRef.current = false
     prioritySetByParsingRef.current = false
     dueDateSetByParsingRef.current = false
+    dueTimeSetByParsingRef.current = false
     recurringSetByParsingRef.current = false
     labelsSetByParsingRef.current = false
     closeDialog()

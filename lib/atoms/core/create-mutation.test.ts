@@ -81,7 +81,6 @@ describe("createMutation Function", () => {
           tasks: [],
           projects: [],
           labels: [{ id: createLabelId(uuidv4()), name: "Work", slug: "work", color: "#ef4444" }],
-          ordering: { projects: [], labels: [] },
           projectGroups: DEFAULT_PROJECT_GROUP,
           labelGroups: DEFAULT_LABEL_GROUP,
         }
@@ -116,7 +115,6 @@ describe("createMutation Function", () => {
             },
           ],
           labels: [],
-          ordering: { projects: [], labels: [] },
           projectGroups: DEFAULT_PROJECT_GROUP,
           labelGroups: DEFAULT_LABEL_GROUP,
         }
@@ -177,7 +175,6 @@ describe("createMutation Function", () => {
           tasks: [{ id: "optimistic-task", title: "Optimistic Task" }],
           projects: [],
           labels: [],
-          ordering: { projects: [], labels: [] },
           projectGroups: DEFAULT_PROJECT_GROUP,
           labelGroups: DEFAULT_LABEL_GROUP,
         })
@@ -202,7 +199,6 @@ describe("createMutation Function", () => {
           tasks: [],
           projects: [],
           labels: [],
-          ordering: { projects: [], labels: [] },
           projectGroups: DEFAULT_PROJECT_GROUP,
           labelGroups: DEFAULT_LABEL_GROUP,
         })
@@ -219,7 +215,6 @@ describe("createMutation Function", () => {
             tasks: [],
             projects: [],
             labels: [],
-            ordering: { projects: [], labels: [] },
           })
           expect(optimisticData).toEqual({
             id: "optimistic-task",
@@ -259,7 +254,6 @@ describe("createMutation Function", () => {
           tasks: [],
           projects: [],
           labels: [],
-          ordering: { projects: [], labels: [] },
           projectGroups: DEFAULT_PROJECT_GROUP,
           labelGroups: DEFAULT_LABEL_GROUP,
         }
@@ -315,7 +309,6 @@ describe("createMutation Function", () => {
           ],
           projects: [],
           labels: [],
-          ordering: { projects: [], labels: [] },
           projectGroups: DEFAULT_PROJECT_GROUP,
           labelGroups: DEFAULT_LABEL_GROUP,
         }
@@ -380,7 +373,6 @@ describe("createMutation Function", () => {
           ],
           projects: [],
           labels: [],
-          ordering: { projects: [], labels: [] },
           projectGroups: DEFAULT_PROJECT_GROUP,
           labelGroups: DEFAULT_LABEL_GROUP,
         }
@@ -556,7 +548,6 @@ describe("createMutation Function", () => {
             },
           ],
           labels: [],
-          ordering: { projects: [TEST_PROJECT_ID_1], labels: [] },
           projectGroups: DEFAULT_PROJECT_GROUP,
           labelGroups: DEFAULT_LABEL_GROUP,
         }
@@ -593,7 +584,6 @@ describe("createMutation Function", () => {
           updatedState.tasks.every((task) => task.projectId === updateVariables.projectId),
         ).toBe(true)
         expect(updatedState.projects).toEqual(initialState.projects)
-        expect(updatedState.ordering).toEqual(initialState.ordering)
       })
     })
 
@@ -628,10 +618,6 @@ describe("createMutation Function", () => {
             slug: `label-${i}`,
             color: "#ef4444",
           })),
-          ordering: {
-            projects: Array.from({ length: 50 }, () => createProjectId(uuidv4())),
-            labels: Array.from({ length: 20 }, () => createLabelId(uuidv4())),
-          },
           projectGroups: DEFAULT_PROJECT_GROUP,
           labelGroups: DEFAULT_LABEL_GROUP,
         }
@@ -692,7 +678,6 @@ describe("createMutation Function", () => {
           ],
           projects: [],
           labels: [],
-          ordering: { projects: [], labels: [] },
           projectGroups: DEFAULT_PROJECT_GROUP,
           labelGroups: DEFAULT_LABEL_GROUP,
         }

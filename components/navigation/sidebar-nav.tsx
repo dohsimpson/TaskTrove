@@ -42,10 +42,10 @@ import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { useSetAtom, useAtom, useAtomValue } from "jotai"
 import {
   taskCounts,
-  sortedLabels,
   visibleProjectsAtom,
   labelTaskCountsAtom,
   updateLabel,
+  labelAtoms,
 } from "@/lib/atoms"
 import {
   rootProjectGroupsAtom,
@@ -55,7 +55,6 @@ import {
   removeProjectFromGroupWithIndexAtom,
   reorderGroupAtom,
 } from "@/lib/atoms/core/groups"
-import { reorderProjectAtom } from "@/lib/atoms/core/ordering"
 import type { Project, Label } from "@/lib/types"
 import {
   openSearchAtom,
@@ -71,7 +70,7 @@ import { openSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
 export function SidebarNav() {
   // Get data from atoms instead of props
   const [projects] = useAtom(visibleProjectsAtom)
-  const [labels] = useAtom(sortedLabels)
+  const [labels] = useAtom(labelAtoms.labels)
   const [taskCountsData] = useAtom(taskCounts)
   const pathname = useAtomValue(pathnameAtom)
   const projectGroups = useAtomValue(rootProjectGroupsAtom)
@@ -85,7 +84,6 @@ export function SidebarNav() {
   const moveProjectToGroup = useSetAtom(moveProjectToGroupAtom)
   const removeProjectFromGroupWithIndex = useSetAtom(removeProjectFromGroupWithIndexAtom)
   const reorderGroup = useSetAtom(reorderGroupAtom)
-  const reorderProject = useSetAtom(reorderProjectAtom)
 
   // Get action atoms
   const openSearch = useSetAtom(openSearchAtom)
@@ -118,12 +116,6 @@ export function SidebarNav() {
                 projectId: instruction.projectId,
                 newIndex: instruction.toIndex,
               })
-            } else {
-              // Reorder in ungrouped projects
-              await reorderProject({
-                projectId: instruction.projectId,
-                newIndex: instruction.toIndex,
-              })
             }
             break
 
@@ -139,7 +131,7 @@ export function SidebarNav() {
           case "remove-project-from-group":
             await removeProjectFromGroupWithIndex({
               projectId: instruction.projectId,
-              insertIndex: instruction.insertIndex,
+              _insertIndex: instruction.insertIndex,
             })
             break
 

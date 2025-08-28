@@ -135,19 +135,6 @@ async function importData(
       }
     }
 
-    // Recalculate ordering to include new items
-    const allProjectIds = mergedData.projects.map((p) => p.id)
-    const allLabelIds = mergedData.labels.map((l) => l.id)
-
-    // Merge ordering arrays, keeping existing order and adding new items at the end
-    const existingProjectOrdering = mergedData.ordering.projects
-    const existingLabelOrdering = mergedData.ordering.labels
-
-    mergedData.ordering = {
-      projects: [...new Set([...existingProjectOrdering, ...allProjectIds])],
-      labels: [...new Set([...existingLabelOrdering, ...allLabelIds])],
-    }
-
     // Write updated data file
     const writeSuccess = await withFileOperationLogging(
       () => safeWriteDataFile({ data: mergedData }),

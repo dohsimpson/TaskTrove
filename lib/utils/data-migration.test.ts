@@ -19,7 +19,6 @@ describe("Data Migration Utility", () => {
       tasks: [],
       projects: [],
       labels: [],
-      ordering: { projects: [], labels: [] },
       projectGroups: DEFAULT_PROJECT_GROUP,
       labelGroups: DEFAULT_LABEL_GROUP,
     }

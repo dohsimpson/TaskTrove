@@ -64,7 +64,6 @@ describe("GET /api/groups", () => {
       projects: [],
       tasks: [],
       labels: [],
-      ordering: { projects: [], labels: [] },
       projectGroups: {
         type: "project",
         id: TEST_GROUP_ID_3,
@@ -121,7 +120,6 @@ describe("POST /api/groups", () => {
       projects: [],
       tasks: [],
       labels: [],
-      ordering: { projects: [], labels: [] },
       projectGroups: {
         type: "project",
         id: TEST_GROUP_ID_3,
@@ -196,7 +194,6 @@ describe("PATCH /api/groups", () => {
       projects: [],
       tasks: [],
       labels: [],
-      ordering: { projects: [], labels: [] },
       projectGroups: {
         type: "project",
         id: TEST_GROUP_ID_3,
@@ -271,7 +268,6 @@ describe("DELETE /api/groups", () => {
       projects: [],
       tasks: [],
       labels: [],
-      ordering: { projects: [], labels: [] },
       projectGroups: {
         type: "project",
         id: createGroupId("00000000-0000-4000-8000-000000000001"),

@@ -360,7 +360,7 @@ export const moveProjectToGroupAtom = atom(
   },
 )
 
-// Remove a project from group with specific insertion index in ungrouped projects
+// Remove a project from group
 export const removeProjectFromGroupWithIndexAtom = atom(
   null,
   async (
@@ -368,27 +368,19 @@ export const removeProjectFromGroupWithIndexAtom = atom(
     set,
     {
       projectId,
-      insertIndex,
+      _insertIndex, // eslint-disable-line @typescript-eslint/no-unused-vars
     }: {
       projectId: ProjectId
-      insertIndex: number
+      _insertIndex: number // Kept for API compatibility but no longer used
     },
   ) => {
     try {
-      // Remove from current group
+      // Remove from current group - ungrouped projects don't need separate ordering
       await set(removeProjectFromGroupAtom, { projectId })
 
-      // For ungrouped projects, we would need to update the main project ordering
-      // This requires the reorderProjectAtom to handle insertion at specific index
-      const { reorderProjectAtom } = await import("./ordering")
-
-      // Get current ungrouped projects to calculate the right index
-      // Note: This is a simplification - in practice, we might need more sophisticated logic
-      await set(reorderProjectAtom, { projectId, newIndex: insertIndex })
-
-      log.info({ projectId, insertIndex }, "Project removed from group and reordered")
+      log.info({ projectId }, "Project removed from group")
     } catch (error) {
-      log.error({ error, projectId, insertIndex }, "Failed to remove project from group with index")
+      log.error({ error, projectId }, "Failed to remove project from group")
       throw error
     }
   },

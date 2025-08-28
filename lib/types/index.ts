@@ -556,19 +556,6 @@ export const CommonRRules = {
 } as const
 
 /**
- * Schema for ordering arrays - central source of truth for item ordering
- */
-export const OrderingSchema = z.object({
-  /** Ordered array of project IDs */
-  projects: z.array(ProjectIdSchema),
-  /** Ordered array of label IDs */
-  labels: z.array(LabelIdSchema),
-})
-
-// Base serialization schema for Ordering (colocated with OrderingSchema for high correlation)
-export const OrderingSerializationSchema = OrderingSchema
-
-/**
  * Main Task schema with all properties
  */
 export const TaskSchema = z.object({
@@ -799,7 +786,6 @@ export const DataFileSchema = z.object({
   tasks: z.array(TaskSchema),
   projects: z.array(ProjectSchema),
   labels: z.array(LabelSchema),
-  ordering: OrderingSchema,
   projectGroups: ProjectGroupSchema,
   labelGroups: LabelGroupSchema,
   version: VersionStringSchema.optional(),
@@ -809,7 +795,6 @@ export const DataFileSerializationSchema = z.object({
   tasks: z.array(TaskSerializationSchema),
   projects: z.array(ProjectSerializationSchema),
   labels: z.array(LabelSerializationSchema),
-  ordering: OrderingSerializationSchema,
   projectGroups: ProjectGroupSchema,
   labelGroups: LabelGroupSchema,
   version: VersionStringSchema.optional(),
@@ -823,7 +808,6 @@ export type ProjectSection = z.infer<typeof ProjectSectionSchema>
 export type Subtask = z.infer<typeof SubtaskSchema>
 export type TaskComment = z.infer<typeof TaskCommentSchema>
 export type ViewState = z.infer<typeof ViewStateSchema>
-export type Ordering = z.infer<typeof OrderingSchema>
 export type Task = z.infer<typeof TaskSchema>
 export type Project = z.infer<typeof ProjectSchema>
 export type Label = z.infer<typeof LabelSchema>
@@ -834,7 +818,6 @@ export type TaskArraySerialization = z.infer<typeof TaskArraySerializationSchema
 export type ProjectSerialization = z.infer<typeof ProjectSerializationSchema>
 export type LabelSerialization = z.infer<typeof LabelSerializationSchema>
 export type GroupSerialization = z.infer<typeof GroupSerializationSchema>
-export type OrderingSerialization = z.infer<typeof OrderingSerializationSchema>
 export type DataFileSerialization = z.infer<typeof DataFileSerializationSchema>
 
 // =============================================================================
@@ -1692,15 +1675,6 @@ export const LabelUpdateSerializationSchema = LabelSerializationSchema.partial()
 export const LabelUpdateArraySerializationSchema = z.array(LabelUpdateSerializationSchema)
 
 /**
- * Schema for ordering updates
- */
-export const OrderingUpdateRequestSchema = OrderingSchema.partial()
-
-// Serialization schemas for UpdateOrdering (colocated with request schema)
-export const OrderingUpdateSerializationSchema = OrderingSerializationSchema.partial()
-export const OrderingUpdateArraySerializationSchema = z.array(OrderingUpdateSerializationSchema)
-
-/**
  * Schema for delete requests
  */
 export const DeleteTaskRequestSchema = TaskSchema.pick({ id: true })
@@ -1794,13 +1768,6 @@ export const DeleteLabelResponseSchema = ApiResponseSchema.extend({
 })
 
 /**
- * Ordering update response schema
- */
-export const OrderingUpdateResponseSchema = ApiResponseSchema.extend({
-  ordering: OrderingSchema.optional(),
-})
-
-/**
  * Error response schema
  */
 export const ErrorResponseSchema = z.object({
@@ -1823,7 +1790,6 @@ export type UpdateProjectRequest = z.infer<typeof UpdateProjectRequestSchema>
 export type ProjectUpdateUnion = z.infer<typeof ProjectUpdateUnionSchema>
 export type UpdateLabelRequest = z.infer<typeof UpdateLabelRequestSchema>
 export type LabelUpdateUnion = z.infer<typeof LabelUpdateUnionSchema>
-export type OrderingUpdateRequest = z.infer<typeof OrderingUpdateRequestSchema>
 export type DeleteTaskRequest = z.infer<typeof DeleteTaskRequestSchema>
 export type DeleteProjectRequest = z.infer<typeof DeleteProjectRequestSchema>
 export type DeleteLabelRequest = z.infer<typeof DeleteLabelRequestSchema>
@@ -1945,7 +1911,6 @@ export type DeleteGroupRequest = z.infer<typeof DeleteGroupRequestSchema>
 export type CreateGroupResponse = z.infer<typeof CreateGroupResponseSchema>
 export type UpdateGroupResponse = z.infer<typeof UpdateGroupResponseSchema>
 export type DeleteGroupResponse = z.infer<typeof DeleteGroupResponseSchema>
-export type OrderingUpdateResponse = z.infer<typeof OrderingUpdateResponseSchema>
 export type DeleteTaskResponse = z.infer<typeof DeleteTaskResponseSchema>
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>
 

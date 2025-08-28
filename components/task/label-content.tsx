@@ -14,7 +14,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
-import { labelsFromIdsAtom, sortedLabelsAtom } from "@/lib/atoms/core/labels"
+import { labelsFromIdsAtom, labelsAtom } from "@/lib/atoms/core/labels"
 import type { Task, LabelId } from "@/lib/types"
 
 interface LabelContentProps {
@@ -44,7 +44,7 @@ export function LabelContent({
   const commandRef = useRef<HTMLDivElement>(null)
 
   const getLabelsFromIds = useAtomValue(labelsFromIdsAtom)
-  const allLabels = useAtomValue(sortedLabelsAtom)
+  const allLabels = useAtomValue(labelsAtom)
 
   // For quick-add mode, task might not be provided, so use empty array as fallback
   const taskLabels = task ? getLabelsFromIds(task.labels) : []

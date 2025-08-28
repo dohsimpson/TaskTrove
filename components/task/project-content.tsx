@@ -4,7 +4,7 @@ import React from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Folder } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { sortedProjectsAtom, updateTaskAtom } from "@/lib/atoms"
+import { projectsAtom, updateTaskAtom } from "@/lib/atoms"
 import type { Task, ProjectId } from "@/lib/types"
 
 interface ProjectContentProps {
@@ -14,7 +14,7 @@ interface ProjectContentProps {
 }
 
 export function ProjectContent({ task, mode = "inline", className }: ProjectContentProps) {
-  const allProjects = useAtomValue(sortedProjectsAtom)
+  const allProjects = useAtomValue(projectsAtom)
   const updateTask = useSetAtom(updateTaskAtom)
 
   const currentProject = allProjects.find((p) => p.id === task.projectId)

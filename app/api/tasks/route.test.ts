@@ -141,17 +141,6 @@ const mockDataFile: DataFile = {
       color: "#10b981",
     },
   ],
-  ordering: {
-    projects: [
-      createProjectId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"),
-      createProjectId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"),
-    ],
-    labels: [
-      createLabelId("cccccccc-cccc-4ccc-8ccc-cccccccccccc"),
-      createLabelId("dddddddd-dddd-4ddd-8ddd-dddddddddddd"),
-      createLabelId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"),
-    ],
-  },
   projectGroups: DEFAULT_PROJECT_GROUP,
   labelGroups: DEFAULT_LABEL_GROUP,
 }

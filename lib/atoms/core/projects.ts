@@ -1,11 +1,8 @@
 /**
- * Project management atoms for TaskTrove Jotai migration
- *
- * This file contains all project-related atoms migrated from the useTaskManager hook.
- * Projects use a linked-list structure for ordering and embed view states for UI preferences.
+ * Project management atoms for TaskTrove
  *
  * Data persistence strategy:
- * - Project data operations (add, update, delete, reorder, sections) use server mutations
+ * - Project data operations (add, update, delete, sections) use server mutations
  * - View state changes remain localStorage-only for performance
  * - Current project selection remains localStorage-only as UI state
  */
@@ -16,6 +13,7 @@ import { handleAtomError, createAtomWithStorage } from "../utils/index"
 import type {
   Project,
   ProjectId,
+  GroupId,
   SectionId,
   ProjectSection,
   Task,
@@ -39,13 +37,6 @@ import {
 } from "./base"
 import { viewStatesAtom } from "../ui/views"
 import { recordOperationAtom } from "./history"
-import {
-  orderedProjectsAtom,
-  orderingAtom,
-  addProjectToOrderingAtom,
-  removeProjectFromOrderingAtom,
-  reorderProjectAtom as reorderProjectInOrderingAtom,
-} from "./ordering"
 import { log } from "../../utils/logger"
 
 // =============================================================================
@@ -108,8 +99,7 @@ inboxProjectAtom.debugLabel = "inboxProjectAtom"
 // =============================================================================
 
 /**
- * Adds a new project using ordered arrays
- * Automatically adds to ordering
+ * Adds a new project
  */
 export const addProjectAtom = atom(
   null,
@@ -119,7 +109,7 @@ export const addProjectAtom = atom(
     projectData: {
       name: string
       color: string
-      insertPosition?: { id: ProjectId; placement: "above" | "below" }
+      groupId?: GroupId // Projects will be added to groups instead of global ordering
     },
   ) => {
     try {
@@ -134,25 +124,10 @@ export const addProjectAtom = atom(
       // Get the first (and only) project ID from the response
       const newProjectId = result.projectIds[0]
 
-      // Calculate insertion index based on position
-      let insertionIndex: number | undefined
-      if (projectData.insertPosition) {
-        const ordering = get(orderingAtom)
-        const referenceIndex = ordering.projects.findIndex(
-          (id) => id === projectData.insertPosition?.id,
-        )
-
-        if (referenceIndex !== -1) {
-          insertionIndex =
-            projectData.insertPosition.placement === "above" ? referenceIndex : referenceIndex + 1
-        }
-      }
-
-      // Add to ordering - await to ensure both updates complete together
-      await set(addProjectToOrderingAtom, { projectId: newProjectId, index: insertionIndex })
-
       // Record the operation for undo/redo feedback
       set(recordOperationAtom, `Added project: "${projectData.name}"`)
+
+      return newProjectId
     } catch (error) {
       handleAtomError(error, "addProject")
       throw error
@@ -187,7 +162,7 @@ export const updateProjectAtom = atom(
 updateProjectAtom.debugLabel = "updateProjectAtom"
 
 /**
- * Removes a project from data and ordering
+ * Removes a project
  * Uses server mutation for persistence
  */
 export const deleteProjectAtom = atom(null, async (get, set, projectId: ProjectId) => {
@@ -200,9 +175,6 @@ export const deleteProjectAtom = atom(null, async (get, set, projectId: ProjectI
     // Delete project using the DELETE endpoint
     const deleteProjectMutation = get(deleteProjectMutationAtom)
     await deleteProjectMutation.mutateAsync({ id: projectId })
-
-    // Remove from ordering - await to ensure both updates complete together
-    await set(removeProjectFromOrderingAtom, projectId)
 
     // Clear current project if it was deleted
     const currentProjectId = get(currentProjectIdAtom)
@@ -219,21 +191,9 @@ export const deleteProjectAtom = atom(null, async (get, set, projectId: ProjectI
 })
 deleteProjectAtom.debugLabel = "deleteProjectAtom"
 
-/**
- * Reorders a project using ordered arrays - much simpler than position-based
- * @deprecated Use reorderProjectInOrderingAtom directly from ./ordering
- */
-export const reorderProjectAtom = reorderProjectInOrderingAtom
-
 // =============================================================================
 // DERIVED READ ATOMS
 // =============================================================================
-
-/**
- * Projects in their ordered sequence - now uses ordered arrays instead of position sorting
- * @deprecated Use orderedProjectsAtom directly from ./ordering
- */
-export const sortedProjectsAtom = orderedProjectsAtom
 
 /**
  * Projects excluding the special inbox project (for display in project lists)
@@ -241,8 +201,8 @@ export const sortedProjectsAtom = orderedProjectsAtom
  */
 export const visibleProjectsAtom = atom((get) => {
   try {
-    const sortedProjects = get(sortedProjectsAtom)
-    return sortedProjects.filter((project) => project.id !== INBOX_PROJECT_ID)
+    const projects = get(projectsAtom)
+    return projects.filter((project) => project.id !== INBOX_PROJECT_ID)
   } catch (error) {
     handleAtomError(error, "visibleProjects")
     return []
@@ -688,7 +648,6 @@ export const projectAtoms = {
     addProject: addProjectAtom,
     updateProject: updateProjectAtom,
     deleteProject: deleteProjectAtom,
-    reorderProject: reorderProjectAtom,
     addSection: addProjectSectionAtom,
     removeSection: removeProjectSectionAtom,
     renameSection: renameProjectSectionAtom,
@@ -699,7 +658,6 @@ export const projectAtoms = {
 
   // Derived read atoms
   derived: {
-    sortedProjects: sortedProjectsAtom,
     visibleProjects: visibleProjectsAtom,
     allProjects: allProjectsAtom,
     inboxProject: inboxProjectAtom,

@@ -54,12 +54,14 @@ vi.mock("@/lib/atoms", () => ({
   enterSelectionModeAtom: { toString: () => "enterSelectionModeAtom" },
   tasksAtom: { toString: () => "tasksAtom" },
   sortedProjectsAtom: { toString: () => "sortedProjectsAtom" },
+  projectsAtom: { toString: () => "projectsAtom" },
 }))
 
 vi.mock("@/lib/atoms/core/labels", () => ({
   sortedLabelsAtom: { toString: () => "sortedLabelsAtom" },
   addLabelAtom: { toString: () => "addLabelAtom" },
   labelsFromIdsAtom: { toString: () => "labelsFromIdsAtom" },
+  labelsAtom: { toString: () => "labelsAtom" },
 }))
 
 // Mock component interfaces
@@ -713,7 +715,7 @@ describe("TaskItem", () => {
       if (atomString?.includes("selectionMode")) {
         return false // Usually false unless testing selection mode
       }
-      if (atomString?.includes("sortedLabels")) {
+      if (atomString?.includes("sortedLabels") || atomString?.includes("labelsAtom")) {
         return mockLabels
       }
       if (atomString?.includes("labelsFromIds")) {
@@ -721,7 +723,7 @@ describe("TaskItem", () => {
           return labelIds.map((id) => mockLabels.find((label) => label.id === id)).filter(Boolean)
         }
       }
-      if (atomString?.includes("sortedProjects")) {
+      if (atomString?.includes("sortedProjects") || atomString?.includes("projectsAtom")) {
         return mockProjects
       }
       return []

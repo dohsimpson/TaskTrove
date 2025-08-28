@@ -23,7 +23,6 @@ import {
   removeProjectFromGroupWithIndexAtom,
   reorderGroupAtom,
 } from "@/lib/atoms/core/groups"
-import { reorderProjectAtom } from "@/lib/atoms/core/ordering"
 import {
   attachInstruction,
   extractInstruction,
@@ -67,7 +66,6 @@ export function DraggableProjectItem({
   const moveProjectToGroup = useSetAtom(moveProjectToGroupAtom)
   const removeProjectFromGroupWithIndex = useSetAtom(removeProjectFromGroupWithIndexAtom)
   const reorderGroup = useSetAtom(reorderGroupAtom)
-  const reorderProject = useSetAtom(reorderProjectAtom)
 
   // Computed values
   const isActive = pathname === `/projects/${project.slug}`
@@ -124,12 +122,6 @@ export function DraggableProjectItem({
                 projectId: instruction.projectId,
                 newIndex: instruction.toIndex,
               })
-            } else {
-              // Reorder in ungrouped projects
-              await reorderProject({
-                projectId: instruction.projectId,
-                newIndex: instruction.toIndex,
-              })
             }
             break
 
@@ -145,7 +137,7 @@ export function DraggableProjectItem({
           case "remove-project-from-group":
             await removeProjectFromGroupWithIndex({
               projectId: instruction.projectId,
-              insertIndex: instruction.insertIndex,
+              _insertIndex: instruction.insertIndex,
             })
             break
 

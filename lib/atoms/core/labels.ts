@@ -3,22 +3,11 @@ import { handleAtomError } from "../utils/index"
 import { Label, Task, LabelId, ViewStates, CreateLabelRequest } from "../../types/index"
 import { createLabelMutationAtom, labelsAtom, deleteLabelMutationAtom } from "./base"
 import { recordOperationAtom } from "./history"
-import {
-  orderedLabelsAtom,
-  orderingAtom,
-  addLabelToOrderingAtom,
-  removeLabelFromOrderingAtom,
-  reorderLabelAtom as reorderLabelInOrderingAtom,
-} from "./ordering"
 import { activeTasksAtom } from "./tasks"
 import { viewStatesAtom } from "../ui/views"
 
 /**
- * Core label atoms for TaskTrove Jotai migration
- *
- * Implements label management with linked-list ordering structure identical to
- * the existing useTaskManager hook logic. Preserves the getSortedLabels() and
- * reorderLabel() algorithms exactly.
+ * Core label atoms for TaskTrove
  */
 
 // =============================================================================
@@ -30,12 +19,6 @@ import { viewStatesAtom } from "../ui/views"
 // =============================================================================
 // DERIVED READ ATOMS
 // =============================================================================
-
-/**
- * Labels in their ordered sequence - now uses ordered arrays instead of position sorting
- * @deprecated Use orderedLabelsAtom directly from ./ordering
- */
-export const sortedLabelsAtom = orderedLabelsAtom
 
 /**
  * Atom that provides a Map of label ID → Label object for efficient lookups
@@ -163,51 +146,26 @@ labelTaskCountsAtom.debugLabel = "labelTaskCountsAtom"
 // =============================================================================
 
 /**
- * Adds a new label using ordered arrays
- * Automatically adds to end of ordering
+ * Adds a new label
  */
-export const addLabelAtom = atom(
-  null,
-  async (
-    get,
-    set,
-    labelData: CreateLabelRequest & {
-      insertPosition?: { id: LabelId; placement: "above" | "below" }
-    },
-  ) => {
-    try {
-      const { insertPosition, ...newLabel } = labelData
+export const addLabelAtom = atom(null, async (get, set, labelData: CreateLabelRequest) => {
+  try {
+    // Add to labels data using server mutation for optimistic updates
+    const createLabelMutation = get(createLabelMutationAtom)
+    const result = await createLabelMutation.mutateAsync(labelData)
 
-      // Add to labels data using server mutation for optimistic updates
-      const createLabelMutation = get(createLabelMutationAtom)
-      const result = await createLabelMutation.mutateAsync(newLabel)
+    // Get the first (and only) label ID from the response
+    const newLabelId = result.labelIds[0]
 
-      // Get the first (and only) label ID from the response
-      const newLabelId = result.labelIds[0]
+    // Record the operation for undo/redo feedback
+    set(recordOperationAtom, `Added label: "${labelData.name}"`)
 
-      // Calculate insertion index based on position
-      let insertionIndex: number | undefined
-      if (insertPosition) {
-        const ordering = get(orderingAtom)
-        const referenceIndex = ordering.labels.findIndex((id) => id === insertPosition?.id)
-
-        if (referenceIndex !== -1) {
-          insertionIndex =
-            insertPosition.placement === "above" ? referenceIndex : referenceIndex + 1
-        }
-      }
-
-      // Add to ordering - await to ensure both updates complete together
-      await set(addLabelToOrderingAtom, { labelId: newLabelId, index: insertionIndex })
-
-      // Record the operation for undo/redo feedback
-      set(recordOperationAtom, `Added label: "${newLabel.name}"`)
-    } catch (error) {
-      handleAtomError(error, "addLabelAtom")
-      throw error
-    }
-  },
-)
+    return newLabelId
+  } catch (error) {
+    handleAtomError(error, "addLabelAtom")
+    throw error
+  }
+})
 addLabelAtom.debugLabel = "addLabelAtom"
 
 /**
@@ -230,7 +188,7 @@ export const updateLabelAtom = atom(
 updateLabelAtom.debugLabel = "updateLabelAtom"
 
 /**
- * Removes a label from data and ordering
+ * Removes a label - group membership is handled by group management
  */
 export const deleteLabelAtom = atom(null, async (get, set, labelId: LabelId) => {
   try {
@@ -242,21 +200,12 @@ export const deleteLabelAtom = atom(null, async (get, set, labelId: LabelId) => 
     // Remove from labels data using DELETE endpoint for proper deletion
     const deleteLabelMutation = get(deleteLabelMutationAtom)
     await deleteLabelMutation.mutateAsync({ id: labelId })
-
-    // Remove from ordering - await to ensure both updates complete together
-    await set(removeLabelFromOrderingAtom, labelId)
   } catch (error) {
     handleAtomError(error, "deleteLabelAtom")
     throw error
   }
 })
 deleteLabelAtom.debugLabel = "deleteLabelAtom"
-
-/**
- * Reorders a label using ordered arrays - much simpler than position-based
- * @deprecated Use reorderLabelInOrderingAtom directly from ./ordering
- */
-export const reorderLabelAtom = reorderLabelInOrderingAtom
 
 // =============================================================================
 // EXPORTS
@@ -270,7 +219,6 @@ export const labelAtoms = {
   labels: labelsAtom,
 
   // Derived read atoms
-  sortedLabels: sortedLabelsAtom,
   labelsMap: labelsMapAtom,
   labelById: labelByIdAtom,
   labelByName: labelByNameAtom,
@@ -282,7 +230,6 @@ export const labelAtoms = {
   addLabel: addLabelAtom,
   updateLabel: updateLabelAtom,
   deleteLabel: deleteLabelAtom,
-  reorderLabel: reorderLabelAtom,
 } as const
 
 // Individual exports for backward compatibility

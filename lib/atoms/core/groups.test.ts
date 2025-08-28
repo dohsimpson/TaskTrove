@@ -78,7 +78,6 @@ const mockGroupsData: DataFileSerialization = {
   tasks: [],
   projects: [],
   labels: [],
-  ordering: { projects: [], labels: [] },
 }
 
 describe("Groups Atoms", () => {
@@ -312,7 +311,6 @@ describe("Groups Atoms", () => {
           tasks: [],
           projects: [],
           labels: [],
-          ordering: { projects: [], labels: [] },
         }),
       })
 

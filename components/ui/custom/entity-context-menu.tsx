@@ -30,7 +30,7 @@ import {
   Move,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { orderingAtom, projectsAtom } from "@/lib/atoms"
+import { projectsAtom } from "@/lib/atoms"
 import { currentRouteContextAtom } from "@/lib/atoms/ui/navigation"
 import { isValidProjectId } from "@/lib/utils/routing"
 import { LabelId, ProjectId, SectionId } from "@/lib/types"
@@ -78,7 +78,6 @@ export function EntityContextMenu({
   const contextMenuRef = useRef<HTMLDivElement>(null)
 
   // Get atoms for position detection
-  const ordering = useAtomValue(orderingAtom)
   const projects = useAtomValue(projectsAtom)
   const routeContext = useAtomValue(currentRouteContextAtom)
 
@@ -110,12 +109,24 @@ export function EntityContextMenu({
   const getPositionInfo = () => {
     switch (entityType) {
       case "project": {
-        const index = ordering.projects.findIndex((projectId) => projectId === id)
-        return createPositionInfo(index, ordering.projects.length)
+        return {
+          isFirst: false,
+          isLast: false,
+          canMoveUp: false,
+          canMoveDown: false,
+          canAddAbove: false,
+          canAddBelow: false,
+        }
       }
       case "label": {
-        const index = ordering.labels.findIndex((labelId) => labelId === id)
-        return createPositionInfo(index, ordering.labels.length)
+        return {
+          isFirst: false,
+          isLast: false,
+          canMoveUp: false,
+          canMoveDown: false,
+          canAddAbove: false,
+          canAddBelow: false,
+        }
       }
       case "section": {
         // Find the project containing this section

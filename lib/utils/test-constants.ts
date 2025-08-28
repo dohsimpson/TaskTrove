@@ -74,5 +74,4 @@ export const TEST_GROUPS_DATA: DataFileSerialization = {
   tasks: [],
   projects: [],
   labels: [],
-  ordering: { projects: [], labels: [] },
 }

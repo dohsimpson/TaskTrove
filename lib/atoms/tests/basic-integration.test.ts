@@ -244,7 +244,7 @@ describe("TaskTrove Jotai Atoms Integration Tests", () => {
   describe("Project View State Management", () => {
     it("should manage project view state correctly", async () => {
       // Get first project
-      const projects = store.get(projectAtoms.derived.sortedProjects)
+      const projects = store.get(projectAtoms.projects)
       if (projects.length === 0) return
 
       const project = projects[0]

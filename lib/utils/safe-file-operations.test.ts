@@ -340,10 +340,6 @@ describe("safe-file-operations", () => {
           color: "#00FF00",
         },
       ],
-      ordering: {
-        projects: [],
-        labels: [],
-      },
       projectGroups: DEFAULT_PROJECT_GROUP,
       labelGroups: DEFAULT_LABEL_GROUP,
     }
@@ -393,10 +389,6 @@ describe("safe-file-operations", () => {
       tasks: [],
       projects: [],
       labels: [],
-      ordering: {
-        projects: [],
-        labels: [],
-      },
       projectGroups: DEFAULT_PROJECT_GROUP,
       labelGroups: DEFAULT_LABEL_GROUP,
     }

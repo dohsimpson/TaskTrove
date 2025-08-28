@@ -82,10 +82,6 @@ describe("API Route - Recurring Tasks Integration", () => {
     tasks,
     projects: [],
     labels: [],
-    ordering: {
-      projects: [],
-      labels: [],
-    },
     projectGroups: DEFAULT_PROJECT_GROUP,
     labelGroups: DEFAULT_LABEL_GROUP,
   })

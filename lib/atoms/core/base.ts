@@ -13,7 +13,6 @@ import {
   Project,
   Label,
   DataFile,
-  Ordering,
   INBOX_PROJECT_ID,
   createTaskId,
   createProjectId,
@@ -47,9 +46,6 @@ import {
   UpdateLabelResponse,
   UpdateLabelResponseSchema,
   LabelUpdateArraySerializationSchema,
-  OrderingUpdateResponseSchema,
-  OrderingSerializationSchema,
-  OrderingUpdateResponse,
   CreateLabelRequest,
   CreateLabelResponse,
   CreateLabelResponseSchema,
@@ -156,7 +152,6 @@ const EMPTY_CACHE_DATA: DataFile = {
   tasks: [],
   projects: [],
   labels: [],
-  ordering: { projects: [], labels: [] },
   projectGroups: {
     type: "project",
     id: createGroupId("00000000-0000-4000-8000-000000000001"),
@@ -179,17 +174,11 @@ function isValidCacheData(data: unknown): data is DataFile {
   if (!data || typeof data !== "object") return false
 
   // Type narrowing without assertion
-  if (!("tasks" in data && "projects" in data && "labels" in data && "ordering" in data)) {
+  if (!("tasks" in data && "projects" in data && "labels" in data)) {
     return false
   }
 
-  return !!(
-    Array.isArray(data.tasks) &&
-    Array.isArray(data.projects) &&
-    Array.isArray(data.labels) &&
-    data.ordering &&
-    typeof data.ordering === "object"
-  )
+  return !!(Array.isArray(data.tasks) && Array.isArray(data.projects) && Array.isArray(data.labels))
 }
 
 /**
@@ -432,17 +421,6 @@ export const dataQueryAtom = atomWithQuery(() => ({
           id: createGroupId("88888888-8888-4888-8888-888888888888"),
           name: "All Labels",
           items: [],
-        },
-        ordering: {
-          projects: [
-            INBOX_PROJECT_ID,
-            createProjectId("12345678-1234-4234-8234-123456789abc"),
-            createProjectId("12345678-1234-4234-8234-123456789abd"),
-          ],
-          labels: [
-            createLabelId("abcdef01-abcd-4bcd-8bcd-abcdefabcdef"),
-            createLabelId("abcdef01-abcd-4bcd-8bcd-abcdefabcde0"),
-          ],
         },
       }
     }
@@ -1126,38 +1104,6 @@ export const labelsAtom = atom(
   },
 )
 labelsAtom.debugLabel = "labelsAtom"
-
-// =============================================================================
-// BASE ORDERING ATOM
-// =============================================================================
-
-// Mutation atom for updating ordering with optimistic updates
-export const updateOrderingMutationAtom = createMutation<
-  OrderingUpdateResponse,
-  Ordering,
-  undefined
->({
-  method: "PATCH",
-  operationName: "Updated ordering",
-  responseSchema: OrderingUpdateResponseSchema,
-  serializationSchema: OrderingSerializationSchema,
-  apiEndpoint: "/api/ordering",
-  logModule: "ordering",
-  testResponseFactory: (ordering: Ordering): OrderingUpdateResponse => {
-    return {
-      success: true,
-      ordering: ordering,
-      message: "Ordering updated successfully (test mode)",
-    }
-  },
-  optimisticUpdateFn: (newOrdering: Ordering, oldData: DataFile) => {
-    return {
-      ...oldData,
-      ordering: newOrdering,
-    }
-  },
-})
-updateOrderingMutationAtom.debugLabel = "updateOrderingMutationAtom"
 
 // =============================================================================
 // SETTINGS ATOMS

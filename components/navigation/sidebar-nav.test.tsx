@@ -130,6 +130,9 @@ vi.mock("@/lib/atoms", () => ({
   projects: vi.fn(),
   orderingAtom: vi.fn(),
   labels: vi.fn(),
+  labelAtoms: {
+    labels: vi.fn(),
+  },
 }))
 
 vi.mock("@/lib/atoms/core/projects", () => ({

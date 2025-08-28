@@ -34,9 +34,9 @@ import { SubtaskContent } from "./subtask-content"
 import { LabelContent } from "./label-content"
 import { CommentContent } from "./comment-content"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
-import { updateTaskAtom, addCommentAtom, sortedProjectsAtom, selectedTaskAtom } from "@/lib/atoms"
+import { updateTaskAtom, addCommentAtom, projectsAtom, selectedTaskAtom } from "@/lib/atoms"
 import { log } from "@/lib/utils/logger"
-import { sortedLabelsAtom, addLabelAtom } from "@/lib/atoms/core/labels"
+import { labelsAtom, addLabelAtom } from "@/lib/atoms/core/labels"
 import { Task, createLabelId, type LabelId } from "@/lib/types"
 import { getDueDateTextColor, getPriorityTextColor } from "@/lib/color-utils"
 
@@ -60,8 +60,8 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
 
   // Atom values
   const task = useAtomValue(selectedTaskAtom)
-  const allLabels = useAtomValue(sortedLabelsAtom)
-  const allProjects = useAtomValue(sortedProjectsAtom)
+  const allLabels = useAtomValue(labelsAtom)
+  const allProjects = useAtomValue(projectsAtom)
 
   // Auto-save with debouncing
   const debouncedSave = useDebouncedCallback((updates: Partial<Task>) => {

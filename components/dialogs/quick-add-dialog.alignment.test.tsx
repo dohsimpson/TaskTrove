@@ -177,6 +177,7 @@ vi.mock("jotai", async (importOriginal) => {
 vi.mock("@/lib/atoms/core/labels", () => ({
   sortedLabelsAtom: "mockSortedLabelsAtom",
   addLabelAtom: "mockAddLabelAtom",
+  labelsAtom: "mockLabelsAtom",
   labelAtoms: {
     labels: "mockLabelsAtom",
     sortedLabels: "mockSortedLabelsAtom",

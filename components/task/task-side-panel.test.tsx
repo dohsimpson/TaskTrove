@@ -48,12 +48,14 @@ vi.mock("@/lib/atoms", () => ({
   addCommentAtom: "mockAddCommentAtom",
   sortedProjectsAtom: "mockSortedProjectsAtom",
   selectedTaskAtom: "mockSelectedTaskAtom",
+  projectsAtom: "mockProjectsAtom",
 }))
 
 vi.mock("@/lib/atoms/core/labels", () => ({
   sortedLabelsAtom: "mockSortedLabelsAtom",
   addLabelAtom: "mockAddLabelAtom",
   labelsFromIdsAtom: "mockLabelsFromIdsAtom",
+  labelsAtom: "mockLabelsAtom",
 }))
 
 vi.mock("@/lib/utils", () => ({

@@ -16,11 +16,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { ColorPicker } from "@/components/ui/custom/color-picker"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { COLOR_OPTIONS } from "@/lib/constants/defaults"
-import { showProjectDialogAtom, projectDialogContextAtom } from "@/lib/atoms/ui/dialogs"
+import { showProjectDialogAtom } from "@/lib/atoms/ui/dialogs"
 import { closeProjectDialogAtom } from "@/lib/atoms/ui/navigation"
 import { addProjectAtom } from "@/lib/atoms/core/projects"
 import { addProjectGroupAtom } from "@/lib/atoms/core/groups"
-import { createProjectId } from "@/lib/types"
 
 export function ProjectDialog() {
   const [entityType, setEntityType] = useState<"project" | "projectGroup">("project")
@@ -29,7 +28,6 @@ export function ProjectDialog() {
   const [selectedColor, setSelectedColor] = useState<string>(COLOR_OPTIONS[0].value)
 
   const open = useAtomValue(showProjectDialogAtom)
-  const context = useAtomValue(projectDialogContextAtom)
   const closeDialog = useSetAtom(closeProjectDialogAtom)
   const addProject = useSetAtom(addProjectAtom)
   const addProjectGroup = useSetAtom(addProjectGroupAtom)
@@ -51,13 +49,6 @@ export function ProjectDialog() {
       addProject({
         name: name.trim(),
         color: selectedColor,
-        insertPosition:
-          context.insertPosition?.id && context.insertPosition?.placement
-            ? {
-                id: createProjectId(context.insertPosition.id),
-                placement: context.insertPosition.placement,
-              }
-            : undefined,
       })
     }
 

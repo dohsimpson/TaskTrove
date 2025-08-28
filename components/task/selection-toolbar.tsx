@@ -25,7 +25,7 @@ import {
   bulkScheduleTasksAtom,
   filteredTasksAtom,
 } from "@/lib/atoms"
-import { sortedProjectsAtom } from "@/lib/atoms"
+import { projectsAtom } from "@/lib/atoms"
 import { DeleteConfirmDialog } from "@/components/dialogs/delete-confirm-dialog"
 import { cn } from "@/lib/utils"
 import type { ProjectId } from "@/lib/types"
@@ -44,7 +44,7 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
   const filteredTasks = useAtomValue(filteredTasksAtom)
 
   // Projects for move operation
-  const projects = useAtomValue(sortedProjectsAtom)
+  const projects = useAtomValue(projectsAtom)
 
   // Selection actions
   const exitSelectionMode = useSetAtom(exitSelectionModeAtom)

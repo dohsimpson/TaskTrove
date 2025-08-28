@@ -23,7 +23,7 @@ import {
 import { cn } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { useAtomValue, useSetAtom } from "jotai"
-import { sortedLabelsAtom, addLabelAtom } from "@/lib/atoms/core/labels"
+import { labelsAtom, addLabelAtom } from "@/lib/atoms/core/labels"
 import { visibleProjectsAtom } from "@/lib/atoms/core/projects"
 import { addTaskAtom } from "@/lib/atoms/core/tasks"
 import {
@@ -162,7 +162,7 @@ export function QuickAddDialog() {
   const resetNewTask = useSetAtom(resetQuickAddTaskAtom)
 
   // Get data from atoms
-  const labels = useAtomValue(sortedLabelsAtom)
+  const labels = useAtomValue(labelsAtom)
   const projects = useAtomValue(visibleProjectsAtom)
   const addTask = useSetAtom(addTaskAtom)
   const addLabel = useSetAtom(addLabelAtom)

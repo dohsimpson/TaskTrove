@@ -7,7 +7,7 @@ import { updateTaskAtom } from "@/lib/atoms/core/tasks"
 import type { TaskId, Project } from "@/lib/types"
 import { useSetAtom } from "jotai"
 import { createProjectId, createTaskId } from "@/lib/types"
-import { orderedProjectsAtom } from "@/lib/atoms"
+import { projectsAtom } from "@/lib/atoms"
 
 interface TaskProjectPopoverProps {
   taskId?: TaskId
@@ -26,7 +26,7 @@ export function TaskProjectPopover({
   align = "end",
   contentClassName = "w-48 p-1",
 }: TaskProjectPopoverProps) {
-  const projects = useAtomValue(orderedProjectsAtom)
+  const projects = useAtomValue(projectsAtom)
   const updateTask = useSetAtom(updateTaskAtom)
 
   const getProjectSections = (): PopoverSection[] => {

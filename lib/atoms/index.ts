@@ -55,22 +55,6 @@ export { labelAtoms } from "./core/labels"
  */
 export * from "./core/groups"
 
-/**
- * Ordering management atoms
- * Contains project and label ordering using simple arrays
- */
-export {
-  orderingAtom,
-  orderedProjectsAtom,
-  orderedLabelsAtom,
-  addProjectToOrderingAtom,
-  removeProjectFromOrderingAtom,
-  reorderProjectAtom,
-  addLabelToOrderingAtom,
-  removeLabelFromOrderingAtom,
-  reorderLabelAtom,
-} from "./core/ordering"
-
 // =============================================================================
 // FEATURE ATOMS
 // =============================================================================
@@ -164,7 +148,6 @@ export const {
  */
 export const {
   labels,
-  sortedLabels,
   labelsMap,
   labelById,
   labelByName,
@@ -174,7 +157,6 @@ export const {
   addLabel,
   updateLabel,
   deleteLabel,
-  reorderLabel,
 } = labelAtoms
 
 /**
@@ -247,7 +229,6 @@ export {
   addProjectAtom,
   updateProjectAtom,
   deleteProjectAtom,
-  sortedProjectsAtom,
   visibleProjectsAtom,
   projectByIdAtom,
   projectTaskCountsAtom,
@@ -257,7 +238,6 @@ export {
 // Label atoms
 export {
   labelsAtom,
-  sortedLabelsAtom,
   labelsMapAtom,
   labelByIdAtom,
   labelByNameAtom,

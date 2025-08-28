@@ -23,6 +23,7 @@ vi.mock("jotai", () => ({
   useAtomValue: vi.fn((atom: { toString: () => string }) => {
     if (atom.toString().includes("labelsFromIdsAtom")) return mockLabelsFromIds
     if (atom.toString().includes("sortedLabelsAtom")) return mockAllLabels
+    if (atom.toString().includes("labelsAtom")) return mockAllLabels
     return vi.fn()
   }),
 }))
@@ -31,6 +32,7 @@ vi.mock("jotai", () => ({
 vi.mock("@/lib/atoms/core/labels", () => ({
   labelsFromIdsAtom: { toString: () => "labelsFromIdsAtom" },
   sortedLabelsAtom: { toString: () => "sortedLabelsAtom" },
+  labelsAtom: { toString: () => "labelsAtom" },
 }))
 
 // Mock component interfaces

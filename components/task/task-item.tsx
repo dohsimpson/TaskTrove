@@ -50,8 +50,8 @@ import {
   selectionToggleTaskSelectionAtom,
   enterSelectionModeAtom,
 } from "@/lib/atoms"
-import { sortedLabelsAtom, addLabelAtom, labelsFromIdsAtom } from "@/lib/atoms/core/labels"
-import { sortedProjectsAtom } from "@/lib/atoms"
+import { labelsAtom, addLabelAtom, labelsFromIdsAtom } from "@/lib/atoms/core/labels"
+import { projectsAtom } from "@/lib/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
 import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } from "@/lib/types"
 import { INBOX_PROJECT_ID, createTaskId, createLabelId } from "@/lib/types"
@@ -86,9 +86,9 @@ export function TaskItem({
   const allTasks = useAtomValue(tasksAtom)
   const selectedTasks = useAtomValue(selectedTasksAtom)
   const selectionMode = useAtomValue(selectionModeAtom)
-  const allLabels = useAtomValue(sortedLabelsAtom)
+  const allLabels = useAtomValue(labelsAtom)
   const getLabelsFromIds = useAtomValue(labelsFromIdsAtom)
-  const allProjects = useAtomValue(sortedProjectsAtom)
+  const allProjects = useAtomValue(projectsAtom)
 
   // Atom actions
   const toggleTask = useSetAtom(toggleTaskAtom)

@@ -38,7 +38,7 @@ interface TaskFormProps {
 export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
   // Atom hooks
   const projects = useAtomValue(projectAtoms.projects)
-  const labels = useAtomValue(labelAtoms.sortedLabels)
+  const labels = useAtomValue(labelAtoms.labels)
   const addTask = useSetAtom(taskAtoms.actions.addTask)
   const updateTask = useSetAtom(taskAtoms.actions.updateTask)
   const [formData, setFormData] = useState<CreateTaskRequest>({

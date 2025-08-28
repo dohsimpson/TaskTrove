@@ -36,12 +36,83 @@ import {
 import { handleAtomError } from "../utils"
 import { currentViewAtom, currentViewStateAtom, viewStatesAtom } from "../ui/views"
 import { currentRouteContextAtom } from "../ui/navigation"
-import {
-  getOrderedTasksForProject,
-  moveTaskWithinProject,
-  addTaskToProjectOrder,
-  removeTaskFromProjectOrder,
-} from "../../utils/task-ordering-operations"
+// Task ordering utilities - inline implementation after task-ordering-operations.ts removal
+const getOrderedTasksForProject = (
+  projectId: ProjectId,
+  tasks: Task[],
+  projects: Project[],
+): Task[] => {
+  const project = projects.find((p) => p.id === projectId)
+  if (!project?.taskOrder) {
+    return tasks.filter((task) => task.projectId === projectId)
+  }
+
+  const taskMap = new Map(tasks.map((task) => [task.id, task]))
+  const orderedTasks = project.taskOrder
+    .map((taskId) => taskMap.get(taskId))
+    .filter((task): task is Task => task !== undefined && task.projectId === projectId)
+
+  return orderedTasks
+}
+
+const moveTaskWithinProject = (
+  projectId: ProjectId,
+  taskId: TaskId,
+  toIndex: number,
+  projects: Project[],
+): Project[] => {
+  return projects.map((project) => {
+    if (project.id !== projectId) return project
+
+    const taskOrder = project.taskOrder || []
+    const currentIndex = taskOrder.indexOf(taskId)
+    if (currentIndex === -1) return project
+
+    const newTaskOrder = [...taskOrder]
+    newTaskOrder.splice(currentIndex, 1)
+    newTaskOrder.splice(toIndex, 0, taskId)
+
+    return { ...project, taskOrder: newTaskOrder }
+  })
+}
+
+const addTaskToProjectOrder = (
+  taskId: TaskId,
+  projectId: ProjectId,
+  position: number | undefined,
+  projects: Project[],
+): Project[] => {
+  return projects.map((project) => {
+    if (project.id !== projectId) return project
+
+    const taskOrder = project.taskOrder || []
+    if (taskOrder.includes(taskId)) return project
+
+    const newTaskOrder = [...taskOrder]
+    if (position === undefined) {
+      newTaskOrder.push(taskId)
+    } else {
+      newTaskOrder.splice(position, 0, taskId)
+    }
+
+    return { ...project, taskOrder: newTaskOrder }
+  })
+}
+
+const removeTaskFromProjectOrder = (
+  taskId: TaskId,
+  projectId: ProjectId,
+  projects: Project[],
+): Project[] => {
+  return projects.map((project) => {
+    if (project.id !== projectId) return project
+
+    const taskOrder = project.taskOrder || []
+    const filteredOrder = taskOrder.filter((id) => id !== taskId)
+
+    return { ...project, taskOrder: filteredOrder }
+  })
+}
 import { playSound } from "../../utils/audio"
 import { tasksAtom, createTaskMutationAtom, deleteTaskMutationAtom, projectsAtom } from "./base"
 import { recordOperationAtom } from "./history"
@@ -707,10 +778,9 @@ export const moveTaskAtom = atom(
         }
 
         const updatedProjects = moveTaskWithinProject(
-          params.taskId,
-          params.fromIndex,
-          params.toIndex,
           projectId,
+          params.taskId,
+          params.toIndex,
           projects,
         )
         set(projectsAtom, updatedProjects)
@@ -819,10 +889,9 @@ export const reorderTaskInViewAtom = atom(
       }
 
       const updatedProjects = moveTaskWithinProject(
-        params.taskId,
-        params.fromIndex,
-        params.toIndex,
         projectId,
+        params.taskId,
+        params.toIndex,
         projects,
       )
 
@@ -890,7 +959,7 @@ export const addTaskToViewAtom = atom(
       // Add to project's taskOrder array
       const projectId = newTask.projectId || INBOX_PROJECT_ID
       const projects = get(projectsAtom)
-      const position = params.position !== undefined ? params.position : "end"
+      const position = params.position
       const updatedProjects = addTaskToProjectOrder(newTask.id, projectId, position, projects)
       set(projectsAtom, updatedProjects)
 

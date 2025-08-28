@@ -39,12 +39,66 @@ export type SidebarInstruction =
   | { type: "reorder-group"; groupId: GroupId; fromIndex: number; toIndex: number }
   | null
 
-// Extract instruction from drop data following official Pragmatic pattern
+/**
+ * Helper function to calculate correct toIndex for reordering within the same context.
+ *
+ * When moving an item within the same list, the source item is conceptually removed first,
+ * which shifts all subsequent items down by one position. This function accounts for that shift.
+ *
+ * @param sourceIndex - Current index of the item being moved
+ * @param targetIndex - Index of the drop target
+ * @param closestEdge - Which edge of the target ("top" = before, "bottom" = after, null = after)
+ * @returns The correct final index after accounting for source removal
+ */
+function calculateAdjustedToIndex(
+  sourceIndex: number,
+  targetIndex: number,
+  closestEdge: Edge | null | undefined,
+): number {
+  const insertIndex = closestEdge === "top" ? targetIndex : targetIndex + 1
+  // Account for source removal: if moving forward, target shifts down by 1
+  return sourceIndex < insertIndex ? insertIndex - 1 : insertIndex
+}
+
+/**
+ * Helper function to extract edge information from Atlassian's tree-item instruction
+ */
+function getEdgeFromInstruction(targetData: Record<string, unknown>): Edge | null {
+  // Check if target data has the instruction symbol
+  const instructionSymbol = Object.getOwnPropertySymbols(targetData).find((symbol) =>
+    symbol.toString().includes("tree-item-instruction"),
+  )
+
+  if (instructionSymbol) {
+    // TypeScript-safe way to access symbol property
+    const instruction = (targetData as any)[instructionSymbol] as { type: string }
+    switch (instruction?.type) {
+      case "reorder-above":
+        return "top"
+      case "reorder-below":
+        return "bottom"
+      default:
+        return null
+    }
+  }
+
+  return null
+}
+
+/**
+ * Extract instruction from drop data following official Pragmatic pattern.
+ *
+ * This function converts drag and drop event data into sidebar-specific instructions
+ * that can be executed by atom actions. It correctly handles toIndex calculation
+ * for same-context reordering by accounting for source item removal.
+ */
 export function extractSidebarInstruction(
   sourceData: Record<string, unknown>,
   targetData: Record<string, unknown>,
-  closestEdge?: Edge | null,
 ): SidebarInstruction {
+  // Use instruction data directly from Atlassian's system
+  const actualEdge = getEdgeFromInstruction(targetData)
+
   // Project being dragged
   if (sourceData.type === "sidebar-project") {
     const projectId = sourceData.projectId as ProjectId
@@ -56,18 +110,18 @@ export function extractSidebarInstruction(
       const targetIndex = targetData.index as number
       const targetGroupId = targetData.groupId as GroupId | undefined
 
-      const insertIndex = closestEdge === "top" ? targetIndex : targetIndex + 1
-
       // Same group/context - reorder
       if (sourceGroupId === targetGroupId) {
         return {
           type: "reorder-project",
           projectId,
           fromIndex: sourceIndex,
-          toIndex: insertIndex,
+          toIndex: calculateAdjustedToIndex(sourceIndex, targetIndex, actualEdge),
           withinGroupId: sourceGroupId,
         }
       }
+
+      const insertIndex = actualEdge === "top" ? targetIndex : targetIndex + 1
 
       // Different groups - move
       if (targetGroupId) {
@@ -119,13 +173,12 @@ export function extractSidebarInstruction(
     // Dropped on another group (reordering)
     if (targetData.type === "sidebar-group-drop-target") {
       const targetIndex = targetData.index as number
-      const insertIndex = closestEdge === "top" ? targetIndex : targetIndex + 1
 
       return {
         type: "reorder-group",
         groupId,
         fromIndex: sourceIndex,
-        toIndex: insertIndex,
+        toIndex: calculateAdjustedToIndex(sourceIndex, targetIndex, actualEdge),
       }
     }
   }

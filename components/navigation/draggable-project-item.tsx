@@ -24,7 +24,6 @@ import {
   reorderGroupAtom,
 } from "@/lib/atoms/core/groups"
 import { reorderProjectAtom } from "@/lib/atoms/core/ordering"
-import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
 import {
   attachInstruction,
   extractInstruction,
@@ -108,9 +107,8 @@ export function DraggableProjectItem({
 
     if (!sourceData || !dropTargetData) return
 
-    // Extract closest edge and instruction following official pattern
-    const closestEdge = extractClosestEdge(dropTargetData)
-    const instruction = extractSidebarInstruction(sourceData, dropTargetData, closestEdge)
+    // Extract instruction using Atlassian's instruction system
+    const instruction = extractSidebarInstruction(sourceData, dropTargetData)
 
     console.log("📍 Extracted instruction:", instruction)
 

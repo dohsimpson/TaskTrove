@@ -12,18 +12,20 @@ describe("extractSidebarInstruction", () => {
         index: 0,
       }
 
+      const instructionSymbol = Symbol("tree-item-instruction")
       const targetData = {
         type: "sidebar-project-drop-target",
         index: 1,
+        [instructionSymbol]: { type: "reorder-below", indentPerLevel: 0, currentLevel: 0 },
       }
 
-      const instruction = extractSidebarInstruction(sourceData, targetData, "bottom")
+      const instruction = extractSidebarInstruction(sourceData, targetData)
 
       expect(instruction).toEqual({
         type: "reorder-project",
         projectId: "project-1",
         fromIndex: 0,
-        toIndex: 2, // bottom edge means insert after target
+        toIndex: 1, // bottom edge after accounting for source removal
         withinGroupId: undefined,
       })
     })
@@ -40,7 +42,7 @@ describe("extractSidebarInstruction", () => {
         groupId: "group-1",
       }
 
-      const instruction = extractSidebarInstruction(sourceData, targetData, null)
+      const instruction = extractSidebarInstruction(sourceData, targetData)
 
       expect(instruction).toEqual({
         type: "move-project-to-group",
@@ -58,23 +60,32 @@ describe("extractSidebarInstruction", () => {
         index: 0,
       }
 
-      const targetData = {
+      // Test top edge with instruction symbol
+      const instructionSymbolTop = Symbol("tree-item-instruction")
+      const targetDataTop = {
         type: "sidebar-project-drop-target",
         index: 2,
+        [instructionSymbolTop]: { type: "reorder-above", indentPerLevel: 0, currentLevel: 0 },
       }
 
-      // Test top edge
-      const topInstruction = extractSidebarInstruction(sourceData, targetData, "top")
+      const topInstruction = extractSidebarInstruction(sourceData, targetDataTop)
       expect(topInstruction?.type).toBe("reorder-project")
       if (topInstruction?.type === "reorder-project") {
-        expect(topInstruction.toIndex).toBe(2) // Insert before target
+        expect(topInstruction.toIndex).toBe(1) // Insert before target, accounting for source removal
       }
 
-      // Test bottom edge
-      const bottomInstruction = extractSidebarInstruction(sourceData, targetData, "bottom")
+      // Test bottom edge with instruction symbol
+      const instructionSymbolBottom = Symbol("tree-item-instruction")
+      const targetDataBottom = {
+        type: "sidebar-project-drop-target",
+        index: 2,
+        [instructionSymbolBottom]: { type: "reorder-below", indentPerLevel: 0, currentLevel: 0 },
+      }
+
+      const bottomInstruction = extractSidebarInstruction(sourceData, targetDataBottom)
       expect(bottomInstruction?.type).toBe("reorder-project")
       if (bottomInstruction?.type === "reorder-project") {
-        expect(bottomInstruction.toIndex).toBe(3) // Insert after target
+        expect(bottomInstruction.toIndex).toBe(2) // Insert after target, accounting for source removal
       }
     })
 
@@ -86,12 +97,14 @@ describe("extractSidebarInstruction", () => {
         groupId: "group-1",
       }
 
+      const instructionSymbol = Symbol("tree-item-instruction")
       const targetData = {
         type: "sidebar-project-drop-target",
         index: 1,
+        [instructionSymbol]: { type: "reorder-above", indentPerLevel: 0, currentLevel: 0 },
       }
 
-      const instruction = extractSidebarInstruction(sourceData, targetData, "top")
+      const instruction = extractSidebarInstruction(sourceData, targetData)
 
       expect(instruction).toEqual({
         type: "remove-project-from-group",
@@ -110,18 +123,20 @@ describe("extractSidebarInstruction", () => {
         index: 0,
       }
 
+      const instructionSymbol = Symbol("tree-item-instruction")
       const targetData = {
         type: "sidebar-group-drop-target",
         index: 1,
+        [instructionSymbol]: { type: "reorder-above", indentPerLevel: 0, currentLevel: 0 },
       }
 
-      const instruction = extractSidebarInstruction(sourceData, targetData, "top")
+      const instruction = extractSidebarInstruction(sourceData, targetData)
 
       expect(instruction).toEqual({
         type: "reorder-group",
         groupId: "group-1",
         fromIndex: 0,
-        toIndex: 1,
+        toIndex: 0, // top edge after accounting for source removal
       })
     })
 
@@ -132,23 +147,32 @@ describe("extractSidebarInstruction", () => {
         index: 0,
       }
 
-      const targetData = {
+      // Test top edge with instruction symbol
+      const instructionSymbolTop = Symbol("tree-item-instruction")
+      const targetDataTop = {
         type: "sidebar-group-drop-target",
         index: 2,
+        [instructionSymbolTop]: { type: "reorder-above", indentPerLevel: 0, currentLevel: 0 },
       }
 
-      // Top edge means insert at target index
-      const topInstruction = extractSidebarInstruction(sourceData, targetData, "top")
+      const topInstruction = extractSidebarInstruction(sourceData, targetDataTop)
       expect(topInstruction?.type).toBe("reorder-group")
       if (topInstruction?.type === "reorder-group") {
-        expect(topInstruction.toIndex).toBe(2)
+        expect(topInstruction.toIndex).toBe(1) // top edge after accounting for source removal
       }
 
-      // Bottom edge means insert after target
-      const bottomInstruction = extractSidebarInstruction(sourceData, targetData, "bottom")
+      // Test bottom edge with instruction symbol
+      const instructionSymbolBottom = Symbol("tree-item-instruction")
+      const targetDataBottom = {
+        type: "sidebar-group-drop-target",
+        index: 2,
+        [instructionSymbolBottom]: { type: "reorder-below", indentPerLevel: 0, currentLevel: 0 },
+      }
+
+      const bottomInstruction = extractSidebarInstruction(sourceData, targetDataBottom)
       expect(bottomInstruction?.type).toBe("reorder-group")
       if (bottomInstruction?.type === "reorder-group") {
-        expect(bottomInstruction.toIndex).toBe(3)
+        expect(bottomInstruction.toIndex).toBe(2) // bottom edge after accounting for source removal
       }
     })
   })
@@ -163,7 +187,7 @@ describe("extractSidebarInstruction", () => {
         type: "sidebar-project-drop-target",
       }
 
-      const instruction = extractSidebarInstruction(sourceData, targetData, null)
+      const instruction = extractSidebarInstruction(sourceData, targetData)
       expect(instruction).toBeNull()
     })
 
@@ -179,11 +203,62 @@ describe("extractSidebarInstruction", () => {
         index: 1,
       }
 
-      // When edge is null/undefined, should default to bottom behavior
-      const instruction = extractSidebarInstruction(sourceData, targetData, null as any)
+      // When no instruction symbol is present, should default to bottom behavior
+      const instruction = extractSidebarInstruction(sourceData, targetData)
       expect(instruction?.type).toBe("reorder-project")
       if (instruction?.type === "reorder-project") {
-        expect(instruction.toIndex).toBe(2) // Defaults to after target
+        expect(instruction.toIndex).toBe(1) // Defaults to after target, accounting for source removal
+      }
+    })
+
+    it("falls back to instruction symbol when extractClosestEdge returns null", () => {
+      // This test prevents regression of the bug where extractClosestEdge returns null
+      // but Atlassian's instruction system provides the correct edge information
+
+      const sourceData = {
+        type: "sidebar-group",
+        groupId: "group-1",
+        index: 1,
+      }
+
+      // Create instruction symbol (matches what Atlassian's attachInstruction provides)
+      const instructionSymbol = Symbol("tree-item-instruction")
+      const targetData = {
+        type: "sidebar-group-drop-target",
+        index: 0,
+        [instructionSymbol]: { type: "reorder-above", indentPerLevel: 0, currentLevel: 0 },
+      }
+
+      // Simulate extractClosestEdge returning null (the original bug)
+      const instruction = extractSidebarInstruction(sourceData, targetData)
+
+      expect(instruction?.type).toBe("reorder-group")
+      if (instruction?.type === "reorder-group") {
+        expect(instruction.groupId).toBe("group-1")
+        expect(instruction.fromIndex).toBe(1)
+        expect(instruction.toIndex).toBe(0) // Should correctly extract "top" edge from instruction symbol
+      }
+    })
+
+    it("falls back to instruction symbol for reorder-below", () => {
+      const sourceData = {
+        type: "sidebar-project",
+        projectId: "project-1",
+        index: 0,
+      }
+
+      const instructionSymbol = Symbol("tree-item-instruction")
+      const targetData = {
+        type: "sidebar-project-drop-target",
+        index: 1,
+        [instructionSymbol]: { type: "reorder-below", indentPerLevel: 0, currentLevel: 0 },
+      }
+
+      const instruction = extractSidebarInstruction(sourceData, targetData)
+
+      expect(instruction?.type).toBe("reorder-project")
+      if (instruction?.type === "reorder-project") {
+        expect(instruction.toIndex).toBe(1) // reorder-below -> bottom -> target + 1, then adjusted for source removal: 2 - 1 = 1
       }
     })
   })

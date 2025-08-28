@@ -130,7 +130,15 @@ class JotaiErrorBoundary extends Component<
                     Go to Home Page
                   </a>
                 </div>
-                <div className="flex justify-center text-sm mt-2">
+                <div className="flex justify-center gap-4 text-sm mt-2">
+                  <a
+                    href="https://docs.tasktrove.io/troubleshooting"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1 text-muted-foreground hover:text-foreground underline underline-offset-4"
+                  >
+                    Troubleshooting Guide
+                  </a>
                   <a
                     href="https://github.com/dohsimpson/tasktrove/issues"
                     target="_blank"

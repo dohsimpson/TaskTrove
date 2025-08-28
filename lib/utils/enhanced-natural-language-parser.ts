@@ -85,22 +85,22 @@ function createEveryShorthandWeekdayPatterns() {
 // Enhanced priority patterns - separate exclamation and p-notation patterns
 const PRIORITY_PATTERNS = [
   {
-    pattern: new RegExp(`${WORD_BOUNDARY_START}(p1)${WORD_BOUNDARY_END}`, "g"),
+    pattern: new RegExp(`${WORD_BOUNDARY_START}(p1)${WORD_BOUNDARY_END}`, "gi"),
     level: 1,
     display: "P1",
   },
   {
-    pattern: new RegExp(`${WORD_BOUNDARY_START}(p2)${WORD_BOUNDARY_END}`, "g"),
+    pattern: new RegExp(`${WORD_BOUNDARY_START}(p2)${WORD_BOUNDARY_END}`, "gi"),
     level: 2,
     display: "P2",
   },
   {
-    pattern: new RegExp(`${WORD_BOUNDARY_START}(p3)${WORD_BOUNDARY_END}`, "g"),
+    pattern: new RegExp(`${WORD_BOUNDARY_START}(p3)${WORD_BOUNDARY_END}`, "gi"),
     level: 3,
     display: "P3",
   },
   {
-    pattern: new RegExp(`${WORD_BOUNDARY_START}(p4)${WORD_BOUNDARY_END}`, "g"),
+    pattern: new RegExp(`${WORD_BOUNDARY_START}(p4)${WORD_BOUNDARY_END}`, "gi"),
     level: 4,
     display: "P4",
   },

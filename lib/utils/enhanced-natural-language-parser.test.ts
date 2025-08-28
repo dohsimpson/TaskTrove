@@ -1410,5 +1410,30 @@ describe("Enhanced Natural Language Parser - Edge Cases", () => {
         })
       })
     })
+
+    describe("Case sensitivity", () => {
+      it("should parse uppercase P1 priority", () => {
+        const result = parseEnhancedNaturalLanguage("test task P1")
+        expect(result.priority).toBe(1)
+        expect(result.title).toBe("test task")
+      })
+
+      it("should parse lowercase p1 priority", () => {
+        const result = parseEnhancedNaturalLanguage("test task p1")
+        expect(result.priority).toBe(1)
+        expect(result.title).toBe("test task")
+      })
+
+      it("should parse mixed case priorities", () => {
+        const resultP2 = parseEnhancedNaturalLanguage("test task P2")
+        expect(resultP2.priority).toBe(2)
+
+        const resultp3 = parseEnhancedNaturalLanguage("test task p3")
+        expect(resultp3.priority).toBe(3)
+
+        const resultP4 = parseEnhancedNaturalLanguage("test task P4")
+        expect(resultP4.priority).toBe(4)
+      })
+    })
   })
 })

@@ -43,6 +43,7 @@ vi.mock("uuid", () => ({
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { processRecurringTaskCompletion } from "@/lib/utils/recurring-task-processor"
 import { logBusinessEvent } from "@/lib/middleware/api-logger"
+import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
 
 const mockReadDataFile = vi.mocked(safeReadDataFile)
 const mockWriteDataFile = vi.mocked(safeWriteDataFile)
@@ -85,8 +86,8 @@ describe("API Route - Recurring Tasks Integration", () => {
       projects: [],
       labels: [],
     },
-    projectGroups: [],
-    labelGroups: [],
+    projectGroups: DEFAULT_PROJECT_GROUP,
+    labelGroups: DEFAULT_LABEL_GROUP,
   })
 
   it("should generate recurring task instance when completing a recurring task", async () => {

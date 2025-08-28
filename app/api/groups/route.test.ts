@@ -65,15 +65,18 @@ describe("GET /api/groups", () => {
       tasks: [],
       labels: [],
       ordering: { projects: [], labels: [] },
-      projectGroups: [
-        {
-          type: "project",
-          id: TEST_GROUP_ID_3,
-          name: "Active Projects",
-          items: [TEST_PROJECT_ID_1],
-        },
-      ],
-      labelGroups: [],
+      projectGroups: {
+        type: "project",
+        id: TEST_GROUP_ID_3,
+        name: "Active Projects",
+        items: [TEST_PROJECT_ID_1],
+      },
+      labelGroups: {
+        type: "label",
+        id: createGroupId("99999999-9999-4999-8999-999999999999"),
+        name: "All Labels",
+        items: [],
+      },
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)
@@ -86,10 +89,12 @@ describe("GET /api/groups", () => {
     expect(response.status).toBe(200)
     const data = await response.json()
 
-    expect(data.projectGroups).toHaveLength(1)
-    expect(data.labelGroups).toHaveLength(0)
-    expect(data.projectGroups[0].name).toBe("Active Projects")
-    expect(data.projectGroups[0].items).toHaveLength(1)
+    expect(data.projectGroups).toBeDefined()
+    expect(data.projectGroups.type).toBe("project")
+    expect(data.projectGroups.name).toBe("Active Projects")
+    expect(data.projectGroups.items).toHaveLength(1)
+    expect(data.labelGroups).toBeDefined()
+    expect(data.labelGroups.type).toBe("label")
   })
 
   it("should handle file read failure", async () => {
@@ -117,15 +122,18 @@ describe("POST /api/groups", () => {
       tasks: [],
       labels: [],
       ordering: { projects: [], labels: [] },
-      projectGroups: [
-        {
-          type: "project",
-          id: TEST_GROUP_ID_3,
-          name: "Parent Project Group",
-          items: [],
-        },
-      ],
-      labelGroups: [],
+      projectGroups: {
+        type: "project",
+        id: TEST_GROUP_ID_3,
+        name: "Parent Project Group",
+        items: [],
+      },
+      labelGroups: {
+        type: "label",
+        id: createGroupId("88888888-8888-4888-8888-888888888888"),
+        name: "All Labels",
+        items: [],
+      },
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)
@@ -189,15 +197,18 @@ describe("PATCH /api/groups", () => {
       tasks: [],
       labels: [],
       ordering: { projects: [], labels: [] },
-      projectGroups: [
-        {
-          type: "project",
-          id: TEST_GROUP_ID_3,
-          name: "Original Project Group",
-          items: [TEST_PROJECT_ID_1],
-        },
-      ],
-      labelGroups: [],
+      projectGroups: {
+        type: "project",
+        id: TEST_GROUP_ID_3,
+        name: "Original Project Group",
+        items: [TEST_PROJECT_ID_1],
+      },
+      labelGroups: {
+        type: "label",
+        id: createGroupId("77777777-7777-4777-8777-777777777777"),
+        name: "All Labels",
+        items: [],
+      },
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)
@@ -261,15 +272,25 @@ describe("DELETE /api/groups", () => {
       tasks: [],
       labels: [],
       ordering: { projects: [], labels: [] },
-      projectGroups: [
-        {
-          type: "project",
-          id: TEST_GROUP_ID_3,
-          name: "Project Group to Delete",
-          items: [TEST_PROJECT_ID_1],
-        },
-      ],
-      labelGroups: [],
+      projectGroups: {
+        type: "project",
+        id: createGroupId("00000000-0000-4000-8000-000000000001"),
+        name: "All Projects",
+        items: [
+          {
+            type: "project",
+            id: TEST_GROUP_ID_3,
+            name: "Project Group to Delete",
+            items: [TEST_PROJECT_ID_1],
+          },
+        ],
+      },
+      labelGroups: {
+        type: "label",
+        id: createGroupId("66666666-6666-4666-8666-666666666666"),
+        name: "All Labels",
+        items: [],
+      },
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)

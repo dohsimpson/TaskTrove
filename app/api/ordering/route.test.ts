@@ -15,6 +15,7 @@ import {
   TEST_LABEL_ID_2,
   TEST_LABEL_ID_3,
 } from "@/lib/utils/test-constants"
+import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
 
 // Mock the safe file operations
 vi.mock("@/lib/utils/safe-file-operations")
@@ -69,8 +70,8 @@ describe("PATCH /api/ordering", () => {
         labels: [TEST_LABEL_ID_1, TEST_LABEL_ID_2],
       },
       taskGroups: [],
-      projectGroups: [],
-      labelGroups: [],
+      projectGroups: DEFAULT_PROJECT_GROUP,
+      labelGroups: DEFAULT_LABEL_GROUP,
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)

@@ -15,6 +15,7 @@ import {
   TEST_TASK_ID_3,
 } from "@/lib/utils/test-constants"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
+import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
 
 // Mock the safe file operations directly
 vi.mock("@/lib/utils/safe-file-operations")
@@ -86,8 +87,8 @@ describe("PATCH /api/projects", () => {
       labels: [],
       ordering: { projects: [], labels: [] },
       taskGroups: [],
-      projectGroups: [],
-      labelGroups: [],
+      projectGroups: DEFAULT_PROJECT_GROUP,
+      labelGroups: DEFAULT_LABEL_GROUP,
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)
@@ -339,8 +340,8 @@ describe("POST /api/projects", () => {
       labels: [],
       ordering: { projects: [], labels: [] },
       taskGroups: [],
-      projectGroups: [],
-      labelGroups: [],
+      projectGroups: DEFAULT_PROJECT_GROUP,
+      labelGroups: DEFAULT_LABEL_GROUP,
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)
@@ -484,8 +485,8 @@ describe("DELETE /api/projects", () => {
       labels: [],
       ordering: { projects: [], labels: [] },
       taskGroups: [],
-      projectGroups: [],
-      labelGroups: [],
+      projectGroups: DEFAULT_PROJECT_GROUP,
+      labelGroups: DEFAULT_LABEL_GROUP,
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)

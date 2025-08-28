@@ -5,6 +5,7 @@ import { render } from "@/test-utils/render-with-providers"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
 import { dataQueryAtom } from "@/lib/atoms/core/base"
 import { createGroupId } from "@/lib/types"
+import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
 
 // Mock component interfaces
 interface MockButtonProps {
@@ -144,8 +145,8 @@ describe("ProjectGroupContextMenu", () => {
           tasks: [],
           projects: [],
           labels: [],
-          projectGroups: [mockProjectGroup],
-          labelGroups: [],
+          projectGroups: { ...DEFAULT_PROJECT_GROUP, items: [mockProjectGroup] },
+          labelGroups: DEFAULT_LABEL_GROUP,
           ordering: { projects: [], labels: [] },
         },
       },
@@ -227,8 +228,8 @@ describe("ProjectGroupContextMenu", () => {
                 tasks: [],
                 projects: [],
                 labels: [],
-                projectGroups: [],
-                labelGroups: [],
+                projectGroups: DEFAULT_PROJECT_GROUP,
+                labelGroups: DEFAULT_LABEL_GROUP,
                 ordering: { projects: [], labels: [] },
               },
             },

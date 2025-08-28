@@ -36,6 +36,7 @@ import {
   moveProjectBetweenGroupsAtom,
 } from "./groups"
 import { dataQueryAtom } from "./base"
+import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
 
 // Mock fetch for API calls
 const mockFetch = vi.fn()
@@ -72,8 +73,8 @@ const mockParentProjectGroup: ProjectGroup = {
 }
 
 const mockGroupsData: DataFileSerialization = {
-  projectGroups: [mockParentProjectGroup],
-  labelGroups: [],
+  projectGroups: { ...DEFAULT_PROJECT_GROUP, items: [mockParentProjectGroup] },
+  labelGroups: DEFAULT_LABEL_GROUP,
   tasks: [],
   projects: [],
   labels: [],
@@ -306,8 +307,8 @@ describe("Groups Atoms", () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          projectGroups: [],
-          labelGroups: [],
+          projectGroups: DEFAULT_PROJECT_GROUP,
+          labelGroups: DEFAULT_LABEL_GROUP,
           tasks: [],
           projects: [],
           labels: [],
@@ -356,17 +357,20 @@ describe("Groups Atoms", () => {
 
       const deepMockData: DataFileSerialization = {
         ...mockGroupsData,
-        projectGroups: [
-          {
-            ...mockParentProjectGroup,
-            items: [
-              {
-                ...mockProjectGroup,
-                items: [deeplyNested, TEST_PROJECT_ID_1],
-              },
-            ],
-          },
-        ],
+        projectGroups: {
+          ...DEFAULT_PROJECT_GROUP,
+          items: [
+            {
+              ...mockParentProjectGroup,
+              items: [
+                {
+                  ...mockProjectGroup,
+                  items: [deeplyNested, TEST_PROJECT_ID_1],
+                },
+              ],
+            },
+          ],
+        },
       }
 
       mockFetch.mockResolvedValueOnce({
@@ -387,19 +391,22 @@ describe("Groups Atoms", () => {
     it("should handle large numbers of groups efficiently", async () => {
       const largeGroupsData: DataFileSerialization = {
         ...mockGroupsData,
-        projectGroups: Array.from({ length: 100 }, (_, i) => {
-          const groupNum = i.toString().padStart(8, "0")
-          const projectItems = Array.from({ length: 5 }, (_, j) => {
-            const projNum = `${i}-${j}`.padStart(8, "0").replace("-", "").substring(0, 8)
-            return createProjectId(`${projNum}-0000-4000-8000-000000000000`)
-          })
-          return {
-            type: "project" as const,
-            id: createGroupId(`${groupNum}-0000-4000-8000-000000000000`),
-            name: `Group ${i}`,
-            items: projectItems,
-          }
-        }),
+        projectGroups: {
+          ...DEFAULT_PROJECT_GROUP,
+          items: Array.from({ length: 100 }, (_, i) => {
+            const groupNum = i.toString().padStart(8, "0")
+            const projectItems = Array.from({ length: 5 }, (_, j) => {
+              const projNum = `${i}-${j}`.padStart(8, "0").replace("-", "").substring(0, 8)
+              return createProjectId(`${projNum}-0000-4000-8000-000000000000`)
+            })
+            return {
+              type: "project" as const,
+              id: createGroupId(`${groupNum}-0000-4000-8000-000000000000`),
+              name: `Group ${i}`,
+              items: projectItems,
+            }
+          }),
+        },
       }
 
       mockFetch.mockResolvedValueOnce({

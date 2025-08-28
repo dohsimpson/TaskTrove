@@ -14,6 +14,7 @@ import {
   createLabelId,
   createSectionId,
 } from "@/lib/types"
+import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { createMockEnhancedRequest } from "@/lib/utils/test-helpers"
 
@@ -151,8 +152,8 @@ const mockDataFile: DataFile = {
       createLabelId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"),
     ],
   },
-  projectGroups: [],
-  labelGroups: [],
+  projectGroups: DEFAULT_PROJECT_GROUP,
+  labelGroups: DEFAULT_LABEL_GROUP,
 }
 
 describe("PATCH /api/tasks - Task Updates Only", () => {

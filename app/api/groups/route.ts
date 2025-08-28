@@ -79,24 +79,24 @@ export const GET = withMutexProtection(
  * Utility function to find a group by ID in any tree
  */
 function findGroupInTrees(
-  projectGroups: ProjectGroup[],
-  labelGroups: LabelGroup[],
+  projectGroups: ProjectGroup,
+  labelGroups: LabelGroup,
   groupId: GroupId,
 ): { group: Group; tree: "project" | "label"; parent?: Group } | null {
-  function searchInTree(
-    groups: Group[],
+  function searchInGroup(
+    rootGroup: Group,
     treeType: "project" | "label",
     parent?: Group,
   ): { group: Group; tree: "project" | "label"; parent?: Group } | null {
-    for (const group of groups) {
-      if (group.id === groupId) {
-        return { group, tree: treeType, parent }
-      }
+    if (rootGroup.id === groupId) {
+      return { group: rootGroup, tree: treeType, parent }
+    }
 
-      // Search in nested groups - filter for Group objects in items array
-      const nestedGroups = group.items.filter(isGroup<Group>)
+    // Search in nested groups - filter for Group objects in items array
+    const nestedGroups = rootGroup.items.filter(isGroup<Group>)
 
-      const found = searchInTree(nestedGroups, treeType, group)
+    for (const group of nestedGroups) {
+      const found = searchInGroup(group, treeType, rootGroup)
       if (found) {
         return found
       }
@@ -104,7 +104,7 @@ function findGroupInTrees(
     return null
   }
 
-  return searchInTree(projectGroups, "project") || searchInTree(labelGroups, "label")
+  return searchInGroup(projectGroups, "project") || searchInGroup(labelGroups, "label")
 }
 
 /**
@@ -149,11 +149,16 @@ async function createGroup(
         color: color ?? DEFAULT_LABEL_COLORS[0],
         items: [],
       }
-      // Add to root projectGroups array
+      // Add to root projectGroups items
       if (!fileData.projectGroups) {
-        fileData.projectGroups = []
+        fileData.projectGroups = {
+          type: "project",
+          id: createGroupId("00000000-0000-4000-8000-000000000001"),
+          name: "All Projects",
+          items: [],
+        }
       }
-      fileData.projectGroups.push(newProjectGroup)
+      fileData.projectGroups.items.push(newProjectGroup)
       newGroup = newProjectGroup
     } else if (type === "label") {
       const newLabelGroup: LabelGroup = {
@@ -164,11 +169,16 @@ async function createGroup(
         color: color ?? DEFAULT_LABEL_COLORS[0],
         items: [],
       }
-      // Add to root labelGroups array
+      // Add to root labelGroups items
       if (!fileData.labelGroups) {
-        fileData.labelGroups = []
+        fileData.labelGroups = {
+          type: "label",
+          id: createGroupId("00000000-0000-4000-8000-000000000002"),
+          name: "All Labels",
+          items: [],
+        }
       }
-      fileData.labelGroups.push(newLabelGroup)
+      fileData.labelGroups.items.push(newLabelGroup)
       newGroup = newLabelGroup
     } else {
       return createErrorResponse("Invalid group type", `Unsupported group type: ${type}`, 400)
@@ -193,8 +203,8 @@ async function createGroup(
         type: newGroup.type,
         parentId: null,
         totalGroups: {
-          project: fileData.projectGroups?.length || 0,
-          label: fileData.labelGroups?.length || 0,
+          project: fileData.projectGroups ? 1 : 0,
+          label: fileData.labelGroups ? 1 : 0,
         },
       },
       request.context,
@@ -211,8 +221,18 @@ async function createGroup(
 
   // Find parent group in appropriate tree
   const parentResult = findGroupInTrees(
-    fileData.projectGroups || [],
-    fileData.labelGroups || [],
+    fileData.projectGroups || {
+      type: "project",
+      id: createGroupId("00000000-0000-4000-8000-000000000001"),
+      name: "All Projects",
+      items: [],
+    },
+    fileData.labelGroups || {
+      type: "label",
+      id: createGroupId("00000000-0000-4000-8000-000000000002"),
+      name: "All Labels",
+      items: [],
+    },
     parentId,
   )
 
@@ -284,8 +304,8 @@ async function createGroup(
       type: newGroup.type,
       parentId: parentId,
       totalGroups: {
-        project: fileData.projectGroups?.length || 0,
-        label: fileData.labelGroups?.length || 0,
+        project: fileData.projectGroups ? 1 : 0,
+        label: fileData.labelGroups ? 1 : 0,
       },
     },
     request.context,
@@ -355,11 +375,27 @@ async function handleBulkGroupUpdate(
     return createErrorResponse("Failed to update groups", "File reading or validation failed", 500)
   }
 
-  // Replace entire array based on type
+  // Replace ROOT group's items based on type
   if (bulkUpdate.type === "project") {
-    fileData.projectGroups = bulkUpdate.groups
+    if (!fileData.projectGroups) {
+      fileData.projectGroups = {
+        type: "project",
+        id: createGroupId("00000000-0000-4000-8000-000000000001"),
+        name: "All Projects",
+        items: [],
+      }
+    }
+    fileData.projectGroups.items = bulkUpdate.groups
   } else if (bulkUpdate.type === "label") {
-    fileData.labelGroups = bulkUpdate.groups
+    if (!fileData.labelGroups) {
+      fileData.labelGroups = {
+        type: "label",
+        id: createGroupId("00000000-0000-4000-8000-000000000002"),
+        name: "All Labels",
+        items: [],
+      }
+    }
+    fileData.labelGroups.items = bulkUpdate.groups
   }
 
   const writeSuccess = await withPerformanceLogging(
@@ -379,8 +415,8 @@ async function handleBulkGroupUpdate(
       type: bulkUpdate.type,
       groupCount: bulkUpdate.groups.length,
       totalGroups: {
-        project: fileData.projectGroups?.length || 0,
-        label: fileData.labelGroups?.length || 0,
+        project: fileData.projectGroups ? 1 : 0,
+        label: fileData.labelGroups ? 1 : 0,
       },
     },
     request.context,
@@ -421,8 +457,18 @@ async function handleIndividualGroupUpdates(
 
   for (const update of updates) {
     const groupResult = findGroupInTrees(
-      fileData.projectGroups || [],
-      fileData.labelGroups || [],
+      fileData.projectGroups || {
+        type: "project",
+        id: createGroupId("00000000-0000-4000-8000-000000000001"),
+        name: "All Projects",
+        items: [],
+      },
+      fileData.labelGroups || {
+        type: "label",
+        id: createGroupId("00000000-0000-4000-8000-000000000002"),
+        name: "All Labels",
+        items: [],
+      },
       update.id,
     )
 
@@ -483,8 +529,8 @@ async function handleIndividualGroupUpdates(
         itemsCount: group.items.length,
       })),
       totalGroups: {
-        project: fileData.projectGroups?.length || 0,
-        label: fileData.labelGroups?.length || 0,
+        project: fileData.projectGroups ? 1 : 0,
+        label: fileData.labelGroups ? 1 : 0,
       },
     },
     request.context,
@@ -508,29 +554,38 @@ export const PATCH = withMutexProtection(
 )
 
 /**
- * Utility function to remove a group from any tree (recursively)
+ * Utility function to remove a group from a ROOT group (recursively)
  */
-function removeGroupFromTree(groups: Group[], groupId: GroupId): boolean {
-  for (let i = 0; i < groups.length; i++) {
-    const group = groups[i]
+function removeGroupFromRootGroup(rootGroup: Group, groupId: GroupId): boolean {
+  // Check if we're trying to delete the ROOT group itself (not allowed)
+  if (rootGroup.id === groupId) {
+    return false // Cannot delete ROOT groups
+  }
+
+  // Remove from immediate children
+  const nestedGroups = rootGroup.items.filter(isGroup<Group>)
+  for (let i = 0; i < nestedGroups.length; i++) {
+    const group = nestedGroups[i]
     if (group.id === groupId) {
-      groups.splice(i, 1)
-      return true
-    }
-
-    // Search in nested groups using type guard
-    const nestedGroups = group.items.filter(isGroup<Group>)
-
-    if (removeGroupFromTree(nestedGroups, groupId)) {
-      // Update the items array to reflect the removal using discriminated union narrowing
-      if (group.type === "project") {
-        group.items = group.items.filter((item) => !isGroup<Group>(item) || item.id !== groupId)
-      } else if (group.type === "label") {
-        group.items = group.items.filter((item) => !isGroup<Group>(item) || item.id !== groupId)
+      // Remove from ROOT group's items with proper type narrowing
+      if (rootGroup.type === "project") {
+        rootGroup.items = rootGroup.items.filter(
+          (item) => typeof item === "string" || item.id !== groupId,
+        )
+      } else if (rootGroup.type === "label") {
+        rootGroup.items = rootGroup.items.filter(
+          (item) => typeof item === "string" || item.id !== groupId,
+        )
       }
       return true
     }
+
+    // Recursively search in nested groups
+    if (removeGroupFromRootGroup(group, groupId)) {
+      return true
+    }
   }
+
   return false
 }
 
@@ -562,11 +617,16 @@ async function deleteGroup(
     return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
   }
 
-  // Try to remove from each tree
+  // Try to remove from each ROOT group
   let deleted = false
-  deleted =
-    removeGroupFromTree(fileData.projectGroups || [], groupId) ||
-    removeGroupFromTree(fileData.labelGroups || [], groupId)
+
+  if (fileData.projectGroups) {
+    deleted = removeGroupFromRootGroup(fileData.projectGroups, groupId)
+  }
+
+  if (!deleted && fileData.labelGroups) {
+    deleted = removeGroupFromRootGroup(fileData.labelGroups, groupId)
+  }
 
   const writeSuccess = await withPerformanceLogging(
     () => safeWriteDataFile({ data: fileData }),
@@ -587,8 +647,8 @@ async function deleteGroup(
       groupId,
       deletedCount,
       remainingGroups: {
-        project: fileData.projectGroups?.length || 0,
-        label: fileData.labelGroups?.length || 0,
+        project: fileData.projectGroups ? 1 : 0,
+        label: fileData.labelGroups ? 1 : 0,
       },
     },
     request.context,

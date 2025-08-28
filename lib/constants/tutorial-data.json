@@ -214,5 +214,17 @@
   "ordering": {
     "projects": ["550e8400-e29b-41d4-a716-446655440000"],
     "labels": ["6ba7b811-9dad-41d1-8696-f01c6a84b1a1"]
+  },
+  "projectGroups": {
+    "type": "project",
+    "id": "00000000-0000-4000-8000-000000000001",
+    "name": "All Projects",
+    "items": ["550e8400-e29b-41d4-a716-446655440000"]
+  },
+  "labelGroups": {
+    "type": "label",
+    "id": "00000000-0000-4000-8000-000000000002",
+    "name": "All Labels",
+    "items": ["6ba7b811-9dad-41d1-8696-f01c6a84b1a1"]
   }
 }

@@ -15,7 +15,7 @@ import { ColorPickerFloating } from "@/components/ui/custom/color-picker-floatin
 import { MoreHorizontal, Edit3, Trash2, Palette, FolderPlus, UserPlus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
-  allGroupsAtom,
+  projectGroupsAtom,
   updateProjectGroupAtom,
   deleteProjectGroupAtom,
 } from "@/lib/atoms/core/groups"
@@ -41,7 +41,7 @@ export function ProjectGroupContextMenu({
   const contextMenuRef = useRef<HTMLDivElement>(null)
 
   // Get group data and actions from atoms
-  const allGroups = useAtomValue(allGroupsAtom)
+  const projectGroups = useAtomValue(projectGroupsAtom)
   const updateProjectGroup = useSetAtom(updateProjectGroupAtom)
   const deleteProjectGroup = useSetAtom(deleteProjectGroupAtom)
   const openProjectGroupDialog = useSetAtom(openProjectGroupDialogAtom)
@@ -51,7 +51,7 @@ export function ProjectGroupContextMenu({
   const setIsOpen = onOpenChange || setInternalOpen
 
   // Find the project group
-  const projectGroup = allGroups.projectGroups.find((group) => group.id === groupId)
+  const projectGroup = projectGroups.find((group) => group.id === groupId)
   if (!projectGroup) return null
 
   const handleEdit = () => {

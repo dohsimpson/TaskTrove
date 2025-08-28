@@ -800,9 +800,8 @@ export const DataFileSchema = z.object({
   projects: z.array(ProjectSchema),
   labels: z.array(LabelSchema),
   ordering: OrderingSchema,
-  projectGroups: z.array(ProjectGroupSchema).default([]),
-  labelGroups: z.array(LabelGroupSchema).default([]),
-  // TODO: this field will become required from v0.10.0
+  projectGroups: ProjectGroupSchema,
+  labelGroups: LabelGroupSchema,
   version: VersionStringSchema.optional(),
 })
 
@@ -811,8 +810,8 @@ export const DataFileSerializationSchema = z.object({
   projects: z.array(ProjectSerializationSchema),
   labels: z.array(LabelSerializationSchema),
   ordering: OrderingSerializationSchema,
-  projectGroups: z.array(GroupSerializationSchema).default([]),
-  labelGroups: z.array(GroupSerializationSchema).default([]),
+  projectGroups: ProjectGroupSchema,
+  labelGroups: LabelGroupSchema,
   version: VersionStringSchema.optional(),
 })
 

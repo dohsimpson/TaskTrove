@@ -2,12 +2,13 @@ import { atom } from "jotai"
 import type {
   GroupId,
   ProjectGroup,
+  LabelGroup,
   ProjectId,
   CreateGroupRequest,
   UpdateProjectGroupRequest,
   DeleteGroupRequest,
 } from "@/lib/types"
-import { isGroup } from "@/lib/types"
+import { isGroup, createGroupId } from "@/lib/types"
 import { log } from "@/lib/utils/logger"
 import {
   createProjectGroupMutationAtom,
@@ -27,27 +28,75 @@ export const allGroupsAtom = atom((get) => {
   // Handle TanStack Query result structure - follow same pattern as projectsAtom
   if ("data" in result && result.data) {
     return {
-      projectGroups: result.data.projectGroups ?? [],
-      labelGroups: result.data.labelGroups ?? [],
+      projectGroups: result.data.projectGroups ?? {
+        type: "project" as const,
+        id: createGroupId("00000000-0000-4000-8000-000000000001"),
+        name: "All Projects",
+        items: [],
+      },
+      labelGroups: result.data.labelGroups ?? {
+        type: "label" as const,
+        id: createGroupId("00000000-0000-4000-8000-000000000002"),
+        name: "All Labels",
+        items: [],
+      },
     }
   }
 
   return {
-    projectGroups: [],
-    labelGroups: [],
+    projectGroups: {
+      type: "project" as const,
+      id: createGroupId("00000000-0000-4000-8000-000000000001"),
+      name: "All Projects",
+      items: [],
+    },
+    labelGroups: {
+      type: "label" as const,
+      id: createGroupId("00000000-0000-4000-8000-000000000002"),
+      name: "All Labels",
+      items: [],
+    },
   }
 })
 
 export const projectGroupsAtom = atom((get) => {
   const groups = get(allGroupsAtom)
-  return groups.projectGroups.filter(
-    (group): group is ProjectGroup => isGroup(group) && group.type === "project",
-  )
+  // Extract the items from the ROOT project group and flatten any nested groups
+  const flattenGroups = (group: ProjectGroup): ProjectGroup[] => {
+    const result: ProjectGroup[] = []
+    for (const item of group.items) {
+      if (typeof item === "string") {
+        // It's a ProjectId, skip for this function
+        continue
+      } else {
+        // It's a ProjectGroup
+        result.push(item)
+        result.push(...flattenGroups(item))
+      }
+    }
+    return result
+  }
+  return flattenGroups(groups.projectGroups)
 })
 
 export const labelGroupsAtom = atom((get) => {
   const groups = get(allGroupsAtom)
-  return groups.labelGroups
+  // Extract the items from the ROOT label group and flatten any nested groups
+  const flattenGroups = (group: LabelGroup): LabelGroup[] => {
+    const result: LabelGroup[] = []
+    for (const item of group.items) {
+      if (typeof item === "string") {
+        // It's a LabelId, skip for this function
+        continue
+      } else {
+        // It's a LabelGroup
+        result.push(item)
+        result.push(...flattenGroups(item))
+      }
+    }
+    return result
+  }
+  return flattenGroups(groups.labelGroups)
 })
 
 // CRUD Mutation atoms are now imported from base.ts

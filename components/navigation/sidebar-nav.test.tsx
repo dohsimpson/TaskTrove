@@ -4,6 +4,7 @@ import { render, screen } from "@/test-utils"
 import { SidebarNav } from "./sidebar-nav"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { mockNextNavigation } from "@/test-utils/mock-router"
+import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
 
 // Mock Next.js router using centralized utilities
 mockNextNavigation()
@@ -75,16 +76,19 @@ vi.mock("jotai", async (importOriginal) => {
       }
       if (atom.debugLabel === "allGroupsAtom") {
         return {
-          projectGroups: [
-            {
-              id: "group-1",
-              name: "Work Projects",
-              type: "project",
-              color: "#3b82f6",
-              items: ["1"],
-            },
-          ],
-          labelGroups: [],
+          projectGroups: {
+            ...DEFAULT_PROJECT_GROUP,
+            items: [
+              {
+                id: "group-1",
+                name: "Work Projects",
+                type: "project",
+                color: "#3b82f6",
+                items: ["1"],
+              },
+            ],
+          },
+          labelGroups: DEFAULT_LABEL_GROUP,
         }
       }
       // Handle other read-only atoms by returning their default values

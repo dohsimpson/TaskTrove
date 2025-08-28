@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { migrateDataFile, needsMigration, getMigrationInfo } from "./data-migration"
 import type { DataFile } from "@/lib/types"
 import { createTaskId, createProjectId, createVersionString } from "@/lib/types"
+import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
 
 // Mock package.json to control version in tests
 vi.mock("@/package.json", () => ({
@@ -19,8 +20,8 @@ describe("Data Migration Utility", () => {
       projects: [],
       labels: [],
       ordering: { projects: [], labels: [] },
-      projectGroups: [],
-      labelGroups: [],
+      projectGroups: DEFAULT_PROJECT_GROUP,
+      labelGroups: DEFAULT_LABEL_GROUP,
     }
 
     // Reset console.log mock

@@ -64,8 +64,13 @@ export const TEST_PROJECT_GROUP_ALL: ProjectGroup = {
 }
 
 export const TEST_GROUPS_DATA: DataFileSerialization = {
-  projectGroups: [TEST_PROJECT_GROUP_ALL],
-  labelGroups: [],
+  projectGroups: TEST_PROJECT_GROUP_ALL,
+  labelGroups: {
+    type: "label",
+    id: createGroupId("77777777-7777-4777-8777-777777777777"),
+    name: "All Labels",
+    items: [],
+  },
   tasks: [],
   projects: [],
   labels: [],

@@ -82,7 +82,6 @@ import {
   BulkGroupUpdate,
   BulkGroupUpdateSchema,
   createGroupId,
-  isGroup,
 } from "../../types"
 import {
   DEFAULT_TASK_PRIORITY,
@@ -158,8 +157,18 @@ const EMPTY_CACHE_DATA: DataFile = {
   projects: [],
   labels: [],
   ordering: { projects: [], labels: [] },
-  projectGroups: [],
-  labelGroups: [],
+  projectGroups: {
+    type: "project",
+    id: createGroupId("00000000-0000-4000-8000-000000000001"),
+    name: "All Projects",
+    items: [],
+  },
+  labelGroups: {
+    type: "label",
+    id: createGroupId("00000000-0000-4000-8000-000000000002"),
+    name: "All Labels",
+    items: [],
+  },
 }
 
 /**
@@ -397,30 +406,33 @@ export const dataQueryAtom = atomWithQuery(() => ({
             color: "#3b82f6",
           },
         ],
-        projectGroups: [
-          {
-            type: "project" as const,
-            id: createGroupId("33333333-3333-4333-8333-333333333333"),
-            name: "All Projects",
-            items: [
-              {
-                type: "project" as const,
-                id: createGroupId("11111111-1111-4111-8111-111111111111"),
-                name: "Work Projects",
-                description: "Projects related to work",
-                color: "#3b82f6",
-                items: [createProjectId("44444444-4444-4444-8444-444444444444")],
-              },
-              {
-                type: "project" as const,
-                id: createGroupId("22222222-2222-4222-8222-222222222222"),
-                name: "Development",
-                items: [createProjectId("55555555-5555-4555-8555-555555555555")],
-              },
-            ],
-          },
-        ],
-        labelGroups: [],
+        projectGroups: {
+          type: "project" as const,
+          id: createGroupId("33333333-3333-4333-8333-333333333333"),
+          name: "All Projects",
+          items: [
+            {
+              type: "project" as const,
+              id: createGroupId("11111111-1111-4111-8111-111111111111"),
+              name: "Work Projects",
+              description: "Projects related to work",
+              color: "#3b82f6",
+              items: [createProjectId("44444444-4444-4444-8444-444444444444")],
+            },
+            {
+              type: "project" as const,
+              id: createGroupId("22222222-2222-4222-8222-222222222222"),
+              name: "Development",
+              items: [createProjectId("55555555-5555-4555-8555-555555555555")],
+            },
+          ],
+        },
+        labelGroups: {
+          type: "label" as const,
+          id: createGroupId("88888888-8888-4888-8888-888888888888"),
+          name: "All Labels",
+          items: [],
+        },
         ordering: {
           projects: [
             INBOX_PROJECT_ID,
@@ -795,7 +807,10 @@ export const createProjectGroupMutationAtom = createMutation({
 
     return {
       ...oldData,
-      projectGroups: [...(oldData.projectGroups || []), optimisticGroup],
+      projectGroups: {
+        ...oldData.projectGroups,
+        items: [...oldData.projectGroups.items, optimisticGroup],
+      },
     }
   },
 })
@@ -829,21 +844,39 @@ export const updateProjectGroupMutationAtom = createMutation({
   optimisticUpdateFn: (request: UpdateProjectGroupRequest, oldData: DataFile) => {
     const updateRequest = Array.isArray(request) ? request : [request]
 
+    if (!oldData.projectGroups) {
+      return oldData
+    }
+
+    // Helper function to recursively update groups within ROOT structure
+    const updateGroupInTree = (group: ProjectGroup): ProjectGroup => {
+      const update = updateRequest.find((u) => u.id === group.id)
+      if (update) {
+        return {
+          ...group,
+          ...(update.name && { name: update.name }),
+          ...(update.description && { description: update.description }),
+          ...(update.color && { color: update.color }),
+          ...(update.items && { items: update.items }),
+        }
+      }
+
+      // Recursively update nested groups in items
+      return {
+        ...group,
+        items: group.items.map((item) => {
+          if (typeof item === "string") {
+            return item // ProjectId, leave unchanged
+          } else {
+            return updateGroupInTree(item) // Nested ProjectGroup, recurse
+          }
+        }),
+      }
+    }
+
     return {
       ...oldData,
-      projectGroups:
-        oldData.projectGroups?.map((group) => {
-          const update = updateRequest.find((u) => u.id === group.id)
-          if (!update) return group
-
-          return {
-            ...group,
-            ...(update.name && { name: update.name }),
-            ...(update.description && { description: update.description }),
-            ...(update.color && { color: update.color }),
-            ...(update.items && { items: update.items }),
-          }
-        }) || [],
+      projectGroups: updateGroupInTree(oldData.projectGroups),
     }
   },
 })
@@ -864,36 +897,34 @@ export const deleteProjectGroupMutationAtom = createMutation({
     message: "Group deleted successfully (test mode)",
   }),
   optimisticUpdateFn: (request: DeleteGroupRequest, oldData: DataFile) => {
-    // Remove the group and all its children recursively
-    function removeGroupRecursively(groups: ProjectGroup[], targetId: GroupId): ProjectGroup[] {
-      return groups
-        .filter((group) => group.id !== targetId)
-        .map((group) => ({
-          ...group,
-          items: group.items
-            .filter((item) => {
-              if (typeof item === "string") return true // Keep project IDs
-              return isGroup(item) && item.id !== targetId // Remove matching groups
-            })
-            .map((item) => {
-              if (typeof item === "string") return item
-              if (isGroup(item)) {
-                return {
-                  ...item,
-                  items: item.items.filter((childItem) => {
-                    if (typeof childItem === "string") return true
-                    return isGroup(childItem) && childItem.id !== targetId
-                  }),
-                }
-              }
-              return item
-            }),
-        }))
+    if (!oldData.projectGroups) {
+      return oldData
+    }
+
+    // Cannot delete the ROOT group itself
+    if (oldData.projectGroups.id === request.id) {
+      return oldData
+    }
+
+    // Remove the group recursively from ROOT group structure
+    const removeGroupFromTree = (group: ProjectGroup, targetId: GroupId): ProjectGroup => {
+      return {
+        ...group,
+        items: group.items
+          .filter((item) => {
+            if (typeof item === "string") return true // Keep project IDs
+            return item.id !== targetId // Remove matching groups
+          })
+          .map((item) => {
+            if (typeof item === "string") return item // ProjectId, leave unchanged
+            return removeGroupFromTree(item, targetId) // Recursively clean nested groups
+          }),
+      }
     }
 
     return {
       ...oldData,
-      projectGroups: removeGroupRecursively(oldData.projectGroups || [], request.id),
+      projectGroups: removeGroupFromTree(oldData.projectGroups, request.id),
     }
   },
 })
@@ -914,16 +945,36 @@ export const bulkUpdateGroupsMutationAtom = createMutation({
     message: `${request.groups.length} ${request.type} group(s) bulk updated successfully (test mode)`,
   }),
   optimisticUpdateFn: (request: BulkGroupUpdate, oldData: DataFile) => {
-    // Replace entire array based on type
+    // Replace ROOT group's items array based on type
     if (request.type === "project") {
       return {
         ...oldData,
-        projectGroups: request.groups,
+        projectGroups: oldData.projectGroups
+          ? {
+              ...oldData.projectGroups,
+              items: request.groups,
+            }
+          : {
+              type: "project" as const,
+              id: createGroupId("00000000-0000-4000-8000-000000000001"),
+              name: "All Projects",
+              items: request.groups,
+            },
       }
     } else if (request.type === "label") {
       return {
         ...oldData,
-        labelGroups: request.groups,
+        labelGroups: oldData.labelGroups
+          ? {
+              ...oldData.labelGroups,
+              items: request.groups,
+            }
+          : {
+              type: "label" as const,
+              id: createGroupId("00000000-0000-4000-8000-000000000002"),
+              name: "All Labels",
+              items: request.groups,
+            },
       }
     }
     return oldData

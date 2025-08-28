@@ -16,6 +16,7 @@ import {
   TEST_LABEL_ID_1,
   TEST_SECTION_ID_1,
 } from "@/lib/utils/test-constants"
+import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
 
 // Mock fs/promises
 vi.mock("fs/promises", () => ({
@@ -343,8 +344,8 @@ describe("safe-file-operations", () => {
         projects: [],
         labels: [],
       },
-      projectGroups: [],
-      labelGroups: [],
+      projectGroups: DEFAULT_PROJECT_GROUP,
+      labelGroups: DEFAULT_LABEL_GROUP,
     }
 
     it("should successfully read a valid data file", async () => {
@@ -396,8 +397,8 @@ describe("safe-file-operations", () => {
         projects: [],
         labels: [],
       },
-      projectGroups: [],
-      labelGroups: [],
+      projectGroups: DEFAULT_PROJECT_GROUP,
+      labelGroups: DEFAULT_LABEL_GROUP,
     }
 
     it("should successfully write a valid data file", async () => {

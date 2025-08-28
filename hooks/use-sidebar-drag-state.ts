@@ -40,64 +40,58 @@ export type SidebarInstruction =
   | null
 
 /**
- * Helper function to calculate correct toIndex for reordering within the same context.
- *
- * When moving an item within the same list, the source item is conceptually removed first,
- * which shifts all subsequent items down by one position. This function accounts for that shift.
- *
- * @param sourceIndex - Current index of the item being moved
- * @param targetIndex - Index of the drop target
- * @param closestEdge - Which edge of the target ("top" = before, "bottom" = after, null = after)
- * @returns The correct final index after accounting for source removal
+ * Calculates correct toIndex for reordering within the same context.
+ * Accounts for source removal when moving items within the same list.
  */
 function calculateAdjustedToIndex(
   sourceIndex: number,
   targetIndex: number,
-  closestEdge: Edge | null | undefined,
+  edge: Edge | null | undefined,
 ): number {
-  const insertIndex = closestEdge === "top" ? targetIndex : targetIndex + 1
-  // Account for source removal: if moving forward, target shifts down by 1
+  const insertIndex = edge === "top" ? targetIndex : targetIndex + 1
   return sourceIndex < insertIndex ? insertIndex - 1 : insertIndex
 }
 
+type InstructionType = "reorder-above" | "reorder-below" | "make-child"
+
 /**
- * Helper function to extract edge information from Atlassian's tree-item instruction
+ * Extracts Atlassian's tree-item instruction from drop target data
  */
-function getEdgeFromInstruction(targetData: Record<string, unknown>): Edge | null {
-  // Check if target data has the instruction symbol
+function extractInstruction(targetData: Record<string, unknown>): {
+  type: InstructionType | null
+  edge: Edge | null
+} {
   const instructionSymbol = Object.getOwnPropertySymbols(targetData).find((symbol) =>
     symbol.toString().includes("tree-item-instruction"),
   )
 
-  if (instructionSymbol) {
-    // TypeScript-safe way to access symbol property
-    const instruction = (targetData as any)[instructionSymbol] as { type: string }
-    switch (instruction?.type) {
-      case "reorder-above":
-        return "top"
-      case "reorder-below":
-        return "bottom"
-      default:
-        return null
-    }
+  if (!instructionSymbol) {
+    return { type: null, edge: null }
   }
 
-  return null
+  const instruction = (targetData as any)[instructionSymbol] as { type: string }
+  const type = instruction?.type as InstructionType
+
+  switch (type) {
+    case "reorder-above":
+      return { type, edge: "top" }
+    case "reorder-below":
+      return { type, edge: "bottom" }
+    case "make-child":
+      return { type, edge: null }
+    default:
+      return { type: null, edge: null }
+  }
 }
 
 /**
- * Extract instruction from drop data following official Pragmatic pattern.
- *
- * This function converts drag and drop event data into sidebar-specific instructions
- * that can be executed by atom actions. It correctly handles toIndex calculation
- * for same-context reordering by accounting for source item removal.
+ * Converts drag and drop event data into sidebar-specific instructions.
  */
 export function extractSidebarInstruction(
   sourceData: Record<string, unknown>,
   targetData: Record<string, unknown>,
 ): SidebarInstruction {
-  // Use instruction data directly from Atlassian's system
-  const actualEdge = getEdgeFromInstruction(targetData)
+  const instruction = extractInstruction(targetData)
 
   // Project being dragged
   if (sourceData.type === "sidebar-project") {
@@ -116,12 +110,12 @@ export function extractSidebarInstruction(
           type: "reorder-project",
           projectId,
           fromIndex: sourceIndex,
-          toIndex: calculateAdjustedToIndex(sourceIndex, targetIndex, actualEdge),
+          toIndex: calculateAdjustedToIndex(sourceIndex, targetIndex, instruction.edge),
           withinGroupId: sourceGroupId,
         }
       }
 
-      const insertIndex = actualEdge === "top" ? targetIndex : targetIndex + 1
+      const insertIndex = instruction.edge === "top" ? targetIndex : targetIndex + 1
 
       // Different groups - move
       if (targetGroupId) {
@@ -142,15 +136,29 @@ export function extractSidebarInstruction(
       }
     }
 
-    // Dropped on group header (add to group)
+    // Dropped on group header
     if (targetData.type === "sidebar-group-drop-target") {
       const targetGroupId = targetData.groupId as GroupId
-      return {
-        type: "move-project-to-group",
-        projectId,
-        fromGroupId: sourceGroupId,
-        toGroupId: targetGroupId,
-        insertIndex: 0, // Add to beginning of group
+      const targetIndex = targetData.index as number
+
+      if (instruction.type === "reorder-above" || instruction.type === "reorder-below") {
+        // Move to ROOT level at group position (full bar)
+        const insertIndex = instruction.edge === "top" ? targetIndex : targetIndex + 1
+        return {
+          type: "remove-project-from-group",
+          projectId,
+          fromGroupId: sourceGroupId!,
+          insertIndex,
+        }
+      } else {
+        // Move INTO the group (shorter bar or no instruction)
+        return {
+          type: "move-project-to-group",
+          projectId,
+          fromGroupId: sourceGroupId,
+          toGroupId: targetGroupId,
+          insertIndex: 0,
+        }
       }
     }
 
@@ -178,7 +186,7 @@ export function extractSidebarInstruction(
         type: "reorder-group",
         groupId,
         fromIndex: sourceIndex,
-        toIndex: calculateAdjustedToIndex(sourceIndex, targetIndex, actualEdge),
+        toIndex: calculateAdjustedToIndex(sourceIndex, targetIndex, instruction.edge),
       }
     }
   }
@@ -186,10 +194,8 @@ export function extractSidebarInstruction(
   return null
 }
 
-export type SidebarDragStates = Map<string, SidebarDragState>
-
 export function useSidebarDragState() {
-  const [dragStates, setDragStates] = useState<SidebarDragStates>(new Map())
+  const [dragStates, setDragStates] = useState<Map<string, SidebarDragState>>(new Map())
 
   const updateDragState = (targetId: string, state: Partial<SidebarDragState>) => {
     setDragStates((prev) => {
@@ -223,163 +229,4 @@ export function useSidebarDragState() {
     clearAllDragStates,
     getDragState,
   }
-}
-
-// Execute instruction following official Pragmatic pattern
-export async function executeSidebarInstruction(
-  instruction: SidebarInstruction,
-  atomStore: {
-    set: <T>(atom: any, value: T) => Promise<void>
-  },
-): Promise<void> {
-  if (!instruction) return
-
-  // Import the atoms we need - using dynamic imports to avoid circular dependencies
-  const {
-    reorderProjectWithinGroupAtom,
-    moveProjectToGroupAtom,
-    removeProjectFromGroupWithIndexAtom,
-    reorderGroupAtom,
-  } = await import("@/lib/atoms/core/groups")
-  const { reorderProjectAtom } = await import("@/lib/atoms/core/ordering")
-
-  try {
-    switch (instruction.type) {
-      case "reorder-project":
-        if (instruction.withinGroupId) {
-          // Reorder within a group
-          await atomStore.set(reorderProjectWithinGroupAtom, {
-            groupId: instruction.withinGroupId,
-            projectId: instruction.projectId,
-            newIndex: instruction.toIndex,
-          })
-        } else {
-          // Reorder in ungrouped projects
-          await atomStore.set(reorderProjectAtom, {
-            projectId: instruction.projectId,
-            newIndex: instruction.toIndex,
-          })
-        }
-        break
-
-      case "move-project-to-group":
-        await atomStore.set(moveProjectToGroupAtom, {
-          projectId: instruction.projectId,
-          fromGroupId: instruction.fromGroupId,
-          toGroupId: instruction.toGroupId,
-          insertIndex: instruction.insertIndex,
-        })
-        break
-
-      case "remove-project-from-group":
-        await atomStore.set(removeProjectFromGroupWithIndexAtom, {
-          projectId: instruction.projectId,
-          insertIndex: instruction.insertIndex,
-        })
-        break
-
-      case "reorder-group":
-        await atomStore.set(reorderGroupAtom, {
-          groupId: instruction.groupId,
-          fromIndex: instruction.fromIndex,
-          toIndex: instruction.toIndex,
-        })
-        break
-
-      default:
-        console.log("❓ Unknown instruction:", instruction)
-    }
-  } catch (error) {
-    console.error("🚨 Error executing sidebar instruction:", error)
-    throw error
-  }
-}
-
-// Legacy mock actions (for backward compatibility)
-export const mockSidebarActions = {
-  moveProject: ({
-    projectId,
-    fromGroupId,
-    toGroupId,
-    insertIndex,
-  }: {
-    projectId: ProjectId
-    fromGroupId?: GroupId
-    toGroupId?: GroupId
-    insertIndex: number
-  }) => {
-    console.log("🔄 Mock Action: moveProject", {
-      projectId,
-      fromGroupId: fromGroupId || "ungrouped",
-      toGroupId: toGroupId || "ungrouped",
-      insertIndex,
-    })
-  },
-
-  reorderProject: ({
-    projectId,
-    fromIndex,
-    toIndex,
-    withinGroupId,
-  }: {
-    projectId: ProjectId
-    fromIndex: number
-    toIndex: number
-    withinGroupId?: GroupId
-  }) => {
-    console.log("📋 Mock Action: reorderProject", {
-      projectId,
-      fromIndex,
-      toIndex,
-      context: withinGroupId || "ungrouped",
-    })
-  },
-
-  reorderGroup: ({
-    groupId,
-    fromIndex,
-    toIndex,
-  }: {
-    groupId: GroupId
-    fromIndex: number
-    toIndex: number
-  }) => {
-    console.log("📁 Mock Action: reorderGroup", {
-      groupId,
-      fromIndex,
-      toIndex,
-    })
-  },
-
-  addProjectToGroup: ({
-    projectId,
-    groupId,
-    insertIndex,
-  }: {
-    projectId: ProjectId
-    groupId: GroupId
-    insertIndex: number
-  }) => {
-    console.log("➕ Mock Action: addProjectToGroup", {
-      projectId,
-      groupId,
-      insertIndex,
-    })
-  },
-
-  removeProjectFromGroup: ({
-    projectId,
-    groupId,
-    insertIndex,
-  }: {
-    projectId: ProjectId
-    groupId: GroupId
-    insertIndex: number
-  }) => {
-    console.log("➖ Mock Action: removeProjectFromGroup", {
-      projectId,
-      groupId,
-      insertIndex,
-    })
-  },
 }

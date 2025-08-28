@@ -5,9 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
-// import { useDragAndDrop } from "@/hooks/use-drag-and-drop" // unused
 import { useSetAtom, useAtomValue } from "jotai"
-// import { moveTaskAtom } from "@/lib/atoms" // unused
 import {
   orderedTasksByProjectAtom,
   reorderTaskInViewAtom,
@@ -71,7 +69,6 @@ interface KanbanBoardProps {
 }
 
 export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
-  // const { handleDrop: _handleDrop } = useDragAndDrop() // unused
   const [columns, setColumns] = useState<KanbanColumn[]>([])
 
   // Track drag state for shadow rendering per column

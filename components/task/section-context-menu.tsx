@@ -8,7 +8,7 @@ import {
   currentRouteContextAtom,
   openSectionDialogAtom,
 } from "@/lib/atoms/ui/navigation"
-import { DEFAULT_SECTION_ID } from "@/lib/constants/defaults"
+import { DEFAULT_UUID } from "@/lib/constants/defaults"
 import { isValidProjectId } from "@/lib/utils/routing"
 import type { Project, ProjectSection, SectionId } from "@/lib/types"
 
@@ -47,7 +47,7 @@ export function SectionContextMenu({
   if (!section) return null
 
   // Check if this is the default section (not deletable)
-  const showDeleteOption = sectionId !== DEFAULT_SECTION_ID
+  const showDeleteOption = sectionId !== DEFAULT_UUID
 
   const handleEdit = () => {
     startEditing(sectionId)

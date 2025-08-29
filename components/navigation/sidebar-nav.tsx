@@ -48,14 +48,15 @@ import {
   labelAtoms,
 } from "@/lib/atoms"
 import {
-  rootProjectGroupsAtom,
-  ungroupedProjectsAtom,
+  allGroupsAtom,
   reorderProjectWithinGroupAtom,
   moveProjectToGroupAtom,
   removeProjectFromGroupWithIndexAtom,
   reorderGroupAtom,
+  reorderProjectWithinRootAtom,
 } from "@/lib/atoms/core/groups"
-import type { Project, Label } from "@/lib/types"
+import type { Project, Label, ProjectGroup } from "@/lib/types"
+import { isGroup } from "@/lib/types"
 import {
   openSearchAtom,
   openQuickAddAtom,
@@ -66,6 +67,7 @@ import {
   stopEditingLabelAtom,
 } from "@/lib/atoms/ui/navigation"
 import { openSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
+import { ROOT_PROJECT_GROUP_ID } from "@/lib/types/defaults"
 
 export function SidebarNav() {
   // Get data from atoms instead of props
@@ -73,14 +75,14 @@ export function SidebarNav() {
   const [labels] = useAtom(labelAtoms.labels)
   const [taskCountsData] = useAtom(taskCounts)
   const pathname = useAtomValue(pathnameAtom)
-  const projectGroups = useAtomValue(rootProjectGroupsAtom)
-  const ungroupedProjects = useAtomValue(ungroupedProjectsAtom)
+  const groups = useAtomValue(allGroupsAtom)
 
   // Drag state management for sidebar
   const { updateDragState, clearDragState, clearAllDragStates } = useSidebarDragState()
 
   // Drag and drop atom setters
   const reorderProjectWithinGroup = useSetAtom(reorderProjectWithinGroupAtom)
+  const reorderProjectWithinRoot = useSetAtom(reorderProjectWithinRootAtom)
   const moveProjectToGroup = useSetAtom(moveProjectToGroupAtom)
   const removeProjectFromGroupWithIndex = useSetAtom(removeProjectFromGroupWithIndexAtom)
   const reorderGroup = useSetAtom(reorderGroupAtom)
@@ -113,6 +115,12 @@ export function SidebarNav() {
               // Reorder within a group
               await reorderProjectWithinGroup({
                 groupId: instruction.withinGroupId,
+                projectId: instruction.projectId,
+                newIndex: instruction.toIndex,
+              })
+            } else {
+              await reorderProjectWithinRoot({
+                groupId: ROOT_PROJECT_GROUP_ID,
                 projectId: instruction.projectId,
                 newIndex: instruction.toIndex,
               })
@@ -307,17 +315,7 @@ export function SidebarNav() {
           <CollapsibleContent>
             <SidebarGroupContent>
               <SidebarMenu>
-                {/* Render project groups with drag and drop support */}
-                {projectGroups?.map((group, index) => (
-                  <DraggableProjectGroupItem
-                    key={group.id}
-                    group={group}
-                    projects={projects || []}
-                    index={index}
-                  />
-                ))}
-
-                {/* Drop zone for ungrouped projects */}
+                {/* Drop zone for root group items with drag and drop support */}
                 <DropTargetWrapper
                   onDrop={handleRootDrop}
                   onDragEnter={handleRootDragEnter}
@@ -326,15 +324,32 @@ export function SidebarNav() {
                     type: "sidebar-root-drop-target",
                   })}
                 >
-                  {/* Render individual projects not in any group */}
-                  {ungroupedProjects?.map((project, index) => (
-                    <DraggableProjectItem
-                      key={project.id}
-                      project={project}
-                      index={index}
-                      isInGroup={false}
-                    />
-                  ))}
+                  {/* Render root group items in order (projects and groups) */}
+                  {groups.projectGroups.items.map((item, index) => {
+                    if (isGroup<ProjectGroup>(item)) {
+                      // It's a project group - render as group with nested projects
+                      return (
+                        <DraggableProjectGroupItem
+                          key={item.id}
+                          group={item}
+                          projects={projects || []}
+                          index={index}
+                        />
+                      )
+                    } else {
+                      // It's a project ID - render as individual project
+                      const project = projects.find((p) => p.id === item)
+                      if (!project) return null
+                      return (
+                        <DraggableProjectItem
+                          key={project.id}
+                          project={project}
+                          index={index}
+                          isInGroup={false}
+                        />
+                      )
+                    }
+                  })}
                 </DropTargetWrapper>
               </SidebarMenu>
             </SidebarGroupContent>

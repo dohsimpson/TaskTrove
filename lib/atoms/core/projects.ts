@@ -23,7 +23,7 @@ import {
   DEFAULT_INBOX_NAME,
   DEFAULT_INBOX_COLOR,
   DEFAULT_PROJECT_SHARED,
-  DEFAULT_SECTION_ID,
+  DEFAULT_UUID,
   DEFAULT_SECTION_NAME,
   DEFAULT_SECTION_COLOR,
 } from "../../constants/defaults"
@@ -54,7 +54,7 @@ const createDefaultInboxProject = (): Project => ({
   shared: DEFAULT_PROJECT_SHARED,
   sections: [
     {
-      id: createSectionId(DEFAULT_SECTION_ID),
+      id: createSectionId(DEFAULT_UUID),
       name: DEFAULT_SECTION_NAME,
       color: DEFAULT_SECTION_COLOR,
     },
@@ -417,7 +417,7 @@ export const removeProjectSectionAtom = atom(
       const updatedProjects = projects.map((project: Project) => {
         if (project.id === data.projectId) {
           // Don't allow removing the default section
-          if (data.sectionId === DEFAULT_SECTION_ID) {
+          if (data.sectionId === DEFAULT_UUID) {
             throw new Error("Cannot remove the default section")
           }
 

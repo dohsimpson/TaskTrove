@@ -4,7 +4,7 @@ import {
   DEFAULT_TASK_TITLE,
   DEFAULT_TASK_COMPLETED,
   DEFAULT_TASK_STATUS,
-  DEFAULT_SECTION_ID,
+  DEFAULT_UUID,
   DEFAULT_TASK_LABELS,
   DEFAULT_TASK_SUBTASKS,
   DEFAULT_TASK_COMMENTS,
@@ -52,8 +52,8 @@ describe("TaskTrove Default Constants", () => {
     })
 
     it("should have correct section ID", () => {
-      expect(DEFAULT_SECTION_ID).toBe("00000000-0000-0000-0000-000000000000")
-      expect(typeof DEFAULT_SECTION_ID).toBe("string")
+      expect(DEFAULT_UUID).toBe("00000000-0000-0000-0000-000000000000")
+      expect(typeof DEFAULT_UUID).toBe("string")
     })
 
     it("should have empty arrays for task collections", () => {
@@ -220,7 +220,7 @@ describe("TaskTrove Default Constants", () => {
 
     it("should have sensible numeric defaults", () => {
       expect(DEFAULT_TASK_PRIORITY).toBe(4) // Lowest priority
-      expect(DEFAULT_SECTION_ID).toBe("00000000-0000-0000-0000-000000000000") // First section
+      expect(DEFAULT_UUID).toBe("00000000-0000-0000-0000-000000000000") // First section
       expect(DEFAULT_SOUND_VOLUME).toBeLessThan(1) // Not too loud
       expect(DEFAULT_NOTIFICATION_VOLUME).toBeLessThan(100) // Not max volume
     })

@@ -1,12 +1,20 @@
 import type { DataFile, ProjectGroup, LabelGroup } from "./index"
 import { createGroupId } from "./index"
+import { DEFAULT_UUID } from "../constants/defaults"
 
 /**
  * Default ROOT project group for empty data files
  */
+/**
+ * Root group ID constants - these are the foundational group IDs that should be used
+ * consistently across the entire application for the root project and label groups.
+ */
+export const ROOT_PROJECT_GROUP_ID = createGroupId(DEFAULT_UUID)
+export const ROOT_LABEL_GROUP_ID = createGroupId(DEFAULT_UUID)
+
 export const DEFAULT_PROJECT_GROUP: ProjectGroup = {
   type: "project",
-  id: createGroupId("00000000-0000-4000-8000-000000000001"),
+  id: ROOT_PROJECT_GROUP_ID,
   name: "All Projects",
   items: [],
 }
@@ -16,7 +24,7 @@ export const DEFAULT_PROJECT_GROUP: ProjectGroup = {
  */
 export const DEFAULT_LABEL_GROUP: LabelGroup = {
   type: "label",
-  id: createGroupId("00000000-0000-4000-8000-000000000002"),
+  id: ROOT_LABEL_GROUP_ID,
   name: "All Labels",
   items: [],
 }

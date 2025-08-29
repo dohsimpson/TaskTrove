@@ -73,7 +73,7 @@ describe("Group Schemas", () => {
         expect(() => ProjectGroupSchema.parse(projectGroup)).not.toThrow()
       })
 
-      it("should reject ProjectGroup with mixed ProjectIds and ProjectGroups", () => {
+      it("should accept ProjectGroup with mixed ProjectIds and ProjectGroups", () => {
         const nestedProjectGroup: ProjectGroup = {
           type: "project",
           id: groupId2,
@@ -88,9 +88,7 @@ describe("Group Schemas", () => {
           items: [projectId1, nestedProjectGroup],
         }
 
-        expect(() => ProjectGroupSchema.parse(projectGroup)).toThrow(
-          /Items must be either all IDs or all groups, not mixed/,
-        )
+        expect(() => ProjectGroupSchema.parse(projectGroup)).not.toThrow()
       })
     })
 
@@ -157,7 +155,7 @@ describe("Group Schemas", () => {
         expect(() => LabelGroupSchema.parse(labelGroup)).not.toThrow()
       })
 
-      it("should reject LabelGroup with mixed LabelIds and LabelGroups", () => {
+      it("should accept LabelGroup with mixed LabelIds and LabelGroups", () => {
         const nestedLabelGroup: LabelGroup = {
           type: "label",
           id: groupId2,
@@ -172,9 +170,7 @@ describe("Group Schemas", () => {
           items: [labelId1, nestedLabelGroup],
         }
 
-        expect(() => LabelGroupSchema.parse(labelGroup)).toThrow(
-          /Items must be either all IDs or all groups, not mixed/,
-        )
+        expect(() => LabelGroupSchema.parse(labelGroup)).not.toThrow()
       })
     })
 

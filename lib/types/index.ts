@@ -722,19 +722,6 @@ ProjectGroupSchema = z
       path: ["items"],
     },
   )
-  .refine(
-    (group) => {
-      // Ensure items are either all IDs or all groups, not mixed
-      if (group.items.length === 0) return true
-      const hasGroups = group.items.some((item) => isGroup<ProjectGroup>(item))
-      const hasIds = group.items.some((item) => !isGroup<ProjectGroup>(item))
-      return !(hasGroups && hasIds)
-    },
-    {
-      message: "Items must be either all IDs or all groups, not mixed",
-      path: ["items"],
-    },
-  )
 
 // Label Group Schema with manual typing
 // eslint-disable-next-line prefer-const
@@ -757,19 +744,6 @@ LabelGroupSchema = z
     },
     {
       message: "Group cannot contain itself as a direct child (circular reference)",
-      path: ["items"],
-    },
-  )
-  .refine(
-    (group) => {
-      // Ensure items are either all IDs or all groups, not mixed
-      if (group.items.length === 0) return true
-      const hasGroups = group.items.some((item) => isGroup<LabelGroup>(item))
-      const hasIds = group.items.some((item) => !isGroup<LabelGroup>(item))
-      return !(hasGroups && hasIds)
-    },
-    {
-      message: "Items must be either all IDs or all groups, not mixed",
       path: ["items"],
     },
   )

@@ -55,7 +55,7 @@ import { ChevronDown, ChevronRight, Plus, X } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { log } from "@/lib/utils/logger"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { DEFAULT_SECTION_ID } from "@/lib/constants/defaults"
+import { DEFAULT_UUID } from "@/lib/constants/defaults"
 
 // Constants
 const SIDE_PANEL_WIDTH = 320 // 320px = w-80 in Tailwind
@@ -344,11 +344,11 @@ export function ProjectSectionsView({
       }
 
       const sourceSectionId =
-        typeof sourceData.sectionId === "string" ? sourceData.sectionId : DEFAULT_SECTION_ID
+        typeof sourceData.sectionId === "string" ? sourceData.sectionId : DEFAULT_UUID
       const targetSectionId =
         typeof taskListTarget.data.sectionId === "string"
           ? taskListTarget.data.sectionId
-          : DEFAULT_SECTION_ID
+          : DEFAULT_UUID
 
       const rawProjectId = taskListTarget.data.projectId
       if (typeof rawProjectId !== "string") {
@@ -463,7 +463,7 @@ export function ProjectSectionsView({
     const sectionTasks = tasks.filter((task: Task) => {
       if (sectionId === null) {
         // For backward compatibility, treat null as default section
-        return task.sectionId === DEFAULT_SECTION_ID
+        return task.sectionId === DEFAULT_UUID
       }
       return task.sectionId === sectionId
     })
@@ -884,7 +884,7 @@ export function ProjectSectionsView({
                           type: "task-drop-target",
                           dropTargetId: `task-${task.id}`,
                           taskId: task.id,
-                          sectionId: DEFAULT_SECTION_ID,
+                          sectionId: DEFAULT_UUID,
                         }
 
                         // Only use attachClosestEdge if we have proper input and element

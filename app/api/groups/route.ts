@@ -18,6 +18,7 @@ import {
   BulkGroupUpdate,
   GroupId,
 } from "@/lib/types"
+import { ROOT_PROJECT_GROUP_ID, ROOT_LABEL_GROUP_ID } from "@/lib/types/defaults"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { v4 as uuidv4 } from "uuid"
@@ -153,7 +154,7 @@ async function createGroup(
       if (!fileData.projectGroups) {
         fileData.projectGroups = {
           type: "project",
-          id: createGroupId("00000000-0000-4000-8000-000000000001"),
+          id: ROOT_PROJECT_GROUP_ID,
           name: "All Projects",
           items: [],
         }
@@ -173,7 +174,7 @@ async function createGroup(
       if (!fileData.labelGroups) {
         fileData.labelGroups = {
           type: "label",
-          id: createGroupId("00000000-0000-4000-8000-000000000002"),
+          id: ROOT_LABEL_GROUP_ID,
           name: "All Labels",
           items: [],
         }
@@ -223,13 +224,13 @@ async function createGroup(
   const parentResult = findGroupInTrees(
     fileData.projectGroups || {
       type: "project",
-      id: createGroupId("00000000-0000-4000-8000-000000000001"),
+      id: ROOT_PROJECT_GROUP_ID,
       name: "All Projects",
       items: [],
     },
     fileData.labelGroups || {
       type: "label",
-      id: createGroupId("00000000-0000-4000-8000-000000000002"),
+      id: ROOT_LABEL_GROUP_ID,
       name: "All Labels",
       items: [],
     },
@@ -380,7 +381,7 @@ async function handleBulkGroupUpdate(
     if (!fileData.projectGroups) {
       fileData.projectGroups = {
         type: "project",
-        id: createGroupId("00000000-0000-4000-8000-000000000001"),
+        id: ROOT_PROJECT_GROUP_ID,
         name: "All Projects",
         items: [],
       }
@@ -390,7 +391,7 @@ async function handleBulkGroupUpdate(
     if (!fileData.labelGroups) {
       fileData.labelGroups = {
         type: "label",
-        id: createGroupId("00000000-0000-4000-8000-000000000002"),
+        id: ROOT_LABEL_GROUP_ID,
         name: "All Labels",
         items: [],
       }
@@ -459,13 +460,13 @@ async function handleIndividualGroupUpdates(
     const groupResult = findGroupInTrees(
       fileData.projectGroups || {
         type: "project",
-        id: createGroupId("00000000-0000-4000-8000-000000000001"),
+        id: ROOT_PROJECT_GROUP_ID,
         name: "All Projects",
         items: [],
       },
       fileData.labelGroups || {
         type: "label",
-        id: createGroupId("00000000-0000-4000-8000-000000000002"),
+        id: ROOT_LABEL_GROUP_ID,
         name: "All Labels",
         items: [],
       },

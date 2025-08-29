@@ -17,7 +17,7 @@ import { createSectionId } from "@/lib/types"
 import { TaskItem } from "@/components/task/task-item"
 import { SelectionToolbar } from "@/components/task/selection-toolbar"
 import { TaskShadow } from "@/components/ui/custom/task-shadow"
-import { DEFAULT_SECTION_COLOR } from "@/lib/constants/defaults"
+import { DEFAULT_SECTION_COLOR, DEFAULT_UUID } from "@/lib/constants/defaults"
 import {
   extractClosestEdge,
   attachClosestEdge,
@@ -39,7 +39,7 @@ function isDragInput(input: unknown): input is DragInputType {
 import { log } from "@/lib/utils/logger"
 
 // Constants
-const DEFAULT_SECTION_ID = createSectionId("00000000-0000-0000-0000-000000000000")
+const DEFAULT_SECTION_ID = createSectionId(DEFAULT_UUID)
 
 // Define type-safe interfaces for our drag-and-drop data
 interface TaskDragData {

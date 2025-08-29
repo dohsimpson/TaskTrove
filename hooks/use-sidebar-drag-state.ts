@@ -4,6 +4,9 @@ import { useState } from "react"
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
 import type { ProjectId, GroupId } from "@/lib/types"
 
+import { createGroupId } from "@/lib/types"
+import { ROOT_PROJECT_GROUP_ID } from "@/lib/types/defaults"
+
 export interface SidebarDragState {
   isDraggingOver: boolean
   draggedItemRect?: { height: number }
@@ -127,10 +130,13 @@ export function extractSidebarInstruction(
           insertIndex,
         }
       } else {
+        // Moving to ungrouped area - move to ROOT project group
+        // The target project is ungrouped, so we calculate position in ROOT group
         return {
-          type: "remove-project-from-group",
+          type: "move-project-to-group",
           projectId,
-          fromGroupId: sourceGroupId!,
+          fromGroupId: sourceGroupId,
+          toGroupId: ROOT_PROJECT_GROUP_ID,
           insertIndex,
         }
       }
@@ -142,12 +148,13 @@ export function extractSidebarInstruction(
       const targetIndex = targetData.index as number
 
       if (instruction.type === "reorder-above" || instruction.type === "reorder-below") {
-        // Move to ROOT level at group position (full bar)
+        // Move to ROOT level at group position - move to ROOT project group
         const insertIndex = instruction.edge === "top" ? targetIndex : targetIndex + 1
         return {
-          type: "remove-project-from-group",
+          type: "move-project-to-group",
           projectId,
-          fromGroupId: sourceGroupId!,
+          fromGroupId: sourceGroupId,
+          toGroupId: ROOT_PROJECT_GROUP_ID,
           insertIndex,
         }
       } else {
@@ -162,13 +169,17 @@ export function extractSidebarInstruction(
       }
     }
 
-    // Dropped on root (remove from group)
+    // Dropped on root (move to ROOT project group)
     if (targetData.type === "sidebar-root-drop-target" && sourceGroupId) {
+      // Calculate insertion position in ROOT group:
+      // ROOT group structure: [group1, group2, ..., ungrouped_project1, ungrouped_project2, ...]
+      // We want to insert at the end of ROOT group (after all groups and ungrouped projects)
       return {
-        type: "remove-project-from-group",
+        type: "move-project-to-group",
         projectId,
         fromGroupId: sourceGroupId,
-        insertIndex: 0,
+        toGroupId: ROOT_PROJECT_GROUP_ID,
+        insertIndex: -1, // Special value meaning "append to end"
       }
     }
   }
@@ -180,6 +191,18 @@ export function extractSidebarInstruction(
 
     // Dropped on another group (reordering)
     if (targetData.type === "sidebar-group-drop-target") {
+      const targetIndex = targetData.index as number
+
+      return {
+        type: "reorder-group",
+        groupId,
+        fromIndex: sourceIndex,
+        toIndex: calculateAdjustedToIndex(sourceIndex, targetIndex, instruction.edge),
+      }
+    }
+
+    // Dropped on a project (reordering to project's position)
+    if (targetData.type === "sidebar-project-drop-target") {
       const targetIndex = targetData.index as number
 
       return {

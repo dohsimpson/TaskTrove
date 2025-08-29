@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { TaskSidePanel } from "./task-side-panel"
-import { DEFAULT_SECTION_COLORS } from "@/lib/constants/defaults"
+import { DEFAULT_SECTION_COLORS, DEFAULT_UUID } from "@/lib/constants/defaults"
 import type { LabelId } from "@/lib/types"
 import { createLabelId } from "@/lib/types"
 
@@ -391,7 +391,7 @@ describe("TaskSidePanel", () => {
     priority: 2 as const,
     dueDate: new Date("2024-01-01"),
     projectId: "project-1",
-    sectionId: "00000000-0000-4000-8000-000000000000",
+    sectionId: DEFAULT_UUID,
     labels: ["label-1"],
     subtasks: [
       { id: "sub-1", title: "Subtask 1", completed: false },
@@ -420,7 +420,7 @@ describe("TaskSidePanel", () => {
       position: 1000,
       sections: [
         {
-          id: "00000000-0000-4000-8000-000000000000",
+          id: DEFAULT_UUID,
           name: "Default",
           color: DEFAULT_SECTION_COLORS[0],
         },
@@ -445,7 +445,7 @@ describe("TaskSidePanel", () => {
       position: 2000,
       sections: [
         {
-          id: "00000000-0000-4000-8000-000000000000",
+          id: DEFAULT_UUID,
           name: "Default",
           color: DEFAULT_SECTION_COLORS[0],
         },

@@ -85,13 +85,14 @@ import {
   DEFAULT_TASK_COMPLETED,
   DEFAULT_PROJECT_COLORS,
   DEFAULT_TASK_STATUS,
-  DEFAULT_SECTION_ID,
+  DEFAULT_UUID,
   DEFAULT_TASK_SUBTASKS,
   DEFAULT_TASK_COMMENTS,
   DEFAULT_TASK_ATTACHMENTS,
   DEFAULT_LABEL_COLORS,
   DEFAULT_RECURRING_MODE,
 } from "../../constants/defaults"
+import { ROOT_PROJECT_GROUP_ID, ROOT_LABEL_GROUP_ID } from "../../types/defaults"
 
 // Define supported sources constant to ensure type consistency
 const SUPPORTED_IMPORT_SOURCES = ["ticktick", "todoist", "asana", "trello"] as const
@@ -154,13 +155,13 @@ const EMPTY_CACHE_DATA: DataFile = {
   labels: [],
   projectGroups: {
     type: "project",
-    id: createGroupId("00000000-0000-4000-8000-000000000001"),
+    id: ROOT_PROJECT_GROUP_ID,
     name: "All Projects",
     items: [],
   },
   labelGroups: {
     type: "label",
-    id: createGroupId("00000000-0000-4000-8000-000000000002"),
+    id: ROOT_LABEL_GROUP_ID,
     name: "All Labels",
     items: [],
   },
@@ -541,7 +542,7 @@ export const createTaskMutationAtom = createMutation<CreateTaskResponse, CreateT
       // Ensure required fields have defaults
       title: taskData.title || DEFAULT_TASK_TITLE,
       priority: taskData.priority || DEFAULT_TASK_PRIORITY,
-      sectionId: taskData.sectionId || createSectionId(DEFAULT_SECTION_ID),
+      sectionId: taskData.sectionId || createSectionId(DEFAULT_UUID),
       projectId: taskData.projectId || INBOX_PROJECT_ID,
       labels: taskData.labels || [],
       // Ensure dates are properly converted if they come in as strings
@@ -665,7 +666,7 @@ export const createProjectMutationAtom = createMutation<
         projectData.slug ?? createSafeProjectNameSlug(projectData.name, oldData?.projects || []),
       color: projectData.color ?? DEFAULT_PROJECT_COLORS[0],
       shared: projectData.shared ?? false,
-      sections: [{ id: createSectionId(DEFAULT_SECTION_ID), name: "Default", color: "#6b7280" }],
+      sections: [{ id: createSectionId(DEFAULT_UUID), name: "Default", color: "#6b7280" }],
     }
   },
   optimisticUpdateFn: (
@@ -934,7 +935,7 @@ export const bulkUpdateGroupsMutationAtom = createMutation({
             }
           : {
               type: "project" as const,
-              id: createGroupId("00000000-0000-4000-8000-000000000001"),
+              id: ROOT_PROJECT_GROUP_ID,
               name: "All Projects",
               items: request.groups,
             },
@@ -949,7 +950,7 @@ export const bulkUpdateGroupsMutationAtom = createMutation({
             }
           : {
               type: "label" as const,
-              id: createGroupId("00000000-0000-4000-8000-000000000002"),
+              id: ROOT_LABEL_GROUP_ID,
               name: "All Labels",
               items: request.groups,
             },

@@ -19,6 +19,7 @@ import {
   moveProjectToGroupAtom,
   removeProjectFromGroupWithIndexAtom,
   reorderGroupAtom,
+  reorderProjectWithinRootAtom,
 } from "@/lib/atoms/core/groups"
 import {
   attachInstruction,
@@ -27,6 +28,7 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item"
 import type { Input as DragInputType } from "@atlaskit/pragmatic-drag-and-drop/types"
 import type { ProjectGroup, ProjectId, Project } from "@/lib/types"
+import { ROOT_PROJECT_GROUP_ID } from "@/lib/types/defaults"
 
 interface DraggableProjectGroupItemProps {
   group: ProjectGroup
@@ -45,6 +47,7 @@ export function DraggableProjectGroupItem({
 
   // Drag and drop atom setters
   const reorderProjectWithinGroup = useSetAtom(reorderProjectWithinGroupAtom)
+  const reorderProjectWithinRoot = useSetAtom(reorderProjectWithinRootAtom)
   const moveProjectToGroup = useSetAtom(moveProjectToGroupAtom)
   const removeProjectFromGroupWithIndex = useSetAtom(removeProjectFromGroupWithIndexAtom)
   const reorderGroup = useSetAtom(reorderGroupAtom)
@@ -120,6 +123,12 @@ export function DraggableProjectGroupItem({
               // Reorder within a group
               await reorderProjectWithinGroup({
                 groupId: instruction.withinGroupId,
+                projectId: instruction.projectId,
+                newIndex: instruction.toIndex,
+              })
+            } else {
+              await reorderProjectWithinRoot({
+                groupId: ROOT_PROJECT_GROUP_ID,
                 projectId: instruction.projectId,
                 newIndex: instruction.toIndex,
               })

@@ -8,16 +8,15 @@ import type {
   UpdateProjectGroupRequest,
   DeleteGroupRequest,
 } from "@/lib/types"
-import { isGroup, createGroupId } from "@/lib/types"
+import { isGroup } from "@/lib/types"
+import { ROOT_LABEL_GROUP_ID, ROOT_PROJECT_GROUP_ID } from "@/lib/types/defaults"
 import { log } from "@/lib/utils/logger"
 import {
   createProjectGroupMutationAtom,
   updateProjectGroupMutationAtom,
   deleteProjectGroupMutationAtom,
-  bulkUpdateGroupsMutationAtom,
   dataQueryAtom,
 } from "./base"
-import { visibleProjectsAtom } from "./projects"
 
 // Groups data comes from dataQueryAtom, following same pattern as projectsAtom
 
@@ -30,13 +29,13 @@ export const allGroupsAtom = atom((get) => {
     return {
       projectGroups: result.data.projectGroups ?? {
         type: "project" as const,
-        id: createGroupId("00000000-0000-4000-8000-000000000001"),
+        id: ROOT_PROJECT_GROUP_ID,
         name: "All Projects",
         items: [],
       },
       labelGroups: result.data.labelGroups ?? {
         type: "label" as const,
-        id: createGroupId("00000000-0000-4000-8000-000000000002"),
+        id: ROOT_LABEL_GROUP_ID,
         name: "All Labels",
         items: [],
       },
@@ -46,13 +45,13 @@ export const allGroupsAtom = atom((get) => {
   return {
     projectGroups: {
       type: "project" as const,
-      id: createGroupId("00000000-0000-4000-8000-000000000001"),
+      id: ROOT_PROJECT_GROUP_ID,
       name: "All Projects",
       items: [],
     },
     labelGroups: {
       type: "label" as const,
-      id: createGroupId("00000000-0000-4000-8000-000000000002"),
+      id: ROOT_LABEL_GROUP_ID,
       name: "All Labels",
       items: [],
     },
@@ -179,15 +178,6 @@ export const flattenProjectGroupsAtom = atom((get) => {
 export const projectsInGroupsAtom = atom((get) => {
   const analysis = get(groupAnalysisAtom)
   return Array.from(analysis.projectToGroup.keys())
-})
-// Get projects that are NOT in any group
-// TODO: this is a temporary workaround until we have automatic migration figured out, ideally, no project should be without a group
-export const ungroupedProjectsAtom = atom((get) => {
-  const allVisibleProjects = get(visibleProjectsAtom)
-  const projectsInGroups = get(projectsInGroupsAtom)
-  const projectsInGroupsSet = new Set(projectsInGroups)
-
-  return allVisibleProjects.filter((project) => !projectsInGroupsSet.has(project.id))
 })
 
 // Project-Group relationship management atoms
@@ -317,8 +307,74 @@ export const moveProjectToGroupAtom = atom(
     },
   ) => {
     try {
-      // If fromGroupId is provided, remove from that group first
-      if (fromGroupId) {
+      // Check if this is a root level operation
+      if (toGroupId === ROOT_PROJECT_GROUP_ID) {
+        // Moving to root level - use individual update API for root group
+
+        // First remove project from its current group (if any)
+        const findGroupContaining = get(findGroupContainingProjectAtom)
+        const currentGroup = findGroupContaining(projectId)
+
+        if (currentGroup && currentGroup.id !== ROOT_PROJECT_GROUP_ID) {
+          // Remove from current group using individual update
+          const updatedItems = currentGroup.items.filter((item) => item !== projectId)
+          await set(updateProjectGroupAtom, {
+            id: currentGroup.id,
+            items: updatedItems,
+          })
+        }
+
+        // Get current root group items (contains both ProjectIds and nested ProjectGroups)
+        const groups = get(allGroupsAtom)
+        const rootGroup = groups.projectGroups
+
+        // Create new items array with project inserted at specified index
+        const updatedRootItems = [...rootGroup.items]
+        let adjustedInsertIndex = insertIndex
+
+        // If project is already in root group, remove it first to avoid duplicates
+        const existingIndex = updatedRootItems.indexOf(projectId)
+        if (existingIndex !== -1) {
+          updatedRootItems.splice(existingIndex, 1)
+          // Adjust insert index if removing item before insertion point
+          if (existingIndex < insertIndex) {
+            adjustedInsertIndex = insertIndex - 1
+          }
+        }
+
+        const actualInsertIndex =
+          adjustedInsertIndex === -1 ? updatedRootItems.length : adjustedInsertIndex
+        updatedRootItems.splice(actualInsertIndex, 0, projectId)
+
+        // Use individual update API to update root group's items array
+        await set(updateProjectGroupAtom, {
+          id: ROOT_PROJECT_GROUP_ID,
+          items: updatedRootItems,
+        })
+
+        log.info(
+          { projectId, insertIndex, adjustedInsertIndex, actualInsertIndex, existingIndex },
+          "Project moved to root level using individual update",
+        )
+        return
+      }
+
+      // Regular group operation - use individual update API
+
+      // First, check if project is currently at root level and remove it
+      const groups = get(allGroupsAtom)
+      const rootGroup = groups.projectGroups
+      const isAtRoot = rootGroup.items.includes(projectId)
+
+      if (isAtRoot) {
+        // Remove from root level first
+        const updatedRootItems = rootGroup.items.filter((item) => item !== projectId)
+        await set(updateProjectGroupAtom, {
+          id: ROOT_PROJECT_GROUP_ID,
+          items: updatedRootItems,
+        })
+      } else if (fromGroupId) {
+        // Remove from source group if not at root
         await set(removeProjectFromGroupAtom, { projectId })
       }
 
@@ -338,7 +394,10 @@ export const moveProjectToGroupAtom = atom(
 
       // Create the updated items array with project inserted at specific index
       const updatedItems = [...targetGroup.items]
-      updatedItems.splice(insertIndex, 0, projectId)
+
+      // Handle special case: insertIndex = -1 means append to end
+      const actualInsertIndex = insertIndex === -1 ? updatedItems.length : insertIndex
+      updatedItems.splice(actualInsertIndex, 0, projectId)
 
       // Update the group via the API
       await set(updateProjectGroupAtom, {
@@ -347,7 +406,7 @@ export const moveProjectToGroupAtom = atom(
       })
 
       log.info(
-        { projectId, fromGroupId, toGroupId, insertIndex },
+        { projectId, fromGroupId, toGroupId, insertIndex, actualInsertIndex },
         "Project moved to group at specific index",
       )
     } catch (error) {
@@ -375,10 +434,41 @@ export const removeProjectFromGroupWithIndexAtom = atom(
     },
   ) => {
     try {
-      // Remove from current group - ungrouped projects don't need separate ordering
-      await set(removeProjectFromGroupAtom, { projectId })
+      const findGroupContaining = get(findGroupContainingProjectAtom)
+      const containingGroup = findGroupContaining(projectId)
 
-      log.info({ projectId }, "Project removed from group")
+      if (!containingGroup) {
+        log.info({ projectId }, "Project not found in any group")
+        return
+      }
+
+      // Check if this is a root level operation
+      if (containingGroup.id === ROOT_PROJECT_GROUP_ID) {
+        // Removing from root level - use individual update API for root group
+        const groups = get(allGroupsAtom)
+        const rootGroup = groups.projectGroups
+
+        // Check if project is at root level
+        if (!rootGroup.items.includes(projectId)) {
+          log.info({ projectId }, "Project not found at root level")
+          return
+        }
+
+        // Create new items array without the project
+        const updatedRootItems = rootGroup.items.filter((item) => item !== projectId)
+
+        // Use individual update API to update root group's items array
+        await set(updateProjectGroupAtom, {
+          id: ROOT_PROJECT_GROUP_ID,
+          items: updatedRootItems,
+        })
+
+        log.info({ projectId }, "Project removed from root level using individual update")
+      } else {
+        // Regular group operation - use individual update API
+        await set(removeProjectFromGroupAtom, { projectId })
+        log.info({ projectId }, "Project removed from group")
+      }
     } catch (error) {
       log.error({ error, projectId }, "Failed to remove project from group")
       throw error
@@ -533,6 +623,68 @@ export const reorderProjectWithinGroupAtom = atom(
     }
   },
 )
+//
+// Reorder projects within root group's array
+export const reorderProjectWithinRootAtom = atom(
+  null,
+  async (
+    get,
+    set,
+    {
+      groupId,
+      projectId,
+      newIndex,
+    }: {
+      groupId: GroupId
+      projectId: ProjectId
+      newIndex: number
+    },
+  ) => {
+    try {
+      // Check if this is a root level operation
+      if (groupId === ROOT_PROJECT_GROUP_ID) {
+        // Moving to root level - use individual update API for root group
+
+        // Get current root group items (contains both ProjectIds and nested ProjectGroups)
+        const groups = get(allGroupsAtom)
+        const rootGroup = groups.projectGroups
+
+        // Create new items array with project inserted at specified index
+        const updatedRootItems = [...rootGroup.items]
+        let adjustedInsertIndex = newIndex
+
+        // If project is already in root group, remove it first to avoid duplicates
+        const existingIndex = updatedRootItems.indexOf(projectId)
+        if (existingIndex !== -1) {
+          updatedRootItems.splice(existingIndex, 1)
+          // Adjust insert index if removing item before insertion point
+          if (existingIndex < newIndex) {
+            adjustedInsertIndex = newIndex - 1
+          }
+        }
+
+        const actualInsertIndex =
+          adjustedInsertIndex === -1 ? updatedRootItems.length : adjustedInsertIndex
+        updatedRootItems.splice(actualInsertIndex, 0, projectId)
+
+        // Use individual update API to update root group's items array
+        await set(updateProjectGroupAtom, {
+          id: ROOT_PROJECT_GROUP_ID,
+          items: updatedRootItems,
+        })
+
+        log.info(
+          { projectId, newIndex, adjustedInsertIndex, actualInsertIndex, existingIndex },
+          "Project moved within root level using individual update",
+        )
+        return
+      }
+    } catch (error) {
+      log.error({ error, projectId, groupId, newIndex }, "Failed to reorder project within group")
+      throw error
+    }
+  },
+)
 
 // Reorder groups by updating the root groups array directly
 export const reorderGroupAtom = atom(
@@ -556,33 +708,39 @@ export const reorderGroupAtom = atom(
         return
       }
 
-      // Get current root groups
-      const rootGroups = get(rootProjectGroupsAtom)
+      // Get current root group items (mixed array of projects and groups)
+      const groups = get(allGroupsAtom)
+      const rootItems = groups.projectGroups.items
 
-      // Validate the group exists at the expected index
-      if (fromIndex < 0 || fromIndex >= rootGroups.length || rootGroups[fromIndex].id !== groupId) {
+      // Validate the indices and group
+      if (fromIndex < 0 || fromIndex >= rootItems.length) {
+        throw new Error(`Invalid fromIndex ${fromIndex}`)
+      }
+
+      if (toIndex < 0 || toIndex >= rootItems.length) {
+        throw new Error(`Invalid toIndex ${toIndex}`)
+      }
+
+      // Validate that the item at fromIndex is actually the group we expect
+      const itemToMove = rootItems[fromIndex]
+      if (typeof itemToMove === "string" || !("id" in itemToMove) || itemToMove.id !== groupId) {
         throw new Error(`Group ${groupId} not found at index ${fromIndex}`)
       }
 
-      if (toIndex < 0 || toIndex >= rootGroups.length) {
-        throw new Error(`Invalid target index ${toIndex}`)
-      }
+      // Create new items array with group moved to new position
+      const newItems = [...rootItems]
+      const [movedItem] = newItems.splice(fromIndex, 1)
+      newItems.splice(toIndex, 0, movedItem)
 
-      // Create new groups array with group moved to new position
-      const newGroups = [...rootGroups]
-      const [movedGroup] = newGroups.splice(fromIndex, 1)
-      newGroups.splice(toIndex, 0, movedGroup)
-
-      // Use bulk update to replace the entire projectGroups array with new order
-      const bulkUpdateMutation = get(bulkUpdateGroupsMutationAtom)
-      await bulkUpdateMutation.mutateAsync({
-        type: "project",
-        groups: newGroups,
+      // Update the root group's items array
+      await set(updateProjectGroupAtom, {
+        id: ROOT_PROJECT_GROUP_ID,
+        items: newItems,
       })
 
       log.info(
-        { groupId, fromIndex, toIndex, newGroupsCount: newGroups.length },
-        "Group successfully reordered using bulk update",
+        { groupId, fromIndex, toIndex, newItemsCount: newItems.length },
+        "Group successfully reordered in mixed array using individual update",
       )
     } catch (error) {
       log.error({ error, groupId, fromIndex, toIndex }, "Failed to reorder group")

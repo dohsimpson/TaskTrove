@@ -35,7 +35,7 @@ import {
   DEFAULT_TASK_COMMENTS,
   DEFAULT_TASK_ATTACHMENTS,
   DEFAULT_TASK_STATUS,
-  DEFAULT_SECTION_ID,
+  DEFAULT_UUID,
   DEFAULT_RECURRING_MODE,
 } from "@/lib/constants/defaults"
 import { processRecurringTaskCompletion } from "@/lib/utils/recurring-task-processor"
@@ -124,7 +124,7 @@ async function createTask(
     attachments: validation.data.attachments ?? DEFAULT_TASK_ATTACHMENTS,
     createdAt: new Date(),
     status: validation.data.status ?? DEFAULT_TASK_STATUS,
-    sectionId: validation.data.sectionId ?? createSectionId(DEFAULT_SECTION_ID),
+    sectionId: validation.data.sectionId ?? createSectionId(DEFAULT_UUID),
     projectId: validation.data.projectId ?? INBOX_PROJECT_ID,
     dueDate: validation.data.dueDate, // Use the provided due date
     recurringMode: validation.data.recurringMode ?? DEFAULT_RECURRING_MODE,

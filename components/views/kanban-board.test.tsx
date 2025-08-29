@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { Provider } from "jotai"
 import { KanbanBoard } from "./kanban-board"
-import { DEFAULT_SECTION_COLORS } from "@/lib/constants/defaults"
+import { DEFAULT_SECTION_COLORS, DEFAULT_UUID } from "@/lib/constants/defaults"
 import type { Task, TaskPriority } from "@/lib/types"
 import { createTaskId, createCommentId, createLabelId, createSectionId } from "@/lib/types"
 import {
@@ -901,7 +901,7 @@ describe.skip("KanbanBoard", () => {
         ...defaultProps.project,
         sections: [
           {
-            id: createSectionId("00000000-0000-4000-8000-000000000000"),
+            id: createSectionId(DEFAULT_UUID),
             name: "Custom Section 1",
             color: "#ff0000",
           },
@@ -931,7 +931,7 @@ describe.skip("KanbanBoard", () => {
         ...defaultProps.project,
         sections: [
           {
-            id: createSectionId("00000000-0000-4000-8000-000000000000"),
+            id: createSectionId(DEFAULT_UUID),
             name: "With Hash",
             color: "#3b82f6",
           },

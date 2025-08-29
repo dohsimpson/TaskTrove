@@ -21,7 +21,7 @@ import {
   DEFAULT_SECTION_NAME,
   DEFAULT_SECTION_COLOR,
   DEFAULT_PROJECT_COLORS,
-  DEFAULT_SECTION_ID,
+  DEFAULT_UUID,
 } from "@/lib/constants/defaults"
 import { createSafeProjectNameSlug } from "@/lib/utils/routing"
 import {
@@ -113,7 +113,7 @@ async function createProject(
     shared: validation.data.shared ?? DEFAULT_PROJECT_SHARED,
     sections: validation.data.sections ?? [
       {
-        id: createSectionId(DEFAULT_SECTION_ID),
+        id: createSectionId(DEFAULT_UUID),
         name: DEFAULT_SECTION_NAME,
         color: DEFAULT_SECTION_COLOR,
       },

@@ -22,6 +22,7 @@ import {
   moveProjectToGroupAtom,
   removeProjectFromGroupWithIndexAtom,
   reorderGroupAtom,
+  reorderProjectWithinRootAtom,
 } from "@/lib/atoms/core/groups"
 import {
   attachInstruction,
@@ -32,6 +33,7 @@ import type { Input as DragInputType } from "@atlaskit/pragmatic-drag-and-drop/t
 import type { Project, GroupId } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { ROOT_PROJECT_GROUP_ID } from "@/lib/types/defaults"
 
 interface DraggableProjectItemProps {
   project: Project
@@ -63,6 +65,7 @@ export function DraggableProjectItem({
 
   // Drag and drop atom setters
   const reorderProjectWithinGroup = useSetAtom(reorderProjectWithinGroupAtom)
+  const reorderProjectWithinRoot = useSetAtom(reorderProjectWithinRootAtom)
   const moveProjectToGroup = useSetAtom(moveProjectToGroupAtom)
   const removeProjectFromGroupWithIndex = useSetAtom(removeProjectFromGroupWithIndexAtom)
   const reorderGroup = useSetAtom(reorderGroupAtom)
@@ -122,6 +125,12 @@ export function DraggableProjectItem({
                 projectId: instruction.projectId,
                 newIndex: instruction.toIndex,
               })
+            } else {
+              await reorderProjectWithinRoot({
+                groupId: ROOT_PROJECT_GROUP_ID,
+                projectId: instruction.projectId,
+                newIndex: instruction.toIndex,
+              })
             }
             break
 
@@ -161,7 +170,13 @@ export function DraggableProjectItem({
   }
 
   const handleDragEnter = ({ source }: { source: { data: Record<string, unknown> } }) => {
-    if (source.data.type === "sidebar-project" && source.data.projectId !== project.id) {
+    const sourceType = source.data.type
+
+    // Handle both projects and groups being dragged over this project
+    if (
+      (sourceType === "sidebar-project" && source.data.projectId !== project.id) ||
+      sourceType === "sidebar-group"
+    ) {
       const rect = source.data.rect
       if (rect && typeof rect === "object" && "height" in rect && typeof rect.height === "number") {
         setDragState({
@@ -183,7 +198,13 @@ export function DraggableProjectItem({
     source: { data: Record<string, unknown> }
     location: { current: { dropTargets: Array<{ data: Record<string, unknown> }> } }
   }) => {
-    if (source.data.type === "sidebar-project" && source.data.projectId !== project.id) {
+    const sourceType = source.data.type
+
+    // Handle both projects and groups being dragged over this project
+    if (
+      (sourceType === "sidebar-project" && source.data.projectId !== project.id) ||
+      sourceType === "sidebar-group"
+    ) {
       // Only show indicator if THIS element is the innermost target (following official pattern)
       const innerMost = location.current.dropTargets[0]
       const isInnermostTarget =

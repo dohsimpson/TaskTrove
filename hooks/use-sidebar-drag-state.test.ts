@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest"
 import { renderHook, act } from "@testing-library/react"
 import { extractSidebarInstruction, useSidebarDragState } from "./use-sidebar-drag-state"
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
+import { ROOT_PROJECT_GROUP_ID } from "@/lib/types/defaults"
 
 describe("extractSidebarInstruction", () => {
   describe("Project dragging scenarios", () => {
@@ -89,7 +90,7 @@ describe("extractSidebarInstruction", () => {
       }
     })
 
-    it("returns remove-project-from-group when dragging from group to ungrouped", () => {
+    it("returns move-project-to-group when dragging from group to ungrouped", () => {
       const sourceData = {
         type: "sidebar-project",
         projectId: "project-1",
@@ -107,9 +108,10 @@ describe("extractSidebarInstruction", () => {
       const instruction = extractSidebarInstruction(sourceData, targetData)
 
       expect(instruction).toEqual({
-        type: "remove-project-from-group",
+        type: "move-project-to-group",
         projectId: "project-1",
         fromGroupId: "group-1",
+        toGroupId: ROOT_PROJECT_GROUP_ID, // ROOT_PROJECT_GROUP_ID
         insertIndex: 1,
       })
     })
@@ -162,9 +164,10 @@ describe("extractSidebarInstruction", () => {
       const instruction = extractSidebarInstruction(sourceData, targetData)
 
       expect(instruction).toEqual({
-        type: "remove-project-from-group",
+        type: "move-project-to-group",
         projectId: "project-1",
         fromGroupId: "group-1",
+        toGroupId: ROOT_PROJECT_GROUP_ID, // ROOT_PROJECT_GROUP_ID
         insertIndex: 1, // Above the target group at index 1
       })
     })
@@ -188,9 +191,10 @@ describe("extractSidebarInstruction", () => {
       const instruction = extractSidebarInstruction(sourceData, targetData)
 
       expect(instruction).toEqual({
-        type: "remove-project-from-group",
+        type: "move-project-to-group",
         projectId: "project-1",
         fromGroupId: "group-1",
+        toGroupId: ROOT_PROJECT_GROUP_ID, // ROOT_PROJECT_GROUP_ID
         insertIndex: 2, // Below the target group at index 1 → 1 + 1 = 2
       })
     })
@@ -217,6 +221,29 @@ describe("extractSidebarInstruction", () => {
         fromGroupId: "group-1",
         toGroupId: "group-2",
         insertIndex: 0,
+      })
+    })
+
+    it("moves project to root group when dropped on root target", () => {
+      const sourceData = {
+        type: "sidebar-project",
+        projectId: "project-1",
+        index: 0,
+        groupId: "group-1",
+      }
+
+      const targetData = {
+        type: "sidebar-root-drop-target",
+      }
+
+      const instruction = extractSidebarInstruction(sourceData, targetData)
+
+      expect(instruction).toEqual({
+        type: "move-project-to-group",
+        projectId: "project-1",
+        fromGroupId: "group-1",
+        toGroupId: ROOT_PROJECT_GROUP_ID, // ROOT_PROJECT_GROUP_ID
+        insertIndex: -1, // Special value meaning "append to end"
       })
     })
   })

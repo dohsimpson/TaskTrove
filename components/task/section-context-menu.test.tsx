@@ -205,7 +205,7 @@ describe("SectionContextMenu", () => {
   })
 
   it("hides delete option when section is default section", () => {
-    // Use DEFAULT_SECTION_ID for this test
+    // Use DEFAULT_UUID for this test
     const { container } = render(
       <SectionContextMenu
         sectionId={createSectionId("00000000-0000-0000-0000-000000000000")}

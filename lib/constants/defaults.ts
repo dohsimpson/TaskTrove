@@ -5,6 +5,13 @@
 import type { Subtask, TaskComment, LabelId } from "../types"
 
 // =============================================================================
+// DEFAULT/MOCK UUID
+// =============================================================================
+
+/** Default UUID used for mock/default IDs throughout the application */
+export const DEFAULT_UUID = "00000000-0000-0000-0000-000000000000"
+
+// =============================================================================
 // TASK DEFAULTS
 // =============================================================================
 
@@ -19,12 +26,6 @@ export const DEFAULT_TASK_COMPLETED = false
 
 /** Default task status */
 export const DEFAULT_TASK_STATUS = "active" as const
-
-/** Default section ID for new tasks */
-export const DEFAULT_SECTION_ID = "00000000-0000-0000-0000-000000000000"
-
-/** Default new task ID (temporary) */
-export const DEFAULT_NEW_TASK_TEMP_ID = "00000000-0000-0000-0000-000000000000"
 
 /** Default empty arrays for task properties */
 export const DEFAULT_TASK_LABELS: LabelId[] = []
@@ -221,10 +222,3 @@ export const MIGRATION_DEFAULT_PROJECT_COLOR = "#3b82f6"
 
 /** Default label color for migration */
 export const MIGRATION_DEFAULT_LABEL_COLOR = "#6b7280"
-
-// =============================================================================
-// MOCK UUID
-// =============================================================================
-
-/** this ID will pass the Zod uuid validation **/
-export const MOCK_UUID = "00000000-0000-0000-0000-000000000000"

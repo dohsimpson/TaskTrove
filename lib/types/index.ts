@@ -1488,6 +1488,16 @@ export interface ColorPalette {
   error: string
 }
 
+/**
+ * JSON schema utility for validating any JSON-encodable value
+ */
+export const JsonSchema = z.json()
+
+/**
+ * TypeScript type for JSON-encodable values
+ */
+export type Json = z.infer<typeof JsonSchema>
+
 // =============================================================================
 // API REQUEST/RESPONSE SCHEMAS
 // =============================================================================

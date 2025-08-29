@@ -75,6 +75,82 @@ const moveTaskWithinProject = (
     return { ...project, taskOrder: newTaskOrder }
   })
 }
+/**
+ * Section-aware task reordering that maintains section boundaries.
+ * Reorders a task within its section while preserving the project's global task order structure.
+ */
+export const moveTaskWithinSection = (
+  projectId: ProjectId,
+  taskId: TaskId,
+  toIndex: number,
+  sectionId: SectionId,
+  projects: Project[],
+  tasks: Task[],
+): Project[] => {
+  return projects.map((project) => {
+    if (project.id !== projectId) return project
+
+    const taskOrder = project.taskOrder || []
+
+    // Get all tasks in the target section, ordered by current project taskOrder
+    const sectionTasks = tasks
+      .filter((task) => {
+        // Handle DEFAULT_UUID section compatibility
+        const taskSection = task.sectionId || DEFAULT_UUID
+        const targetSection = sectionId || DEFAULT_UUID
+        return task.projectId === projectId && taskSection === targetSection
+      })
+      .sort((a, b) => {
+        const aIndex = taskOrder.indexOf(a.id)
+        const bIndex = taskOrder.indexOf(b.id)
+
+        // If both are in taskOrder, maintain that order
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+
+        // If only one is in taskOrder, it comes first
+        if (aIndex !== -1) return -1
+        if (bIndex !== -1) return 1
+
+        // Neither in taskOrder, maintain creation order
+        return a.createdAt.getTime() - b.createdAt.getTime()
+      })
+
+    const sectionTaskIds = sectionTasks.map((task) => task.id)
+    const currentIndexInSection = sectionTaskIds.indexOf(taskId)
+
+    if (currentIndexInSection === -1) return project
+
+    // Reorder within the section
+    const newSectionOrder = [...sectionTaskIds]
+    newSectionOrder.splice(currentIndexInSection, 1)
+    newSectionOrder.splice(toIndex, 0, taskId)
+
+    // Rebuild the project's taskOrder by replacing section tasks with new order
+    const newTaskOrder = [...taskOrder]
+
+    // Find positions of section tasks in global order
+    const sectionPositions = sectionTaskIds
+      .map((id) => newTaskOrder.indexOf(id))
+      .filter((pos) => pos !== -1)
+
+    if (sectionPositions.length > 0) {
+      // Remove all section tasks from their current positions
+      sectionTaskIds.forEach((id) => {
+        const index = newTaskOrder.indexOf(id)
+        if (index !== -1) newTaskOrder.splice(index, 1)
+      })
+
+      // Insert reordered section tasks at the earliest position
+      const insertPosition = Math.min(...sectionPositions)
+      newTaskOrder.splice(insertPosition, 0, ...newSectionOrder)
+    } else {
+      // Section tasks aren't in global order yet, add them at the end
+      newTaskOrder.push(...newSectionOrder)
+    }
+
+    return { ...project, taskOrder: newTaskOrder }
+  })
+}
 
 const addTaskToProjectOrder = (
   taskId: TaskId,
@@ -868,10 +944,19 @@ export const reorderTaskInViewAtom = atom(
     },
   ) => {
     try {
-      // Determine project ID from view ID
+      // Get current tasks and projects
+      const tasks = get(tasksAtom)
       const projects = get(projectsAtom)
-      let projectId: ProjectId
 
+      // Find the task being reordered
+      const task = tasks.find((t: Task) => t.id === params.taskId)
+      if (!task) {
+        log.warn({ taskId: params.taskId }, "Task not found for reordering")
+        return
+      }
+
+      // Determine project ID from view ID or task
+      let projectId: ProjectId
       if (params.viewId === "inbox") {
         projectId = INBOX_PROJECT_ID
       } else {
@@ -882,17 +967,20 @@ export const reorderTaskInViewAtom = atom(
           projectId = matchingProject.id
         } else {
           // ViewId is likely a StandardViewId or LabelId - get project from task
-          const tasks = get(tasksAtom)
-          const task = tasks.find((t: Task) => t.id === params.taskId)
-          projectId = task?.projectId || INBOX_PROJECT_ID
+          projectId = task.projectId || INBOX_PROJECT_ID
         }
       }
 
-      const updatedProjects = moveTaskWithinProject(
+      // Use section-aware reordering that maintains section boundaries
+      const taskSectionId = task.sectionId || createSectionId(DEFAULT_UUID)
+
+      const updatedProjects = moveTaskWithinSection(
         projectId,
         params.taskId,
         params.toIndex,
+        taskSectionId,
         projects,
+        tasks,
       )
 
       set(projectsAtom, updatedProjects)
@@ -900,11 +988,12 @@ export const reorderTaskInViewAtom = atom(
         {
           taskId: params.taskId,
           projectId,
+          sectionId: taskSectionId,
           fromIndex: params.fromIndex,
           toIndex: params.toIndex,
           module: "tasks",
         },
-        "Task moved within project",
+        "Task reordered within section",
       )
     } catch (error) {
       handleAtomError(error, "reorderTaskInViewAtom")

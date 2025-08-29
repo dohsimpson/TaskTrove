@@ -59,13 +59,10 @@ import { format, isToday, isPast } from "date-fns"
 import { formatTaskDateTimeBadge } from "@/lib/utils/task-date-formatter"
 import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
 import { log } from "@/lib/utils/logger"
-import {
-  parseEnhancedNaturalLanguage,
-  convertTimeToHHMMSS,
-  type ParsedTask,
-} from "@/lib/utils/enhanced-natural-language-parser"
+import { convertTimeToHHMMSS } from "@/lib/utils/enhanced-natural-language-parser"
 import { getPriorityTextColor, getDueDateTextColor } from "@/lib/color-utils"
 import { v4 as uuidv4 } from "uuid"
+import { useDebouncedParse } from "@/hooks/use-debounced-parse"
 
 // Enhanced autocomplete interface
 type AutocompleteType = "project" | "label" | "date"
@@ -98,35 +95,6 @@ const getRRuleDisplayText = (rrule: string): string => {
   }
 
   return "Recurring"
-}
-
-// Custom hook for debounced parsing with NLP toggle support
-// Careful when setting delay, parsing will not complete if form is submitted before timeout, and stale data will be used.
-// Setting delay to 0 causes parsing to be scheduled as soon as possible, from experience this will be enough to prevent said bug.
-const useDebouncedParse = (text: string, disabledSections: Set<string>, delay: number = 0) => {
-  const [parsed, setParsed] = useState<ParsedTask | null>(null)
-
-  // Get NLP enabled state from atom
-  const enabled = useAtomValue(nlpEnabledAtom)
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!enabled) {
-        setParsed(null)
-        return
-      }
-
-      if (text.trim()) {
-        setParsed(parseEnhancedNaturalLanguage(text, disabledSections))
-      } else {
-        setParsed(null)
-      }
-    }, delay)
-
-    return () => clearTimeout(timer)
-  }, [text, delay, disabledSections, enabled])
-
-  return parsed
 }
 
 export function QuickAddDialog() {

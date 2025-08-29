@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
@@ -33,6 +33,10 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { tasksAtom, updateTaskAtom } from "@/lib/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
 import { HelpPopover } from "@/components/ui/help-popover"
+import {
+  parseEnhancedNaturalLanguage,
+  convertTimeToHHMMSS,
+} from "@/lib/utils/enhanced-natural-language-parser"
 
 interface TaskScheduleContentProps {
   taskId?: TaskId
@@ -77,45 +81,95 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
   })
   const [showTimeSelector, setShowTimeSelector] = useState(false)
 
-  const handleUpdate = (
-    taskId: TaskId | undefined,
-    date: Date | undefined | null,
-    time: Date | undefined | null,
-    type: string,
-    recurring?: string,
-  ) => {
-    // Build update object based on operation type
-    const updates = (() => {
-      switch (type) {
-        case "remove":
-          return { dueDate: isNewTask ? undefined : null }
-        case "remove-time":
-          return { dueTime: isNewTask ? undefined : null }
-        case "remove-recurring":
-          return { recurring: isNewTask ? undefined : null }
-        default:
-          // Handle cases where date, time, and recurring need to be set
-          const updateObj: { recurring?: string; dueDate?: Date | null; dueTime?: Date | null } = {}
-          if (recurring !== undefined) {
-            updateObj.recurring = recurring
-          }
-          if (date !== undefined) {
-            updateObj.dueDate = date
-          }
-          if (time !== undefined) {
-            updateObj.dueTime = time
-          }
-          return updateObj
-      }
-    })()
+  // Natural language input state
+  const [nlInput, setNlInput] = useState("")
 
-    // Apply updates using appropriate function
-    if (!taskId) {
-      updateQuickAddTask({ updateRequest: updates })
-    } else {
-      updateTask({ updateRequest: { id: taskId, ...updates } })
+  const handleUpdate = useCallback(
+    (
+      taskId: TaskId | undefined,
+      date: Date | undefined | null,
+      time: Date | undefined | null,
+      type: string,
+      recurring?: string,
+    ) => {
+      // Build update object based on operation type
+      const updates = (() => {
+        switch (type) {
+          case "remove":
+            return { dueDate: isNewTask ? undefined : null }
+          case "remove-time":
+            return { dueTime: isNewTask ? undefined : null }
+          case "remove-recurring":
+            return { recurring: isNewTask ? undefined : null }
+          default:
+            // Handle cases where date, time, and recurring need to be set
+            const updateObj: { recurring?: string; dueDate?: Date | null; dueTime?: Date | null } =
+              {}
+            if (recurring !== undefined) {
+              updateObj.recurring = recurring
+            }
+            if (date !== undefined) {
+              updateObj.dueDate = date
+            }
+            if (time !== undefined) {
+              updateObj.dueTime = time
+            }
+            return updateObj
+        }
+      })()
+
+      // Apply updates using appropriate function
+      if (!taskId) {
+        updateQuickAddTask({ updateRequest: updates })
+      } else {
+        updateTask({ updateRequest: { id: taskId, ...updates } })
+      }
+    },
+    [isNewTask, updateTask, updateQuickAddTask],
+  )
+
+  // Handle manual natural language parsing
+  const handleParseInput = useCallback(() => {
+    if (!nlInput.trim()) return
+
+    const parsed = parseEnhancedNaturalLanguage(nlInput)
+
+    // Collect all parsed values
+    let parsedDate: Date | undefined = undefined
+    let parsedTime: Date | undefined = undefined
+    let parsedRecurring: string | undefined = undefined
+    let hasAppliedValue = false
+
+    // Process parsed date
+    if (parsed.dueDate) {
+      parsedDate = parsed.dueDate
+      hasAppliedValue = true
     }
-  }
+
+    // Process parsed time
+    if (parsed.time) {
+      const timeFormatted = convertTimeToHHMMSS(parsed.time)
+      if (timeFormatted) {
+        const [hours, minutes] = timeFormatted.split(":").map(Number)
+        const timeDate = new Date()
+        timeDate.setHours(hours, minutes, 0, 0)
+        parsedTime = timeDate
+        hasAppliedValue = true
+      }
+    }
+
+    // Process parsed recurring
+    if (parsed.recurring) {
+      parsedRecurring = parsed.recurring
+      hasAppliedValue = true
+    }
+
+    // Apply all updates in a single call
+    if (hasAppliedValue) {
+      handleUpdate(taskId, parsedDate, parsedTime, "parsed", parsedRecurring)
+      setNlInput("")
+    }
+  }, [nlInput, taskId, handleUpdate])
 
   // Helper function to create time Date object
   const createTimeFromHourMinute = (hour: string, minute: string, ampm: string): Date => {
@@ -506,7 +560,7 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
         <div className="space-y-4">
           <div className="flex gap-2 items-center justify-center">
             <Select value={selectedHour} onValueChange={setSelectedHour}>
-              <SelectTrigger className="w-16">
+              <SelectTrigger className="w-18">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -519,7 +573,7 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
             </Select>
             <span className="text-lg font-medium">:</span>
             <Select value={selectedMinute} onValueChange={setSelectedMinute}>
-              <SelectTrigger className="w-16">
+              <SelectTrigger className="w-18">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -531,7 +585,7 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
               </SelectContent>
             </Select>
             <Select value={selectedAmPm} onValueChange={setSelectedAmPm}>
-              <SelectTrigger className="w-16">
+              <SelectTrigger className="w-18">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -569,6 +623,22 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
         >
           <X className="h-4 w-4" />
         </Button>
+      </div>
+
+      {/* Natural Language Input */}
+      <div className="p-3">
+        <div className="flex gap-2">
+          <Input
+            placeholder="e.g., tomorrow 3PM, next monday, daily"
+            value={nlInput}
+            onChange={(e) => setNlInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleParseInput()}
+            className="text-sm flex-1"
+          />
+          <Button onClick={handleParseInput} disabled={!nlInput.trim()} size="sm" variant="default">
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       <div className="flex gap-1 mb-2">

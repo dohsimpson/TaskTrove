@@ -1,10 +1,22 @@
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { vi, describe, it, expect, beforeEach } from "vitest"
 import { TaskScheduleContent } from "./task-schedule-content"
 import type { Task } from "@/lib/types"
 import { INBOX_PROJECT_ID } from "@/lib/types"
 import { TEST_TASK_ID_1 } from "@/lib/utils/test-constants"
 import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
+import userEvent from "@testing-library/user-event"
+
+// Mock the shared hook
+vi.mock("@/hooks/use-debounced-parse", () => ({
+  useDebouncedParse: vi.fn(),
+}))
+
+// Mock natural language parser functions
+vi.mock("@/lib/utils/enhanced-natural-language-parser", () => ({
+  parseEnhancedNaturalLanguage: vi.fn(),
+  convertTimeToHHMMSS: vi.fn(),
+}))
 
 // Mock jotai to provide test data
 let mockTasks: Task[] = []
@@ -1099,6 +1111,362 @@ describe("TaskScheduleContent", () => {
           dueDate: nextDate,
         },
       })
+    })
+  })
+
+  describe("Natural Language Input", () => {
+    beforeEach(async () => {
+      // Reset mocks for natural language tests
+      const { parseEnhancedNaturalLanguage, convertTimeToHHMMSS } = await import(
+        "@/lib/utils/enhanced-natural-language-parser"
+      )
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue({
+        title: "",
+        labels: [],
+        originalText: "",
+      })
+      vi.mocked(convertTimeToHHMMSS).mockReturnValue(null)
+    })
+
+    it("should render natural language input field with button", () => {
+      renderWithTasks(
+        [mockTask],
+        <TaskScheduleContent
+          taskId={mockTask.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
+      const parseButton = screen.getByRole("button", { name: "" })
+      expect(nlInput).toBeInTheDocument()
+      expect(nlInput).toBeInstanceOf(HTMLInputElement)
+      expect(parseButton).toBeInTheDocument()
+      expect(parseButton).toBeDisabled() // Should be disabled when input is empty
+    })
+
+    it("should enable parse button when input has text", async () => {
+      const user = userEvent.setup()
+
+      renderWithTasks(
+        [mockTask],
+        <TaskScheduleContent
+          taskId={mockTask.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
+      const parseButton = screen.getByRole("button", { name: "" })
+
+      expect(parseButton).toBeDisabled()
+
+      await user.type(nlInput, "tomorrow")
+      expect(parseButton).not.toBeDisabled()
+    })
+
+    it("should parse and update task when button is clicked", async () => {
+      const { parseEnhancedNaturalLanguage } = await import(
+        "@/lib/utils/enhanced-natural-language-parser"
+      )
+      const user = userEvent.setup()
+
+      const parsedResult = {
+        title: "",
+        labels: [],
+        originalText: "tomorrow",
+        dueDate: new Date("2024-01-16"),
+      }
+
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(parsedResult)
+
+      renderWithTasks(
+        [mockTask],
+        <TaskScheduleContent
+          taskId={mockTask.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
+      const parseButton = screen.getByRole("button", { name: "" })
+
+      await user.type(nlInput, "tomorrow")
+      await user.click(parseButton)
+
+      await waitFor(() => {
+        expect(parseEnhancedNaturalLanguage).toHaveBeenCalledWith("tomorrow")
+        expect(mockUpdateTask).toHaveBeenCalledWith({
+          updateRequest: {
+            id: TEST_TASK_ID_1,
+            dueDate: parsedResult.dueDate,
+          },
+        })
+      })
+
+      // Input should be cleared after parsing
+      expect(nlInput).toHaveValue("")
+    })
+
+    it("should parse and update task when Enter is pressed", async () => {
+      const { parseEnhancedNaturalLanguage } = await import(
+        "@/lib/utils/enhanced-natural-language-parser"
+      )
+      const user = userEvent.setup()
+
+      const parsedResult = {
+        title: "",
+        labels: [],
+        originalText: "tomorrow",
+        dueDate: new Date("2024-01-16"),
+      }
+
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(parsedResult)
+
+      renderWithTasks(
+        [mockTask],
+        <TaskScheduleContent
+          taskId={mockTask.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
+
+      await user.type(nlInput, "tomorrow")
+      await user.keyboard("{Enter}")
+
+      await waitFor(() => {
+        expect(parseEnhancedNaturalLanguage).toHaveBeenCalledWith("tomorrow")
+        expect(mockUpdateTask).toHaveBeenCalledWith({
+          updateRequest: {
+            id: TEST_TASK_ID_1,
+            dueDate: parsedResult.dueDate,
+          },
+        })
+      })
+    })
+
+    it("should update task with parsed time", async () => {
+      const { parseEnhancedNaturalLanguage, convertTimeToHHMMSS } = await import(
+        "@/lib/utils/enhanced-natural-language-parser"
+      )
+      const user = userEvent.setup()
+
+      const parsedResult = {
+        title: "",
+        labels: [],
+        originalText: "3PM",
+        time: "3PM",
+      }
+
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(parsedResult)
+      vi.mocked(convertTimeToHHMMSS).mockReturnValue("15:00:00")
+
+      renderWithTasks(
+        [mockTask],
+        <TaskScheduleContent
+          taskId={mockTask.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
+      const parseButton = screen.getByRole("button", { name: "" })
+
+      await user.type(nlInput, "3PM")
+      await user.click(parseButton)
+
+      await waitFor(() => {
+        expect(convertTimeToHHMMSS).toHaveBeenCalledWith("3PM")
+        expect(mockUpdateTask).toHaveBeenCalledWith({
+          updateRequest: {
+            id: TEST_TASK_ID_1,
+            dueTime: expect.any(Date),
+          },
+        })
+      })
+    })
+
+    it("should update task with parsed recurring pattern", async () => {
+      const { parseEnhancedNaturalLanguage } = await import(
+        "@/lib/utils/enhanced-natural-language-parser"
+      )
+      const user = userEvent.setup()
+
+      const parsedResult = {
+        title: "",
+        labels: [],
+        originalText: "daily",
+        recurring: "RRULE:FREQ=DAILY",
+      }
+
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(parsedResult)
+
+      renderWithTasks(
+        [mockTask],
+        <TaskScheduleContent
+          taskId={mockTask.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
+      const parseButton = screen.getByRole("button", { name: "" })
+
+      await user.type(nlInput, "daily")
+      await user.click(parseButton)
+
+      await waitFor(() => {
+        expect(mockUpdateTask).toHaveBeenCalledWith({
+          updateRequest: {
+            id: TEST_TASK_ID_1,
+            recurring: "RRULE:FREQ=DAILY",
+          },
+        })
+      })
+    })
+
+    it("should handle complex natural language input", async () => {
+      const { parseEnhancedNaturalLanguage, convertTimeToHHMMSS } = await import(
+        "@/lib/utils/enhanced-natural-language-parser"
+      )
+      const user = userEvent.setup()
+
+      const parsedResult = {
+        title: "meeting",
+        labels: [],
+        originalText: "meeting tomorrow 2PM daily",
+        dueDate: new Date("2024-01-16"),
+        time: "2PM",
+        recurring: "RRULE:FREQ=DAILY",
+      }
+
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(parsedResult)
+      vi.mocked(convertTimeToHHMMSS).mockReturnValue("14:00:00")
+
+      renderWithTasks(
+        [mockTask],
+        <TaskScheduleContent
+          taskId={mockTask.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
+      const parseButton = screen.getByRole("button", { name: "" })
+
+      await user.type(nlInput, "meeting tomorrow 2PM daily")
+      await user.click(parseButton)
+
+      await waitFor(() => {
+        // Should call updateTask multiple times for different parsed elements
+        expect(mockUpdateTask).toHaveBeenCalledWith(
+          expect.objectContaining({
+            updateRequest: expect.objectContaining({
+              id: TEST_TASK_ID_1,
+              dueDate: parsedResult.dueDate,
+            }),
+          }),
+        )
+      })
+
+      await waitFor(() => {
+        expect(mockUpdateTask).toHaveBeenCalledWith(
+          expect.objectContaining({
+            updateRequest: expect.objectContaining({
+              id: TEST_TASK_ID_1,
+              dueTime: expect.any(Date),
+            }),
+          }),
+        )
+      })
+
+      await waitFor(() => {
+        expect(mockUpdateTask).toHaveBeenCalledWith(
+          expect.objectContaining({
+            updateRequest: expect.objectContaining({
+              id: TEST_TASK_ID_1,
+              recurring: "RRULE:FREQ=DAILY",
+            }),
+          }),
+        )
+      })
+    })
+
+    it("should work with new task (quickAddTask)", async () => {
+      const { parseEnhancedNaturalLanguage } = await import(
+        "@/lib/utils/enhanced-natural-language-parser"
+      )
+      const user = userEvent.setup()
+
+      const parsedResult = {
+        title: "",
+        labels: [],
+        originalText: "tomorrow",
+        dueDate: new Date("2024-01-16"),
+      }
+
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(parsedResult)
+      mockQuickAddTask = { title: "New Task", description: "" }
+
+      render(<TaskScheduleContent onClose={mockOnClose} onModeChange={mockOnModeChange} />)
+
+      const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
+      const parseButton = screen.getByRole("button", { name: "" })
+
+      await user.type(nlInput, "tomorrow")
+      await user.click(parseButton)
+
+      await waitFor(() => {
+        expect(mockUpdateQuickAddTask).toHaveBeenCalledWith({
+          updateRequest: {
+            dueDate: parsedResult.dueDate,
+          },
+        })
+        expect(mockUpdateTask).not.toHaveBeenCalled()
+      })
+    })
+
+    it("should not update when parsed result has no values", async () => {
+      const { parseEnhancedNaturalLanguage } = await import(
+        "@/lib/utils/enhanced-natural-language-parser"
+      )
+      const user = userEvent.setup()
+
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue({
+        title: "invalid input",
+        labels: [],
+        originalText: "invalid input",
+        // No dueDate, time, or recurring - should not trigger any updates
+      })
+
+      renderWithTasks(
+        [mockTask],
+        <TaskScheduleContent
+          taskId={mockTask.id}
+          onClose={mockOnClose}
+          onModeChange={mockOnModeChange}
+        />,
+      )
+
+      const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
+      const parseButton = screen.getByRole("button", { name: "" })
+
+      await user.type(nlInput, "invalid input")
+      await user.click(parseButton)
+
+      // Wait a bit to ensure any effects would have run
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      expect(mockUpdateTask).not.toHaveBeenCalled()
     })
   })
 })

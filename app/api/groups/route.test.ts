@@ -9,6 +9,7 @@ import { NextRequest } from "next/server"
 import { GET, POST, PATCH, DELETE } from "./route"
 import { createGroupId, createProjectId, type DataFile } from "@/lib/types"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
+import { DEFAULT_UUID } from "@/lib/constants/defaults"
 
 // Mock safe file operations
 vi.mock("@/lib/utils/safe-file-operations", () => ({
@@ -270,7 +271,7 @@ describe("DELETE /api/groups", () => {
       labels: [],
       projectGroups: {
         type: "project",
-        id: createGroupId("00000000-0000-4000-8000-000000000001"),
+        id: createGroupId(DEFAULT_UUID),
         name: "All Projects",
         items: [
           {

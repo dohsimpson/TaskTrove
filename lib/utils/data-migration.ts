@@ -1,5 +1,6 @@
 import type { DataFile, VersionString, Json } from "@/lib/types"
 import { createVersionString, DataFileSchema } from "@/lib/types"
+import { DEFAULT_UUID } from "@/lib/constants/defaults"
 import packageJson from "@/package.json"
 
 /**
@@ -108,7 +109,7 @@ const migrationFunctions: MigrationStep[] = [
         const projectsArray = Array.isArray(ordering.projects) ? ordering.projects : []
         result.projectGroups = {
           type: "project",
-          id: "00000000-0000-0000-0000-000000000000", // DEFAULT_UUID
+          id: DEFAULT_UUID,
           name: "All Projects",
           items: projectsArray, // Array of ProjectIds
         }
@@ -117,7 +118,7 @@ const migrationFunctions: MigrationStep[] = [
         const labelsArray = Array.isArray(ordering.labels) ? ordering.labels : []
         result.labelGroups = {
           type: "label",
-          id: "00000000-0000-0000-0000-000000000000", // DEFAULT_UUID
+          id: DEFAULT_UUID,
           name: "All Labels",
           items: labelsArray, // Array of LabelIds
         }
@@ -128,13 +129,13 @@ const migrationFunctions: MigrationStep[] = [
         // If no ordering exists, create empty default groups
         result.projectGroups = {
           type: "project",
-          id: "00000000-0000-0000-0000-000000000000",
+          id: DEFAULT_UUID,
           name: "All Projects",
           items: [],
         }
         result.labelGroups = {
           type: "label",
-          id: "00000000-0000-0000-0000-000000000000",
+          id: DEFAULT_UUID,
           name: "All Labels",
           items: [],
         }

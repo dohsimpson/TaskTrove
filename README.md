@@ -4,7 +4,6 @@
 
 <img width="3400" height="920" alt="tasktrove-banner" src="https://github.com/user-attachments/assets/52c06cfe-2757-40d0-bb17-a6fed1b74f96" />
 
-
 <br />
 <br />
 
@@ -13,7 +12,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)](./selfhost/)
 [![Demo](https://img.shields.io/badge/Demo-Try%20Now-orange)](https://demo.tasktrove.io)
 
-[🌐 Website](https://tasktrove.io) • [Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Development](#-development)
+[🌐 Website](https://tasktrove.io) • [Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Development](#-development) • [Roadmap](https://github.com/users/dohsimpson/projects/1)
 
 | Light Theme                                                                                                  | Dark Theme                                                                                               | Mobile View                                                                                                 |
 | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |

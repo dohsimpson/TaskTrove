@@ -315,7 +315,7 @@ export function DraggableProjectGroupItem({
                   </span>
 
                   {/* Group name */}
-                  <span className="flex-1 truncate">{group.name}</span>
+                  <span className="flex-1 truncate mr-6">{group.name}</span>
 
                   {/* Task count badge */}
                   <SidebarMenuBadge className={cn(contextMenuVisible ? "opacity-0" : "")}>

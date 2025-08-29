@@ -306,7 +306,7 @@ export function DraggableProjectItem({
                       onClick={(e) => e.stopPropagation()} // Prevent navigation during edit
                     />
                   ) : (
-                    <span className="flex-1 truncate">{project.name}</span>
+                    <span className="flex-1 truncate mr-6">{project.name}</span>
                   )}
                   <SidebarMenuBadge className={contextMenuVisible ? "opacity-0" : ""}>
                     {taskCount}

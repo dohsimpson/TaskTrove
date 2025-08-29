@@ -664,13 +664,14 @@ describe("ProjectSectionsView", () => {
     render(<ProjectSectionsView droppableId="test-droppable" />)
 
     const badges = screen.getAllByTestId("badge")
-    expect(badges).toHaveLength(3) // 3 sections
+    expect(badges).toHaveLength(4) // 4 sections (3 original + 1 default)
 
     // Check badge content shows task count
     const badgeTexts = badges.map((badge) => badge.textContent)
+    expect(badgeTexts).toContain("0") // Default section has 0 tasks
     expect(badgeTexts).toContain("2") // Planning has 2 tasks (TEST_TASK_ID_1 and TEST_TASK_ID_3 both have sectionId: TEST_SECTION_ID_1)
     expect(badgeTexts).toContain("1") // In Progress has 1 task (TEST_TASK_ID_2 has sectionId: TEST_SECTION_ID_2)
-    expect(badgeTexts).toContain("0") // Review has 0 tasks
+    expect(badgeTexts).toContain("0") // Review has 0 tasks (there will be two sections with 0 tasks)
   })
 
   it("handles task click to open side panel", async () => {
@@ -923,9 +924,9 @@ describe("ProjectSectionsView", () => {
       // Check that the first section (collapsed) has a droppable wrapper
       expect(screen.getByText("Planning")).toBeInTheDocument()
 
-      // Verify the first collapsible shows it's closed (collapsed)
+      // Verify the Planning section (now at index 1 due to default section) shows it's closed (collapsed)
       const collapsibles = screen.getAllByTestId("collapsible")
-      expect(collapsibles[0]).toHaveAttribute("data-open", "false")
+      expect(collapsibles[1]).toHaveAttribute("data-open", "false")
 
       // Verify we have droppable areas for sections (collapsed section should have a drop target)
       const droppables = screen.getAllByTestId(/^droppable-test-droppable-section-/)
@@ -994,7 +995,7 @@ describe("ProjectSectionsView", () => {
 
       // Verify collapsible states
       const collapsibles = screen.getAllByTestId("collapsible")
-      expect(collapsibles).toHaveLength(3)
+      expect(collapsibles).toHaveLength(4) // 4 sections (3 original + 1 default)
     })
   })
 

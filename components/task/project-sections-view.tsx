@@ -461,9 +461,9 @@ export function ProjectSectionsView({
   const getOrderedTasksForSection = (sectionId: string | null) => {
     // Filter tasks for this section from the passed tasks (already sorted by filteredTasksAtom)
     const sectionTasks = tasks.filter((task: Task) => {
-      if (sectionId === null) {
-        // For backward compatibility, treat null as default section
-        return task.sectionId === DEFAULT_UUID
+      // For backward compatibility, treat null as default section
+      if (sectionId === null || sectionId === DEFAULT_UUID) {
+        return task.sectionId === DEFAULT_UUID || !task.sectionId
       }
       return task.sectionId === sectionId
     })
@@ -504,8 +504,21 @@ export function ProjectSectionsView({
     return sortedTasks
   }
 
-  // Get sections from project
+  // Get sections from project and ensure default section is always present
   const sectionsToShow = project ? [...project.sections] : []
+
+  // Always ensure default section is present
+  const hasDefaultSection = sectionsToShow.some((section) => section.id === DEFAULT_UUID)
+  if (!hasDefaultSection) {
+    // Create default section if it doesn't exist
+    const defaultSection = {
+      id: createSectionId(DEFAULT_UUID),
+      name: "(no section)",
+      color: "#6b7280", // Gray color for default section
+    }
+    // Add default section at the beginning
+    sectionsToShow.unshift(defaultSection)
+  }
 
   const renderSection = (section: { id: string; name: string; color: string }) => {
     const displayName = section.name

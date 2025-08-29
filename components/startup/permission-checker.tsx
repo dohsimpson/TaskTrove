@@ -218,9 +218,6 @@ export function PermissionChecker() {
                   data, it may be permanently overwritten and cannot be recovered.
                   <br />
                   <br />
-                  <strong>Make sure you have backed up any existing data before proceeding.</strong>
-                  <br />
-                  <br />
                   Are you sure you want to continue?
                 </div>
               ),

@@ -4,11 +4,9 @@ import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-opera
 import { withFileOperationLogging } from "@/lib/middleware/api-logger"
 import { createErrorResponse } from "@/lib/utils/validation"
 import { log } from "@/lib/utils/logger"
-import { DataFileSchema, DataFile } from "@/lib/types"
-import type { ErrorResponse } from "@/lib/types"
-
-// Import data schema - expects a DataFile format
-const ImportDataSchema = DataFileSchema
+import { DataFile, DataFileSchema, JsonSchema } from "@/lib/types"
+import type { ErrorResponse, ProjectId, LabelId } from "@/lib/types"
+import { migrateDataFile, needsMigration, getMigrationInfo } from "@/lib/utils/data-migration"
 
 interface ImportResponse {
   success: boolean
@@ -29,18 +27,65 @@ async function importData(
     // Parse request body
     const body = await request.json()
 
-    // Validate import data structure - expecting DataFile format
-    const importData = ImportDataSchema.parse(body)
+    // Validate import data structure - accepts any JSON object
+    const rawImportData = JsonSchema.parse(body)
+
+    // Get migration info for the import data
+    const requiresMigration = needsMigration(rawImportData)
+    const migrationInfo = getMigrationInfo(rawImportData)
 
     log.info(
       {
         module: "import",
-        tasksCount: importData.tasks.length,
-        projectsCount: importData.projects.length,
-        labelsCount: importData.labels.length,
+        ...migrationInfo,
       },
-      "Processing import request",
+      "Processing import request with potential migration",
     )
+
+    // Apply migration to import data only if needed
+    let importData: DataFile
+    try {
+      if (requiresMigration) {
+        importData = migrateDataFile(rawImportData)
+        log.info(
+          {
+            module: "import",
+            finalVersion: importData.version,
+            tasksCount: importData.tasks.length,
+            projectsCount: importData.projects.length,
+            labelsCount: importData.labels.length,
+          },
+          "Import data migrated successfully",
+        )
+      } else {
+        // No migration needed, validate and use data as-is
+        importData = DataFileSchema.parse(rawImportData)
+        log.info(
+          {
+            module: "import",
+            currentVersion: importData.version,
+            tasksCount: importData.tasks.length,
+            projectsCount: importData.projects.length,
+            labelsCount: importData.labels.length,
+          },
+          "Import data already in current format",
+        )
+      }
+    } catch (migrationError) {
+      log.error(
+        { error: migrationError, module: "import" },
+        requiresMigration
+          ? "Failed to migrate import data"
+          : "Failed to validate import data format",
+      )
+      return createErrorResponse(
+        "Invalid import data format",
+        requiresMigration
+          ? `Failed to migrate import data: ${migrationError instanceof Error ? migrationError.message : String(migrationError)}`
+          : `Invalid data format: ${migrationError instanceof Error ? migrationError.message : String(migrationError)}`,
+        400,
+      )
+    }
 
     // Read current data file
     const currentData = await withFileOperationLogging(
@@ -59,6 +104,8 @@ async function importData(
     // Merge import data with existing data
     const mergedData: DataFile = {
       ...currentData,
+      // Use imported data version if it's newer or current version if same/older
+      version: importData.version,
     }
 
     let importedTasks = 0
@@ -73,7 +120,6 @@ async function importData(
     for (const label of importData.labels) {
       const existingLabel = mergedData.labels.find((l) => l.id === label.id)
       if (existingLabel) {
-        duplicatesSkipped++
         duplicateLabelsSkipped++
         log.debug({ labelId: label.id }, "Skipping duplicate label")
       } else {
@@ -87,7 +133,6 @@ async function importData(
     for (const project of importData.projects) {
       const existingProject = mergedData.projects.find((p) => p.id === project.id)
       if (existingProject) {
-        duplicatesSkipped++
         duplicateProjectsSkipped++
         log.debug({ projectId: project.id }, "Skipping duplicate project")
       } else {
@@ -101,7 +146,6 @@ async function importData(
     for (const task of importData.tasks) {
       const existingTask = mergedData.tasks.find((t) => t.id === task.id)
       if (existingTask) {
-        duplicatesSkipped++
         duplicateTasksSkipped++
         log.debug({ taskId: task.id }, "Skipping duplicate task")
       } else {
@@ -117,14 +161,20 @@ async function importData(
           canImport = false
         }
 
-        // Check labels exist
+        // Check labels exist and filter out invalid ones
         if (task.labels) {
-          for (const labelId of task.labels) {
-            if (!mergedData.labels.find((l) => l.id === labelId)) {
-              log.warn({ taskId: task.id, labelId }, "Task references non-existent label")
-              // Don't block import, just warn
+          const validLabels = task.labels.filter((labelId) => {
+            const labelExists = mergedData.labels.find((l) => l.id === labelId)
+            if (!labelExists) {
+              log.warn(
+                { taskId: task.id, labelId },
+                "Removing non-existent label reference from task",
+              )
             }
-          }
+            return labelExists
+          })
+          // Update task with only valid labels
+          task.labels = validLabels
         }
 
         if (canImport) {
@@ -134,6 +184,58 @@ async function importData(
         }
       }
     }
+
+    // Merge project groups and label groups
+    // Only merge items that exist in the merged data
+    const existingProjectIds = new Set(mergedData.projects.map((p) => p.id))
+    const existingLabelIds = new Set(mergedData.labels.map((l) => l.id))
+
+    // Update project groups to include any new projects (only string IDs, not nested groups)
+    const importedProjectItems: ProjectId[] = []
+    const currentProjectItems: ProjectId[] = []
+
+    for (const item of importData.projectGroups.items) {
+      if (typeof item === "string" && existingProjectIds.has(item)) {
+        importedProjectItems.push(item)
+      }
+    }
+
+    for (const item of mergedData.projectGroups.items) {
+      if (typeof item === "string") {
+        currentProjectItems.push(item)
+      }
+    }
+
+    const allProjectItems = [...new Set([...currentProjectItems, ...importedProjectItems])]
+    mergedData.projectGroups = {
+      ...mergedData.projectGroups,
+      items: allProjectItems,
+    }
+
+    // Update label groups to include any new labels (only string IDs, not nested groups)
+    const importedLabelItems: LabelId[] = []
+    const currentLabelItems: LabelId[] = []
+
+    for (const item of importData.labelGroups.items) {
+      if (typeof item === "string" && existingLabelIds.has(item)) {
+        importedLabelItems.push(item)
+      }
+    }
+
+    for (const item of mergedData.labelGroups.items) {
+      if (typeof item === "string") {
+        currentLabelItems.push(item)
+      }
+    }
+
+    const allLabelItems = [...new Set([...currentLabelItems, ...importedLabelItems])]
+    mergedData.labelGroups = {
+      ...mergedData.labelGroups,
+      items: allLabelItems,
+    }
+
+    // Calculate total duplicates skipped
+    duplicatesSkipped = duplicateTasksSkipped + duplicateProjectsSkipped + duplicateLabelsSkipped
 
     // Write updated data file
     const writeSuccess = await withFileOperationLogging(
@@ -176,7 +278,7 @@ async function importData(
     if (error instanceof z.ZodError) {
       return createErrorResponse(
         "Invalid import data format",
-        "The uploaded file does not match the expected format",
+        "The uploaded file does not contain valid JSON data",
         400,
       )
     }

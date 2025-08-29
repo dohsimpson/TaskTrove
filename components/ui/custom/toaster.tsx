@@ -8,7 +8,6 @@ type ToasterProps = ComponentProps<typeof SonnerToaster>
 export function Toaster({ ...props }: ToasterProps) {
   return (
     <SonnerToaster
-      expand
       visibleToasts={5}
       {...props}
       style={{

@@ -498,7 +498,7 @@ export function TaskItem({
               </div>
 
               {/* Right side - Labels and project info */}
-              <div className="flex items-center gap-1 flex-shrink-0">
+              <div className="flex items-center gap-1 flex-shrink-0 ml-2">
                 {/* Labels - Show if present, limited on smaller screens */}
                 {task.labels.length > 0 && (
                   <LabelManagementPopover
@@ -560,7 +560,7 @@ export function TaskItem({
                   <ProjectPopover task={task}>
                     <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
                       <Folder
-                        className="h-2 w-2 flex-shrink-0"
+                        className="h-3 w-3 flex-shrink-0"
                         style={{ color: taskProject.color }}
                       />
                       <span className="truncate max-w-24">{taskProject.name}</span>

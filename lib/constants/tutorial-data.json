@@ -131,8 +131,8 @@
     },
     {
       "id": "f47ac11d-58cc-4372-a567-0e02b2c3d48b",
-      "title": "🎯 Master Quick Organization",
-      "description": "TaskTrove's drag-and-drop sidebar makes organizing tasks incredibly fast. Try it!",
+      "title": "🎯 Master Drag & Drop Organization",
+      "description": "TaskTrove's drag-and-drop makes organizing tasks and projects incredibly fast. Try it!",
       "completed": false,
       "priority": 1,
       "projectId": "550e8400-e29b-41d4-a716-446655440000",
@@ -141,21 +141,27 @@
       "subtasks": [
         {
           "id": "f47ac11e-58cc-4372-a567-0e02b2c3d48c",
-          "title": "Drag any task to a project in the sidebar to move it",
+          "title": "Drag tasks within projects to reorder them",
           "completed": false,
           "order": 1
         },
         {
           "id": "f47ac11f-58cc-4372-a567-0e02b2c3d48d",
-          "title": "Drag a task to a label in the sidebar to tag it",
+          "title": "Drag tasks between sections in list view or kanban view",
           "completed": false,
           "order": 2
         },
         {
           "id": "f47ac120-58cc-4372-a567-0e02b2c3d48e",
-          "title": "Complete this task to finish your TaskTrove tour! 🎉",
+          "title": "Drag projects in the sidebar to reorder them",
           "completed": false,
           "order": 3
+        },
+        {
+          "id": "f47ac121-58cc-4372-a567-0e02b2c3d48f",
+          "title": "Complete this task to finish your TaskTrove tour! 🎉",
+          "completed": false,
+          "order": 4
         }
       ],
       "comments": [
@@ -201,6 +207,31 @@
         "f47ac117-58cc-4372-a567-0e02b2c3d485",
         "f47ac11d-58cc-4372-a567-0e02b2c3d48b"
       ]
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "name": "🎯 My Sample Project",
+      "slug": "my-sample-project",
+      "color": "#3B82F6",
+      "shared": false,
+      "sections": [
+        {
+          "id": "6ba7b810-9dad-41d1-8696-f01c6a84b1a1",
+          "name": "To Do",
+          "color": "#6B7280"
+        },
+        {
+          "id": "6ba7b820-9dad-41d1-8696-f01c6a84b1b1",
+          "name": "In Progress",
+          "color": "#F59E0B"
+        },
+        {
+          "id": "6ba7b830-9dad-41d1-8696-f01c6a84b1c1",
+          "name": "Completed",
+          "color": "#10B981"
+        }
+      ],
+      "taskOrder": []
     }
   ],
   "labels": [
@@ -211,20 +242,30 @@
       "color": "#8B5CF6"
     }
   ],
-  "ordering": {
-    "projects": ["550e8400-e29b-41d4-a716-446655440000"],
-    "labels": ["6ba7b811-9dad-41d1-8696-f01c6a84b1a1"]
-  },
   "projectGroups": {
     "type": "project",
     "id": "00000000-0000-0000-0000-000000000000",
     "name": "All Projects",
-    "items": ["550e8400-e29b-41d4-a716-446655440000"]
+    "items": [
+      {
+        "type": "project",
+        "id": "6ba7b801-9dad-41d1-8696-f01c6a84b101",
+        "name": "Tutorial",
+        "items": ["550e8400-e29b-41d4-a716-446655440000"]
+      },
+      {
+        "type": "project",
+        "id": "6ba7b802-9dad-41d1-8696-f01c6a84b102",
+        "name": "Personal",
+        "items": ["550e8400-e29b-41d4-a716-446655440001"]
+      }
+    ]
   },
   "labelGroups": {
     "type": "label",
     "id": "00000000-0000-0000-0000-000000000000",
     "name": "All Labels",
     "items": ["6ba7b811-9dad-41d1-8696-f01c6a84b1a1"]
-  }
+  },
+  "version": "v0.3.0"
 }

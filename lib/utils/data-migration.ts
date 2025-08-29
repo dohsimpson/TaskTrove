@@ -188,7 +188,8 @@ const migrationFunctions: MigrationStep[] = [
  * @returns Migrated and validated data file conforming to current DataFile schema
  */
 export function migrateDataFile(dataFile: Json): DataFile {
-  const target = createVersionString(`v${packageJson.version}`)
+  const latestAvailableMigration = getLatestAvailableMigration()
+  const target = latestAvailableMigration || createVersionString(`v${packageJson.version}`)
 
   // Convert Json to a workable object type
   if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
@@ -275,14 +276,32 @@ export function migrateDataFile(dataFile: Json): DataFile {
 }
 
 /**
+ * Get the latest available migration version
+ *
+ * @returns The latest migration version available, or null if no migrations exist
+ */
+function getLatestAvailableMigration(): VersionString | null {
+  const target = createVersionString(`v${packageJson.version}`)
+  let latestAvailableMigration: VersionString | null = null
+
+  for (const step of migrationFunctions) {
+    if (!isVersionLessThan(target, step.version)) {
+      latestAvailableMigration = step.version
+    } else {
+      break // Since array is sorted, no need to continue
+    }
+  }
+
+  return latestAvailableMigration
+}
+
+/**
  * Check if a data file needs migration
  *
  * @param dataFile - The raw JSON data file to check (unknown structure)
  * @returns True if migration is needed
  */
 export function needsMigration(dataFile: Json): boolean {
-  const target = createVersionString(`v${packageJson.version}`)
-
   // Convert Json to workable object type
   if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
     throw new Error("Data file must be a JSON object")
@@ -293,16 +312,8 @@ export function needsMigration(dataFile: Json): boolean {
     (typeof dataFile.version === "string" ? createVersionString(dataFile.version) : null) ||
     createVersionString("v0.2.0")
 
-  // Find latest available migration that's <= target
-  let latestAvailableMigration: VersionString | null = null
-
-  for (const step of migrationFunctions) {
-    if (!isVersionLessThan(target, step.version)) {
-      latestAvailableMigration = step.version
-    } else {
-      break // Since array is sorted, no need to continue
-    }
-  }
+  // Get latest available migration
+  const latestAvailableMigration = getLatestAvailableMigration()
 
   // Need migration if current version < latest available migration
   return latestAvailableMigration
@@ -317,8 +328,6 @@ export function needsMigration(dataFile: Json): boolean {
  * @returns Migration information
  */
 export function getMigrationInfo(dataFile: Json) {
-  const target = createVersionString(`v${packageJson.version}`)
-
   // Convert Json to workable object type
   if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
     throw new Error("Data file must be a JSON object")
@@ -329,9 +338,13 @@ export function getMigrationInfo(dataFile: Json) {
     (typeof dataFile.version === "string" ? createVersionString(dataFile.version) : null) ||
     createVersionString("v0.2.0")
 
+  // Get latest available migration as target
+  const latestAvailableMigration = getLatestAvailableMigration()
+  const targetVersion = latestAvailableMigration || currentVersion
+
   return {
     currentVersion,
-    targetVersion: target,
+    targetVersion,
     needsMigration: needsMigration(dataFile),
   }
 }

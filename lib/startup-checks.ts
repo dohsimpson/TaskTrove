@@ -1,6 +1,8 @@
 import { promises as fs } from "fs"
 import { join } from "path"
 import { DEFAULT_DATA_FILE_PATH, DEFAULT_DATA_DIR } from "@/lib/constants/defaults"
+import { getMigrationInfo } from "@/lib/utils/data-migration"
+import type { Json } from "@/lib/types"
 
 interface PermissionCheckResult {
   success: boolean
@@ -11,6 +13,12 @@ interface PermissionCheckResult {
 interface DataFileCheckResult {
   exists: boolean
   needsInitialization?: boolean
+  needsMigration?: boolean
+  migrationInfo?: {
+    currentVersion: string
+    targetVersion: string
+    needsMigration: boolean
+  }
   error?: string
   details?: string
 }
@@ -90,8 +98,22 @@ export async function checkDataFile(): Promise<DataFileCheckResult> {
     await fs.access(dataFilePath)
     // File exists, try to read it to ensure it's accessible
     try {
-      await fs.readFile(dataFilePath, "utf8")
-      return { exists: true }
+      const dataContent = await fs.readFile(dataFilePath, "utf8")
+
+      // Check if migration is needed
+      try {
+        const jsonData: Json = JSON.parse(dataContent)
+        const migrationInfo = getMigrationInfo(jsonData)
+
+        return {
+          exists: true,
+          needsMigration: migrationInfo.needsMigration,
+          migrationInfo: migrationInfo,
+        }
+      } catch {
+        // If we can't parse the JSON, just return that file exists but don't check migration
+        return { exists: true }
+      }
     } catch (readError) {
       return {
         exists: true,

@@ -7,6 +7,17 @@ async function healthCheck() {
     const permissionResult = await checkStartupPermissions()
 
     if (permissionResult.success) {
+      // Check if migration is needed
+      if (permissionResult.dataFileCheck.needsMigration) {
+        return NextResponse.json({
+          status: "needs_migration",
+          message: "Data file needs to be migrated",
+          dataFileCheck: permissionResult.dataFileCheck,
+          migrationInfo: permissionResult.dataFileCheck.migrationInfo,
+          timestamp: new Date().toISOString(),
+        })
+      }
+
       return NextResponse.json({
         status: "healthy",
         message: "All permission checks passed",

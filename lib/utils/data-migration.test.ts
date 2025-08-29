@@ -186,6 +186,39 @@ describe("Data Migration Utility", () => {
         needsMigration: false,
       })
     })
+
+    it("should use latest available migration as target, not package version", () => {
+      // This test verifies that when package.json has a higher version than
+      // the latest available migration, the target version is the migration version
+      // Since we can't easily mock package.json dynamically in tests,
+      // we'll test the logic by creating a data file that needs migration
+
+      const v020Data = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        ordering: { projects: [], labels: [] },
+      })
+
+      const info = getMigrationInfo(v020Data)
+
+      // The target should be v0.3.0 (latest migration available)
+      // regardless of what version is in package.json
+      expect(info.targetVersion).toEqual(createVersionString("v0.3.0"))
+      expect(info.currentVersion).toEqual(createVersionString("v0.2.0"))
+      expect(info.needsMigration).toBe(true)
+
+      // Also test that if data is already at v0.3.0, target stays v0.3.0
+      const v030Data = createJsonData({
+        ...DEFAULT_EMPTY_DATA_FILE,
+        version: "v0.3.0",
+      })
+
+      const info2 = getMigrationInfo(v030Data)
+      expect(info2.targetVersion).toEqual(createVersionString("v0.3.0"))
+      expect(info2.currentVersion).toEqual(createVersionString("v0.3.0"))
+      expect(info2.needsMigration).toBe(false)
+    })
   })
 
   describe("v0.3.0 Migration Function", () => {

@@ -268,8 +268,24 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
       return
     }
 
+    // Get sections from project and ensure default section is always present (matches project-sections-view logic)
+    const sectionsToShow = [...project.sections]
+
+    // Always ensure default section is present
+    const hasDefaultSection = sectionsToShow.some((section) => section.id === DEFAULT_SECTION_ID)
+    if (!hasDefaultSection) {
+      // Create default section if it doesn't exist
+      const defaultSection = {
+        id: DEFAULT_SECTION_ID,
+        name: "(no section)",
+        color: "#6b7280", // Gray color for default section
+      }
+      // Add default section at the beginning
+      sectionsToShow.unshift(defaultSection)
+    }
+
     const newColumns: KanbanColumn[] = []
-    project.sections.forEach((section) => {
+    sectionsToShow.forEach((section) => {
       const sectionTasks = getOrderedTasksForSection(section.id)
       newColumns.push({
         id: section.id.toString(),

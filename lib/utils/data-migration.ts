@@ -75,14 +75,13 @@ interface MigrationStep {
  * Array is ordered sequentially - no need for sorting or complex filtering
  */
 const migrationFunctions: MigrationStep[] = [
-  // Migration from v0.2.0 to v0.3.0 - first introduction of explicit version field
+  // Migration from v0.2.0 to v0.3.0 - transform ordering to groups system + add recurringMode
   {
     version: createVersionString("v0.3.0"),
     migrate: (dataFile: Json): Json => {
       console.log("Migrating data file from v0.2.0 to v0.3.0...")
-      console.log("Adding explicit version field to data file")
-      // Add actual migration logic here when v0.3.0 requires data changes
-      // Note: Version is set by main migration logic, not here
+      console.log("Converting ordering system to groups system and adding recurringMode to tasks")
+
       // Safely handle Json object type
       if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
         throw new Error("Migration input must be a JSON object")
@@ -93,7 +92,74 @@ const migrationFunctions: MigrationStep[] = [
         result[key] = value
       }
 
-      // Add any actual data structure changes here
+      // 1. Transform ordering.projects array to projectGroups structure
+      if (
+        result.ordering &&
+        typeof result.ordering === "object" &&
+        result.ordering !== null &&
+        !Array.isArray(result.ordering)
+      ) {
+        const ordering: Record<string, unknown> = {}
+        for (const [key, value] of Object.entries(result.ordering)) {
+          ordering[key] = value
+        }
+
+        // Create default project group with items from ordering.projects
+        const projectsArray = Array.isArray(ordering.projects) ? ordering.projects : []
+        result.projectGroups = {
+          type: "project",
+          id: "00000000-0000-0000-0000-000000000000", // DEFAULT_UUID
+          name: "All Projects",
+          items: projectsArray, // Array of ProjectIds
+        }
+
+        // Create default label group with items from ordering.labels
+        const labelsArray = Array.isArray(ordering.labels) ? ordering.labels : []
+        result.labelGroups = {
+          type: "label",
+          id: "00000000-0000-0000-0000-000000000000", // DEFAULT_UUID
+          name: "All Labels",
+          items: labelsArray, // Array of LabelIds
+        }
+
+        // Remove the old ordering field
+        delete result.ordering
+      } else {
+        // If no ordering exists, create empty default groups
+        result.projectGroups = {
+          type: "project",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Projects",
+          items: [],
+        }
+        result.labelGroups = {
+          type: "label",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Labels",
+          items: [],
+        }
+      }
+
+      // 2. Add recurringMode to all existing tasks (default to "dueDate")
+      if (Array.isArray(result.tasks)) {
+        result.tasks = result.tasks.map((task) => {
+          if (typeof task === "object" && task !== null && !Array.isArray(task)) {
+            const taskObj: Record<string, unknown> = {}
+            for (const [key, value] of Object.entries(task)) {
+              taskObj[key] = value
+            }
+            // Add recurringMode if not already present
+            if (!("recurringMode" in taskObj)) {
+              taskObj.recurringMode = "dueDate"
+            }
+            return taskObj
+          }
+          return task
+        })
+      }
+
+      console.log("✓ Transformed ordering to groups system")
+      console.log("✓ Added recurringMode to tasks")
 
       // Return as Json by serializing/deserializing
       return JSON.parse(JSON.stringify(result))

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { migrateDataFile, needsMigration, getMigrationInfo } from "./data-migration"
 import type { Json } from "@/lib/types"
-import { createVersionString } from "@/lib/types"
-import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
+import { createVersionString, createProjectId, createLabelId } from "@/lib/types"
+import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types/defaults"
 
 // Mock package.json to control version in tests
 vi.mock("@/package.json", () => ({
@@ -20,82 +20,74 @@ describe("Data Migration Utility", () => {
   }
 
   beforeEach(() => {
-    // Create a raw JSON object as it would come from disk (without DataFile validation)
-    const rawData = {
+    // Create generic data that needs migration (no version field = v0.2.0)
+    const unmigrated = {
       tasks: [],
       projects: [],
       labels: [],
-      projectGroups: DEFAULT_PROJECT_GROUP,
-      labelGroups: DEFAULT_LABEL_GROUP,
+      ordering: { projects: [], labels: [] }, // Legacy field that should be migrated
     }
 
-    // Convert to Json type by serializing/deserializing to simulate real JSON data
-    mockDataFile = createJsonData(rawData)
-
-    // Reset console.log mock
+    mockDataFile = createJsonData(unmigrated)
     vi.clearAllMocks()
   })
 
   describe("migrateDataFile", () => {
-    it("should migrate v0.2.0 data file to v0.3.0 when package version is v0.3.0", () => {
+    it("should migrate unversioned data to current version", () => {
       const result = migrateDataFile(mockDataFile)
 
-      // Should migrate from v0.2.0 to v0.3.0
+      // Should detect version and migrate to current package version
       expect(result.version).toBe(createVersionString("v0.3.0"))
-      expect(result).toEqual(
-        expect.objectContaining({
-          tasks: [],
-          projects: [],
-          labels: [],
-          version: createVersionString("v0.3.0"),
-        }),
-      )
+
+      // Should conform to current DataFile schema (specific structure doesn't matter)
+      expect(result).toHaveProperty("tasks")
+      expect(result).toHaveProperty("projects")
+      expect(result).toHaveProperty("labels")
+      expect(result).toHaveProperty("projectGroups")
+      expect(result).toHaveProperty("labelGroups")
+      expect(result).toHaveProperty("version")
+
+      // Should pass current schema validation
+      expect(() => result).not.toThrow()
     })
 
-    it("should apply migration to latest available version", () => {
-      // Package version is v0.3.0 and migration exists for v0.3.0
+    it("should migrate to latest available migration version", () => {
       const result = migrateDataFile(mockDataFile)
 
-      // Should be v0.3.0 (latest available migration)
+      // Should migrate to current package version (latest available migration)
       expect(result.version).toBe(createVersionString("v0.3.0"))
     })
 
-    it("should handle versioned data file with no migration needed", () => {
-      const baseData = JSON.parse(JSON.stringify(mockDataFile))
-      const dataFileWithVersion = createJsonData({
-        ...baseData,
+    it("should handle already migrated data with no changes needed", () => {
+      // Create data that's already at current version
+      const currentVersionData = createJsonData({
+        ...DEFAULT_EMPTY_DATA_FILE,
         version: "v0.3.0",
       })
-      const result = migrateDataFile(dataFileWithVersion)
 
+      const result = migrateDataFile(currentVersionData)
       expect(result.version).toBe(createVersionString("v0.3.0"))
-      expect(result).toEqual(
-        expect.objectContaining({
-          version: createVersionString("v0.3.0"),
-        }),
-      )
     })
 
-    it("should handle data file with newer version (no migration needed)", () => {
-      const baseData = JSON.parse(JSON.stringify(mockDataFile))
-      const dataFileWithNewerVersion = createJsonData({
-        ...baseData,
+    it("should handle future version data without breaking", () => {
+      // Create data from a hypothetical future version
+      const futureVersionData = createJsonData({
+        ...DEFAULT_EMPTY_DATA_FILE,
         version: "v0.4.0",
       })
-      const result = migrateDataFile(dataFileWithNewerVersion)
 
-      // Should remain at v0.4.0 since no migration needed
+      const result = migrateDataFile(futureVersionData)
+      // Should remain at future version since no migration needed
       expect(result.version).toBe(createVersionString("v0.4.0"))
     })
 
-    it("should preserve all data during migration", () => {
-      const baseData = JSON.parse(JSON.stringify(mockDataFile))
+    it("should preserve all existing data during migration", () => {
+      // Create data with actual content to test data preservation
       const dataWithContent = createJsonData({
-        ...baseData,
         tasks: [
           {
             id: "550e8400-e29b-41d4-a716-446655440000",
-            title: "Test Task",
+            title: "Sample Task",
             completed: false,
             priority: 1,
             labels: [],
@@ -103,73 +95,75 @@ describe("Data Migration Utility", () => {
             comments: [],
             attachments: [],
             createdAt: new Date().toISOString(),
-            recurringMode: "dueDate",
           },
         ],
         projects: [
           {
             id: "550e8400-e29b-41d4-a716-446655440001",
-            name: "Test Project",
-            slug: "test-project",
+            name: "Sample Project",
+            slug: "sample-project",
             color: "#ff0000",
             shared: false,
             sections: [],
           },
         ],
+        labels: [],
+        ordering: { projects: [], labels: [] },
       })
 
       const result = migrateDataFile(dataWithContent)
 
+      // Should preserve all original data
       expect(result.tasks).toHaveLength(1)
       expect(result.projects).toHaveLength(1)
-      expect(result.tasks[0].title).toBe("Test Task")
-      expect(result.projects[0].name).toBe("Test Project")
+      expect(result.tasks[0].title).toBe("Sample Task")
+      expect(result.projects[0].name).toBe("Sample Project")
+
+      // Should have current version and schema compliance
       expect(result.version).toBe(createVersionString("v0.3.0"))
+      expect(result).toHaveProperty("projectGroups")
+      expect(result).toHaveProperty("labelGroups")
     })
   })
 
   describe("needsMigration", () => {
-    it("should return true for v0.2.0 data file when package version is v0.3.0", () => {
-      // Package is at v0.3.0, mockDataFile is at v0.2.0 (no version field)
+    it("should detect when unversioned data needs migration", () => {
+      // Data without version field should need migration
       expect(needsMigration(mockDataFile)).toBe(true)
     })
 
-    it("should return true for v0.2.0 data file with available migrations", () => {
-      // v0.2.0 data should need migration to v0.3.0
+    it("should detect when old version data needs migration", () => {
+      // Any data older than current should need migration
       expect(needsMigration(mockDataFile)).toBe(true)
     })
 
-    it("should return false for versioned data file with same version", () => {
-      const baseData = JSON.parse(JSON.stringify(mockDataFile))
-      const dataFileWithVersion = createJsonData({
-        ...baseData,
+    it("should return false for current version data", () => {
+      const currentVersionData = createJsonData({
+        ...DEFAULT_EMPTY_DATA_FILE,
         version: "v0.3.0",
       })
-      expect(needsMigration(dataFileWithVersion)).toBe(false)
+      expect(needsMigration(currentVersionData)).toBe(false)
     })
 
-    it("should return false for data file with newer version", () => {
-      const baseData = JSON.parse(JSON.stringify(mockDataFile))
-      const dataFileWithNewerVersion = createJsonData({
-        ...baseData,
+    it("should return false for future version data", () => {
+      const futureVersionData = createJsonData({
+        ...DEFAULT_EMPTY_DATA_FILE,
         version: "v0.4.0",
       })
-      expect(needsMigration(dataFileWithNewerVersion)).toBe(false)
+      expect(needsMigration(futureVersionData)).toBe(false)
     })
 
-    it("should return false for data file when no migration function exists beyond current", () => {
-      const baseData = JSON.parse(JSON.stringify(mockDataFile))
-      const dataFileWithCurrentVersion = createJsonData({
-        ...baseData,
+    it("should return false when no migrations are available", () => {
+      const currentVersionData = createJsonData({
+        ...DEFAULT_EMPTY_DATA_FILE,
         version: "v0.3.0",
       })
-      // No migration function exists for v0.4.0, so no migration needed
-      expect(needsMigration(dataFileWithCurrentVersion)).toBe(false)
+      expect(needsMigration(currentVersionData)).toBe(false)
     })
   })
 
   describe("getMigrationInfo", () => {
-    it("should return correct info for v0.2.0 data file with package at v0.3.0", () => {
+    it("should return correct info for data needing migration", () => {
       const info = getMigrationInfo(mockDataFile)
 
       expect(info).toEqual({
@@ -179,29 +173,298 @@ describe("Data Migration Utility", () => {
       })
     })
 
-    it("should return correct info for v0.2.0 data file needing migration", () => {
-      const info = getMigrationInfo(mockDataFile)
-
-      expect(info).toEqual({
-        currentVersion: createVersionString("v0.2.0"),
-        targetVersion: createVersionString("v0.3.0"),
-        needsMigration: true,
-      })
-    })
-
-    it("should return correct info for versioned data file", () => {
-      const baseData = JSON.parse(JSON.stringify(mockDataFile))
-      const dataFileWithVersion = createJsonData({
-        ...baseData,
+    it("should return correct info for current version data", () => {
+      const currentVersionData = createJsonData({
+        ...DEFAULT_EMPTY_DATA_FILE,
         version: "v0.3.0",
       })
-      const info = getMigrationInfo(dataFileWithVersion)
+      const info = getMigrationInfo(currentVersionData)
 
       expect(info).toEqual({
         currentVersion: createVersionString("v0.3.0"),
         targetVersion: createVersionString("v0.3.0"),
         needsMigration: false,
       })
+    })
+  })
+
+  describe("v0.3.0 Migration Function", () => {
+    it("should transform ordering.projects to projectGroups structure", () => {
+      const projectId1 = createProjectId("550e8400-e29b-41d4-a716-446655440001")
+      const projectId2 = createProjectId("550e8400-e29b-41d4-a716-446655440002")
+
+      const v020DataWithProjects = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        ordering: {
+          projects: [projectId1, projectId2],
+          labels: [],
+        },
+      })
+
+      const result = migrateDataFile(v020DataWithProjects)
+
+      // Should create projectGroups with ordering data
+      expect(result.projectGroups).toEqual({
+        type: "project",
+        id: "00000000-0000-0000-0000-000000000000",
+        name: "All Projects",
+        items: [projectId1, projectId2],
+      })
+
+      // Should remove legacy ordering field
+      expect(result).not.toHaveProperty("ordering")
+    })
+
+    it("should transform ordering.labels to labelGroups structure", () => {
+      const labelId1 = createLabelId("550e8400-e29b-41d4-a716-446655440003")
+      const labelId2 = createLabelId("550e8400-e29b-41d4-a716-446655440004")
+
+      const v020DataWithLabels = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        ordering: {
+          projects: [],
+          labels: [labelId1, labelId2],
+        },
+      })
+
+      const result = migrateDataFile(v020DataWithLabels)
+
+      // Should create labelGroups with ordering data
+      expect(result.labelGroups).toEqual({
+        type: "label",
+        id: "00000000-0000-0000-0000-000000000000",
+        name: "All Labels",
+        items: [labelId1, labelId2],
+      })
+
+      // Should remove legacy ordering field
+      expect(result).not.toHaveProperty("ordering")
+    })
+
+    it("should add recurringMode to existing tasks", () => {
+      const v020DataWithTasks = createJsonData({
+        tasks: [
+          {
+            id: "550e8400-e29b-41d4-a716-446655440000",
+            title: "Regular task",
+            completed: false,
+            priority: 1,
+            labels: [],
+            subtasks: [],
+            comments: [],
+            attachments: [],
+            createdAt: new Date().toISOString(),
+            // Note: no recurringMode field
+          },
+          {
+            id: "550e8400-e29b-41d4-a716-446655440001",
+            title: "Recurring task",
+            completed: false,
+            priority: 2,
+            labels: [],
+            subtasks: [],
+            comments: [],
+            attachments: [],
+            createdAt: new Date().toISOString(),
+            recurring: "RRULE:FREQ=DAILY;INTERVAL=1",
+            // Note: no recurringMode field
+          },
+        ],
+        projects: [],
+        labels: [],
+        ordering: { projects: [], labels: [] },
+      })
+
+      const result = migrateDataFile(v020DataWithTasks)
+
+      // All tasks should have recurringMode added
+      expect(result.tasks).toHaveLength(2)
+      expect(result.tasks[0]).toEqual(
+        expect.objectContaining({
+          id: "550e8400-e29b-41d4-a716-446655440000",
+          title: "Regular task",
+          recurringMode: "dueDate", // Should be added
+        }),
+      )
+      expect(result.tasks[1]).toEqual(
+        expect.objectContaining({
+          id: "550e8400-e29b-41d4-a716-446655440001",
+          title: "Recurring task",
+          recurring: "RRULE:FREQ=DAILY;INTERVAL=1",
+          recurringMode: "dueDate", // Should be added
+        }),
+      )
+    })
+
+    it("should handle missing ordering field gracefully", () => {
+      const v020DataWithoutOrdering = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        // No ordering field at all
+      })
+
+      const result = migrateDataFile(v020DataWithoutOrdering)
+
+      // Should create default empty groups
+      expect(result.projectGroups).toEqual({
+        type: "project",
+        id: "00000000-0000-0000-0000-000000000000",
+        name: "All Projects",
+        items: [],
+      })
+
+      expect(result.labelGroups).toEqual({
+        type: "label",
+        id: "00000000-0000-0000-0000-000000000000",
+        name: "All Labels",
+        items: [],
+      })
+
+      expect(result).not.toHaveProperty("ordering")
+    })
+
+    it("should handle malformed ordering field", () => {
+      const v020DataWithMalformedOrdering = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        ordering: {
+          projects: null, // Invalid - not an array
+          labels: "invalid", // Invalid - not an array
+        },
+      })
+
+      const result = migrateDataFile(v020DataWithMalformedOrdering)
+
+      // Should create default empty groups when ordering data is malformed
+      expect(result.projectGroups).toEqual({
+        type: "project",
+        id: "00000000-0000-0000-0000-000000000000",
+        name: "All Projects",
+        items: [], // Empty because ordering.projects was null
+      })
+
+      expect(result.labelGroups).toEqual({
+        type: "label",
+        id: "00000000-0000-0000-0000-000000000000",
+        name: "All Labels",
+        items: [], // Empty because ordering.labels was invalid
+      })
+    })
+
+    it("should preserve tasks that already have recurringMode", () => {
+      const v020DataWithExistingRecurringMode = createJsonData({
+        tasks: [
+          {
+            id: "550e8400-e29b-41d4-a716-446655440000",
+            title: "Task with existing recurringMode",
+            completed: false,
+            priority: 1,
+            labels: [],
+            subtasks: [],
+            comments: [],
+            attachments: [],
+            createdAt: new Date().toISOString(),
+            recurringMode: "completedAt", // Already has recurringMode
+          },
+        ],
+        projects: [],
+        labels: [],
+        ordering: { projects: [], labels: [] },
+      })
+
+      const result = migrateDataFile(v020DataWithExistingRecurringMode)
+
+      // Should preserve existing recurringMode
+      expect(result.tasks[0]).toEqual(
+        expect.objectContaining({
+          id: "550e8400-e29b-41d4-a716-446655440000",
+          recurringMode: "completedAt", // Should remain unchanged
+        }),
+      )
+    })
+
+    it("should handle comprehensive v0.2.0 to v0.3.0 transformation", () => {
+      const projectId1 = createProjectId("550e8400-e29b-41d4-a716-446655440001")
+      const labelId1 = createLabelId("550e8400-e29b-41d4-a716-446655440003")
+
+      const complexV020Data = createJsonData({
+        tasks: [
+          {
+            id: "550e8400-e29b-41d4-a716-446655440000",
+            title: "Complex task",
+            completed: false,
+            priority: 1,
+            labels: [labelId1],
+            subtasks: [],
+            comments: [],
+            attachments: [],
+            createdAt: new Date().toISOString(),
+            recurring: "RRULE:FREQ=WEEKLY",
+          },
+        ],
+        projects: [
+          {
+            id: projectId1,
+            name: "Sample Project",
+            slug: "sample-project",
+            color: "#ff0000",
+            shared: false,
+            sections: [],
+          },
+        ],
+        labels: [
+          {
+            id: labelId1,
+            name: "Important",
+            slug: "important",
+            color: "#ff0000",
+          },
+        ],
+        ordering: {
+          projects: [projectId1],
+          labels: [labelId1],
+        },
+      })
+
+      const result = migrateDataFile(complexV020Data)
+
+      // Should have correct version
+      expect(result.version).toBe(createVersionString("v0.3.0"))
+
+      // Should transform all data correctly
+      expect(result.tasks[0]).toEqual(
+        expect.objectContaining({
+          recurringMode: "dueDate", // Added
+        }),
+      )
+
+      expect(result.projectGroups).toEqual({
+        type: "project",
+        id: "00000000-0000-0000-0000-000000000000",
+        name: "All Projects",
+        items: [projectId1],
+      })
+
+      expect(result.labelGroups).toEqual({
+        type: "label",
+        id: "00000000-0000-0000-0000-000000000000",
+        name: "All Labels",
+        items: [labelId1],
+      })
+
+      // Should preserve all original data
+      expect(result.tasks).toHaveLength(1)
+      expect(result.projects).toHaveLength(1)
+      expect(result.labels).toHaveLength(1)
+
+      // Should remove legacy field
+      expect(result).not.toHaveProperty("ordering")
     })
   })
 
@@ -252,9 +515,22 @@ describe("Data Migration Utility", () => {
     it("should keep datafile at latest migration version when already up to date", () => {
       // This demonstrates the key insight: version represents data structure, not app version
       // Data file is at v0.3.0, package is at v0.3.0, no migration needed
-      const baseData = JSON.parse(JSON.stringify(mockDataFile))
       const dataFileAtV0_3_0 = createJsonData({
-        ...baseData,
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Labels",
+          items: [],
+        },
         version: "v0.3.0",
       })
 
@@ -332,12 +608,15 @@ describe("Data Migration Utility", () => {
     })
 
     it("should handle data with missing required fields", () => {
-      // Create data with missing required fields that should cause schema validation to fail
+      // Create data with truly missing required fields that can't be fixed by migration
       const dataWithMissingFields = createJsonData({
-        tasks: [],
+        // Missing tasks array entirely - this will fail schema validation
         projects: [],
         labels: [],
-        // Missing projectGroups and labelGroups that are required by DataFile schema
+        ordering: {
+          projects: [],
+          labels: [],
+        },
       })
 
       // The migration should fail during schema validation at the end

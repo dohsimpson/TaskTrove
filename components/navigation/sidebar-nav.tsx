@@ -95,7 +95,17 @@ export function SidebarNav() {
   const openSettingsDialog = useSetAtom(openSettingsDialogAtom)
 
   // Root drop target handlers for ungrouped projects
-  const handleRootDrop = async ({ source }: { source: { data: Record<string, unknown> } }) => {
+  const handleRootDrop = async ({
+    source,
+    location,
+  }: {
+    source: { data: Record<string, unknown> }
+    location: { current: { dropTargets: Array<{ data: Record<string, unknown> }> } }
+  }) => {
+    // don't trigger if not on root
+    if (location.current.dropTargets[0]?.data.type !== "sidebar-root-drop-target") {
+      return
+    }
     console.log("🎯 Drop on root:", { source: source.data })
 
     const sourceData = source.data

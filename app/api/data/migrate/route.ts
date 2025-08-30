@@ -3,6 +3,7 @@ import { promises as fs } from "fs"
 import { DEFAULT_DATA_FILE_PATH } from "@/lib/constants/defaults"
 import { migrateDataFile } from "@/lib/utils/data-migration"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
+import { safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import type { Json } from "@/lib/types"
 
 async function migrateData() {
@@ -18,8 +19,15 @@ async function migrateData() {
     const backupPath = DEFAULT_DATA_FILE_PATH + `.backup-${Date.now()}`
     await fs.writeFile(backupPath, dataContent)
 
-    // Write migrated data
-    await fs.writeFile(DEFAULT_DATA_FILE_PATH, JSON.stringify(migratedData, null, 2))
+    // Write migrated data using serialization
+    const writeSuccess = await safeWriteDataFile({
+      filePath: DEFAULT_DATA_FILE_PATH,
+      data: migratedData,
+    })
+
+    if (!writeSuccess) {
+      throw new Error("Failed to write migrated data file")
+    }
 
     return NextResponse.json({
       success: true,

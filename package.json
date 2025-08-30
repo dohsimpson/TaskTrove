@@ -1,6 +1,6 @@
 {
   "name": "tasktrove",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "build": "next build",
@@ -88,6 +88,7 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.6",
+    "@changesets/get-github-info": "^0.6.0",
     "@next/bundle-analyzer": "^15.4.6",
     "@tailwindcss/postcss": "^4.1.11",
     "@tanstack/react-query-devtools": "^5.83.0",

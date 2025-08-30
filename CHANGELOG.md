@@ -1,5 +1,27 @@
 # tasktrove
 
+## 0.3.0
+
+### Noteworthy Features
+
+🎉 Feature - Nested Projects is now supported! (#6)
+🎉 Feature - Adative Recurring Mode allows recurrence based on completion date (#3)
+
+### Improvements
+
+🎉 Feature - Add comment deletion and smooth scroll for comments and subtasks.
+🎉 Feature - Add button-triggered natural language parsing with time selection in schedule dialog.
+🎉 Feature - Add data migration system with automatic versioning and UI feedback.
+🎉 Feature - Enhance quick-add dialog with advanced options and improved parsing.
+🎉 Feature - Add skip to next occurrence for recurring tasks.
+🎉 Feature - Add "no labels" filtering functionality.
+
+### Fixes
+
+🐛 Bug - Resolve drag and drop issues including propagation and group operations.
+🐛 Bug - Improve UI responsiveness and alignment across different viewports.
+🐛 Bug - Make priority parsing case-insensitive and properly handle time in quick-add.
+
 ## 0.2.0
 
 ### Minor Changes

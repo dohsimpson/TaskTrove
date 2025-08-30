@@ -468,7 +468,7 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Calculate next due date from
                 </label>
-                <HelpPopover content="Choose how the next due date is calculated: 'Due date' calculates from the original due date, 'Completion date' calculates from when the task was actually completed. For example, if you have a weekly task that is due on Monday, but you complete it on Tuesday. When using the former option, the next task will be created for next Monday. Using the latter option, next Tuesday." />
+                <HelpPopover content="Choose how the next due date is calculated: 'Due date' always calculates from the original due date. 'Adaptive' adjusts to your actual timing - if you complete after the due date, it calculates from your completion date (i.e. today), but if you completed before due, it calculates based on your due date. Examples: Overdue weekly task, completed on Tuesday → scheduled to next Tuesday. Weekly task due this Friday, completed early on Tuesday → scheduled to next Friday." />
               </div>
               <div className="flex gap-2">
                 <Button
@@ -499,7 +499,7 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
                     }
                   }}
                 >
-                  Completion date
+                  Adaptive
                 </Button>
               </div>
             </div>

@@ -23,6 +23,7 @@ import {
   DEFAULT_PROJECT_COLORS,
   DEFAULT_UUID,
 } from "@/lib/constants/defaults"
+import { ROOT_PROJECT_GROUP_ID } from "@/lib/types/defaults"
 import { createSafeProjectNameSlug } from "@/lib/utils/routing"
 import {
   withApiLogging,
@@ -122,6 +123,17 @@ async function createProject(
 
   // Add the new project to the projects array
   fileData.projects.push(newProject)
+
+  // Ensure the project is added to the root project group so it appears in the sidebar
+  if (!fileData.projectGroups) {
+    fileData.projectGroups = {
+      type: "project",
+      id: ROOT_PROJECT_GROUP_ID,
+      name: "All Projects",
+      items: [],
+    }
+  }
+  fileData.projectGroups.items.push(newProject.id)
 
   const writeSuccess = await withPerformanceLogging(
     () => safeWriteDataFile({ data: fileData }),

@@ -453,6 +453,44 @@ describe("POST /api/projects", () => {
     expect(responseData.projectIds[0]).toBeDefined()
     expect(responseData.message).toBe("Project created successfully")
   })
+
+  it("should add new project to root project group so it appears in sidebar", async () => {
+    const projectData = {
+      name: "New Project for Sidebar",
+      color: "#8b5cf6",
+    }
+
+    const request = new NextRequest("http://localhost:3000/api/projects", {
+      method: "POST",
+      body: JSON.stringify(projectData),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    const response = await POST(request)
+    const responseData = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(responseData.success).toBe(true)
+    expect(responseData.projectIds).toHaveLength(1)
+
+    // Verify that the project was added to the root project group
+    expect(mockSafeWriteDataFile).toHaveBeenCalled()
+    const writeCall = mockSafeWriteDataFile.mock.calls[0]
+    const writtenData = writeCall[0].data
+
+    // Check that project was added to projects array
+    expect(writtenData.projects).toHaveLength(2)
+    const newProject = writtenData.projects[1]
+    expect(newProject.name).toBe("New Project for Sidebar")
+    expect(newProject.color).toBe("#8b5cf6")
+
+    // Check that project ID was added to root project group's items array
+    expect(writtenData.projectGroups).toBeDefined()
+    expect(writtenData.projectGroups.items).toContain(responseData.projectIds[0])
+    expect(writtenData.projectGroups.items).toContain(newProject.id)
+  })
 })
 
 describe("DELETE /api/projects", () => {

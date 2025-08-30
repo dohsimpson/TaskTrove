@@ -246,17 +246,20 @@
     "type": "project",
     "id": "00000000-0000-0000-0000-000000000000",
     "name": "All Projects",
+    "slug": "all-projects",
     "items": [
       {
         "type": "project",
         "id": "6ba7b801-9dad-41d1-8696-f01c6a84b101",
         "name": "Tutorial",
+        "slug": "tutorial",
         "items": ["550e8400-e29b-41d4-a716-446655440000"]
       },
       {
         "type": "project",
         "id": "6ba7b802-9dad-41d1-8696-f01c6a84b102",
         "name": "Personal",
+        "slug": "personal",
         "items": ["550e8400-e29b-41d4-a716-446655440001"]
       }
     ]
@@ -265,6 +268,7 @@
     "type": "label",
     "id": "00000000-0000-0000-0000-000000000000",
     "name": "All Labels",
+    "slug": "all-labels",
     "items": ["6ba7b811-9dad-41d1-8696-f01c6a84b1a1"]
   },
   "version": "v0.3.0"

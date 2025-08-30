@@ -243,6 +243,7 @@ describe("Data Migration Utility", () => {
         type: "project",
         id: "00000000-0000-0000-0000-000000000000",
         name: "All Projects",
+        slug: "all-projects",
         items: [projectId1, projectId2],
       })
 
@@ -271,6 +272,7 @@ describe("Data Migration Utility", () => {
         type: "label",
         id: "00000000-0000-0000-0000-000000000000",
         name: "All Labels",
+        slug: "all-labels",
         items: [labelId1, labelId2],
       })
 
@@ -348,6 +350,7 @@ describe("Data Migration Utility", () => {
         type: "project",
         id: "00000000-0000-0000-0000-000000000000",
         name: "All Projects",
+        slug: "all-projects",
         items: [],
       })
 
@@ -355,7 +358,75 @@ describe("Data Migration Utility", () => {
         type: "label",
         id: "00000000-0000-0000-0000-000000000000",
         name: "All Labels",
+        slug: "all-labels",
         items: [],
+      })
+
+      expect(result).not.toHaveProperty("ordering")
+    })
+
+    it("should populate groups from existing projects and labels when ordering is missing", () => {
+      const projectId1 = "550e8400-e29b-41d4-a716-446655440001"
+      const projectId2 = "550e8400-e29b-41d4-a716-446655440002"
+      const labelId1 = "660e8400-e29b-41d4-a716-446655440001"
+      const labelId2 = "660e8400-e29b-41d4-a716-446655440002"
+
+      const v020DataWithoutOrderingButWithData = createJsonData({
+        tasks: [],
+        projects: [
+          {
+            id: projectId1,
+            name: "Project 1",
+            slug: "project-1",
+            color: "#ff0000",
+            sections: [],
+            shared: false,
+            defaultView: "list",
+          },
+          {
+            id: projectId2,
+            name: "Project 2",
+            slug: "project-2",
+            color: "#00ff00",
+            sections: [],
+            shared: false,
+            defaultView: "list",
+          },
+        ],
+        labels: [
+          {
+            id: labelId1,
+            name: "Label 1",
+            slug: "label-1",
+            color: "#0000ff",
+          },
+          {
+            id: labelId2,
+            name: "Label 2",
+            slug: "label-2",
+            color: "#ffff00",
+          },
+        ],
+        // No ordering field
+      })
+
+      const result = migrateDataFile(v020DataWithoutOrderingButWithData)
+
+      // Should create groups with IDs from existing projects and labels
+      expect(result.projectGroups).toEqual({
+        type: "project",
+        id: "00000000-0000-0000-0000-000000000000",
+        name: "All Projects",
+        slug: "all-projects",
+        items: [projectId1, projectId2],
+      })
+
+      expect(result.labelGroups).toEqual({
+        type: "label",
+        id: "00000000-0000-0000-0000-000000000000",
+        name: "All Labels",
+        slug: "all-labels",
+        items: [labelId1, labelId2],
       })
 
       expect(result).not.toHaveProperty("ordering")
@@ -379,6 +450,7 @@ describe("Data Migration Utility", () => {
         type: "project",
         id: "00000000-0000-0000-0000-000000000000",
         name: "All Projects",
+        slug: "all-projects",
         items: [], // Empty because ordering.projects was null
       })
 
@@ -386,6 +458,7 @@ describe("Data Migration Utility", () => {
         type: "label",
         id: "00000000-0000-0000-0000-000000000000",
         name: "All Labels",
+        slug: "all-labels",
         items: [], // Empty because ordering.labels was invalid
       })
     })
@@ -481,6 +554,7 @@ describe("Data Migration Utility", () => {
         type: "project",
         id: "00000000-0000-0000-0000-000000000000",
         name: "All Projects",
+        slug: "all-projects",
         items: [projectId1],
       })
 
@@ -488,6 +562,7 @@ describe("Data Migration Utility", () => {
         type: "label",
         id: "00000000-0000-0000-0000-000000000000",
         name: "All Labels",
+        slug: "all-labels",
         items: [labelId1],
       })
 
@@ -556,12 +631,14 @@ describe("Data Migration Utility", () => {
           type: "project",
           id: "00000000-0000-0000-0000-000000000000",
           name: "All Projects",
+          slug: "all-projects",
           items: [],
         },
         labelGroups: {
           type: "label",
           id: "00000000-0000-0000-0000-000000000000",
           name: "All Labels",
+          slug: "all-labels",
           items: [],
         },
         version: "v0.3.0",

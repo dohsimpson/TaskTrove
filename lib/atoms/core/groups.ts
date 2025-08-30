@@ -31,12 +31,14 @@ export const allGroupsAtom = atom((get) => {
         type: "project" as const,
         id: ROOT_PROJECT_GROUP_ID,
         name: "All Projects",
+        slug: "all-projects",
         items: [],
       },
       labelGroups: result.data.labelGroups ?? {
         type: "label" as const,
         id: ROOT_LABEL_GROUP_ID,
         name: "All Labels",
+        slug: "all-labels",
         items: [],
       },
     }
@@ -47,12 +49,14 @@ export const allGroupsAtom = atom((get) => {
       type: "project" as const,
       id: ROOT_PROJECT_GROUP_ID,
       name: "All Projects",
+      slug: "all-projects",
       items: [],
     },
     labelGroups: {
       type: "label" as const,
       id: ROOT_LABEL_GROUP_ID,
       name: "All Labels",
+      slug: "all-labels",
       items: [],
     },
   }

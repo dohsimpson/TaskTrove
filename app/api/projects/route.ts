@@ -130,6 +130,7 @@ async function createProject(
       type: "project",
       id: ROOT_PROJECT_GROUP_ID,
       name: "All Projects",
+      slug: "all-projects",
       items: [],
     }
   }

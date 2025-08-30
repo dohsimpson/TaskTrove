@@ -37,6 +37,7 @@ describe("ProjectGroupItem", () => {
   const mockTestGroup: ProjectGroup = {
     id: createGroupId("123e4567-e89b-12d3-a456-426614174001"),
     name: "Test Group",
+    slug: "test-group",
     description: "Test group description",
     color: "#3b82f6",
     type: "project",
@@ -157,6 +158,7 @@ describe("ProjectGroupItem", () => {
     const nestedGroup: ProjectGroup = {
       id: createGroupId("123e4567-e89b-12d3-a456-426614174002"),
       name: "Nested Group",
+      slug: "nested-group",
       type: "project",
       color: "#f59e0b",
       items: [TEST_PROJECT_ID_1],
@@ -186,6 +188,7 @@ describe("ProjectGroupItem", () => {
     const nestedGroup: ProjectGroup = {
       id: createGroupId("123e4567-e89b-12d3-a456-426614174002"),
       name: "Nested Group",
+      slug: "nested-group",
       type: "project",
       color: "#f59e0b",
       items: [TEST_PROJECT_ID_1], // This should be ignored

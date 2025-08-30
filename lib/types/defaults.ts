@@ -16,6 +16,7 @@ export const DEFAULT_PROJECT_GROUP: ProjectGroup = {
   type: "project",
   id: ROOT_PROJECT_GROUP_ID,
   name: "All Projects",
+  slug: "all-projects",
   items: [],
 }
 
@@ -26,6 +27,7 @@ export const DEFAULT_LABEL_GROUP: LabelGroup = {
   type: "label",
   id: ROOT_LABEL_GROUP_ID,
   name: "All Labels",
+  slug: "all-labels",
   items: [],
 }
 

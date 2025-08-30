@@ -1,5 +1,16 @@
 import slugify from "slugify"
-import { Project, Label, ProjectId, LabelId, ProjectIdSchema, LabelIdSchema } from "../types"
+import {
+  Project,
+  Label,
+  ProjectId,
+  LabelId,
+  ProjectIdSchema,
+  LabelIdSchema,
+  ProjectGroup,
+  LabelGroup,
+  GroupId,
+  GroupIdSchema,
+} from "../types"
 
 // Simple MurmurHash3 implementation for generating fixed-length hashes
 function murmurHash3(text: string): string {
@@ -64,6 +75,66 @@ export function createSafeLabelNameSlug(text: string, labels: Label[]): string {
   return createSafeSlug(text, existingSlugs)
 }
 
+/**
+ * Helper function to collect all slugs from a project group tree recursively
+ */
+function collectProjectGroupSlugs(group: ProjectGroup): string[] {
+  const slugs = [group.slug]
+
+  // Recursively collect slugs from nested groups
+  for (const item of group.items) {
+    if (typeof item === "object" && "slug" in item) {
+      const nestedGroup = item
+      if ("type" in nestedGroup && nestedGroup.type === "project") {
+        slugs.push(...collectProjectGroupSlugs(nestedGroup))
+      }
+    }
+  }
+
+  return slugs
+}
+
+/**
+ * Helper function to collect all slugs from a label group tree recursively
+ */
+function collectLabelGroupSlugs(group: LabelGroup): string[] {
+  const slugs = [group.slug]
+
+  // Recursively collect slugs from nested groups
+  for (const item of group.items) {
+    if (typeof item === "object" && "slug" in item) {
+      const nestedGroup = item
+      if ("type" in nestedGroup && nestedGroup.type === "label") {
+        slugs.push(...collectLabelGroupSlugs(nestedGroup))
+      }
+    }
+  }
+
+  return slugs
+}
+
+export function createSafeProjectGroupNameSlug(text: string, projectGroups?: ProjectGroup): string {
+  const existingSlugs = new Set<string>()
+
+  if (projectGroups) {
+    const allSlugs = collectProjectGroupSlugs(projectGroups)
+    allSlugs.forEach((slug) => existingSlugs.add(slug))
+  }
+
+  return createSafeSlug(text, existingSlugs)
+}
+
+export function createSafeLabelGroupNameSlug(text: string, labelGroups?: LabelGroup): string {
+  const existingSlugs = new Set<string>()
+
+  if (labelGroups) {
+    const allSlugs = collectLabelGroupSlugs(labelGroups)
+    allSlugs.forEach((slug) => existingSlugs.add(slug))
+  }
+
+  return createSafeSlug(text, existingSlugs)
+}
+
 // =============================================================================
 // ROUTE RESOLUTION UTILITIES
 // =============================================================================
@@ -93,6 +164,18 @@ export function isValidProjectId(id: string): id is ProjectId {
 function isValidLabelId(id: string): id is LabelId {
   try {
     LabelIdSchema.parse(id)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Validates if a string is a valid GroupId (UUID format)
+ */
+function isValidGroupId(id: string): id is GroupId {
+  try {
+    GroupIdSchema.parse(id)
     return true
   } catch {
     return false
@@ -137,4 +220,83 @@ export function resolveLabel(idOrSlug: string, labels: Label[]): Label | null {
 
   // Then try to find by slug
   return labels.find((l) => l.slug === idOrSlug) || null
+}
+
+/**
+ * Helper function to recursively search for a project group tree by ID or slug
+ */
+function searchProjectGroupInTree(group: ProjectGroup, idOrSlug: string): ProjectGroup | null {
+  // Check if this group matches
+  if (isValidGroupId(idOrSlug)) {
+    if (group.id === idOrSlug) return group
+  } else {
+    if (group.slug === idOrSlug) return group
+  }
+
+  // Search in nested groups
+  for (const item of group.items) {
+    if (typeof item === "object" && "id" in item && "type" in item) {
+      if (item.type === "project") {
+        const found = searchProjectGroupInTree(item, idOrSlug)
+        if (found) return found
+      }
+    }
+  }
+
+  return null
+}
+
+/**
+ * Helper function to recursively search for a label group tree by ID or slug
+ */
+function searchLabelGroupInTree(group: LabelGroup, idOrSlug: string): LabelGroup | null {
+  // Check if this group matches
+  if (isValidGroupId(idOrSlug)) {
+    if (group.id === idOrSlug) return group
+  } else {
+    if (group.slug === idOrSlug) return group
+  }
+
+  // Search in nested groups
+  for (const item of group.items) {
+    if (typeof item === "object" && "id" in item && "type" in item) {
+      if (item.type === "label") {
+        const found = searchLabelGroupInTree(item, idOrSlug)
+        if (found) return found
+      }
+    }
+  }
+
+  return null
+}
+
+/**
+ * Resolves a project group by ID or slug
+ *
+ * @param idOrSlug - The identifier to resolve (UUID or slug)
+ * @param projectGroups - Root project groups tree to search
+ * @returns The matching project group or null if not found
+ *
+ * Priority: ID first, then slug
+ */
+export function resolveProjectGroup(
+  idOrSlug: string,
+  projectGroups?: ProjectGroup,
+): ProjectGroup | null {
+  if (!projectGroups) return null
+  return searchProjectGroupInTree(projectGroups, idOrSlug)
+}
+
+/**
+ * Resolves a label group by ID or slug
+ *
+ * @param idOrSlug - The identifier to resolve (UUID or slug)
+ * @param labelGroups - Root label groups tree to search
+ * @returns The matching label group or null if not found
+ *
+ * Priority: ID first, then slug
+ */
+export function resolveLabelGroup(idOrSlug: string, labelGroups?: LabelGroup): LabelGroup | null {
+  if (!labelGroups) return null
+  return searchLabelGroupInTree(labelGroups, idOrSlug)
 }

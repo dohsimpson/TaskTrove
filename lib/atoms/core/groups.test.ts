@@ -53,6 +53,7 @@ const mockProjectGroup: ProjectGroup = {
   type: "project",
   id: TEST_GROUP_ID_1,
   name: "Work Projects",
+  slug: "work-projects",
   description: "Projects related to work",
   color: "#3b82f6",
   items: [TEST_PROJECT_ID_1],
@@ -62,6 +63,7 @@ const mockNestedProjectGroup: ProjectGroup = {
   type: "project",
   id: TEST_GROUP_ID_2,
   name: "Development",
+  slug: "development",
   items: [TEST_PROJECT_ID_2],
 }
 
@@ -69,6 +71,7 @@ const mockParentProjectGroup: ProjectGroup = {
   type: "project",
   id: TEST_GROUP_ID_3,
   name: "All Projects",
+  slug: "all-projects",
   items: [mockProjectGroup, mockNestedProjectGroup],
 }
 
@@ -350,6 +353,7 @@ describe("Groups Atoms", () => {
         type: "project",
         id: createGroupId("99999999-9999-4999-8999-999999999999"),
         name: "Deeply Nested",
+        slug: "deeply-nested",
         items: [],
       }
 
@@ -401,6 +405,7 @@ describe("Groups Atoms", () => {
               type: "project" as const,
               id: createGroupId(`${groupNum}-0000-4000-8000-000000000000`),
               name: `Group ${i}`,
+              slug: `group-${i}`,
               items: projectItems,
             }
           }),

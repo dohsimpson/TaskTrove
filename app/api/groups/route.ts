@@ -22,6 +22,7 @@ import { ROOT_PROJECT_GROUP_ID, ROOT_LABEL_GROUP_ID } from "@/lib/types/defaults
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { v4 as uuidv4 } from "uuid"
+import { createSafeProjectGroupNameSlug, createSafeLabelGroupNameSlug } from "@/lib/utils/routing"
 import {
   withApiLogging,
   logBusinessEvent,
@@ -146,6 +147,7 @@ async function createGroup(
         type: "project",
         id: newGroupId,
         name,
+        slug: createSafeProjectGroupNameSlug(name, fileData.projectGroups),
         description,
         color: color ?? DEFAULT_LABEL_COLORS[0],
         items: [],
@@ -156,6 +158,7 @@ async function createGroup(
           type: "project",
           id: ROOT_PROJECT_GROUP_ID,
           name: "All Projects",
+          slug: "all-projects",
           items: [],
         }
       }
@@ -166,6 +169,7 @@ async function createGroup(
         type: "label",
         id: newGroupId,
         name,
+        slug: createSafeLabelGroupNameSlug(name, fileData.labelGroups),
         description,
         color: color ?? DEFAULT_LABEL_COLORS[0],
         items: [],
@@ -176,6 +180,7 @@ async function createGroup(
           type: "label",
           id: ROOT_LABEL_GROUP_ID,
           name: "All Labels",
+          slug: "all-labels",
           items: [],
         }
       }
@@ -226,12 +231,14 @@ async function createGroup(
       type: "project",
       id: ROOT_PROJECT_GROUP_ID,
       name: "All Projects",
+      slug: "all-projects",
       items: [],
     },
     fileData.labelGroups || {
       type: "label",
       id: ROOT_LABEL_GROUP_ID,
       name: "All Labels",
+      slug: "all-labels",
       items: [],
     },
     parentId,
@@ -264,6 +271,7 @@ async function createGroup(
       type: "project",
       id: newGroupId,
       name,
+      slug: createSafeProjectGroupNameSlug(name, fileData.projectGroups),
       description,
       color: color ?? DEFAULT_LABEL_COLORS[0],
       items: [],
@@ -275,6 +283,7 @@ async function createGroup(
       type: "label",
       id: newGroupId,
       name,
+      slug: createSafeLabelGroupNameSlug(name, fileData.labelGroups),
       description,
       color: color ?? DEFAULT_LABEL_COLORS[0],
       items: [],
@@ -383,6 +392,7 @@ async function handleBulkGroupUpdate(
         type: "project",
         id: ROOT_PROJECT_GROUP_ID,
         name: "All Projects",
+        slug: "all-projects",
         items: [],
       }
     }
@@ -393,6 +403,7 @@ async function handleBulkGroupUpdate(
         type: "label",
         id: ROOT_LABEL_GROUP_ID,
         name: "All Labels",
+        slug: "all-labels",
         items: [],
       }
     }
@@ -462,12 +473,14 @@ async function handleIndividualGroupUpdates(
         type: "project",
         id: ROOT_PROJECT_GROUP_ID,
         name: "All Projects",
+        slug: "all-projects",
         items: [],
       },
       fileData.labelGroups || {
         type: "label",
         id: ROOT_LABEL_GROUP_ID,
         name: "All Labels",
+        slug: "all-labels",
         items: [],
       },
       update.id,
@@ -491,6 +504,17 @@ async function handleIndividualGroupUpdates(
     // Update group properties in-place
     if (update.name !== undefined) {
       group.name = update.name
+      // If name is being updated but slug is not explicitly provided, regenerate slug
+      if (update.slug === undefined) {
+        if (group.type === "project") {
+          group.slug = createSafeProjectGroupNameSlug(update.name, fileData.projectGroups)
+        } else if (group.type === "label") {
+          group.slug = createSafeLabelGroupNameSlug(update.name, fileData.labelGroups)
+        }
+      }
+    }
+    if (update.slug !== undefined) {
+      group.slug = update.slug
     }
     if (update.description !== undefined) {
       group.description = update.description

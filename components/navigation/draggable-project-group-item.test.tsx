@@ -113,6 +113,7 @@ describe("DraggableProjectGroupItem", () => {
   const mockGroup: ProjectGroup = {
     id: createGroupId("11111111-1111-4111-8111-111111111111"),
     name: "Test Group",
+    slug: "test-group",
     color: "#FF5733",
     items: [createProjectId("22222222-2222-4222-8222-222222222222")],
     type: "project",

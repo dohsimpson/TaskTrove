@@ -111,6 +111,7 @@ const migrationFunctions: MigrationStep[] = [
           type: "project",
           id: DEFAULT_UUID,
           name: "All Projects",
+          slug: "all-projects",
           items: projectsArray, // Array of ProjectIds
         }
 
@@ -120,24 +121,45 @@ const migrationFunctions: MigrationStep[] = [
           type: "label",
           id: DEFAULT_UUID,
           name: "All Labels",
+          slug: "all-labels",
           items: labelsArray, // Array of LabelIds
         }
 
         // Remove the old ordering field
         delete result.ordering
       } else {
-        // If no ordering exists, create empty default groups
+        // If no ordering exists, create groups from existing projects and labels
+        const projectIds: unknown[] = []
+        if (Array.isArray(result.projects)) {
+          for (const project of result.projects) {
+            if (typeof project === "object" && project !== null && "id" in project) {
+              projectIds.push(project.id)
+            }
+          }
+        }
+
+        const labelIds: unknown[] = []
+        if (Array.isArray(result.labels)) {
+          for (const label of result.labels) {
+            if (typeof label === "object" && label !== null && "id" in label) {
+              labelIds.push(label.id)
+            }
+          }
+        }
+
         result.projectGroups = {
           type: "project",
           id: DEFAULT_UUID,
           name: "All Projects",
-          items: [],
+          slug: "all-projects",
+          items: projectIds,
         }
         result.labelGroups = {
           type: "label",
           id: DEFAULT_UUID,
           name: "All Labels",
-          items: [],
+          slug: "all-labels",
+          items: labelIds,
         }
       }
 

@@ -669,6 +669,7 @@ export const LabelSerializationSchema = LabelSchema
 interface IBaseGroup {
   id: GroupId
   name: string
+  slug: string
   description?: string
   color?: string
 }
@@ -707,6 +708,7 @@ ProjectGroupSchema = z
     type: z.literal("project"),
     id: GroupIdSchema,
     name: z.string(),
+    slug: z.string(),
     description: z.string().optional(),
     color: z.string().optional(),
     items: z.array(z.union([ProjectIdSchema, z.lazy(() => ProjectGroupSchema)])),
@@ -732,6 +734,7 @@ LabelGroupSchema = z
     type: z.literal("label"),
     id: GroupIdSchema,
     name: z.string(),
+    slug: z.string(),
     description: z.string().optional(),
     color: z.string().optional(),
     items: z.array(z.union([LabelIdSchema, z.lazy(() => LabelGroupSchema)])),
@@ -1813,6 +1816,8 @@ export const UpdateProjectGroupRequestSchema = z.object({
   type: z.literal("project"),
   /** Updated group name */
   name: z.string().optional(),
+  /** Updated group slug */
+  slug: z.string().optional(),
   /** Updated group description */
   description: z.string().optional(),
   /** Updated group color */
@@ -1828,6 +1833,8 @@ export const UpdateLabelGroupRequestSchema = z.object({
   type: z.literal("label"),
   /** Updated group name */
   name: z.string().optional(),
+  /** Updated group slug */
+  slug: z.string().optional(),
   /** Updated group description */
   description: z.string().optional(),
   /** Updated group color */

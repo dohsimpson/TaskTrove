@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+// import { Textarea } from "@/components/ui/textarea"
 import { ColorPicker } from "@/components/ui/custom/color-picker"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { COLOR_OPTIONS } from "@/lib/constants/defaults"
@@ -114,18 +114,18 @@ export function ProjectDialog() {
             />
           </div>
 
-          {entityType === "projectGroup" && (
-            <div className="space-y-2">
-              <Label htmlFor={`${entityType}-description`}>Description (optional)</Label>
-              <Textarea
-                id={`${entityType}-description`}
-                placeholder="Enter project group description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="min-h-[80px]"
-              />
-            </div>
-          )}
+          {/* {entityType === "projectGroup" && ( */}
+          {/*   <div className="space-y-2"> */}
+          {/*     <Label htmlFor={`${entityType}-description`}>Description (optional)</Label> */}
+          {/*     <Textarea */}
+          {/*       id={`${entityType}-description`} */}
+          {/*       placeholder="Enter project group description" */}
+          {/*       value={description} */}
+          {/*       onChange={(e) => setDescription(e.target.value)} */}
+          {/*       className="min-h-[80px]" */}
+          {/*     /> */}
+          {/*   </div> */}
+          {/* )} */}
 
           <ColorPicker
             selectedColor={selectedColor}

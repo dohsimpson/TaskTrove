@@ -96,7 +96,11 @@ import { ROOT_PROJECT_GROUP_ID, ROOT_LABEL_GROUP_ID } from "../../types/defaults
 
 // Define supported sources constant to ensure type consistency
 const SUPPORTED_IMPORT_SOURCES = ["ticktick", "todoist", "asana", "trello"] as const
-import { createSafeProjectNameSlug, createSafeLabelNameSlug } from "../../utils/routing"
+import {
+  createSafeProjectNameSlug,
+  createSafeLabelNameSlug,
+  createSafeProjectGroupNameSlug,
+} from "../../utils/routing"
 import { atomWithQuery, atomWithMutation, queryClientAtom } from "jotai-tanstack-query"
 
 // Re-export queryClientAtom for use in other atoms
@@ -157,12 +161,14 @@ const EMPTY_CACHE_DATA: DataFile = {
     type: "project",
     id: ROOT_PROJECT_GROUP_ID,
     name: "All Projects",
+    slug: "all-projects",
     items: [],
   },
   labelGroups: {
     type: "label",
     id: ROOT_LABEL_GROUP_ID,
     name: "All Labels",
+    slug: "all-labels",
     items: [],
   },
 }
@@ -400,11 +406,13 @@ export const dataQueryAtom = atomWithQuery(() => ({
           type: "project" as const,
           id: createGroupId("33333333-3333-4333-8333-333333333333"),
           name: "All Projects",
+          slug: "all-projects",
           items: [
             {
               type: "project" as const,
               id: createGroupId("11111111-1111-4111-8111-111111111111"),
               name: "Work Projects",
+              slug: "work-projects",
               description: "Projects related to work",
               color: "#3b82f6",
               items: [createProjectId("44444444-4444-4444-8444-444444444444")],
@@ -413,6 +421,7 @@ export const dataQueryAtom = atomWithQuery(() => ({
               type: "project" as const,
               id: createGroupId("22222222-2222-4222-8222-222222222222"),
               name: "Development",
+              slug: "development",
               items: [createProjectId("55555555-5555-4555-8555-555555555555")],
             },
           ],
@@ -421,6 +430,7 @@ export const dataQueryAtom = atomWithQuery(() => ({
           type: "label" as const,
           id: createGroupId("88888888-8888-4888-8888-888888888888"),
           name: "All Labels",
+          slug: "all-labels",
           items: [],
         },
       }
@@ -772,6 +782,7 @@ export const createProjectGroupMutationAtom = createMutation({
       type: "project",
       id: createGroupId(uuidv4()),
       name: request.name,
+      slug: createSafeProjectGroupNameSlug(request.name, undefined),
       description: request.description,
       color: request.color,
       items: [],
@@ -811,6 +822,7 @@ export const updateProjectGroupMutationAtom = createMutation({
           type: "project" as const,
           id: request.id,
           name: request.name || "Updated Group",
+          slug: request.slug || "updated-group",
           description: request.description,
           color: request.color,
           items: request.items || [],
@@ -937,6 +949,7 @@ export const bulkUpdateGroupsMutationAtom = createMutation({
               type: "project" as const,
               id: ROOT_PROJECT_GROUP_ID,
               name: "All Projects",
+              slug: "all-projects",
               items: request.groups,
             },
       }
@@ -952,6 +965,7 @@ export const bulkUpdateGroupsMutationAtom = createMutation({
               type: "label" as const,
               id: ROOT_LABEL_GROUP_ID,
               name: "All Labels",
+              slug: "all-labels",
               items: request.groups,
             },
       }

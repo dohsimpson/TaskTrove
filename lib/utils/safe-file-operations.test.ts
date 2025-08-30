@@ -17,6 +17,11 @@ import {
   TEST_SECTION_ID_1,
 } from "@/lib/utils/test-constants"
 import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
+import {
+  DEFAULT_AUTO_BACKUP_ENABLED,
+  DEFAULT_BACKUP_TIME,
+  DEFAULT_MAX_BACKUPS,
+} from "@/lib/constants/defaults"
 
 // Mock fs/promises
 vi.mock("fs/promises", () => ({
@@ -442,6 +447,9 @@ describe("safe-file-operations", () => {
           imports: {
             supportedSources: ["ticktick", "todoist"],
           },
+          autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
+          backupTime: DEFAULT_BACKUP_TIME,
+          maxBackups: DEFAULT_MAX_BACKUPS,
         },
       },
       version: "1.0.0",
@@ -525,6 +533,9 @@ describe("safe-file-operations", () => {
           imports: {
             supportedSources: ["ticktick"],
           },
+          autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
+          backupTime: DEFAULT_BACKUP_TIME,
+          maxBackups: DEFAULT_MAX_BACKUPS,
         },
       },
       version: "1.0.0",

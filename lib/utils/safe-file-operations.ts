@@ -10,7 +10,13 @@ import {
   SettingsFileSchema,
   SettingsFileSerializationSchema,
 } from "@/lib/types"
-import { DEFAULT_DATA_FILE_PATH, DEFAULT_SETTINGS_FILE_PATH } from "@/lib/constants/defaults"
+import {
+  DEFAULT_DATA_FILE_PATH,
+  DEFAULT_SETTINGS_FILE_PATH,
+  DEFAULT_AUTO_BACKUP_ENABLED,
+  DEFAULT_BACKUP_TIME,
+  DEFAULT_MAX_BACKUPS,
+} from "@/lib/constants/defaults"
 
 // Create a mutex instance to synchronize all file read/write operations
 const fileOperationsMutex = new Mutex()
@@ -232,6 +238,9 @@ function createDefaultSettingsFile(): SettingsFile {
         imports: {
           supportedSources: ["ticktick", "todoist", "asana", "trello"],
         },
+        autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
+        backupTime: DEFAULT_BACKUP_TIME,
+        maxBackups: DEFAULT_MAX_BACKUPS,
       },
     },
     version: "1.0.0",

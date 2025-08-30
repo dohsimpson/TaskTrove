@@ -209,6 +209,22 @@ export const PLACEHOLDER_SEARCH = "Search tasks..."
 /** Default data directory path */
 export const DEFAULT_DATA_DIR = "data"
 
+/** Default backup directory path */
+export const DEFAULT_BACKUP_DIR = "backups"
+
+// =============================================================================
+// BACKUP DEFAULTS
+// =============================================================================
+
+/** Default auto backup enabled state */
+export const DEFAULT_AUTO_BACKUP_ENABLED = false
+
+/** Default backup time in HH:MM format (24-hour) */
+export const DEFAULT_BACKUP_TIME = "02:00"
+
+/** Default maximum number of backup files to keep (-1 for unlimited) */
+export const DEFAULT_MAX_BACKUPS = -1
+
 /** Default data file path */
 export const DEFAULT_DATA_FILE_PATH = "data/data.json"
 export const DEFAULT_SETTINGS_FILE_PATH = "data/settings.json"

@@ -13,6 +13,11 @@ import { log } from "../../utils/logger"
 import { playSound } from "../../utils/audio"
 import { settingsAtom, settingsQueryAtom, updateSettingsMutationAtom } from "./base"
 import type { UserSettings, PartialUserSettings } from "../../types"
+import {
+  DEFAULT_AUTO_BACKUP_ENABLED,
+  DEFAULT_BACKUP_TIME,
+  DEFAULT_MAX_BACKUPS,
+} from "../../constants/defaults"
 
 // Use the same supported sources constant from base.ts
 const SUPPORTED_IMPORT_SOURCES = ["ticktick", "todoist", "asana", "trello"] as const
@@ -86,6 +91,9 @@ export const integrationSettingsAtom = atom((get) => {
       imports: {
         supportedSources: [...SUPPORTED_IMPORT_SOURCES],
       },
+      autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
+      backupTime: DEFAULT_BACKUP_TIME,
+      maxBackups: DEFAULT_MAX_BACKUPS,
     }
   }
 })

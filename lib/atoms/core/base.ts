@@ -91,6 +91,9 @@ import {
   DEFAULT_TASK_ATTACHMENTS,
   DEFAULT_LABEL_COLORS,
   DEFAULT_RECURRING_MODE,
+  DEFAULT_AUTO_BACKUP_ENABLED,
+  DEFAULT_BACKUP_TIME,
+  DEFAULT_MAX_BACKUPS,
 } from "../../constants/defaults"
 import { ROOT_PROJECT_GROUP_ID, ROOT_LABEL_GROUP_ID } from "../../types/defaults"
 
@@ -1140,6 +1143,9 @@ export const settingsQueryAtom = atomWithQuery(() => ({
             imports: {
               supportedSources: [...SUPPORTED_IMPORT_SOURCES],
             },
+            autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
+            backupTime: DEFAULT_BACKUP_TIME,
+            maxBackups: DEFAULT_MAX_BACKUPS,
           },
         },
         version: "1.0.0",
@@ -1325,6 +1331,9 @@ function getDefaultSettingsData(): SettingsFile {
         imports: {
           supportedSources: [...SUPPORTED_IMPORT_SOURCES],
         },
+        autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
+        backupTime: DEFAULT_BACKUP_TIME,
+        maxBackups: DEFAULT_MAX_BACKUPS,
       },
     },
     version: "1.0.0",
@@ -1387,6 +1396,10 @@ export const updateSettingsMutationAtom = createSettingsMutation<
           supportedSources: [...SUPPORTED_IMPORT_SOURCES],
           ...variables.settings.integrations?.imports,
         },
+        autoBackupEnabled:
+          variables.settings.integrations?.autoBackupEnabled ?? DEFAULT_AUTO_BACKUP_ENABLED,
+        backupTime: variables.settings.integrations?.backupTime ?? DEFAULT_BACKUP_TIME,
+        maxBackups: variables.settings.integrations?.maxBackups ?? DEFAULT_MAX_BACKUPS,
       },
     }
     return {
@@ -1403,6 +1416,18 @@ export const updateSettingsMutationAtom = createSettingsMutation<
           ...oldData.userSettings.integrations.imports,
           ...variables.settings.integrations?.imports,
         },
+        autoBackupEnabled:
+          variables.settings.integrations?.autoBackupEnabled ??
+          oldData.userSettings.integrations.autoBackupEnabled ??
+          DEFAULT_AUTO_BACKUP_ENABLED,
+        backupTime:
+          variables.settings.integrations?.backupTime ??
+          oldData.userSettings.integrations.backupTime ??
+          DEFAULT_BACKUP_TIME,
+        maxBackups:
+          variables.settings.integrations?.maxBackups ??
+          oldData.userSettings.integrations.maxBackups ??
+          DEFAULT_MAX_BACKUPS,
       },
     }
 
@@ -1428,6 +1453,9 @@ export const settingsAtom = atom(
         imports: {
           supportedSources: [...SUPPORTED_IMPORT_SOURCES],
         },
+        autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
+        backupTime: DEFAULT_BACKUP_TIME,
+        maxBackups: DEFAULT_MAX_BACKUPS,
       },
     }
   },

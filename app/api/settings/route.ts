@@ -18,6 +18,11 @@ import {
   type EnhancedRequest,
 } from "@/lib/middleware/api-logger"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
+import {
+  DEFAULT_AUTO_BACKUP_ENABLED,
+  DEFAULT_BACKUP_TIME,
+  DEFAULT_MAX_BACKUPS,
+} from "@/lib/constants/defaults"
 
 /**
  * GET /api/settings
@@ -108,6 +113,18 @@ async function updateSettings(
         ...currentSettingsFile.userSettings.integrations.imports,
         ...partialSettings.integrations?.imports,
       },
+      autoBackupEnabled:
+        partialSettings.integrations?.autoBackupEnabled ??
+        currentSettingsFile.userSettings.integrations.autoBackupEnabled ??
+        DEFAULT_AUTO_BACKUP_ENABLED,
+      backupTime:
+        partialSettings.integrations?.backupTime ??
+        currentSettingsFile.userSettings.integrations.backupTime ??
+        DEFAULT_BACKUP_TIME,
+      maxBackups:
+        partialSettings.integrations?.maxBackups ??
+        currentSettingsFile.userSettings.integrations.maxBackups ??
+        DEFAULT_MAX_BACKUPS,
     },
     // Future settings will be merged here when implemented:
     // appearance: { ... },

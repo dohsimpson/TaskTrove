@@ -2110,6 +2110,12 @@ export const IntegrationSettingsSchema = z.object({
   imports: z.object({
     supportedSources: z.array(z.enum(["ticktick", "todoist", "asana", "trello"])),
   }),
+  /** Auto backup configuration */
+  autoBackupEnabled: z.boolean(),
+  /** Time to run daily backup in HH:MM format (24-hour) */
+  backupTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
+  /** Maximum number of backup files to keep (-1 for unlimited) */
+  maxBackups: z.number(),
   // Future features (not stored in settings.json yet):
   // calendar: z.object({
   //   enabled: z.boolean(),

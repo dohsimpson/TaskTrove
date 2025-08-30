@@ -6,17 +6,25 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-// Unused UI components (for future calendar/webhook features):
-// import { Switch } from "@/components/ui/switch"
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Upload, ExternalLink, CheckCircle2, XCircle, Loader2 } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Upload,
+  ExternalLink,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  Archive,
+  HardDrive,
+} from "lucide-react"
 // Future icons (not used yet): import { Calendar, Link, Trash2, Plus } from "lucide-react"
 import { SiTodoist, SiTrello, SiAsana, SiTicktick } from "@icons-pack/react-simple-icons"
 import {
@@ -24,6 +32,7 @@ import {
   updateIntegrationSettingsAtom,
 } from "@/lib/atoms/ui/user-settings-atom"
 import { queryClientAtom } from "@/lib/atoms/core/base"
+import { DEFAULT_BACKUP_TIME, DEFAULT_MAX_BACKUPS } from "@/lib/constants/defaults"
 
 type UploadStatus = "idle" | "uploading" | "success" | "error"
 
@@ -40,8 +49,7 @@ interface UploadResult {
 export function IntegrationsForm() {
   const settings = useAtomValue(integrationSettingsAtom)
   const queryClient = useAtomValue(queryClientAtom)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const updateSettings = useSetAtom(updateIntegrationSettingsAtom) // Will be used for future calendar/webhook features
+  const updateSettings = useSetAtom(updateIntegrationSettingsAtom)
 
   // Upload state
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle")
@@ -361,6 +369,169 @@ export function IntegrationsForm() {
                 </div>
               )}
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Auto Backup Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Archive className="w-5 h-5" />
+            Auto Backup
+          </CardTitle>
+          <CardDescription>
+            Automatically backup your data daily to protect against data loss.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Docker Volume Mounting Notice - Only show when auto backup is enabled */}
+          {settings.autoBackupEnabled && (
+            <div className="p-3 bg-muted rounded-lg border">
+              <div className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold mt-0.5">
+                  !
+                </div>
+                <div className="text-sm">
+                  <div className="font-medium">Docker Users:</div>
+                  <div className="text-muted-foreground">
+                    You must mount the backups directory as a volume to access backup files:{" "}
+                    <code className="px-1 py-0.5 bg-muted rounded text-xs">
+                      -v ./backups:/app/backups
+                    </code>
+                  </div>
+                  <div className="mt-1">
+                    <a
+                      href="https://docs.tasktrove.io/backup"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline text-xs flex items-center gap-1"
+                    >
+                      See backup setup guide <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="auto-backup">Enable Auto Backup</Label>
+              <p className="text-sm text-muted-foreground">
+                Creates a zip backup of your data daily at the configured time
+              </p>
+            </div>
+            <Switch
+              id="auto-backup"
+              checked={settings.autoBackupEnabled}
+              onCheckedChange={(checked) =>
+                updateSettings({
+                  autoBackupEnabled: checked,
+                })
+              }
+            />
+          </div>
+
+          {settings.autoBackupEnabled && (
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="backup-time">Backup Time</Label>
+                <p className="text-sm text-muted-foreground">
+                  Time to run daily backup (24-hour format)
+                </p>
+              </div>
+              <Input
+                id="backup-time"
+                type="time"
+                value={settings.backupTime || DEFAULT_BACKUP_TIME}
+                onChange={(e) =>
+                  updateSettings({
+                    backupTime: e.target.value,
+                  })
+                }
+                className="w-32"
+              />
+            </div>
+          )}
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="max-backups">Maximum Backups to Keep</Label>
+              <p className="text-sm text-muted-foreground">
+                Older backups will be automatically deleted
+              </p>
+            </div>
+            <Select
+              value={
+                settings.maxBackups !== undefined
+                  ? String(settings.maxBackups)
+                  : String(DEFAULT_MAX_BACKUPS)
+              }
+              onValueChange={(value) =>
+                updateSettings({
+                  maxBackups: Number(value),
+                })
+              }
+            >
+              <SelectTrigger id="max-backups" className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="-1">No limit</SelectItem>
+                {[3, 5, 7, 10, 14, 21, 30, 90, 365].map((num) => (
+                  <SelectItem key={num} value={String(num)}>
+                    {num}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <HardDrive className="w-4 h-4 mt-0.5 text-muted-foreground" />
+              <div className="text-sm space-y-1">
+                <p className="font-medium">Backup Information</p>
+                <ul className="text-muted-foreground space-y-1">
+                  <li>
+                    • Backups are stored in the{" "}
+                    <code className="px-1 py-0.5 bg-muted rounded text-xs">backups/</code> directory
+                  </li>
+                  <li>
+                    •{" "}
+                    {settings.maxBackups === -1
+                      ? "Keeps unlimited backups (no rotation)"
+                      : `Keeps the last ${settings.maxBackups !== undefined ? settings.maxBackups : DEFAULT_MAX_BACKUPS} backups (automatic rotation)`}
+                  </li>
+                  <li>• Includes all tasks, projects, labels, and settings</li>
+                  <li>• Runs daily at {settings.backupTime || DEFAULT_BACKUP_TIME} server time</li>
+                </ul>
+              </div>
+            </div>
+
+            <Button
+              variant="outline"
+              onClick={async () => {
+                try {
+                  const response = await fetch("/api/backup", {
+                    method: "POST",
+                  })
+                  if (response.ok) {
+                    // Could add toast notification here
+                    console.log("Manual backup triggered successfully")
+                  }
+                } catch (error) {
+                  console.error("Failed to trigger manual backup:", error)
+                }
+              }}
+              className="w-full"
+            >
+              <Archive className="w-4 h-4 mr-2" />
+              Trigger Manual Backup Now
+            </Button>
           </div>
         </CardContent>
       </Card>

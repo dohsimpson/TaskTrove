@@ -10,6 +10,7 @@ import { GET, POST, PATCH, DELETE } from "./route"
 import { createGroupId, createProjectId, type DataFile } from "@/lib/types"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { DEFAULT_UUID } from "@/lib/constants/defaults"
+import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types/defaults"
 
 // Mock safe file operations
 vi.mock("@/lib/utils/safe-file-operations", () => ({
@@ -62,9 +63,7 @@ describe("GET /api/groups", () => {
 
     // Mock successful file read with sample data including group trees
     const mockFileData: DataFile = {
-      projects: [],
-      tasks: [],
-      labels: [],
+      ...DEFAULT_EMPTY_DATA_FILE,
       projectGroups: {
         type: "project",
         id: TEST_GROUP_ID_3,
@@ -120,9 +119,7 @@ describe("POST /api/groups", () => {
     vi.clearAllMocks()
 
     const mockFileData: DataFile = {
-      projects: [],
-      tasks: [],
-      labels: [],
+      ...DEFAULT_EMPTY_DATA_FILE,
       projectGroups: {
         type: "project",
         id: TEST_GROUP_ID_3,
@@ -196,9 +193,7 @@ describe("PATCH /api/groups", () => {
     vi.clearAllMocks()
 
     const mockFileData: DataFile = {
-      projects: [],
-      tasks: [],
-      labels: [],
+      ...DEFAULT_EMPTY_DATA_FILE,
       projectGroups: {
         type: "project",
         id: TEST_GROUP_ID_3,
@@ -272,9 +267,7 @@ describe("DELETE /api/groups", () => {
     vi.clearAllMocks()
 
     const mockFileData: DataFile = {
-      projects: [],
-      tasks: [],
-      labels: [],
+      ...DEFAULT_EMPTY_DATA_FILE,
       projectGroups: {
         type: "project",
         id: createGroupId(DEFAULT_UUID),

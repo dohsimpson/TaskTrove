@@ -759,12 +759,32 @@ export const GroupSchema = z.union([ProjectGroupSchema, LabelGroupSchema])
 // Base serialization schema for Group (colocated with GroupSchema for high correlation)
 export const GroupSerializationSchema = GroupSchema
 
+/**
+ * Settings schemas - need to be defined before DataFileSchema
+ */
+export const IntegrationSettingsSchema = z.object({
+  imports: z.object({
+    supportedSources: z.array(z.enum(["ticktick", "todoist", "asana", "trello"])),
+  }),
+  /** Auto backup configuration */
+  autoBackupEnabled: z.boolean(),
+  /** Time to run daily backup in HH:MM format (24-hour) */
+  backupTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
+  /** Maximum number of backup files to keep (-1 for unlimited) */
+  maxBackups: z.number(),
+})
+
+export const UserSettingsSchema = z.object({
+  integrations: IntegrationSettingsSchema,
+})
+
 export const DataFileSchema = z.object({
   tasks: z.array(TaskSchema),
   projects: z.array(ProjectSchema),
   labels: z.array(LabelSchema),
   projectGroups: ProjectGroupSchema,
   labelGroups: LabelGroupSchema,
+  settings: UserSettingsSchema,
   version: VersionStringSchema.optional(),
 })
 
@@ -2103,88 +2123,7 @@ export const NotificationSettingsSchema = z.object({}).optional()
 // Minimal data settings for now
 export const DataSettingsSchema = z.object({}).optional()
 
-/**
- * Integration settings schema - Only imports supported for now
- */
-export const IntegrationSettingsSchema = z.object({
-  imports: z.object({
-    supportedSources: z.array(z.enum(["ticktick", "todoist", "asana", "trello"])),
-  }),
-  /** Auto backup configuration */
-  autoBackupEnabled: z.boolean(),
-  /** Time to run daily backup in HH:MM format (24-hour) */
-  backupTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
-  /** Maximum number of backup files to keep (-1 for unlimited) */
-  maxBackups: z.number(),
-  // Future features (not stored in settings.json yet):
-  // calendar: z.object({
-  //   enabled: z.boolean(),
-  //   provider: z.enum(["google", "outlook", "apple"]).optional(),
-  //   syncDirection: z.enum(["oneWay", "twoWay"]),
-  //   defaultCalendarId: z.string().optional(),
-  //   syncCompletedTasks: z.boolean(),
-  // }),
-  // services: z.object({
-  //   webhooks: z.object({
-  //     enabled: z.boolean(),
-  //     endpoints: z.array(z.string()),
-  //   }),
-  //   apiKeys: z.record(z.string(), z.string()),
-  // }),
-})
-
-// /**
-//  * Productivity settings schema - Placeholder for future implementation
-//  */
-// export const ProductivitySettingsSchema = z.object({
-//   pomodoro: z.object({
-//     workDuration: z.number().min(1).max(120),
-//     shortBreakDuration: z.number().min(1).max(30),
-//     longBreakDuration: z.number().min(5).max(60),
-//     longBreakInterval: z.number().min(2).max(10),
-//     autoStartBreaks: z.boolean(),
-//     autoStartWork: z.boolean(),
-//     soundEnabled: z.boolean(),
-//   }),
-//   goals: z.object({
-//     dailyTaskTarget: z.number().min(1).max(50),
-//     weeklyTaskTarget: z.number().min(1).max(500),
-//     trackingEnabled: z.boolean(),
-//     showProgress: z.boolean(),
-//   }),
-//   analytics: z.object({
-//     dataCollection: z.boolean(),
-//     showMetrics: z.boolean(),
-//     metricVisibility: z.object({
-//       productivity: z.boolean(),
-//       streak: z.boolean(),
-//       timeSpent: z.boolean(),
-//       completion: z.boolean(),
-//     }),
-//   }),
-//   focusMode: z.object({
-//     enabled: z.boolean(),
-//     hideDistractions: z.boolean(),
-//     minimalUI: z.boolean(),
-//     blockNotifications: z.boolean(),
-//   }),
-// })
-
-// Minimal productivity settings for now
-export const ProductivitySettingsSchema = z.object({}).optional()
-
-/**
- * Complete user settings schema - Simplified to only integrations for now
- */
-export const UserSettingsSchema = z.object({
-  integrations: IntegrationSettingsSchema,
-  // Optional future settings (not stored yet):
-  // appearance: AppearanceSettingsSchema,
-  // behavior: BehaviorSettingsSchema,
-  // notifications: NotificationSettingsSchema,
-  // data: DataSettingsSchema,
-  // productivity: ProductivitySettingsSchema,
-})
+// Removed duplicate IntegrationSettingsSchema and UserSettingsSchema definitions - now defined earlier in file
 
 /**
  * Schema for partial user settings updates - Only integrations for now
@@ -2199,24 +2138,6 @@ export const PartialUserSettingsSchema = z.object({
   // productivity: ProductivitySettingsSchema.partial().optional(),
 })
 
-/**
- * Settings file schema for disk storage
- */
-export const SettingsFileSchema = z.object({
-  userSettings: UserSettingsSchema,
-  version: z.string().default("1.0.0"),
-  lastModified: flexibleDateTimeSchema,
-})
-
-/**
- * Settings file serialization schema
- */
-export const SettingsFileSerializationSchema = z.object({
-  userSettings: UserSettingsSchema,
-  version: z.string().default("1.0.0"),
-  lastModified: flexibleDateTimeSerializationSchema,
-})
-
 // Settings API request/response schemas
 export const UpdateSettingsRequestSchema = z.object({
   settings: PartialUserSettingsSchema,
@@ -2226,8 +2147,6 @@ export const UpdateSettingsResponseSchema = ApiResponseSchema.extend({
   settings: UserSettingsSchema,
 })
 // Generated types for settings
-export type SettingsFile = z.infer<typeof SettingsFileSchema>
-export type SettingsFileSerialization = z.infer<typeof SettingsFileSerializationSchema>
 export type UpdateSettingsRequest = z.infer<typeof UpdateSettingsRequestSchema>
 export type UpdateSettingsResponse = z.infer<typeof UpdateSettingsResponseSchema>
 export type IntegrationSettings = z.infer<typeof IntegrationSettingsSchema>

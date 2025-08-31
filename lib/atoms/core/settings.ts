@@ -11,7 +11,7 @@ import { handleAtomError } from "../utils"
 import { recordOperationAtom } from "./history"
 import { log } from "../../utils/logger"
 import { playSound } from "../../utils/audio"
-import { settingsAtom, settingsQueryAtom, updateSettingsMutationAtom } from "./base"
+import { settingsAtom, updateSettingsMutationAtom, dataQueryAtom } from "./base"
 import type { UserSettings, PartialUserSettings } from "../../types"
 import {
   DEFAULT_AUTO_BACKUP_ENABLED,
@@ -120,11 +120,11 @@ importSettingsAtom.debugLabel = "importSettingsAtom"
  */
 export const settingsMetadataAtom = atom((get) => {
   try {
-    const result = get(settingsQueryAtom)
+    const result = get(dataQueryAtom)
     if ("data" in result && result.data) {
       return {
-        version: result.data.version,
-        lastModified: result.data.lastModified,
+        version: result.data.version || "1.0.0",
+        lastModified: new Date(),
       }
     }
     return {
@@ -238,11 +238,11 @@ export const settingsAtoms = {
     isImportSourceSupported: isImportSourceSupportedAtom,
   },
 
-  // Query atoms (for direct access if needed)
+  // Query atoms (settings now use main dataQueryAtom)
   queries: {
-    settingsQuery: settingsQueryAtom,
+    dataQuery: dataQueryAtom,
   },
 }
 
 // Individual exports for backward compatibility
-export { settingsAtom, settingsQueryAtom, updateSettingsMutationAtom } from "./base"
+export { settingsAtom, dataQueryAtom, updateSettingsMutationAtom } from "./base"

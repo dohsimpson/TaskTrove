@@ -271,5 +271,15 @@
     "slug": "all-labels",
     "items": ["6ba7b811-9dad-41d1-8696-f01c6a84b1a1"]
   },
+  "settings": {
+    "integrations": {
+      "imports": {
+        "supportedSources": ["ticktick", "todoist", "asana", "trello"]
+      },
+      "autoBackupEnabled": true,
+      "backupTime": "02:00",
+      "maxBackups": 7
+    }
+  },
   "version": "v0.3.0"
 }

@@ -55,8 +55,6 @@ import {
   DeleteLabelResponse,
   DeleteLabelResponseSchema,
   LabelDeleteSerializationSchema,
-  SettingsFile,
-  SettingsFileSchema,
   UpdateSettingsResponse,
   UpdateSettingsResponseSchema,
   UpdateSettingsRequest,
@@ -173,6 +171,16 @@ const EMPTY_CACHE_DATA: DataFile = {
     name: "All Labels",
     slug: "all-labels",
     items: [],
+  },
+  settings: {
+    integrations: {
+      imports: {
+        supportedSources: [...SUPPORTED_IMPORT_SOURCES],
+      },
+      autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
+      backupTime: DEFAULT_BACKUP_TIME,
+      maxBackups: DEFAULT_MAX_BACKUPS,
+    },
   },
 }
 
@@ -435,6 +443,16 @@ export const dataQueryAtom = atomWithQuery(() => ({
           name: "All Labels",
           slug: "all-labels",
           items: [],
+        },
+        settings: {
+          integrations: {
+            imports: {
+              supportedSources: [...SUPPORTED_IMPORT_SOURCES],
+            },
+            autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
+            backupTime: DEFAULT_BACKUP_TIME,
+            maxBackups: DEFAULT_MAX_BACKUPS,
+          },
         },
       }
     }
@@ -1130,257 +1148,9 @@ labelsAtom.debugLabel = "labelsAtom"
 /**
  * Settings query atom - follows same pattern as dataQueryAtom but for settings
  */
-export const settingsQueryAtom = atomWithQuery(() => ({
-  queryKey: ["settings"],
-  queryFn: async (): Promise<SettingsFile> => {
-    // Check if we're in a test environment
-    if (typeof window === "undefined" || process.env.NODE_ENV === "test") {
-      log.info({ module: "test" }, "Test environment: Using default settings")
-      // Minimal settings for test environment - only imports supported
-      return {
-        userSettings: {
-          integrations: {
-            imports: {
-              supportedSources: [...SUPPORTED_IMPORT_SOURCES],
-            },
-            autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
-            backupTime: DEFAULT_BACKUP_TIME,
-            maxBackups: DEFAULT_MAX_BACKUPS,
-          },
-        },
-        version: "1.0.0",
-        lastModified: new Date(),
-      }
-    }
-
-    const response = await fetch("/api/settings")
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch settings: ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    const parsedResult = SettingsFileSchema.safeParse(data, { reportInput: true })
-
-    if (!parsedResult.success) {
-      console.error(parsedResult.error)
-      throw new Error(`Failed to parse settings: ${parsedResult.error.message}`)
-    }
-
-    return parsedResult.data
-  },
-  staleTime: 5000, // Consider data fresh for 5 seconds
-  refetchOnMount: false,
-  refetchOnWindowFocus: false,
-  refetchInterval: false,
-}))
-settingsQueryAtom.debugLabel = "settingsQueryAtom"
-
-/**
- * Settings-specific mutation configuration for updating settings
- */
-interface SettingsMutationConfig<TResponse, TRequest, TOptimisticData = unknown> {
-  method: "PATCH"
-  operationName: string
-  responseSchema: z.ZodType<TResponse>
-  serializationSchema: z.ZodType
-  testResponseFactory: (variables: TRequest) => TResponse
-  optimisticUpdateFn: (
-    variables: TRequest,
-    oldData: SettingsFile,
-    optimisticData?: TOptimisticData,
-  ) => SettingsFile
-  optimisticDataFactory?: (variables: TRequest, oldData?: SettingsFile) => TOptimisticData
-  logModule?: string
-  apiEndpoint?: string
-  queryKey?: string[]
-}
-
-/**
- * Settings-specific mutation factory - similar to createMutation but for SettingsFile
- */
-function createSettingsMutation<TResponse, TVariables, TOptimisticData = unknown>(
-  config: SettingsMutationConfig<TResponse, TVariables, TOptimisticData>,
-) {
-  const {
-    method,
-    operationName,
-    responseSchema,
-    serializationSchema,
-    testResponseFactory,
-    optimisticUpdateFn,
-    optimisticDataFactory,
-    logModule = "settings",
-    apiEndpoint = "/api/settings",
-    queryKey = ["settings"],
-  } = config
-
-  return atomWithMutation<
-    TResponse,
-    TVariables,
-    Error,
-    MutationContext<TOptimisticData, TVariables>
-  >((get) => ({
-    mutationFn: async (variables: TVariables): Promise<TResponse> => {
-      // 1. Test environment check - standardized
-      if (typeof window === "undefined" || process.env.NODE_ENV === "test") {
-        log.info({ module: "test" }, `Test environment: Simulating ${operationName.toLowerCase()}`)
-        return testResponseFactory(variables)
-      }
-
-      // 2. Input validation/serialization - if schema provided
-      let serializedData: unknown = variables
-      const serialized = serializationSchema.safeParse(variables, { reportInput: true })
-      if (!serialized.success) {
-        throw new Error(
-          `Failed to serialize ${operationName.toLowerCase()} data: ${serialized.error?.message || "Unknown validation error"}`,
-        )
-      }
-      serializedData = serialized.data
-
-      // 3. API request - standardized
-      const response = await fetch(apiEndpoint, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(serializedData),
-      })
-
-      if (!response.ok) {
-        await handleApiError(response, logModule)
-      }
-
-      // 4. Response validation - standardized
-      const data = await response.json()
-      const responseValidation = responseSchema.safeParse(data, { reportInput: true })
-      if (!responseValidation.success) {
-        throw new Error(
-          `Failed to parse ${operationName.toLowerCase()} response: ${responseValidation.error?.message || "Unknown validation error"}`,
-        )
-      }
-
-      if (!responseValidation.data) {
-        throw new Error(`No data returned from ${operationName.toLowerCase()} response`)
-      }
-
-      return responseValidation.data
-    },
-    onMutate: async (variables: TVariables) => {
-      const queryClient = get(queryClientAtom)
-
-      // Cancel queries - standardized
-      await queryClient.cancelQueries({ queryKey })
-
-      // Get current data for optimistic factory context
-      const currentData = queryClient.getQueryData(queryKey)
-      const validCurrentData = isValidSettingsData(currentData)
-        ? currentData
-        : getDefaultSettingsData()
-
-      // Create optimistic data if factory provided
-      const optimisticData = optimisticDataFactory
-        ? optimisticDataFactory(variables, validCurrentData)
-        : undefined
-
-      // Optimistic cache update - parameterized logic
-      const previousData = updateSettingsCache(queryClient, queryKey, (oldData) =>
-        optimisticUpdateFn(variables, oldData, optimisticData),
-      )
-
-      return { previousData, variables, optimisticData }
-    },
-    onSuccess: () => {
-      // Success logging - standardized
-      log.info({ module: logModule }, `${operationName} via API`)
-
-      // Success toast notification
-      toast.success(`${operationName} successfully`)
-
-      // Cache invalidation - standardized
-      const queryClient = get(queryClientAtom)
-      queryClient.invalidateQueries({ queryKey })
-    },
-    onError: (
-      error: Error,
-      variables: TVariables,
-      context: MutationContext<TOptimisticData, TVariables> | undefined,
-    ) => {
-      // Error logging - standardized
-      log.error({ error, module: logModule }, `Failed to ${operationName.toLowerCase()} via API`)
-
-      // Error toast notification
-      toast.error(`Failed to ${operationName.toLowerCase()}: ${error.message}`)
-
-      // Rollback - standardized
-      const queryClient = get(queryClientAtom)
-      if (context?.previousData) {
-        queryClient.setQueryData(queryKey, context.previousData)
-      }
-    },
-  }))
-}
-
-/**
- * Default empty settings cache data structure that matches SettingsFile schema
- */
-function getDefaultSettingsData(): SettingsFile {
-  return {
-    userSettings: {
-      integrations: {
-        imports: {
-          supportedSources: [...SUPPORTED_IMPORT_SOURCES],
-        },
-        autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
-        backupTime: DEFAULT_BACKUP_TIME,
-        maxBackups: DEFAULT_MAX_BACKUPS,
-      },
-    },
-    version: "1.0.0",
-    lastModified: new Date(),
-  }
-}
-
-/**
- * Type guard to check if data has the expected SettingsFile structure
- */
-function isValidSettingsData(data: unknown): data is SettingsFile {
-  if (!data || typeof data !== "object") return false
-
-  if (!("userSettings" in data && "version" in data && "lastModified" in data)) {
-    return false
-  }
-
-  return !!(
-    data.userSettings &&
-    typeof data.userSettings === "object" &&
-    data.version &&
-    typeof data.version === "string" &&
-    data.lastModified
-  )
-}
-
-/**
- * Settings-specific utility for optimistic cache updates
- */
-function updateSettingsCache(
-  queryClient: {
-    getQueryData: (key: string[]) => unknown
-    setQueryData: (key: string[], updater: (oldData: unknown) => unknown) => void
-  },
-  queryKey: string[],
-  updater: (oldData: SettingsFile) => SettingsFile,
-): unknown {
-  const previousData = queryClient.getQueryData(queryKey)
-  queryClient.setQueryData(queryKey, (oldData: unknown) => {
-    if (!isValidSettingsData(oldData)) return oldData
-    return updater(oldData)
-  })
-  return previousData
-}
 
 // Mutation atom for updating settings with optimistic updates
-export const updateSettingsMutationAtom = createSettingsMutation<
+export const updateSettingsMutationAtom = createMutation<
   UpdateSettingsResponse,
   UpdateSettingsRequest
 >({
@@ -1388,6 +1158,8 @@ export const updateSettingsMutationAtom = createSettingsMutation<
   operationName: "Updated settings",
   responseSchema: UpdateSettingsResponseSchema,
   serializationSchema: UpdateSettingsRequestSchema,
+  apiEndpoint: "/api/settings",
+  logModule: "settings",
   testResponseFactory: (variables: UpdateSettingsRequest) => {
     // For test mode, construct a complete UserSettings from the partial updates
     const testUserSettings: UserSettings = {
@@ -1408,33 +1180,32 @@ export const updateSettingsMutationAtom = createSettingsMutation<
       message: "Settings updated successfully (test mode)",
     }
   },
-  optimisticUpdateFn: (variables: UpdateSettingsRequest, oldData: SettingsFile) => {
+  optimisticUpdateFn: (variables: UpdateSettingsRequest, oldData: DataFile) => {
     // Merge partial settings with current settings
-    const updatedUserSettings: UserSettings = {
+    const updatedSettings: UserSettings = {
       integrations: {
         imports: {
-          ...oldData.userSettings.integrations.imports,
+          ...oldData.settings.integrations.imports,
           ...variables.settings.integrations?.imports,
         },
         autoBackupEnabled:
           variables.settings.integrations?.autoBackupEnabled ??
-          oldData.userSettings.integrations.autoBackupEnabled ??
+          oldData.settings.integrations.autoBackupEnabled ??
           DEFAULT_AUTO_BACKUP_ENABLED,
         backupTime:
           variables.settings.integrations?.backupTime ??
-          oldData.userSettings.integrations.backupTime ??
+          oldData.settings.integrations.backupTime ??
           DEFAULT_BACKUP_TIME,
         maxBackups:
           variables.settings.integrations?.maxBackups ??
-          oldData.userSettings.integrations.maxBackups ??
+          oldData.settings.integrations.maxBackups ??
           DEFAULT_MAX_BACKUPS,
       },
     }
 
     return {
       ...oldData,
-      userSettings: updatedUserSettings,
-      lastModified: new Date(),
+      settings: updatedSettings,
     }
   },
 })
@@ -1443,9 +1214,9 @@ updateSettingsMutationAtom.debugLabel = "updateSettingsMutationAtom"
 // Base settings atom - provides read access to current settings
 export const settingsAtom = atom(
   (get) => {
-    const result = get(settingsQueryAtom)
+    const result = get(dataQueryAtom)
     if ("data" in result && result.data) {
-      return result.data.userSettings
+      return result.data.settings
     }
     // Return minimal default settings - only imports supported
     return {

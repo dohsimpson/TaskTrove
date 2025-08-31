@@ -14,7 +14,7 @@ import {
   createLabelId,
   createSectionId,
 } from "@/lib/types"
-import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
+import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types/defaults"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { createMockEnhancedRequest } from "@/lib/utils/test-helpers"
 
@@ -61,6 +61,7 @@ function getWrittenData(): DataFile {
 
 // Mock data structure
 const mockDataFile: DataFile = {
+  ...DEFAULT_EMPTY_DATA_FILE,
   tasks: [
     {
       id: createTaskId("11111111-1111-4111-8111-111111111111"),
@@ -141,8 +142,6 @@ const mockDataFile: DataFile = {
       color: "#10b981",
     },
   ],
-  projectGroups: DEFAULT_PROJECT_GROUP,
-  labelGroups: DEFAULT_LABEL_GROUP,
 }
 
 describe("PATCH /api/tasks - Task Updates Only", () => {

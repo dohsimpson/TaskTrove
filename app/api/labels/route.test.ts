@@ -9,7 +9,7 @@ import { NextRequest } from "next/server"
 import { POST, PATCH, DELETE } from "./route"
 import { TEST_LABEL_ID_1, TEST_LABEL_ID_2 } from "@/lib/utils/test-constants"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
-import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
+import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types/defaults"
 
 // Mock safe file operations
 vi.mock("@/lib/utils/safe-file-operations", () => ({
@@ -59,8 +59,7 @@ describe("PATCH /api/labels", () => {
 
     // Mock successful file read with sample data
     const mockFileData = {
-      projects: [],
-      tasks: [],
+      ...DEFAULT_EMPTY_DATA_FILE,
       labels: [
         {
           id: TEST_LABEL_ID_1,
@@ -75,10 +74,6 @@ describe("PATCH /api/labels", () => {
           color: "#3b82f6",
         },
       ],
-      ordering: { projects: [], labels: [TEST_LABEL_ID_1, TEST_LABEL_ID_2] },
-      taskGroups: [],
-      projectGroups: DEFAULT_PROJECT_GROUP,
-      labelGroups: DEFAULT_LABEL_GROUP,
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)
@@ -269,8 +264,7 @@ describe("DELETE /api/labels", () => {
 
     // Mock successful file read with sample data
     const mockFileData = {
-      projects: [],
-      tasks: [],
+      ...DEFAULT_EMPTY_DATA_FILE,
       labels: [
         {
           id: TEST_LABEL_ID_1,
@@ -285,10 +279,6 @@ describe("DELETE /api/labels", () => {
           color: "#3b82f6",
         },
       ],
-      ordering: { projects: [], labels: [TEST_LABEL_ID_1, TEST_LABEL_ID_2] },
-      taskGroups: [],
-      projectGroups: DEFAULT_PROJECT_GROUP,
-      labelGroups: DEFAULT_LABEL_GROUP,
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)
@@ -391,8 +381,7 @@ describe("POST /api/labels", () => {
 
     // Mock successful file operations
     const mockFileData = {
-      projects: [],
-      tasks: [],
+      ...DEFAULT_EMPTY_DATA_FILE,
       labels: [
         {
           id: TEST_LABEL_ID_1,
@@ -401,10 +390,6 @@ describe("POST /api/labels", () => {
           color: "#ef4444",
         },
       ],
-      ordering: { projects: [], labels: [TEST_LABEL_ID_1] },
-      taskGroups: [],
-      projectGroups: DEFAULT_PROJECT_GROUP,
-      labelGroups: DEFAULT_LABEL_GROUP,
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)

@@ -2,21 +2,8 @@ import fs from "fs/promises"
 import { z } from "zod"
 import { Mutex } from "async-mutex"
 import { log } from "./logger"
-import {
-  DataFile,
-  DataFileSchema,
-  DataFileSerializationSchema,
-  SettingsFile,
-  SettingsFileSchema,
-  SettingsFileSerializationSchema,
-} from "@/lib/types"
-import {
-  DEFAULT_DATA_FILE_PATH,
-  DEFAULT_SETTINGS_FILE_PATH,
-  DEFAULT_AUTO_BACKUP_ENABLED,
-  DEFAULT_BACKUP_TIME,
-  DEFAULT_MAX_BACKUPS,
-} from "@/lib/constants/defaults"
+import { DataFile, DataFileSchema, DataFileSerializationSchema } from "@/lib/types"
+import { DEFAULT_DATA_FILE_PATH } from "@/lib/constants/defaults"
 
 // Create a mutex instance to synchronize all file read/write operations
 const fileOperationsMutex = new Mutex()
@@ -221,73 +208,5 @@ export async function safeWriteJsonFile<T, S>({
       }
       return false
     }
-  })
-}
-
-// =============================================================================
-// SETTINGS FILE OPERATIONS (Consolidated from safe-settings-operations.ts)
-// =============================================================================
-
-/**
- * Default settings file structure with current timestamp
- */
-function createDefaultSettingsFile(): SettingsFile {
-  return {
-    userSettings: {
-      integrations: {
-        imports: {
-          supportedSources: ["ticktick", "todoist", "asana", "trello"],
-        },
-        autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
-        backupTime: DEFAULT_BACKUP_TIME,
-        maxBackups: DEFAULT_MAX_BACKUPS,
-      },
-    },
-    version: "1.0.0",
-    lastModified: new Date(),
-  }
-}
-
-/**
- * Safely reads and parses the settings file, returning defaults if file doesn't exist or fails validation.
- * This is a convenience wrapper around safeReadJsonFile for settings.
- *
- * @param options - Configuration options for reading the settings file
- * @param options.filePath - Path to the JSON file to read (defaults to DEFAULT_SETTINGS_FILE_PATH)
- * @returns The parsed and validated settings object, or default settings if parsing/validation fails.
- */
-export async function safeReadSettingsFile({
-  filePath = DEFAULT_SETTINGS_FILE_PATH,
-}: { filePath?: string } = {}): Promise<SettingsFile> {
-  const result = await safeReadJsonFile({
-    filePath,
-    schema: SettingsFileSchema,
-    defaultValue: createDefaultSettingsFile(),
-  })
-
-  // safeReadJsonFile with defaultValue always returns a value
-  return result ?? createDefaultSettingsFile()
-}
-
-/**
- * Safely writes a settings object to a JSON file with validation and serialization.
- * This is a convenience wrapper around safeWriteJsonFile for settings.
- *
- * @param options - Configuration options for writing the settings file
- * @param options.filePath - Path to the JSON file to write (defaults to DEFAULT_SETTINGS_FILE_PATH)
- * @param options.data - The settings data object to write to the file
- * @returns true if the write operation was successful, false otherwise.
- */
-export async function safeWriteSettingsFile({
-  filePath = DEFAULT_SETTINGS_FILE_PATH,
-  data,
-}: {
-  filePath?: string
-  data: SettingsFile
-}): Promise<boolean> {
-  return safeWriteJsonFile({
-    filePath,
-    data,
-    serializationSchema: SettingsFileSerializationSchema,
   })
 }

@@ -1,14 +1,9 @@
 import archiver from "archiver"
 import { createWriteStream } from "fs"
-import { readFile, mkdir, readdir, unlink, stat } from "fs/promises"
+import { mkdir, readdir, unlink, stat } from "fs/promises"
 import path from "path"
-import {
-  DEFAULT_DATA_DIR,
-  DEFAULT_BACKUP_DIR,
-  DEFAULT_SETTINGS_FILE_PATH,
-  DEFAULT_MAX_BACKUPS,
-} from "@/lib/constants/defaults"
-import type { UserSettings } from "@/lib/types"
+import { DEFAULT_DATA_DIR, DEFAULT_BACKUP_DIR, DEFAULT_MAX_BACKUPS } from "@/lib/constants/defaults"
+import { safeReadDataFile } from "@/lib/utils/safe-file-operations"
 
 const BACKUP_DIR = DEFAULT_BACKUP_DIR
 
@@ -85,21 +80,20 @@ export async function runBackup() {
 
     // Check if auto backup is enabled in settings and get maxBackups value
     try {
-      const settingsContent = await readFile(DEFAULT_SETTINGS_FILE_PATH, "utf8")
-      const settings: UserSettings = JSON.parse(settingsContent)
+      const dataFile = await safeReadDataFile()
 
-      if (!settings.integrations?.autoBackupEnabled) {
+      if (dataFile?.settings?.integrations?.autoBackupEnabled === false) {
         console.log("Auto backup is disabled in settings. Skipping backup.")
         return
       }
 
       // Use maxBackups from settings if available
-      if (settings.integrations?.maxBackups) {
-        maxBackups = settings.integrations.maxBackups
+      if (dataFile?.settings?.integrations?.maxBackups !== undefined) {
+        maxBackups = dataFile.settings.integrations.maxBackups
       }
     } catch {
-      // If settings file doesn't exist or can't be read, proceed with backup using default
-      console.log("Settings file not found or couldn't be read. Proceeding with backup.")
+      // If data file doesn't exist or can't be read, proceed with backup using default
+      console.log("Data file not found or couldn't be read. Proceeding with backup.")
     }
 
     console.log("Starting daily backup...")
@@ -136,7 +130,7 @@ export async function runBackup() {
         console.log("Backup file stream finished writing.")
       })
 
-      archive.on("warning", (err) => {
+      archive.on("warning", (err: Error & { code?: string }) => {
         if (err.code === "ENOENT") {
           // Log specific warnings but don't necessarily reject
           console.warn("Archiver warning (ENOENT):", err)
@@ -146,7 +140,7 @@ export async function runBackup() {
         }
       })
 
-      archive.on("error", (err) => {
+      archive.on("error", (err: Error) => {
         console.error("Archiver error:", err)
         reject(err) // Reject the promise on critical archiver errors
       })
@@ -161,7 +155,7 @@ export async function runBackup() {
 
       // Finalize the archive (writes the central directory)
       console.log("Finalizing archive...")
-      archive.finalize().catch((err) => {
+      archive.finalize().catch((err: Error) => {
         // Catch potential errors during finalization
         console.error("Error during archive finalization:", err)
         reject(err)

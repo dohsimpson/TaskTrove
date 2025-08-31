@@ -1,6 +1,7 @@
 import type { DataFile, VersionString, Json } from "@/lib/types"
 import { createVersionString, DataFileSchema } from "@/lib/types"
 import { DEFAULT_UUID } from "@/lib/constants/defaults"
+import { DEFAULT_USER_SETTINGS } from "@/lib/types/defaults"
 import packageJson from "@/package.json"
 
 /**
@@ -12,17 +13,8 @@ import packageJson from "@/package.json"
  * Note: We don't strictly follow semantic versioning - migration stages are only
  * defined when actual data structure changes are needed.
  *
- * CURRENT STATE: v0.2.0 (data files without explicit version field)
- * FIRST EXPLICIT VERSION: v0.3.0 (data files with version field)
- *
  * Data files without version field are treated as v0.2.0.
  * Data file version reflects the ACTUAL data structure version (latest applied migration).
- *
- * HOW TO ADD NEW MIGRATIONS:
- * 1. Add migration function to migrationFunctions object (key = version)
- * 2. Update package.json version
- * 3. Call migrateDataFile() before using data files
- *
  * ONLY define migration functions for versions that actually change data structure.
  * Version-only bumps (no data changes) don't need migration functions.
  *
@@ -71,132 +63,177 @@ interface MigrationStep {
 }
 
 /**
+ * Individual migration functions for testing
+ *
+ * CRITICAL CONSTRAINT - DO NOT MODIFY RELEASED MIGRATION FUNCTIONS:
+ * Once package.json version is >= a migration function's version, that function becomes IMMUTABLE.
+ *
+ * Example: If package.json is at v0.3.0 or above, v030Migration function is FORBIDDEN to modify.
+ * Reason: Users may have data files migrated using the original function. Changing it breaks data integrity.
+ *
+ * If you need to fix a migration, create a NEW migration function for the next version instead.
+ */
+export const v030Migration = (dataFile: Json): Json => {
+  console.log("Migrating data file from v0.2.0 to v0.3.0...")
+  console.log("Converting ordering system to groups system and adding recurringMode to tasks")
+
+  // Safely handle Json object type
+  if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
+    throw new Error("Migration input must be a JSON object")
+  }
+
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(dataFile)) {
+    result[key] = value
+  }
+
+  // 1. Transform ordering.projects array to projectGroups structure
+  if (
+    result.ordering &&
+    typeof result.ordering === "object" &&
+    result.ordering !== null &&
+    !Array.isArray(result.ordering)
+  ) {
+    const ordering: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(result.ordering)) {
+      ordering[key] = value
+    }
+
+    // Create default project group with items from ordering.projects
+    const projectsArray = Array.isArray(ordering.projects) ? ordering.projects : []
+    result.projectGroups = {
+      type: "project",
+      id: DEFAULT_UUID,
+      name: "All Projects",
+      slug: "all-projects",
+      items: projectsArray, // Array of ProjectIds
+    }
+
+    // Create default label group with items from ordering.labels
+    const labelsArray = Array.isArray(ordering.labels) ? ordering.labels : []
+    result.labelGroups = {
+      type: "label",
+      id: DEFAULT_UUID,
+      name: "All Labels",
+      slug: "all-labels",
+      items: labelsArray, // Array of LabelIds
+    }
+
+    // Remove the old ordering field
+    delete result.ordering
+  } else {
+    // If no ordering exists, create groups from existing projects and labels
+    const projectIds: unknown[] = []
+    if (Array.isArray(result.projects)) {
+      for (const project of result.projects) {
+        if (typeof project === "object" && project !== null && "id" in project) {
+          projectIds.push(project.id)
+        }
+      }
+    }
+
+    const labelIds: unknown[] = []
+    if (Array.isArray(result.labels)) {
+      for (const label of result.labels) {
+        if (typeof label === "object" && label !== null && "id" in label) {
+          labelIds.push(label.id)
+        }
+      }
+    }
+
+    result.projectGroups = {
+      type: "project",
+      id: DEFAULT_UUID,
+      name: "All Projects",
+      slug: "all-projects",
+      items: projectIds,
+    }
+    result.labelGroups = {
+      type: "label",
+      id: DEFAULT_UUID,
+      name: "All Labels",
+      slug: "all-labels",
+      items: labelIds,
+    }
+  }
+
+  // 2. Add recurringMode to all existing tasks (default to "dueDate")
+  if (Array.isArray(result.tasks)) {
+    result.tasks = result.tasks.map((task) => {
+      if (typeof task === "object" && task !== null && !Array.isArray(task)) {
+        const taskObj: Record<string, unknown> = {}
+        for (const [key, value] of Object.entries(task)) {
+          taskObj[key] = value
+        }
+        // Add recurringMode if not already present
+        if (!("recurringMode" in taskObj)) {
+          taskObj.recurringMode = "dueDate"
+        }
+        return taskObj
+      }
+      return task
+    })
+  }
+
+  console.log("✓ Transformed ordering to groups system")
+  console.log("✓ Added recurringMode to tasks")
+
+  // Return as Json by serializing/deserializing
+  return JSON.parse(JSON.stringify(result))
+}
+
+export const v040Migration = (dataFile: Json): Json => {
+  console.log("Migrating data file from v0.3.0 to v0.4.0...")
+  console.log("Adding settings structure to data file")
+
+  // Safely handle Json object type
+  if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
+    throw new Error("Migration input must be a JSON object")
+  }
+
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(dataFile)) {
+    result[key] = value
+  }
+
+  // Add default settings structure if not present
+  if (!("settings" in result)) {
+    result.settings = DEFAULT_USER_SETTINGS
+  }
+
+  console.log("✓ Added default settings structure")
+
+  // Return as Json by serializing/deserializing
+  return JSON.parse(JSON.stringify(result))
+}
+
+/**
  * Migration functions for each version upgrade
  * Only define functions for versions that actually require data structure changes
  * Array is ordered sequentially - no need for sorting or complex filtering
+ *
+ * IMMUTABILITY RULE: Once package.json >= migration version, that migration becomes IMMUTABLE.
+ * Current package.json: v0.4.0
+ * Status:
+ * - v030Migration (v0.3.0): 🔒 IMMUTABLE - package.json >= v0.3.0
+ * - v040Migration (v0.4.0): 🔒 IMMUTABLE - package.json >= v0.4.0
+ *
+ * Future migrations (v0.5.0+): ✏️ Can be modified until release
  */
 const migrationFunctions: MigrationStep[] = [
   // Migration from v0.2.0 to v0.3.0 - transform ordering to groups system + add recurringMode
   {
     version: createVersionString("v0.3.0"),
-    migrate: (dataFile: Json): Json => {
-      console.log("Migrating data file from v0.2.0 to v0.3.0...")
-      console.log("Converting ordering system to groups system and adding recurringMode to tasks")
+    migrate: v030Migration,
+  },
 
-      // Safely handle Json object type
-      if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
-        throw new Error("Migration input must be a JSON object")
-      }
-
-      const result: Record<string, unknown> = {}
-      for (const [key, value] of Object.entries(dataFile)) {
-        result[key] = value
-      }
-
-      // 1. Transform ordering.projects array to projectGroups structure
-      if (
-        result.ordering &&
-        typeof result.ordering === "object" &&
-        result.ordering !== null &&
-        !Array.isArray(result.ordering)
-      ) {
-        const ordering: Record<string, unknown> = {}
-        for (const [key, value] of Object.entries(result.ordering)) {
-          ordering[key] = value
-        }
-
-        // Create default project group with items from ordering.projects
-        const projectsArray = Array.isArray(ordering.projects) ? ordering.projects : []
-        result.projectGroups = {
-          type: "project",
-          id: DEFAULT_UUID,
-          name: "All Projects",
-          slug: "all-projects",
-          items: projectsArray, // Array of ProjectIds
-        }
-
-        // Create default label group with items from ordering.labels
-        const labelsArray = Array.isArray(ordering.labels) ? ordering.labels : []
-        result.labelGroups = {
-          type: "label",
-          id: DEFAULT_UUID,
-          name: "All Labels",
-          slug: "all-labels",
-          items: labelsArray, // Array of LabelIds
-        }
-
-        // Remove the old ordering field
-        delete result.ordering
-      } else {
-        // If no ordering exists, create groups from existing projects and labels
-        const projectIds: unknown[] = []
-        if (Array.isArray(result.projects)) {
-          for (const project of result.projects) {
-            if (typeof project === "object" && project !== null && "id" in project) {
-              projectIds.push(project.id)
-            }
-          }
-        }
-
-        const labelIds: unknown[] = []
-        if (Array.isArray(result.labels)) {
-          for (const label of result.labels) {
-            if (typeof label === "object" && label !== null && "id" in label) {
-              labelIds.push(label.id)
-            }
-          }
-        }
-
-        result.projectGroups = {
-          type: "project",
-          id: DEFAULT_UUID,
-          name: "All Projects",
-          slug: "all-projects",
-          items: projectIds,
-        }
-        result.labelGroups = {
-          type: "label",
-          id: DEFAULT_UUID,
-          name: "All Labels",
-          slug: "all-labels",
-          items: labelIds,
-        }
-      }
-
-      // 2. Add recurringMode to all existing tasks (default to "dueDate")
-      if (Array.isArray(result.tasks)) {
-        result.tasks = result.tasks.map((task) => {
-          if (typeof task === "object" && task !== null && !Array.isArray(task)) {
-            const taskObj: Record<string, unknown> = {}
-            for (const [key, value] of Object.entries(task)) {
-              taskObj[key] = value
-            }
-            // Add recurringMode if not already present
-            if (!("recurringMode" in taskObj)) {
-              taskObj.recurringMode = "dueDate"
-            }
-            return taskObj
-          }
-          return task
-        })
-      }
-
-      console.log("✓ Transformed ordering to groups system")
-      console.log("✓ Added recurringMode to tasks")
-
-      // Return as Json by serializing/deserializing
-      return JSON.parse(JSON.stringify(result))
-    },
+  // Migration from v0.3.0 to v0.4.0 - add settings structure to data file
+  {
+    version: createVersionString("v0.4.0"),
+    migrate: v040Migration,
   },
 
   // Future migration placeholders (define as needed):
-  // {
-  //   version: createVersionString("v0.4.0"),
-  //   migrate: (dataFile: Json): Json => {
-  //     console.log("Migrating data to version v0.4.0...")
-  //     return { ...dataFile, /* Add actual data structure changes here */ }
-  //   }
-  // },
   // { version: createVersionString("v0.5.0"), migrate: (dataFile: Json) => { ... } },
   // { version: createVersionString("v0.6.0"), migrate: (dataFile: Json) => { ... } },
   // { version: createVersionString("v0.7.0"), migrate: (dataFile: Json) => { ... } },

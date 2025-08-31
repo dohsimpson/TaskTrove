@@ -15,7 +15,7 @@ import {
   TEST_TASK_ID_3,
 } from "@/lib/utils/test-constants"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
-import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
+import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types/defaults"
 
 // Mock the safe file operations directly
 vi.mock("@/lib/utils/safe-file-operations")
@@ -63,6 +63,7 @@ describe("PATCH /api/projects", () => {
 
     // Mock successful file read with sample data
     const mockFileData = {
+      ...DEFAULT_EMPTY_DATA_FILE,
       projects: [
         {
           id: TEST_PROJECT_ID_1,
@@ -83,12 +84,6 @@ describe("PATCH /api/projects", () => {
           sections: [],
         },
       ],
-      tasks: [],
-      labels: [],
-      ordering: { projects: [], labels: [] },
-      taskGroups: [],
-      projectGroups: DEFAULT_PROJECT_GROUP,
-      labelGroups: DEFAULT_LABEL_GROUP,
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)
@@ -325,6 +320,7 @@ describe("POST /api/projects", () => {
 
     // Mock successful file read with sample data
     const mockFileData = {
+      ...DEFAULT_EMPTY_DATA_FILE,
       projects: [
         {
           id: TEST_PROJECT_ID_1,
@@ -336,12 +332,6 @@ describe("POST /api/projects", () => {
           sections: [],
         },
       ],
-      tasks: [],
-      labels: [],
-      ordering: { projects: [], labels: [] },
-      taskGroups: [],
-      projectGroups: DEFAULT_PROJECT_GROUP,
-      labelGroups: DEFAULT_LABEL_GROUP,
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)
@@ -499,6 +489,7 @@ describe("DELETE /api/projects", () => {
 
     // Mock successful file read with sample data
     const mockFileData = {
+      ...DEFAULT_EMPTY_DATA_FILE,
       projects: [
         {
           id: TEST_PROJECT_ID_1,
@@ -519,12 +510,6 @@ describe("DELETE /api/projects", () => {
           sections: [],
         },
       ],
-      tasks: [],
-      labels: [],
-      ordering: { projects: [], labels: [] },
-      taskGroups: [],
-      projectGroups: DEFAULT_PROJECT_GROUP,
-      labelGroups: DEFAULT_LABEL_GROUP,
     }
 
     mockSafeReadDataFile.mockResolvedValue(mockFileData)

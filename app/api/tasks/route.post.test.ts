@@ -40,19 +40,13 @@ vi.mock("uuid", () => ({
 }))
 
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
-import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
+import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types/defaults"
 
 const mockReadDataFile = vi.mocked(safeReadDataFile)
 const mockWriteDataFile = vi.mocked(safeWriteDataFile)
 
 const mockDataFile = {
-  tasks: [],
-  projects: [],
-  labels: [],
-  ordering: { projects: [], labels: [] },
-  taskGroups: [],
-  projectGroups: DEFAULT_PROJECT_GROUP,
-  labelGroups: DEFAULT_LABEL_GROUP,
+  ...DEFAULT_EMPTY_DATA_FILE,
 }
 
 describe("POST /api/tasks - Task Creation", () => {
@@ -62,7 +56,6 @@ describe("POST /api/tasks - Task Creation", () => {
     mockDataFile.tasks = []
     mockDataFile.projects = []
     mockDataFile.labels = []
-    mockDataFile.ordering = { projects: [], labels: [] }
     mockReadDataFile.mockResolvedValue(mockDataFile)
     mockWriteDataFile.mockResolvedValue(true)
   })

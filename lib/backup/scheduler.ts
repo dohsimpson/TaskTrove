@@ -1,17 +1,19 @@
 import cron from "node-cron"
-import { readFile } from "fs/promises"
 import { runBackup } from "./backup"
-import { DEFAULT_SETTINGS_FILE_PATH, DEFAULT_BACKUP_TIME } from "@/lib/constants/defaults"
-import type { UserSettings } from "@/lib/types"
+import { DEFAULT_BACKUP_TIME } from "@/lib/constants/defaults"
+import { safeReadDataFile } from "@/lib/utils/safe-file-operations"
 
 let isSchedulerInitialized = false
 let currentBackupJob: ReturnType<typeof cron.schedule> | null = null
 
 async function loadBackupTimeFromSettings(): Promise<string> {
   try {
-    const settingsContent = await readFile(DEFAULT_SETTINGS_FILE_PATH, "utf8")
-    const settings: UserSettings = JSON.parse(settingsContent)
-    return settings.integrations?.backupTime || DEFAULT_BACKUP_TIME
+    const dataFile = await safeReadDataFile()
+    if (!dataFile) {
+      console.log(`Could not load data file, using default backup time ${DEFAULT_BACKUP_TIME}`)
+      return DEFAULT_BACKUP_TIME
+    }
+    return dataFile.settings?.integrations?.backupTime || DEFAULT_BACKUP_TIME
   } catch {
     console.log(`Could not load backup time from settings, using default ${DEFAULT_BACKUP_TIME}`)
     return DEFAULT_BACKUP_TIME

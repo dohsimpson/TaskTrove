@@ -17,7 +17,7 @@ import {
   DEFAULT_TASK_COMMENTS,
   DEFAULT_TASK_ATTACHMENTS,
 } from "@/lib/constants/defaults"
-import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
+import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types/defaults"
 
 // Mock external dependencies
 vi.mock("sonner", () => ({
@@ -78,11 +78,8 @@ describe("createMutation Function", () => {
     describe("Label optimistic factory", () => {
       it("should use proper slug generation with collision detection", () => {
         const mockCacheData: DataFile = {
-          tasks: [],
-          projects: [],
+          ...DEFAULT_EMPTY_DATA_FILE,
           labels: [{ id: createLabelId(uuidv4()), name: "Work", slug: "work", color: "#ef4444" }],
-          projectGroups: DEFAULT_PROJECT_GROUP,
-          labelGroups: DEFAULT_LABEL_GROUP,
         }
 
         const labelData = { name: "Work", color: "#10b981" }
@@ -102,7 +99,7 @@ describe("createMutation Function", () => {
     describe("Project optimistic factory", () => {
       it("should use proper slug generation with collision detection", () => {
         const mockCacheData: DataFile = {
-          tasks: [],
+          ...DEFAULT_EMPTY_DATA_FILE,
           projects: [
             {
               id: createProjectId(uuidv4()),
@@ -114,9 +111,6 @@ describe("createMutation Function", () => {
               taskOrder: [],
             },
           ],
-          labels: [],
-          projectGroups: DEFAULT_PROJECT_GROUP,
-          labelGroups: DEFAULT_LABEL_GROUP,
         }
 
         const projectData = { name: "My Project", color: "#10b981" }
@@ -172,11 +166,8 @@ describe("createMutation Function", () => {
         })
 
         const mockOptimisticUpdateFn = vi.fn().mockReturnValue({
+          ...DEFAULT_EMPTY_DATA_FILE,
           tasks: [{ id: "optimistic-task", title: "Optimistic Task" }],
-          projects: [],
-          labels: [],
-          projectGroups: DEFAULT_PROJECT_GROUP,
-          labelGroups: DEFAULT_LABEL_GROUP,
         })
 
         const mockOptimisticDataFactory = vi.fn().mockReturnValue({
@@ -196,11 +187,7 @@ describe("createMutation Function", () => {
 
         // Mock query client methods - using vi.mocked for test mocking
         vi.mocked(mockQueryClient.getQueryData).mockReturnValue({
-          tasks: [],
-          projects: [],
-          labels: [],
-          projectGroups: DEFAULT_PROJECT_GROUP,
-          labelGroups: DEFAULT_LABEL_GROUP,
+          ...DEFAULT_EMPTY_DATA_FILE,
         })
 
         // Act & Assert - Test mutation configuration
@@ -251,11 +238,7 @@ describe("createMutation Function", () => {
       it("should apply optimistic updates immediately", () => {
         // Arrange
         const initialData: DataFile = {
-          tasks: [],
-          projects: [],
-          labels: [],
-          projectGroups: DEFAULT_PROJECT_GROUP,
-          labelGroups: DEFAULT_LABEL_GROUP,
+          ...DEFAULT_EMPTY_DATA_FILE,
         }
 
         const optimisticTask = {
@@ -293,6 +276,7 @@ describe("createMutation Function", () => {
       it("should handle optimistic updates without optimistic data factory", () => {
         // Arrange
         const initialData: DataFile = {
+          ...DEFAULT_EMPTY_DATA_FILE,
           tasks: [
             {
               id: TEST_TASK_ID_1,
@@ -307,10 +291,6 @@ describe("createMutation Function", () => {
               recurringMode: "dueDate",
             },
           ],
-          projects: [],
-          labels: [],
-          projectGroups: DEFAULT_PROJECT_GROUP,
-          labelGroups: DEFAULT_LABEL_GROUP,
         }
 
         const mockOptimisticUpdateFn = (
@@ -357,6 +337,7 @@ describe("createMutation Function", () => {
       it("should provide previous data for rollback scenarios", () => {
         // Arrange
         const previousData: DataFile = {
+          ...DEFAULT_EMPTY_DATA_FILE,
           tasks: [
             {
               id: TEST_TASK_ID_1,
@@ -371,10 +352,6 @@ describe("createMutation Function", () => {
               recurringMode: "dueDate",
             },
           ],
-          projects: [],
-          labels: [],
-          projectGroups: DEFAULT_PROJECT_GROUP,
-          labelGroups: DEFAULT_LABEL_GROUP,
         }
 
         // Act - Simulate rollback scenario
@@ -510,6 +487,7 @@ describe("createMutation Function", () => {
       it("should maintain data consistency during complex operations", () => {
         // Arrange
         const initialState: DataFile = {
+          ...DEFAULT_EMPTY_DATA_FILE,
           tasks: [
             {
               id: TEST_TASK_ID_1,
@@ -547,9 +525,6 @@ describe("createMutation Function", () => {
               taskOrder: [],
             },
           ],
-          labels: [],
-          projectGroups: DEFAULT_PROJECT_GROUP,
-          labelGroups: DEFAULT_LABEL_GROUP,
         }
 
         // Act - Complex update operation
@@ -591,6 +566,7 @@ describe("createMutation Function", () => {
       it("should not create memory leaks with large datasets", () => {
         // Arrange - Simulate large dataset
         const largeDataset: DataFile = {
+          ...DEFAULT_EMPTY_DATA_FILE,
           tasks: Array.from({ length: 1000 }, (_, i) => ({
             id: createTaskId(uuidv4()),
             title: `Task ${i}`,
@@ -618,8 +594,6 @@ describe("createMutation Function", () => {
             slug: `label-${i}`,
             color: "#ef4444",
           })),
-          projectGroups: DEFAULT_PROJECT_GROUP,
-          labelGroups: DEFAULT_LABEL_GROUP,
         }
 
         // Act - Perform optimistic update on large dataset
@@ -662,6 +636,7 @@ describe("createMutation Function", () => {
       it("should handle deep object cloning correctly", () => {
         // Arrange
         const complexData: DataFile = {
+          ...DEFAULT_EMPTY_DATA_FILE,
           tasks: [
             {
               id: TEST_TASK_ID_1,
@@ -676,10 +651,6 @@ describe("createMutation Function", () => {
               attachments: ["att-1"],
             },
           ],
-          projects: [],
-          labels: [],
-          projectGroups: DEFAULT_PROJECT_GROUP,
-          labelGroups: DEFAULT_LABEL_GROUP,
         }
 
         // Act - Optimistic update should not mutate original data

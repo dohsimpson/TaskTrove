@@ -6,22 +6,19 @@ import {
   safeWriteJsonFile,
   safeReadDataFile,
   safeWriteDataFile,
-  safeReadSettingsFile,
-  safeWriteSettingsFile,
 } from "./safe-file-operations"
-import { type DataFile, type SettingsFile } from "@/lib/types"
+import { type DataFile } from "@/lib/types"
 import {
   TEST_TASK_ID_1,
   TEST_PROJECT_ID_1,
   TEST_LABEL_ID_1,
   TEST_SECTION_ID_1,
 } from "@/lib/utils/test-constants"
-import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
 import {
-  DEFAULT_AUTO_BACKUP_ENABLED,
-  DEFAULT_BACKUP_TIME,
-  DEFAULT_MAX_BACKUPS,
-} from "@/lib/constants/defaults"
+  DEFAULT_PROJECT_GROUP,
+  DEFAULT_LABEL_GROUP,
+  DEFAULT_USER_SETTINGS,
+} from "@/lib/types/defaults"
 
 // Mock fs/promises
 vi.mock("fs/promises", () => ({
@@ -347,6 +344,7 @@ describe("safe-file-operations", () => {
       ],
       projectGroups: DEFAULT_PROJECT_GROUP,
       labelGroups: DEFAULT_LABEL_GROUP,
+      settings: DEFAULT_USER_SETTINGS,
     }
 
     it("should successfully read a valid data file", async () => {
@@ -396,6 +394,7 @@ describe("safe-file-operations", () => {
       labels: [],
       projectGroups: DEFAULT_PROJECT_GROUP,
       labelGroups: DEFAULT_LABEL_GROUP,
+      settings: DEFAULT_USER_SETTINGS,
     }
 
     it("should successfully write a valid data file", async () => {
@@ -434,150 +433,6 @@ describe("safe-file-operations", () => {
       const result = await safeWriteDataFile({
         filePath: testFilePath,
         data: testDataFile,
-      })
-
-      expect(result).toBe(false)
-    })
-  })
-
-  describe("safeReadSettingsFile", () => {
-    const validSettingsFile: SettingsFile = {
-      userSettings: {
-        integrations: {
-          imports: {
-            supportedSources: ["ticktick", "todoist"],
-          },
-          autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
-          backupTime: DEFAULT_BACKUP_TIME,
-          maxBackups: DEFAULT_MAX_BACKUPS,
-        },
-      },
-      version: "1.0.0",
-      lastModified: new Date("2024-01-15T10:00:00Z"),
-    }
-
-    it("should successfully read a valid settings file", async () => {
-      const jsonString = JSON.stringify({
-        ...validSettingsFile,
-        lastModified: validSettingsFile.lastModified.toISOString(),
-      })
-
-      mockFs.readFile.mockResolvedValue(jsonString)
-
-      const result = await safeReadSettingsFile({
-        filePath: testFilePath,
-      })
-
-      expect(result).toBeDefined()
-      expect(result.userSettings.integrations.imports.supportedSources).toEqual([
-        "ticktick",
-        "todoist",
-      ])
-      expect(result.version).toBe("1.0.0")
-    })
-
-    it("should return default settings when file reading fails", async () => {
-      mockFs.readFile.mockRejectedValue(new Error("File not found"))
-
-      const result = await safeReadSettingsFile({
-        filePath: testFilePath,
-      })
-
-      expect(result).toBeDefined()
-      expect(result.userSettings.integrations.imports.supportedSources).toEqual([
-        "ticktick",
-        "todoist",
-        "asana",
-        "trello",
-      ])
-      expect(result.version).toBe("1.0.0")
-    })
-
-    it("should return default settings when validation fails", async () => {
-      const invalidSettings = JSON.stringify({
-        userSettings: "invalid", // Should be object
-        version: 123, // Should be string
-      })
-
-      mockFs.readFile.mockResolvedValue(invalidSettings)
-
-      const result = await safeReadSettingsFile({
-        filePath: testFilePath,
-      })
-
-      expect(result).toBeDefined()
-      expect(result.userSettings.integrations.imports.supportedSources).toEqual([
-        "ticktick",
-        "todoist",
-        "asana",
-        "trello",
-      ])
-    })
-
-    it("should use default file path when none provided", async () => {
-      mockFs.readFile.mockRejectedValue(new Error("File not found"))
-
-      await safeReadSettingsFile()
-
-      expect(mockFs.readFile).toHaveBeenCalledWith(
-        expect.stringContaining("settings.json"),
-        "utf-8",
-      )
-    })
-  })
-
-  describe("safeWriteSettingsFile", () => {
-    const testSettingsFile: SettingsFile = {
-      userSettings: {
-        integrations: {
-          imports: {
-            supportedSources: ["ticktick"],
-          },
-          autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
-          backupTime: DEFAULT_BACKUP_TIME,
-          maxBackups: DEFAULT_MAX_BACKUPS,
-        },
-      },
-      version: "1.0.0",
-      lastModified: new Date("2024-01-15T10:00:00Z"),
-    }
-
-    it("should successfully write a valid settings file", async () => {
-      mockFs.writeFile.mockResolvedValue(undefined)
-
-      const result = await safeWriteSettingsFile({
-        filePath: testFilePath,
-        data: testSettingsFile,
-      })
-
-      expect(result).toBe(true)
-      expect(mockFs.writeFile).toHaveBeenCalledWith(
-        testFilePath,
-        expect.stringContaining('"supportedSources": [\n          "ticktick"\n        ]'),
-        "utf-8",
-      )
-    })
-
-    it("should use default file path when none provided", async () => {
-      mockFs.writeFile.mockResolvedValue(undefined)
-
-      await safeWriteSettingsFile({
-        data: testSettingsFile,
-      })
-
-      expect(mockFs.writeFile).toHaveBeenCalledWith(
-        expect.stringContaining("settings.json"),
-        expect.any(String),
-        "utf-8",
-      )
-    })
-
-    it("should fail when write operation fails", async () => {
-      mockFs.writeFile.mockRejectedValue(new Error("Write failed"))
-
-      const result = await safeWriteSettingsFile({
-        filePath: testFilePath,
-        data: testSettingsFile,
       })
 
       expect(result).toBe(false)

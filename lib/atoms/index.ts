@@ -108,12 +108,7 @@ export {
 /**
  * Core settings atoms from settings module
  */
-export {
-  settingsAtom,
-  updateSettingsAtom,
-  settingsQueryAtom,
-  updateSettingsMutationAtom,
-} from "./core/settings"
+export { settingsAtom, updateSettingsAtom, updateSettingsMutationAtom } from "./core/settings"
 
 // =============================================================================
 // CONVENIENCE RE-EXPORTS FOR COMMON ATOMS

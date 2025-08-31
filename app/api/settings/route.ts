@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server"
 import {
-  SettingsFile,
-  SettingsFileSerializationSchema,
-  SettingsFileSerialization,
+  DataFileSerializationSchema,
+  DataFileSerialization,
   UpdateSettingsRequestSchema,
   UpdateSettingsResponse,
   ErrorResponse,
   UserSettings,
 } from "@/lib/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
-import { safeReadSettingsFile, safeWriteSettingsFile } from "@/lib/utils/safe-file-operations"
+import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import {
   withApiLogging,
   logBusinessEvent,
@@ -27,42 +26,38 @@ import {
 /**
  * GET /api/settings
  *
- * Fetches the current user settings from settings.json file.
- * Returns the complete settings structure with defaults if file doesn't exist.
+ * Fetches the current user settings from data.json file.
+ * Returns the complete data file structure including settings.
  */
 async function getSettings(
   request: EnhancedRequest,
-): Promise<NextResponse<SettingsFileSerialization | ErrorResponse>> {
-  const settingsData = await withFileOperationLogging(
-    () => safeReadSettingsFile(),
-    "read-settings-file",
+): Promise<NextResponse<DataFileSerialization | ErrorResponse>> {
+  const fileData = await withFileOperationLogging(
+    () => safeReadDataFile(),
+    "read-data-file",
     request.context,
   )
 
-  if (!settingsData) {
-    return createErrorResponse(
-      "Failed to read settings file",
-      "File reading or validation failed",
-      500,
-    )
+  if (!fileData) {
+    return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
   }
 
   logBusinessEvent(
     "settings_fetched",
     {
-      settingsVersion: settingsData.version,
+      settingsVersion: fileData.version,
     },
     request.context,
   )
 
-  const serializationResult = SettingsFileSerializationSchema.safeParse(settingsData)
+  const serializationResult = DataFileSerializationSchema.safeParse(fileData)
   if (!serializationResult.success) {
-    return createErrorResponse("Failed to serialize settings", "Serialization failed", 500)
+    return createErrorResponse("Failed to serialize data file", "Serialization failed", 500)
   }
 
   const serializedData = serializationResult.data
 
-  return NextResponse.json<SettingsFileSerialization>(serializedData, {
+  return NextResponse.json<DataFileSerialization>(serializedData, {
     headers: {
       "Cache-Control": "no-cache, no-store, must-revalidate",
       Pragma: "no-cache",
@@ -95,35 +90,35 @@ async function updateSettings(
 
   const { settings: partialSettings } = validation.data
 
-  // Read current settings
-  const currentSettingsFile = await withFileOperationLogging(
-    () => safeReadSettingsFile(),
-    "read-settings-file",
+  // Read current data file
+  const fileData = await withFileOperationLogging(
+    () => safeReadDataFile(),
+    "read-data-file",
     request.context,
   )
 
-  if (!currentSettingsFile) {
-    return createErrorResponse("Failed to read current settings", "File reading failed", 500)
+  if (!fileData) {
+    return createErrorResponse("Failed to read data file", "File reading failed", 500)
   }
 
   // Merge partial settings with current settings (simplified to only integrations)
   const updatedSettings: UserSettings = {
     integrations: {
       imports: {
-        ...currentSettingsFile.userSettings.integrations.imports,
+        ...fileData.settings.integrations.imports,
         ...partialSettings.integrations?.imports,
       },
       autoBackupEnabled:
         partialSettings.integrations?.autoBackupEnabled ??
-        currentSettingsFile.userSettings.integrations.autoBackupEnabled ??
+        fileData.settings.integrations.autoBackupEnabled ??
         DEFAULT_AUTO_BACKUP_ENABLED,
       backupTime:
         partialSettings.integrations?.backupTime ??
-        currentSettingsFile.userSettings.integrations.backupTime ??
+        fileData.settings.integrations.backupTime ??
         DEFAULT_BACKUP_TIME,
       maxBackups:
         partialSettings.integrations?.maxBackups ??
-        currentSettingsFile.userSettings.integrations.maxBackups ??
+        fileData.settings.integrations.maxBackups ??
         DEFAULT_MAX_BACKUPS,
     },
     // Future settings will be merged here when implemented:
@@ -134,29 +129,28 @@ async function updateSettings(
     // productivity: { ... },
   }
 
-  // Create updated settings file
-  const updatedSettingsFile: SettingsFile = {
-    userSettings: updatedSettings,
-    version: currentSettingsFile.version,
-    lastModified: new Date(),
+  // Update the data file with new settings
+  const updatedFileData = {
+    ...fileData,
+    settings: updatedSettings,
   }
 
-  // Write updated settings to file
+  // Write updated data to file
   const writeSuccess = await withPerformanceLogging(
-    () => safeWriteSettingsFile({ data: updatedSettingsFile }),
-    "write-settings-file",
+    () => safeWriteDataFile({ data: updatedFileData }),
+    "write-data-file",
     request.context,
     500, // 500ms threshold for slow file writes
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save settings", "File writing failed", 500)
+    return createErrorResponse("Failed to save data", "File writing failed", 500)
   }
 
   logBusinessEvent(
     "settings_updated",
     {
-      settingsVersion: updatedSettingsFile.version,
+      settingsVersion: updatedFileData.version,
       categoriesUpdated: Object.keys(partialSettings),
     },
     request.context,

@@ -789,12 +789,10 @@ export const DataFileSchema = z.object({
 })
 
 export const DataFileSerializationSchema = z.object({
+  ...DataFileSchema.shape,
   tasks: z.array(TaskSerializationSchema),
   projects: z.array(ProjectSerializationSchema),
   labels: z.array(LabelSerializationSchema),
-  projectGroups: ProjectGroupSchema,
-  labelGroups: LabelGroupSchema,
-  version: VersionStringSchema.optional(),
 })
 
 // =============================================================================

@@ -81,6 +81,16 @@ const mockGroupsData: DataFileSerialization = {
   tasks: [],
   projects: [],
   labels: [],
+  settings: {
+    integrations: {
+      imports: {
+        supportedSources: ["ticktick", "todoist", "asana", "trello"],
+      },
+      autoBackupEnabled: true,
+      backupTime: "09:00",
+      maxBackups: 7,
+    },
+  },
 }
 
 describe("Groups Atoms", () => {

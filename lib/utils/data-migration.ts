@@ -213,32 +213,16 @@ export const v040Migration = (dataFile: Json): Json => {
  * Array is ordered sequentially - no need for sorting or complex filtering
  *
  * IMMUTABILITY RULE: Once package.json >= migration version, that migration becomes IMMUTABLE.
- * Current package.json: v0.4.0
- * Status:
- * - v030Migration (v0.3.0): 🔒 IMMUTABLE - package.json >= v0.3.0
- * - v040Migration (v0.4.0): 🔒 IMMUTABLE - package.json >= v0.4.0
- *
- * Future migrations (v0.5.0+): ✏️ Can be modified until release
  */
 const migrationFunctions: MigrationStep[] = [
-  // Migration from v0.2.0 to v0.3.0 - transform ordering to groups system + add recurringMode
   {
     version: createVersionString("v0.3.0"),
     migrate: v030Migration,
   },
-
-  // Migration from v0.3.0 to v0.4.0 - add settings structure to data file
   {
     version: createVersionString("v0.4.0"),
     migrate: v040Migration,
   },
-
-  // Future migration placeholders (define as needed):
-  // { version: createVersionString("v0.5.0"), migrate: (dataFile: Json) => { ... } },
-  // { version: createVersionString("v0.6.0"), migrate: (dataFile: Json) => { ... } },
-  // { version: createVersionString("v0.7.0"), migrate: (dataFile: Json) => { ... } },
-  // { version: createVersionString("v0.8.0"), migrate: (dataFile: Json) => { ... } },
-  // { version: createVersionString("v0.9.0"), migrate: (dataFile: Json) => { ... } },
 ]
 
 /**

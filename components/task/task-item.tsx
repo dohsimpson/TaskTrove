@@ -37,6 +37,7 @@ import { SubtaskPopover } from "./subtask-popover"
 import { PriorityPopover } from "./priority-popover"
 import { ProjectPopover } from "./project-popover"
 import { TaskActionsMenu } from "./task-actions-menu"
+import { FocusTimerButton } from "./focus-timer-button"
 import {
   toggleTaskAtom,
   deleteTaskAtom,
@@ -450,8 +451,9 @@ export function TaskItem({
                   </TaskSchedulePopover>
                 )}
 
-                {/* Actions Menu - first row on smaller viewport */}
-                <div className="lg:hidden">
+                {/* Timer and Actions Menu - first row on smaller viewport */}
+                <div className="lg:hidden flex items-center gap-1">
+                  <FocusTimerButton taskId={task.id} variant="compact" />
                   <TaskActionsMenu
                     task={task}
                     isVisible={actionsMenuVisible}
@@ -577,8 +579,9 @@ export function TaskItem({
                   </ProjectPopover>
                 )}
               </div>
-              {/* Actions Menu - second row on larger viewport */}
-              <div className="hidden lg:block">
+              {/* Timer and Actions Menu - second row on larger viewport */}
+              <div className="hidden lg:flex lg:items-center lg:gap-1">
+                <FocusTimerButton taskId={task.id} variant="compact" />
                 <TaskActionsMenu
                   task={task}
                   isVisible={actionsMenuVisible}
@@ -714,7 +717,8 @@ export function TaskItem({
               </PriorityPopover>
             )}
 
-            {/* Actions menu */}
+            {/* Timer and Actions */}
+            <FocusTimerButton taskId={task.id} variant="kanban" />
             <TaskActionsMenu
               task={task}
               isVisible={actionsMenuVisible}
@@ -1054,14 +1058,17 @@ export function TaskItem({
               )}
             </div>
 
-            {/* Actions Menu - Now on the right */}
-            <TaskActionsMenu
-              task={task}
-              isVisible={actionsMenuVisible}
-              onDeleteClick={() => deleteTask(task.id)}
-              open={actionsMenuOpen}
-              onOpenChange={handleActionsMenuChange}
-            />
+            {/* Timer and Actions - Now on the right */}
+            <div className="flex items-center gap-1">
+              <FocusTimerButton taskId={task.id} variant="default" />
+              <TaskActionsMenu
+                task={task}
+                isVisible={actionsMenuVisible}
+                onDeleteClick={() => deleteTask(task.id)}
+                open={actionsMenuOpen}
+                onOpenChange={handleActionsMenuChange}
+              />
+            </div>
           </div>
 
           {/* Description - Responsive width, hide on very small screens when empty */}

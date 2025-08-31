@@ -9,6 +9,7 @@ import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import type { Task } from "@/lib/types"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+import { FocusTimerDisplay } from "@/components/task/focus-timer-display"
 
 interface PageFooterProps {
   className?: string
@@ -130,28 +131,8 @@ export function PageFooter({ className }: PageFooterProps) {
         </ContentPopover>
       </div>
 
-      {/* Right: Pomodoro timer */}
-      {/* <div className="flex items-center gap-2">
-        {isTimerRunning ? (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Timer className="w-4 h-4 text-orange-500" />
-              <span className="font-mono font-medium text-foreground">{timerDisplay}</span>
-            </div>
-            <span className="text-xs max-w-32 truncate">{currentTaskTitle}</span>
-          </div>
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handlePomodoroClick}
-            className="flex items-center gap-1 h-7 px-2 text-muted-foreground hover:text-foreground"
-          >
-            <Timer className="w-4 h-4" />
-            <span className="text-xs">Pomodoro</span>
-          </Button>
-        )}
-      </div> */}
+      {/* Right: Focus timer */}
+      <FocusTimerDisplay />
     </div>
   )
 }

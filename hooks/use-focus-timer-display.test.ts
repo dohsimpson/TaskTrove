@@ -1,0 +1,174 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { renderHook, act } from "@testing-library/react"
+import { useFocusTimerDisplay } from "./use-focus-timer-display"
+import type { Task } from "@/lib/types"
+import type { FocusTimer } from "@/lib/atoms/ui/focus-timer"
+import { createTaskId } from "@/lib/types"
+import { v4 as uuidv4 } from "uuid"
+
+// Mock the atoms and their values
+const mockActiveTimer = vi.fn()
+const mockStatus = vi.fn()
+const mockTask = vi.fn()
+const mockStopTimer = vi.fn()
+
+// Mock jotai hooks
+vi.mock("jotai", () => ({
+  useAtomValue: vi.fn((atom: unknown) => {
+    const atomStr = String(atom)
+    if (atomStr.includes("activeFocusTimer") || atom === "activeFocusTimerAtom") {
+      return mockActiveTimer()
+    }
+    if (atomStr.includes("focusTimerStatus") || atom === "focusTimerStatusAtom") {
+      return mockStatus()
+    }
+    if (atomStr.includes("activeFocusTask") || atom === "activeFocusTaskAtom") {
+      return mockTask()
+    }
+    return null
+  }),
+  useSetAtom: vi.fn((atom: unknown) => {
+    const atomStr = String(atom)
+    if (atomStr.includes("stopFocusTimer") || atom === "stopFocusTimerAtom") {
+      return mockStopTimer
+    }
+    return vi.fn()
+  }),
+}))
+
+// Mock the atoms module directly
+vi.mock("@/lib/atoms", () => ({
+  activeFocusTimerAtom: "activeFocusTimerAtom",
+  focusTimerStatusAtom: "focusTimerStatusAtom",
+  activeFocusTaskAtom: "activeFocusTaskAtom",
+  stopFocusTimerAtom: "stopFocusTimerAtom",
+  formatElapsedTime: vi.fn((ms: number) => {
+    const seconds = Math.floor(ms / 1000)
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
+  }),
+}))
+
+describe("useFocusTimerDisplay", () => {
+  const taskId = createTaskId(uuidv4())
+
+  const mockTimer: FocusTimer = {
+    taskId,
+    startedAt: new Date("2024-01-01T12:00:00Z").toISOString(),
+    elapsed: 0,
+  }
+
+  const mockTaskData: Task = {
+    id: taskId,
+    title: "Test Task",
+    description: "",
+    completed: false,
+    priority: 2,
+    labels: [],
+    subtasks: [],
+    comments: [],
+    attachments: [],
+    createdAt: new Date("2024-01-01T10:00:00Z"),
+    recurringMode: "dueDate",
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2024-01-01T12:01:00Z"))
+
+    // Reset all mocks
+    mockActiveTimer.mockReturnValue(null)
+    mockStatus.mockReturnValue("stopped")
+    mockTask.mockReturnValue(null)
+    mockStopTimer.mockClear()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it("returns initial state when no timer is active", () => {
+    mockActiveTimer.mockReturnValue(null)
+    mockStatus.mockReturnValue("stopped")
+    mockTask.mockReturnValue(null)
+
+    const { result } = renderHook(() => useFocusTimerDisplay())
+
+    expect(result.current.activeTimer).toBeNull()
+    expect(result.current.status).toBe("stopped")
+    expect(result.current.task).toBeNull()
+    expect(result.current.displayTime).toBe("0:00")
+  })
+
+  it("returns active timer data when timer is running", () => {
+    mockActiveTimer.mockReturnValue(mockTimer)
+    mockStatus.mockReturnValue("running")
+    mockTask.mockReturnValue(mockTaskData)
+
+    const { result } = renderHook(() => useFocusTimerDisplay())
+
+    expect(result.current.activeTimer).toEqual(mockTimer)
+    expect(result.current.status).toBe("running")
+    expect(result.current.task).toEqual(mockTaskData)
+  })
+
+  it("stops timer when task is completed", () => {
+    // Setup: timer is running for an incomplete task
+    mockActiveTimer.mockReturnValue(mockTimer)
+    mockStatus.mockReturnValue("running")
+    mockTask.mockReturnValue(mockTaskData)
+
+    const { rerender } = renderHook(() => useFocusTimerDisplay())
+
+    // Verify timer is not stopped initially
+    expect(mockStopTimer).not.toHaveBeenCalled()
+
+    // Act: mark task as completed
+    const completedTask = { ...mockTaskData, completed: true }
+    mockTask.mockReturnValue(completedTask)
+
+    act(() => {
+      rerender()
+    })
+
+    // Assert: stopTimer should be called with the task ID
+    expect(mockStopTimer).toHaveBeenCalledWith(taskId)
+  })
+
+  it("does not stop timer when task is completed but timer is already stopped", () => {
+    // Setup: timer exists but is already stopped
+    mockActiveTimer.mockReturnValue(mockTimer)
+    mockStatus.mockReturnValue("stopped")
+    mockTask.mockReturnValue({ ...mockTaskData, completed: true })
+
+    renderHook(() => useFocusTimerDisplay())
+
+    // Assert: stopTimer should not be called since status is already "stopped"
+    expect(mockStopTimer).not.toHaveBeenCalled()
+  })
+
+  it("does not stop timer when no active timer exists", () => {
+    // Setup: no active timer but completed task
+    mockActiveTimer.mockReturnValue(null)
+    mockStatus.mockReturnValue("stopped")
+    mockTask.mockReturnValue({ ...mockTaskData, completed: true })
+
+    renderHook(() => useFocusTimerDisplay())
+
+    // Assert: stopTimer should not be called since there's no active timer
+    expect(mockStopTimer).not.toHaveBeenCalled()
+  })
+
+  it("does not stop timer when task is not completed", () => {
+    // Setup: timer is running for an incomplete task
+    mockActiveTimer.mockReturnValue(mockTimer)
+    mockStatus.mockReturnValue("running")
+    mockTask.mockReturnValue(mockTaskData) // completed: false
+
+    renderHook(() => useFocusTimerDisplay())
+
+    // Assert: stopTimer should not be called since task is not completed
+    expect(mockStopTimer).not.toHaveBeenCalled()
+  })
+})

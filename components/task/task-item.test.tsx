@@ -19,7 +19,13 @@ import {
   TEST_SUBTASK_ID_2,
 } from "@/lib/utils/test-constants"
 
-// Mock Jotai
+// Mock focus timer functions (simplified since we mock the component)
+const mockIsTaskTimerActive = vi.fn(() => false)
+const mockStartFocusTimer = vi.fn()
+const mockPauseFocusTimer = vi.fn()
+const mockStopFocusTimer = vi.fn()
+
+// Mock Jotai (simplified)
 vi.mock("jotai", () => ({
   useAtomValue: vi.fn(),
   useSetAtom: vi.fn(),
@@ -55,6 +61,26 @@ vi.mock("@/lib/atoms", () => ({
   tasksAtom: { toString: () => "tasksAtom" },
   sortedProjectsAtom: { toString: () => "sortedProjectsAtom" },
   projectsAtom: { toString: () => "projectsAtom" },
+  // Focus timer atoms - use simple string identifiers since logic is handled in jotai mock
+  focusTimerStateAtom: "focusTimerStateAtom",
+  activeFocusTimerAtom: "activeFocusTimerAtom",
+  activeFocusTaskAtom: "activeFocusTaskAtom",
+  isTaskTimerActiveAtom: "isTaskTimerActiveAtom",
+  isAnyTimerRunningAtom: "isAnyTimerRunningAtom",
+  currentFocusTimerElapsedAtom: "currentFocusTimerElapsedAtom",
+  focusTimerDisplayAtom: "focusTimerDisplayAtom",
+  focusTimerStatusAtom: "focusTimerStatusAtom",
+  startFocusTimerAtom: "startFocusTimerAtom",
+  pauseFocusTimerAtom: "pauseFocusTimerAtom",
+  stopFocusTimerAtom: "stopFocusTimerAtom",
+  stopAllFocusTimersAtom: "stopAllFocusTimersAtom",
+  focusTimerAtoms: "focusTimerAtoms",
+  formatElapsedTime: vi.fn((ms: number) => {
+    const seconds = Math.floor(ms / 1000)
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
+  }),
 }))
 
 vi.mock("@/lib/atoms/core/labels", () => ({
@@ -62,6 +88,28 @@ vi.mock("@/lib/atoms/core/labels", () => ({
   addLabelAtom: { toString: () => "addLabelAtom" },
   labelsFromIdsAtom: { toString: () => "labelsFromIdsAtom" },
   labelsAtom: { toString: () => "labelsAtom" },
+}))
+
+// Mock FocusTimerButton component
+vi.mock("./focus-timer-button", () => ({
+  FocusTimerButton: ({
+    taskId,
+    variant,
+    className,
+  }: {
+    taskId: string
+    variant?: string
+    className?: string
+  }) => (
+    <div
+      data-testid="focus-timer-button"
+      data-task-id={taskId}
+      data-variant={variant}
+      className={className}
+    >
+      Focus Timer
+    </div>
+  ),
 }))
 
 // Mock component interfaces
@@ -726,6 +774,10 @@ describe("TaskItem", () => {
       if (atomString?.includes("sortedProjects") || atomString?.includes("projectsAtom")) {
         return mockProjects
       }
+      // Return isTaskTimerActive function for focus timer compatibility
+      if (atomString?.includes("isTaskTimerActive")) {
+        return mockIsTaskTimerActive
+      }
       return []
     })
 
@@ -754,6 +806,16 @@ describe("TaskItem", () => {
       }
       if (atomString?.includes("addLabel")) {
         return mockAddLabel
+      }
+      // Focus timer action atoms
+      if (atomString?.includes("startFocusTimer") || atom === "startFocusTimerAtom") {
+        return mockStartFocusTimer
+      }
+      if (atomString?.includes("pauseFocusTimer") || atom === "pauseFocusTimerAtom") {
+        return mockPauseFocusTimer
+      }
+      if (atomString?.includes("stopFocusTimer") || atom === "stopFocusTimerAtom") {
+        return mockStopFocusTimer
       }
       return vi.fn()
     })
@@ -842,6 +904,10 @@ describe("TaskItem", () => {
         if (atomString?.includes("sortedProjects")) {
           return mockProjects
         }
+        // Return isTaskTimerActive function for focus timer compatibility
+        if (atomString?.includes("isTaskTimerActive")) {
+          return mockIsTaskTimerActive
+        }
         return []
       })
 
@@ -909,6 +975,10 @@ describe("TaskItem", () => {
         }
         if (atomString?.includes("sortedProjects")) {
           return mockProjects
+        }
+        // Return isTaskTimerActive function for focus timer compatibility
+        if (atomString?.includes("isTaskTimerActive")) {
+          return mockIsTaskTimerActive
         }
         return []
       })
@@ -2126,8 +2196,8 @@ describe("TaskItem", () => {
         // There should be two action menus (mobile and desktop)
         expect(actionMenus).toHaveLength(2)
 
-        // Find the desktop actions menu (hidden lg:block)
-        const desktopActionsMenu = actionMenus.find((menu) => menu.closest(".hidden.lg\\:block"))
+        // Find the desktop actions menu (hidden lg:flex)
+        const desktopActionsMenu = actionMenus.find((menu) => menu.closest(".hidden.lg\\:flex"))
         expect(desktopActionsMenu).toBeTruthy()
 
         // The desktop actions menu should be in the secondary metadata section (second row)

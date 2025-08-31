@@ -8,6 +8,26 @@ vi.mock("@/lib/atoms", () => ({
   completedTasksTodayAtom: { toString: () => "completedTasksTodayAtom" },
   todayTasksAtom: { toString: () => "todayTasksAtom" },
   toggleTaskAtom: { toString: () => "toggleTaskAtom" },
+  // Focus timer atoms
+  focusTimerStateAtom: { toString: () => "focusTimerStateAtom" },
+  activeFocusTimerAtom: { toString: () => "activeFocusTimerAtom" },
+  activeFocusTaskAtom: { toString: () => "activeFocusTaskAtom" },
+  isTaskTimerActiveAtom: vi.fn(() => vi.fn(() => false)),
+  isAnyTimerRunningAtom: { toString: () => "isAnyTimerRunningAtom" },
+  currentFocusTimerElapsedAtom: { toString: () => "currentFocusTimerElapsedAtom" },
+  focusTimerDisplayAtom: { toString: () => "focusTimerDisplayAtom" },
+  focusTimerStatusAtom: { toString: () => "focusTimerStatusAtom" },
+  startFocusTimerAtom: { toString: () => "startFocusTimerAtom" },
+  pauseFocusTimerAtom: { toString: () => "pauseFocusTimerAtom" },
+  stopFocusTimerAtom: { toString: () => "stopFocusTimerAtom" },
+  stopAllFocusTimersAtom: { toString: () => "stopAllFocusTimersAtom" },
+  focusTimerAtoms: { toString: () => "focusTimerAtoms" },
+  formatElapsedTime: vi.fn((ms: number) => {
+    const seconds = Math.floor(ms / 1000)
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
+  }),
 }))
 import type { Task } from "@/lib/types"
 import { TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3 } from "@/lib/utils/test-constants"

@@ -446,7 +446,7 @@ export function EnhancedHighlightedInput({
       return (
         <span
           key={index}
-          className={cn(tokenStyle, "cursor-pointer hover:opacity-80 transition-opacity")}
+          className={cn(tokenStyle, "opacity-60")} // Apply opacity to show blinking cursor behind it
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
@@ -480,7 +480,7 @@ export function EnhancedHighlightedInput({
         aria-owns="enhanced-quick-add-autocomplete"
         aria-label="Quick add task input with natural language parsing"
         aria-describedby="enhanced-quick-add-help"
-        className={cn(SHARED_TEXT_CLASSES, "text-transparent z-10 bg-transparent")}
+        className={cn(SHARED_TEXT_CLASSES, "bg-transparent")}
         onInput={handleInput}
         onKeyDown={handleKeyDown}
         onFocus={() => setIsFocused(true)}

@@ -62,10 +62,9 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       )
       const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
 
-      // ContentEditable should be above overlay
-      expect(contentEditable).toHaveClass("z-10")
       expect(overlay).toHaveClass("z-0")
       expect(overlay).toHaveClass("absolute")
+      expect(contentEditable).not.toHaveClass("z-10")
     })
 
     it("should have correct transparency classes", () => {
@@ -79,10 +78,8 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       )
       const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
 
-      // ContentEditable text should be transparent
-      expect(contentEditable).toHaveClass("text-transparent")
-
-      // Overlay should not be transparent
+      expect(contentEditable).not.toHaveClass("text-transparent")
+      expect(contentEditable).toHaveClass("bg-transparent")
       expect(overlay).not.toHaveClass("text-transparent")
     })
   })
@@ -100,8 +97,8 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
         // Critical: No horizontal padding that shifts text position
         expect(token).not.toHaveClass("px-0.5", "px-1", "p-1", "p-0.5")
 
-        // Should still have visual styling and interaction
-        expect(token).toHaveClass("cursor-pointer")
+        expect(token).toHaveClass("opacity-60")
+        expect(token).not.toHaveClass("cursor-pointer")
       })
     })
 
@@ -250,8 +247,8 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
         HTMLElement,
       )
 
-      // Should have text transparency and z-index classes
-      expect(contentEditable).toHaveClass("text-transparent", "z-10", "bg-transparent")
+      expect(contentEditable).toHaveClass("bg-transparent")
+      expect(contentEditable).not.toHaveClass("text-transparent", "z-10")
     })
   })
 
@@ -301,8 +298,8 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
         )
         const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
 
-        // Should maintain core alignment classes regardless of parent font size
-        expect(contentEditable).toHaveClass("p-3", "text-transparent", "z-10")
+        expect(contentEditable).toHaveClass("p-3", "bg-transparent")
+        expect(contentEditable).not.toHaveClass("text-transparent", "z-10")
         expect(overlay).toHaveClass("absolute", "inset-0", "p-3", "z-0")
       })
     })
@@ -323,8 +320,8 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       expect(contentEditable).toHaveAttribute("role", "combobox")
       expect(contentEditable).toHaveAttribute("aria-expanded")
 
-      // ARIA should not affect layout classes
-      expect(contentEditable).toHaveClass("text-transparent", "z-10")
+      expect(contentEditable).toHaveClass("bg-transparent")
+      expect(contentEditable).not.toHaveClass("text-transparent", "z-10")
     })
 
     it("should have screen reader help with proper classes", () => {

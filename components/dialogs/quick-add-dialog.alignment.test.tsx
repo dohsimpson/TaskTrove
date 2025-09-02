@@ -449,9 +449,8 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
       expect(contentEditable).toHaveClass("p-3")
       expect(contentEditable).toHaveClass("break-words")
       expect(contentEditable).toHaveClass("whitespace-break-spaces")
-      expect(contentEditable).toHaveClass("text-transparent")
-      expect(contentEditable).toHaveClass("z-10")
-      expect(contentEditable).toHaveClass("z-10")
+      expect(contentEditable).not.toHaveClass("text-transparent")
+      expect(contentEditable).not.toHaveClass("z-10")
 
       // Should NOT have conflicting classes
       expect(contentEditable).not.toHaveClass("px-0")
@@ -529,9 +528,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
         expect(token).not.toHaveClass("px-1")
         expect(token).not.toHaveClass("rounded")
 
-        // Should still have interaction styles
-        expect(token).toHaveClass("cursor-pointer")
-        expect(token).toHaveClass("hover:opacity-80")
+        expect(token).toHaveClass("opacity-60")
+        expect(token).not.toHaveClass("cursor-pointer")
+        expect(token).not.toHaveClass("hover:opacity-80")
       })
     })
 
@@ -572,7 +571,8 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
       const inputContainer = contentEditable.parentElement
 
       expect(inputContainer).toHaveClass("relative")
-      expect(contentEditable).toHaveClass("z-10", "p-3")
+      expect(contentEditable).toHaveClass("p-3", "bg-transparent")
+      expect(contentEditable).not.toHaveClass("z-10")
     })
 
     it("should handle focus states correctly within dialog", () => {
@@ -588,9 +588,8 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
 
       // Focus should not affect alignment classes
       contentEditable.focus()
-      expect(contentEditable).toHaveClass("text-transparent")
-      expect(contentEditable).toHaveClass("z-10")
-      expect(contentEditable).toHaveClass("z-10")
+      expect(contentEditable).not.toHaveClass("text-transparent")
+      expect(contentEditable).not.toHaveClass("z-10")
     })
   })
 
@@ -612,8 +611,7 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
         expect(autocompleteDropdown).toHaveClass("z-20")
 
         // Should not affect the input's position
-        expect(contentEditable).toHaveClass("z-10")
-        expect(contentEditable).toHaveClass("z-10")
+        expect(contentEditable).not.toHaveClass("z-10")
       }
     })
   })
@@ -631,9 +629,8 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
 
       // Parsed elements are rendered but may not show as badges in test environment
       // The important thing is that input alignment is not affected
-      expect(contentEditable).toHaveClass("text-transparent")
-      expect(contentEditable).toHaveClass("z-10")
-      expect(contentEditable).toHaveClass("z-10")
+      expect(contentEditable).not.toHaveClass("text-transparent")
+      expect(contentEditable).not.toHaveClass("z-10")
 
       // Input container should maintain proper structure
       const inputContainer = contentEditable.parentElement
@@ -689,7 +686,7 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
 
       // Overlay should maintain position during parsing delay
       expect(overlay).toHaveClass("absolute", "inset-0", "z-0")
-      expect(contentEditable).toHaveClass("z-10")
+      expect(contentEditable).not.toHaveClass("z-10")
     })
   })
 
@@ -721,7 +718,7 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
       // Should maintain alignment with special characters
       const overlay = contentEditable.parentElement?.querySelector(".absolute.inset-0")
       expect(overlay).toBeInTheDocument()
-      expect(contentEditable).toHaveClass("text-transparent")
+      expect(contentEditable).not.toHaveClass("text-transparent")
     })
 
     it("should recover gracefully from any potential CSS conflicts", () => {
@@ -731,8 +728,8 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
 
       // Verify the critical CSS classes are present (not computed styles in test env)
       expect(contentEditable).toHaveClass("p-3") // Consistent padding
-      expect(contentEditable).toHaveClass("text-transparent") // Proper transparency
-      expect(contentEditable).toHaveClass("z-10") // Proper positioning
+      expect(contentEditable).not.toHaveClass("text-transparent") // Cursor visibility fix
+      expect(contentEditable).not.toHaveClass("z-10") // Cursor visibility fix
 
       // Should not have conflicting classes
       expect(contentEditable).not.toHaveClass("px-0")

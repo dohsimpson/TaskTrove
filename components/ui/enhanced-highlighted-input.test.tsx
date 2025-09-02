@@ -104,10 +104,9 @@ describe("EnhancedHighlightedInput", () => {
         "p-3",
         "break-words",
         "whitespace-break-spaces",
-        "text-transparent",
-        "z-10",
         "bg-transparent",
       )
+      expect(contentEditable).not.toHaveClass("text-transparent", "z-10")
 
       // Overlay should have exact classes from working example
       expect(overlay).toHaveClass(
@@ -137,10 +136,10 @@ describe("EnhancedHighlightedInput", () => {
         expect(token).not.toHaveClass("p-1")
         expect(token).not.toHaveClass("p-2")
 
-        // Should have interaction classes only
-        expect(token).toHaveClass("cursor-pointer")
-        expect(token).toHaveClass("hover:opacity-80")
-        expect(token).toHaveClass("transition-opacity")
+        expect(token).toHaveClass("opacity-60")
+        expect(token).not.toHaveClass("cursor-pointer")
+        expect(token).not.toHaveClass("hover:opacity-80")
+        expect(token).not.toHaveClass("transition-opacity")
       })
     })
 
@@ -326,8 +325,7 @@ describe("EnhancedHighlightedInput", () => {
       expect(contentEditable).toHaveAttribute("aria-controls", "enhanced-quick-add-autocomplete")
       expect(contentEditable).toHaveAttribute("aria-describedby", "enhanced-quick-add-help")
 
-      // ARIA attributes should not affect styling
-      expect(contentEditable).toHaveClass("text-transparent")
+      expect(contentEditable).not.toHaveClass("text-transparent")
     })
 
     it("should provide screen reader help text without affecting layout", () => {
@@ -401,8 +399,7 @@ describe("EnhancedHighlightedInput", () => {
       await user.tab()
       expect(contentEditable).not.toHaveFocus()
 
-      // Styles should remain consistent
-      expect(contentEditable).toHaveClass("text-transparent", "z-10")
+      expect(contentEditable).not.toHaveClass("text-transparent", "z-10")
     })
 
     it("should show/hide placeholder based on focus without layout shift", async () => {
@@ -459,7 +456,8 @@ describe("EnhancedHighlightedInput", () => {
       const overlay = contentEditable.parentElement?.querySelector(".absolute.inset-0")
       expect(overlay).toBeInTheDocument()
       expect(overlay).toHaveClass("absolute", "inset-0", "p-3", "z-0")
-      expect(contentEditable).toHaveClass("z-10", "p-3", "text-transparent")
+      expect(contentEditable).toHaveClass("p-3", "bg-transparent")
+      expect(contentEditable).not.toHaveClass("z-10", "text-transparent")
 
       // Should have tokens rendered (may be 0 in test environment, which is fine)
       const tokens = overlay?.querySelectorAll('span[class*="bg-"]')
@@ -467,7 +465,8 @@ describe("EnhancedHighlightedInput", () => {
       // All tokens (if any) should maintain proper styling
       tokens?.forEach((token) => {
         expect(token).not.toHaveClass("px-0.5")
-        expect(token).toHaveClass("cursor-pointer")
+        expect(token).toHaveClass("opacity-60")
+        expect(token).not.toHaveClass("cursor-pointer")
       })
     })
 

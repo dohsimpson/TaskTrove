@@ -45,8 +45,8 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       expect(contentEditable).toHaveClass("p-3")
       expect(contentEditable).toHaveClass("break-words")
       expect(contentEditable).toHaveClass("whitespace-break-spaces")
-      expect(contentEditable).toHaveClass("text-transparent")
-      expect(contentEditable).toHaveClass("z-10")
+      expect(contentEditable).not.toHaveClass("text-transparent")
+      expect(contentEditable).not.toHaveClass("z-10")
       expect(contentEditable).toHaveClass("bg-transparent")
     })
 
@@ -134,8 +134,8 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
         expect(span).not.toHaveClass("rounded-sm")
         expect(span).not.toHaveClass("rounded-md")
 
-        // Should still have interaction classes
-        expect(span).toHaveClass("cursor-pointer")
+        expect(span).toHaveClass("opacity-60")
+        expect(span).not.toHaveClass("cursor-pointer")
       })
     })
 
@@ -190,8 +190,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
       expect(overlay).toBeTruthy()
 
-      // ContentEditable should be above overlay
-      expect(contentEditable).toHaveClass("z-10")
+      expect(contentEditable).not.toHaveClass("z-10")
       expect(overlay).toHaveClass("z-0")
     })
 
@@ -246,7 +245,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
         HTMLElement,
       )
       expect(contentEditable).toBeTruthy()
-      expect(contentEditable).toHaveClass("text-transparent")
+      expect(contentEditable).not.toHaveClass("text-transparent")
     })
 
     it("should not have text transparency on overlay", () => {
@@ -339,9 +338,8 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       expect(contentEditable).toHaveAttribute("aria-controls")
       expect(contentEditable).toHaveAttribute("aria-label")
 
-      // ARIA attributes should not affect visual classes
-      expect(contentEditable).toHaveClass("text-transparent")
-      expect(contentEditable).toHaveClass("z-10")
+      expect(contentEditable).not.toHaveClass("text-transparent")
+      expect(contentEditable).not.toHaveClass("z-10")
     })
 
     it("should have screen reader help text properly positioned", () => {
@@ -377,8 +375,8 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       )
       expect(contentEditable).toBeTruthy()
 
-      // Should have our fixed classes
-      expect(contentEditable).toHaveClass("p-3", "text-transparent")
+      expect(contentEditable).toHaveClass("p-3", "bg-transparent")
+      expect(contentEditable).not.toHaveClass("text-transparent")
 
       // Should not be possible to override these with className prop
       // (component doesn't accept className anymore)
@@ -402,14 +400,16 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
         "p-3",
         "break-words",
         "whitespace-break-spaces",
-        "text-transparent",
-        "z-10",
         "bg-transparent",
       ]
 
       expectedClasses.forEach((className) => {
         expect(contentEditable).toHaveClass(className)
       })
+
+      // These classes were removed for cursor visibility
+      expect(contentEditable).not.toHaveClass("text-transparent")
+      expect(contentEditable).not.toHaveClass("z-10")
     })
 
     it("should maintain the exact working overlay class combination", () => {

@@ -10,6 +10,9 @@ import { Toaster } from "@/components/ui/custom/toaster"
 export const metadata: Metadata = {
   title: "TaskTrove",
   description: "Task management application",
+  appleWebApp: {
+    title: "TaskTrove",
+  },
 }
 
 export default function RootLayout({

@@ -6,8 +6,8 @@ import { v4 as uuidv4 } from "uuid"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
+import { TimeEstimationButton } from "@/components/ui/custom/time-estimation-button"
 import { LabelManagementPopover } from "./label-management-popover"
 import {
   Calendar,
@@ -17,7 +17,6 @@ import {
   CheckSquare,
   Repeat,
   Star,
-  X,
   Folder,
   Tag,
   AlertTriangle,
@@ -56,6 +55,7 @@ import { projectsAtom } from "@/lib/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
 import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } from "@/lib/types"
 import { INBOX_PROJECT_ID, createTaskId, createLabelId } from "@/lib/types"
+import { TimeEstimationPicker } from "../ui/custom/time-estimation-picker"
 
 // Responsive width for metadata columns to ensure consistent alignment
 const METADATA_COLUMN_WIDTH = "w-auto sm:w-20 md:w-24"
@@ -82,6 +82,8 @@ export function TaskItem({
   const [labelsExpanded, setLabelsExpanded] = useState(false)
   const [isDescriptionEditing, setIsDescriptionEditing] = useState(false)
   const [isDefaultDescriptionEditing, setIsDefaultDescriptionEditing] = useState(false)
+  // Subtask estimation picker state
+  const [showEstimationPicker, setShowEstimationPicker] = useState(false)
 
   // Get task data from atoms - MUST be called before any conditional returns
   const allTasks = useAtomValue(tasksAtom)
@@ -217,6 +219,25 @@ export function TaskItem({
     )
 
     updateSubtasks(updatedSubtasks)
+  }
+
+  const handleSubtaskEstimationUpdate = (estimation: number) => {
+    if (variant !== "subtask") return
+
+    const parent = parentTask || quickAddTask
+    if (!parent || !parent.subtasks) return
+
+    const updatedSubtasks = parent.subtasks.map((subtask) =>
+      String(subtask.id) === String(task.id)
+        ? { ...subtask, estimation: estimation > 0 ? estimation : undefined }
+        : subtask,
+    )
+
+    updateSubtasks(updatedSubtasks)
+  }
+
+  const handleEstimationMenuClick = () => {
+    setShowEstimationPicker(true)
   }
 
   const formatDueDate = (task: { dueDate?: Date | null; dueTime?: Date | null }) => {
@@ -953,17 +974,26 @@ export function TaskItem({
 
   // Subtask variant render - minimal layout for subtasks
   if (variant === "subtask") {
+    // Get current subtask's estimation from parent
+    const parent = parentTask || quickAddTask
+    const currentSubtask = parent?.subtasks?.find((s) => String(s.id) === String(taskId))
+    const currentEstimation = currentSubtask?.estimation || 0
+
     return (
       <div
         className={cn(
-          "group/task flex items-center gap-3 rounded-md transition-colors p-2 bg-muted/50 hover:bg-muted/70",
+          "group/task flex items-center rounded-md transition-colors p-2 bg-muted/50 hover:bg-muted/70",
           task.completed && "opacity-60",
           className,
         )}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <TaskCheckbox checked={task.completed} onCheckedChange={() => handleSubtaskToggle()} />
+        <TaskCheckbox
+          checked={task.completed}
+          onCheckedChange={() => handleSubtaskToggle()}
+          className="mr-3"
+        />
         <EditableDiv
           as="span"
           value={task.title}
@@ -973,20 +1003,39 @@ export function TaskItem({
             }
           }}
           className={cn(
-            "flex-1 text-sm leading-5 cursor-text hover:bg-accent/80 px-2 py-1 rounded transition-colors border border-transparent hover:border-accent",
+            "flex-1 text-sm leading-5 cursor-text hover:bg-accent/80 px-2 py-1 rounded transition-colors border border-transparent hover:border-accent mr-3",
             task.completed ? "line-through text-muted-foreground" : "text-foreground",
           )}
           data-action="edit"
           allowEmpty={false}
         />
-        <Button
-          variant="link"
-          size="icon"
-          className="h-6 w-6 hover:text-red-600 hover:no-underline"
-          onClick={handleSubtaskDelete}
-        >
-          <X className="h-3 w-3" />
-        </Button>
+        <div className="h-6 flex items-center gap-1">
+          {currentEstimation > 0 && (
+            <TimeEstimationButton
+              value={currentEstimation}
+              onChange={() => setShowEstimationPicker(true)}
+              className="h-6 w-6"
+            />
+          )}
+          <TaskActionsMenu
+            task={task}
+            isVisible={actionsMenuVisible}
+            onDeleteClick={handleSubtaskDelete}
+            onEstimationClick={handleEstimationMenuClick}
+            variant="subtask"
+            open={actionsMenuOpen}
+            onOpenChange={handleActionsMenuChange}
+          />
+        </div>
+
+        {/* Hidden TimeEstimationButton to be triggered programmatically */}
+        <TimeEstimationPicker
+          sr-only
+          onChange={handleSubtaskEstimationUpdate}
+          trigger={<div></div>}
+          open={showEstimationPicker}
+          setOpen={setShowEstimationPicker}
+        />
       </div>
     )
   }

@@ -7,6 +7,7 @@ import { TaskItem } from "./task-item"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { TimeEstimationButton } from "@/components/ui/custom/time-estimation-button"
 import { CheckSquare, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { updateTaskAtom, tasksAtom } from "@/lib/atoms"
@@ -19,6 +20,7 @@ interface SubtaskContentProps {
   task?: Task // Deprecated - use taskId instead
   mode?: "inline" | "popover"
   className?: string
+  persistEstimationOnAdd?: boolean // If true, keeps the estimation value after adding a subtask
 }
 
 export function SubtaskContent({
@@ -26,6 +28,7 @@ export function SubtaskContent({
   task: legacyTask,
   mode = "inline",
   className,
+  persistEstimationOnAdd = true,
 }: SubtaskContentProps) {
   const allTasks = useAtomValue(tasksAtom)
   const updateTask = useSetAtom(updateTaskAtom)
@@ -41,6 +44,7 @@ export function SubtaskContent({
   })()
 
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("")
+  const [newSubtaskEstimation, setNewSubtaskEstimation] = useState(0)
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false)
   const subtasksContainerRef = useRef<HTMLDivElement>(null)
 
@@ -74,6 +78,7 @@ export function SubtaskContent({
       title: newSubtaskTitle.trim(),
       completed: false,
       order: task.subtasks?.length || 0,
+      estimation: newSubtaskEstimation > 0 ? newSubtaskEstimation : undefined,
     }
 
     const updatedSubtasks = [...(task.subtasks || []), newSubtask]
@@ -88,6 +93,9 @@ export function SubtaskContent({
     }
 
     setNewSubtaskTitle("")
+    if (!persistEstimationOnAdd) {
+      setNewSubtaskEstimation(0)
+    }
     setShouldScrollToBottom(true)
   }
 
@@ -148,7 +156,7 @@ export function SubtaskContent({
       )}
 
       {/* Add New Subtask Section - Always visible input with button */}
-      <div className="flex gap-2">
+      <div className="flex gap-1">
         <Input
           placeholder={totalSubtasks > 0 ? "Add another subtask..." : "Add subtasks..."}
           value={newSubtaskTitle}
@@ -156,6 +164,11 @@ export function SubtaskContent({
           onKeyDown={handleKeyDown}
           className="text-sm flex-1"
           data-testid="subtask-input"
+        />
+        <TimeEstimationButton
+          value={newSubtaskEstimation}
+          onChange={setNewSubtaskEstimation}
+          className="h-9"
         />
         <Button
           onClick={handleAddSubtask}

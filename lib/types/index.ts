@@ -270,6 +270,8 @@ export const SubtaskSchema = z.object({
   completed: z.boolean(),
   /** Order index for display/sorting */
   order: z.number().optional(),
+  /** Task estimation in seconds */
+  estimation: z.number().optional(),
 })
 
 /**
@@ -607,6 +609,8 @@ export const TaskSchema = z.object({
   energyLevel: z
     .union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)])
     .optional(),
+  /** Task estimation in seconds */
+  estimation: z.number().optional(),
 })
 
 // Base serialization schemas for Task (colocated with TaskSchema for high correlation)

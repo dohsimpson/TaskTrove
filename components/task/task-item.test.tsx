@@ -2898,15 +2898,15 @@ describe("TaskItem", () => {
       })
     })
 
-    it("shows delete button when showDeleteButton is true and hovered", async () => {
+    it("shows actions menu when rendered", async () => {
       render(
         <Provider>
           <TaskItem taskId={subtaskAsTask.id} variant="subtask" parentTask={parentTask} />
         </Provider>,
       )
 
-      // Delete button should always be visible
-      expect(screen.getByTestId("x-icon")).toBeInTheDocument()
+      // Actions menu should always be visible
+      expect(screen.getByTestId("task-actions-menu")).toBeInTheDocument()
     })
 
     it.skip("deletes subtask when delete button is clicked", async () => {
@@ -2924,10 +2924,13 @@ describe("TaskItem", () => {
         await user.hover(container)
       }
 
-      // Delete button should now appear
-      const deleteButton = screen.getByTestId("x-icon").closest("button")
-      if (deleteButton) {
-        await user.click(deleteButton)
+      // Actions menu should be available
+      const actionsMenu = screen.getByTestId("task-actions-menu")
+      if (actionsMenu) {
+        const moreButton = within(actionsMenu).getByTestId("more-horizontal-icon").closest("button")
+        if (moreButton) {
+          await user.click(moreButton)
+        }
       }
 
       // Test expectation
@@ -2942,15 +2945,20 @@ describe("TaskItem", () => {
       })
     })
 
-    it("does not show delete button when showDeleteButton is false", async () => {
+    it("shows actions menu for subtask with delete option", async () => {
       render(
         <Provider>
           <TaskItem taskId={subtaskAsTask.id} variant="subtask" parentTask={parentTask} />
         </Provider>,
       )
 
-      // Delete button should always be visible regardless of showDeleteButton prop
-      expect(screen.getByTestId("x-icon")).toBeInTheDocument()
+      // Actions menu should be visible
+      const actionsMenu = screen.getByTestId("task-actions-menu")
+      expect(actionsMenu).toBeInTheDocument()
+
+      // Should contain the more icon
+      const moreIcon = screen.getByTestId("more-horizontal-icon")
+      expect(moreIcon).toBeInTheDocument()
     })
 
     it("has correct minimal styling for subtask variant", () => {
@@ -2962,10 +2970,10 @@ describe("TaskItem", () => {
 
       const container = screen.getByText("Test Subtask").closest(".group\\/task")
 
-      // Should have minimal styling (flex layout, gap, padding, no container hover)
-      expect(container).toHaveClass("flex", "items-center", "gap-3", "p-2")
+      // Should have minimal styling (flex layout, items-center, padding)
+      expect(container).toHaveClass("group/task", "flex", "items-center", "p-2")
       expect(container).toHaveClass("rounded-md", "transition-colors")
-      // Container should NOT have hover:bg-accent anymore since hover is on the text
+      expect(container).toHaveClass("bg-muted/50", "hover:bg-muted/70")
     })
 
     it("has improved text-focused hover styling for better editability indication", () => {

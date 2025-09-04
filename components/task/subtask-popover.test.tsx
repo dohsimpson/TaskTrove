@@ -403,13 +403,13 @@ describe("SubtaskPopover", () => {
     it("renders trigger when task has subtasks", () => {
       renderSubtaskPopover()
       expect(screen.getByText("Trigger")).toBeInTheDocument()
-      expect(screen.getByTestId("popover")).toBeInTheDocument()
+      expect(screen.getAllByTestId("popover")).toHaveLength(2) // Subtask popover + time estimation popovers
     })
 
     it("renders popover for tasks without subtasks", () => {
       renderSubtaskPopover(mockTaskWithoutSubtasks)
       expect(screen.getByText("Trigger")).toBeInTheDocument()
-      expect(screen.getByTestId("popover")).toBeInTheDocument()
+      expect(screen.getAllByTestId("popover")).toHaveLength(2) // Subtask popover + time estimation popover in add section
     })
 
     it("displays correct subtask count in header when subtasks exist", () => {

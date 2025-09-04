@@ -14,6 +14,7 @@ import {
   Trash2,
   // Timer, // Commented out since pomodoro timer is disabled
   Edit3,
+  ClockFading,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Task } from "@/lib/types"
@@ -24,7 +25,8 @@ interface TaskActionsMenuProps {
   isVisible: boolean
   onDeleteClick: () => void
   onEditClick?: () => void
-  variant?: "full" | "compact" | "kanban"
+  onEstimationClick?: () => void
+  variant?: "full" | "compact" | "kanban" | "subtask"
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }
@@ -34,6 +36,7 @@ export function TaskActionsMenu({
   isVisible,
   onDeleteClick,
   onEditClick,
+  onEstimationClick,
   variant = "full",
   open,
   onOpenChange,
@@ -67,19 +70,32 @@ export function TaskActionsMenu({
     }
   }, [isOpen])
 
-  const handleDeleteClick = () => {
+  const handleDeleteClick = (e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    e?.preventDefault()
     setShowDeleteConfirm(true)
-    setIsOpen(false)
+    // setIsOpen(false)
   }
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = (e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    e?.preventDefault()
     onDeleteClick()
     setShowDeleteConfirm(false)
   }
 
-  const handleEditClick = () => {
+  const handleEditClick = (e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    e?.preventDefault()
     onEditClick?.()
-    setIsOpen(false)
+    // setIsOpen(false)
+  }
+
+  const handleEstimationClick = (e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    e?.preventDefault()
+    onEstimationClick?.()
+    // setIsOpen(false) // NOTE: Must not close menu when opening estimation modal, otherwise estimation modal is closed too
   }
 
   // const handleTimerClick = () => {
@@ -87,10 +103,10 @@ export function TaskActionsMenu({
   //   setIsOpen(false)
   // } // Commented out since pomodoro timer is disabled
 
-  if (variant === "compact" || variant === "kanban") {
+  if (variant === "compact" || variant === "kanban" || variant === "subtask") {
     return (
       <>
-        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
@@ -103,11 +119,17 @@ export function TaskActionsMenu({
               <MoreHorizontal className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-32">
+          <DropdownMenuContent align="end" className={cn("w-32", variant === "subtask" && "w-36")}>
             {onEditClick && (
               <DropdownMenuItem onClick={handleEditClick}>
                 <Edit3 className="h-3.5 w-3.5 mr-2" />
                 Edit
+              </DropdownMenuItem>
+            )}
+            {variant === "subtask" && onEstimationClick && (
+              <DropdownMenuItem onClick={handleEstimationClick}>
+                <ClockFading className="h-3.5 w-3.5 mr-2" />
+                Estimation
               </DropdownMenuItem>
             )}
             {/* <DropdownMenuItem onClick={handleTimerClick}>

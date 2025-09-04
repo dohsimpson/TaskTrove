@@ -1,26 +1,57 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from "react"
+import { useAtomValue, useSetAtom } from "jotai"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { HelpPopover } from "@/components/ui/help-popover"
+import { Badge } from "@/components/ui/badge"
+import { tasksAtom, updateTaskAtom } from "@/lib/atoms"
+import type { TaskId } from "@/lib/types"
 
 interface TimeEstimationPickerProps {
-  value?: number // Time in seconds
-  onChange: (seconds: number) => void
+  taskId?: TaskId // For existing tasks
+  value?: number // For new items (backward compatibility)
+  onChange?: (seconds: number | null) => void // For new items (backward compatibility)
   trigger: React.ReactNode
   open?: boolean
   setOpen?: (open: boolean) => void
 }
 
 export function TimeEstimationPicker({
-  value = 0,
-  onChange,
+  taskId,
+  value: propValue,
+  onChange: propOnChange,
   trigger,
   open,
   setOpen,
 }: TimeEstimationPickerProps) {
+  // Get task data and update function for existing tasks
+  const tasks = useAtomValue(tasksAtom)
+  const updateTask = useSetAtom(updateTaskAtom)
+
+  // For existing tasks: find the task
+  const task = taskId ? tasks.find((t) => t.id === taskId) : null
+
+  // Calculate effective estimation (task estimation or sum of subtasks)
+  const subtaskEstimationSum =
+    task?.subtasks?.reduce((total, subtask) => total + (subtask.estimation || 0), 0) || 0
+  const isUsingSubtaskEstimation =
+    taskId && task && (!task.estimation || task.estimation === 0) && subtaskEstimationSum > 0
+
+  const value =
+    taskId && task
+      ? task.estimation && task.estimation > 0
+        ? task.estimation
+        : subtaskEstimationSum
+      : propValue || 0 // Fallback for new items
+
+  // Handle estimation changes
+  const onChange = taskId
+    ? (estimation: number | null) => updateTask({ updateRequest: { id: taskId, estimation } })
+    : propOnChange || (() => {})
   // Local state for tracking current selection (not yet committed)
   const [currentSeconds, setCurrentSeconds] = useState(value || 0)
   const [hourInput, setHourInput] = useState("")
@@ -158,7 +189,7 @@ export function TimeEstimationPicker({
     setMinuteError("")
     setCurrentSeconds(0)
     setSelectedPreset(null)
-    onChange(0)
+    onChange(null)
     setOpen?.(false)
   }
 
@@ -173,8 +204,24 @@ export function TimeEstimationPicker({
       <PopoverContent className="w-auto overflow-hidden p-0" align="start" asChild>
         <div className="p-4 space-y-4">
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Time Estimation</Label>
-            <p className="text-xs text-muted-foreground">Choose a preset or set custom time</p>
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-medium">Time Estimation</Label>
+              <HelpPopover
+                content={
+                  isUsingSubtaskEstimation
+                    ? "This estimation is calculated from the sum of subtask estimations. Setting a direct estimation here will override the calculated value."
+                    : "Estimate how long this task will take to complete. This helps with planning and tracking your productivity."
+                }
+                align="start"
+              />
+            </div>
+            {isUsingSubtaskEstimation && (
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-xs">
+                  Calculated from subtasks
+                </Badge>
+              </div>
+            )}
           </div>
 
           {/* Quick presets */}
@@ -193,7 +240,7 @@ export function TimeEstimationPicker({
           </div>
 
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Custom Duration</Label>
+            <Label className="text-xs font-medium">Custom Duration</Label>
             <div className="flex items-center justify-center gap-2">
               <div className="flex flex-col items-center space-y-1">
                 <Input

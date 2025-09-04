@@ -7,9 +7,10 @@ import { TaskItem } from "./task-item"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { TimeEstimationButton } from "@/components/ui/custom/time-estimation-button"
-import { CheckSquare, Plus } from "lucide-react"
+import { TimeEstimationPopover } from "./time-estimation-popover"
+import { CheckSquare, Plus, ClockFading } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { formatTime } from "@/lib/utils/time-estimation"
 import { updateTaskAtom, tasksAtom } from "@/lib/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
 import type { Task, Subtask, CreateTaskRequest } from "@/lib/types"
@@ -165,11 +166,24 @@ export function SubtaskContent({
           className="text-sm flex-1"
           data-testid="subtask-input"
         />
-        <TimeEstimationButton
+        <TimeEstimationPopover
           value={newSubtaskEstimation}
-          onChange={setNewSubtaskEstimation}
-          className="h-9"
-        />
+          onChange={(estimation) => setNewSubtaskEstimation(estimation || 0)}
+        >
+          <div className="h-9 min-w-9 px-2 hover:no-underline flex items-center justify-center cursor-pointer rounded-md border border-input hover:bg-accent hover:text-accent-foreground transition-colors">
+            {newSubtaskEstimation === 0 && (
+              <ClockFading className="h-4 w-4 text-muted-foreground" />
+            )}
+            {newSubtaskEstimation > 0 && (
+              <div className="flex items-center gap-1">
+                <ClockFading className="h-3 w-3 opacity-70" />
+                <span className="text-xs font-medium leading-none">
+                  {formatTime(newSubtaskEstimation)}
+                </span>
+              </div>
+            )}
+          </div>
+        </TimeEstimationPopover>
         <Button
           onClick={handleAddSubtask}
           disabled={!newSubtaskTitle.trim()}

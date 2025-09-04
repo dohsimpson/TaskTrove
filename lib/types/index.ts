@@ -1615,6 +1615,7 @@ export const UpdateTaskRequestSchema = TaskSchema.partial()
     dueDate: TaskSchema.shape.dueDate.nullable(),
     dueTime: TaskSchema.shape.dueTime.nullable(),
     recurring: TaskSchema.shape.recurring.nullable(),
+    estimation: TaskSchema.shape.estimation.nullable(),
   })
 
 // Serialization schemas for UpdateTask (colocated with request schema)
@@ -1630,6 +1631,7 @@ export const TaskUpdateSerializationSchema = TaskSerializationSchema.partial()
     dueDate: TaskSerializationSchema.shape.dueDate.nullable(),
     dueTime: TaskSerializationSchema.shape.dueTime.nullable(),
     recurring: TaskSerializationSchema.shape.recurring.nullable(),
+    estimation: TaskSerializationSchema.shape.estimation.nullable(),
   })
 export const TaskUpdateArraySerializationSchema = z.array(TaskUpdateSerializationSchema)
 

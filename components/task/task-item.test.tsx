@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event"
 import { Provider, useSetAtom } from "jotai"
 import { TaskItem } from "./task-item"
 import type { Task, ProjectId, LabelId } from "@/lib/types"
-import { createLabelId, INBOX_PROJECT_ID } from "@/lib/types"
+import { createLabelId, createTaskId, INBOX_PROJECT_ID } from "@/lib/types"
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
@@ -31,6 +31,13 @@ vi.mock("jotai", () => ({
   useSetAtom: vi.fn(),
   atom: vi.fn((value) => ({ init: value, toString: () => "mockAtom" })),
   Provider: ({ children }: { children?: React.ReactNode }) => children,
+  createStore: () => {
+    const store = new Map()
+    return {
+      set: (atom: unknown, value: unknown) => store.set(atom, value),
+      get: (atom: unknown) => store.get(atom) || [],
+    }
+  },
 }))
 
 // Mock date-fns
@@ -684,6 +691,21 @@ vi.mock("lucide-react", () => ({
   AlertTriangle: ({ className }: MockIconProps) => (
     <span data-testid="alert-triangle-icon" className={className}>
       ⚠️
+    </span>
+  ),
+  ClockFading: ({ className }: MockIconProps) => (
+    <span data-testid="clock-fading-icon" className={className}>
+      🕐
+    </span>
+  ),
+  HelpCircle: ({ className }: MockIconProps) => (
+    <span data-testid="help-circle-icon" className={className}>
+      ❓
+    </span>
+  ),
+  Lightbulb: ({ className }: MockIconProps) => (
+    <span data-testid="lightbulb-icon" className={className}>
+      💡
     </span>
   ),
 }))
@@ -3033,6 +3055,49 @@ describe("TaskItem", () => {
           </Provider>,
         )
       }).not.toThrow()
+    })
+
+    it("displays subtask estimation correctly", async () => {
+      // Create a parent task with a subtask that has estimation
+      const parentTaskWithEstimation: Task = {
+        ...parentTask,
+        subtasks: [
+          {
+            id: TEST_SUBTASK_ID_1,
+            title: "Test Subtask",
+            completed: false,
+            order: 0,
+            estimation: 3600,
+          }, // 1 hour
+        ],
+      }
+
+      render(
+        <Provider>
+          <TaskItem
+            taskId={createTaskId(String(TEST_SUBTASK_ID_1))}
+            variant="subtask"
+            parentTask={parentTaskWithEstimation}
+          />
+        </Provider>,
+      )
+
+      // Should display the estimation (1 hour = 3600 seconds should show as "1h")
+      const estimationButtons = screen.getAllByText("1h")
+      expect(estimationButtons[0]).toBeInTheDocument()
+
+      // Click the estimation button to open the picker
+      fireEvent.click(estimationButtons[0])
+
+      // Wait for the picker to open and verify it has the correct initial value
+      await waitFor(() => {
+        expect(screen.getAllByText("Time Estimation")[0]).toBeInTheDocument()
+        // The input fields should show "01" and "00" for 1 hour
+        const hourInputs = screen.getAllByDisplayValue("01")
+        const minuteInputs = screen.getAllByDisplayValue("00")
+        expect(hourInputs[0]).toBeInTheDocument()
+        expect(minuteInputs[0]).toBeInTheDocument()
+      })
     })
   })
 

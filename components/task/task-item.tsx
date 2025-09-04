@@ -7,7 +7,7 @@ import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import { Badge } from "@/components/ui/badge"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
-import { TimeEstimationButton } from "@/components/ui/custom/time-estimation-button"
+import { TimeEstimationPopover } from "./time-estimation-popover"
 import { LabelManagementPopover } from "./label-management-popover"
 import {
   Calendar,
@@ -20,10 +20,12 @@ import {
   Folder,
   Tag,
   AlertTriangle,
+  ClockFading,
 } from "lucide-react"
 import { isToday, isPast } from "date-fns"
 import { cn, getContrastColor } from "@/lib/utils"
 import { formatTaskDateTimeBadge } from "@/lib/utils/task-date-formatter"
+import { formatTime, getEffectiveEstimation } from "@/lib/utils/time-estimation"
 import {
   getPriorityColor,
   getPriorityTextColor,
@@ -61,6 +63,37 @@ import { TimeEstimationPicker } from "../ui/custom/time-estimation-picker"
 
 // Responsive width for metadata columns to ensure consistent alignment
 const METADATA_COLUMN_WIDTH = "w-auto sm:w-20 md:w-24"
+
+// Helper component for time estimation trigger button
+function TimeEstimationTrigger({ task, className }: { task: Task; className?: string }) {
+  const { estimation, isFromSubtasks } = getEffectiveEstimation(task)
+  const timeText = formatTime(estimation)
+  const hasTime = estimation > 0
+
+  return (
+    <span
+      className={cn(
+        "flex items-center gap-1 cursor-pointer",
+        hasTime
+          ? "hover:opacity-100 text-foreground"
+          : "text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
+        className,
+      )}
+    >
+      <ClockFading className="h-3 w-3" />
+      {hasTime && (
+        <span
+          className={cn(
+            "text-xs font-medium leading-none",
+            isFromSubtasks && "border-b border-dotted border-current",
+          )}
+        >
+          {timeText}
+        </span>
+      )}
+    </span>
+  )
+}
 
 interface TaskItemProps {
   taskId: TaskId
@@ -136,6 +169,7 @@ export function TaskItem({
           status: subtask.completed ? "completed" : "active",
           order: subtask.order || 0,
           recurringMode: "dueDate",
+          estimation: subtask.estimation, // Include estimation from subtask
         }
       }
     }
@@ -222,7 +256,7 @@ export function TaskItem({
     updateSubtasks(updatedSubtasks)
   }
 
-  const handleSubtaskEstimationUpdate = (estimation: number) => {
+  const handleSubtaskEstimationUpdate = (estimation: number | null) => {
     if (variant !== "subtask") return
 
     const parent = parentTask || quickAddTask
@@ -230,7 +264,7 @@ export function TaskItem({
 
     const updatedSubtasks = parent.subtasks.map((subtask) =>
       String(subtask.id) === String(task.id)
-        ? { ...subtask, estimation: estimation > 0 ? estimation : undefined }
+        ? { ...subtask, estimation: estimation && estimation > 0 ? estimation : undefined }
         : subtask,
     )
 
@@ -477,6 +511,9 @@ export function TaskItem({
                 {/* Timer and Actions Menu - first row on smaller viewport */}
                 <div className="lg:hidden flex items-center gap-1">
                   <FocusTimerButton taskId={task.id} variant="compact" />
+                  <TimeEstimationPopover taskId={task.id}>
+                    <TimeEstimationTrigger task={task} />
+                  </TimeEstimationPopover>
                   <TaskActionsMenu
                     task={task}
                     isVisible={actionsMenuVisible}
@@ -605,6 +642,9 @@ export function TaskItem({
               {/* Timer and Actions Menu - second row on larger viewport */}
               <div className="hidden lg:flex lg:items-center lg:gap-1">
                 <FocusTimerButton taskId={task.id} variant="compact" />
+                <TimeEstimationPopover taskId={task.id}>
+                  <TimeEstimationTrigger task={task} />
+                </TimeEstimationPopover>
                 <TaskActionsMenu
                   task={task}
                   isVisible={actionsMenuVisible}
@@ -742,6 +782,9 @@ export function TaskItem({
 
             {/* Timer and Actions */}
             <FocusTimerButton taskId={task.id} variant="kanban" />
+            <TimeEstimationPopover taskId={task.id}>
+              <TimeEstimationTrigger task={task} />
+            </TimeEstimationPopover>
             <TaskActionsMenu
               task={task}
               isVisible={actionsMenuVisible}
@@ -1013,11 +1056,23 @@ export function TaskItem({
         />
         <div className="h-6 flex items-center gap-1">
           {currentEstimation > 0 && (
-            <TimeEstimationButton
+            <TimeEstimationPopover
               value={currentEstimation}
-              onChange={() => setShowEstimationPicker(true)}
-              className="h-6 w-6"
-            />
+              onChange={handleSubtaskEstimationUpdate}
+            >
+              <div
+                className={cn(
+                  "h-6 min-w-6 px-1 hover:no-underline flex items-center justify-center cursor-pointer rounded-md border border-transparent hover:bg-accent hover:border-border transition-colors text-foreground",
+                )}
+              >
+                <div className="flex items-center gap-0.5">
+                  <ClockFading className="h-2.5 w-2.5 opacity-70" />
+                  <span className="text-xs font-medium leading-none">
+                    {formatTime(currentEstimation)}
+                  </span>
+                </div>
+              </div>
+            </TimeEstimationPopover>
           )}
           <TaskActionsMenu
             task={task}
@@ -1030,9 +1085,9 @@ export function TaskItem({
           />
         </div>
 
-        {/* Hidden TimeEstimationButton to be triggered programmatically */}
+        {/* Hidden TimeEstimationPicker to be triggered programmatically from menu */}
         <TimeEstimationPicker
-          sr-only
+          value={currentEstimation}
           onChange={handleSubtaskEstimationUpdate}
           trigger={<div></div>}
           open={showEstimationPicker}
@@ -1112,6 +1167,9 @@ export function TaskItem({
             {/* Timer and Actions - Now on the right */}
             <div className="flex items-center gap-1">
               <FocusTimerButton taskId={task.id} variant="default" />
+              <TimeEstimationPopover taskId={task.id}>
+                <TimeEstimationTrigger task={task} />
+              </TimeEstimationPopover>
               <TaskActionsMenu
                 task={task}
                 isVisible={actionsMenuVisible}

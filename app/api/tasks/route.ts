@@ -233,11 +233,12 @@ async function updateTasks(
       }
     }
 
-    // Convert null values to undefined for date/time/recurring fields
+    // Convert null values to undefined for date/time/recurring/estimation fields
     const cleanedUpdate = { ...update, completedAt }
     if (cleanedUpdate.dueDate === null) cleanedUpdate.dueDate = undefined
     if (cleanedUpdate.dueTime === null) cleanedUpdate.dueTime = undefined
     if (cleanedUpdate.recurring === null) cleanedUpdate.recurring = undefined
+    if (cleanedUpdate.estimation === null) cleanedUpdate.estimation = undefined
 
     updateMap.set(update.id, cleanedUpdate)
   }
@@ -256,6 +257,7 @@ async function updateTasks(
       dueDate: updatedTask.dueDate === null ? undefined : updatedTask.dueDate,
       dueTime: updatedTask.dueTime === null ? undefined : updatedTask.dueTime,
       recurring: updatedTask.recurring === null ? undefined : updatedTask.recurring,
+      estimation: updatedTask.estimation === null ? undefined : updatedTask.estimation,
     }
 
     return cleanedTask

@@ -528,6 +528,7 @@ export const updateTasksMutationAtom = createMutation<UpdateTaskResponse, TaskUp
         dueDate: optimisticTask.dueDate === null ? undefined : optimisticTask.dueDate,
         dueTime: optimisticTask.dueTime === null ? undefined : optimisticTask.dueTime,
         recurring: optimisticTask.recurring === null ? undefined : optimisticTask.recurring,
+        estimation: optimisticTask.estimation === null ? undefined : optimisticTask.estimation,
       }
 
       return cleanedTask

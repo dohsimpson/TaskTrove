@@ -166,8 +166,8 @@ vi.mock("@/components/ui/help-popover", () => ({
 
 // Mock icons
 vi.mock("lucide-react", () => ({
-  ChevronLeft: () => <span data-testid="chevron-left-icon" />,
-  ChevronRight: () => <span data-testid="chevron-right-icon" />,
+  PanelRightClose: () => <span data-testid="panel-right-close-icon" />,
+  PanelRightOpen: () => <span data-testid="panel-right-open-icon" />,
   Search: () => <span data-testid="search-icon" />,
   Monitor: () => <span data-testid="monitor-icon" />,
   Calendar: () => <span data-testid="calendar-icon" />,

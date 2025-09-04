@@ -21,8 +21,8 @@ import {
   Sun,
   Moon,
   Monitor,
-  ChevronRight,
-  ChevronLeft,
+  PanelRightClose,
+  PanelRightOpen,
   Inbox,
   Folder,
   Tag,
@@ -147,7 +147,7 @@ export function PageHeader({
                 title="Collapse sidebar"
                 className="cursor-pointer"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <PanelRightOpen className="h-4 w-4" />
               </Button>
             )}
             {!sidebarOpen && (
@@ -158,7 +158,7 @@ export function PageHeader({
                 title="Open sidebar"
                 className="cursor-pointer"
               >
-                <ChevronRight className="h-4 w-4" />
+                <PanelRightClose className="h-4 w-4" />
               </Button>
             )}
           </div>

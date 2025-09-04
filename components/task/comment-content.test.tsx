@@ -95,6 +95,33 @@ vi.mock("@/components/ui/input", () => ({
   ),
 }))
 
+// Mock tooltip components
+vi.mock("@/components/ui/tooltip", () => ({
+  TooltipProvider: ({
+    children,
+    delayDuration,
+    ...props
+  }: {
+    children: React.ReactNode
+    delayDuration?: number
+  }) => (
+    <div data-testid="tooltip-provider" data-delay-duration={delayDuration} {...props}>
+      {children}
+    </div>
+  ),
+  Tooltip: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="tooltip">{children}</div>
+  ),
+  TooltipTrigger: ({ children, ...props }: { children: React.ReactNode; asChild?: boolean }) => (
+    <div data-testid="tooltip-trigger" {...props}>
+      {children}
+    </div>
+  ),
+  TooltipContent: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="tooltip-content">{children}</div>
+  ),
+}))
+
 // Mock utility functions
 vi.mock("@/lib/utils", () => ({
   cn: (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(" "),
@@ -330,6 +357,42 @@ describe("CommentContent", () => {
       render(<CommentContent task={task} />)
 
       expect(screen.getByTestId("comment-input")).toBeInTheDocument()
+    })
+
+    it("shows tooltip with absolute timestamp when hovering over relative timestamp", () => {
+      const specificDate = new Date("2024-01-15T14:30:00Z")
+      const comment = createMockComment({
+        content: "Test comment",
+        createdAt: specificDate,
+      })
+      const task = createMockTask({ comments: [comment] })
+
+      render(<CommentContent task={task} />)
+
+      // Should render tooltip components
+      expect(screen.getByTestId("tooltip-provider")).toBeInTheDocument()
+      expect(screen.getByTestId("tooltip")).toBeInTheDocument()
+      expect(screen.getByTestId("tooltip-trigger")).toBeInTheDocument()
+      expect(screen.getByTestId("tooltip-content")).toBeInTheDocument()
+
+      // Should show relative time in the trigger
+      expect(screen.getByText(/ago/)).toBeInTheDocument()
+
+      // Should show absolute timestamp in tooltip content (formatted with PPpp)
+      // PPpp format example: "Jan 15, 2024, 9:30:00 AM" (converted from UTC to local timezone)
+      expect(screen.getByTestId("tooltip-content")).toHaveTextContent(/Jan 15, 2024,.*AM|PM/)
+    })
+
+    it("applies pointer cursor to timestamp hover area", () => {
+      const comment = createMockComment({ content: "Test comment" })
+      const task = createMockTask({ comments: [comment] })
+
+      const { container } = render(<CommentContent task={task} />)
+
+      // Find the span with timestamp that should have cursor-pointer class
+      const timestampElement = container.querySelector(".cursor-pointer")
+      expect(timestampElement).toBeInTheDocument()
+      expect(timestampElement).toHaveClass("cursor-pointer")
     })
   })
 

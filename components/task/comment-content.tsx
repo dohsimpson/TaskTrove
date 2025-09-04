@@ -5,7 +5,8 @@ import { MessageSquare, User, Plus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import { formatDistanceToNow } from "date-fns"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { formatDistanceToNow, format } from "date-fns"
 import { useAtomValue, useSetAtom } from "jotai"
 import { v4 as uuidv4 } from "uuid"
 import { updateTaskAtom, tasksAtom } from "@/lib/atoms"
@@ -32,40 +33,52 @@ function CommentItem({
   onDelete?: (commentId: string) => void
 }) {
   return (
-    <div
-      className={cn(
-        "group flex gap-2 mb-3 last:mb-0 hover:bg-accent/20 rounded-lg p-2 -mx-2 transition-colors",
-        mode === "popover" && "bg-muted/20 rounded-lg p-3 mx-0",
-      )}
-    >
-      <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-full flex-shrink-0 flex items-center justify-center">
-        <User className="h-3 w-3 text-gray-500" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-medium text-gray-900 dark:text-gray-100">admin</span>
-          {comment.createdAt && (
-            <span className="text-xs text-gray-400">
-              {formatDistanceToNow(comment.createdAt, { addSuffix: true, includeSeconds: true })}
-            </span>
-          )}
+    <TooltipProvider delayDuration={0}>
+      <div
+        className={cn(
+          "group flex gap-2 mb-3 last:mb-0 hover:bg-accent/20 rounded-lg p-2 -mx-2 transition-colors",
+          mode === "popover" && "bg-muted/20 rounded-lg p-3 mx-0",
+        )}
+      >
+        <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-full flex-shrink-0 flex items-center justify-center">
+          <User className="h-3 w-3 text-gray-500" />
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-300 break-words leading-relaxed">
-          {comment.content}
-        </p>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">admin</span>
+            {comment.createdAt && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-xs text-gray-400 cursor-pointer">
+                    {formatDistanceToNow(comment.createdAt, {
+                      addSuffix: true,
+                      includeSeconds: true,
+                    })}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">{format(comment.createdAt, "PPpp")}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-300 break-words leading-relaxed">
+            {comment.content}
+          </p>
+        </div>
+        {onDelete && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDelete(comment.id)}
+            className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+            data-testid={`comment-delete-button-${comment.id}`}
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        )}
       </div>
-      {onDelete && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onDelete(comment.id)}
-          className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-          data-testid={`comment-delete-button-${comment.id}`}
-        >
-          <X className="h-3 w-3" />
-        </Button>
-      )}
-    </div>
+    </TooltipProvider>
   )
 }
 

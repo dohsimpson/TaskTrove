@@ -19,6 +19,7 @@ import {
   type ProjectId,
   type LabelId,
   type SectionId,
+  type GroupId,
   type ViewId,
   type StandardViewId,
   createProjectId,
@@ -790,6 +791,43 @@ export const closeSectionColorPickerAtom = atom(null, (get, set) => {
 })
 closeSectionColorPickerAtom.debugLabel = "closeSectionColorPickerAtom"
 
+/**
+ * Group context menu state atoms
+ * Manages editing, color picker, and menu visibility states for groups
+ */
+
+/** Currently editing group ID */
+export const editingGroupIdAtom = atom<GroupId | null>(null)
+editingGroupIdAtom.debugLabel = "editingGroupIdAtom"
+
+/** Group color picker open state with group ID */
+export const groupColorPickerAtom = atom<GroupId | null>(null)
+groupColorPickerAtom.debugLabel = "groupColorPickerAtom"
+
+/** Start editing a group by ID */
+export const startEditingGroupAtom = atom(null, (get, set, groupId: GroupId) => {
+  set(editingGroupIdAtom, groupId)
+})
+startEditingGroupAtom.debugLabel = "startEditingGroupAtom"
+
+/** Stop editing current group */
+export const stopEditingGroupAtom = atom(null, (get, set) => {
+  set(editingGroupIdAtom, null)
+})
+stopEditingGroupAtom.debugLabel = "stopEditingGroupAtom"
+
+/** Open color picker for a group */
+export const openGroupColorPickerAtom = atom(null, (get, set, groupId: GroupId) => {
+  set(groupColorPickerAtom, groupId)
+})
+openGroupColorPickerAtom.debugLabel = "openGroupColorPickerAtom"
+
+/** Close group color picker */
+export const closeGroupColorPickerAtom = atom(null, (get, set) => {
+  set(groupColorPickerAtom, null)
+})
+closeGroupColorPickerAtom.debugLabel = "closeGroupColorPickerAtom"
+
 // =============================================================================
 // EXPORT COLLECTIONS
 // =============================================================================
@@ -854,6 +892,14 @@ export const navigationAtoms = {
       stopEditing: stopEditingSectionAtom,
       openColorPicker: openSectionColorPickerAtom,
       closeColorPicker: closeSectionColorPickerAtom,
+    },
+    group: {
+      editing: editingGroupIdAtom,
+      colorPicker: groupColorPickerAtom,
+      startEditing: startEditingGroupAtom,
+      stopEditing: stopEditingGroupAtom,
+      openColorPicker: openGroupColorPickerAtom,
+      closeColorPicker: closeGroupColorPickerAtom,
     },
   },
 } as const

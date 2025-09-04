@@ -33,11 +33,11 @@ import { cn } from "@/lib/utils"
 import { projectsAtom } from "@/lib/atoms"
 import { currentRouteContextAtom } from "@/lib/atoms/ui/navigation"
 import { isValidProjectId } from "@/lib/utils/routing"
-import { LabelId, ProjectId, SectionId } from "@/lib/types"
+import { GroupId, LabelId, ProjectId, SectionId } from "@/lib/types"
 
 interface EntityContextMenuProps {
-  id: LabelId | ProjectId | SectionId
-  entityType: "section" | "project" | "label"
+  id: GroupId | LabelId | ProjectId | SectionId
+  entityType: "group" | "section" | "project" | "label"
   entityName: string
   entityColor: string
   isVisible: boolean
@@ -108,6 +108,16 @@ export function EntityContextMenu({
   // Dynamic position detection
   const getPositionInfo = () => {
     switch (entityType) {
+      case "group": {
+        return {
+          isFirst: false,
+          isLast: false,
+          canMoveUp: false,
+          canMoveDown: false,
+          canAddAbove: false,
+          canAddBelow: false,
+        }
+      }
       case "project": {
         return {
           isFirst: false,
@@ -248,7 +258,7 @@ export function EntityContextMenu({
           <DropdownMenuContent align="end" className={getMenuWidth()}>
             <DropdownMenuItem onClick={handleEditClick}>
               <Edit3 className="h-3 w-3 mr-2" />
-              Edit {entityType}
+              Edit Name
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleChangeColor}>
               <Palette className="h-3 w-3 mr-2" />

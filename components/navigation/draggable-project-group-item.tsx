@@ -12,6 +12,7 @@ import { DraggableProjectItem } from "./draggable-project-item"
 import { cn } from "@/lib/utils"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
+import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { extractSidebarInstruction } from "@/hooks/use-sidebar-drag-state"
 import { projectTaskCountsAtom } from "@/lib/atoms"
 import {
@@ -20,7 +21,9 @@ import {
   removeProjectFromGroupWithIndexAtom,
   reorderGroupAtom,
   reorderProjectWithinRootAtom,
+  updateProjectGroupAtom,
 } from "@/lib/atoms/core/groups"
+import { editingGroupIdAtom, stopEditingGroupAtom } from "@/lib/atoms/ui/navigation"
 import {
   attachInstruction,
   extractInstruction,
@@ -44,6 +47,20 @@ export function DraggableProjectGroupItem({
   const [isExpanded, setIsExpanded] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
   const projectTaskCounts = useAtomValue(projectTaskCountsAtom)
+
+  // Editing state
+  const editingGroupId = useAtomValue(editingGroupIdAtom)
+  const stopEditing = useSetAtom(stopEditingGroupAtom)
+  const updateProjectGroup = useSetAtom(updateProjectGroupAtom)
+  const isEditing = editingGroupId === group.id
+
+  // Handle saving group name
+  const handleSave = (newName: string) => {
+    if (newName.trim() && newName !== group.name) {
+      updateProjectGroup({ id: group.id, name: newName.trim() })
+    }
+    stopEditing()
+  }
 
   // Drag and drop atom setters
   const reorderProjectWithinGroup = useSetAtom(reorderProjectWithinGroupAtom)
@@ -315,7 +332,18 @@ export function DraggableProjectGroupItem({
                   </span>
 
                   {/* Group name */}
-                  <span className="flex-1 truncate mr-6">{group.name}</span>
+                  {isEditing ? (
+                    <EditableDiv
+                      as="span"
+                      value={group.name}
+                      onChange={handleSave}
+                      onCancel={stopEditing}
+                      autoFocus
+                      className="flex-1 mr-6"
+                    />
+                  ) : (
+                    <span className="flex-1 truncate mr-6">{group.name}</span>
+                  )}
 
                   {/* Task count badge */}
                   <SidebarMenuBadge className={cn(contextMenuVisible ? "opacity-0" : "")}>

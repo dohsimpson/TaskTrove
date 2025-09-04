@@ -171,4 +171,72 @@ describe("useFocusTimerDisplay", () => {
     // Assert: stopTimer should not be called since task is not completed
     expect(mockStopTimer).not.toHaveBeenCalled()
   })
+
+  it("stops timer when task is deleted", () => {
+    // Setup: timer is running for a task
+    mockActiveTimer.mockReturnValue(mockTimer)
+    mockStatus.mockReturnValue("running")
+    mockTask.mockReturnValue(mockTaskData)
+
+    const { rerender } = renderHook(() => useFocusTimerDisplay())
+
+    // Verify timer is not stopped initially
+    expect(mockStopTimer).not.toHaveBeenCalled()
+
+    // Act: delete task (task becomes null)
+    mockTask.mockReturnValue(null)
+
+    act(() => {
+      rerender()
+    })
+
+    // Assert: stopTimer should be called with the timer's taskId
+    expect(mockStopTimer).toHaveBeenCalledWith(taskId)
+  })
+
+  it("does not stop timer when task is deleted but timer is already stopped", () => {
+    // Setup: timer exists but is already stopped, no task
+    mockActiveTimer.mockReturnValue(mockTimer)
+    mockStatus.mockReturnValue("stopped")
+    mockTask.mockReturnValue(null)
+
+    renderHook(() => useFocusTimerDisplay())
+
+    // Assert: stopTimer should not be called since status is already "stopped"
+    expect(mockStopTimer).not.toHaveBeenCalled()
+  })
+
+  it("does not stop timer when task is deleted but no active timer exists", () => {
+    // Setup: no active timer, no task
+    mockActiveTimer.mockReturnValue(null)
+    mockStatus.mockReturnValue("stopped")
+    mockTask.mockReturnValue(null)
+
+    renderHook(() => useFocusTimerDisplay())
+
+    // Assert: stopTimer should not be called since there's no active timer
+    expect(mockStopTimer).not.toHaveBeenCalled()
+  })
+
+  it("stops timer when task changes from existing to deleted", () => {
+    // Setup: timer is paused for a task
+    mockActiveTimer.mockReturnValue(mockTimer)
+    mockStatus.mockReturnValue("paused")
+    mockTask.mockReturnValue(mockTaskData)
+
+    const { rerender } = renderHook(() => useFocusTimerDisplay())
+
+    // Verify timer is not stopped initially
+    expect(mockStopTimer).not.toHaveBeenCalled()
+
+    // Act: delete task (transition from existing task to null)
+    mockTask.mockReturnValue(null)
+
+    act(() => {
+      rerender()
+    })
+
+    // Assert: stopTimer should be called with the timer's taskId
+    expect(mockStopTimer).toHaveBeenCalledWith(taskId)
+  })
 })

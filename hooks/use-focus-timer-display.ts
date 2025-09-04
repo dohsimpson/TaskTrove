@@ -59,12 +59,16 @@ export function useFocusTimerDisplay() {
     }
   }, [activeTimer, status])
 
-  // Stop timer when task is completed
+  // Stop timer when task is completed or deleted
   useEffect(() => {
-    if (task?.completed && activeTimer && status !== "stopped") {
-      stopTimer(task.id)
+    if (activeTimer && status !== "stopped") {
+      if (task?.completed) {
+        stopTimer(task.id)
+      } else if (!task) {
+        stopTimer(activeTimer.taskId)
+      }
     }
-  }, [task?.completed, activeTimer, status, stopTimer, task?.id])
+  }, [task, activeTimer, status, stopTimer])
 
   return {
     activeTimer,

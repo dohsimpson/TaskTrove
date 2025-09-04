@@ -8,6 +8,7 @@ import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import { Badge } from "@/components/ui/badge"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { TimeEstimationPopover } from "./time-estimation-popover"
+import { FocusTimerPopover } from "./focus-timer-popover"
 import { LabelManagementPopover } from "./label-management-popover"
 import {
   Calendar,
@@ -21,6 +22,9 @@ import {
   Tag,
   AlertTriangle,
   ClockFading,
+  Play,
+  Pause,
+  Square,
 } from "lucide-react"
 import { isToday, isPast } from "date-fns"
 import { cn, getContrastColor } from "@/lib/utils"
@@ -38,7 +42,6 @@ import { SubtaskPopover } from "./subtask-popover"
 import { PriorityPopover } from "./priority-popover"
 import { ProjectPopover } from "./project-popover"
 import { TaskActionsMenu } from "./task-actions-menu"
-import { FocusTimerButton } from "./focus-timer-button"
 import {
   toggleTaskAtom,
   deleteTaskAtom,
@@ -46,6 +49,12 @@ import {
   addCommentAtom,
   toggleTaskPanelWithViewStateAtom,
   tasksAtom,
+  isTaskTimerActiveAtom,
+  focusTimerStatusAtom,
+  activeFocusTimerAtom,
+  startFocusTimerAtom,
+  pauseFocusTimerAtom,
+  stopFocusTimerAtom,
   // Use centralized selection atoms
   selectionModeAtom,
   selectionToggleTaskSelectionAtom,
@@ -95,6 +104,83 @@ function TimeEstimationTrigger({ task, className }: { task: Task; className?: st
   )
 }
 
+// Helper function to check if focus timer should be shown for a task
+function shouldShowFocusTimer(taskId: TaskId, activeTimer: { taskId: TaskId } | null) {
+  return !activeTimer || activeTimer.taskId === taskId
+}
+
+// Helper component for focus timer trigger button
+function FocusTimerTrigger({ taskId, className }: { taskId: TaskId; className?: string }) {
+  const isTaskTimerActive = useAtomValue(isTaskTimerActiveAtom)
+  const timerStatus = useAtomValue(focusTimerStatusAtom)
+  const startTimer = useSetAtom(startFocusTimerAtom)
+  const pauseTimer = useSetAtom(pauseFocusTimerAtom)
+  const stopTimer = useSetAtom(stopFocusTimerAtom)
+
+  const isThisTaskActive = isTaskTimerActive(taskId)
+  const isThisTaskRunning = isThisTaskActive && timerStatus === "running"
+  const isThisTaskPaused = isThisTaskActive && timerStatus === "paused"
+
+  const handleStartClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    startTimer(taskId)
+  }
+
+  const handlePauseResumeClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (isThisTaskRunning) {
+      pauseTimer(taskId)
+    } else if (isThisTaskPaused) {
+      startTimer(taskId)
+    }
+  }
+
+  const handleStopClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    stopTimer(taskId)
+  }
+
+  if (!isThisTaskActive) {
+    // Show single start button when not active
+    return (
+      <span
+        onClick={handleStartClick}
+        className={cn(
+          "flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
+          className,
+        )}
+        title="Start focus timer"
+      >
+        <Play className="h-3 w-3" />
+      </span>
+    )
+  }
+
+  // Show both stop and play/pause buttons when active
+  return (
+    <div className={cn("flex items-center gap-1", className)}>
+      <span
+        onClick={handlePauseResumeClick}
+        className={cn("cursor-pointer text-muted-foreground hover:text-foreground")}
+        title={isThisTaskRunning ? "Pause timer" : "Resume timer"}
+      >
+        {isThisTaskRunning ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+      </span>
+      <span
+        onClick={handleStopClick}
+        className="cursor-pointer text-muted-foreground hover:text-foreground text-red-500"
+        title="Stop timer"
+      >
+        <Square className="h-3 w-3" />
+      </span>
+    </div>
+  )
+}
+
 interface TaskItemProps {
   taskId: TaskId
   className?: string
@@ -127,6 +213,7 @@ export function TaskItem({
   const getLabelsFromIds = useAtomValue(labelsFromIdsAtom)
   const allProjects = useAtomValue(projectsAtom)
   const selectedTaskId = useAtomValue(selectedTaskIdAtom)
+  const activeFocusTimer = useAtomValue(activeFocusTimerAtom)
 
   // Atom actions
   const toggleTask = useSetAtom(toggleTaskAtom)
@@ -435,28 +522,6 @@ export function TaskItem({
                   <Star className="h-3 w-3 text-yellow-500 fill-current flex-shrink-0" />
                 )}
 
-                {/* Priority Flag - Show for P1-P3 in compact variant or add priority on hover */}
-                {shouldShowPriority ? (
-                  <PriorityPopover task={task}>
-                    <Flag
-                      className={cn(
-                        "h-3 w-3 flex-shrink-0 cursor-pointer hover:opacity-100",
-                        task.priority === 1
-                          ? "text-red-500"
-                          : task.priority === 2
-                            ? "text-orange-500"
-                            : "text-blue-500",
-                      )}
-                    />
-                  </PriorityPopover>
-                ) : (
-                  <PriorityPopover task={task}>
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground transition-colors opacity-70 hover:opacity-100">
-                      <Flag className="h-3 w-3" />
-                    </span>
-                  </PriorityPopover>
-                )}
-
                 {/* Due Date/Recurring - Show all dates and recurring in compact variant */}
                 {shouldShowSchedule ? (
                   <TaskSchedulePopover taskId={task.id}>
@@ -508,12 +573,38 @@ export function TaskItem({
                   </TaskSchedulePopover>
                 )}
 
+                {/* Priority Flag - Show for P1-P3 in compact variant or add priority on hover */}
+                {shouldShowPriority ? (
+                  <PriorityPopover task={task}>
+                    <Flag
+                      className={cn(
+                        "h-3 w-3 flex-shrink-0 cursor-pointer hover:opacity-100",
+                        task.priority === 1
+                          ? "text-red-500"
+                          : task.priority === 2
+                            ? "text-orange-500"
+                            : "text-blue-500",
+                      )}
+                    />
+                  </PriorityPopover>
+                ) : (
+                  <PriorityPopover task={task}>
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground transition-colors opacity-70 hover:opacity-100">
+                      <Flag className="h-3 w-3" />
+                    </span>
+                  </PriorityPopover>
+                )}
+
                 {/* Timer and Actions Menu - first row on smaller viewport */}
                 <div className="lg:hidden flex items-center gap-1">
-                  <FocusTimerButton taskId={task.id} variant="compact" />
                   <TimeEstimationPopover taskId={task.id}>
                     <TimeEstimationTrigger task={task} />
                   </TimeEstimationPopover>
+                  {shouldShowFocusTimer(task.id, activeFocusTimer) && (
+                    <FocusTimerPopover taskId={task.id}>
+                      <FocusTimerTrigger taskId={task.id} />
+                    </FocusTimerPopover>
+                  )}
                   <TaskActionsMenu
                     task={task}
                     isVisible={actionsMenuVisible}
@@ -560,7 +651,7 @@ export function TaskItem({
               </div>
 
               {/* Right side - Labels and project info */}
-              <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+              <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                 {/* Labels - Show if present, limited on smaller screens */}
                 {task.labels.length > 0 && (
                   <LabelManagementPopover
@@ -638,21 +729,26 @@ export function TaskItem({
                     </span>
                   </ProjectPopover>
                 )}
-              </div>
-              {/* Timer and Actions Menu - second row on larger viewport */}
-              <div className="hidden lg:flex lg:items-center lg:gap-1">
-                <FocusTimerButton taskId={task.id} variant="compact" />
-                <TimeEstimationPopover taskId={task.id}>
-                  <TimeEstimationTrigger task={task} />
-                </TimeEstimationPopover>
-                <TaskActionsMenu
-                  task={task}
-                  isVisible={actionsMenuVisible}
-                  onDeleteClick={() => deleteTask(task.id)}
-                  variant="compact"
-                  open={actionsMenuOpen}
-                  onOpenChange={handleActionsMenuChange}
-                />
+
+                {/* Timer and Actions Menu - second row on larger viewport */}
+                <div className="hidden lg:flex lg:items-center gap-1">
+                  <TimeEstimationPopover taskId={task.id}>
+                    <TimeEstimationTrigger task={task} />
+                  </TimeEstimationPopover>
+                  {shouldShowFocusTimer(task.id, activeFocusTimer) && (
+                    <FocusTimerPopover taskId={task.id}>
+                      <FocusTimerTrigger taskId={task.id} />
+                    </FocusTimerPopover>
+                  )}
+                  <TaskActionsMenu
+                    task={task}
+                    isVisible={actionsMenuVisible}
+                    onDeleteClick={() => deleteTask(task.id)}
+                    variant="compact"
+                    open={actionsMenuOpen}
+                    onOpenChange={handleActionsMenuChange}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -781,10 +877,14 @@ export function TaskItem({
             )}
 
             {/* Timer and Actions */}
-            <FocusTimerButton taskId={task.id} variant="kanban" />
             <TimeEstimationPopover taskId={task.id}>
               <TimeEstimationTrigger task={task} />
             </TimeEstimationPopover>
+            {shouldShowFocusTimer(task.id, activeFocusTimer) && (
+              <FocusTimerPopover taskId={task.id}>
+                <FocusTimerTrigger taskId={task.id} />
+              </FocusTimerPopover>
+            )}
             <TaskActionsMenu
               task={task}
               isVisible={actionsMenuVisible}
@@ -1165,15 +1265,20 @@ export function TaskItem({
             </div>
 
             {/* Timer and Actions - Now on the right */}
-            <div className="flex items-center gap-1">
-              <FocusTimerButton taskId={task.id} variant="default" />
+            <div className="flex items-center gap-2">
               <TimeEstimationPopover taskId={task.id}>
                 <TimeEstimationTrigger task={task} />
               </TimeEstimationPopover>
+              {shouldShowFocusTimer(task.id, activeFocusTimer) && (
+                <FocusTimerPopover taskId={task.id}>
+                  <FocusTimerTrigger taskId={task.id} />
+                </FocusTimerPopover>
+              )}
               <TaskActionsMenu
                 task={task}
                 isVisible={actionsMenuVisible}
                 onDeleteClick={() => deleteTask(task.id)}
+                variant="compact"
                 open={actionsMenuOpen}
                 onOpenChange={handleActionsMenuChange}
               />

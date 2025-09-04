@@ -71,14 +71,14 @@ vi.mock("@/lib/atoms", () => ({
   // Focus timer atoms - use simple string identifiers since logic is handled in jotai mock
   focusTimerStateAtom: "focusTimerStateAtom",
   activeFocusTimerAtom: "activeFocusTimerAtom",
+  isTaskTimerActiveAtom: () => () => false,
+  focusTimerStatusAtom: "stopped",
+  startFocusTimerAtom: () => {},
+  pauseFocusTimerAtom: () => {},
   activeFocusTaskAtom: "activeFocusTaskAtom",
-  isTaskTimerActiveAtom: "isTaskTimerActiveAtom",
   isAnyTimerRunningAtom: "isAnyTimerRunningAtom",
   currentFocusTimerElapsedAtom: "currentFocusTimerElapsedAtom",
   focusTimerDisplayAtom: "focusTimerDisplayAtom",
-  focusTimerStatusAtom: "focusTimerStatusAtom",
-  startFocusTimerAtom: "startFocusTimerAtom",
-  pauseFocusTimerAtom: "pauseFocusTimerAtom",
   stopFocusTimerAtom: "stopFocusTimerAtom",
   stopAllFocusTimersAtom: "stopAllFocusTimersAtom",
   focusTimerAtoms: "focusTimerAtoms",
@@ -97,26 +97,19 @@ vi.mock("@/lib/atoms/core/labels", () => ({
   labelsAtom: { toString: () => "labelsAtom" },
 }))
 
-// Mock FocusTimerButton component
-vi.mock("./focus-timer-button", () => ({
-  FocusTimerButton: ({
-    taskId,
-    variant,
-    className,
-  }: {
-    taskId: string
-    variant?: string
-    className?: string
-  }) => (
-    <div
-      data-testid="focus-timer-button"
-      data-task-id={taskId}
-      data-variant={variant}
-      className={className}
-    >
-      Focus Timer
-    </div>
-  ),
+// Mock FocusTimerPopover component
+vi.mock("./focus-timer-popover", () => ({
+  FocusTimerPopover: ({ children }: { children: React.ReactNode }) => children,
+}))
+
+// Mock focus timer display hook
+vi.mock("@/hooks/use-focus-timer-display", () => ({
+  useFocusTimerDisplay: () => ({
+    activeTimer: null,
+    status: "stopped",
+    task: null,
+    displayTime: "00:00",
+  }),
 }))
 
 // Mock component interfaces
@@ -799,6 +792,12 @@ describe("TaskItem", () => {
       // Return isTaskTimerActive function for focus timer compatibility
       if (atomString?.includes("isTaskTimerActive")) {
         return mockIsTaskTimerActive
+      }
+      if (atomString?.includes("focusTimerStatusAtom")) {
+        return "stopped"
+      }
+      if (atomString?.includes("activeFocusTimerAtom")) {
+        return null
       }
       return []
     })

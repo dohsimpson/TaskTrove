@@ -43,16 +43,18 @@ import {
   updateTaskAtom,
   addCommentAtom,
   toggleTaskPanelWithViewStateAtom,
-  selectedTasksAtom,
   tasksAtom,
   // Use centralized selection atoms
   selectionModeAtom,
   selectionToggleTaskSelectionAtom,
-  enterSelectionModeAtom,
 } from "@/lib/atoms"
 import { labelsAtom, addLabelAtom, labelsFromIdsAtom } from "@/lib/atoms/core/labels"
 import { projectsAtom } from "@/lib/atoms"
-import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
+import {
+  quickAddTaskAtom,
+  selectedTaskIdAtom,
+  updateQuickAddTaskAtom,
+} from "@/lib/atoms/ui/dialogs"
 import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } from "@/lib/types"
 import { INBOX_PROJECT_ID, createTaskId, createLabelId } from "@/lib/types"
 import { TimeEstimationPicker } from "../ui/custom/time-estimation-picker"
@@ -87,11 +89,11 @@ export function TaskItem({
 
   // Get task data from atoms - MUST be called before any conditional returns
   const allTasks = useAtomValue(tasksAtom)
-  const selectedTasks = useAtomValue(selectedTasksAtom)
   const selectionMode = useAtomValue(selectionModeAtom)
   const allLabels = useAtomValue(labelsAtom)
   const getLabelsFromIds = useAtomValue(labelsFromIdsAtom)
   const allProjects = useAtomValue(projectsAtom)
+  const selectedTaskId = useAtomValue(selectedTaskIdAtom)
 
   // Atom actions
   const toggleTask = useSetAtom(toggleTaskAtom)
@@ -100,7 +102,6 @@ export function TaskItem({
   const addComment = useSetAtom(addCommentAtom)
   const toggleTaskPanel = useSetAtom(toggleTaskPanelWithViewStateAtom)
   const toggleTaskSelection = useSetAtom(selectionToggleTaskSelectionAtom)
-  const enterSelectionMode = useSetAtom(enterSelectionModeAtom)
   const addLabel = useSetAtom(addLabelAtom)
 
   // Quick-add atoms for subtask handling in new tasks
@@ -141,7 +142,7 @@ export function TaskItem({
   }
 
   // Derived state from atoms
-  const isSelected = selectedTasks.includes(taskId)
+  const isSelected = selectedTaskId === taskId
   const isSelectionMode = selectionMode
 
   // Context menu visibility with flicker prevention
@@ -280,9 +281,10 @@ export function TaskItem({
   const handleContextMenu = (e: React.MouseEvent) => {
     // Prevent default context menu and enter selection mode
     e.preventDefault()
-    if (!isSelectionMode) {
-      enterSelectionMode(taskId)
-    }
+    // TODO: commented out right click triggering selection mode, as it's not supported at the moment
+    // if (!isSelectionMode) {
+    //   enterSelectionMode(taskId)
+    // }
   }
 
   const handleAddLabel = (labelName?: string) => {
@@ -337,10 +339,10 @@ export function TaskItem({
     return (
       <div
         className={cn(
-          "group/task relative bg-card rounded border border-border border-l-2 transition-all duration-200",
+          "group/task relative bg-card rounded border border-border border-l-3 transition-all duration-200",
           "hover:bg-card hover:shadow-sm hover:scale-[1.005] active:scale-[1.002]",
           task.completed && "opacity-60",
-          isSelected && "ring-2 ring-blue-500 border-blue-300",
+          isSelected && "ring-1 ring-ring",
           "cursor-pointer",
           getPriorityColor(task.priority, variant),
           className,
@@ -626,9 +628,9 @@ export function TaskItem({
     return (
       <div
         className={cn(
-          "group/task relative p-3 bg-card border border-border border-l-2 rounded-lg shadow-xs cursor-pointer hover:shadow-md hover:scale-[1.005] active:scale-[1.002] transition-all duration-200",
+          "group/task relative p-3 bg-card border border-border border-l-3 rounded-lg shadow-xs cursor-pointer hover:shadow-md hover:scale-[1.005] active:scale-[1.002] transition-all duration-200",
           task.completed && "opacity-60",
-          isSelected && "ring-2 ring-blue-500",
+          isSelected && "ring-1 ring-ring",
           getPriorityColor(task.priority, variant),
           className,
         )}
@@ -956,7 +958,7 @@ export function TaskItem({
     return (
       <div
         className={cn(
-          "group/task text-xs p-0.5 lg:p-1 rounded cursor-pointer transition-all duration-200 border border-border border-l-2",
+          "group/task text-xs p-0.5 lg:p-1 rounded cursor-pointer transition-all duration-200 border border-border border-l-3",
           task.completed
             ? "bg-muted text-muted-foreground line-through"
             : "bg-card hover:bg-accent",
@@ -1044,10 +1046,10 @@ export function TaskItem({
   return (
     <div
       className={cn(
-        "group relative p-2 sm:p-3 md:p-4 bg-card rounded-lg border border-border border-l-2 transition-all duration-200",
+        "group relative p-2 sm:p-3 md:p-4 bg-card rounded-lg border border-border border-l-3 transition-all duration-200",
         "hover:shadow-md hover:scale-[1.005] active:scale-[1.002]",
         task.completed && "opacity-60",
-        isSelected && "ring-2 ring-blue-500 border-blue-300",
+        isSelected && "ring-1 ring-ring",
         "cursor-pointer",
         getPriorityColor(task.priority, variant),
         className,

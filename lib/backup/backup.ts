@@ -82,14 +82,14 @@ export async function runBackup() {
     try {
       const dataFile = await safeReadDataFile()
 
-      if (dataFile?.settings?.integrations?.autoBackup?.enabled === false) {
+      if (dataFile?.settings?.data?.autoBackup?.enabled === false) {
         console.log("Auto backup is disabled in settings. Skipping backup.")
         return
       }
 
       // Use maxBackups from settings if available
-      if (dataFile?.settings?.integrations?.autoBackup?.maxBackups !== undefined) {
-        maxBackups = dataFile.settings.integrations.autoBackup.maxBackups
+      if (dataFile?.settings?.data?.autoBackup?.maxBackups !== undefined) {
+        maxBackups = dataFile.settings.data.autoBackup.maxBackups
       }
     } catch {
       // If data file doesn't exist or can't be read, proceed with backup using default

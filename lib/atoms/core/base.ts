@@ -93,10 +93,12 @@ import {
   DEFAULT_BACKUP_TIME,
   DEFAULT_MAX_BACKUPS,
 } from "../../constants/defaults"
-import { ROOT_PROJECT_GROUP_ID, ROOT_LABEL_GROUP_ID } from "../../types/defaults"
+import {
+  ROOT_PROJECT_GROUP_ID,
+  ROOT_LABEL_GROUP_ID,
+  DEFAULT_NOTIFICATION_SETTINGS,
+} from "../../types/defaults"
 
-// Define supported sources constant to ensure type consistency
-const SUPPORTED_IMPORT_SOURCES = ["ticktick", "todoist", "asana", "trello"] as const
 import {
   createSafeProjectNameSlug,
   createSafeLabelNameSlug,
@@ -173,16 +175,14 @@ const EMPTY_CACHE_DATA: DataFile = {
     items: [],
   },
   settings: {
-    integrations: {
-      imports: {
-        supportedSources: [...SUPPORTED_IMPORT_SOURCES],
-      },
+    data: {
       autoBackup: {
         enabled: DEFAULT_AUTO_BACKUP_ENABLED,
         backupTime: DEFAULT_BACKUP_TIME,
         maxBackups: DEFAULT_MAX_BACKUPS,
       },
     },
+    notifications: DEFAULT_NOTIFICATION_SETTINGS,
   },
 }
 
@@ -447,16 +447,14 @@ export const dataQueryAtom = atomWithQuery(() => ({
           items: [],
         },
         settings: {
-          integrations: {
-            imports: {
-              supportedSources: [...SUPPORTED_IMPORT_SOURCES],
-            },
+          data: {
             autoBackup: {
               enabled: DEFAULT_AUTO_BACKUP_ENABLED,
               backupTime: DEFAULT_BACKUP_TIME,
               maxBackups: DEFAULT_MAX_BACKUPS,
             },
           },
+          notifications: DEFAULT_NOTIFICATION_SETTINGS,
         },
       }
     }
@@ -1168,19 +1166,15 @@ export const updateSettingsMutationAtom = createMutation<
   testResponseFactory: (variables: UpdateSettingsRequest) => {
     // For test mode, construct a complete UserSettings from the partial updates
     const testUserSettings: UserSettings = {
-      integrations: {
-        imports: {
-          supportedSources: [...SUPPORTED_IMPORT_SOURCES],
-          ...variables.settings.integrations?.imports,
-        },
+      data: {
         autoBackup: {
-          enabled:
-            variables.settings.integrations?.autoBackup?.enabled ?? DEFAULT_AUTO_BACKUP_ENABLED,
-          backupTime:
-            variables.settings.integrations?.autoBackup?.backupTime ?? DEFAULT_BACKUP_TIME,
-          maxBackups:
-            variables.settings.integrations?.autoBackup?.maxBackups ?? DEFAULT_MAX_BACKUPS,
+          enabled: variables.settings.data?.autoBackup?.enabled ?? DEFAULT_AUTO_BACKUP_ENABLED,
+          backupTime: variables.settings.data?.autoBackup?.backupTime ?? DEFAULT_BACKUP_TIME,
+          maxBackups: variables.settings.data?.autoBackup?.maxBackups ?? DEFAULT_MAX_BACKUPS,
         },
+      },
+      notifications: {
+        enabled: variables.settings.notifications?.enabled ?? DEFAULT_NOTIFICATION_SETTINGS.enabled,
       },
     }
     return {
@@ -1192,25 +1186,27 @@ export const updateSettingsMutationAtom = createMutation<
   optimisticUpdateFn: (variables: UpdateSettingsRequest, oldData: DataFile) => {
     // Merge partial settings with current settings
     const updatedSettings: UserSettings = {
-      integrations: {
-        imports: {
-          ...oldData.settings.integrations.imports,
-          ...variables.settings.integrations?.imports,
-        },
+      data: {
         autoBackup: {
           enabled:
-            variables.settings.integrations?.autoBackup?.enabled ??
-            oldData.settings.integrations.autoBackup?.enabled ??
+            variables.settings.data?.autoBackup?.enabled ??
+            oldData.settings.data.autoBackup?.enabled ??
             DEFAULT_AUTO_BACKUP_ENABLED,
           backupTime:
-            variables.settings.integrations?.autoBackup?.backupTime ??
-            oldData.settings.integrations.autoBackup?.backupTime ??
+            variables.settings.data?.autoBackup?.backupTime ??
+            oldData.settings.data.autoBackup?.backupTime ??
             DEFAULT_BACKUP_TIME,
           maxBackups:
-            variables.settings.integrations?.autoBackup?.maxBackups ??
-            oldData.settings.integrations.autoBackup?.maxBackups ??
+            variables.settings.data?.autoBackup?.maxBackups ??
+            oldData.settings.data.autoBackup?.maxBackups ??
             DEFAULT_MAX_BACKUPS,
         },
+      },
+      notifications: {
+        enabled:
+          variables.settings.notifications?.enabled ??
+          oldData.settings.notifications?.enabled ??
+          DEFAULT_NOTIFICATION_SETTINGS.enabled,
       },
     }
 
@@ -1229,18 +1225,16 @@ export const settingsAtom = atom(
     if ("data" in result && result.data) {
       return result.data.settings
     }
-    // Return minimal default settings - only imports supported
+    // Return minimal default settings
     return {
-      integrations: {
-        imports: {
-          supportedSources: [...SUPPORTED_IMPORT_SOURCES],
-        },
+      data: {
         autoBackup: {
           enabled: DEFAULT_AUTO_BACKUP_ENABLED,
           backupTime: DEFAULT_BACKUP_TIME,
           maxBackups: DEFAULT_MAX_BACKUPS,
         },
       },
+      notifications: DEFAULT_NOTIFICATION_SETTINGS,
     }
   },
   async (get, set, partialSettings: PartialUserSettings) => {

@@ -2,11 +2,11 @@ import { atom } from "jotai"
 import type {
   PartialUserSettings,
   DataSettings,
+  NotificationSettings,
   // Future type imports (not used yet):
   // AppearanceSettings,
   // BehaviorSettings,
   // ProductivitySettings,
-  // NotificationSettings,
   // TaskPriority,
 } from "@/lib/types"
 import { settingsAtom, updateSettingsAtom } from "@/lib/atoms/core/settings"
@@ -45,23 +45,13 @@ import { settingsAtom, updateSettingsAtom } from "@/lib/atoms/core/settings"
 //   },
 // )
 
-// /**
-//  * Data settings atom - Not implemented yet
-//  */
-// export const dataSettingsAtom = atom(
-//   (get) => get(settingsAtom).data,
-//   async (get, set, updates: Partial<DataSettings>) => {
-//     await set(updateSettingsAtom, { data: updates })
-//   },
-// )
-
 /**
  * Data settings atom with API persistence
  */
 export const dataSettingsAtom = atom(
-  (get) => get(settingsAtom).integrations,
+  (get) => get(settingsAtom).data,
   async (get, set, updates: Partial<DataSettings>) => {
-    await set(updateSettingsAtom, { integrations: updates })
+    await set(updateSettingsAtom, { data: updates })
   },
 )
 
@@ -143,15 +133,15 @@ export const userSettingsAtom = atom((get) => get(settingsAtom))
 //   },
 // )
 
-// /**
-//  * Generic action to update notification settings - Not implemented yet
-//  */
-// export const updateNotificationSettingsAtom = atom(
-//   null,
-//   async (get, set, updates: Partial<NotificationSettings>) => {
-//     await set(updateSettingsAtom, { notifications: updates })
-//   },
-// )
+/**
+ * Generic action to update notification settings
+ */
+export const updateNotificationSettingsAtom = atom(
+  null,
+  async (get, set, updates: Partial<NotificationSettings>) => {
+    await set(updateSettingsAtom, { notifications: updates })
+  },
+)
 
 // /**
 //  * Generic action to update data settings - Not implemented yet
@@ -169,7 +159,7 @@ export const userSettingsAtom = atom((get) => get(settingsAtom))
 export const updateDataSettingsAtom = atom(
   null,
   async (get, set, updates: Partial<DataSettings>) => {
-    await set(updateSettingsAtom, { integrations: updates })
+    await set(updateSettingsAtom, { data: updates })
   },
 )
 

@@ -22,6 +22,7 @@ import {
   DEFAULT_BACKUP_TIME,
   DEFAULT_MAX_BACKUPS,
 } from "@/lib/constants/defaults"
+import { DEFAULT_NOTIFICATION_SETTINGS } from "@/lib/types/defaults"
 
 /**
  * GET /api/settings
@@ -101,32 +102,33 @@ async function updateSettings(
     return createErrorResponse("Failed to read data file", "File reading failed", 500)
   }
 
-  // Merge partial settings with current settings (simplified to only integrations)
+  // Merge partial settings with current settings
   const updatedSettings: UserSettings = {
-    integrations: {
-      imports: {
-        ...fileData.settings.integrations.imports,
-        ...partialSettings.integrations?.imports,
-      },
+    data: {
       autoBackup: {
         enabled:
-          partialSettings.integrations?.autoBackup?.enabled ??
-          fileData.settings.integrations.autoBackup?.enabled ??
+          partialSettings.data?.autoBackup?.enabled ??
+          fileData.settings.data.autoBackup?.enabled ??
           DEFAULT_AUTO_BACKUP_ENABLED,
         backupTime:
-          partialSettings.integrations?.autoBackup?.backupTime ??
-          fileData.settings.integrations.autoBackup?.backupTime ??
+          partialSettings.data?.autoBackup?.backupTime ??
+          fileData.settings.data.autoBackup?.backupTime ??
           DEFAULT_BACKUP_TIME,
         maxBackups:
-          partialSettings.integrations?.autoBackup?.maxBackups ??
-          fileData.settings.integrations.autoBackup?.maxBackups ??
+          partialSettings.data?.autoBackup?.maxBackups ??
+          fileData.settings.data.autoBackup?.maxBackups ??
           DEFAULT_MAX_BACKUPS,
       },
+    },
+    notifications: {
+      enabled:
+        partialSettings.notifications?.enabled ??
+        fileData.settings.notifications?.enabled ??
+        DEFAULT_NOTIFICATION_SETTINGS.enabled,
     },
     // Future settings will be merged here when implemented:
     // appearance: { ... },
     // behavior: { ... },
-    // notifications: { ... },
     // data: { ... },
     // productivity: { ... },
   }

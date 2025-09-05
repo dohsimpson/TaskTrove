@@ -19,9 +19,6 @@ import {
   DEFAULT_MAX_BACKUPS,
 } from "../../constants/defaults"
 
-// Use the same supported sources constant from base.ts
-const SUPPORTED_IMPORT_SOURCES = ["ticktick", "todoist", "asana", "trello"] as const
-
 /**
  * Core settings management atoms for TaskTrove's Jotai migration
  *
@@ -84,13 +81,10 @@ updateSettingsAtom.debugLabel = "updateSettingsAtom"
 export const dataSettingsAtom = atom((get) => {
   try {
     const settings = get(settingsAtom)
-    return settings.integrations
+    return settings.data
   } catch (error) {
     handleAtomError(error, "dataSettingsAtom")
     return {
-      imports: {
-        supportedSources: [...SUPPORTED_IMPORT_SOURCES],
-      },
       autoBackup: {
         enabled: DEFAULT_AUTO_BACKUP_ENABLED,
         backupTime: DEFAULT_BACKUP_TIME,
@@ -102,22 +96,6 @@ export const dataSettingsAtom = atom((get) => {
 dataSettingsAtom.debugLabel = "dataSettingsAtom"
 
 /**
- * Import settings (specific to imports functionality)
- */
-export const importSettingsAtom = atom((get) => {
-  try {
-    const dataSettings = get(dataSettingsAtom)
-    return dataSettings.imports
-  } catch (error) {
-    handleAtomError(error, "importSettingsAtom")
-    return {
-      supportedSources: [...SUPPORTED_IMPORT_SOURCES],
-    }
-  }
-})
-importSettingsAtom.debugLabel = "importSettingsAtom"
-
-/**
  * Settings file metadata (version, lastModified)
  */
 export const settingsMetadataAtom = atom((get) => {
@@ -125,7 +103,7 @@ export const settingsMetadataAtom = atom((get) => {
     const result = get(dataQueryAtom)
     if ("data" in result && result.data) {
       return {
-        version: result.data.version || "1.0.0",
+        version: "version" in result.data && result.data.version ? result.data.version : "1.0.0",
         lastModified: new Date(),
       }
     }
@@ -148,36 +126,15 @@ settingsMetadataAtom.debugLabel = "settingsMetadataAtom"
 // =============================================================================
 
 /**
- * Checks if a specific source is supported for imports
- */
-export const isImportSourceSupportedAtom = atom((get) => {
-  const importSettings = get(importSettingsAtom)
-  return (source: string): boolean => {
-    try {
-      // Type-safe check without assertion
-      return importSettings.supportedSources.some((supportedSource) => supportedSource === source)
-    } catch (error) {
-      handleAtomError(error, "isImportSourceSupportedAtom")
-      return false
-    }
-  }
-})
-isImportSourceSupportedAtom.debugLabel = "isImportSourceSupportedAtom"
-
-/**
  * Updates specific data settings
  */
 export const updateDataSettingsAtom = atom(
   null,
-  (get, set, dataUpdates: Partial<UserSettings["integrations"]>) => {
+  (get, set, dataUpdates: Partial<UserSettings["data"]>) => {
     try {
-      const currentSettings = get(settingsAtom)
       const updatedSettings: PartialUserSettings = {
-        integrations: {
-          imports: {
-            ...currentSettings.integrations.imports,
-            ...dataUpdates.imports,
-          },
+        data: {
+          ...dataUpdates,
         },
       }
       set(updateSettingsAtom, updatedSettings)
@@ -187,30 +144,6 @@ export const updateDataSettingsAtom = atom(
   },
 )
 updateDataSettingsAtom.debugLabel = "updateDataSettingsAtom"
-
-/**
- * Updates import settings specifically
- */
-export const updateImportSettingsAtom = atom(
-  null,
-  (get, set, importUpdates: Partial<UserSettings["integrations"]["imports"]>) => {
-    try {
-      const currentSettings = get(settingsAtom)
-      const updatedSettings: PartialUserSettings = {
-        integrations: {
-          imports: {
-            ...currentSettings.integrations.imports,
-            ...importUpdates,
-          },
-        },
-      }
-      set(updateSettingsAtom, updatedSettings)
-    } catch (error) {
-      handleAtomError(error, "updateImportSettingsAtom")
-    }
-  },
-)
-updateImportSettingsAtom.debugLabel = "updateImportSettingsAtom"
 
 // =============================================================================
 // EXPORT STRUCTURE
@@ -228,16 +161,13 @@ export const settingsAtoms = {
   actions: {
     updateSettings: updateSettingsAtom,
     updateDataSettings: updateDataSettingsAtom,
-    updateImportSettings: updateImportSettingsAtom,
     updateSettingsMutation: updateSettingsMutationAtom,
   },
 
   // Derived read atoms
   derived: {
     dataSettings: dataSettingsAtom,
-    importSettings: importSettingsAtom,
     settingsMetadata: settingsMetadataAtom,
-    isImportSourceSupported: isImportSourceSupportedAtom,
   },
 
   // Query atoms (settings now use main dataQueryAtom)

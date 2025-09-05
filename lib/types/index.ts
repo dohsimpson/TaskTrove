@@ -760,9 +760,6 @@ export const GroupSerializationSchema = GroupSchema
  * Settings schemas - need to be defined before DataFileSchema
  */
 export const DataSettingsSchema = z.object({
-  imports: z.object({
-    supportedSources: z.array(z.enum(["ticktick", "todoist", "asana", "trello"])),
-  }),
   /** Auto backup configuration */
   autoBackup: z.object({
     enabled: z.boolean(),
@@ -831,8 +828,8 @@ export const NotificationSettingsSchema = z.object({
 })
 
 export const UserSettingsSchema = z.object({
-  integrations: DataSettingsSchema,
-  notifications: NotificationSettingsSchema.optional(),
+  data: DataSettingsSchema,
+  notifications: NotificationSettingsSchema,
 })
 /** Schema for scheduled notification */
 export const ScheduledNotificationSchema = z.object({
@@ -2082,12 +2079,11 @@ export const BehaviorSettingsSchema = z.object({}).optional()
  * Schema for partial user settings updates - Only integrations for now
  */
 export const PartialUserSettingsSchema = z.object({
-  integrations: DataSettingsSchema.partial().optional(),
+  data: DataSettingsSchema.partial().optional(),
   notifications: NotificationSettingsSchema.partial().optional(),
   // Optional future settings (not stored yet):
   // appearance: AppearanceSettingsSchema.partial().optional(),
   // behavior: BehaviorSettingsSchema.partial().optional(),
-  // data: DataSettingsSchema.partial().optional(),
   // productivity: ProductivitySettingsSchema.partial().optional(),
 })
 

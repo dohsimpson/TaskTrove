@@ -237,3 +237,13 @@ export const MIGRATION_DEFAULT_PROJECT_COLOR = "#3b82f6"
 
 /** Default label color for migration */
 export const MIGRATION_DEFAULT_LABEL_COLOR = "#6b7280"
+
+// =============================================================================
+// IMPORT DEFAULTS
+// =============================================================================
+
+/** Supported import sources for task management services */
+export const SUPPORTED_IMPORT_SOURCES = ["ticktick", "todoist", "asana", "trello"] as const
+
+/** Type for supported import sources */
+export type SupportedImportSource = (typeof SUPPORTED_IMPORT_SOURCES)[number]

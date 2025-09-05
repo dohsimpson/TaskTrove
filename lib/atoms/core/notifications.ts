@@ -17,6 +17,18 @@ import { log } from "@/lib/utils/logger"
 import { handleAtomError } from "../utils"
 import { showCrossBrowserNotification } from "@/lib/utils/cross-browser-notifications"
 import { DEFAULT_UUID } from "@/lib/constants/defaults"
+import { DEFAULT_NOTIFICATION_SETTINGS } from "@/lib/types/defaults"
+
+// ====================
+// TYPE GUARDS
+// ====================
+
+/** Type guard to check if an object is NotificationSettings */
+function isNotificationSettings(obj: unknown): obj is NotificationSettings {
+  return (
+    obj !== null && typeof obj === "object" && "enabled" in obj && typeof obj.enabled === "boolean"
+  )
+}
 
 // ====================
 // STATE ATOMS
@@ -79,16 +91,28 @@ export const nextDueNotificationsAtom = atom((get): ScheduledNotificationSet => 
 })
 
 /** Get notification settings from user settings */
-export const notificationSettingsAtom = atom((get) => {
-  const settings = get(settingsAtom)
+export const notificationSettingsAtom = atom(
+  (get): NotificationSettings => {
+    const settings = get(settingsAtom)
 
-  // Default notification settings - simplified
-  const defaultSettings: NotificationSettings = {
-    enabled: true,
-  }
+    // Default notification settings
+    const defaultSettings: NotificationSettings = DEFAULT_NOTIFICATION_SETTINGS
 
-  return settings?.notifications || defaultSettings
-})
+    // Type-safe access to notifications - all settings now include notifications by default
+    if (settings && typeof settings === "object" && "notifications" in settings) {
+      const notifications = settings.notifications
+      if (isNotificationSettings(notifications)) {
+        return notifications
+      }
+    }
+    return defaultSettings
+  },
+  async (get, set, updates: Partial<NotificationSettings>) => {
+    // Use the core updateSettingsAtom to persist changes
+    const { updateSettingsAtom } = await import("./settings")
+    await set(updateSettingsAtom, { notifications: updates })
+  },
+)
 
 /** Check if notifications should be shown now (simplified) */
 export const shouldShowNotificationNowAtom = atom((get) => {

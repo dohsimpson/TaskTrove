@@ -47,10 +47,17 @@ const SUPPORTED_SOURCES: ("ticktick" | "todoist" | "asana" | "trello")[] = [
 ]
 
 /**
+ * Default notification settings
+ */
+export const DEFAULT_NOTIFICATION_SETTINGS = {
+  enabled: true,
+}
+
+/**
  * Default user settings structure
  */
 export const DEFAULT_USER_SETTINGS = {
-  integrations: {
+  data: {
     imports: {
       supportedSources: SUPPORTED_SOURCES,
     },
@@ -60,6 +67,7 @@ export const DEFAULT_USER_SETTINGS = {
       maxBackups: DEFAULT_MAX_BACKUPS,
     },
   },
+  notifications: DEFAULT_NOTIFICATION_SETTINGS,
 }
 
 /**

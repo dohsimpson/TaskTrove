@@ -28,7 +28,11 @@ import {
 import { SiTodoist, SiTrello, SiAsana, SiTicktick } from "@icons-pack/react-simple-icons"
 import { dataSettingsAtom, updateDataSettingsAtom } from "@/lib/atoms/ui/user-settings-atom"
 import { queryClientAtom } from "@/lib/atoms/core/base"
-import { DEFAULT_BACKUP_TIME, DEFAULT_MAX_BACKUPS } from "@/lib/constants/defaults"
+import {
+  DEFAULT_BACKUP_TIME,
+  DEFAULT_MAX_BACKUPS,
+  SUPPORTED_IMPORT_SOURCES,
+} from "@/lib/constants/defaults"
 
 type UploadStatus = "idle" | "uploading" | "success" | "error"
 
@@ -114,6 +118,8 @@ export function DataForm() {
   //     description: `Calendar connection for ${provider} is not yet implemented.`,
   //   })
   // }
+
+  // Using centralized constant for supported import sources
 
   const importFromService = (service: string) => {
     // Open import site in new tab
@@ -228,7 +234,7 @@ export function DataForm() {
             instructions to export and convert your data to TaskTrove format.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {settings.imports.supportedSources.map((source) => (
+            {SUPPORTED_IMPORT_SOURCES.map((source) => (
               <Button
                 key={source}
                 variant="outline"

@@ -36,7 +36,11 @@ import {
   moveProjectBetweenGroupsAtom,
 } from "./groups"
 import { dataQueryAtom } from "./base"
-import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
+import {
+  DEFAULT_PROJECT_GROUP,
+  DEFAULT_LABEL_GROUP,
+  DEFAULT_NOTIFICATION_SETTINGS,
+} from "@/lib/types/defaults"
 
 // Mock fetch for API calls
 const mockFetch = vi.fn()
@@ -82,16 +86,14 @@ const mockGroupsData: DataFileSerialization = {
   projects: [],
   labels: [],
   settings: {
-    integrations: {
-      imports: {
-        supportedSources: ["ticktick", "todoist", "asana", "trello"],
-      },
+    data: {
       autoBackup: {
         enabled: true,
         backupTime: "09:00",
         maxBackups: 7,
       },
     },
+    notifications: DEFAULT_NOTIFICATION_SETTINGS,
   },
 }
 

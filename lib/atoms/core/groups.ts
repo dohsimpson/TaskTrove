@@ -368,7 +368,9 @@ export const moveProjectToGroupAtom = atom(
       // First, check if project is currently at root level and remove it
       const groups = get(allGroupsAtom)
       const rootGroup = groups.projectGroups
-      const isAtRoot = rootGroup.items.includes(projectId)
+      const isAtRoot = rootGroup.items.some((item) =>
+        typeof item === "string" ? item === projectId : false,
+      )
 
       if (isAtRoot) {
         // Remove from root level first
@@ -453,7 +455,9 @@ export const removeProjectFromGroupWithIndexAtom = atom(
         const rootGroup = groups.projectGroups
 
         // Check if project is at root level
-        if (!rootGroup.items.includes(projectId)) {
+        if (
+          !rootGroup.items.some((item) => (typeof item === "string" ? item === projectId : false))
+        ) {
           log.info({ projectId }, "Project not found at root level")
           return
         }

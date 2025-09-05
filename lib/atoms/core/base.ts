@@ -177,9 +177,11 @@ const EMPTY_CACHE_DATA: DataFile = {
       imports: {
         supportedSources: [...SUPPORTED_IMPORT_SOURCES],
       },
-      autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
-      backupTime: DEFAULT_BACKUP_TIME,
-      maxBackups: DEFAULT_MAX_BACKUPS,
+      autoBackup: {
+        enabled: DEFAULT_AUTO_BACKUP_ENABLED,
+        backupTime: DEFAULT_BACKUP_TIME,
+        maxBackups: DEFAULT_MAX_BACKUPS,
+      },
     },
   },
 }
@@ -449,9 +451,11 @@ export const dataQueryAtom = atomWithQuery(() => ({
             imports: {
               supportedSources: [...SUPPORTED_IMPORT_SOURCES],
             },
-            autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
-            backupTime: DEFAULT_BACKUP_TIME,
-            maxBackups: DEFAULT_MAX_BACKUPS,
+            autoBackup: {
+              enabled: DEFAULT_AUTO_BACKUP_ENABLED,
+              backupTime: DEFAULT_BACKUP_TIME,
+              maxBackups: DEFAULT_MAX_BACKUPS,
+            },
           },
         },
       }
@@ -1169,10 +1173,14 @@ export const updateSettingsMutationAtom = createMutation<
           supportedSources: [...SUPPORTED_IMPORT_SOURCES],
           ...variables.settings.integrations?.imports,
         },
-        autoBackupEnabled:
-          variables.settings.integrations?.autoBackupEnabled ?? DEFAULT_AUTO_BACKUP_ENABLED,
-        backupTime: variables.settings.integrations?.backupTime ?? DEFAULT_BACKUP_TIME,
-        maxBackups: variables.settings.integrations?.maxBackups ?? DEFAULT_MAX_BACKUPS,
+        autoBackup: {
+          enabled:
+            variables.settings.integrations?.autoBackup?.enabled ?? DEFAULT_AUTO_BACKUP_ENABLED,
+          backupTime:
+            variables.settings.integrations?.autoBackup?.backupTime ?? DEFAULT_BACKUP_TIME,
+          maxBackups:
+            variables.settings.integrations?.autoBackup?.maxBackups ?? DEFAULT_MAX_BACKUPS,
+        },
       },
     }
     return {
@@ -1189,18 +1197,20 @@ export const updateSettingsMutationAtom = createMutation<
           ...oldData.settings.integrations.imports,
           ...variables.settings.integrations?.imports,
         },
-        autoBackupEnabled:
-          variables.settings.integrations?.autoBackupEnabled ??
-          oldData.settings.integrations.autoBackupEnabled ??
-          DEFAULT_AUTO_BACKUP_ENABLED,
-        backupTime:
-          variables.settings.integrations?.backupTime ??
-          oldData.settings.integrations.backupTime ??
-          DEFAULT_BACKUP_TIME,
-        maxBackups:
-          variables.settings.integrations?.maxBackups ??
-          oldData.settings.integrations.maxBackups ??
-          DEFAULT_MAX_BACKUPS,
+        autoBackup: {
+          enabled:
+            variables.settings.integrations?.autoBackup?.enabled ??
+            oldData.settings.integrations.autoBackup?.enabled ??
+            DEFAULT_AUTO_BACKUP_ENABLED,
+          backupTime:
+            variables.settings.integrations?.autoBackup?.backupTime ??
+            oldData.settings.integrations.autoBackup?.backupTime ??
+            DEFAULT_BACKUP_TIME,
+          maxBackups:
+            variables.settings.integrations?.autoBackup?.maxBackups ??
+            oldData.settings.integrations.autoBackup?.maxBackups ??
+            DEFAULT_MAX_BACKUPS,
+        },
       },
     }
 
@@ -1225,9 +1235,11 @@ export const settingsAtom = atom(
         imports: {
           supportedSources: [...SUPPORTED_IMPORT_SOURCES],
         },
-        autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
-        backupTime: DEFAULT_BACKUP_TIME,
-        maxBackups: DEFAULT_MAX_BACKUPS,
+        autoBackup: {
+          enabled: DEFAULT_AUTO_BACKUP_ENABLED,
+          backupTime: DEFAULT_BACKUP_TIME,
+          maxBackups: DEFAULT_MAX_BACKUPS,
+        },
       },
     }
   },

@@ -54,9 +54,11 @@ export const DEFAULT_USER_SETTINGS = {
     imports: {
       supportedSources: SUPPORTED_SOURCES,
     },
-    autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
-    backupTime: DEFAULT_BACKUP_TIME,
-    maxBackups: DEFAULT_MAX_BACKUPS,
+    autoBackup: {
+      enabled: DEFAULT_AUTO_BACKUP_ENABLED,
+      backupTime: DEFAULT_BACKUP_TIME,
+      maxBackups: DEFAULT_MAX_BACKUPS,
+    },
   },
 }
 

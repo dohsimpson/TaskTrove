@@ -15,15 +15,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { Link, X } from "lucide-react"
+import { Database, X, Bell } from "lucide-react"
 // Future icons (not used yet):
-// import { Palette, Settings, Bell, Database, Target, Code } from "lucide-react"
+// import { Link, Palette, Settings, Target, Code } from "lucide-react"
 import { showSettingsDialogAtom, closeSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
-import { IntegrationsForm } from "./settings-forms/integrations-form"
+import { DataForm } from "./settings-forms/data-form"
+import { NotificationsForm } from "./settings-forms/notifications-form"
 // Future form imports (not used yet):
 // import { AppearanceForm } from "./settings-forms/appearance-form"
 // import { BehaviorForm } from "./settings-forms/behavior-form"
-// import { NotificationsForm } from "./settings-forms/notifications-form"
 // import { DataForm } from "./settings-forms/data-form"
 // import { ProductivityForm } from "./settings-forms/productivity-form"
 // import { ApiForm } from "./settings-forms/api-form"
@@ -36,13 +36,18 @@ interface SettingsCategory {
   description: string
 }
 
-// Only show integrations for now - other categories will be added later
 const settingsCategories: SettingsCategory[] = [
   {
-    id: "integrations",
-    title: "Import & Export",
-    icon: Link,
-    description: "Import tasks from other providers and export your data",
+    id: "notifications",
+    title: "Notifications",
+    icon: Bell,
+    description: "Notification settings",
+  },
+  {
+    id: "data",
+    title: "Data & Storage",
+    icon: Database,
+    description: "Import/export, backups",
   },
   // Future settings categories (not implemented yet):
   // {
@@ -56,18 +61,6 @@ const settingsCategories: SettingsCategory[] = [
   //   title: "Behavior",
   //   icon: Settings,
   //   description: "App behavior and default preferences",
-  // },
-  // {
-  //   id: "notifications",
-  //   title: "Notifications",
-  //   icon: Bell,
-  //   description: "Notification settings and sound preferences",
-  // },
-  // {
-  //   id: "data",
-  //   title: "Data & Sync",
-  //   icon: Database,
-  //   description: "Backup, export, and synchronization settings",
   // },
   // {
   //   id: "productivity",
@@ -86,22 +79,22 @@ const settingsCategories: SettingsCategory[] = [
 export function SettingsDialog() {
   const open = useAtomValue(showSettingsDialogAtom)
   const closeDialog = useSetAtom(closeSettingsDialogAtom)
-  const [activeCategory, setActiveCategory] = useState("integrations")
+  const [activeCategory, setActiveCategory] = useState("data")
 
   // Get active category info
   const activeCategoryInfo = settingsCategories.find((cat) => cat.id === activeCategory)
 
   const renderCategoryContent = () => {
     switch (activeCategory) {
-      case "integrations":
-        return <IntegrationsForm />
+      case "data":
+        return <DataForm />
+      case "notifications":
+        return <NotificationsForm />
       // Future forms (not implemented yet):
       // case "appearance":
       //   return <AppearanceForm />
       // case "behavior":
       //   return <BehaviorForm />
-      // case "notifications":
-      //   return <NotificationsForm />
       // case "data":
       //   return <DataForm />
       // case "productivity":

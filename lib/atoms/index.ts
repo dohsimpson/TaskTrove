@@ -98,8 +98,8 @@ export { selectionAtoms } from "./ui/selection"
  * Contains user preferences, settings persistence, and configuration
  */
 export {
-  integrationSettingsAtom,
-  updateIntegrationSettingsAtom,
+  dataSettingsAtom,
+  updateDataSettingsAtom,
   userSettingsAtom,
   exportSettingsAtom,
   importSettingsAtom,

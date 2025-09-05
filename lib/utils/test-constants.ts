@@ -83,9 +83,11 @@ export const TEST_GROUPS_DATA: DataFileSerialization = {
       imports: {
         supportedSources: ["ticktick", "todoist", "asana", "trello"],
       },
-      autoBackupEnabled: true,
-      backupTime: "09:00",
-      maxBackups: 7,
+      autoBackup: {
+        enabled: true,
+        backupTime: "09:00",
+        maxBackups: 7,
+      },
     },
   },
 }

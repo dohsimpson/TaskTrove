@@ -1,11 +1,10 @@
 import { atom } from "jotai"
 import type {
   PartialUserSettings,
-  IntegrationSettings,
+  DataSettings,
   // Future type imports (not used yet):
   // AppearanceSettings,
   // BehaviorSettings,
-  // DataSettings,
   // ProductivitySettings,
   // NotificationSettings,
   // TaskPriority,
@@ -57,11 +56,11 @@ import { settingsAtom, updateSettingsAtom } from "@/lib/atoms/core/settings"
 // )
 
 /**
- * Integration settings atom with API persistence
+ * Data settings atom with API persistence
  */
-export const integrationSettingsAtom = atom(
+export const dataSettingsAtom = atom(
   (get) => get(settingsAtom).integrations,
-  async (get, set, updates: Partial<IntegrationSettings>) => {
+  async (get, set, updates: Partial<DataSettings>) => {
     await set(updateSettingsAtom, { integrations: updates })
   },
 )
@@ -165,11 +164,11 @@ export const userSettingsAtom = atom((get) => get(settingsAtom))
 // )
 
 /**
- * Generic action to update integration settings
+ * Generic action to update data settings
  */
-export const updateIntegrationSettingsAtom = atom(
+export const updateDataSettingsAtom = atom(
   null,
-  async (get, set, updates: Partial<IntegrationSettings>) => {
+  async (get, set, updates: Partial<DataSettings>) => {
     await set(updateSettingsAtom, { integrations: updates })
   },
 )

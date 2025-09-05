@@ -36,6 +36,7 @@ import {
 import { handleAtomError } from "../utils"
 import { currentViewAtom, currentViewStateAtom, viewStatesAtom } from "../ui/views"
 import { currentRouteContextAtom } from "../ui/navigation"
+import { notificationAtoms } from "./notifications"
 // Task ordering utilities - inline implementation after task-ordering-operations.ts removal
 const getOrderedTasksForProject = (
   projectId: ProjectId,
@@ -241,6 +242,18 @@ export const addTaskAtom = atom(null, async (get, set, taskData: CreateTaskReque
       log.warn({ error, module: "tasks" }, "Failed to play task creation sound")
     })
 
+    // Schedule notification if task has due date and time
+    if (taskData.dueDate && taskData.dueTime) {
+      // Get the task from the updated tasks list to have the full task object
+      const tasks = get(tasksAtom)
+      const createdTask = tasks.find((task) => task.id === createdTaskId)
+
+      if (createdTask) {
+        set(notificationAtoms.actions.scheduleTask, { taskId: createdTaskId, task: createdTask })
+        log.info({ taskId: createdTaskId, module: "tasks" }, "Scheduled notification for new task")
+      }
+    }
+
     log.info({ taskId: createdTaskId, title: taskTitle, module: "tasks" }, "Task added")
 
     // Since we use optimistic updates and invalidateQueries, the task will be available in cache
@@ -262,10 +275,73 @@ export const updateTaskAtom = atom(
   (get, set, { updateRequest }: { updateRequest: UpdateTaskRequest }) => {
     try {
       const tasks = get(tasksAtom)
+      const existingTask = tasks.find((task: Task) => task.id === updateRequest.id)
+
+      if (!existingTask) {
+        log.warn({ taskId: updateRequest.id, module: "tasks" }, "Task not found for update")
+        return
+      }
+
+      // Convert nullable fields to undefined to match Task type
+      const updatedTask: Task = {
+        ...existingTask,
+        ...updateRequest,
+        dueDate:
+          updateRequest.dueDate === null
+            ? undefined
+            : (updateRequest.dueDate ?? existingTask.dueDate),
+        dueTime:
+          updateRequest.dueTime === null
+            ? undefined
+            : (updateRequest.dueTime ?? existingTask.dueTime),
+        recurring:
+          updateRequest.recurring === null
+            ? undefined
+            : (updateRequest.recurring ?? existingTask.recurring),
+        estimation:
+          updateRequest.estimation === null
+            ? undefined
+            : (updateRequest.estimation ?? existingTask.estimation),
+      }
       const updatedTasks = tasks.map((task: Task) =>
-        task.id === updateRequest.id ? { ...task, ...updateRequest } : task,
+        task.id === updateRequest.id ? updatedTask : task,
       )
       set(tasksAtom, updatedTasks)
+
+      // Handle notification scheduling based on changes
+      const dueDateChanged = updateRequest.dueDate !== undefined
+      const dueTimeChanged = updateRequest.dueTime !== undefined
+      const completedChanged = updateRequest.completed !== undefined
+
+      if (dueDateChanged || dueTimeChanged || completedChanged) {
+        if (updatedTask.completed) {
+          // Task completed, cancel notification
+          set(notificationAtoms.actions.cancelTask, updateRequest.id)
+          log.info(
+            { taskId: updateRequest.id, module: "tasks" },
+            "Cancelled notification for completed task",
+          )
+        } else if (updatedTask.dueDate && updatedTask.dueTime) {
+          // Task has due date/time and is not completed, reschedule notification
+          set(notificationAtoms.actions.scheduleTask, {
+            taskId: updateRequest.id,
+            task: updatedTask,
+          })
+          log.info(
+            { taskId: updateRequest.id, module: "tasks" },
+            "Rescheduled notification for updated task",
+          )
+        } else {
+          // Task no longer has due date/time, cancel notification
+          set(notificationAtoms.actions.cancelTask, updateRequest.id)
+          log.info(
+            { taskId: updateRequest.id, module: "tasks" },
+            "Cancelled notification for task without due date",
+          )
+        }
+      }
+
+      log.info({ taskId: updateRequest.id, module: "tasks" }, "Task updated")
     } catch (error) {
       handleAtomError(error, "updateTaskAtom")
     }
@@ -285,6 +361,9 @@ export const deleteTaskAtom = atom(null, async (get, set, taskId: TaskId) => {
     const taskToDelete = tasks.find((task: Task) => task.id === taskId)
 
     if (!taskToDelete) return
+
+    // Cancel any scheduled notification for this task
+    set(notificationAtoms.actions.cancelTask, taskId)
 
     // Get the delete task mutation
     const deleteTaskMutation = get(deleteTaskMutationAtom)

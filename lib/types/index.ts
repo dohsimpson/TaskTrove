@@ -50,11 +50,6 @@ export const UserIdSchema = z.uuid().brand("UserId")
 export const TeamIdSchema = z.uuid().brand("TeamId")
 
 /**
- * Notification ID - string type that must be a UUID
- */
-export const NotificationIdSchema = z.uuid().brand("NotificationId")
-
-/**
  * Voice Command ID - string type that must be a UUID
  */
 export const VoiceCommandIdSchema = z.uuid().brand("VoiceCommandId")
@@ -85,7 +80,6 @@ export type SubtaskId = z.infer<typeof SubtaskIdSchema>
 export type CommentId = z.infer<typeof CommentIdSchema>
 export type UserId = z.infer<typeof UserIdSchema>
 export type TeamId = z.infer<typeof TeamIdSchema>
-export type NotificationId = z.infer<typeof NotificationIdSchema>
 export type VoiceCommandId = z.infer<typeof VoiceCommandIdSchema>
 export type SectionId = z.infer<typeof SectionIdSchema>
 export type GroupId = z.infer<typeof GroupIdSchema>
@@ -102,7 +96,6 @@ export const createSubtaskId = (id: string): SubtaskId => SubtaskIdSchema.parse(
 export const createCommentId = (id: string): CommentId => CommentIdSchema.parse(id)
 export const createUserId = (id: string): UserId => UserIdSchema.parse(id)
 export const createTeamId = (id: string): TeamId => TeamIdSchema.parse(id)
-export const createNotificationId = (id: string): NotificationId => NotificationIdSchema.parse(id)
 export const createVoiceCommandId = (id: string): VoiceCommandId => VoiceCommandIdSchema.parse(id)
 export const createSectionId = (id: string): SectionId => SectionIdSchema.parse(id)
 export const createGroupId = (id: string): GroupId => GroupIdSchema.parse(id)
@@ -766,21 +759,104 @@ export const GroupSerializationSchema = GroupSchema
 /**
  * Settings schemas - need to be defined before DataFileSchema
  */
-export const IntegrationSettingsSchema = z.object({
+export const DataSettingsSchema = z.object({
   imports: z.object({
     supportedSources: z.array(z.enum(["ticktick", "todoist", "asana", "trello"])),
   }),
   /** Auto backup configuration */
-  autoBackupEnabled: z.boolean(),
-  /** Time to run daily backup in HH:MM format (24-hour) */
-  backupTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
-  /** Maximum number of backup files to keep (-1 for unlimited) */
-  maxBackups: z.number(),
+  autoBackup: z.object({
+    enabled: z.boolean(),
+    /** Time to run daily backup in HH:MM format (24-hour) */
+    backupTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
+    /** Maximum number of backup files to keep (-1 for unlimited) */
+    maxBackups: z.number(),
+  }),
+})
+
+// Notification schemas (moved here before UserSettingsSchema)
+// Advanced notification schemas - commented out for future implementation
+/*
+export const NotificationChannelsSchema = z.object({
+  push: z.boolean(),
+  email: z.boolean(),
+  desktop: z.boolean(),
+  mobile: z.boolean(),
+})
+
+export const NotificationScheduleSchema = z.object({
+  quietHours: z.object({
+    enabled: z.boolean(),
+    start: z.string(),
+    end: z.string(),
+  }),
+  weekends: z.boolean(),
+  holidays: z.boolean(),
+})
+
+export const NotificationTypesSchema = z.object({
+  reminders: z.boolean(),
+  deadlines: z.boolean(),
+  collaboration: z.boolean(),
+  achievements: z.boolean(),
+  system: z.boolean(),
+})
+
+export const NotificationFrequencySchema = z.object({
+  immediate: z.boolean(),
+  digest: z.enum(["never", "daily", "weekly"]),
+  digestTime: z.string(),
+})
+
+export const NotificationSoundSchema = z.object({
+  enabled: z.boolean(),
+  volume: z.number().min(0).max(100),
+})
+*/
+
+export const NotificationSettingsSchema = z.object({
+  /** Whether notifications are globally enabled */
+  enabled: z.boolean().default(true),
+  /** Auto-close timeout in seconds (0 = never auto close) */
+  // timeoutSeconds: z.number().min(0).default(10),
+  /** Notification channels */
+  // channels: NotificationChannelsSchema,
+  /** Schedule settings */
+  // schedule: NotificationScheduleSchema,
+  /** Type preferences */
+  // types: NotificationTypesSchema,
+  /** Frequency settings */
+  // frequency: NotificationFrequencySchema,
+  /** Sound settings */
+  // sound: NotificationSoundSchema,
 })
 
 export const UserSettingsSchema = z.object({
-  integrations: IntegrationSettingsSchema,
+  integrations: DataSettingsSchema,
+  notifications: NotificationSettingsSchema.optional(),
 })
+/** Schema for scheduled notification */
+export const ScheduledNotificationSchema = z.object({
+  /** Task ID */
+  taskId: TaskIdSchema,
+  /** Task title for notification */
+  taskTitle: z.string(),
+  /** When the notification should fire */
+  notifyAt: flexibleDateTimeSchema,
+  /** Type of notification */
+  type: z.enum(["due", "reminder"]),
+})
+
+/** Scheduled notification information */
+export type ScheduledNotification = z.infer<typeof ScheduledNotificationSchema>
+
+/** Schema for a set of scheduled notifications */
+export const ScheduledNotificationSetSchema = z.set(ScheduledNotificationSchema)
+
+/** Set of scheduled notifications */
+export type ScheduledNotificationSet = z.infer<typeof ScheduledNotificationSetSchema>
+
+/** Notification permission status */
+export type NotificationPermissionStatus = "default" | "granted" | "denied"
 
 export const DataFileSchema = z.object({
   tasks: z.array(TaskSchema),
@@ -1037,101 +1113,69 @@ export interface TeamStats {
 // NOTIFICATION TYPES
 // =============================================================================
 
-/**
- * Notification types
- */
-export type NotificationType = "reminder" | "collaboration" | "achievement" | "system"
-
-/**
- * Notification priority levels
- */
-export type NotificationPriority = "low" | "medium" | "high" | "critical"
-
-/**
- * Notification categories
- */
-export type NotificationCategory = "deadlines" | "team" | "achievements" | "system" | "updates"
-
-/**
- * Individual notification
- */
-export interface Notification {
-  /** Unique identifier for the notification */
-  id: NotificationId
-  /** Type of notification */
-  type: NotificationType
-  /** Notification title */
-  title: string
-  /** Notification message/content */
-  message: string
-  /** When the notification was created */
-  timestamp: Date
-  /** Whether the notification has been read */
-  read: boolean
-  /** Priority level of the notification */
-  priority: NotificationPriority
-  /** Category of the notification */
-  category: NotificationCategory
-  /** Optional associated task ID */
-  taskId?: TaskId
-  /** Optional associated project ID */
-  projectId?: ProjectId
-  /** Optional action URL */
-  actionUrl?: string
-}
-
-/**
- * Notification channel settings
- */
+// Advanced notification interfaces - commented out for future implementation
+/*
+// Notification channel settings
 export interface NotificationChannels {
-  /** Push notifications */
+  // Push notifications
   push: boolean
-  /** Email notifications */
+  // Email notifications  
   email: boolean
-  /** Desktop notifications */
+  // Desktop notifications
   desktop: boolean
-  /** Mobile notifications */
+  // Mobile notifications
   mobile: boolean
 }
 
-/**
- * Quiet hours configuration
- */
+// Quiet hours configuration
 export interface QuietHours {
-  /** Whether quiet hours are enabled */
+  // Whether quiet hours are enabled
   enabled: boolean
-  /** Start time (HH:MM format) */
+  // Start time (HH:MM format)
   start: string
-  /** End time (HH:MM format) */
+  // End time (HH:MM format)
   end: string
 }
 
-/**
- * Notification schedule settings
- */
+// Notification schedule settings
 export interface NotificationSchedule {
-  /** Quiet hours configuration */
+  // Quiet hours configuration
   quietHours: QuietHours
-  /** Whether to send notifications on weekends */
+  // Whether to send notifications on weekends
   weekends: boolean
-  /** Whether to send notifications on holidays */
+  // Whether to send notifications on holidays
   holidays: boolean
 }
 
-/**
- * Notification type preferences
- */
+// Notification type preferences
 export interface NotificationTypes {
-  /** Task reminders */
+  // Task reminders
   reminders: boolean
+  // Deadline notifications
+  deadlines: boolean
+  // Team collaboration notifications
+  collaboration: boolean
+  // Achievement notifications
+  achievements: boolean
+  // System notifications
+  system: boolean
+}
+*/
+
+// Simplified interfaces for basic notification functionality
+export interface NotificationChannels {
+  /** Desktop notifications */
+  desktop: boolean
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface NotificationSchedule {
+  // Simplified - no complex scheduling for now
+}
+
+export interface NotificationTypes {
   /** Deadline notifications */
   deadlines: boolean
-  /** Team collaboration notifications */
-  collaboration: boolean
-  /** Achievement notifications */
-  achievements: boolean
-  /** System notifications */
-  system: boolean
 }
 
 /**
@@ -1161,20 +1205,7 @@ export interface NotificationSound {
 /**
  * Complete notification settings
  */
-export interface NotificationSettings {
-  /** Whether notifications are globally enabled */
-  enabled: boolean
-  /** Notification channels */
-  channels: NotificationChannels
-  /** Schedule settings */
-  schedule: NotificationSchedule
-  /** Type preferences */
-  types: NotificationTypes
-  /** Frequency settings */
-  frequency: NotificationFrequency
-  /** Sound settings */
-  sound: NotificationSound
-}
+export type NotificationSettings = z.infer<typeof NotificationSettingsSchema>
 
 // =============================================================================
 // USER SETTINGS TYPES
@@ -1241,36 +1272,7 @@ export interface BehaviorSettings {
   }
 }
 
-/**
- * Data management and sync settings
- */
-export interface DataSettings {
-  /** Auto backup configuration */
-  autoBackup: {
-    enabled: boolean
-    frequency: "daily" | "weekly" | "monthly"
-    maxBackups: number
-    includeCompleted: boolean
-  }
-  /** Export preferences */
-  exportPreferences: {
-    format: "json" | "csv" | "markdown"
-    includeMetadata: boolean
-    includeComments: boolean
-    includeSubtasks: boolean
-  }
-  /** Local storage limits */
-  storage: {
-    maxCacheSizeMB: number
-    clearCacheOnStartup: boolean
-    retentionDays: number
-  }
-  /** Sync configuration */
-  sync: SyncConfig
-}
-
-// Integration settings type will be generated from schema later
-// export interface IntegrationSettings { ... }
+// Data settings type will be generated from schema later
 
 /**
  * Productivity and analytics settings
@@ -1327,7 +1329,7 @@ export interface ProductivitySettings {
 //   /** Data management and sync settings */
 //   data: DataSettings
 //   /** Integration settings */
-//   integrations: IntegrationSettings
+//   integrations: DataSettings
 //   /** Productivity and analytics settings */
 //   productivity: ProductivitySettings
 // }
@@ -1346,7 +1348,7 @@ export interface ProductivitySettings {
 //   /** Data management and sync settings */
 //   data?: Partial<DataSettings>
 //   /** Integration settings */
-//   integrations?: Partial<IntegrationSettings>
+//   integrations?: Partial<DataSettings>
 //   /** Productivity and analytics settings */
 //   productivity?: Partial<ProductivitySettings>
 // }
@@ -1971,56 +1973,7 @@ export type VoiceCommand = z.infer<typeof VoiceCommandSchema>
 // SETTINGS SCHEMAS
 // =============================================================================
 
-/**
- * Notification channels schema
- */
-export const NotificationChannelsSchema = z.object({
-  push: z.boolean(),
-  email: z.boolean(),
-  desktop: z.boolean(),
-  mobile: z.boolean(),
-})
-
-/**
- * Notification schedule schema
- */
-export const NotificationScheduleSchema = z.object({
-  quietHours: z.object({
-    enabled: z.boolean(),
-    start: z.string(),
-    end: z.string(),
-  }),
-  weekends: z.boolean(),
-  holidays: z.boolean(),
-})
-
-/**
- * Notification types schema
- */
-export const NotificationTypesSchema = z.object({
-  reminders: z.boolean(),
-  deadlines: z.boolean(),
-  collaboration: z.boolean(),
-  achievements: z.boolean(),
-  system: z.boolean(),
-})
-
-/**
- * Notification frequency schema
- */
-export const NotificationFrequencySchema = z.object({
-  immediate: z.boolean(),
-  digest: z.enum(["never", "daily", "weekly"]),
-  digestTime: z.string(),
-})
-
-/**
- * Notification sound schema
- */
-export const NotificationSoundSchema = z.object({
-  enabled: z.boolean(),
-  volume: z.number().min(0).max(100),
-})
+// (Duplicate schemas removed - they are now defined earlier in the file before UserSettingsSchema)
 
 // /**
 //  * Appearance settings schema - Placeholder for future implementation
@@ -2090,8 +2043,7 @@ export const BehaviorSettingsSchema = z.object({}).optional()
 //   sound: NotificationSoundSchema,
 // })
 
-// Minimal notification settings for now
-export const NotificationSettingsSchema = z.object({}).optional()
+// (NotificationSettingsSchema moved earlier in the file before UserSettingsSchema)
 
 // /**
 //  * Data settings schema - Placeholder for future implementation
@@ -2124,20 +2076,17 @@ export const NotificationSettingsSchema = z.object({}).optional()
 //   }),
 // })
 
-// Minimal data settings for now
-export const DataSettingsSchema = z.object({}).optional()
-
-// Removed duplicate IntegrationSettingsSchema and UserSettingsSchema definitions - now defined earlier in file
+// Removed duplicate DataSettingsSchema and UserSettingsSchema definitions - now defined earlier in file
 
 /**
  * Schema for partial user settings updates - Only integrations for now
  */
 export const PartialUserSettingsSchema = z.object({
-  integrations: IntegrationSettingsSchema.partial().optional(),
+  integrations: DataSettingsSchema.partial().optional(),
+  notifications: NotificationSettingsSchema.partial().optional(),
   // Optional future settings (not stored yet):
   // appearance: AppearanceSettingsSchema.partial().optional(),
   // behavior: BehaviorSettingsSchema.partial().optional(),
-  // notifications: NotificationSettingsSchema.partial().optional(),
   // data: DataSettingsSchema.partial().optional(),
   // productivity: ProductivitySettingsSchema.partial().optional(),
 })
@@ -2153,7 +2102,7 @@ export const UpdateSettingsResponseSchema = ApiResponseSchema.extend({
 // Generated types for settings
 export type UpdateSettingsRequest = z.infer<typeof UpdateSettingsRequestSchema>
 export type UpdateSettingsResponse = z.infer<typeof UpdateSettingsResponseSchema>
-export type IntegrationSettings = z.infer<typeof IntegrationSettingsSchema>
+export type DataSettings = z.infer<typeof DataSettingsSchema>
 export type UserSettings = z.infer<typeof UserSettingsSchema>
 export type PartialUserSettings = z.infer<typeof PartialUserSettingsSchema>
 
@@ -2182,14 +2131,4 @@ export function isValidSortDirection(value: unknown): value is "asc" | "desc" {
  */
 export function isValidTeamRole(value: unknown): value is TeamMember["role"] {
   return typeof value === "string" && ["owner", "admin", "member", "viewer"].includes(value)
-}
-
-/**
- * Type guard to check if a value is a valid notification type
- */
-export function isValidNotificationType(value: unknown): value is NotificationType {
-  return (
-    typeof value === "string" &&
-    ["reminder", "collaboration", "achievement", "system"].includes(value)
-  )
 }

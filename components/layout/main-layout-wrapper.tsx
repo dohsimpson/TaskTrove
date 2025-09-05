@@ -57,6 +57,7 @@ import {
   openQuickAddAtom,
 } from "@/lib/atoms/ui/navigation"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useNotificationSystem } from "@/hooks/use-notification-system"
 
 interface MainLayoutWrapperProps {
   children: React.ReactNode
@@ -122,6 +123,9 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
   // Use our new atoms for simplified state management
   const [routeContext] = useAtom(currentRouteContextAtom)
   const isMobile = useIsMobile()
+
+  // Initialize notification system following Next.js best practices
+  useNotificationSystem()
 
   // Navigation actions using our centralized atoms
   const openSearch = useSetAtom(openSearchAtom)

@@ -79,33 +79,35 @@ updateSettingsAtom.debugLabel = "updateSettingsAtom"
 // =============================================================================
 
 /**
- * Integration settings (simplified read access)
+ * Data settings (simplified read access)
  */
-export const integrationSettingsAtom = atom((get) => {
+export const dataSettingsAtom = atom((get) => {
   try {
     const settings = get(settingsAtom)
     return settings.integrations
   } catch (error) {
-    handleAtomError(error, "integrationSettingsAtom")
+    handleAtomError(error, "dataSettingsAtom")
     return {
       imports: {
         supportedSources: [...SUPPORTED_IMPORT_SOURCES],
       },
-      autoBackupEnabled: DEFAULT_AUTO_BACKUP_ENABLED,
-      backupTime: DEFAULT_BACKUP_TIME,
-      maxBackups: DEFAULT_MAX_BACKUPS,
+      autoBackup: {
+        enabled: DEFAULT_AUTO_BACKUP_ENABLED,
+        backupTime: DEFAULT_BACKUP_TIME,
+        maxBackups: DEFAULT_MAX_BACKUPS,
+      },
     }
   }
 })
-integrationSettingsAtom.debugLabel = "integrationSettingsAtom"
+dataSettingsAtom.debugLabel = "dataSettingsAtom"
 
 /**
  * Import settings (specific to imports functionality)
  */
 export const importSettingsAtom = atom((get) => {
   try {
-    const integrationSettings = get(integrationSettingsAtom)
-    return integrationSettings.imports
+    const dataSettings = get(dataSettingsAtom)
+    return dataSettings.imports
   } catch (error) {
     handleAtomError(error, "importSettingsAtom")
     return {
@@ -163,28 +165,28 @@ export const isImportSourceSupportedAtom = atom((get) => {
 isImportSourceSupportedAtom.debugLabel = "isImportSourceSupportedAtom"
 
 /**
- * Updates specific integration settings
+ * Updates specific data settings
  */
-export const updateIntegrationSettingsAtom = atom(
+export const updateDataSettingsAtom = atom(
   null,
-  (get, set, integrationUpdates: Partial<UserSettings["integrations"]>) => {
+  (get, set, dataUpdates: Partial<UserSettings["integrations"]>) => {
     try {
       const currentSettings = get(settingsAtom)
       const updatedSettings: PartialUserSettings = {
         integrations: {
           imports: {
             ...currentSettings.integrations.imports,
-            ...integrationUpdates.imports,
+            ...dataUpdates.imports,
           },
         },
       }
       set(updateSettingsAtom, updatedSettings)
     } catch (error) {
-      handleAtomError(error, "updateIntegrationSettingsAtom")
+      handleAtomError(error, "updateDataSettingsAtom")
     }
   },
 )
-updateIntegrationSettingsAtom.debugLabel = "updateIntegrationSettingsAtom"
+updateDataSettingsAtom.debugLabel = "updateDataSettingsAtom"
 
 /**
  * Updates import settings specifically
@@ -225,14 +227,14 @@ export const settingsAtoms = {
   // Action atoms (write-only)
   actions: {
     updateSettings: updateSettingsAtom,
-    updateIntegrationSettings: updateIntegrationSettingsAtom,
+    updateDataSettings: updateDataSettingsAtom,
     updateImportSettings: updateImportSettingsAtom,
     updateSettingsMutation: updateSettingsMutationAtom,
   },
 
   // Derived read atoms
   derived: {
-    integrationSettings: integrationSettingsAtom,
+    dataSettings: dataSettingsAtom,
     importSettings: importSettingsAtom,
     settingsMetadata: settingsMetadataAtom,
     isImportSourceSupported: isImportSourceSupportedAtom,

@@ -108,18 +108,20 @@ async function updateSettings(
         ...fileData.settings.integrations.imports,
         ...partialSettings.integrations?.imports,
       },
-      autoBackupEnabled:
-        partialSettings.integrations?.autoBackupEnabled ??
-        fileData.settings.integrations.autoBackupEnabled ??
-        DEFAULT_AUTO_BACKUP_ENABLED,
-      backupTime:
-        partialSettings.integrations?.backupTime ??
-        fileData.settings.integrations.backupTime ??
-        DEFAULT_BACKUP_TIME,
-      maxBackups:
-        partialSettings.integrations?.maxBackups ??
-        fileData.settings.integrations.maxBackups ??
-        DEFAULT_MAX_BACKUPS,
+      autoBackup: {
+        enabled:
+          partialSettings.integrations?.autoBackup?.enabled ??
+          fileData.settings.integrations.autoBackup?.enabled ??
+          DEFAULT_AUTO_BACKUP_ENABLED,
+        backupTime:
+          partialSettings.integrations?.autoBackup?.backupTime ??
+          fileData.settings.integrations.autoBackup?.backupTime ??
+          DEFAULT_BACKUP_TIME,
+        maxBackups:
+          partialSettings.integrations?.autoBackup?.maxBackups ??
+          fileData.settings.integrations.autoBackup?.maxBackups ??
+          DEFAULT_MAX_BACKUPS,
+      },
     },
     // Future settings will be merged here when implemented:
     // appearance: { ... },

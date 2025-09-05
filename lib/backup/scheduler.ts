@@ -13,7 +13,7 @@ async function loadBackupTimeFromSettings(): Promise<string> {
       console.log(`Could not load data file, using default backup time ${DEFAULT_BACKUP_TIME}`)
       return DEFAULT_BACKUP_TIME
     }
-    return dataFile.settings?.integrations?.backupTime || DEFAULT_BACKUP_TIME
+    return dataFile.settings?.integrations?.autoBackup?.backupTime || DEFAULT_BACKUP_TIME
   } catch {
     console.log(`Could not load backup time from settings, using default ${DEFAULT_BACKUP_TIME}`)
     return DEFAULT_BACKUP_TIME

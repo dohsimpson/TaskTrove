@@ -336,12 +336,14 @@ export const showTaskDueNotificationAtom = atom(
   null,
   async (get, set, notification: ScheduledNotification) => {
     try {
+      const notificationSettings = get(notificationSettingsAtom)
+
       // Show browser notification using cross-browser utility
       const result = await showCrossBrowserNotification(
         `TaskTrove - Task Due`,
         {
           body: `${notification.taskTitle}`,
-          requireInteraction: true,
+          requireInteraction: notificationSettings.requireInteraction,
           tag: `task-due-${notification.taskId}`,
           data: {
             taskId: notification.taskId,

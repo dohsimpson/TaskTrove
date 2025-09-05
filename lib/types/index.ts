@@ -812,9 +812,9 @@ export const NotificationSoundSchema = z.object({
 
 export const NotificationSettingsSchema = z.object({
   /** Whether notifications are globally enabled */
-  enabled: z.boolean().default(true),
-  /** Auto-close timeout in seconds (0 = never auto close) */
-  // timeoutSeconds: z.number().min(0).default(10),
+  enabled: z.boolean(),
+  /** Whether notifications require user interaction to dismiss */
+  requireInteraction: z.boolean(),
   /** Notification channels */
   // channels: NotificationChannelsSchema,
   /** Schedule settings */

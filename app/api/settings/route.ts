@@ -125,6 +125,10 @@ async function updateSettings(
         partialSettings.notifications?.enabled ??
         fileData.settings.notifications?.enabled ??
         DEFAULT_NOTIFICATION_SETTINGS.enabled,
+      requireInteraction:
+        partialSettings.notifications?.requireInteraction ??
+        fileData.settings.notifications?.requireInteraction ??
+        DEFAULT_NOTIFICATION_SETTINGS.requireInteraction,
     },
     // Future settings will be merged here when implemented:
     // appearance: { ... },

@@ -37,20 +37,11 @@ export const DEFAULT_LABEL_GROUP: LabelGroup = {
 }
 
 /**
- * Default supported import sources
- */
-const SUPPORTED_SOURCES: ("ticktick" | "todoist" | "asana" | "trello")[] = [
-  "ticktick",
-  "todoist",
-  "asana",
-  "trello",
-]
-
-/**
  * Default notification settings
  */
 export const DEFAULT_NOTIFICATION_SETTINGS = {
   enabled: true,
+  requireInteraction: true,
 }
 
 /**
@@ -58,9 +49,6 @@ export const DEFAULT_NOTIFICATION_SETTINGS = {
  */
 export const DEFAULT_USER_SETTINGS = {
   data: {
-    imports: {
-      supportedSources: SUPPORTED_SOURCES,
-    },
     autoBackup: {
       enabled: DEFAULT_AUTO_BACKUP_ENABLED,
       backupTime: DEFAULT_BACKUP_TIME,

@@ -273,9 +273,6 @@
   },
   "settings": {
     "data": {
-      "imports": {
-        "supportedSources": ["ticktick", "todoist", "asana", "trello"]
-      },
       "autoBackup": {
         "enabled": true,
         "backupTime": "02:00",
@@ -283,8 +280,9 @@
       }
     },
     "notifications": {
-      "enabled": true
+      "enabled": true,
+      "requireInteraction": true
     }
   },
-  "version": "v0.3.0"
+  "version": "v0.4.0"
 }

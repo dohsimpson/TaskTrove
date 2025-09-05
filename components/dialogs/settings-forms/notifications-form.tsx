@@ -60,17 +60,36 @@ export function NotificationsForm() {
     <div className="space-y-6">
       {/* Global Enable/Disable */}
       <SettingsCard title="General Settings" experimental>
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <Label htmlFor="notifications-enabled">Enable Notifications</Label>
-            <p className="text-xs text-muted-foreground">Turn all notifications on or off</p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label htmlFor="notifications-enabled">Enable Notifications</Label>
+              <p className="text-xs text-muted-foreground">Turn all notifications on or off</p>
+            </div>
+            <Switch
+              id="notifications-enabled"
+              checked={notificationSettings.enabled}
+              onCheckedChange={(enabled) => updateNotificationSettings({ enabled })}
+              disabled={notificationPermission !== "granted"}
+            />
           </div>
-          <Switch
-            id="notifications-enabled"
-            checked={notificationSettings.enabled}
-            onCheckedChange={(enabled) => updateNotificationSettings({ enabled })}
-            disabled={notificationPermission !== "granted"}
-          />
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label htmlFor="require-interaction">Require User Interaction</Label>
+              <p className="text-xs text-muted-foreground">
+                Notifications stay visible until you interact with them
+              </p>
+            </div>
+            <Switch
+              id="require-interaction"
+              checked={notificationSettings.requireInteraction}
+              onCheckedChange={(requireInteraction) =>
+                updateNotificationSettings({ requireInteraction })
+              }
+              disabled={!notificationSettings.enabled || notificationPermission !== "granted"}
+            />
+          </div>
         </div>
       </SettingsCard>
 

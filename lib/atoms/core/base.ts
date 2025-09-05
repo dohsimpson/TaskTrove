@@ -1175,6 +1175,9 @@ export const updateSettingsMutationAtom = createMutation<
       },
       notifications: {
         enabled: variables.settings.notifications?.enabled ?? DEFAULT_NOTIFICATION_SETTINGS.enabled,
+        requireInteraction:
+          variables.settings.notifications?.requireInteraction ??
+          DEFAULT_NOTIFICATION_SETTINGS.requireInteraction,
       },
     }
     return {
@@ -1207,6 +1210,10 @@ export const updateSettingsMutationAtom = createMutation<
           variables.settings.notifications?.enabled ??
           oldData.settings.notifications?.enabled ??
           DEFAULT_NOTIFICATION_SETTINGS.enabled,
+        requireInteraction:
+          variables.settings.notifications?.requireInteraction ??
+          oldData.settings.notifications?.requireInteraction ??
+          DEFAULT_NOTIFICATION_SETTINGS.requireInteraction,
       },
     }
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { log } from "@/lib/utils/logger"
+import { showCrossBrowserNotification } from "@/lib/utils/cross-browser-notifications"
 
 export function useNotificationManager() {
   log.warn(
@@ -98,12 +99,21 @@ export function useNotificationManager() {
     return false
   }
 
-  const testNotification = () => {
-    if (permissionStatus === "granted") {
-      new Notification("Test Notification", {
+  const testNotification = async () => {
+    const result = await showCrossBrowserNotification(
+      "Test Notification",
+      {
         body: "This is a test notification from TaskTrove",
-        icon: "/favicon.ico",
-      })
+        tag: "tasktrove-test-notification",
+      },
+      "hook:useNotificationManager",
+    )
+
+    if (!result.success) {
+      log.warn(
+        { module: "hooks", hook: "useNotificationManager", error: result.error },
+        "Test notification failed",
+      )
     }
   }
 

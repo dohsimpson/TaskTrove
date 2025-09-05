@@ -2,12 +2,11 @@
 
 import React, { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { Check, X, AlertTriangle, Clock, Loader2, Bell } from "lucide-react"
+import { Check, X, AlertTriangle, Loader2, Bell } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 import { notificationAtoms } from "@/lib/atoms/core/notifications"
@@ -21,14 +20,20 @@ export function NotificationsForm() {
   const notificationPermission = useAtomValue(notificationAtoms.permission)
   const requestPermission = useSetAtom(notificationAtoms.actions.requestPermission)
   const testNotification = useSetAtom(notificationAtoms.actions.test)
-  const isSystemActive = useAtomValue(notificationAtoms.isSystemActive)
 
   const [isRequestingPermission, setIsRequestingPermission] = useState(false)
+  const [hasTriedRetry, setHasTriedRetry] = useState(false)
 
   const handlePermissionRequest = async () => {
     setIsRequestingPermission(true)
     try {
+      const previousPermission = notificationPermission
       await requestPermission()
+
+      // If permission was denied and still denied after request, user likely needs manual action
+      if (previousPermission === "denied") {
+        setHasTriedRetry(true)
+      }
     } finally {
       setIsRequestingPermission(false)
     }
@@ -74,29 +79,67 @@ export function NotificationsForm() {
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <p className="text-sm font-medium">Browser Notifications</p>
-            <p className="text-xs text-muted-foreground">
-              {notificationPermission === "granted" && "Notifications are enabled"}
-              {notificationPermission === "denied" && "Notifications are blocked"}
-              {notificationPermission === "default" && "Permission not requested"}
-            </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {notificationPermission === "granted" && (
-              <Badge variant="secondary" className="text-green-600">
-                <Check className="w-3 h-3 mr-1" />
-                Granted
-              </Badge>
+              <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                <Check className="w-4 h-4" />
+                <span className="text-sm font-medium">Enabled</span>
+              </div>
             )}
             {notificationPermission === "denied" && (
-              <Badge variant="destructive">
-                <X className="w-3 h-3 mr-1" />
-                Blocked
-              </Badge>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                  <X className="w-4 h-4" />
+                  <span className="text-sm font-medium">Blocked</span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handlePermissionRequest}
+                  disabled={isRequestingPermission}
+                  className="h-7 px-3 text-xs"
+                  title={
+                    hasTriedRetry
+                      ? "Browser may require manual settings change"
+                      : "Try requesting permission again"
+                  }
+                >
+                  {isRequestingPermission ? (
+                    <>
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      Requesting
+                    </>
+                  ) : hasTriedRetry ? (
+                    "Try Again"
+                  ) : (
+                    "Retry"
+                  )}
+                </Button>
+              </div>
             )}
             {notificationPermission === "default" && (
-              <Button size="sm" onClick={handlePermissionRequest} disabled={isRequestingPermission}>
-                {isRequestingPermission ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enable"}
-              </Button>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Bell className="w-4 h-4" />
+                  <span className="text-sm font-medium">Not enabled</span>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={handlePermissionRequest}
+                  disabled={isRequestingPermission}
+                  className="h-7 px-3 text-xs"
+                >
+                  {isRequestingPermission ? (
+                    <>
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      Requesting
+                    </>
+                  ) : (
+                    "Enable"
+                  )}
+                </Button>
+              </div>
             )}
           </div>
         </div>
@@ -106,8 +149,18 @@ export function NotificationsForm() {
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Notifications Blocked</AlertTitle>
             <AlertDescription>
-              To receive notifications, please enable them in your browser settings and refresh the
-              page.
+              {hasTriedRetry ? (
+                <>
+                  The browser didn't show a permission dialog. To enable notifications, click the 🔒
+                  icon in your address bar or go to browser settings → Privacy & Security → Site
+                  Settings → Notifications, then refresh the page.
+                </>
+              ) : (
+                <>
+                  Try the "Retry" button first. If that doesn't work, you'll need to enable
+                  notifications manually in your browser settings.
+                </>
+              )}
             </AlertDescription>
           </Alert>
         )}
@@ -118,12 +171,6 @@ export function NotificationsForm() {
               <Bell className="w-4 h-4 mr-1" />
               Test Notification
             </Button>
-            {isSystemActive && (
-              <Badge variant="secondary" className="text-blue-600">
-                <Clock className="w-3 h-3 mr-1" />
-                System Active
-              </Badge>
-            )}
           </div>
         )}
       </SettingsCard>

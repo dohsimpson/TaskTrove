@@ -79,7 +79,7 @@ const settingsCategories: SettingsCategory[] = [
 export function SettingsDialog() {
   const open = useAtomValue(showSettingsDialogAtom)
   const closeDialog = useSetAtom(closeSettingsDialogAtom)
-  const [activeCategory, setActiveCategory] = useState("data")
+  const [activeCategory, setActiveCategory] = useState(settingsCategories[0].id)
 
   // Get active category info
   const activeCategoryInfo = settingsCategories.find((cat) => cat.id === activeCategory)

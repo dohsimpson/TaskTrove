@@ -15,6 +15,7 @@ import { settingsAtom } from "@/lib/atoms/core/settings"
 import { playSound } from "@/lib/utils/audio"
 import { log } from "@/lib/utils/logger"
 import { handleAtomError } from "../utils"
+import { showCrossBrowserNotification } from "@/lib/utils/cross-browser-notifications"
 import { DEFAULT_UUID } from "@/lib/constants/defaults"
 
 // ====================
@@ -309,36 +310,27 @@ const fireNotificationsAtom = atom(null, (get, set, notifications: ScheduledNoti
 /** Show notification to user */
 export const showTaskDueNotificationAtom = atom(
   null,
-  (get, set, notification: ScheduledNotification) => {
+  async (get, set, notification: ScheduledNotification) => {
     try {
-      // Create browser notification
-      if ("Notification" in window && Notification.permission === "granted") {
-        const browserNotification = new Notification(`TaskTrove Notification`, {
-          body: `Task due: ${notification.taskTitle}`,
-          icon: "/favicon.ico",
-          badge: "/favicon.ico",
+      // Show browser notification using cross-browser utility
+      const result = await showCrossBrowserNotification(
+        `TaskTrove - Task Due`,
+        {
+          body: `${notification.taskTitle}`,
           requireInteraction: true,
+          tag: `task-due-${notification.taskId}`,
           data: {
             taskId: notification.taskId,
             type: notification.type,
           },
-        })
+        },
+        "atom:showTaskDueNotificationAtom",
+      )
 
-        // Handle notification click
-        browserNotification.onclick = () => {
-          window.focus()
-          // Navigate to task (would need router integration)
-          browserNotification.close()
-        }
-
-        // Auto close after 10 seconds (hardcoded for now)
-        setTimeout(() => {
-          browserNotification.close()
-        }, 10000)
-      } else {
+      if (!result.success) {
         log.error(
-          { module: "notifications" },
-          "Notification is not enabled or unsupported in this environment",
+          { module: "notifications", error: result.error, method: result.method },
+          "Failed to show task due notification",
         )
       }
 
@@ -348,8 +340,14 @@ export const showTaskDueNotificationAtom = atom(
       })
 
       log.info(
-        { taskId: notification.taskId, taskTitle: notification.taskTitle, module: "notifications" },
-        "Showed task due notification",
+        {
+          taskId: notification.taskId,
+          taskTitle: notification.taskTitle,
+          method: result.method,
+          success: result.success,
+          module: "notifications",
+        },
+        "Processed task due notification",
       )
     } catch (error) {
       handleAtomError(error, "showTaskDueNotificationAtom")

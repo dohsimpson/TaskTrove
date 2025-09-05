@@ -14,6 +14,7 @@ vi.mock("@/lib/atoms", () => ({
   activeFocusTaskAtom: { toString: () => "activeFocusTaskAtom" },
   isTaskTimerActiveAtom: vi.fn(() => vi.fn(() => false)),
   isAnyTimerRunningAtom: { toString: () => "isAnyTimerRunningAtom" },
+  focusTimerTickAtom: { toString: () => "focusTimerTickAtom" },
   currentFocusTimerElapsedAtom: { toString: () => "currentFocusTimerElapsedAtom" },
   focusTimerDisplayAtom: { toString: () => "focusTimerDisplayAtom" },
   focusTimerStatusAtom: { toString: () => "focusTimerStatusAtom" },
@@ -186,6 +187,11 @@ describe("PageFooter Popover Tests", () => {
     mockUseAtomValue
       .mockReturnValueOnce(mockCompletedTasks) // completedTasksTodayAtom
       .mockReturnValueOnce([]) // todayTasksAtom
+      // Focus timer atoms
+      .mockReturnValueOnce(null) // activeFocusTimerAtom
+      .mockReturnValueOnce("stopped") // focusTimerStatusAtom
+      .mockReturnValueOnce(null) // activeFocusTaskAtom
+      .mockReturnValueOnce("0:00") // focusTimerDisplayAtom
 
     render(<PageFooter />)
 
@@ -227,6 +233,11 @@ describe("PageFooter Popover Tests", () => {
     mockUseAtomValue
       .mockReturnValueOnce([]) // completedTasksTodayAtom
       .mockReturnValueOnce(mockDueTodayTasks) // todayTasksAtom
+      // Focus timer atoms
+      .mockReturnValueOnce(null) // activeFocusTimerAtom
+      .mockReturnValueOnce("stopped") // focusTimerStatusAtom
+      .mockReturnValueOnce(null) // activeFocusTaskAtom
+      .mockReturnValueOnce("0:00") // focusTimerDisplayAtom
 
     render(<PageFooter />)
 

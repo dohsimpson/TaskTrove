@@ -97,11 +97,22 @@ export const isAnyTimerRunningAtom = atom<boolean>((get) => {
 isAnyTimerRunningAtom.debugLabel = "isAnyTimerRunningAtom"
 
 /**
+ * Tick atom that updates every second - used to trigger real-time updates
+ */
+export const focusTimerTickAtom = atom(0)
+focusTimerTickAtom.debugLabel = "focusTimerTickAtom"
+
+/**
  * Get current elapsed time for active timer
  */
 export const currentFocusTimerElapsedAtom = atom<number>((get) => {
   const activeTimer = get(activeFocusTimerAtom)
   if (!activeTimer) return 0
+
+  // Get tick to force updates when timer is running
+  if (!activeTimer.pausedAt) {
+    get(focusTimerTickAtom)
+  }
 
   const startTime = new Date(activeTimer.startedAt).getTime()
   const now = Date.now()

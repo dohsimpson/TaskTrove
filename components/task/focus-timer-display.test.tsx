@@ -39,6 +39,9 @@ vi.mock("jotai", () => ({
     if (atomStr.includes("stopFocusTimerAtom")) {
       return mockStopTimer
     }
+    if (atomStr.includes("focusTimerTickAtom")) {
+      return vi.fn()
+    }
     return vi.fn()
   },
 }))
@@ -49,6 +52,7 @@ vi.mock("@/lib/atoms", () => ({
   activeFocusTaskAtom: {},
   focusTimerDisplayAtom: {},
   focusTimerStatusAtom: {},
+  focusTimerTickAtom: {},
   tasksAtom: {},
   pauseFocusTimerAtom: {},
   startFocusTimerAtom: {},

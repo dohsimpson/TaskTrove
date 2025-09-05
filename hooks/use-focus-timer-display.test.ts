@@ -10,7 +10,9 @@ import { v4 as uuidv4 } from "uuid"
 const mockActiveTimer = vi.fn()
 const mockStatus = vi.fn()
 const mockTask = vi.fn()
+const mockDisplayTime = vi.fn()
 const mockStopTimer = vi.fn()
+const mockSetTick = vi.fn()
 
 // Mock jotai hooks
 vi.mock("jotai", () => ({
@@ -25,12 +27,18 @@ vi.mock("jotai", () => ({
     if (atomStr.includes("activeFocusTask") || atom === "activeFocusTaskAtom") {
       return mockTask()
     }
+    if (atomStr.includes("focusTimerDisplay") || atom === "focusTimerDisplayAtom") {
+      return mockDisplayTime()
+    }
     return null
   }),
   useSetAtom: vi.fn((atom: unknown) => {
     const atomStr = String(atom)
     if (atomStr.includes("stopFocusTimer") || atom === "stopFocusTimerAtom") {
       return mockStopTimer
+    }
+    if (atomStr.includes("focusTimerTick") || atom === "focusTimerTickAtom") {
+      return mockSetTick
     }
     return vi.fn()
   }),
@@ -41,6 +49,8 @@ vi.mock("@/lib/atoms", () => ({
   activeFocusTimerAtom: "activeFocusTimerAtom",
   focusTimerStatusAtom: "focusTimerStatusAtom",
   activeFocusTaskAtom: "activeFocusTaskAtom",
+  focusTimerDisplayAtom: "focusTimerDisplayAtom",
+  focusTimerTickAtom: "focusTimerTickAtom",
   stopFocusTimerAtom: "stopFocusTimerAtom",
   formatElapsedTime: vi.fn((ms: number) => {
     const seconds = Math.floor(ms / 1000)
@@ -81,7 +91,9 @@ describe("useFocusTimerDisplay", () => {
     mockActiveTimer.mockReturnValue(null)
     mockStatus.mockReturnValue("stopped")
     mockTask.mockReturnValue(null)
+    mockDisplayTime.mockReturnValue("0:00")
     mockStopTimer.mockClear()
+    mockSetTick.mockClear()
   })
 
   afterEach(() => {

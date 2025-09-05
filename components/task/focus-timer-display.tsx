@@ -1,7 +1,7 @@
 "use client"
 
 import { useSetAtom } from "jotai"
-import { Timer, Pause, Play, Square } from "lucide-react"
+import { ClockAlert, Pause, Play, Square } from "lucide-react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { ContentPopover } from "@/components/ui/content-popover"
@@ -44,7 +44,7 @@ function FocusTimerDetailsContent() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Timer className="h-4 w-4" />
+          <ClockAlert className="h-4 w-4" />
           <span className="font-medium text-sm">Focus Timer</span>
         </div>
         <span className="text-xs text-muted-foreground">
@@ -54,19 +54,20 @@ function FocusTimerDetailsContent() {
 
       {/* Timer Display */}
       <div className="text-center">
+        {/* Task Info */}
+        {task && (
+          <div>
+            <div className="border-b pb-3">
+              <p className="text-sm text-foreground opacity-70 line-clamp-2">{task.title}</p>
+            </div>
+            <div className="pb-3"></div>
+          </div>
+        )}
         <div className="text-2xl font-mono font-medium text-foreground">{displayTime}</div>
         <div className="text-sm text-muted-foreground mt-1">
           {status === "running" ? "Running" : status === "paused" ? "Paused" : "Stopped"}
         </div>
       </div>
-
-      {/* Task Info */}
-      {task && (
-        <div className="border-t pt-3">
-          <p className="text-sm font-medium text-foreground mb-1">Task:</p>
-          <p className="text-sm text-muted-foreground line-clamp-2">{task.title}</p>
-        </div>
-      )}
 
       {/* Controls */}
       <div className="flex items-center justify-center gap-2 pt-2">
@@ -104,7 +105,7 @@ function FocusTimerDetailsContent() {
 }
 
 function FocusTimerDisplayInner({ className }: FocusTimerDisplayProps) {
-  const { activeTimer, status, task, displayTime } = useFocusTimerDisplay()
+  const { activeTimer, displayTime } = useFocusTimerDisplay()
 
   if (!activeTimer) {
     return null
@@ -124,21 +125,12 @@ function FocusTimerDisplayInner({ className }: FocusTimerDisplayProps) {
           className="flex items-center gap-2 h-auto px-2 py-1 hover:bg-transparent hover:text-foreground cursor-pointer"
         >
           <div className="flex items-center gap-1">
-            <Timer
-              className={cn(
-                "w-4 h-4",
-                status === "running"
-                  ? "text-green-600"
-                  : status === "paused"
-                    ? "text-yellow-600"
-                    : "text-muted-foreground",
-              )}
-            />
+            <ClockAlert className={cn("w-4 h-4 text-foreground")} />
             <span className="font-mono font-medium text-foreground">{displayTime}</span>
           </div>
-          {task && (
-            <span className="text-xs max-w-32 truncate text-muted-foreground">{task.title}</span>
-          )}
+          {/* {task && ( */}
+          {/*   <span className="text-xs max-w-32 truncate text-muted-foreground">{task.title}</span> */}
+          {/* )} */}
         </Button>
       </ContentPopover>
     </div>

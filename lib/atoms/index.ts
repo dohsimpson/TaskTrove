@@ -346,6 +346,7 @@ export {
   activeFocusTaskAtom,
   isTaskTimerActiveAtom,
   isAnyTimerRunningAtom,
+  focusTimerTickAtom,
   currentFocusTimerElapsedAtom,
   focusTimerDisplayAtom,
   focusTimerStatusAtom,

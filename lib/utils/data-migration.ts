@@ -8,7 +8,6 @@ import packageJson from "@/package.json"
  * Data Migration Utility for TaskTrove Data Files
  *
  * Performs staged version upgrades (1 version at a time) to ensure data compatibility.
- * Supports up to 8 version migrations with automatic version bumping.
  *
  * Note: We don't strictly follow semantic versioning - migration stages are only
  * defined when actual data structure changes are needed.
@@ -324,7 +323,7 @@ export function migrateDataFile(dataFile: Json): DataFile {
  *
  * @returns The latest migration version available, or null if no migrations exist
  */
-function getLatestAvailableMigration(): VersionString | null {
+export function getLatestAvailableMigration(): VersionString | null {
   const target = createVersionString(`v${packageJson.version}`)
   let latestAvailableMigration: VersionString | null = null
 

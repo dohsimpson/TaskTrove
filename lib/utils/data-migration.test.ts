@@ -4,12 +4,21 @@ import {
   migrateDataFile,
   needsMigration,
   getMigrationInfo,
+  getLatestAvailableMigration,
   v030Migration,
   v040Migration,
 } from "./data-migration"
 import type { Json } from "@/lib/types"
-import { createVersionString, createProjectId, createLabelId } from "@/lib/types"
+import { createVersionString, createProjectId, createLabelId, DataFileSchema } from "@/lib/types"
 import { DEFAULT_EMPTY_DATA_FILE, DEFAULT_USER_SETTINGS } from "@/lib/types/defaults"
+import { DEFAULT_UUID } from "@/lib/constants/defaults"
+import {
+  TEST_TASK_ID_1,
+  TEST_TASK_ID_2,
+  TEST_PROJECT_ID_1,
+  TEST_LABEL_ID_1,
+  TEST_SECTION_ID_1,
+} from "./test-constants"
 
 // Don't mock package.json - let it use the real version
 // This prevents issues where schema expectations don't match mocked version during development
@@ -957,6 +966,128 @@ describe("Data Migration Utility", () => {
     it("should handle getMigrationInfo errors for invalid input", () => {
       expect(() => getMigrationInfo(null)).toThrow("Data file must be a JSON object")
       expect(() => getMigrationInfo([])).toThrow("Data file must be a JSON object")
+    })
+  })
+
+  describe("Complete Migration Path", () => {
+    it("should migrate v0.2.0 data file to latest version and validate schema", () => {
+      // Create a complete v0.2.0 data file (no version field means v0.2.0)
+      const v020DataFile = createJsonData({
+        tasks: [
+          {
+            id: TEST_TASK_ID_1,
+            title: "Test Task 1",
+            description: "A test task",
+            completed: false,
+            priority: 2,
+            projectId: TEST_PROJECT_ID_1,
+            sectionId: TEST_SECTION_ID_1,
+            labels: [TEST_LABEL_ID_1],
+            subtasks: [],
+            comments: [],
+            attachments: [],
+            createdAt: "2024-01-01T00:00:00.000Z",
+            order: 1,
+            // Note: No recurringMode field - should be added during migration
+          },
+          {
+            id: TEST_TASK_ID_2,
+            title: "Test Task 2",
+            completed: true,
+            priority: 1,
+            projectId: TEST_PROJECT_ID_1,
+            sectionId: TEST_SECTION_ID_1,
+            labels: [],
+            subtasks: [],
+            comments: [],
+            attachments: [],
+            createdAt: "2024-01-02T00:00:00.000Z",
+            order: 2,
+          },
+        ],
+        projects: [
+          {
+            id: TEST_PROJECT_ID_1,
+            name: "Test Project",
+            slug: "test-project",
+            color: "#3b82f6",
+            shared: false,
+            sections: [
+              {
+                id: TEST_SECTION_ID_1,
+                name: "Default Section",
+                color: "#6b7280",
+              },
+            ],
+            taskOrder: [TEST_TASK_ID_1, TEST_TASK_ID_2],
+          },
+        ],
+        labels: [
+          {
+            id: TEST_LABEL_ID_1,
+            name: "test-label",
+            slug: "test-label",
+            color: "#ef4444",
+          },
+        ],
+        // v0.2.0 has ordering field (legacy) instead of groups
+        ordering: {
+          projects: [TEST_PROJECT_ID_1],
+          labels: [TEST_LABEL_ID_1],
+        },
+        // No version field - indicates v0.2.0
+        // No settings field - should be added during migration
+      })
+
+      // Migrate to latest version
+      const migratedData = migrateDataFile(v020DataFile)
+
+      // Verify the migration succeeded and data conforms to current schema
+      expect(() => DataFileSchema.parse(migratedData)).not.toThrow()
+
+      // Verify the version matches the latest migration version
+      const latestMigrationVersion = getLatestAvailableMigration()
+      expect(latestMigrationVersion).not.toBeNull()
+      expect(migratedData.version).toBe(latestMigrationVersion)
+
+      // Verify v0.3.0 migration changes
+      expect(migratedData).toHaveProperty("projectGroups")
+      expect(migratedData).toHaveProperty("labelGroups")
+      expect(migratedData).not.toHaveProperty("ordering")
+
+      // Verify projectGroups structure
+      expect(migratedData.projectGroups).toEqual({
+        type: "project",
+        id: DEFAULT_UUID,
+        name: "All Projects",
+        slug: "all-projects",
+        items: [TEST_PROJECT_ID_1],
+      })
+
+      // Verify labelGroups structure
+      expect(migratedData.labelGroups).toEqual({
+        type: "label",
+        id: DEFAULT_UUID,
+        name: "All Labels",
+        slug: "all-labels",
+        items: [TEST_LABEL_ID_1],
+      })
+
+      // Verify recurringMode was added to all tasks
+      expect(migratedData.tasks[0]).toHaveProperty("recurringMode", "dueDate")
+      expect(migratedData.tasks[1]).toHaveProperty("recurringMode", "dueDate")
+
+      // Verify v0.4.0 migration changes
+      expect(migratedData).toHaveProperty("settings")
+      expect(migratedData.settings).toEqual(DEFAULT_USER_SETTINGS)
+
+      // Verify original data structure is preserved
+      expect(migratedData.tasks).toHaveLength(2)
+      expect(migratedData.projects).toHaveLength(1)
+      expect(migratedData.labels).toHaveLength(1)
+      expect(migratedData.tasks[0].title).toBe("Test Task 1")
+      expect(migratedData.projects[0].name).toBe("Test Project")
+      expect(migratedData.labels[0].name).toBe("test-label")
     })
   })
 })

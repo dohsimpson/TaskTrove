@@ -97,7 +97,7 @@ function SettingsContent() {
   }
 
   return (
-    <div className="flex h-full w-full relative">
+    <div className="flex h-full w-full relative overflow-y-auto">
       {/* Desktop Sidebar - hidden on mobile */}
       <aside className="hidden md:flex w-64 border-r flex-col">
         <div className="p-4">

@@ -1,5 +1,28 @@
 # tasktrove
 
+## 0.4.0
+
+### Features
+
+🎉 Feature - Add experimental web notification system.
+🎉 Feature - Add PWA support with web app manifest and icons.
+🎉 Feature - Add time estimation for tasks and subtasks.
+🎉 Feature - Implement focus timer system with comprehensive task integration.
+🎉 Feature - Implement auto backup with configurable settings and centralized defaults.
+
+### UI Changes
+
+🎉 Feature - Replace chevron icons with semantic panel icons for sidebar toggle.
+✨ UI - Update task selection indicator to use semantic ring color.
+🎉 Feature - Add tooltip with absolute timestamp to comment timestamps.
+🎉 Feature - Improve responsive behavior and add mobile drawer.
+
+### Bug Fixes
+
+🐛 Bug - Resolve focus timer display inconsistency between footer and popover.
+🐛 Bug - Enable inline editing for project group names.
+🐛 Bug - Show blinking cursor under highlighted text in quick add.
+
 ## 0.3.0
 
 ### Noteworthy Features

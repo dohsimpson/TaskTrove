@@ -559,31 +559,57 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
 
         <div className="space-y-4">
           <div className="flex gap-2 items-center justify-center">
-            <Select value={selectedHour} onValueChange={setSelectedHour}>
-              <SelectTrigger className="w-18">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((hour) => (
-                  <SelectItem key={hour} value={hour.toString()}>
-                    {hour}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Input
+              type="number"
+              min="1"
+              max="12"
+              value={selectedHour}
+              onChange={(e) => {
+                const value = parseInt(e.target.value)
+                if (value >= 1 && value <= 12) {
+                  setSelectedHour(e.target.value)
+                } else if (e.target.value === "") {
+                  setSelectedHour("")
+                }
+              }}
+              onBlur={(e) => {
+                const value = parseInt(e.target.value)
+                if (isNaN(value) || value < 1) {
+                  setSelectedHour("1")
+                } else if (value > 12) {
+                  setSelectedHour("12")
+                }
+              }}
+              className="w-18 text-center"
+            />
             <span className="text-lg font-medium">:</span>
-            <Select value={selectedMinute} onValueChange={setSelectedMinute}>
-              <SelectTrigger className="w-18">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {["00", "15", "30", "45"].map((minute) => (
-                  <SelectItem key={minute} value={minute}>
-                    {minute}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Input
+              type="number"
+              min="0"
+              max="59"
+              value={selectedMinute}
+              onChange={(e) => {
+                const value = parseInt(e.target.value)
+                if (value >= 0 && value <= 59) {
+                  setSelectedMinute(e.target.value)
+                } else if (e.target.value === "") {
+                  setSelectedMinute("")
+                }
+              }}
+              onBlur={(e) => {
+                const value = parseInt(e.target.value)
+                let finalValue: string
+                if (isNaN(value) || value < 0) {
+                  finalValue = "00"
+                } else if (value > 59) {
+                  finalValue = "59"
+                } else {
+                  finalValue = value.toString().padStart(2, "0")
+                }
+                setSelectedMinute(finalValue)
+              }}
+              className="w-18 text-center"
+            />
             <Select value={selectedAmPm} onValueChange={setSelectedAmPm}>
               <SelectTrigger className="w-18">
                 <SelectValue />

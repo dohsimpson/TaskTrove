@@ -24,7 +24,7 @@
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.4",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
-    "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "^3.2.1",
+    "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "^3.2.6",
     "@hookform/resolvers": "^3.9.1",
     "@icons-pack/react-simple-icons": "^13.7.0",
     "@radix-ui/react-accordion": "1.2.2",

@@ -6,6 +6,14 @@ import { notificationAtoms } from "@/lib/atoms/core/notifications"
 import { tasksAtom, updateTaskAtom } from "@/lib/atoms/core/tasks"
 import { log } from "@/lib/utils/logger"
 import type { TaskId, ScheduledNotification } from "@/lib/types"
+import { getServiceWorker, isSecureContext } from "@/lib/utils/service-worker-notifications"
+
+// ====================
+// CONSTANTS
+// ====================
+
+/** Timeout for service worker ping in milliseconds */
+const SERVICE_WORKER_PING_TIMEOUT = 5000
 
 interface ServiceWorkerMessage {
   type: string
@@ -102,8 +110,9 @@ export function useNotificationServiceWorker() {
       return null
     }
 
-    if (!("serviceWorker" in navigator)) {
-      log.warn({ module: "notifications" }, "Service Worker not supported")
+    const sw = getServiceWorker()
+    if (!sw) {
+      log.warn({ module: "notifications" }, "Service worker not supported")
       return null
     }
 
@@ -111,7 +120,7 @@ export function useNotificationServiceWorker() {
       // Wait for page load to avoid blocking initial render
       const handleLoad = async () => {
         try {
-          const registration = await navigator.serviceWorker.register("/sw.js", {
+          const registration = await sw.register("/sw.js", {
             scope: "/",
             // Use 'classic' script type for better compatibility
             type: "classic",
@@ -129,14 +138,14 @@ export function useNotificationServiceWorker() {
           )
 
           // Listen for messages from service worker
-          navigator.serviceWorker.addEventListener("message", handleServiceWorkerMessage)
+          sw.addEventListener("message", handleServiceWorkerMessage)
 
           // Handle updates with better user experience
           registration.addEventListener("updatefound", () => {
             const newWorker = registration.installing
             if (newWorker) {
               newWorker.addEventListener("statechange", () => {
-                if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                if (newWorker.state === "installed" && sw.controller) {
                   log.info(
                     { module: "notifications" },
                     "New service worker available - will update on next visit",
@@ -223,8 +232,8 @@ export function useNotificationServiceWorker() {
         resolve(event.data?.type === "PONG")
       }
 
-      // Timeout after 5 seconds
-      setTimeout(() => resolve(false), 5000)
+      // Timeout after service worker ping timeout
+      setTimeout(() => resolve(false), SERVICE_WORKER_PING_TIMEOUT)
 
       swRef.current!.active!.postMessage({ type: "PING" }, [channel.port2])
     })
@@ -232,17 +241,32 @@ export function useNotificationServiceWorker() {
 
   // Initialize service worker on mount
   useEffect(() => {
+    if (!isSecureContext()) {
+      log.warn(
+        { module: "notifications" },
+        "Service worker requires secure context (HTTPS or localhost)",
+      )
+      return
+    }
+
     registerServiceWorker()
 
     return () => {
+      const sw = getServiceWorker()
+      if (!sw) {
+        log.warn({ module: "notifications" }, "Service worker not supported")
+        return
+      }
+
       if (typeof window !== "undefined") {
-        navigator.serviceWorker.removeEventListener("message", handleServiceWorkerMessage)
+        sw.removeEventListener("message", handleServiceWorkerMessage)
       }
     }
-  }, [registerServiceWorker, handleServiceWorkerMessage])
+  }, [])
 
   // Sync scheduled notifications with service worker
   useEffect(() => {
+    if (!isSecureContext()) return
     if (!isSystemActive || scheduledNotifications.size === 0) return
 
     const syncNotifications = async () => {
@@ -261,6 +285,8 @@ export function useNotificationServiceWorker() {
 
   // Handle page visibility changes
   useEffect(() => {
+    if (!isSecureContext()) return
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         // Page became visible, ping service worker to ensure it's alive
@@ -282,33 +308,6 @@ export function useNotificationServiceWorker() {
       document.removeEventListener("visibilitychange", handleVisibilityChange)
     }
   }, [pingServiceWorker, registerServiceWorker])
-
-  // Handle beforeunload to ensure service worker can handle notifications
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Ensure all scheduled notifications are synced with service worker
-      if (scheduledNotifications.size > 0) {
-        // Use navigator.sendBeacon for reliable delivery on page unload
-        const notificationsData = Array.from(scheduledNotifications.values())
-        const data = JSON.stringify({
-          type: "SYNC_NOTIFICATIONS",
-          notifications: notificationsData,
-        })
-
-        try {
-          navigator.sendBeacon("/api/notifications/sync", data)
-        } catch (error) {
-          log.error({ error, module: "notifications" }, "Failed to sync notifications on unload")
-        }
-      }
-    }
-
-    window.addEventListener("beforeunload", handleBeforeUnload)
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload)
-    }
-  }, [scheduledNotifications])
 
   return {
     isServiceWorkerRegistered: isRegistered.current,

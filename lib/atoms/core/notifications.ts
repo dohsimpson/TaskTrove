@@ -15,9 +15,16 @@ import { settingsAtom } from "@/lib/atoms/core/settings"
 import { playSound } from "@/lib/utils/audio"
 import { log } from "@/lib/utils/logger"
 import { handleAtomError } from "../utils"
-import { showCrossBrowserNotification } from "@/lib/utils/cross-browser-notifications"
+import { showServiceWorkerNotification } from "@/lib/utils/service-worker-notifications"
 import { DEFAULT_UUID } from "@/lib/constants/defaults"
 import { DEFAULT_NOTIFICATION_SETTINGS } from "@/lib/types/defaults"
+
+// ====================
+// CONSTANTS
+// ====================
+
+/** Delay between multiple notifications to prevent overwhelming the user */
+const NOTIFICATION_STAGGER_DELAY = 500
 
 // ====================
 // TYPE GUARDS
@@ -318,7 +325,7 @@ const fireNotificationsAtom = atom(null, (get, set, notifications: ScheduledNoti
             },
             "Showed notification",
           )
-        }, index * 500) // 500ms between each notification
+        }, index * NOTIFICATION_STAGGER_DELAY)
       })
     }
 
@@ -338,8 +345,8 @@ export const showTaskDueNotificationAtom = atom(
     try {
       const notificationSettings = get(notificationSettingsAtom)
 
-      // Show browser notification using cross-browser utility
-      const result = await showCrossBrowserNotification(
+      // Show browser notification using service worker
+      const result = await showServiceWorkerNotification(
         `TaskTrove - Task Due`,
         {
           body: `${notification.taskTitle}`,
@@ -355,7 +362,7 @@ export const showTaskDueNotificationAtom = atom(
 
       if (!result.success) {
         log.error(
-          { module: "notifications", error: result.error, method: result.method },
+          { module: "notifications", error: result.error },
           "Failed to show task due notification",
         )
       }
@@ -369,7 +376,6 @@ export const showTaskDueNotificationAtom = atom(
         {
           taskId: notification.taskId,
           taskTitle: notification.taskTitle,
-          method: result.method,
           success: result.success,
           module: "notifications",
         },

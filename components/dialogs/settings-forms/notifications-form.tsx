@@ -13,6 +13,8 @@ import { notificationAtoms } from "@/lib/atoms/core/notifications"
 import { settingsAtoms } from "@/lib/atoms/core/settings"
 import type { NotificationSettings } from "@/lib/types"
 import { SettingsCard } from "@/components/ui/custom/settings-card"
+import { isSecureContext } from "@/lib/utils/service-worker-notifications"
+import { log } from "@/lib/utils/logger"
 
 export function NotificationsForm() {
   const notificationSettings = useAtomValue(notificationAtoms.settings)
@@ -23,6 +25,9 @@ export function NotificationsForm() {
 
   const [isRequestingPermission, setIsRequestingPermission] = useState(false)
   const [hasTriedRetry, setHasTriedRetry] = useState(false)
+
+  // Check if we're in a secure context (HTTPS or localhost)
+  const isInSecureContext = isSecureContext()
 
   const handlePermissionRequest = async () => {
     setIsRequestingPermission(true)
@@ -43,7 +48,10 @@ export function NotificationsForm() {
     const success = testNotification()
     if (!success) {
       // Could show toast or alert here
-      console.warn("Failed to send test notification")
+      log.warn(
+        { module: "components", component: "NotificationsForm" },
+        "Failed to send test notification",
+      )
     }
   }
 
@@ -70,7 +78,6 @@ export function NotificationsForm() {
               id="notifications-enabled"
               checked={notificationSettings.enabled}
               onCheckedChange={(enabled) => updateNotificationSettings({ enabled })}
-              disabled={notificationPermission !== "granted"}
             />
           </div>
 
@@ -87,7 +94,6 @@ export function NotificationsForm() {
               onCheckedChange={(requireInteraction) =>
                 updateNotificationSettings({ requireInteraction })
               }
-              disabled={!notificationSettings.enabled || notificationPermission !== "granted"}
             />
           </div>
         </div>
@@ -100,13 +106,19 @@ export function NotificationsForm() {
             <p className="text-sm font-medium">Browser Notifications</p>
           </div>
           <div className="flex items-center gap-3">
-            {notificationPermission === "granted" && (
+            {!isInSecureContext && (
+              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                <AlertTriangle className="w-4 h-4" />
+                <span className="text-sm font-medium">Notification requires HTTPS</span>
+              </div>
+            )}
+            {isInSecureContext && notificationPermission === "granted" && (
               <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
                 <Check className="w-4 h-4" />
                 <span className="text-sm font-medium">Enabled</span>
               </div>
             )}
-            {notificationPermission === "denied" && (
+            {isInSecureContext && notificationPermission === "denied" && (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
                   <X className="w-4 h-4" />
@@ -137,7 +149,7 @@ export function NotificationsForm() {
                 </Button>
               </div>
             )}
-            {notificationPermission === "default" && (
+            {isInSecureContext && notificationPermission === "default" && (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Bell className="w-4 h-4" />
@@ -163,7 +175,18 @@ export function NotificationsForm() {
           </div>
         </div>
 
-        {notificationPermission === "denied" && (
+        {!isInSecureContext && (
+          <Alert>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Secure Connection Required</AlertTitle>
+            <AlertDescription>
+              Notifications require a secure connection (HTTPS) or localhost. Please access this
+              site via HTTPS or run it on localhost to enable notification features.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {isInSecureContext && notificationPermission === "denied" && (
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Notifications Blocked</AlertTitle>
@@ -184,7 +207,7 @@ export function NotificationsForm() {
           </Alert>
         )}
 
-        {notificationPermission === "granted" && (
+        {isInSecureContext && notificationPermission === "granted" && (
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={handleTestNotification}>
               <Bell className="w-4 h-4 mr-1" />

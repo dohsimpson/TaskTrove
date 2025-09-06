@@ -83,7 +83,7 @@
     "recharts": "2.15.4",
     "slugify": "^1.6.6",
     "sonner": "^1.7.1",
-    "tailwind-merge": "^2.5.5",
+    "tailwind-merge": "^3.3.1",
     "uuid": "^11.1.0",
     "vaul": "^0.9.6",
     "zod": "^4.0.14"

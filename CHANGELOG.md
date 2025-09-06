@@ -1,5 +1,12 @@
 # tasktrove
 
+## 0.4.1
+
+### Patch Changes
+
+🐛 Bug - Resolve app crash on insecure context startup.
+🐛 Bug - Resolve non-scrollable overflow in settings dialog.
+
 ## 0.4.0
 
 ### Features

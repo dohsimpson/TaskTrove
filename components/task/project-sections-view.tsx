@@ -825,12 +825,7 @@ export function ProjectSectionsView({
                     ) : null
                   })()}
 
-                  {sectionTasks.length === 0 && (
-                    <TaskEmptyState
-                      title="No tasks in this section"
-                      description="Create your first task to get started"
-                    />
-                  )}
+                  {sectionTasks.length === 0 && <TaskEmptyState title="No tasks in this section" />}
                 </div>
               </DropTargetWrapper>
             </div>

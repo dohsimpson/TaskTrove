@@ -359,6 +359,13 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
           mode="single"
           selected={selectedDate}
           onSelect={handleCustomDateSelect}
+          fixedWeeks={true}
+          showOutsideDays={false}
+          captionLayout="dropdown"
+          // Restrict year range to reasonable bounds for task scheduling
+          // 2 years back (for overdue tasks) to 10 years forward (for long-term planning)
+          startMonth={new Date(new Date().getFullYear() - 2, 0)}
+          endMonth={new Date(new Date().getFullYear() + 10, 11)}
           className="rounded-md border-0 w-full"
           classNames={{
             week: "flex w-full mt-1",

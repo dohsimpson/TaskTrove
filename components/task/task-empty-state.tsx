@@ -13,7 +13,7 @@ interface TaskEmptyStateProps {
 
 export function TaskEmptyState({
   title = "No tasks found",
-  description = "Create your first task to get started",
+  description = undefined,
   action,
   className = "",
 }: TaskEmptyStateProps) {
@@ -21,12 +21,12 @@ export function TaskEmptyState({
     <div
       className={`text-center text-muted-foreground flex flex-col justify-center h-full ${className}`}
     >
-      <div className="mb-4">
-        <div className="size-16 mx-auto mb-4 rounded-full bg-muted/30 flex items-center justify-center">
+      <div>
+        <div className="size-16 mx-auto rounded-full bg-muted/30 flex items-center justify-center">
           <Archive className="h-8 w-8 text-muted-foreground/60" />
         </div>
-        <h3 className="text-lg font-medium text-foreground mb-2">{title}</h3>
-        <p className="text-sm text-muted-foreground mb-4">{description}</p>
+        <h3 className="text-lg font-medium text-muted-foreground mb-2">{title}</h3>
+        {description && <p className="text-sm text-muted-foreground mb-4">{description}</p>}
         {action && (
           <Button onClick={action.onClick} className="mx-auto">
             {action.label}

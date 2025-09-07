@@ -8,7 +8,8 @@ describe("TaskEmptyState", () => {
     render(<TaskEmptyState />)
 
     expect(screen.getByText("No tasks found")).toBeInTheDocument()
-    expect(screen.getByText("Create your first task to get started")).toBeInTheDocument()
+    // Description should not be rendered when undefined
+    expect(screen.queryByText("Create your first task to get started")).not.toBeInTheDocument()
   })
 
   it("renders with custom title and description", () => {
@@ -22,5 +23,12 @@ describe("TaskEmptyState", () => {
     const { container } = render(<TaskEmptyState className="custom-class" />)
 
     expect(container.firstChild).toHaveClass("custom-class")
+  })
+
+  it("renders without description when description is undefined", () => {
+    render(<TaskEmptyState title="No items" description={undefined} />)
+
+    expect(screen.getByText("No items")).toBeInTheDocument()
+    expect(screen.queryByText("Create your first task to get started")).not.toBeInTheDocument()
   })
 })

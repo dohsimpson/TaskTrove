@@ -40,7 +40,7 @@ function CommentItem({
           mode === "popover" && "bg-muted/20 rounded-lg p-3 mx-0",
         )}
       >
-        <div className="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-full flex-shrink-0 flex items-center justify-center">
+        <div className="size-6 bg-gray-200 dark:bg-gray-700 rounded-full flex-shrink-0 flex items-center justify-center">
           <User className="h-3 w-3 text-gray-500" />
         </div>
         <div className="flex-1 min-w-0">

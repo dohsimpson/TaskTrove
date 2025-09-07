@@ -62,7 +62,7 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
                 className="flex-1 cursor-pointer group"
                 onClick={() => window.open("https://github.com/dohsimpson/TaskTrove", "_blank")}
               >
-                <Star className="w-4 h-4 mr-2 text-yellow-600 group-hover:animate-[breathe_3s_ease-in-out_infinite]" />
+                <Star className="size-4 mr-2 text-yellow-600 group-hover:animate-[breathe_3s_ease-in-out_infinite]" />
                 Star on GitHub
               </Button>
 
@@ -72,7 +72,7 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
                 className="flex-1 cursor-pointer group"
                 onClick={() => window.open("https://github.com/sponsors/dohsimpson", "_blank")}
               >
-                <Heart className="w-4 h-4 mr-2 text-pink-600 group-hover:animate-[breathe_3s_ease-in-out_infinite]" />
+                <Heart className="size-4 mr-2 text-pink-600 group-hover:animate-[breathe_3s_ease-in-out_infinite]" />
                 Sponsor Me
               </Button>
             </div>

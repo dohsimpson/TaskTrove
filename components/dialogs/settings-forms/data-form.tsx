@@ -131,15 +131,15 @@ export function DataForm() {
   const getProviderIcon = (source: string) => {
     switch (source.toLowerCase()) {
       case "todoist":
-        return <SiTodoist className="w-4 h-4" />
+        return <SiTodoist className="size-4" />
       case "trello":
-        return <SiTrello className="w-4 h-4" />
+        return <SiTrello className="size-4" />
       case "asana":
-        return <SiAsana className="w-4 h-4" />
+        return <SiAsana className="size-4" />
       case "ticktick":
-        return <SiTicktick className="w-4 h-4" />
+        return <SiTicktick className="size-4" />
       default:
-        return <ExternalLink className="w-4 h-4" />
+        return <ExternalLink className="size-4" />
     }
   }
 
@@ -210,7 +210,7 @@ export function DataForm() {
       {/* <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
+            <Calendar className="size-5" />
             Calendar Sync
           </CardTitle>
           <CardDescription>Sync your tasks with external calendar applications.</CardDescription>
@@ -247,7 +247,7 @@ export function DataForm() {
                     <div className="font-medium capitalize">{source}</div>
                   </div>
                 </div>
-                <ExternalLink className="w-4 h-4" />
+                <ExternalLink className="size-4" />
               </Button>
             ))}
           </div>
@@ -263,7 +263,7 @@ export function DataForm() {
           </p>
           <div className="p-3 bg-muted rounded-lg border">
             <div className="flex items-start gap-2">
-              <div className="w-5 h-5 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold mt-0.5">
+              <div className="size-5 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold mt-0.5">
                 !
               </div>
               <div className="text-sm">
@@ -293,9 +293,9 @@ export function DataForm() {
               >
                 <span className="flex items-center gap-3">
                   {uploadStatus === "uploading" ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="size-5 animate-spin" />
                   ) : (
-                    <Upload className="w-5 h-5" />
+                    <Upload className="size-5" />
                   )}
                   <div className="font-medium">
                     {uploadStatus === "uploading" ? "Uploading..." : "Upload JSON File"}
@@ -307,7 +307,7 @@ export function DataForm() {
             {/* Status indicator */}
             {uploadStatus === "success" && uploadResult && (
               <div className="flex items-center gap-2 text-green-600">
-                <CheckCircle2 className="w-5 h-5" />
+                <CheckCircle2 className="size-5" />
                 <div className="text-sm">
                   <div className="font-medium">Import successful!</div>
                   <div className="text-xs text-muted-foreground">
@@ -359,7 +359,7 @@ export function DataForm() {
 
             {uploadStatus === "error" && uploadError && (
               <div className="flex items-center gap-2 text-red-600">
-                <XCircle className="w-5 h-5" />
+                <XCircle className="size-5" />
                 <div className="text-sm">
                   <div className="font-medium">Import failed</div>
                   <div className="text-xs text-muted-foreground">{uploadError}</div>
@@ -381,7 +381,7 @@ export function DataForm() {
         {settings.autoBackup.enabled && (
           <div className="p-3 bg-muted rounded-lg border">
             <div className="flex items-start gap-2">
-              <div className="w-5 h-5 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold mt-0.5">
+              <div className="size-5 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold mt-0.5">
                 !
               </div>
               <div className="text-sm">
@@ -493,7 +493,7 @@ export function DataForm() {
 
         <div className="space-y-3">
           <div className="flex items-start gap-2">
-            <HardDrive className="w-4 h-4 mt-0.5 text-muted-foreground" />
+            <HardDrive className="size-4 mt-0.5 text-muted-foreground" />
             <div className="text-sm space-y-1">
               <p className="font-medium">Backup Information</p>
               <ul className="text-muted-foreground space-y-1">
@@ -533,7 +533,7 @@ export function DataForm() {
             }}
             className="w-full"
           >
-            <Archive className="w-4 h-4 mr-2" />
+            <Archive className="size-4 mr-2" />
             Trigger Manual Backup Now
           </Button>
         </div>
@@ -543,7 +543,7 @@ export function DataForm() {
       {/* <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Link className="w-5 h-5" />
+            <Link className="size-5" />
             Third-party Services
           </CardTitle>
           <CardDescription>

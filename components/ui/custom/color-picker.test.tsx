@@ -68,12 +68,12 @@ describe("ColorPicker", () => {
     )
 
     let colorButton = screen.getByTitle("Blue")
-    expect(colorButton).toHaveClass("w-5", "h-5")
+    expect(colorButton).toHaveClass("size-5")
 
     rerender(<ColorPicker selectedColor="#3b82f6" onColorSelect={mockOnColorSelect} size="md" />)
 
     colorButton = screen.getByTitle("Blue")
-    expect(colorButton).toHaveClass("w-6", "h-6")
+    expect(colorButton).toHaveClass("size-6")
 
     rerender(<ColorPicker selectedColor="#3b82f6" onColorSelect={mockOnColorSelect} size="lg" />)
 
@@ -116,8 +116,8 @@ describe("ColorPicker", () => {
   it("handles all size variants correctly", () => {
     const sizes = ["sm", "md", "lg"] as const
     const expectedClasses = {
-      sm: ["w-5", "h-5"],
-      md: ["w-6", "h-6"],
+      sm: ["size-5"],
+      md: ["size-6"],
       lg: ["w-7", "h-7"],
     }
 

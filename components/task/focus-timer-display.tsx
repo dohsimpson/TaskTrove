@@ -125,7 +125,7 @@ function FocusTimerDisplayInner({ className }: FocusTimerDisplayProps) {
           className="flex items-center gap-2 h-auto px-2 py-1 hover:bg-transparent hover:text-foreground cursor-pointer"
         >
           <div className="flex items-center gap-1">
-            <ClockAlert className={cn("w-4 h-4 text-foreground")} />
+            <ClockAlert className={cn("size-4 text-foreground")} />
             <span className="font-mono font-medium text-foreground">{displayTime}</span>
           </div>
           {/* {task && ( */}

@@ -108,20 +108,20 @@ export function NotificationsForm() {
           <div className="flex items-center gap-3">
             {!isInSecureContext && (
               <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-                <AlertTriangle className="w-4 h-4" />
+                <AlertTriangle className="size-4" />
                 <span className="text-sm font-medium">Notification requires HTTPS</span>
               </div>
             )}
             {isInSecureContext && notificationPermission === "granted" && (
               <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                <Check className="w-4 h-4" />
+                <Check className="size-4" />
                 <span className="text-sm font-medium">Enabled</span>
               </div>
             )}
             {isInSecureContext && notificationPermission === "denied" && (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
-                  <X className="w-4 h-4" />
+                  <X className="size-4" />
                   <span className="text-sm font-medium">Blocked</span>
                 </div>
                 <Button
@@ -152,7 +152,7 @@ export function NotificationsForm() {
             {isInSecureContext && notificationPermission === "default" && (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Bell className="w-4 h-4" />
+                  <Bell className="size-4" />
                   <span className="text-sm font-medium">Not enabled</span>
                 </div>
                 <Button
@@ -210,7 +210,7 @@ export function NotificationsForm() {
         {isInSecureContext && notificationPermission === "granted" && (
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={handleTestNotification}>
-              <Bell className="w-4 h-4 mr-1" />
+              <Bell className="size-4 mr-1" />
               Test Notification
             </Button>
           </div>

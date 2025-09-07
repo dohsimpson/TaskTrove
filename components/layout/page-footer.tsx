@@ -100,7 +100,7 @@ export function PageFooter({ className }: PageFooterProps) {
             size="sm"
             className="flex items-center gap-1 h-auto px-0 py-0 hover:bg-transparent hover:text-foreground cursor-pointer"
           >
-            <CheckCircle className="w-4 h-4" />
+            <CheckCircle className="size-4" />
             <span className="font-medium text-foreground">
               {Array.isArray(completedTasksToday) ? completedTasksToday.length : 0}
             </span>{" "}
@@ -125,7 +125,7 @@ export function PageFooter({ className }: PageFooterProps) {
             size="sm"
             className="flex items-center gap-1 h-auto px-0 py-0 hover:bg-transparent hover:text-foreground cursor-pointer"
           >
-            <Calendar className="w-4 h-4" />
+            <Calendar className="size-4" />
             <span className="font-medium text-foreground">{dueTodayCount}</span> due today
           </Button>
         </ContentPopover>

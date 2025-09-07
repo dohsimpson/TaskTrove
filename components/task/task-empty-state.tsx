@@ -22,7 +22,7 @@ export function TaskEmptyState({
       className={`text-center text-muted-foreground flex flex-col justify-center h-full ${className}`}
     >
       <div className="mb-4">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted/30 flex items-center justify-center">
+        <div className="size-16 mx-auto mb-4 rounded-full bg-muted/30 flex items-center justify-center">
           <Archive className="h-8 w-8 text-muted-foreground/60" />
         </div>
         <h3 className="text-lg font-medium text-foreground mb-2">{title}</h3>

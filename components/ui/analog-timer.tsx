@@ -182,9 +182,9 @@ export default function AnalogTimer({
         {onToggle && (
           <button
             onClick={onToggle}
-            className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:border-2 hover:border-slate-700 dark:hover:border-slate-300 text-slate-700 dark:text-slate-300"
+            className="size-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:border-2 hover:border-slate-700 dark:hover:border-slate-300 text-slate-700 dark:text-slate-300"
           >
-            {isRunning ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+            {isRunning ? <Pause className="size-5" /> : <Play className="size-5" />}
           </button>
         )}
       </div>

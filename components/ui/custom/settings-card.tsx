@@ -29,7 +29,7 @@ export function SettingsCard({
     <Card className={className}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          {Icon && <Icon className="w-5 h-5" />}
+          {Icon && <Icon className="size-5" />}
           {title}
           {experimental && <ExperimentalBadge />}
         </CardTitle>

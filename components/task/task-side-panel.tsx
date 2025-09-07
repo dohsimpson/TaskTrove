@@ -168,7 +168,7 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
                 const project = getTaskProject()
                 return project ? (
                   <>
-                    <Folder className="w-4 h-4" style={{ color: project.color }} />
+                    <Folder className="size-4" style={{ color: project.color }} />
                     <span className="text-sm font-medium truncate">{project.name}</span>
                   </>
                 ) : (

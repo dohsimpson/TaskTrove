@@ -113,7 +113,7 @@ function SettingsContent() {
                 onClick={() => setActiveCategory(category.id)}
                 className="w-full justify-start py-3 h-auto"
               >
-                <category.icon className="w-4 h-4 mr-3" />
+                <category.icon className="size-4 mr-3" />
                 <div className="flex flex-col items-start">
                   <span className="font-medium">{category.title}</span>
                   <span className="text-xs text-muted-foreground">{category.description}</span>
@@ -160,7 +160,7 @@ function SettingsContent() {
                     }}
                     className="w-full justify-start py-3 h-auto"
                   >
-                    <category.icon className="w-4 h-4 mr-3" />
+                    <category.icon className="size-4 mr-3" />
                     <div className="flex flex-col items-start">
                       <span className="font-medium">{category.title}</span>
                       <span className="text-xs text-muted-foreground">{category.description}</span>

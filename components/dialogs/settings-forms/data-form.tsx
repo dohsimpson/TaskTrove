@@ -15,17 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  Upload,
-  ExternalLink,
-  CheckCircle2,
-  XCircle,
-  Loader2,
-  Archive,
-  HardDrive,
-} from "lucide-react"
+import { Upload, ExternalLink, CheckCircle2, XCircle, Loader2, Archive } from "lucide-react"
 // Future icons (not used yet): import { Calendar, Link, Trash2, Plus } from "lucide-react"
 import { SiTodoist, SiTrello, SiAsana, SiTicktick } from "@icons-pack/react-simple-icons"
+import { toast } from "sonner"
 import { dataSettingsAtom, updateDataSettingsAtom } from "@/lib/atoms/ui/user-settings-atom"
 import { queryClientAtom } from "@/lib/atoms/core/base"
 import {
@@ -394,7 +387,7 @@ export function DataForm() {
                 </div>
                 <div className="mt-1">
                   <a
-                    href="https://docs.tasktrove.io/backup"
+                    href="https://docs.tasktrove.io/backup#built-in-auto-backup-recommended"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline text-xs flex items-center gap-1"
@@ -489,33 +482,7 @@ export function DataForm() {
           </Select>
         </div>
 
-        <Separator />
-
         <div className="space-y-3">
-          <div className="flex items-start gap-2">
-            <HardDrive className="size-4 mt-0.5 text-muted-foreground" />
-            <div className="text-sm space-y-1">
-              <p className="font-medium">Backup Information</p>
-              <ul className="text-muted-foreground space-y-1">
-                <li>
-                  • Backups are stored in the{" "}
-                  <code className="px-1 py-0.5 bg-muted rounded text-xs">backups/</code> directory
-                </li>
-                <li>
-                  •{" "}
-                  {settings.autoBackup.maxBackups === -1
-                    ? "Keeps unlimited backups (no rotation)"
-                    : `Keeps the last ${settings.autoBackup.maxBackups !== undefined ? settings.autoBackup.maxBackups : DEFAULT_MAX_BACKUPS} backups (automatic rotation)`}
-                </li>
-                <li>• Includes all tasks, projects, labels, and settings</li>
-                <li>
-                  • Runs daily at {settings.autoBackup.backupTime || DEFAULT_BACKUP_TIME} server
-                  time
-                </li>
-              </ul>
-            </div>
-          </div>
-
           <Button
             variant="outline"
             onClick={async () => {
@@ -524,11 +491,12 @@ export function DataForm() {
                   method: "POST",
                 })
                 if (response.ok) {
-                  // Could add toast notification here
-                  console.log("Manual backup triggered successfully")
+                  toast.success("Manual backup triggered successfully")
+                } else {
+                  toast.error("Failed to trigger manual backup")
                 }
-              } catch (error) {
-                console.error("Failed to trigger manual backup:", error)
+              } catch {
+                toast.error("Failed to trigger manual backup. Please try again.")
               }
             }}
             className="w-full"

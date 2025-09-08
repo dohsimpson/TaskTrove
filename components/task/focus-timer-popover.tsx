@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { ClockAlert, Play, Pause, Square } from "lucide-react"
+import { Coffee, Play, Pause, Square } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ContentPopover } from "@/components/ui/content-popover"
 import {
@@ -56,7 +56,7 @@ function FocusTimerContent({ taskId }: { taskId: TaskId }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <ClockAlert className="h-4 w-4" />
+          <Coffee className="h-4 w-4" />
           <span className="font-medium text-sm">Focus Timer</span>
         </div>
         <span className="text-xs text-muted-foreground">
@@ -91,7 +91,7 @@ function FocusTimerContent({ taskId }: { taskId: TaskId }) {
             onClick={handleStart}
             className="flex items-center gap-2"
           >
-            <ClockAlert className="h-3 w-3" />
+            <Coffee className="h-3 w-3" />
             Start Timer
           </Button>
         ) : (

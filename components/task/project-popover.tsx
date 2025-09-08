@@ -24,7 +24,7 @@ export function ProjectPopover({ task, children, className, onOpenChange }: Proj
     <ContentPopover
       open={open}
       onOpenChange={handleOpenChange}
-      content={<ProjectContent task={task} mode="popover" />}
+      content={<ProjectContent task={task} />}
       className="w-64 p-0"
       align="start"
     >

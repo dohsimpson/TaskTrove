@@ -9,11 +9,10 @@ import type { Task, ProjectId } from "@/lib/types"
 
 interface ProjectContentProps {
   task: Task
-  mode?: "inline" | "popover"
   className?: string
 }
 
-export function ProjectContent({ task, mode = "inline", className }: ProjectContentProps) {
+export function ProjectContent({ task, className }: ProjectContentProps) {
   const allProjects = useAtomValue(projectsAtom)
   const updateTask = useSetAtom(updateTaskAtom)
 
@@ -24,7 +23,7 @@ export function ProjectContent({ task, mode = "inline", className }: ProjectCont
   }
 
   return (
-    <div className={cn("space-y-3", mode === "popover" && "p-4", className)}>
+    <div className={cn("space-y-3", className)}>
       {/* Projects List */}
       {allProjects.length > 0 && (
         <div className="space-y-1 max-h-48 overflow-y-auto">

@@ -37,7 +37,7 @@ function CommentItem({
       <div
         className={cn(
           "group flex gap-2 mb-3 last:mb-0 hover:bg-accent/20 rounded-lg p-2 -mx-2 transition-colors",
-          mode === "popover" && "bg-muted/20 rounded-lg p-3 mx-0",
+          mode === "popover" && "bg-muted/20 rounded-lg p-1 mx-0",
         )}
       >
         <div className="size-6 bg-gray-200 dark:bg-gray-700 rounded-full flex-shrink-0 flex items-center justify-center">
@@ -184,7 +184,7 @@ export function CommentContent({
   const commentsLength = task.comments?.length || 0
 
   return (
-    <div className={cn("space-y-3", mode === "popover" && "p-4", className)}>
+    <div className={cn("space-y-3", mode === "popover" && "p-2", className)}>
       {/* Header - Show title for popover header only */}
       {mode !== "inline" && (
         <div className="flex items-center justify-between">

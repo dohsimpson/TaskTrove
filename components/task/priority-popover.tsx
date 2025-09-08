@@ -24,9 +24,7 @@ export function PriorityPopover({ task, children, className, onOpenChange }: Pri
     <ContentPopover
       open={open}
       onOpenChange={handleOpenChange}
-      content={
-        <PriorityContent task={task} mode="popover" onPrioritySelect={() => setOpen(false)} />
-      }
+      content={<PriorityContent task={task} onPrioritySelect={() => setOpen(false)} />}
       className="w-full p-0"
       align="start"
     >

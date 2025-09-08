@@ -1,7 +1,7 @@
 "use client"
 
 import { useSetAtom } from "jotai"
-import { ClockAlert, Pause, Play, Square } from "lucide-react"
+import { Coffee, Pause, Play, Square } from "lucide-react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { ContentPopover } from "@/components/ui/content-popover"
@@ -44,7 +44,7 @@ function FocusTimerDetailsContent() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <ClockAlert className="h-4 w-4" />
+          <Coffee className="h-4 w-4" />
           <span className="font-medium text-sm">Focus Timer</span>
         </div>
         <span className="text-xs text-muted-foreground">
@@ -125,7 +125,7 @@ function FocusTimerDisplayInner({ className }: FocusTimerDisplayProps) {
           className="flex items-center gap-2 h-auto px-2 py-1 hover:bg-transparent hover:text-foreground cursor-pointer"
         >
           <div className="flex items-center gap-1">
-            <ClockAlert className={cn("size-4 text-foreground")} />
+            <Coffee className={cn("size-4 text-foreground")} />
             <span className="font-mono font-medium text-foreground">{displayTime}</span>
           </div>
           {/* {task && ( */}

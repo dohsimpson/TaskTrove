@@ -11,17 +11,11 @@ import type { Task } from "@/lib/types"
 
 interface PriorityContentProps {
   task: Task
-  mode?: "inline" | "popover"
   className?: string
   onPrioritySelect?: () => void
 }
 
-export function PriorityContent({
-  task,
-  mode = "inline",
-  className,
-  onPrioritySelect,
-}: PriorityContentProps) {
+export function PriorityContent({ task, className, onPrioritySelect }: PriorityContentProps) {
   const updateTask = useSetAtom(updateTaskAtom)
 
   const handlePriorityUpdate = (priority: number) => {
@@ -39,7 +33,7 @@ export function PriorityContent({
   ]
 
   return (
-    <div className={cn("space-y-1", mode === "popover" && "p-3", className)}>
+    <div className={cn("space-y-1", className)}>
       {/* Priority Options */}
       <div className="space-y-1">
         {priorities.map((priority) => (

@@ -112,7 +112,7 @@ export function SubtaskContent({
   const progressPercentage = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0
 
   return (
-    <div className={cn("space-y-3", mode === "popover" && "p-4", className)}>
+    <div className={cn("space-y-3", mode === "popover" && "p-2", className)}>
       {/* Header - Show title for popover header only */}
       {mode !== "inline" && (
         <div className="flex items-center justify-between">

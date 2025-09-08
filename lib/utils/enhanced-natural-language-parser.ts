@@ -1,4 +1,13 @@
-import { format, addDays, nextMonday, nextFriday, startOfDay } from "date-fns"
+import {
+  format,
+  addDays,
+  addWeeks,
+  addMonths,
+  addYears,
+  nextMonday,
+  nextFriday,
+  startOfDay,
+} from "date-fns"
 import { CommonRRules, buildRRule, RRuleFrequency } from "@/lib/types"
 
 export interface ParsedTask {
@@ -274,14 +283,24 @@ const DATE_PATTERNS: StaticDatePattern[] = [
 
   // Relative day patterns
   {
-    pattern: new RegExp(`${WORD_BOUNDARY_START}(in 3 days)${WORD_BOUNDARY_END}`, "gi"),
-    getValue: () => addDays(new Date(), 3),
-    display: "In 3 days",
+    pattern: new RegExp(`${WORD_BOUNDARY_START}(in a day)${WORD_BOUNDARY_END}`, "gi"),
+    getValue: () => addDays(new Date(), 1),
+    display: "In a day",
   },
   {
     pattern: new RegExp(`${WORD_BOUNDARY_START}(in a week)${WORD_BOUNDARY_END}`, "gi"),
-    getValue: () => addDays(new Date(), 7),
+    getValue: () => addWeeks(new Date(), 1),
     display: "In a week",
+  },
+  {
+    pattern: new RegExp(`${WORD_BOUNDARY_START}(in a month)${WORD_BOUNDARY_END}`, "gi"),
+    getValue: () => addMonths(new Date(), 1),
+    display: "In a month",
+  },
+  {
+    pattern: new RegExp(`${WORD_BOUNDARY_START}(in a year)${WORD_BOUNDARY_END}`, "gi"),
+    getValue: () => addYears(new Date(), 1),
+    display: "In a year",
   },
 ] as const
 
@@ -299,7 +318,7 @@ const DYNAMIC_DATE_PATTERNS: DynamicDatePattern[] = [
     pattern: new RegExp(`${WORD_BOUNDARY_START}(in (\\d+) weeks?)${WORD_BOUNDARY_END}`, "gi"),
     getValue: (match: RegExpMatchArray) => {
       const weeks = parseInt(match[2])
-      return addDays(new Date(), weeks * 7)
+      return addWeeks(new Date(), weeks)
     },
     display: (match: RegExpMatchArray) => `In ${match[2]} weeks`,
   },
@@ -307,9 +326,17 @@ const DYNAMIC_DATE_PATTERNS: DynamicDatePattern[] = [
     pattern: new RegExp(`${WORD_BOUNDARY_START}(in (\\d+) months?)${WORD_BOUNDARY_END}`, "gi"),
     getValue: (match: RegExpMatchArray) => {
       const months = parseInt(match[2])
-      return addDays(new Date(), months * 30) // Approximate - could use date-fns addMonths for precision
+      return addMonths(new Date(), months)
     },
     display: (match: RegExpMatchArray) => `In ${match[2]} months`,
+  },
+  {
+    pattern: new RegExp(`${WORD_BOUNDARY_START}(in (\\d+) years?)${WORD_BOUNDARY_END}`, "gi"),
+    getValue: (match: RegExpMatchArray) => {
+      const years = parseInt(match[2])
+      return addYears(new Date(), years)
+    },
+    display: (match: RegExpMatchArray) => `In ${match[2]} years`,
   },
 ]
 

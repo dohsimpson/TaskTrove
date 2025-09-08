@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi } from "vitest"
 import { parseEnhancedNaturalLanguage } from "./enhanced-natural-language-parser"
 
 describe("Enhanced Natural Language Parser - Edge Cases", () => {
@@ -822,7 +822,7 @@ describe("Enhanced Natural Language Parser - Edge Cases", () => {
         expect(result.title).toBe("task")
 
         const expectedDate = new Date()
-        expectedDate.setDate(expectedDate.getDate() + 60) // 2 months * 30 days
+        expectedDate.setMonth(expectedDate.getMonth() + 2) // Use precise month calculation
         expectedDate.setHours(0, 0, 0, 0)
         expect(result.dueDate?.getTime()).toBe(expectedDate.getTime())
       })
@@ -1434,6 +1434,41 @@ describe("Enhanced Natural Language Parser - Edge Cases", () => {
         const resultP4 = parseEnhancedNaturalLanguage("test task P4")
         expect(resultP4.priority).toBe(4)
       })
+    })
+  })
+
+  describe("Date Precision with date-fns", () => {
+    it("should use precise month calculations for 'in a month'", () => {
+      // Test from January 31st (31 days) to February (28/29 days)
+      const jan31 = new Date(2024, 0, 31) // January 31, 2024
+      vi.setSystemTime(jan31)
+
+      const result = parseEnhancedNaturalLanguage("task in a month")
+      expect(result.dueDate).toEqual(new Date(2024, 1, 29)) // Feb 29, 2024 (leap year)
+
+      vi.useRealTimers()
+    })
+
+    it("should use precise year calculations for 'in a year'", () => {
+      // Test leap year precision
+      const feb29_2024 = new Date(2024, 1, 29) // Feb 29, 2024 (leap year)
+      vi.setSystemTime(feb29_2024)
+
+      const result = parseEnhancedNaturalLanguage("task in a year")
+      expect(result.dueDate).toEqual(new Date(2025, 1, 28)) // Feb 28, 2025 (non-leap year)
+
+      vi.useRealTimers()
+    })
+
+    it("should handle 'in 3 months' with variable month lengths", () => {
+      // Test from November 30 (30 days) to February (28/29 days)
+      const nov30 = new Date(2024, 10, 30) // November 30, 2024
+      vi.setSystemTime(nov30)
+
+      const result = parseEnhancedNaturalLanguage("task in 3 months")
+      expect(result.dueDate).toEqual(new Date(2025, 1, 28)) // Feb 28, 2025 (end of month adjustment)
+
+      vi.useRealTimers()
     })
   })
 })

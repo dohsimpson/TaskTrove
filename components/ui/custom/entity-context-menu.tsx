@@ -274,7 +274,13 @@ export function EntityContextMenu({
             {/* Reordering submenus */}
             {hasReorderingFeatures && (
               <>
-                <DropdownMenuSeparator />
+                {/* Only show separator if we have at least one reordering submenu to render */}
+                {(((onMoveUp || onMoveDown) &&
+                  (positionInfo.canMoveUp || positionInfo.canMoveDown)) ||
+                  ((onAddAbove || onAddBelow) &&
+                    (positionInfo.canAddAbove || positionInfo.canAddBelow))) && (
+                  <DropdownMenuSeparator />
+                )}
 
                 {/* Move submenu */}
                 {(onMoveUp || onMoveDown) &&
@@ -330,7 +336,15 @@ export function EntityContextMenu({
 
             {showDeleteOption && (
               <>
-                <DropdownMenuSeparator />
+                {/* Only show separator if we have items before the delete option */}
+                {(onDuplicate ||
+                  (hasReorderingFeatures &&
+                    (((onMoveUp || onMoveDown) &&
+                      (positionInfo.canMoveUp || positionInfo.canMoveDown)) ||
+                      ((onAddAbove || onAddBelow) &&
+                        (positionInfo.canAddAbove || positionInfo.canAddBelow))))) && (
+                  <DropdownMenuSeparator />
+                )}
                 <DropdownMenuItem
                   onClick={handleDeleteClick}
                   className="text-destructive focus:text-destructive"

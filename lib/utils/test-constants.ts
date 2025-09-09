@@ -9,7 +9,7 @@ import {
   createGroupId,
 } from "@/lib/types"
 import type { DataFileSerialization, ProjectGroup } from "@/lib/types"
-import { DEFAULT_NOTIFICATION_SETTINGS } from "@/lib/types/defaults"
+import { DEFAULT_NOTIFICATION_SETTINGS, DEFAULT_GENERAL_SETTINGS } from "@/lib/types/defaults"
 
 // Test UUID constants for consistent testing (using proper UUID v4 format)
 export const TEST_TASK_ID_1 = createTaskId("12345678-1234-4234-8234-123456789abc")
@@ -88,5 +88,6 @@ export const TEST_GROUPS_DATA: DataFileSerialization = {
       },
     },
     notifications: DEFAULT_NOTIFICATION_SETTINGS,
+    general: DEFAULT_GENERAL_SETTINGS,
   },
 }

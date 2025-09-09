@@ -5,16 +5,15 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Database, X, Bell, Menu } from "lucide-react"
+import { Database, X, Bell, Settings, Menu } from "lucide-react"
 // Future icons (not used yet):
-// import { Link, Palette, Settings, Target, Code } from "lucide-react"
+// import { Link, Palette, Target, Code } from "lucide-react"
 import { showSettingsDialogAtom, closeSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
 import { DataForm } from "./settings-forms/data-form"
 import { NotificationsForm } from "./settings-forms/notifications-form"
+import { GeneralForm } from "./settings-forms/general-form"
 // Future form imports (not used yet):
 // import { AppearanceForm } from "./settings-forms/appearance-form"
-// import { BehaviorForm } from "./settings-forms/behavior-form"
-// import { DataForm } from "./settings-forms/data-form"
 // import { ProductivityForm } from "./settings-forms/productivity-form"
 // import { ApiForm } from "./settings-forms/api-form"
 
@@ -27,6 +26,12 @@ interface SettingsCategory {
 }
 
 const settingsCategories: SettingsCategory[] = [
+  {
+    id: "general",
+    title: "General",
+    icon: Settings,
+    description: "Default page, basic preferences",
+  },
   {
     id: "notifications",
     title: "Notifications",
@@ -76,6 +81,8 @@ function SettingsContent() {
 
   const renderCategoryContent = () => {
     switch (activeCategory) {
+      case "general":
+        return <GeneralForm />
       case "data":
         return <DataForm />
       case "notifications":
@@ -83,10 +90,6 @@ function SettingsContent() {
       // Future forms (not implemented yet):
       // case "appearance":
       //   return <AppearanceForm />
-      // case "behavior":
-      //   return <BehaviorForm />
-      // case "data":
-      //   return <DataForm />
       // case "productivity":
       //   return <ProductivityForm />
       // case "api":

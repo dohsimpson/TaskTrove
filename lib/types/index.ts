@@ -827,9 +827,16 @@ export const NotificationSettingsSchema = z.object({
   // sound: NotificationSoundSchema,
 })
 
+// General settings schema
+export const GeneralSettingsSchema = z.object({
+  /** Default view on app launch */
+  startView: z.union([z.enum(STANDARD_VIEW_IDS), z.literal("lastViewed")]),
+})
+
 export const UserSettingsSchema = z.object({
   data: DataSettingsSchema,
   notifications: NotificationSettingsSchema,
+  general: GeneralSettingsSchema,
 })
 /** Schema for scheduled notification */
 export const ScheduledNotificationSchema = z.object({
@@ -883,6 +890,7 @@ export type ViewState = z.infer<typeof ViewStateSchema>
 export type Task = z.infer<typeof TaskSchema>
 export type Project = z.infer<typeof ProjectSchema>
 export type Label = z.infer<typeof LabelSchema>
+export type GeneralSettings = z.infer<typeof GeneralSettingsSchema>
 export type Group = ProjectGroup | LabelGroup
 export type DataFile = z.infer<typeof DataFileSchema>
 export type TaskSerialization = z.infer<typeof TaskSerializationSchema>
@@ -896,23 +904,12 @@ export type DataFileSerialization = z.infer<typeof DataFileSerializationSchema>
 // VIEW IDENTIFIER TYPES
 // =============================================================================
 
+import { STANDARD_VIEW_IDS } from "@/lib/constants/defaults"
+
 /**
  * Standard view identifiers used in the application
  */
-export type StandardViewId =
-  | "inbox"
-  | "today"
-  | "upcoming"
-  | "completed"
-  | "all"
-  | "analytics"
-  | "search"
-  | "shortcuts"
-  | "profile"
-  | "debug"
-  | "projects"
-  | "labels"
-  | "filters"
+export type StandardViewId = (typeof STANDARD_VIEW_IDS)[number]
 
 /**
  * All possible view identifiers for routing and view state management
@@ -2025,8 +2022,8 @@ export const AppearanceSettingsSchema = z.object({}).optional()
 //   }),
 // })
 
-// Minimal behavior settings for now
-export const BehaviorSettingsSchema = z.object({}).optional()
+// Minimal behavior settings for now - moved before UserSettingsSchema
+// export const BehaviorSettingsSchema = // MOVED ABOVE
 
 // /**
 //  * Notification settings schema - Placeholder for future implementation
@@ -2081,9 +2078,9 @@ export const BehaviorSettingsSchema = z.object({}).optional()
 export const PartialUserSettingsSchema = z.object({
   data: DataSettingsSchema.partial().optional(),
   notifications: NotificationSettingsSchema.partial().optional(),
+  general: GeneralSettingsSchema.partial().optional(),
   // Optional future settings (not stored yet):
   // appearance: AppearanceSettingsSchema.partial().optional(),
-  // behavior: BehaviorSettingsSchema.partial().optional(),
   // productivity: ProductivitySettingsSchema.partial().optional(),
 })
 

@@ -206,6 +206,59 @@ export const v040Migration = (dataFile: Json): Json => {
   return JSON.parse(JSON.stringify(result))
 }
 
+function v050Migration(dataFile: Json): Json {
+  console.log("Migrating data file from v0.4.0 to v0.5.0...")
+  console.log("Adding general settings and migrating behavior settings")
+
+  // Safely handle Json object type
+  if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
+    throw new Error("Migration input must be a JSON object")
+  }
+
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(dataFile)) {
+    result[key] = value
+  }
+
+  // Handle settings migration
+  if (
+    typeof result.settings === "object" &&
+    result.settings !== null &&
+    !Array.isArray(result.settings)
+  ) {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const settings = result.settings as Record<string, unknown>
+
+    // If there's an old 'behavior' property, migrate it to 'general'
+    if (
+      "behavior" in settings &&
+      typeof settings.behavior === "object" &&
+      settings.behavior !== null
+    ) {
+      console.log("✓ Migrating behavior settings to general settings")
+      settings.general = settings.behavior
+      delete settings.behavior
+    }
+
+    // Ensure general settings exist with defaults
+    if (!("general" in settings)) {
+      console.log("✓ Adding default general settings")
+      settings.general = {
+        startView: "all", // Corresponds to DEFAULT_ROUTE "/all"
+      }
+    }
+  } else {
+    // If no settings exist at all, use defaults (this shouldn't happen after v0.4.0 migration)
+    console.log("✓ Adding complete default settings structure")
+    result.settings = DEFAULT_USER_SETTINGS
+  }
+
+  console.log("✓ General settings migration completed")
+
+  // Return as Json by serializing/deserializing
+  return JSON.parse(JSON.stringify(result))
+}
+
 /**
  * Migration functions for each version upgrade
  * Only define functions for versions that actually require data structure changes
@@ -221,6 +274,10 @@ const migrationFunctions: MigrationStep[] = [
   {
     version: createVersionString("v0.4.0"),
     migrate: v040Migration,
+  },
+  {
+    version: createVersionString("v0.5.0"),
+    migrate: v050Migration,
   },
 ]
 
@@ -324,18 +381,12 @@ export function migrateDataFile(dataFile: Json): DataFile {
  * @returns The latest migration version available, or null if no migrations exist
  */
 export function getLatestAvailableMigration(): VersionString | null {
-  const target = createVersionString(`v${packageJson.version}`)
-  let latestAvailableMigration: VersionString | null = null
-
-  for (const step of migrationFunctions) {
-    if (!isVersionLessThan(target, step.version)) {
-      latestAvailableMigration = step.version
-    } else {
-      break // Since array is sorted, no need to continue
-    }
+  if (migrationFunctions.length === 0) {
+    return null
   }
 
-  return latestAvailableMigration
+  // Return the last migration version since array is sorted
+  return migrationFunctions[migrationFunctions.length - 1].version
 }
 
 /**

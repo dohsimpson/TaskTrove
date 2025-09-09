@@ -43,6 +43,9 @@ export const DEFAULT_NOTIFICATION_SETTINGS = {
   enabled: true,
   requireInteraction: true,
 }
+export const DEFAULT_GENERAL_SETTINGS = {
+  startView: "all" as const, // Corresponds to DEFAULT_ROUTE "/all"
+} as const
 
 /**
  * Default user settings structure
@@ -56,6 +59,7 @@ export const DEFAULT_USER_SETTINGS = {
     },
   },
   notifications: DEFAULT_NOTIFICATION_SETTINGS,
+  general: DEFAULT_GENERAL_SETTINGS,
 }
 
 /**

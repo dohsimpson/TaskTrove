@@ -22,7 +22,7 @@ import {
   DEFAULT_BACKUP_TIME,
   DEFAULT_MAX_BACKUPS,
 } from "@/lib/constants/defaults"
-import { DEFAULT_NOTIFICATION_SETTINGS } from "@/lib/types/defaults"
+import { DEFAULT_NOTIFICATION_SETTINGS, DEFAULT_GENERAL_SETTINGS } from "@/lib/types/defaults"
 
 /**
  * GET /api/settings
@@ -130,9 +130,14 @@ async function updateSettings(
         fileData.settings.notifications?.requireInteraction ??
         DEFAULT_NOTIFICATION_SETTINGS.requireInteraction,
     },
+    general: {
+      startView:
+        partialSettings.general?.startView ??
+        fileData.settings.general?.startView ??
+        DEFAULT_GENERAL_SETTINGS.startView,
+    },
     // Future settings will be merged here when implemented:
     // appearance: { ... },
-    // behavior: { ... },
     // data: { ... },
     // productivity: { ... },
   }

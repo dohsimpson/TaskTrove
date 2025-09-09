@@ -40,6 +40,7 @@ import {
   DEFAULT_PROJECT_GROUP,
   DEFAULT_LABEL_GROUP,
   DEFAULT_NOTIFICATION_SETTINGS,
+  DEFAULT_GENERAL_SETTINGS,
 } from "@/lib/types/defaults"
 
 // Mock fetch for API calls
@@ -94,6 +95,7 @@ const mockGroupsData: DataFileSerialization = {
       },
     },
     notifications: DEFAULT_NOTIFICATION_SETTINGS,
+    general: DEFAULT_GENERAL_SETTINGS,
   },
 }
 

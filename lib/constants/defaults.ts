@@ -106,6 +106,137 @@ export const DEFAULT_NOTIFICATION_VOLUME = 70
 export const DEFAULT_ROUTE = "/all" as const
 
 // =============================================================================
+// STANDARD VIEW DEFINITIONS
+// =============================================================================
+
+/** Standard view identifiers used throughout the application */
+export const STANDARD_VIEW_IDS = [
+  "all",
+  "inbox",
+  "today",
+  "upcoming",
+  "completed",
+  // "analytics",
+  // "search",
+  // "shortcuts",
+  // "profile",
+  // "debug",
+  // "filters",
+  "projects",
+  "labels",
+] as const
+
+/** Standard view metadata for UI display */
+export const STANDARD_VIEW_METADATA: Record<
+  (typeof STANDARD_VIEW_IDS)[number],
+  {
+    title: string
+    description: string
+    iconType: string
+  }
+> = {
+  all: {
+    title: "All Tasks",
+    description: "View all your tasks in one place",
+    iconType: "all" as const,
+  },
+  inbox: {
+    title: "Inbox",
+    description: "Start with unorganized tasks",
+    iconType: "inbox" as const,
+  },
+  today: {
+    title: "Today",
+    description: "Focus on today's tasks",
+    iconType: "today" as const,
+  },
+  upcoming: {
+    title: "Upcoming",
+    description: "See what's coming up next",
+    iconType: "upcoming" as const,
+  },
+  completed: {
+    title: "Completed",
+    description: "Review completed tasks",
+    iconType: "completed" as const,
+  },
+  // analytics: {
+  //   title: "Analytics",
+  //   description: "Start with productivity insights",
+  //   iconType: "analytics" as const,
+  // },
+  // search: {
+  //   title: "Search",
+  //   description: "Begin by searching tasks",
+  //   iconType: "search" as const,
+  // },
+  // shortcuts: {
+  //   title: "Shortcuts",
+  //   description: "Keyboard shortcuts and quick actions",
+  //   iconType: "shortcuts" as const,
+  // },
+  // profile: {
+  //   title: "Profile",
+  //   description: "User profile and account settings",
+  //   iconType: "profile" as const,
+  // },
+  // debug: {
+  //   title: "Debug",
+  //   description: "Development and debugging tools",
+  //   iconType: "debug" as const,
+  // },
+  // filters: {
+  //   title: "Filters",
+  //   description: "Advanced task filtering options",
+  //   iconType: "filters" as const,
+  // },
+  projects: {
+    title: "Projects",
+    description: "Manage and organize projects",
+    iconType: "projects" as const,
+  },
+  labels: {
+    title: "Labels",
+    description: "Organize tasks with labels",
+    iconType: "labels" as const,
+  },
+} as const
+
+/** Additional start view options for settings */
+export const START_VIEW_METADATA = {
+  ...STANDARD_VIEW_METADATA,
+  lastViewed: {
+    title: "Last Viewed",
+    description: "Return to your last active page",
+    iconType: "lastViewed" as const,
+  },
+} as const
+
+/** View configuration options for UI components */
+export const VIEW_CONFIG_OPTIONS = {
+  today: {
+    calendarDisabled: true,
+    showCompletedDisabled: false,
+  },
+  inbox: {
+    calendarDisabled: false,
+    showCompletedDisabled: false,
+  },
+  upcoming: {
+    calendarDisabled: false,
+    showCompletedDisabled: false,
+  },
+  completed: {
+    calendarDisabled: false,
+    showCompletedDisabled: true,
+  },
+  all: {
+    calendarDisabled: false,
+    showCompletedDisabled: false,
+  },
+} as const
+
+// =============================================================================
 // HISTORY DEFAULTS
 // =============================================================================
 

@@ -1,15 +1,33 @@
 "use client"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useAtomValue } from "jotai"
+import { settingsAtom } from "@/lib/atoms"
 import { DEFAULT_ROUTE } from "@/lib/constants/defaults"
 
 export default function HomePage() {
   const router = useRouter()
+  const settings = useAtomValue(settingsAtom)
 
   useEffect(() => {
-    // Redirect to default page
-    router.push(DEFAULT_ROUTE)
-  }, [router])
+    // Get the default page from settings, with fallback to DEFAULT_ROUTE
+    // Note: During v0.5.0 migration, general property might not exist yet
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const generalSettings = (settings as { general?: { startView?: string } }).general
+    const startView = generalSettings?.startView ?? "all"
+
+    let redirectPath: string
+    if (startView === "lastViewed") {
+      // For now, treat "lastViewed" as default route
+      // TODO: Implement localStorage-based last viewed tracking
+      redirectPath = DEFAULT_ROUTE
+    } else {
+      // Map standard view IDs to routes
+      redirectPath = `/${startView}`
+    }
+
+    router.push(redirectPath)
+  }, [router, settings])
 
   return (
     <div className="flex items-center justify-center min-h-screen">

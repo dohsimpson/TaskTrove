@@ -4,10 +4,14 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { SettingsDialog } from "./settings-dialog"
 
 // Mock Jotai
-vi.mock("jotai", () => ({
-  useAtomValue: vi.fn(),
-  useSetAtom: vi.fn(),
-}))
+vi.mock("jotai", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("jotai")>()
+  return {
+    ...actual,
+    useAtomValue: vi.fn(),
+    useSetAtom: vi.fn(),
+  }
+})
 
 // Mock the form components
 vi.mock("./settings-forms/data-form", () => ({
@@ -16,6 +20,10 @@ vi.mock("./settings-forms/data-form", () => ({
 
 vi.mock("./settings-forms/notifications-form", () => ({
   NotificationsForm: () => <div data-testid="notifications-form">Notifications Form</div>,
+}))
+
+vi.mock("./settings-forms/general-form", () => ({
+  GeneralForm: () => <div data-testid="general-form">General Form</div>,
 }))
 
 // Mock atoms
@@ -62,6 +70,7 @@ describe("SettingsDialog", () => {
 
     expect(screen.getByRole("dialog")).toBeInTheDocument()
     expect(screen.getAllByText("Settings")).toHaveLength(2) // Dialog title and sidebar header
+    expect(screen.getByRole("button", { name: /general/i })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /notifications/i })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /data & storage/i })).toBeInTheDocument()
   })
@@ -152,9 +161,9 @@ describe("SettingsDialog", () => {
     mockUseAtomValue.mockReturnValue(true)
     render(<SettingsDialog />)
 
-    // Initially shows notifications (first category)
-    expect(screen.getByRole("heading", { level: 1, name: "Notifications" })).toBeInTheDocument()
-    expect(screen.getByTestId("notifications-form")).toBeInTheDocument()
+    // Initially shows general (first category)
+    expect(screen.getByRole("heading", { level: 1, name: "General" })).toBeInTheDocument()
+    expect(screen.getByTestId("general-form")).toBeInTheDocument()
 
     // Click on Data & Storage category
     const dataButton = screen.getByRole("button", { name: /data & storage/i })
@@ -218,6 +227,7 @@ describe("SettingsDialog", () => {
     render(<SettingsDialog />)
 
     // Should render category buttons with icons (we can't easily test SVG icons, but buttons should be present)
+    expect(screen.getByRole("button", { name: /general/i })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /notifications/i })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /data & storage/i })).toBeInTheDocument()
   })

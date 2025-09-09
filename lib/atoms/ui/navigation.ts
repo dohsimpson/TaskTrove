@@ -39,25 +39,14 @@ function isValidProjectId(id: string): id is ProjectId {
   }
 }
 
+import { STANDARD_VIEW_IDS, STANDARD_VIEW_METADATA } from "@/lib/constants/defaults"
+
 /**
  * Validates if a string is a standard view identifier
  */
 function isStandardViewId(id: string): id is StandardViewId {
-  return [
-    "inbox",
-    "today",
-    "upcoming",
-    "completed",
-    "all",
-    "analytics",
-    "search",
-    "shortcuts",
-    "profile",
-    "debug",
-    "projects",
-    "labels",
-    "filters",
-  ].includes(id)
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return STANDARD_VIEW_IDS.includes(id as StandardViewId)
 }
 
 /**
@@ -566,86 +555,14 @@ function generatePageInfo(
     }
   }
 
-  // Handle standard routes
-  switch (viewId) {
-    case "today":
-      return {
-        title: "Today",
-        description: "Tasks due today",
-        iconType: "today",
-      }
-    case "inbox":
-      return {
-        title: "Inbox",
-        description: "Uncategorized tasks",
-        iconType: "inbox",
-      }
-    case "upcoming":
-      return {
-        title: "Upcoming",
-        description: "Tasks scheduled for later",
-        iconType: "upcoming",
-      }
-    case "analytics":
-      return {
-        title: "Analytics",
-        description: "Task completion insights and statistics",
-        iconType: "analytics",
-      }
-    case "all":
-      return {
-        title: "All Tasks",
-        description: "All tasks across all projects",
-        iconType: "all",
-      }
-    case "completed":
-      return {
-        title: "Completed",
-        description: "Completed tasks",
-        iconType: "completed",
-      }
-    case "search":
-      return {
-        title: "Search",
-        description: "Search through all tasks",
-        iconType: "search",
-      }
-    case "shortcuts":
-      return {
-        title: "Shortcuts",
-        description: "Keyboard shortcuts and commands",
-        iconType: "shortcuts",
-      }
-    case "profile":
-      return {
-        title: "Profile",
-        description: "User profile and preferences",
-        iconType: "profile",
-      }
-    case "debug":
-      return {
-        title: "Debug",
-        description: "Debug information and tools",
-        iconType: "debug",
-      }
-    case "projects":
-      return {
-        title: "Projects",
-        description: "Manage your projects",
-        iconType: "projects",
-      }
-    case "labels":
-      return {
-        title: "Labels",
-        description: "Manage your labels",
-        iconType: "labels",
-      }
-    case "filters":
-      return {
-        title: "Filters",
-        description: "Custom task filters",
-        iconType: "filters",
-      }
+  // Handle standard routes using centralized metadata
+  if (viewId in STANDARD_VIEW_METADATA) {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    return STANDARD_VIEW_METADATA[viewId as keyof typeof STANDARD_VIEW_METADATA]
+  }
+
+  // Handle non-standard routes
+  switch (true) {
     default:
       // Capitalize first letter for unknown routes
       const capitalizedTitle = viewId.charAt(0).toUpperCase() + viewId.slice(1)

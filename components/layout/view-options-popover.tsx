@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
+import { VIEW_CONFIG_OPTIONS } from "@/lib/constants/defaults"
 import dynamic from "next/dynamic"
 import { currentViewAtom, currentViewStateAtom, setViewOptionsAtom } from "@/lib/atoms/ui/views"
 import { currentRouteContextAtom } from "@/lib/atoms/ui/navigation"
@@ -55,35 +56,9 @@ function ViewOptionsPopoverComponent({ className }: ViewOptionsProps) {
       showCompletedDisabled: false,
     }
 
-    switch (view) {
-      case "today":
-        return {
-          calendarDisabled: true,
-          showCompletedDisabled: false,
-        }
-      case "inbox":
-        return {
-          calendarDisabled: false,
-          showCompletedDisabled: false,
-        }
-      case "upcoming":
-        return {
-          calendarDisabled: false,
-          showCompletedDisabled: false,
-        }
-      case "completed":
-        return {
-          calendarDisabled: false,
-          showCompletedDisabled: true,
-        }
-      case "all":
-        return {
-          calendarDisabled: false,
-          showCompletedDisabled: false,
-        }
-      default:
-        return defaultConfig
-    }
+    // Use centralized view configuration or default config
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    return VIEW_CONFIG_OPTIONS[view as keyof typeof VIEW_CONFIG_OPTIONS] || defaultConfig
   }
 
   const viewConfig = getViewConfig(currentView)

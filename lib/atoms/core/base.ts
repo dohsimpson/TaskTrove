@@ -97,6 +97,7 @@ import {
   ROOT_PROJECT_GROUP_ID,
   ROOT_LABEL_GROUP_ID,
   DEFAULT_NOTIFICATION_SETTINGS,
+  DEFAULT_GENERAL_SETTINGS,
 } from "../../types/defaults"
 
 import {
@@ -183,6 +184,7 @@ const EMPTY_CACHE_DATA: DataFile = {
       },
     },
     notifications: DEFAULT_NOTIFICATION_SETTINGS,
+    general: DEFAULT_GENERAL_SETTINGS,
   },
 }
 
@@ -1179,6 +1181,9 @@ export const updateSettingsMutationAtom = createMutation<
           variables.settings.notifications?.requireInteraction ??
           DEFAULT_NOTIFICATION_SETTINGS.requireInteraction,
       },
+      general: {
+        startView: variables.settings.general?.startView ?? DEFAULT_GENERAL_SETTINGS.startView,
+      },
     }
     return {
       success: true,
@@ -1215,6 +1220,12 @@ export const updateSettingsMutationAtom = createMutation<
           oldData.settings.notifications?.requireInteraction ??
           DEFAULT_NOTIFICATION_SETTINGS.requireInteraction,
       },
+      general: {
+        startView:
+          variables.settings.general?.startView ??
+          oldData.settings.general?.startView ??
+          DEFAULT_GENERAL_SETTINGS.startView,
+      },
     }
 
     return {
@@ -1242,6 +1253,7 @@ export const settingsAtom = atom(
         },
       },
       notifications: DEFAULT_NOTIFICATION_SETTINGS,
+      general: DEFAULT_GENERAL_SETTINGS,
     }
   },
   async (get, set, partialSettings: PartialUserSettings) => {

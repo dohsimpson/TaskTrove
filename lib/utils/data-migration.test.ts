@@ -943,7 +943,7 @@ describe("Data Migration Utility", () => {
       })
 
       // The migration should fail during schema validation at the end
-      expect(() => migrateDataFile(dataWithMissingFields)).toThrow("Migration failed:")
+      expect(() => migrateDataFile(dataWithMissingFields)).toThrow(/Migration failed:/)
     })
 
     it("should throw error when migration produces malformed data", () => {
@@ -955,7 +955,7 @@ describe("Data Migration Utility", () => {
       })
 
       // This should fail during schema validation at the end
-      expect(() => migrateDataFile(malformedData)).toThrow("Migration failed:")
+      expect(() => migrateDataFile(malformedData)).toThrow(/Migration failed:/)
     })
 
     it("should handle needsMigration errors for invalid input", () => {

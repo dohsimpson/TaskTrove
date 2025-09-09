@@ -49,6 +49,12 @@ rollout() {
   kubie exec k3s unsafe kubectl rollout restart deployment tasktrove-demo
 }
 
+_stash_and_rebase_and_pnpm_install() {
+  git stash
+  git rebase "$1"
+  pnpm install
+}
+
 # Show help when no arguments are provided
 if [ $# -eq 0 ]; then
   help

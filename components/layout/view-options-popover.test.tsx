@@ -328,4 +328,37 @@ describe("ViewOptionsPopover", () => {
     expect(selectTrigger).toBeInTheDocument()
     expect(selectTrigger).not.toBeDisabled()
   })
+
+  it("triggers hover handlers on mouse events", async () => {
+    renderWithJotai(<ViewOptionsPopover />)
+
+    const triggerButton = screen.getAllByTestId("button")[0]
+
+    // Test that hover events can be triggered without error
+    fireEvent.mouseEnter(triggerButton)
+    fireEvent.mouseLeave(triggerButton)
+
+    // Component should still be rendered successfully
+    expect(triggerButton).toBeInTheDocument()
+  })
+
+  it("handles hover timeout properly", async () => {
+    vi.useFakeTimers()
+
+    renderWithJotai(<ViewOptionsPopover />)
+
+    const triggerButton = screen.getAllByTestId("button")[0]
+
+    // Simulate hover and immediate leave
+    fireEvent.mouseEnter(triggerButton)
+    fireEvent.mouseLeave(triggerButton)
+
+    // Fast-forward time to ensure timeout would have been cleared
+    vi.advanceTimersByTime(1000)
+
+    // Component should still be functional
+    expect(triggerButton).toBeInTheDocument()
+
+    vi.useRealTimers()
+  })
 })

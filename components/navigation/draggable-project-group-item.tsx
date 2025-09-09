@@ -3,7 +3,7 @@
 import React from "react"
 import { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { ChevronDown, ChevronRight, Folder, FolderOpen } from "lucide-react"
+import { ChevronDown, ChevronRight, FolderOpen, Folders } from "lucide-react"
 import { SidebarMenuItem, SidebarMenuButton, SidebarMenuBadge } from "@/components/ui/sidebar"
 import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
@@ -327,7 +327,7 @@ export function DraggableProjectGroupItem({
                     {isExpanded ? (
                       <FolderOpen className="h-4 w-4" style={{ color: group.color }} />
                     ) : (
-                      <Folder className="h-4 w-4" style={{ color: group.color }} />
+                      <Folders className="h-4 w-4" style={{ color: group.color }} />
                     )}
                   </span>
 

@@ -151,7 +151,6 @@ export function ProjectSectionsView({
   const [addingSectionPosition, setAddingSectionPosition] = useState<number | undefined>(undefined)
   const [newSectionName, setNewSectionName] = useState("")
   const [newSectionColor, setNewSectionColor] = useState("#3b82f6")
-  const [editingSectionName, setEditingSectionName] = useState("")
   const [editingSectionColor, setEditingSectionColor] = useState("")
   const [hoveredSectionId, setHoveredSectionId] = useState<string | null>(null)
 
@@ -178,7 +177,6 @@ export function ProjectSectionsView({
     if (editingSectionId && project) {
       const section = project.sections.find((s: ProjectSection) => s.id === editingSectionId)
       if (section) {
-        setEditingSectionName(section.name)
         setEditingSectionColor(section.color)
       }
     }
@@ -252,8 +250,6 @@ export function ProjectSectionsView({
       // Find the current section being edited
       const currentSection = project.sections.find((s: ProjectSection) => s.id === sectionId)
       if (!currentSection) {
-        stopEditingSection()
-        setEditingSectionName("")
         return
       }
 
@@ -261,9 +257,6 @@ export function ProjectSectionsView({
       if (trimmedName && trimmedName !== currentSection.name) {
         // Check if the new name already exists
         if (project.sections.some((s: ProjectSection) => s.name === trimmedName)) {
-          // Reset and exit early - section name already exists
-          stopEditingSection()
-          setEditingSectionName("")
           return
         }
 
@@ -286,19 +279,16 @@ export function ProjectSectionsView({
             },
             "Failed to rename section",
           )
-          // TODO: Add error handling/toast notification
         }
       }
-
-      // Always exit edit mode after processing
-      stopEditingSection()
-      setEditingSectionName("")
     }
+
+    // Always exit edit mode after processing
+    stopEditingSection()
   }
 
   const handleCancelEditSection = () => {
     stopEditingSection()
-    setEditingSectionName("")
     setEditingSectionColor("")
   }
 
@@ -587,6 +577,12 @@ export function ProjectSectionsView({
           <Button
             variant="ghost"
             className="flex items-center gap-2 p-0 h-auto hover:bg-transparent cursor-pointer"
+            onClick={(e) => {
+              if (isEditing) {
+                e.preventDefault()
+                e.stopPropagation()
+              }
+            }}
           >
             {isCollapsed ? (
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -597,11 +593,12 @@ export function ProjectSectionsView({
             {isEditing ? (
               <EditableDiv
                 as="h2"
-                value={editingSectionName}
+                value={section.name}
                 onChange={handleSaveEditSection}
                 onCancel={handleCancelEditSection}
                 className="text-base font-medium text-foreground"
                 autoFocus={true}
+                cursorPosition="end"
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (

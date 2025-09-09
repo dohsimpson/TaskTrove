@@ -17,6 +17,34 @@ function cleanContentEditableText(text: string): string {
     .trim() // Only trim start/end, preserve all internal formatting
 }
 
+/**
+ * Move the cursor to the end of a contentEditable element
+ * @param element - The contentEditable element to modify
+ */
+function moveCursorToEnd(element: EditableDivElement): void {
+  try {
+    const range = document.createRange()
+    const selection = window.getSelection()
+
+    if (!selection) return
+
+    if (element.firstChild) {
+      range.selectNodeContents(element)
+      range.collapse(false) // false = collapse to end
+    } else {
+      // Handle empty elements by setting range to element itself
+      range.setStart(element, 0)
+      range.setEnd(element, 0)
+    }
+
+    selection.removeAllRanges()
+    selection.addRange(range)
+  } catch (error) {
+    // Fallback for older browsers - just focus without cursor positioning
+    console.warn("Cursor positioning not supported:", error)
+  }
+}
+
 type EditableDivElement =
   | HTMLHeadingElement
   | HTMLParagraphElement
@@ -33,6 +61,11 @@ interface EditableDivProps extends Omit<React.HTMLAttributes<EditableDivElement>
   allowEmpty?: boolean
   autoFocus?: boolean
   onEditingChange?: (isEditing: boolean) => void
+  /**
+   * Controls cursor position when autoFocus is enabled
+   * @default "start"
+   */
+  cursorPosition?: "start" | "end"
 }
 
 export function EditableDiv({
@@ -46,6 +79,7 @@ export function EditableDiv({
   allowEmpty = false,
   autoFocus = false,
   onEditingChange,
+  cursorPosition = "start",
   ...props
 }: EditableDivProps) {
   const ref = useRef<EditableDivElement>(null)
@@ -122,8 +156,18 @@ export function EditableDiv({
   useEffect(() => {
     if (autoFocus && ref.current) {
       ref.current.focus()
+
+      // Position cursor after focus
+      if (cursorPosition === "end") {
+        // Use requestAnimationFrame for more reliable timing
+        requestAnimationFrame(() => {
+          if (ref.current) {
+            moveCursorToEnd(ref.current)
+          }
+        })
+      }
     }
-  }, [autoFocus])
+  }, [autoFocus, cursorPosition])
 
   return React.createElement(Component, {
     ref,

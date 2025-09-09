@@ -4,7 +4,11 @@ import React from "react"
 import { useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/custom/animated-collapsible"
 import {
   SidebarGroup,
   SidebarGroupContent,

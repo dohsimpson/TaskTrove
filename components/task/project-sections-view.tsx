@@ -50,7 +50,11 @@ import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { ColorPicker } from "@/components/ui/custom/color-picker"
 import { SectionContextMenu } from "./section-context-menu"
 import { ChevronDown, ChevronRight, X } from "lucide-react"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/custom/animated-collapsible"
 import { log } from "@/lib/utils/logger"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { DEFAULT_UUID } from "@/lib/constants/defaults"
@@ -792,7 +796,7 @@ export function ProjectSectionsView({
                         <TaskItem
                           taskId={task.id}
                           variant={compactView ? "compact" : "default"}
-                          className="cursor-pointer mb-2"
+                          className="cursor-pointer mb-2 mx-2"
                           showProjectBadge={true}
                         />
                       </DraggableWrapper>

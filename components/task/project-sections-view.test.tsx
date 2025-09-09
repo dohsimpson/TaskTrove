@@ -488,7 +488,7 @@ vi.mock("@/components/ui/input", () => ({
   ),
 }))
 
-vi.mock("@/components/ui/collapsible", () => ({
+vi.mock("@/components/ui/custom/animated-collapsible", () => ({
   Collapsible: ({ children, open }: MockCollapsibleProps) => (
     <div data-testid="collapsible" data-open={open}>
       {children}

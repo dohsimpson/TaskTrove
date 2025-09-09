@@ -586,10 +586,7 @@ describe("QuickAddDialog", () => {
       "max-w-[420px]",
       "sm:max-w-[520px]",
       "md:max-w-[600px]",
-      "p-3",
-      "sm:p-5",
-      "pb-3",
-      "sm:pb-4",
+      "p-1",
       "border",
       "shadow-2xl",
     )
@@ -1906,8 +1903,7 @@ describe("QuickAddDialog", () => {
         "max-w-[420px]",
         "sm:max-w-[520px]",
         "md:max-w-[600px]",
-        "p-3",
-        "sm:p-5",
+        "p-1",
       )
     })
 
@@ -1967,7 +1963,7 @@ describe("QuickAddDialog", () => {
       const dialogContent = screen.getByTestId("dialog-content")
 
       // Check mobile-first responsive padding
-      expect(dialogContent).toHaveClass("p-3", "sm:p-5", "pb-3", "sm:pb-4")
+      expect(dialogContent).toHaveClass("p-1")
 
       // Find textarea and check it has responsive min-height
       const textarea = screen.getByPlaceholderText("Description")

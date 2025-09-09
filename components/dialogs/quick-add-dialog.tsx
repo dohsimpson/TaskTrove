@@ -19,6 +19,7 @@ import {
   MoreHorizontal,
   CheckSquare,
   MessageSquare,
+  Square,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
@@ -39,6 +40,7 @@ import { TaskSchedulePopover } from "@/components/task/task-schedule-popover"
 import { LabelManagementPopover } from "@/components/task/label-management-popover"
 import { TaskProjectPopover } from "@/components/task/task-project-popover"
 import { TaskPriorityPopover } from "@/components/task/task-priority-popover"
+import { TaskSectionPopover } from "@/components/task/task-section-popover"
 import { SubtaskPopover } from "@/components/task/subtask-popover"
 import { CommentManagementPopover } from "@/components/task/comment-management-popover"
 import { HelpPopover } from "@/components/ui/help-popover"
@@ -47,6 +49,7 @@ import {
   CreateTaskRequest,
   type ProjectId,
   type LabelId,
+  type SectionId,
   type TaskPriority,
   ProjectIdSchema,
   isValidPriority,
@@ -437,6 +440,10 @@ export function QuickAddDialog() {
     updateNewTask({ updateRequest: { priority } })
   }
 
+  const handleManualSectionSelect = (sectionId?: SectionId) => {
+    updateNewTask({ updateRequest: { sectionId } })
+  }
+
   const handleCloseDialog = () => {
     setInput("")
     resetNewTask()
@@ -454,13 +461,13 @@ export function QuickAddDialog() {
   return (
     <Dialog open={open} onOpenChange={handleCloseDialog}>
       <DialogContentWithoutOverlay
-        className="w-[95vw] max-w-[420px] sm:max-w-[520px] md:max-w-[600px] p-3 sm:p-5 pb-3 sm:pb-4 border shadow-2xl"
+        className="w-[95vw] max-w-[420px] sm:max-w-[520px] md:max-w-[600px] p-1 border shadow-2xl"
         showCloseButton={false}
       >
         <VisuallyHidden>
           <DialogTitle>Quick Add Task</DialogTitle>
         </VisuallyHidden>
-        <div className="flex flex-col justify-between gap-2">
+        <div className="flex flex-col justify-between gap-1">
           {/* Main Input */}
           <div>
             <div className="relative">
@@ -636,7 +643,7 @@ export function QuickAddDialog() {
 
           {/* Advanced Row - Second row of options */}
           {showAdvancedRow && (
-            <div className="flex items-center gap-1 flex-wrap py-1">
+            <div className="flex items-center gap-1 flex-wrap">
               {/* Subtasks */}
               <SubtaskPopover onOpenChange={() => {}}>
                 <Button
@@ -660,6 +667,40 @@ export function QuickAddDialog() {
                   <span className="hidden sm:inline whitespace-nowrap">Comments</span>
                 </Button>
               </CommentManagementPopover>
+
+              {/* Section - Only show if a project is selected */}
+              {(newTask.projectId ?? currentProject) !== INBOX_PROJECT_ID && (
+                <TaskSectionPopover
+                  projectId={newTask.projectId ?? currentProject}
+                  onUpdate={handleManualSectionSelect}
+                  align="start"
+                  contentClassName="w-48 p-1"
+                >
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
+                  >
+                    {(() => {
+                      const selectedProjectId = newTask.projectId ?? currentProject
+                      const project = projects.find((p) => p.id === selectedProjectId)
+                      const section = project?.sections.find((s) => s.id === newTask.sectionId)
+
+                      return (
+                        <>
+                          <Square
+                            className="h-3 w-3 flex-shrink-0"
+                            style={{ color: section?.color || undefined }}
+                          />
+                          <span className="hidden sm:inline whitespace-nowrap truncate max-w-16 sm:max-w-24">
+                            {section ? section.name : "Section"}
+                          </span>
+                        </>
+                      )
+                    })()}
+                  </Button>
+                </TaskSectionPopover>
+              )}
             </div>
           )}
 

@@ -19,6 +19,7 @@ import { TaskEmptyState } from "./task-empty-state"
 import { ViewEmptyState } from "./view-empty-state"
 import { SelectionToolbar } from "./selection-toolbar"
 import { ProjectViewToolbar } from "./project-view-toolbar"
+import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
 import {
   projectAtoms,
   openQuickAddAtom,
@@ -49,7 +50,7 @@ import { Input } from "@/components/ui/input"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { ColorPicker } from "@/components/ui/custom/color-picker"
 import { SectionContextMenu } from "./section-context-menu"
-import { ChevronDown, ChevronRight, X } from "lucide-react"
+import { ChevronDown, ChevronRight, X, Plus } from "lucide-react"
 import {
   Collapsible,
   CollapsibleContent,
@@ -188,6 +189,7 @@ export function ProjectSectionsView({
   const addSection = useSetAtom(projectAtoms.actions.addSection)
   const renameSection = useSetAtom(projectAtoms.actions.renameSection)
   const openQuickAddAction = useSetAtom(openQuickAddAtom)
+  const addTaskToSection = useAddTaskToSection()
   const reorderTaskInView = useSetAtom(reorderTaskInViewAtom)
   const moveTaskBetweenSections = useSetAtom(moveTaskBetweenSectionsAtom)
   const orderedTasksByProject = useAtomValue(orderedTasksByProjectAtom)
@@ -592,30 +594,44 @@ export function ProjectSectionsView({
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             )}
             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: section.color }} />
-            {isEditing ? (
-              <EditableDiv
-                as="h2"
-                value={section.name}
-                onChange={handleSaveEditSection}
-                onCancel={handleCancelEditSection}
-                className="text-base font-medium text-foreground"
-                autoFocus={true}
-                cursorPosition="end"
-                onClick={(e) => e.stopPropagation()}
-              />
-            ) : (
-              <h2 className="text-base font-medium text-foreground">{displayName}</h2>
-            )}
+            <div className="flex items-center gap-2">
+              {isEditing ? (
+                <EditableDiv
+                  as="h2"
+                  value={section.name}
+                  onChange={handleSaveEditSection}
+                  onCancel={handleCancelEditSection}
+                  className="text-base font-medium text-foreground"
+                  autoFocus={true}
+                  cursorPosition="end"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <h2 className="text-base font-medium text-foreground">{displayName}</h2>
+              )}
+
+              {/* Task count badge */}
+              <Badge
+                variant="secondary"
+                className="text-xs px-1.5 py-0.5 h-auto bg-transparent border-none text-muted-foreground font-medium"
+              >
+                {sectionTasks.length}
+              </Badge>
+            </div>
           </Button>
         </CollapsibleTrigger>
 
-        <div className="flex items-center gap-2 ml-2">
-          <Badge
-            variant="secondary"
-            className="text-xs px-1.5 py-0.5 h-auto bg-transparent border-none text-muted-foreground font-medium"
+        <div className="flex items-center gap-2 ml-auto">
+          {/* Add Task Button - always show (remove hidden class) */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 flex items-center justify-center"
+            onClick={() => addTaskToSection(project?.id, sectionId)}
+            title="Add task to this section"
           >
-            {sectionTasks.length}
-          </Badge>
+            <Plus className="h-3 w-3" />
+          </Button>
 
           {/* Section context menu for non-unsectioned sections - only show if sections are supported */}
           {section.name !== "Unsectioned" && supportsSections && project?.id && (

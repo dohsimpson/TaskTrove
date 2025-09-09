@@ -12,10 +12,10 @@ import {
   moveTaskBetweenSectionsAtom,
 } from "@/lib/atoms/core/tasks"
 import { stopEditingSectionAtom } from "@/lib/atoms/ui/navigation"
+import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
 import { projectAtoms } from "@/lib/atoms"
 import type { Project, Task as TaskType } from "@/lib/types"
-import { TaskIdSchema, ProjectIdSchema } from "@/lib/types"
-import { createSectionId } from "@/lib/types"
+import { TaskIdSchema, ProjectIdSchema, createSectionId } from "@/lib/types"
 import { TaskItem } from "@/components/task/task-item"
 import { SelectionToolbar } from "@/components/task/selection-toolbar"
 import { ProjectViewToolbar } from "@/components/task/project-view-toolbar"
@@ -98,6 +98,9 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
   // Section editing atoms
   const stopEditingSection = useSetAtom(stopEditingSectionAtom)
   const renameSection = useSetAtom(projectAtoms.actions.renameSection)
+
+  // Hook for adding tasks to sections
+  const addTaskToSection = useAddTaskToSection()
 
   // Get ordered tasks for a specific section - matches project-sections-view logic
   const getOrderedTasksForSection = useCallback(
@@ -332,6 +335,10 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
     stopEditingSection()
   }
 
+  const handleAddTaskToSection = (sectionId: string) => {
+    addTaskToSection(project?.id, sectionId)
+  }
+
   // Calculate responsive column classes based on number of columns
   const getColumnClasses = () => {
     const columnCount = columns.length
@@ -384,10 +391,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                       variant="ghost"
                       size="sm"
                       className="text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10"
-                      onClick={() => {
-                        // TODO: Implement add task functionality
-                        console.log(`Add task to section ${column.id}`)
-                      }}
+                      onClick={() => handleAddTaskToSection(column.id)}
                     >
                       <Plus className="h-4 w-4" />
                     </Button>

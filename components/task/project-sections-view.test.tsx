@@ -62,6 +62,9 @@ vi.mock("@/lib/atoms/ui/dialogs", () => ({
   selectedTaskIdAtom: { debugLabel: "selectedTaskIdAtom" },
   taskFormDataAtom: { debugLabel: "taskFormDataAtom" },
   resetTaskFormAtom: { debugLabel: "resetTaskFormAtom" },
+  openQuickAddAtom: { debugLabel: "openQuickAddAtom" },
+  updateQuickAddTaskAtom: { debugLabel: "updateQuickAddTaskAtom" },
+  resetQuickAddTaskAtom: { debugLabel: "resetQuickAddTaskAtom" },
 }))
 
 vi.mock("@/lib/atoms/ui/views", () => ({
@@ -83,6 +86,10 @@ vi.mock("@/lib/atoms/ui/navigation", () => ({
   stopEditingSectionAtom: { debugLabel: "stopEditingSectionAtom" },
   collapsedSectionsAtom: { debugLabel: "collapsedSectionsAtom" },
   toggleSectionCollapseAtom: { debugLabel: "toggleSectionCollapseAtom" },
+}))
+
+vi.mock("@/hooks/use-add-task-to-section", () => ({
+  useAddTaskToSection: vi.fn(() => vi.fn()),
 }))
 
 vi.mock("@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge", () => ({

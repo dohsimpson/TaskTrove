@@ -238,7 +238,7 @@ export function EntityContextMenu({
               variant="ghost"
               size="sm"
               className={cn(
-                "h-6 w-6 p-0 transition-opacity flex-shrink-0 cursor-pointer",
+                "h-6 w-6 p-0 transition-opacity flex-shrink-0 cursor-pointer flex items-center justify-center",
                 entityType === "section" ? "text-muted-foreground hover:text-primary" : "",
                 getVisibilityClass(),
               )}

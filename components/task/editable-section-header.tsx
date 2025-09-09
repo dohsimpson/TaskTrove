@@ -120,7 +120,7 @@ export function EditableSectionHeader({
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 ml-auto">
         {/* Custom right content (e.g., add button) */}
         {rightContent}
 

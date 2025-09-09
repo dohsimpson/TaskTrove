@@ -11,12 +11,15 @@ import {
   reorderTaskInViewAtom,
   moveTaskBetweenSectionsAtom,
 } from "@/lib/atoms/core/tasks"
+import { stopEditingSectionAtom } from "@/lib/atoms/ui/navigation"
+import { projectAtoms } from "@/lib/atoms"
 import type { Project, Task as TaskType } from "@/lib/types"
 import { TaskIdSchema, ProjectIdSchema } from "@/lib/types"
 import { createSectionId } from "@/lib/types"
 import { TaskItem } from "@/components/task/task-item"
 import { SelectionToolbar } from "@/components/task/selection-toolbar"
 import { ProjectViewToolbar } from "@/components/task/project-view-toolbar"
+import { EditableSectionHeader } from "@/components/task/editable-section-header"
 import { TaskShadow } from "@/components/ui/custom/task-shadow"
 import { DEFAULT_SECTION_COLOR, DEFAULT_UUID } from "@/lib/constants/defaults"
 import {
@@ -71,6 +74,7 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
   const [columns, setColumns] = useState<KanbanColumn[]>([])
+  const [hoveredSectionId, setHoveredSectionId] = useState<string | null>(null)
 
   // Track drag state for shadow rendering per column
   const [columnDragStates, setColumnDragStates] = useState<
@@ -90,6 +94,10 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
   const orderedTasksByProject = useAtomValue(orderedTasksByProjectAtom)
   const reorderTaskInView = useSetAtom(reorderTaskInViewAtom)
   const moveTaskBetweenSections = useSetAtom(moveTaskBetweenSectionsAtom)
+
+  // Section editing atoms
+  const stopEditingSection = useSetAtom(stopEditingSectionAtom)
+  const renameSection = useSetAtom(projectAtoms.actions.renameSection)
 
   // Get ordered tasks for a specific section - matches project-sections-view logic
   const getOrderedTasksForSection = useCallback(
@@ -283,6 +291,47 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
     setColumns(newColumns)
   }, [tasks, project, getOrderedTasksForSection])
 
+  // Initialize editing state when section editing starts - handled by EditableSectionHeader
+
+  const handleSaveEditSection = (sectionId: string) => (newName: string) => {
+    if (project) {
+      const trimmedName = newName.trim()
+
+      // Find the current section being edited
+      const currentSection = project.sections.find((s) => s.id === sectionId)
+      if (!currentSection) {
+        return
+      }
+
+      // Only proceed with rename if name is valid and different
+      if (trimmedName && trimmedName !== currentSection.name) {
+        // Check if the new name already exists
+        if (project.sections.some((s) => s.name === trimmedName)) {
+          return
+        }
+
+        try {
+          // Update the section in the project (name and color)
+          renameSection({
+            projectId: project.id,
+            sectionId: createSectionId(sectionId),
+            newSectionName: trimmedName,
+            newSectionColor: currentSection.color, // Keep existing color
+          })
+        } catch (error) {
+          console.error("Failed to rename section:", error)
+        }
+      }
+    }
+
+    // Always exit edit mode after processing
+    stopEditingSection()
+  }
+
+  const handleCancelEditSection = () => {
+    stopEditingSection()
+  }
+
   // Calculate responsive column classes based on number of columns
   const getColumnClasses = () => {
     const columnCount = columns.length
@@ -317,29 +366,33 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
             <div key={column.id} className={getColumnClasses()}>
               <div className={getInnerColumnClasses()}>
                 {/* Column Header */}
-                <div className="flex items-center justify-between px-2 py-2 border-b-2">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: column.color || DEFAULT_SECTION_COLOR }}
-                    />
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-medium text-gray-900">{column.title}</h3>
-                      <span className="text-sm text-gray-500">{column.tasks.length}</span>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10"
-                    onClick={() => {
-                      // TODO: Implement add task functionality
-                      console.log(`Add task to section ${column.id}`)
-                    }}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
+                <EditableSectionHeader
+                  sectionId={column.id}
+                  sectionName={column.title}
+                  sectionColor={column.color || DEFAULT_SECTION_COLOR}
+                  taskCount={column.tasks.length}
+                  isHovered={hoveredSectionId === column.id}
+                  className="px-2 py-2 border-b-2"
+                  nameClassName="font-medium text-gray-900"
+                  nameElement="h3"
+                  onSaveEdit={handleSaveEditSection(column.id)}
+                  onCancelEdit={handleCancelEditSection}
+                  onMouseEnter={() => setHoveredSectionId(column.id)}
+                  onMouseLeave={() => setHoveredSectionId(null)}
+                  rightContent={
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10"
+                      onClick={() => {
+                        // TODO: Implement add task functionality
+                        console.log(`Add task to section ${column.id}`)
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  }
+                />
 
                 {/* Tasks */}
                 <div className="flex flex-1 flex-col gap-3 overflow-y-auto my-2">

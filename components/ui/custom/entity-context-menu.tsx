@@ -222,9 +222,6 @@ export function EntityContextMenu({
   }
 
   const getVisibilityClass = () => {
-    if (entityType === "section") {
-      return isVisible ? "opacity-100" : "opacity-0"
-    }
     return isVisible ? "opacity-100" : "hidden"
   }
 
@@ -294,13 +291,13 @@ export function EntityContextMenu({
                         {positionInfo.canMoveUp && onMoveUp && (
                           <DropdownMenuItem onClick={handleMoveUp}>
                             <ArrowUp className="h-3 w-3 mr-2" />
-                            Move up
+                            Before
                           </DropdownMenuItem>
                         )}
                         {positionInfo.canMoveDown && onMoveDown && (
                           <DropdownMenuItem onClick={handleMoveDown}>
                             <ArrowDown className="h-3 w-3 mr-2" />
-                            Move down
+                            After
                           </DropdownMenuItem>
                         )}
                       </DropdownMenuSubContent>
@@ -319,13 +316,13 @@ export function EntityContextMenu({
                         {positionInfo.canAddAbove && onAddAbove && (
                           <DropdownMenuItem onClick={handleAddAbove}>
                             <ArrowUp className="h-3 w-3 mr-2" />
-                            Above
+                            Before
                           </DropdownMenuItem>
                         )}
                         {positionInfo.canAddBelow && onAddBelow && (
                           <DropdownMenuItem onClick={handleAddBelow}>
                             <ArrowDown className="h-3 w-3 mr-2" />
-                            Below
+                            After
                           </DropdownMenuItem>
                         )}
                       </DropdownMenuSubContent>

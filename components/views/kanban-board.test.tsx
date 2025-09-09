@@ -121,6 +121,7 @@ const mockJotai = vi.hoisted(() => ({
   useSetAtom: vi.fn(() => vi.fn()),
   useAtom: vi.fn(() => [vi.fn(), vi.fn()]),
   useAtomValue: vi.fn(() => new Map()),
+  atom: vi.fn(() => ({ debugLabel: "mock-atom" })),
   Provider: ({ children }: { children: React.ReactNode }) => children,
 }))
 

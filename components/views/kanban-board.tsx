@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
 import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
 import { useSetAtom, useAtomValue } from "jotai"
@@ -16,6 +16,7 @@ import { TaskIdSchema, ProjectIdSchema } from "@/lib/types"
 import { createSectionId } from "@/lib/types"
 import { TaskItem } from "@/components/task/task-item"
 import { SelectionToolbar } from "@/components/task/selection-toolbar"
+import { ProjectViewToolbar } from "@/components/task/project-view-toolbar"
 import { TaskShadow } from "@/components/ui/custom/task-shadow"
 import { DEFAULT_SECTION_COLOR, DEFAULT_UUID } from "@/lib/constants/defaults"
 import {
@@ -89,22 +90,6 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
   const orderedTasksByProject = useAtomValue(orderedTasksByProjectAtom)
   const reorderTaskInView = useSetAtom(reorderTaskInViewAtom)
   const moveTaskBetweenSections = useSetAtom(moveTaskBetweenSectionsAtom)
-
-  // Convert hex color to RGBA with transparency
-  const hexToBackground = (hexColor: string | undefined): string => {
-    // Use the color provided, or fallback to default section color
-    const colorToUse = hexColor || DEFAULT_SECTION_COLOR
-
-    // Remove # if present
-    const hex = colorToUse.replace("#", "")
-
-    // Convert hex to RGB
-    const r = parseInt(hex.substr(0, 2), 16)
-    const g = parseInt(hex.substr(2, 2), 16)
-    const b = parseInt(hex.substr(4, 2), 16)
-
-    return `rgba(${r}, ${g}, ${b}, 0.1)`
-  }
 
   // Get ordered tasks for a specific section - matches project-sections-view logic
   const getOrderedTasksForSection = useCallback(
@@ -298,43 +283,66 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
     setColumns(newColumns)
   }, [tasks, project, getOrderedTasksForSection])
 
+  // Calculate responsive column classes based on number of columns
+  const getColumnClasses = () => {
+    const columnCount = columns.length
+    if (columnCount === 0) return "w-full my-1"
+    if (columnCount === 1) return "w-full my-1"
+    // For 5+ columns, use flex with min-width
+    return "w-full my-1 sm:flex-1 sm:min-w-80"
+  }
+
+  // Calculate responsive inner column classes
+  const getInnerColumnClasses = () => {
+    const columnCount = columns.length
+    if (columnCount === 1)
+      return "flex flex-col rounded-lg border bg-gray-100 py-1 px-2 min-h-full min-w-full"
+    return "flex min-w-60 flex-col rounded-lg border bg-gray-100 py-1 px-2 flex-1 min-h-full"
+  }
+
   return (
-    <div className="h-full overflow-auto">
+    <>
       {/* Selection Toolbar */}
       <SelectionToolbar />
 
-      <div className="overflow-x-auto sm:overflow-x-visible px-6">
-        <div className="flex flex-col sm:flex-row gap-6 min-h-full sm:min-w-max">
+      {/* Filter Controls, Search Input and Add Task Button */}
+      <ProjectViewToolbar className="px-4 pt-3" />
+
+      {/* Scrollable Kanban Columns */}
+      <div className="flex-1 overflow-x-auto">
+        <div
+          className={`px-4 py-3 flex flex-col sm:flex-row gap-2 ${columns.length <= 1 ? "" : "sm:min-w-max"}`}
+        >
           {columns.map((column) => (
-            <div key={column.id} className="w-full sm:w-80 lg:flex-1 lg:min-w-64 my-6">
-              <Card className="h-full py-0 overflow-hidden">
-                <div
-                  style={{ backgroundColor: hexToBackground(column.color) }}
-                  data-testid="kanban-column-header"
-                >
-                  <CardHeader className="py-6 bg-transparent">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-medium flex items-center gap-2">
-                        <div
-                          className="w-3 h-3"
-                          style={{ backgroundColor: column.color || DEFAULT_SECTION_COLOR }}
-                        />
-                        {column.title}
-                        <Badge variant="secondary" className="ml-2">
-                          {column.tasks.length}
-                        </Badge>
-                      </CardTitle>
-                      {/* <Button */}
-                      {/*   variant="ghost" */}
-                      {/*   size="icon" */}
-                      {/*   className="h-6 w-6" */}
-                      {/* > */}
-                      {/*   <Plus className="h-4 w-4" /> */}
-                      {/* </Button> */}
+            <div key={column.id} className={getColumnClasses()}>
+              <div className={getInnerColumnClasses()}>
+                {/* Column Header */}
+                <div className="flex items-center justify-between px-2 py-2 border-b-2">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="h-3 w-3 rounded-full"
+                      style={{ backgroundColor: column.color || DEFAULT_SECTION_COLOR }}
+                    />
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium text-gray-900">{column.title}</h3>
+                      <span className="text-sm text-gray-500">{column.tasks.length}</span>
                     </div>
-                  </CardHeader>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10"
+                    onClick={() => {
+                      // TODO: Implement add task functionality
+                      console.log(`Add task to section ${column.id}`)
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
                 </div>
-                <CardContent className="px-4 h-full">
+
+                {/* Tasks */}
+                <div className="flex flex-1 flex-col gap-3 overflow-y-auto my-2">
                   <DropTargetWrapper
                     dropTargetId={
                       project ? `task-list-project-${project.id}-section-${column.id}` : column.id
@@ -401,9 +409,9 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                         return newMap
                       })
                     }}
-                    className="space-y-3 h-full min-h-[200px] pb-4"
+                    className="space-y-3 h-full min-h-[200px] py-1"
                   >
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {column.tasks.map((task, index) => (
                         <DropTargetWrapper
                           key={task.id}
@@ -535,12 +543,12 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                       })()}
                     </div>
                   </DropTargetWrapper>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           ))}
         </div>
       </div>
-    </div>
+    </>
   )
 }

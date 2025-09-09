@@ -557,47 +557,49 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
     //   onGesture={handleGesture}
     //   onUpdateConfig={setGestureConfig}
     // >
-    <SidebarProvider
-      style={
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- CSS custom properties require type assertion
-        {
-          "--sidebar-width": "20rem",
-          "--sidebar-width-mobile": "16rem",
-        } as React.CSSProperties
-      }
-      defaultOpen={!isMobile}
-    >
-      <SidebarKeyboardHandler />
-      <Sidebar variant={isMobile ? "floating" : "sidebar"} collapsible="offcanvas">
-        <SidebarHeader className="flex items-center justify-center p-4 py-8">
-          <TaskTroveLogo />
-        </SidebarHeader>
-        <SidebarContent className="p-4">
-          <SidebarNav />
-        </SidebarContent>
-        <AppSidebarFooter />
-      </Sidebar>
-      <SidebarInset>
-        <div className="flex h-screen flex-col dark:bg-black bg-gray-50">
-          <PageHeader onAdvancedSearch={openSearch} />
+    <div data-testid="main-layout-wrapper" className="w-full h-full">
+      <SidebarProvider
+        style={
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- CSS custom properties require type assertion
+          {
+            "--sidebar-width": "20rem",
+            "--sidebar-width-mobile": "16rem",
+          } as React.CSSProperties
+        }
+        defaultOpen={!isMobile}
+      >
+        <SidebarKeyboardHandler />
+        <Sidebar variant={isMobile ? "floating" : "sidebar"} collapsible="offcanvas">
+          <SidebarHeader className="flex items-center justify-center p-4 py-8">
+            <TaskTroveLogo />
+          </SidebarHeader>
+          <SidebarContent className="p-4">
+            <SidebarNav />
+          </SidebarContent>
+          <AppSidebarFooter />
+        </Sidebar>
+        <SidebarInset className="overflow-auto">
+          <div className="flex h-screen flex-col dark:bg-black bg-gray-50">
+            <PageHeader onAdvancedSearch={openSearch} />
 
-          <div className="flex-1 overflow-y-auto">
-            <RouteContent onTaskClick={toggleTaskPanel} onVoiceCommand={handleVoiceCommand} />
+            <div className="flex-1 overflow-y-auto">
+              <RouteContent onTaskClick={toggleTaskPanel} onVoiceCommand={handleVoiceCommand} />
+            </div>
+
+            <PageFooter />
           </div>
+        </SidebarInset>
 
-          <PageFooter />
-        </div>
-      </SidebarInset>
-
-      {/* Dialogs - Zero Props Pattern */}
-      <QuickAddDialog />
-      {/* <PomodoroDialog /> */}
-      <ProjectDialog />
-      <LabelDialog />
-      <SectionDialog />
-      <SearchDialog />
-      <SettingsDialog />
-    </SidebarProvider>
+        {/* Dialogs - Zero Props Pattern */}
+        <QuickAddDialog />
+        {/* <PomodoroDialog /> */}
+        <ProjectDialog />
+        <LabelDialog />
+        <SectionDialog />
+        <SearchDialog />
+        <SettingsDialog />
+      </SidebarProvider>
+    </div>
     // </GestureHandler>
   )
 }

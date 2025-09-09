@@ -162,7 +162,7 @@ export function MainContent({}: MainContentProps) {
   }
 
   return (
-    <div className={`flex-1 flex flex-col transition-all duration-300`}>
+    <div className={`flex-1 flex flex-col transition-all duration-300 h-full`}>
       <PermissionChecker />
       <div className="flex-1 flex flex-col">{renderContent()}</div>
     </div>

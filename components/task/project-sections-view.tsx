@@ -18,9 +18,7 @@ import { AddSectionDivider } from "./add-section-divider"
 import { TaskEmptyState } from "./task-empty-state"
 import { ViewEmptyState } from "./view-empty-state"
 import { SelectionToolbar } from "./selection-toolbar"
-import { TaskFilterControls } from "./task-filter-controls"
-import { TaskFilterBadges } from "./task-filter-badges"
-import { TaskSearchInput } from "./task-search-input"
+import { ProjectViewToolbar } from "./project-view-toolbar"
 import {
   projectAtoms,
   openQuickAddAtom,
@@ -51,7 +49,7 @@ import { Input } from "@/components/ui/input"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { ColorPicker } from "@/components/ui/custom/color-picker"
 import { SectionContextMenu } from "./section-context-menu"
-import { ChevronDown, ChevronRight, Plus, X } from "lucide-react"
+import { ChevronDown, ChevronRight, X } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { log } from "@/lib/utils/logger"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -589,7 +587,7 @@ export function ProjectSectionsView({
             ) : (
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             )}
-            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: section.color }} />
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: section.color }} />
             {isEditing ? (
               <EditableDiv
                 as="h2"
@@ -838,31 +836,14 @@ export function ProjectSectionsView({
       <div className="flex flex-1 relative">
         {/* Flat Task List */}
         <div
-          className="flex-1 p-6 transition-all duration-300"
+          className="flex-1 px-4 py-3 transition-all duration-300"
           style={{
             marginRight: shouldApplyMargin ? `${SIDE_PANEL_WIDTH}px` : "0px",
           }}
         >
           <div className="space-y-4">
             {/* Filter Controls, Search Input and Add Task Button */}
-            <div className="flex justify-between items-start gap-3 mb-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <TaskFilterControls />
-                  <TaskSearchInput />
-                </div>
-                <TaskFilterBadges />
-              </div>
-              <Button
-                onClick={() => openQuickAddAction()}
-                variant="default"
-                size="sm"
-                className="shadow-sm shrink-0"
-              >
-                <Plus className="h-4 w-4 mr-1.5" />
-                Add Task
-              </Button>
-            </div>
+            <ProjectViewToolbar className="mb-3" />
 
             {/* Flat Task List without sections */}
             <div className="space-y-0">
@@ -946,7 +927,7 @@ export function ProjectSectionsView({
     <div className="flex flex-1 relative">
       {/* Sections List */}
       <div
-        className="flex-1 p-6 transition-all duration-300"
+        className="flex-1 px-4 py-3 transition-all duration-300"
         style={{
           marginRight: shouldApplyMargin ? `${SIDE_PANEL_WIDTH}px` : "0px",
         }}
@@ -956,24 +937,7 @@ export function ProjectSectionsView({
           <SelectionToolbar />
 
           {/* Filter Controls, Search Input and Add Task Button */}
-          <div className="flex justify-between items-start gap-3 mb-3">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <TaskFilterControls />
-                <TaskSearchInput />
-              </div>
-              <TaskFilterBadges />
-            </div>
-            <Button
-              onClick={() => openQuickAddAction()}
-              variant="default"
-              size="sm"
-              className="shadow-sm shrink-0"
-            >
-              <Plus className="h-4 w-4 mr-1.5" />
-              Add Task
-            </Button>
-          </div>
+          <ProjectViewToolbar className="mb-3" />
 
           {sectionsToShow.map((section, index) => (
             <div key={section.id}>

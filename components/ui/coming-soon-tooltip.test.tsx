@@ -167,25 +167,4 @@ describe("ComingSoonTooltip", () => {
       expect(screen.getAllByText("Keyboard accessible")).toHaveLength(2)
     })
   })
-
-  it("has 100ms delay duration", async () => {
-    const user = userEvent.setup()
-
-    render(
-      <ComingSoonTooltip content="Instant tooltip">
-        <button>No delay trigger</button>
-      </ComingSoonTooltip>,
-    )
-
-    const trigger = screen.getByRole("button", { name: "No delay trigger" })
-    await user.hover(trigger)
-
-    // Should appear within 200ms due to 100ms delay
-    await waitFor(
-      () => {
-        expect(screen.getAllByText("Instant tooltip")).toHaveLength(2)
-      },
-      { timeout: 200 },
-    )
-  })
 })

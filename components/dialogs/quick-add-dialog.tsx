@@ -125,6 +125,7 @@ export function QuickAddDialog() {
   const projectSetByParsingRef = useRef(false)
   const prioritySetByParsingRef = useRef(false)
   const dueDateSetByParsingRef = useRef(false)
+  const dueDateSetByRecurringRef = useRef(false)
   const dueTimeSetByParsingRef = useRef(false)
   const recurringSetByParsingRef = useRef(false)
   const labelsSetByParsingRef = useRef(false)
@@ -152,8 +153,9 @@ export function QuickAddDialog() {
         prioritySetByParsingRef.current = false
         updateNewTask({ updateRequest: { priority: undefined } })
       }
-      if (dueDateSetByParsingRef.current) {
+      if (dueDateSetByParsingRef.current || dueDateSetByRecurringRef.current) {
         dueDateSetByParsingRef.current = false
+        dueDateSetByRecurringRef.current = false
         updateNewTask({ updateRequest: { dueDate: undefined } })
       }
       if (dueTimeSetByParsingRef.current) {
@@ -220,14 +222,19 @@ export function QuickAddDialog() {
     if (parsed?.recurring) {
       // Calculate the initial due date for the recurring pattern if none exists
       let dueDate = newTask.dueDate
+      let setDueDateByRecurring = false
       if (!dueDate) {
         const calculatedDueDate = calculateNextDueDate(parsed.recurring, new Date(), true)
         if (calculatedDueDate) {
           dueDate = calculatedDueDate
+          setDueDateByRecurring = true
         }
       }
 
       recurringSetByParsingRef.current = true
+      if (setDueDateByRecurring) {
+        dueDateSetByRecurringRef.current = true
+      }
       updateNewTask({
         updateRequest: {
           recurring: parsed.recurring,
@@ -237,7 +244,15 @@ export function QuickAddDialog() {
     } else if (!parsed?.recurring && recurringSetByParsingRef.current) {
       // Only clear if the recurring pattern was previously set by parsing
       recurringSetByParsingRef.current = false
-      updateNewTask({ updateRequest: { recurring: undefined } })
+      const updateRequest: { recurring: undefined; dueDate?: undefined } = { recurring: undefined }
+
+      // Also clear due date if it was set automatically by the recurring pattern
+      if (dueDateSetByRecurringRef.current) {
+        dueDateSetByRecurringRef.current = false
+        updateRequest.dueDate = undefined
+      }
+
+      updateNewTask({ updateRequest })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- newTask.dueDate intentionally excluded to prevent infinite re-renders
   }, [parsed?.recurring, updateNewTask])

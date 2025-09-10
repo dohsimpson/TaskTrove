@@ -397,9 +397,22 @@ Object.defineProperty(window, "matchMedia", {
   })),
 })
 
+// Mock the debounced parse hook
+vi.mock("@/hooks/use-debounced-parse", () => ({
+  useDebouncedParse: vi.fn(),
+}))
+
 describe("QuickAddDialog", () => {
   beforeEach(async () => {
     vi.clearAllMocks()
+
+    // Reset the mock to use the original implementation by default
+    const originalHook = await vi.importActual<typeof import("@/hooks/use-debounced-parse")>(
+      "@/hooks/use-debounced-parse",
+    )
+    const hookModule = await import("@/hooks/use-debounced-parse")
+    vi.mocked(hookModule.useDebouncedParse).mockImplementation(originalHook.useDebouncedParse)
+
     // Reset NLP enabled state
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any
     ;(globalThis as any).nlpEnabledState.value = true
@@ -1968,6 +1981,81 @@ describe("QuickAddDialog", () => {
       // Find textarea and check it has responsive min-height
       const textarea = screen.getByPlaceholderText("Description")
       expect(textarea).toHaveClass("min-h-16", "sm:min-h-24")
+    })
+  })
+
+  describe("Recurring Pattern Due Date Management", () => {
+    let mockUseDebouncedParse: ReturnType<typeof vi.fn>
+
+    beforeEach(async () => {
+      // Get the mocked function from the module
+      const hookModule = await import("@/hooks/use-debounced-parse")
+      mockUseDebouncedParse = vi.mocked(hookModule.useDebouncedParse)
+      // Reset to null by default for these tests
+      mockUseDebouncedParse.mockReturnValue(null)
+    })
+
+    it("renders and functions correctly with recurring pattern parsing", async () => {
+      // This test verifies that the new due date clearing logic doesn't break the component
+      // Step 1: Test with recurring pattern
+      mockUseDebouncedParse.mockReturnValue({
+        recurring: "RRULE:FREQ=DAILY;INTERVAL=1",
+        title: "daily task",
+      })
+
+      render(<QuickAddDialog />)
+
+      // Verify the component renders without errors when recurring pattern is provided
+      expect(screen.getByTestId("enhanced-input")).toBeInTheDocument()
+
+      // Step 2: Test clearing recurring pattern
+      mockUseDebouncedParse.mockReturnValue({
+        title: "task", // No recurring pattern
+      })
+
+      // Force a re-render by updating the input value (simulating user typing)
+      const input = screen.getByTestId("enhanced-input")
+      fireEvent.input(input, { target: { textContent: "task" } })
+
+      // Verify the component still renders properly after clearing
+      await waitFor(() => {
+        expect(screen.getByTestId("enhanced-input")).toBeInTheDocument()
+      })
+
+      // The component should continue to function normally
+      expect(screen.getByTestId("task-description")).toBeInTheDocument()
+    })
+
+    it("handles edge cases with recurring pattern management", async () => {
+      // Test that the component handles null/undefined parsing results gracefully
+      mockUseDebouncedParse.mockReturnValue(null)
+
+      render(<QuickAddDialog />)
+
+      await waitFor(() => {
+        expect(screen.getByTestId("enhanced-input")).toBeInTheDocument()
+      })
+
+      // Test with empty object
+      mockUseDebouncedParse.mockReturnValue({})
+
+      const input = screen.getByTestId("enhanced-input")
+      fireEvent.input(input, { target: { textContent: "test" } })
+
+      await waitFor(() => {
+        expect(screen.getByTestId("enhanced-input")).toBeInTheDocument()
+      })
+
+      // Test with recurring pattern but no other fields
+      mockUseDebouncedParse.mockReturnValue({
+        recurring: "RRULE:FREQ=WEEKLY;INTERVAL=1",
+      })
+
+      fireEvent.input(input, { target: { textContent: "weekly task" } })
+
+      await waitFor(() => {
+        expect(screen.getByTestId("enhanced-input")).toBeInTheDocument()
+      })
     })
   })
 

@@ -113,6 +113,21 @@ vi.mock("@/components/ui/coming-soon-wrapper", () => ({
   ),
 }))
 
+vi.mock("@/components/ui/tooltip", () => ({
+  TooltipProvider: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="tooltip-provider">{children}</div>
+  ),
+  Tooltip: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="tooltip">{children}</div>
+  ),
+  TooltipTrigger: ({ children }: { children?: React.ReactNode; asChild?: boolean }) => (
+    <div data-testid="tooltip-trigger">{children}</div>
+  ),
+  TooltipContent: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="tooltip-content">{children}</div>
+  ),
+}))
+
 // Mock Lucide icons
 vi.mock("lucide-react", () => ({
   Settings2: () => <div data-testid="settings2-icon" />,

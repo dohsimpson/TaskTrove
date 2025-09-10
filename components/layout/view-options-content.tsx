@@ -31,6 +31,7 @@ import {
 } from "lucide-react"
 import { HelpPopover } from "@/components/ui/help-popover"
 import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 
 interface ViewOptionsContentProps {
   onAdvancedSearch?: () => void
@@ -82,7 +83,7 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
   }
 
   return (
-    <>
+    <TooltipProvider delayDuration={0}>
       {/* Header */}
       <div className="flex items-center gap-2 pb-3 border-b">
         <Settings2 className="h-5 w-5" />
@@ -148,13 +149,30 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
                 </Button>
               )
 
-              return isComingSoon ? (
-                <ComingSoonWrapper key={mode} disabled={true} featureName="Calendar View">
-                  {button}
-                </ComingSoonWrapper>
-              ) : (
-                button
-              )
+              // Handle coming soon features
+              if (isComingSoon) {
+                return (
+                  <ComingSoonWrapper key={mode} disabled={true} featureName="Calendar View">
+                    {button}
+                  </ComingSoonWrapper>
+                )
+              }
+
+              // Handle kanban disabled state with tooltip
+              if (mode === "kanban" && isKanbanDisabled()) {
+                return (
+                  <Tooltip key={mode}>
+                    <TooltipTrigger asChild>
+                      <div>{button}</div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Only available for projects</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )
+              }
+
+              return button
             })}
           </div>
         </div>
@@ -335,6 +353,6 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
           </div>
         </div>
       </div>
-    </>
+    </TooltipProvider>
   )
 }

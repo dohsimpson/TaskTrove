@@ -116,6 +116,7 @@ export const STANDARD_VIEW_IDS = [
   "today",
   "upcoming",
   "completed",
+  "calendar",
   // "analytics",
   // "search",
   // "shortcuts",
@@ -159,6 +160,11 @@ export const STANDARD_VIEW_METADATA: Record<
     title: "Completed",
     description: "Review completed tasks",
     iconType: "completed" as const,
+  },
+  calendar: {
+    title: "Calendar",
+    description: "View tasks in calendar format",
+    iconType: "calendar" as const,
   },
   // analytics: {
   //   title: "Analytics",
@@ -232,6 +238,10 @@ export const VIEW_CONFIG_OPTIONS = {
   },
   all: {
     calendarDisabled: false,
+    showCompletedDisabled: false,
+  },
+  calendar: {
+    calendarDisabled: true,
     showCompletedDisabled: false,
   },
 } as const

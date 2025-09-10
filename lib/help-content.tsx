@@ -215,6 +215,31 @@ export function getHelpContent(routeName: string, title: string): HelpContent | 
         ),
       }
 
+    case "calendar":
+      return {
+        title: "Calendar View",
+        content: (
+          <HelpSection>
+            <HelpDescription>
+              Visualize your tasks in a calendar layout to better plan your time.
+            </HelpDescription>
+            <HelpList
+              variant="steps"
+              items={[
+                "View tasks with due dates arranged by calendar days",
+                "Drag and drop tasks to reschedule them quickly",
+                "Navigate between months to plan ahead or review past tasks",
+                "Click on tasks to view details or edit inline",
+              ]}
+            />
+            <HelpTip variant="tip">
+              <strong>Time management tip:</strong> Use calendar view for weekly planning and
+              deadline visualization.
+            </HelpTip>
+          </HelpSection>
+        ),
+      }
+
     default:
       // Handle project pages and label pages
       if (title.startsWith("#")) {
@@ -251,6 +276,7 @@ export function getHelpContent(routeName: string, title: string): HelpContent | 
         "filters",
         "analytics",
         "search",
+        "calendar",
       ]
       if (!commonRoutes.includes(normalizedRoute) && title !== "TaskTrove") {
         return {

@@ -226,6 +226,13 @@ export function SidebarNav() {
       href: "/upcoming",
     },
     {
+      id: "calendar",
+      label: "Calendar",
+      icon: <Calendar className="h-4 w-4" />,
+      count: taskCountsData.calendar,
+      href: "/calendar",
+    },
+    {
       id: "completed",
       label: "Completed",
       icon: <CheckSquare className="h-4 w-4" />,

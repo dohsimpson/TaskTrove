@@ -623,6 +623,21 @@ export const overdueTasksAtom = atom((get) => {
 overdueTasksAtom.debugLabel = "overdueTasksAtom"
 
 /**
+ * Calendar tasks - tasks with due dates
+ * Filters active tasks that have a due date for calendar view
+ */
+export const calendarTasksAtom = atom((get) => {
+  try {
+    const activeTasks = get(activeTasksAtom)
+    return activeTasks.filter((task: Task) => task.dueDate)
+  } catch (error) {
+    handleAtomError(error, "calendarTasksAtom")
+    return []
+  }
+})
+calendarTasksAtom.debugLabel = "calendarTasksAtom"
+
+/**
  * Task counts for different categories
  * Uses the same derived atoms as filtering to ensure consistency
  */
@@ -633,6 +648,7 @@ export const taskCountsAtom = atom((get) => {
     const todayTasks = get(todayTasksAtom)
     const upcomingTasks = get(upcomingTasksAtom)
     const overdueTasks = get(overdueTasksAtom)
+    const calendarTasks = get(calendarTasksAtom)
     const completedTasks = get(completedTasksAtom)
     const rawViewStates = get(viewStatesAtom)
     const viewStates: ViewStates =
@@ -655,6 +671,7 @@ export const taskCountsAtom = atom((get) => {
       inbox: filterByViewCompleted(inboxTasks, "inbox").length,
       today: filterByViewCompleted(todayTasks, "today").length,
       upcoming: filterByViewCompleted(upcomingTasks, "upcoming").length,
+      calendar: filterByViewCompleted(calendarTasks, "calendar").length,
       overdue: filterByViewCompleted(overdueTasks, "today").length,
       completed: completedTasks.length, // Always show all completed tasks in completed section
       all: filterByViewCompleted(activeTasks, "all").length,
@@ -667,6 +684,7 @@ export const taskCountsAtom = atom((get) => {
       inbox: 0,
       today: 0,
       upcoming: 0,
+      calendar: 0,
       overdue: 0,
       completed: 0,
       all: 0,
@@ -1262,6 +1280,7 @@ export const taskAtoms = {
     todayTasks: todayTasksAtom,
     upcomingTasks: upcomingTasksAtom,
     overdueTasks: overdueTasksAtom,
+    calendarTasks: calendarTasksAtom,
     taskCounts: taskCountsAtom,
     completedTasksToday: completedTasksTodayAtom,
     baseTasksForView: baseTasksForViewAtom,

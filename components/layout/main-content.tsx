@@ -68,6 +68,17 @@ export function MainContent({}: MainContentProps) {
       case "analytics":
         return <AnalyticsDashboard />
 
+      case "calendar":
+        // Calendar view always shows tasks in calendar format
+        return (
+          <CalendarView
+            tasks={filteredTasks}
+            onTaskClick={toggleTaskPanel}
+            onDateClick={() => {}}
+            droppableId={getDroppableId()}
+          />
+        )
+
       case "voice":
         return (
           <TaskEmptyState

@@ -30,7 +30,6 @@ import {
   CheckSquare,
 } from "lucide-react"
 import { HelpPopover } from "@/components/ui/help-popover"
-import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 
 interface ViewOptionsContentProps {
@@ -133,30 +132,20 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
               const disabled =
                 (mode === "kanban" && isKanbanDisabled()) ||
                 (mode === "calendar" && isCalendarDisabled())
-              const isComingSoon = mode === "calendar"
 
               const button = (
                 <Button
                   key={mode}
                   variant={viewState.viewMode === mode ? "default" : "outline"}
                   size="sm"
-                  onClick={() => !isComingSoon && setViewOptions({ viewMode: mode })}
-                  disabled={disabled || isComingSoon}
+                  onClick={() => setViewOptions({ viewMode: mode })}
+                  disabled={disabled}
                   className="justify-center capitalize cursor-pointer"
                 >
                   {getViewModeIcon(mode)}
                   <span className="ml-1">{mode}</span>
                 </Button>
               )
-
-              // Handle coming soon features
-              if (isComingSoon) {
-                return (
-                  <ComingSoonWrapper key={mode} disabled={true} featureName="Calendar View">
-                    {button}
-                  </ComingSoonWrapper>
-                )
-              }
 
               // Handle kanban disabled state with tooltip
               if (mode === "kanban" && isKanbanDisabled()) {

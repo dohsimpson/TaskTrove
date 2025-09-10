@@ -995,7 +995,7 @@ describe("TaskSidePanel", () => {
         expect(screen.queryByTestId("drawer")).not.toBeInTheDocument()
 
         // Find the main panel container by looking for the container with panel styles
-        const container = document.querySelector(".fixed.top-0.right-0")
+        const container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
         expect(container instanceof HTMLElement ? container.style.width : undefined).toBe("320px")
         expect(container?.className).toContain("bg-background")
@@ -1016,7 +1016,7 @@ describe("TaskSidePanel", () => {
 
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        const container = document.querySelector(".fixed.top-0.right-0")
+        const container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
         expect(container instanceof HTMLElement ? container.style.width : undefined).toBe("320px")
         expect(container instanceof HTMLElement ? container.style.width : undefined).toBe("320px")
@@ -1027,7 +1027,7 @@ describe("TaskSidePanel", () => {
 
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        const container = document.querySelector(".fixed.top-0.right-0")
+        const container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
         expect(container?.className).toContain("translate-x-0")
         expect(container?.className).toContain("transition-transform")
@@ -1150,7 +1150,7 @@ describe("TaskSidePanel", () => {
 
         // Verify desktop rendering
         expect(screen.queryByTestId("drawer")).not.toBeInTheDocument()
-        const container = document.querySelector(".fixed.top-0.right-0")
+        const container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
         expect(container instanceof HTMLElement ? container.style.width : undefined).toBe("320px")
       })
@@ -1349,9 +1349,9 @@ describe("TaskSidePanel", () => {
       it("renders with fixed positioning classes", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        const container = document.querySelector(".fixed.top-0.right-0")
+        const container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
-        expect(container?.className).toContain("fixed")
+        expect(container?.className).toContain("absolute")
         expect(container?.className).toContain("top-0")
         expect(container?.className).toContain("right-0")
       })
@@ -1359,7 +1359,7 @@ describe("TaskSidePanel", () => {
       it("has correct z-index for proper layering", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        const container = document.querySelector(".fixed.top-0.right-0")
+        const container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
         expect(container?.className).toContain("z-30")
         expect(container?.className).not.toContain("z-50") // Should not be z-50 which would cover header
@@ -1369,16 +1369,16 @@ describe("TaskSidePanel", () => {
       it("includes proper width and height classes", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        const container = document.querySelector(".fixed.top-0.right-0")
+        const container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
         expect(container instanceof HTMLElement ? container.style.width : undefined).toBe("320px")
-        expect(container?.className).toContain("h-screen")
+        expect(container?.className).toContain("h-full")
       })
 
       it("has transition classes for smooth animation", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        const container = document.querySelector(".fixed.top-0.right-0")
+        const container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
         expect(container?.className).toContain("transition-transform")
         expect(container?.className).toContain("duration-300")
@@ -1388,7 +1388,7 @@ describe("TaskSidePanel", () => {
       it("shows translate-x-0 when open", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        const container = document.querySelector(".fixed.top-0.right-0")
+        const container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
         expect(container?.className).toContain("translate-x-0")
         expect(container?.className).not.toContain("translate-x-full")
@@ -1398,14 +1398,14 @@ describe("TaskSidePanel", () => {
         render(<TaskSidePanel isOpen={false} onClose={mockOnClose} />)
 
         // When closed, panel returns null, so no container should exist
-        const container = document.querySelector(".fixed.top-0.right-0")
+        const container = document.querySelector(".absolute.top-0.right-0")
         expect(container).not.toBeInTheDocument()
       })
 
       it("includes flex layout classes", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        const container = document.querySelector(".fixed.top-0.right-0")
+        const container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
         expect(container?.className).toContain("flex")
         expect(container?.className).toContain("flex-col")
@@ -1414,7 +1414,7 @@ describe("TaskSidePanel", () => {
       it("has background and border styling", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        const container = document.querySelector(".fixed.top-0.right-0")
+        const container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
         expect(container?.className).toContain("bg-background")
         expect(container?.className).toContain("border-l")
@@ -1423,19 +1423,19 @@ describe("TaskSidePanel", () => {
     })
 
     describe("Header Positioning", () => {
-      it("has correct margin-top to account for page header", () => {
+      it("does not need margin-top since using absolute positioning", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        // Find the header element within the fixed container
-        const header = document.querySelector(".fixed.top-0.right-0 .flex-shrink-0")
+        // Find the header element within the absolute container
+        const header = document.querySelector(".absolute.top-0.right-0 .flex-shrink-0")
         expect(header).toBeInTheDocument()
-        expect(header?.className).toContain("mt-[60px]")
+        expect(header?.className).not.toContain("mt-[60px]") // No longer needed with absolute positioning
       })
 
       it("does not use sticky positioning for header", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        const header = document.querySelector(".fixed.top-0.right-0 .flex-shrink-0")
+        const header = document.querySelector(".absolute.top-0.right-0 .flex-shrink-0")
         expect(header).toBeInTheDocument()
         expect(header?.className).not.toContain("sticky")
         expect(header?.className).not.toContain("top-[60px]") // Should not have sticky top anymore
@@ -1444,7 +1444,7 @@ describe("TaskSidePanel", () => {
       it("has proper header background and border styling", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        const header = document.querySelector(".fixed.top-0.right-0 .flex-shrink-0")
+        const header = document.querySelector(".absolute.top-0.right-0 .flex-shrink-0")
         expect(header).toBeInTheDocument()
         expect(header?.className).toContain("border-b")
         expect(header?.className).toContain("border-border")
@@ -1458,13 +1458,13 @@ describe("TaskSidePanel", () => {
         const { rerender } = render(<TaskSidePanel isOpen={false} onClose={mockOnClose} />)
 
         // When closed, panel returns null
-        let container = document.querySelector(".fixed.top-0.right-0")
+        let container = document.querySelector(".absolute.top-0.right-0")
         expect(container).not.toBeInTheDocument()
 
         rerender(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
         // When open, panel should be visible with proper classes
-        container = document.querySelector(".fixed.top-0.right-0")
+        container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
         expect(container?.className).toContain("translate-x-0")
         expect(container?.className).toContain("transition-transform")
@@ -1473,14 +1473,14 @@ describe("TaskSidePanel", () => {
       it("animates smoothly when transitioning from open to closed", () => {
         const { rerender } = render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        let container = document.querySelector(".fixed.top-0.right-0")
+        let container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
         expect(container?.className).toContain("translate-x-0")
 
         rerender(<TaskSidePanel isOpen={false} onClose={mockOnClose} />)
 
         // When closed, panel returns null
-        container = document.querySelector(".fixed.top-0.right-0")
+        container = document.querySelector(".absolute.top-0.right-0")
         expect(container).not.toBeInTheDocument()
       })
     })
@@ -1492,7 +1492,7 @@ describe("TaskSidePanel", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
         // Should not have fixed positioning on mobile
-        const fixedContainer = document.querySelector(".fixed.top-0.right-0")
+        const fixedContainer = document.querySelector(".absolute.top-0.right-0")
         expect(fixedContainer).not.toBeInTheDocument()
 
         // Should have drawer instead
@@ -1511,7 +1511,7 @@ describe("TaskSidePanel", () => {
         expect(drawer).toHaveAttribute("data-direction", "bottom")
 
         // Ensure no fixed positioning classes leak into mobile
-        expect(drawer.className).not.toContain("fixed")
+        expect(drawer.className).not.toContain("absolute")
         expect(drawer.className).not.toContain("top-0")
         expect(drawer.className).not.toContain("right-0")
       })
@@ -1521,7 +1521,7 @@ describe("TaskSidePanel", () => {
       it("uses z-30 to stay below page header z-40", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        const container = document.querySelector(".fixed.top-0.right-0")
+        const container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
         expect(container?.className).toContain("z-30")
       })
@@ -1529,7 +1529,7 @@ describe("TaskSidePanel", () => {
       it("does not use z-50 which would cover page header", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        const container = document.querySelector(".fixed.top-0.right-0")
+        const container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
         expect(container?.className).not.toContain("z-50")
       })
@@ -1537,7 +1537,7 @@ describe("TaskSidePanel", () => {
       it("does not use z-40 which would conflict with page header", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-        const container = document.querySelector(".fixed.top-0.right-0")
+        const container = document.querySelector(".absolute.top-0.right-0")
         expect(container).toBeInTheDocument()
         expect(container?.className).not.toContain("z-40")
       })
@@ -1548,7 +1548,7 @@ describe("TaskSidePanel", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
         const scrollableContent = document.querySelector(
-          ".fixed.top-0.right-0 .flex-1.overflow-y-auto",
+          ".absolute.top-0.right-0 .flex-1.overflow-y-auto",
         )
         expect(scrollableContent).toBeInTheDocument()
         expect(scrollableContent?.className).toContain("overflow-y-auto")
@@ -1563,7 +1563,7 @@ describe("TaskSidePanel", () => {
         rerender(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
         const scrollableContent = document.querySelector(
-          ".fixed.top-0.right-0 .flex-1.overflow-y-auto",
+          ".absolute.top-0.right-0 .flex-1.overflow-y-auto",
         )
         expect(scrollableContent).toBeInTheDocument()
         expect(scrollableContent?.className).toContain("overflow-y-auto")
@@ -1581,7 +1581,7 @@ describe("TaskSidePanel", () => {
 
       render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-      const container = document.querySelector(".fixed.top-0.right-0")
+      const container = document.querySelector(".absolute.top-0.right-0")
       expect(container).toBeInTheDocument()
       expect(container instanceof HTMLElement ? container.style.width : undefined).toBe("320px") // Main content should account for this width
     })
@@ -1589,7 +1589,7 @@ describe("TaskSidePanel", () => {
     it("provides 320px width (w-80) that main content should accommodate", () => {
       render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-      const container = document.querySelector(".fixed.top-0.right-0")
+      const container = document.querySelector(".absolute.top-0.right-0")
       expect(container).toBeInTheDocument()
       expect(container instanceof HTMLElement ? container.style.width : undefined).toBe("320px") // Tailwind w-80 = 320px
     })

@@ -28,12 +28,18 @@ import {
 import { TaskItem } from "@/components/task/task-item"
 import { SelectionToolbar } from "@/components/task/selection-toolbar"
 import { TaskSidePanel } from "@/components/task/task-side-panel"
-import { showTaskPanelAtom, closeTaskPanelAtom, selectedTaskAtom } from "@/lib/atoms/ui/dialogs"
+import {
+  showTaskPanelAtom,
+  closeTaskPanelAtom,
+  selectedTaskAtom,
+  updateQuickAddTaskAtom,
+} from "@/lib/atoms/ui/dialogs"
 import { currentViewStateAtom, taskActions } from "@/lib/atoms"
 import { useIsMobile } from "@/hooks/use-mobile"
-import type { Task } from "@/lib/types"
+import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
+import type { Task, Project } from "@/lib/types"
 import { TaskIdSchema } from "@/lib/types"
-import { toast } from "sonner"
+import { DEFAULT_UUID } from "@/lib/constants/defaults"
 import { log } from "@/lib/utils/logger"
 
 // Constants
@@ -44,15 +50,44 @@ interface CalendarViewProps {
   onTaskClick: (task: Task) => void
   onDateClick: (date: Date) => void
   droppableId: string // Required ID for the droppable sidebar
+  project?: Project // Optional project context for adding tasks
 }
 
-export function CalendarView({ tasks, onTaskClick, onDateClick, droppableId }: CalendarViewProps) {
+export function CalendarView({
+  tasks,
+  onTaskClick,
+  onDateClick,
+  droppableId,
+  project,
+}: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [alwaysShow6Rows] = useState(true) // TODO: Extract to view settings when needed
 
   // Task update action
   const updateTask = useSetAtom(taskActions.updateTask)
+
+  // Add task functionality
+  const addTaskToSection = useAddTaskToSection()
+  const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
+
+  // Handle adding task with prefilled date and project
+  const handleAddTask = useCallback(() => {
+    if (!selectedDate) return
+
+    // Use the project's default section (first section) or undefined
+    const defaultSectionId = project?.sections?.[0]?.id
+
+    // Open quick add with project/section prefilled
+    addTaskToSection(project?.id, defaultSectionId ?? DEFAULT_UUID)
+
+    // Immediately update with the selected date as due date
+    updateQuickAddTask({
+      updateRequest: {
+        dueDate: selectedDate,
+      },
+    })
+  }, [selectedDate, project, addTaskToSection, updateQuickAddTask])
 
   // Handle task drops on calendar days
   const handleCalendarDrop = useCallback(
@@ -126,7 +161,6 @@ export function CalendarView({ tasks, onTaskClick, onDateClick, droppableId }: C
           },
         })
 
-        toast.success("Updated task due date")
         log.info(
           { taskId: taskIdResult.data, dueDate: targetDate },
           "Task due date updated via calendar drop",
@@ -136,7 +170,6 @@ export function CalendarView({ tasks, onTaskClick, onDateClick, droppableId }: C
           { error: error instanceof Error ? error.message : String(error) },
           "Failed to handle calendar drop",
         )
-        toast.error("Failed to update task due date")
       }
     },
     [updateTask],
@@ -173,6 +206,10 @@ export function CalendarView({ tasks, onTaskClick, onDateClick, droppableId }: C
   const getSelectedDateTasks = () => {
     if (!selectedDate) return []
     return getTasksForDate(selectedDate)
+  }
+
+  const getUnscheduledTasks = () => {
+    return tasks.filter((task) => !task.dueDate && !task.completed)
   }
 
   // Generate month and year options (locale-aware)
@@ -387,7 +424,7 @@ export function CalendarView({ tasks, onTaskClick, onDateClick, droppableId }: C
             <div className="p-3">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-lg font-semibold">{format(selectedDate, "EEEE, MMMM d")}</h2>
-                <Button size="sm" onClick={() => onDateClick(selectedDate)}>
+                <Button size="sm" onClick={handleAddTask}>
                   <Plus className="h-4 w-4 mr-1" />
                   Add task
                 </Button>
@@ -421,6 +458,7 @@ export function CalendarView({ tasks, onTaskClick, onDateClick, droppableId }: C
                 })}
                 className="space-y-2 min-h-[120px]"
               >
+                {/* Tasks scheduled for selected date */}
                 {getSelectedDateTasks().length > 0 ? (
                   getSelectedDateTasks().map((task, index) => (
                     <DraggableWrapper
@@ -449,9 +487,48 @@ export function CalendarView({ tasks, onTaskClick, onDateClick, droppableId }: C
                     </DraggableWrapper>
                   ))
                 ) : (
-                  <div className="flex items-center justify-center h-[120px] text-muted-foreground text-sm">
+                  <div className="flex items-center justify-center text-muted-foreground text-sm py-2">
                     No tasks scheduled for this date
                   </div>
+                )}
+
+                {/* Separator and unscheduled tasks */}
+                {getUnscheduledTasks().length > 0 && (
+                  <>
+                    <div className="flex items-center gap-2 py-2">
+                      <div className="flex-1 h-px bg-border" />
+                      <span className="text-xs text-muted-foreground font-medium px-2">
+                        Unscheduled
+                      </span>
+                      <div className="flex-1 h-px bg-border" />
+                    </div>
+                    {getUnscheduledTasks().map((task, index) => (
+                      <DraggableWrapper
+                        key={task.id}
+                        dragId={task.id}
+                        index={getSelectedDateTasks().length + index}
+                        getData={() => ({
+                          type: "draggable-item",
+                          dragId: task.id,
+                          taskId: task.id,
+                          fromUnscheduled: true,
+                        })}
+                      >
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onTaskClick(task)
+                          }}
+                        >
+                          <TaskItem
+                            taskId={task.id}
+                            variant={compactView ? "compact" : "default"}
+                            showProjectBadge={true}
+                          />
+                        </div>
+                      </DraggableWrapper>
+                    ))}
+                  </>
                 )}
               </DropTargetWrapper>
             </div>

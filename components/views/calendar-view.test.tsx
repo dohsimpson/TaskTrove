@@ -407,6 +407,12 @@ vi.mock("@/hooks/use-mobile", () => ({
   useIsMobile: vi.fn(() => false),
 }))
 
+// Mock useAddTaskToSection hook
+const mockAddTaskToSection = vi.fn()
+vi.mock("@/hooks/use-add-task-to-section", () => ({
+  useAddTaskToSection: vi.fn(() => mockAddTaskToSection),
+}))
+
 describe("CalendarView", () => {
   const mockTasks: Task[] = [
     {
@@ -462,6 +468,7 @@ describe("CalendarView", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockAddTaskToSection.mockClear()
   })
 
   it("renders calendar header with navigation", () => {
@@ -751,8 +758,8 @@ describe("CalendarView", () => {
     const addTaskButton = screen.getByText("Add task")
     await user.click(addTaskButton)
 
-    // Should be called with the currently selected date (new Date() in our mock)
-    expect(defaultProps.onDateClick).toHaveBeenCalled()
+    // Should call addTaskToSection with project and section info
+    expect(mockAddTaskToSection).toHaveBeenCalled()
   })
 
   it("renders drag handles for tasks in calendar", () => {
@@ -948,9 +955,9 @@ describe("CalendarView", () => {
       const emptyTaskContainer = document.querySelector(".space-y-2.min-h-\\[120px\\]")
       expect(emptyTaskContainer).toBeInTheDocument()
 
-      // Verify the placeholder has the expected height
+      // Verify the placeholder has the expected styling
       const placeholderElement = screen.getByText("No tasks scheduled for this date")
-      expect(placeholderElement).toHaveClass("h-[120px]")
+      expect(placeholderElement).toHaveClass("py-2")
     })
 
     it("always renders drop target area regardless of task presence", async () => {

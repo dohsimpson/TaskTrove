@@ -135,6 +135,7 @@ export function MainContent({}: MainContentProps) {
                 onTaskClick={toggleTaskPanel}
                 onDateClick={() => {}}
                 droppableId={getDroppableId()}
+                project={projectForView}
               />
             )
 

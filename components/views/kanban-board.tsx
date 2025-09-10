@@ -348,14 +348,6 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
     return "w-full my-1 sm:flex-1 sm:min-w-80"
   }
 
-  // Calculate responsive inner column classes
-  const getInnerColumnClasses = () => {
-    const columnCount = columns.length
-    if (columnCount === 1)
-      return "flex flex-col rounded-lg border bg-gray-100 py-1 px-2 min-h-full min-w-full"
-    return "flex min-w-60 flex-col rounded-lg border bg-gray-100 py-1 px-2 flex-1 min-h-full"
-  }
-
   return (
     <>
       {/* Selection Toolbar */}
@@ -371,7 +363,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
         >
           {columns.map((column) => (
             <div key={column.id} className={getColumnClasses()}>
-              <div className={getInnerColumnClasses()}>
+              <div className="flex min-w-60 flex-col rounded-lg border bg-muted dark:bg-background py-1 px-2 flex-1 min-h-full">
                 {/* Column Header */}
                 <EditableSectionHeader
                   sectionId={column.id}
@@ -380,7 +372,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                   taskCount={column.tasks.length}
                   isHovered={hoveredSectionId === column.id}
                   className="px-2 py-2 border-b-2"
-                  nameClassName="font-medium text-gray-900"
+                  nameClassName="font-medium text-foreground"
                   nameElement="h3"
                   onSaveEdit={handleSaveEditSection(column.id)}
                   onCancelEdit={handleCancelEditSection}

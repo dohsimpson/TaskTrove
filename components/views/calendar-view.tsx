@@ -1,10 +1,9 @@
 "use client"
 
-import { useState } from "react"
-import { useAtomValue } from "jotai"
+import { useState, useCallback } from "react"
+import { useAtomValue, useSetAtom } from "jotai"
 import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
-import { useDragAndDrop } from "@/hooks/use-drag-and-drop"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -30,10 +29,12 @@ import { TaskItem } from "@/components/task/task-item"
 import { SelectionToolbar } from "@/components/task/selection-toolbar"
 import { TaskSidePanel } from "@/components/task/task-side-panel"
 import { showTaskPanelAtom, closeTaskPanelAtom, selectedTaskAtom } from "@/lib/atoms/ui/dialogs"
-import { currentViewStateAtom } from "@/lib/atoms"
-import { useSetAtom } from "jotai"
+import { currentViewStateAtom, taskActions } from "@/lib/atoms"
 import { useIsMobile } from "@/hooks/use-mobile"
 import type { Task } from "@/lib/types"
+import { TaskIdSchema } from "@/lib/types"
+import { toast } from "sonner"
+import { log } from "@/lib/utils/logger"
 
 // Constants
 const SIDE_PANEL_WIDTH = 320 // 320px = w-80 in Tailwind
@@ -49,13 +50,104 @@ export function CalendarView({ tasks, onTaskClick, onDateClick, droppableId }: C
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [alwaysShow6Rows] = useState(true) // TODO: Extract to view settings when needed
-  const { handleDrop } = useDragAndDrop()
+
+  // Task update action
+  const updateTask = useSetAtom(taskActions.updateTask)
+
+  // Handle task drops on calendar days
+  const handleCalendarDrop = useCallback(
+    ({
+      source,
+      location,
+    }: {
+      source: { data: Record<string, unknown> }
+      location: { current: { dropTargets: { data: Record<string, unknown> }[] } }
+    }) => {
+      try {
+        const sourceData = source.data
+        const destinationData = location.current.dropTargets[0]?.data
+
+        if (!sourceData || !destinationData) {
+          log.warn(
+            { sourceData, destinationData },
+            "Missing source or destination data in calendar drop",
+          )
+          return
+        }
+
+        // Check if this is a draggable item (task)
+        if (sourceData.type !== "draggable-item") {
+          log.warn({ sourceType: sourceData.type }, "Invalid source type for calendar drop")
+          return
+        }
+
+        // Check if dropping on calendar day
+        if (destinationData.type !== "calendar-day") {
+          log.warn(
+            { destinationType: destinationData.type },
+            "Invalid destination type for calendar drop",
+          )
+          return
+        }
+
+        // Extract task ID and target date
+        const taskId =
+          typeof (sourceData.dragId || sourceData.taskId) === "string"
+            ? sourceData.dragId || sourceData.taskId
+            : null
+        const targetDate = typeof destinationData.date === "string" ? destinationData.date : null
+
+        if (!taskId || !targetDate) {
+          log.warn({ taskId, targetDate }, "Missing task ID or target date in calendar drop")
+          return
+        }
+
+        // Validate task ID
+        const taskIdResult = TaskIdSchema.safeParse(taskId)
+        if (!taskIdResult.success) {
+          log.warn({ taskId }, "Invalid task ID in calendar drop")
+          return
+        }
+
+        // Convert date string to Date object in local timezone
+        // Parse the date components to avoid UTC conversion issues
+        const [year, month, day] = targetDate.split("-").map(Number)
+        const dueDate = new Date(year, month - 1, day) // month is 0-indexed
+        if (isNaN(dueDate.getTime())) {
+          log.warn({ targetDate }, "Invalid date format in calendar drop")
+          return
+        }
+
+        // Update task due date
+        updateTask({
+          updateRequest: {
+            id: taskIdResult.data,
+            dueDate: dueDate,
+          },
+        })
+
+        toast.success("Updated task due date")
+        log.info(
+          { taskId: taskIdResult.data, dueDate: targetDate },
+          "Task due date updated via calendar drop",
+        )
+      } catch (error) {
+        log.error(
+          { error: error instanceof Error ? error.message : String(error) },
+          "Failed to handle calendar drop",
+        )
+        toast.error("Failed to update task due date")
+      }
+    },
+    [updateTask],
+  )
 
   // Task panel state
   const showTaskPanel = useAtomValue(showTaskPanelAtom)
   const closeTaskPanel = useSetAtom(closeTaskPanelAtom)
   const selectedTask = useAtomValue(selectedTaskAtom)
   const currentViewState = useAtomValue(currentViewStateAtom)
+  const { compactView } = currentViewState
   const isMobile = useIsMobile()
 
   // Calculate side panel margin (same logic as project-sections-view)
@@ -210,52 +302,10 @@ export function CalendarView({ tasks, onTaskClick, onDateClick, droppableId }: C
                   <DropTargetWrapper
                     key={day.toISOString()}
                     dropTargetId={`calendar-day-${dayId}`}
-                    onDrop={({ source }) => {
-                      if (
-                        source.data &&
-                        (source.data.type === "task" || source.data.type === "draggable-item")
-                      ) {
-                        const taskId =
-                          (typeof source.data.taskId === "string" ? source.data.taskId : null) ||
-                          (typeof source.data.dragId === "string" ? source.data.dragId : null)
-                        if (taskId) {
-                          handleDrop({
-                            source: {
-                              data: {
-                                type: source.data.type,
-                                dragId:
-                                  (typeof source.data.taskId === "string"
-                                    ? source.data.taskId
-                                    : null) ||
-                                  (typeof source.data.dragId === "string"
-                                    ? source.data.dragId
-                                    : null) ||
-                                  "",
-                                index: 0,
-                                taskId: source.data.taskId,
-                                ...source.data,
-                              },
-                            },
-                            location: {
-                              current: {
-                                dropTargets: [
-                                  {
-                                    data: {
-                                      type: "calendar-day",
-                                      date: dayId,
-                                    },
-                                  },
-                                ],
-                              },
-                            },
-                          })
-                        }
-                      }
+                    onDrop={({ source, location }) => {
+                      handleCalendarDrop({ source, location })
                     }}
-                    canDrop={({ source }) =>
-                      source.data &&
-                      (source.data.type === "task" || source.data.type === "draggable-item")
-                    }
+                    canDrop={({ source }) => source.data && source.data.type === "draggable-item"}
                     getData={() => ({
                       type: "calendar-day",
                       date: dayId,
@@ -263,10 +313,8 @@ export function CalendarView({ tasks, onTaskClick, onDateClick, droppableId }: C
                   >
                     <div
                       className={`min-h-16 lg:min-h-24 h-full p-0.5 lg:p-1 border border-border cursor-pointer hover:bg-muted/50 transition-colors ${
-                        isSelected ? "bg-accent border-accent-foreground/20" : ""
-                      } ${isTodayDate ? "bg-accent/60" : ""} ${
-                        !isCurrentMonth ? "opacity-40" : ""
-                      }`}
+                        isSelected ? "ring-1 ring-foreground" : ""
+                      } ${isTodayDate ? "bg-muted" : ""} ${!isCurrentMonth ? "opacity-40" : ""}`}
                       onClick={() => {
                         setSelectedDate(day)
                         onDateClick(day)
@@ -288,10 +336,11 @@ export function CalendarView({ tasks, onTaskClick, onDateClick, droppableId }: C
                           dayTasks.slice(0, 3).map((task, index) => (
                             <DraggableWrapper
                               key={task.id}
-                              dragId={`calendar-day-task-${task.id}`}
+                              dragId={task.id}
                               index={index}
                               getData={() => ({
-                                type: "task",
+                                type: "draggable-item",
+                                dragId: task.id,
                                 taskId: task.id,
                                 fromCalendarDay: dayId,
                               })}
@@ -343,26 +392,44 @@ export function CalendarView({ tasks, onTaskClick, onDateClick, droppableId }: C
                   Add task
                 </Button>
               </div>
-              {getSelectedDateTasks().length > 0 && (
-                <DropTargetWrapper
-                  dropTargetId={droppableId}
-                  onDrop={({ source }) => {
-                    // Handle task drops on selected date area
-                    console.log("Selected date area drop:", { source, droppableId })
-                  }}
-                  getData={() => ({
-                    type: "task-list",
-                    sidebarContext: "calendar-bottom",
-                  })}
-                  className="space-y-2"
-                >
-                  {getSelectedDateTasks().map((task, index) => (
+              <DropTargetWrapper
+                dropTargetId={droppableId}
+                onDrop={({ source }) => {
+                  if (source.data && source.data.type === "draggable-item" && selectedDate) {
+                    // Transform to calendar-day drop for selected date
+                    const calendarDayDrop = {
+                      source,
+                      location: {
+                        current: {
+                          dropTargets: [
+                            {
+                              data: {
+                                type: "calendar-day",
+                                date: format(selectedDate, "yyyy-MM-dd"),
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    }
+                    handleCalendarDrop(calendarDayDrop)
+                  }
+                }}
+                getData={() => ({
+                  type: "task-list",
+                  sidebarContext: "calendar-bottom",
+                })}
+                className="space-y-2 min-h-[120px]"
+              >
+                {getSelectedDateTasks().length > 0 ? (
+                  getSelectedDateTasks().map((task, index) => (
                     <DraggableWrapper
                       key={task.id}
-                      dragId={`bottom-task-${task.id}`}
+                      dragId={task.id}
                       index={index}
                       getData={() => ({
-                        type: "task",
+                        type: "draggable-item",
+                        dragId: task.id,
                         taskId: task.id,
                         fromBottom: true,
                       })}
@@ -373,12 +440,20 @@ export function CalendarView({ tasks, onTaskClick, onDateClick, droppableId }: C
                           onTaskClick(task)
                         }}
                       >
-                        <TaskItem taskId={task.id} variant="compact" showProjectBadge={false} />
+                        <TaskItem
+                          taskId={task.id}
+                          variant={compactView ? "compact" : "default"}
+                          showProjectBadge={false}
+                        />
                       </div>
                     </DraggableWrapper>
-                  ))}
-                </DropTargetWrapper>
-              )}
+                  ))
+                ) : (
+                  <div className="flex items-center justify-center h-[120px] text-muted-foreground text-sm">
+                    No tasks scheduled for this date
+                  </div>
+                )}
+              </DropTargetWrapper>
             </div>
           </div>
         )}

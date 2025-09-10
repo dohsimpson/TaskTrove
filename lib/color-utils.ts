@@ -129,8 +129,8 @@ export function getDueDateTextColor(
   } else {
     if (isPast(date) && !isToday(date)) return "text-red-600 dark:text-red-400"
     if (isToday(date)) return "text-orange-600 dark:text-orange-400"
-    if (isTomorrow(date)) return "text-muted-foreground"
-    return "text-muted-foreground"
+    if (isTomorrow(date)) return "text-foreground"
+    return "text-foreground"
   }
 }
 

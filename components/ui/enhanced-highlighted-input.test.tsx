@@ -197,7 +197,7 @@ describe("EnhancedHighlightedInput", () => {
       render(<EnhancedHighlightedInput {...defaultProps} value="Task #work project" />)
 
       const overlay = screen.getByRole("combobox").parentElement?.querySelector(".absolute.inset-0")
-      const projectToken = overlay?.querySelector('span[class*="bg-purple-200"]')
+      const projectToken = overlay?.querySelector('span[class*="bg-purple-500/20"]')
 
       expect(projectToken).toBeInTheDocument()
       expect(projectToken).toHaveTextContent("#work")
@@ -211,7 +211,7 @@ describe("EnhancedHighlightedInput", () => {
       render(<EnhancedHighlightedInput {...defaultProps} value="Task @urgent label" />)
 
       const overlay = screen.getByRole("combobox").parentElement?.querySelector(".absolute.inset-0")
-      const labelToken = overlay?.querySelector('span[class*="bg-blue-200"]')
+      const labelToken = overlay?.querySelector('span[class*="bg-blue-500/20"]')
 
       expect(labelToken).toBeInTheDocument()
       expect(labelToken).toHaveTextContent("@urgent")

@@ -284,13 +284,13 @@ describe("EditableMetadata", () => {
     rerender(<EditableMetadata {...defaultProps} dueDate={tomorrow} />)
 
     dueDateSpan = screen.getByText(/tomorrow/i)
-    expect(dueDateSpan).toHaveClass("text-muted-foreground")
+    expect(dueDateSpan).toHaveClass("text-foreground")
 
     const futureDate = addDays(new Date(), 7)
     rerender(<EditableMetadata {...defaultProps} dueDate={futureDate} />)
 
     dueDateSpan = screen.getByText(new RegExp(format(futureDate, "MMM d"), "i"))
-    expect(dueDateSpan).toHaveClass("text-muted-foreground")
+    expect(dueDateSpan).toHaveClass("text-foreground")
   })
 
   it("handles empty projects array", () => {

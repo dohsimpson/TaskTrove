@@ -89,8 +89,8 @@ describe("color-utils", () => {
 
     it("should return correct colors for default variant", () => {
       expect(getDueDateTextColor(today, false)).toBe("text-orange-600 dark:text-orange-400")
-      expect(getDueDateTextColor(tomorrow, false)).toBe("text-muted-foreground")
-      expect(getDueDateTextColor(futureDate, false)).toBe("text-muted-foreground")
+      expect(getDueDateTextColor(tomorrow, false)).toBe("text-foreground")
+      expect(getDueDateTextColor(futureDate, false)).toBe("text-foreground")
     })
 
     it("should return correct colors for compact variant", () => {

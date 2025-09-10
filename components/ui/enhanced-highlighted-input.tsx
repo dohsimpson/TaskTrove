@@ -83,13 +83,13 @@ const createReactChangeEvent = (value: string): React.ChangeEvent<HTMLInputEleme
 
 // Token styling based on TaskTrove's theme system
 const TOKEN_STYLES = {
-  project: "bg-purple-200 text-purple-900 font-medium",
-  label: "bg-blue-200 text-blue-900 font-medium",
-  priority: "bg-red-200 text-red-900 font-medium",
-  date: "bg-green-200 text-green-900 font-medium",
-  time: "bg-purple-200 text-purple-900 font-medium",
-  recurring: "bg-blue-200 text-blue-900 font-medium",
-  duration: "bg-orange-200 text-orange-900 font-medium",
+  project: "bg-purple-500/20 text-purple-300 font-medium",
+  label: "bg-blue-500/20 text-blue-300 font-medium",
+  priority: "bg-red-500/20 text-red-300 font-medium",
+  date: "bg-green-500/20 text-green-300 font-medium",
+  time: "bg-purple-500/20 text-purple-300 font-medium",
+  recurring: "bg-blue-500/20 text-blue-300 font-medium",
+  duration: "bg-orange-500/20 text-orange-300 font-medium",
   text: "",
 }
 

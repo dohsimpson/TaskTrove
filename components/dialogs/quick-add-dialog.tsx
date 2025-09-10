@@ -38,7 +38,7 @@ import {
 import { currentRouteContextAtom } from "@/lib/atoms/ui/navigation"
 import { TaskSchedulePopover } from "@/components/task/task-schedule-popover"
 import { LabelManagementPopover } from "@/components/task/label-management-popover"
-import { TaskProjectPopover } from "@/components/task/task-project-popover"
+import { ProjectPopover } from "@/components/task/project-popover"
 import { TaskPriorityPopover } from "@/components/task/task-priority-popover"
 import { TaskSectionPopover } from "@/components/task/task-section-popover"
 import { SubtaskPopover } from "@/components/task/subtask-popover"
@@ -54,7 +54,6 @@ import {
   ProjectIdSchema,
   isValidPriority,
   createLabelId,
-  createProjectId,
   parseRRule,
 } from "@/lib/types"
 import { PLACEHOLDER_TASK_INPUT } from "@/lib/constants/defaults"
@@ -495,6 +494,42 @@ export function QuickAddDialog() {
           {/* Quick Actions Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2 sm:pt-3 pb-1">
             <div className="flex items-center gap-1 flex-wrap">
+              {/* Due Date */}
+              <TaskSchedulePopover>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "h-8 px-2 gap-1 text-xs sm:text-sm min-w-0",
+                    newTask.dueDate
+                      ? getDueDateTextColor(newTask.dueDate, false)
+                      : newTask.recurring
+                        ? "text-foreground"
+                        : "text-muted-foreground",
+                  )}
+                >
+                  {newTask.recurring ? (
+                    <Repeat className="h-3 w-3 flex-shrink-0" />
+                  ) : newTask.dueDate && isPast(newTask.dueDate) && !isToday(newTask.dueDate) ? (
+                    <AlertTriangle className="h-3 w-3 text-red-500 flex-shrink-0" />
+                  ) : (
+                    <Calendar className="h-3 w-3 flex-shrink-0" />
+                  )}
+                  <span
+                    className={cn(
+                      "whitespace-nowrap",
+                      newTask.recurring || newTask.dueDate ? "" : "hidden sm:inline",
+                    )}
+                  >
+                    {newTask.recurring
+                      ? getRRuleDisplayText(newTask.recurring)
+                      : newTask.dueDate
+                        ? formatTaskDateTimeBadge(newTask) || format(newTask.dueDate, "MMM d")
+                        : "Date"}
+                  </span>
+                </Button>
+              </TaskSchedulePopover>
+
               {/* Priority */}
               <TaskPriorityPopover
                 onUpdate={(priority) => handleManualPrioritySelect(priority)}
@@ -523,49 +558,24 @@ export function QuickAddDialog() {
                 </Button>
               </TaskPriorityPopover>
 
-              {/* Due Date */}
-              <TaskSchedulePopover>
+              {/* Add Label */}
+              <LabelManagementPopover onAddLabel={handleAddLabel} onRemoveLabel={handleRemoveLabel}>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={cn(
-                    "h-8 px-2 gap-1 text-xs sm:text-sm min-w-0",
-                    newTask.dueDate
-                      ? getDueDateTextColor(newTask.dueDate, false)
-                      : "text-muted-foreground",
-                  )}
+                  className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
                 >
-                  {newTask.recurring ? (
-                    <Repeat className="h-3 w-3 flex-shrink-0" />
-                  ) : newTask.dueDate && isPast(newTask.dueDate) && !isToday(newTask.dueDate) ? (
-                    <AlertTriangle className="h-3 w-3 text-red-500 flex-shrink-0" />
-                  ) : (
-                    <Calendar className="h-3 w-3 flex-shrink-0" />
-                  )}
-                  <span
-                    className={cn(
-                      "whitespace-nowrap",
-                      newTask.recurring || newTask.dueDate ? "" : "hidden sm:inline",
-                    )}
-                  >
-                    {newTask.recurring
-                      ? getRRuleDisplayText(newTask.recurring)
-                      : newTask.dueDate
-                        ? formatTaskDateTimeBadge(newTask) || format(newTask.dueDate, "MMM d")
-                        : "Date"}
-                  </span>
+                  <Tag className="h-3 w-3 flex-shrink-0" />
+                  <span className="hidden sm:inline whitespace-nowrap">Label</span>
                 </Button>
-              </TaskSchedulePopover>
+              </LabelManagementPopover>
 
               {/* Project */}
-              <TaskProjectPopover
-                onUpdate={(projectId) =>
-                  handleManualProjectSelect(
-                    projectId ? createProjectId(projectId) : INBOX_PROJECT_ID,
-                  )
-                }
+              <ProjectPopover
+                selectedProjectId={newTask.projectId ?? currentProject}
+                onUpdate={(projectId) => handleManualProjectSelect(projectId)}
                 align="start"
-                contentClassName="w-64 p-4"
+                contentClassName="w-64 p-0"
               >
                 <Button
                   variant="ghost"
@@ -593,19 +603,7 @@ export function QuickAddDialog() {
                     )
                   })()}
                 </Button>
-              </TaskProjectPopover>
-
-              {/* Add Label */}
-              <LabelManagementPopover onAddLabel={handleAddLabel} onRemoveLabel={handleRemoveLabel}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
-                >
-                  <Tag className="h-3 w-3 flex-shrink-0" />
-                  <span className="hidden sm:inline whitespace-nowrap">Label</span>
-                </Button>
-              </LabelManagementPopover>
+              </ProjectPopover>
 
               {/* Expansion Toggle */}
               <Button

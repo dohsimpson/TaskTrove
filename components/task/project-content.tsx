@@ -8,18 +8,35 @@ import { projectsAtom, updateTaskAtom } from "@/lib/atoms"
 import type { Task, ProjectId } from "@/lib/types"
 
 interface ProjectContentProps {
-  task: Task
+  // Mode 1: Task-based (for TaskItem)
+  task?: Task
+  // Mode 2: Callback-based (for QuickAdd)
+  selectedProjectId?: ProjectId
+  onUpdate?: (projectId: ProjectId) => void
   className?: string
 }
 
-export function ProjectContent({ task, className }: ProjectContentProps) {
+export function ProjectContent({
+  task,
+  selectedProjectId,
+  onUpdate,
+  className,
+}: ProjectContentProps) {
   const allProjects = useAtomValue(projectsAtom)
   const updateTask = useSetAtom(updateTaskAtom)
 
-  const currentProject = allProjects.find((p) => p.id === task.projectId)
+  // Determine current project based on mode
+  const currentProjectId = task?.projectId || selectedProjectId
+  const currentProject = allProjects.find((p) => p.id === currentProjectId)
 
   const handleProjectSelect = (projectId: ProjectId) => {
-    updateTask({ updateRequest: { id: task.id, projectId } })
+    if (onUpdate) {
+      // Callback mode (QuickAdd)
+      onUpdate(projectId)
+    } else if (task) {
+      // Task mode (TaskItem)
+      updateTask({ updateRequest: { id: task.id, projectId } })
+    }
   }
 
   return (

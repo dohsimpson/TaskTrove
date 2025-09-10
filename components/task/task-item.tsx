@@ -1410,6 +1410,34 @@ export function TaskItem({
               )
             }
 
+            // Subtasks - Show if present or add subtask
+            const completed = task.subtasks.filter((s: Subtask) => s.completed).length
+            leftMetadataItems.push(
+              <SubtaskPopover key="subtasks" task={task}>
+                {task.subtasks.length > 0 ? (
+                  <span
+                    className={cn(
+                      "flex items-center gap-1 cursor-pointer hover:opacity-100 text-foreground",
+                      METADATA_COLUMN_WIDTH,
+                    )}
+                  >
+                    <CheckSquare className="h-3 w-3" />
+                    {completed}/{task.subtasks.length}
+                  </span>
+                ) : (
+                  <span
+                    className={cn(
+                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground whitespace-nowrap opacity-70 hover:opacity-100",
+                      METADATA_COLUMN_WIDTH,
+                    )}
+                  >
+                    <CheckSquare className="h-3 w-3" />
+                    <span className="text-xs hidden group-hover:inline">Add subtask</span>
+                  </span>
+                )}
+              </SubtaskPopover>,
+            )
+
             // Comments - Use unified popover for both viewing and adding
             if (task.comments.length > 0) {
               leftMetadataItems.push(
@@ -1453,34 +1481,6 @@ export function TaskItem({
                 </CommentManagementPopover>,
               )
             }
-
-            // Subtasks - Show if present or add subtask
-            const completed = task.subtasks.filter((s: Subtask) => s.completed).length
-            leftMetadataItems.push(
-              <SubtaskPopover key="subtasks" task={task}>
-                {task.subtasks.length > 0 ? (
-                  <span
-                    className={cn(
-                      "flex items-center gap-1 cursor-pointer hover:opacity-100 text-foreground",
-                      METADATA_COLUMN_WIDTH,
-                    )}
-                  >
-                    <CheckSquare className="h-3 w-3" />
-                    {completed}/{task.subtasks.length}
-                  </span>
-                ) : (
-                  <span
-                    className={cn(
-                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground whitespace-nowrap opacity-70 hover:opacity-100",
-                      METADATA_COLUMN_WIDTH,
-                    )}
-                  >
-                    <CheckSquare className="h-3 w-3" />
-                    <span className="text-xs hidden group-hover:inline">Add subtask</span>
-                  </span>
-                )}
-              </SubtaskPopover>,
-            )
 
             // Right side - Flexible width items
             // Labels - Now clickable with popover for editing

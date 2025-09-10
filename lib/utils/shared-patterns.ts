@@ -218,11 +218,32 @@ export function generateDurationSuggestions(): AutocompleteSuggestion[] {
 /**
  * Generate comprehensive highlighting patterns using parser's safe boundaries
  */
-export function generateHighlightingPatterns(): HighlightingPattern[] {
+interface DynamicPatternsConfig {
+  projects?: Array<{ name: string }>
+  labels?: Array<{ name: string }>
+}
+
+export function generateHighlightingPatterns(
+  config?: DynamicPatternsConfig,
+): HighlightingPattern[] {
   const patterns: HighlightingPattern[] = []
 
-  // Project and label patterns (simple)
-  patterns.push({ type: "project", regex: /#(\w+)/g }, { type: "label", regex: /@(\w+)/g })
+  // Project and label patterns with dynamic name support
+  if (config?.projects && config.projects.length > 0) {
+    const projectNames = config.projects.map((p) => p.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    const projectRegex = new RegExp(`#(${projectNames.join("|")})`, "gi")
+    patterns.push({ type: "project", regex: projectRegex })
+  } else {
+    patterns.push({ type: "project", regex: /#(\w+)/g })
+  }
+
+  if (config?.labels && config.labels.length > 0) {
+    const labelNames = config.labels.map((l) => l.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    const labelRegex = new RegExp(`@(${labelNames.join("|")})`, "gi")
+    patterns.push({ type: "label", regex: labelRegex })
+  } else {
+    patterns.push({ type: "label", regex: /@(\w+)/g })
+  }
 
   // Priority patterns - combine p-notation and exclamations with safe boundaries
   const priorityCaptures = [
@@ -277,7 +298,7 @@ export function generateHighlightingPatterns(): HighlightingPattern[] {
 
   // Time patterns - only match explicit time formats to avoid highlighting standalone numbers
   const timeRegex = new RegExp(
-    `${WORD_BOUNDARY_START}(\\d{1,2}:\\d{2}(?:\\s*(?:AM|PM))?|\\d{1,2}(?:AM|PM)|at\\s+\\d{1,2}(?::\\d{2})?(?:\\s*(?:AM|PM))?)${WORD_BOUNDARY_END}`,
+    `${WORD_BOUNDARY_START}(\\d{1,2}:\\d{2}(?:\\s*(?:AM|PM))?|\\d{1,2}(?:AM|PM)|at\\s+\\d{1,2}(?:\\d{2})?(?:\\s*(?:AM|PM))?)${WORD_BOUNDARY_END}`,
     "gi",
   )
   patterns.push({ type: "time", regex: timeRegex })

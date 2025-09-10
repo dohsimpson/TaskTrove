@@ -1,11 +1,12 @@
 "use client"
 
-import type React from "react"
-import { useState, useRef, useEffect, useMemo, useCallback } from "react"
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react"
 import { useAtomValue } from "jotai"
 import { cn } from "@/lib/utils"
 import { generateHighlightingPatterns } from "@/lib/utils/shared-patterns"
 import { nlpEnabledAtom } from "@/lib/atoms/ui/dialogs"
+import { labelsAtom } from "@/lib/atoms/core/labels"
+import { visibleProjectsAtom } from "@/lib/atoms/core/projects"
 
 interface ParsedToken {
   type: "project" | "label" | "time" | "date" | "priority" | "recurring" | "duration" | "text"
@@ -16,7 +17,7 @@ interface ParsedToken {
 
 interface AutocompleteItem {
   id: string
-  label: string
+  label: string // Display text (name)
   icon: React.ReactNode
   type: "project" | "label" | "date"
   value?: string
@@ -104,8 +105,7 @@ const DISABLED_TOKEN_STYLES = {
   text: "",
 }
 
-// Generate token patterns from shared patterns (using parser patterns)
-const TOKEN_PATTERNS = generateHighlightingPatterns()
+// Dynamic token patterns will be generated inside the component
 
 // Shared classes for contentEditable and overlay to ensure perfect alignment
 const SHARED_TEXT_CLASSES =
@@ -125,8 +125,10 @@ export function EnhancedHighlightedInput({
   const inputRef = useRef<HTMLDivElement>(null)
   const autocompleteRef = useRef<HTMLDivElement>(null)
 
-  // Get NLP enabled state from atom
+  // Get data from atoms with fallbacks
   const nlpEnabled = useAtomValue(nlpEnabledAtom)
+  const labels = useAtomValue(labelsAtom) || []
+  const projects = useAtomValue(visibleProjectsAtom) || []
 
   const [cursorPosition, setCursorPosition] = useState(0)
   const [isFocused, setIsFocused] = useState(false)
@@ -141,67 +143,76 @@ export function EnhancedHighlightedInput({
   })
 
   // Parse text into tokens
-  const parseText = useCallback((input: string): ParsedToken[] => {
-    const tokens: ParsedToken[] = []
+  const parseText = useCallback(
+    (input: string): ParsedToken[] => {
+      const tokens: ParsedToken[] = []
 
-    TOKEN_PATTERNS.forEach(({ type, regex }) => {
-      let match
-      const regexCopy = new RegExp(regex.source, regex.flags)
-      while ((match = regexCopy.exec(input)) !== null) {
-        tokens.push({
-          type,
-          value: match[0],
-          start: match.index,
-          end: match.index + match[0].length,
-        })
+      // Generate dynamic patterns based on available projects and labels
+      const dynamicPatterns = generateHighlightingPatterns({
+        projects: projects.map((p) => ({ name: p.name })),
+        labels: labels.map((l) => ({ name: l.name })),
+      })
+
+      dynamicPatterns.forEach(({ type, regex }) => {
+        let match
+        const regexCopy = new RegExp(regex.source, regex.flags)
+        while ((match = regexCopy.exec(input)) !== null) {
+          tokens.push({
+            type,
+            value: match[0],
+            start: match.index,
+            end: match.index + match[0].length,
+          })
+        }
+      })
+
+      // Sort tokens by start position
+      tokens.sort((a, b) => a.start - b.start)
+
+      // Remove overlapping tokens (keep the first one)
+      const nonOverlapping: ParsedToken[] = []
+      for (const token of tokens) {
+        if (
+          !nonOverlapping.some(
+            (existing) =>
+              (token.start >= existing.start && token.start < existing.end) ||
+              (token.end > existing.start && token.end <= existing.end),
+          )
+        ) {
+          nonOverlapping.push(token)
+        }
       }
-    })
 
-    // Sort tokens by start position
-    tokens.sort((a, b) => a.start - b.start)
+      // Fill in text tokens
+      const result: ParsedToken[] = []
+      let lastEnd = 0
 
-    // Remove overlapping tokens (keep the first one)
-    const nonOverlapping: ParsedToken[] = []
-    for (const token of tokens) {
-      if (
-        !nonOverlapping.some(
-          (existing) =>
-            (token.start >= existing.start && token.start < existing.end) ||
-            (token.end > existing.start && token.end <= existing.end),
-        )
-      ) {
-        nonOverlapping.push(token)
-      }
-    }
+      nonOverlapping.forEach((token) => {
+        if (token.start > lastEnd) {
+          result.push({
+            type: "text",
+            value: input.slice(lastEnd, token.start),
+            start: lastEnd,
+            end: token.start,
+          })
+        }
+        result.push(token)
+        lastEnd = token.end
+      })
 
-    // Fill in text tokens
-    const result: ParsedToken[] = []
-    let lastEnd = 0
-
-    nonOverlapping.forEach((token) => {
-      if (token.start > lastEnd) {
+      if (lastEnd < input.length) {
         result.push({
           type: "text",
-          value: input.slice(lastEnd, token.start),
+          value: input.slice(lastEnd),
           start: lastEnd,
-          end: token.start,
+          end: input.length,
         })
       }
-      result.push(token)
-      lastEnd = token.end
-    })
 
-    if (lastEnd < input.length) {
-      result.push({
-        type: "text",
-        value: input.slice(lastEnd),
-        start: lastEnd,
-        end: input.length,
-      })
-    }
-
-    return result
-  }, [])
+      return result
+    },
+    [projects, labels],
+  )
 
   // Detect autocomplete triggers
   const detectAutocomplete = useCallback(
@@ -216,7 +227,7 @@ export function EnhancedHighlightedInput({
       const lastWord = textBeforeCursor.split(/\s/).pop() || ""
 
       // Project autocomplete (#)
-      if (lastChar === "#" || lastWord.match(/^#\w*/)) {
+      if (lastChar === "#" || (lastWord.startsWith("#") && lastWord.length > 1)) {
         const query = lastWord.slice(1)
         const filteredProjects = autocompleteItems.projects.filter((p) =>
           p.label.toLowerCase().includes(query.toLowerCase()),
@@ -236,7 +247,7 @@ export function EnhancedHighlightedInput({
       }
 
       // Label autocomplete (@)
-      if (lastChar === "@" || lastWord.match(/^@\w*/)) {
+      if (lastChar === "@" || (lastWord.startsWith("@") && lastWord.length > 1)) {
         const query = lastWord.slice(1)
         const filteredLabels = autocompleteItems.labels.filter((l) =>
           l.label.toLowerCase().includes(query.toLowerCase()),
@@ -319,10 +330,14 @@ export function EnhancedHighlightedInput({
 
       const prefix =
         autocomplete.type === "project" ? "#" : autocomplete.type === "label" ? "@" : ""
+
+      // Use the actual label/name for insertion
+      const insertText = item.label
+
       const newText =
         value.slice(0, autocomplete.startPos) +
         prefix +
-        item.label +
+        insertText +
         " " +
         value.slice(cursorPosition)
 
@@ -330,7 +345,7 @@ export function EnhancedHighlightedInput({
       inputRef.current.textContent = newText
 
       // Set cursor position
-      const newPosition = autocomplete.startPos + prefix.length + item.label.length + 1
+      const newPosition = autocomplete.startPos + prefix.length + insertText.length + 1
       const selection = window.getSelection()
       const range = document.createRange()
 

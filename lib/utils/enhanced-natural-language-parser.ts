@@ -803,9 +803,15 @@ export function convertToRRule(recurringValue: string): string {
   }
 }
 
+interface DynamicPatternsConfig {
+  projects?: Array<{ name: string }>
+  labels?: Array<{ name: string }>
+}
+
 export function parseEnhancedNaturalLanguage(
   text: string,
   disabledSections: Set<string> = new Set(),
+  config?: DynamicPatternsConfig,
 ): ParsedTask {
   let cleanText = text.trim()
   const parsed: ParsedTask = {
@@ -815,26 +821,73 @@ export function parseEnhancedNaturalLanguage(
   }
 
   // Extract project (#project) - only if not disabled, take the last one
-  const projectMatches = cleanText.match(/#(\w+)/g)
-  if (projectMatches) {
+  let projectMatches: string[] = []
+  let projectRegex: RegExp
+
+  if (config?.projects && config.projects.length > 0) {
+    // Use dynamic patterns based on actual project names
+    const projectNames = config.projects.map((p) => p.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    projectRegex = new RegExp(`#(${projectNames.join("|")})`, "gi")
+    const matches = cleanText.match(projectRegex)
+    if (matches) {
+      projectMatches = matches
+    }
+  } else {
+    // Fallback to static pattern for backward compatibility
+    const matches = cleanText.match(/#(\w+)/g)
+    if (matches) {
+      projectMatches = matches
+      projectRegex = /#\w+/g
+    }
+  }
+
+  if (projectMatches.length > 0) {
     const enabledProjects = projectMatches.filter(
       (match) => !disabledSections.has(match.toLowerCase()),
     )
     if (enabledProjects.length > 0) {
-      // Take the last project match
-      parsed.project = enabledProjects[enabledProjects.length - 1].substring(1)
-      cleanText = cleanText.replace(/#\w+/g, "").trim()
+      // Take the last project match and extract the name (remove #)
+      const lastProject = enabledProjects[enabledProjects.length - 1]
+      parsed.project = lastProject.substring(1)
+
+      // Remove all project matches from clean text
+      if (config?.projects && config.projects.length > 0) {
+        enabledProjects.forEach((project) => {
+          cleanText = cleanText.replace(project, "").trim()
+        })
+      } else {
+        cleanText = cleanText.replace(/#\w+/g, "").trim()
+      }
     }
   }
 
   // Extract labels (@label) - only if not disabled, deduplicate
-  const labelMatches = cleanText.match(/@(\w+)/g)
-  if (labelMatches) {
+  let labelMatches: string[] = []
+
+  if (config?.labels && config.labels.length > 0) {
+    // Use dynamic patterns based on actual label names
+    const labelNames = config.labels.map((l) => l.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    const labelRegex = new RegExp(`@(${labelNames.join("|")})`, "gi")
+    const matches = cleanText.match(labelRegex)
+    if (matches) {
+      labelMatches = matches
+    }
+  } else {
+    // Fallback to static pattern for backward compatibility
+    const matches = cleanText.match(/@(\w+)/g)
+    if (matches) {
+      labelMatches = matches
+    }
+  }
+
+  if (labelMatches.length > 0) {
     const enabledLabels = labelMatches.filter((match) => !disabledSections.has(match.toLowerCase()))
     if (enabledLabels.length > 0) {
       // Deduplicate labels by converting to Set and back to array
       const uniqueLabels = [...new Set(enabledLabels.map((label) => label.substring(1)))]
       parsed.labels = uniqueLabels
+
+      // Remove all label matches from clean text
       enabledLabels.forEach((label) => {
         cleanText = cleanText.replace(label, "").trim()
       })

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react"
 import { useAtomValue } from "jotai"
 import { nlpEnabledAtom } from "@/lib/atoms/ui/dialogs"
+import { labelsAtom } from "@/lib/atoms/core/labels"
+import { visibleProjectsAtom } from "@/lib/atoms/core/projects"
 import {
   parseEnhancedNaturalLanguage,
   type ParsedTask,
@@ -24,8 +26,10 @@ export function useDebouncedParse(
 ): ParsedTask | null {
   const [parsed, setParsed] = useState<ParsedTask | null>(null)
 
-  // Get NLP enabled state from atom
+  // Get data from atoms
   const enabled = useAtomValue(nlpEnabledAtom)
+  const labels = useAtomValue(labelsAtom) || []
+  const projects = useAtomValue(visibleProjectsAtom) || []
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -35,14 +39,19 @@ export function useDebouncedParse(
       }
 
       if (text.trim()) {
-        setParsed(parseEnhancedNaturalLanguage(text, disabledSections))
+        setParsed(
+          parseEnhancedNaturalLanguage(text, disabledSections, {
+            projects: projects.map((p) => ({ name: p.name })),
+            labels: labels.map((l) => ({ name: l.name })),
+          }),
+        )
       } else {
         setParsed(null)
       }
     }, delay)
 
     return () => clearTimeout(timer)
-  }, [text, delay, disabledSections, enabled])
+  }, [text, delay, disabledSections, enabled, labels, projects])
 
   return parsed
 }

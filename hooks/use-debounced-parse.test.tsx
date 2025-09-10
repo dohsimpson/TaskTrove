@@ -4,6 +4,8 @@ import React from "react"
 import { Provider } from "jotai"
 import { useDebouncedParse } from "./use-debounced-parse"
 import { nlpEnabledAtom } from "@/lib/atoms/ui/dialogs"
+import { labelsAtom } from "@/lib/atoms/core/labels"
+import { visibleProjectsAtom } from "@/lib/atoms/core/projects"
 import { useAtomValue } from "jotai"
 
 // Mock the natural language parser
@@ -14,6 +16,14 @@ vi.mock("@/lib/utils/enhanced-natural-language-parser", () => ({
 // Mock atoms
 vi.mock("@/lib/atoms/ui/dialogs", () => ({
   nlpEnabledAtom: vi.fn(),
+}))
+
+vi.mock("@/lib/atoms/core/labels", () => ({
+  labelsAtom: vi.fn(),
+}))
+
+vi.mock("@/lib/atoms/core/projects", () => ({
+  visibleProjectsAtom: vi.fn(),
 }))
 
 // Mock jotai
@@ -38,7 +48,11 @@ describe("useDebouncedParse", () => {
   const wrapper = ({ children }: { children: React.ReactNode }) => <Provider>{children}</Provider>
 
   it("returns null when NLP is disabled", async () => {
-    vi.mocked(useAtomValue).mockReturnValue(false) // NLP disabled
+    // Mock useAtomValue to return appropriate values for different atoms
+    vi.mocked(useAtomValue)
+      .mockReturnValueOnce(false) // nlpEnabledAtom
+      .mockReturnValueOnce([]) // labelsAtom
+      .mockReturnValueOnce([]) // visibleProjectsAtom
 
     const { result } = renderHook(() => useDebouncedParse("hello world"), { wrapper })
 
@@ -50,7 +64,11 @@ describe("useDebouncedParse", () => {
   })
 
   it("returns parsed result when NLP is enabled and text is provided", async () => {
-    vi.mocked(useAtomValue).mockReturnValue(true) // NLP enabled
+    // Mock useAtomValue to return appropriate values for different atoms
+    vi.mocked(useAtomValue)
+      .mockReturnValueOnce(true) // nlpEnabledAtom
+      .mockReturnValueOnce([{ name: "urgent" }]) // labelsAtom
+      .mockReturnValueOnce([{ name: "work" }]) // visibleProjectsAtom
 
     const mockParsedResult = {
       title: "hello",
@@ -72,11 +90,22 @@ describe("useDebouncedParse", () => {
     })
 
     expect(result.current).toEqual(mockParsedResult)
-    expect(parseEnhancedNaturalLanguage).toHaveBeenCalledWith("hello world tomorrow 9AM", new Set())
+    expect(parseEnhancedNaturalLanguage).toHaveBeenCalledWith(
+      "hello world tomorrow 9AM",
+      new Set(),
+      {
+        projects: [{ name: "work" }],
+        labels: [{ name: "urgent" }],
+      },
+    )
   })
 
   it("returns null for empty text", async () => {
-    vi.mocked(useAtomValue).mockReturnValue(true) // NLP enabled
+    // Mock useAtomValue to return appropriate values for different atoms
+    vi.mocked(useAtomValue)
+      .mockReturnValueOnce(true) // nlpEnabledAtom
+      .mockReturnValueOnce([]) // labelsAtom
+      .mockReturnValueOnce([]) // visibleProjectsAtom
 
     const { result } = renderHook(() => useDebouncedParse(""), { wrapper })
 
@@ -88,7 +117,11 @@ describe("useDebouncedParse", () => {
   })
 
   it("returns null for whitespace-only text", async () => {
-    vi.mocked(useAtomValue).mockReturnValue(true) // NLP enabled
+    // Mock useAtomValue to return appropriate values for different atoms
+    vi.mocked(useAtomValue)
+      .mockReturnValueOnce(true) // nlpEnabledAtom
+      .mockReturnValueOnce([]) // labelsAtom
+      .mockReturnValueOnce([]) // visibleProjectsAtom
 
     const { result } = renderHook(() => useDebouncedParse("   "), { wrapper })
 
@@ -100,7 +133,11 @@ describe("useDebouncedParse", () => {
   })
 
   it("debounces parsing with custom delay", async () => {
-    vi.mocked(useAtomValue).mockReturnValue(true) // NLP enabled
+    // Mock useAtomValue to return appropriate values for different atoms
+    vi.mocked(useAtomValue).mockImplementation((atom) => {
+      if (atom === nlpEnabledAtom) return true
+      return [] // Return empty arrays for labels and projects
+    })
 
     const { parseEnhancedNaturalLanguage } = await import(
       "@/lib/utils/enhanced-natural-language-parser"
@@ -131,11 +168,18 @@ describe("useDebouncedParse", () => {
 
     // Should only parse the final value
     expect(parseEnhancedNaturalLanguage).toHaveBeenCalledTimes(1)
-    expect(parseEnhancedNaturalLanguage).toHaveBeenCalledWith("final", new Set())
+    expect(parseEnhancedNaturalLanguage).toHaveBeenCalledWith("final", new Set(), {
+      projects: [],
+      labels: [],
+    })
   })
 
   it("passes disabled sections to parser", async () => {
-    vi.mocked(useAtomValue).mockReturnValue(true) // NLP enabled
+    // Mock useAtomValue to return appropriate values for different atoms
+    vi.mocked(useAtomValue)
+      .mockReturnValueOnce(true) // nlpEnabledAtom
+      .mockReturnValueOnce([]) // labelsAtom
+      .mockReturnValueOnce([]) // visibleProjectsAtom
 
     const { parseEnhancedNaturalLanguage } = await import(
       "@/lib/utils/enhanced-natural-language-parser"
@@ -158,12 +202,20 @@ describe("useDebouncedParse", () => {
     expect(parseEnhancedNaturalLanguage).toHaveBeenCalledWith(
       "test @urgent #work",
       disabledSections,
+      {
+        projects: [],
+        labels: [],
+      },
     )
   })
 
   it("updates result when NLP setting changes", async () => {
     // Start with NLP disabled
-    vi.mocked(useAtomValue).mockReturnValue(false)
+    let nlpEnabled = false
+    vi.mocked(useAtomValue).mockImplementation((atom) => {
+      if (atom === nlpEnabledAtom) return nlpEnabled
+      return [] // Return empty arrays for labels and projects
+    })
 
     const { result, rerender } = renderHook(() => useDebouncedParse("hello world"), { wrapper })
 
@@ -174,7 +226,7 @@ describe("useDebouncedParse", () => {
     expect(result.current).toBeNull()
 
     // Enable NLP
-    vi.mocked(useAtomValue).mockReturnValue(true)
+    nlpEnabled = true
 
     const mockParsedResult = {
       title: "hello world",
@@ -198,7 +250,11 @@ describe("useDebouncedParse", () => {
 
   it("clears result when NLP is disabled after being enabled", async () => {
     // Start with NLP enabled
-    vi.mocked(useAtomValue).mockReturnValue(true)
+    let nlpEnabled = true
+    vi.mocked(useAtomValue).mockImplementation((atom) => {
+      if (atom === nlpEnabledAtom) return nlpEnabled
+      return [] // Return empty arrays for labels and projects
+    })
 
     const mockParsedResult = {
       title: "hello world",
@@ -220,7 +276,7 @@ describe("useDebouncedParse", () => {
     expect(result.current).toEqual(mockParsedResult)
 
     // Disable NLP
-    vi.mocked(useAtomValue).mockReturnValue(false)
+    nlpEnabled = false
     rerender()
 
     act(() => {

@@ -23,6 +23,15 @@ vi.mock("lucide-react", () => ({
   ),
 }))
 
+// Mock atoms - provide simple defaults
+vi.mock("jotai", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("jotai")>()
+  return {
+    ...actual,
+    useAtomValue: vi.fn(() => []), // Return empty arrays for labels/projects atoms
+  }
+})
+
 describe("EnhancedHighlightedInput", () => {
   const defaultProps = {
     value: "",

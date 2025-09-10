@@ -944,7 +944,7 @@ export function ProjectSectionsView({
   }
 
   return (
-    <div className="flex flex-1 relative">
+    <div className="flex flex-1 relative h-full">
       {/* Sections List */}
       <div
         className="flex-1 px-4 py-3 transition-all duration-300"

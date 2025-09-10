@@ -1595,6 +1595,38 @@ describe("TaskSidePanel", () => {
     })
   })
 
+  describe("Full Height Behavior", () => {
+    it("always maintains full height regardless of content amount", () => {
+      render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
+
+      const container = document.querySelector(".absolute.top-0.right-0")
+      expect(container).toBeInTheDocument()
+      expect(container?.className).toContain("h-full") // Should always fill parent height
+
+      // Verify the panel takes full height even with minimal content
+      const scrollableContent = container?.querySelector(".flex-1.overflow-y-auto")
+      expect(scrollableContent).toBeInTheDocument()
+      expect(scrollableContent?.className).toContain("flex-1") // Should expand to fill available space
+    })
+
+    it("uses flexbox layout to ensure full height expansion", () => {
+      render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
+
+      const container = document.querySelector(".absolute.top-0.right-0")
+      expect(container).toBeInTheDocument()
+
+      // Verify the panel has the necessary classes for full height behavior
+      expect(container?.className).toContain("h-full") // Takes full parent height
+      expect(container?.className).toContain("flex") // Flexbox container
+      expect(container?.className).toContain("flex-col") // Column direction
+
+      // Verify the scrollable content area expands to fill space
+      const scrollableArea = container?.querySelector(".flex-1")
+      expect(scrollableArea).toBeInTheDocument()
+      expect(scrollableArea?.className).toContain("flex-1") // Flexbox child that expands
+    })
+  })
+
   describe("Due Time Display", () => {
     beforeEach(() => {
       vi.clearAllMocks()

@@ -153,7 +153,7 @@ export function MainContent({}: MainContentProps) {
           default:
             // Use ProjectSectionsView for all task views
             return (
-              <div>
+              <div className="flex flex-col h-full">
                 <ProjectSectionsView
                   supportsSections={supportsSections}
                   droppableId={getDroppableId()}

@@ -562,7 +562,7 @@ export function TaskItem({
                             <Repeat className="h-3 w-3" data-testid="repeat-icon" />
                           )}
                           {task.dueDate && formatDueDate(task)}
-                          {scheduleIcons.showRecurringOnly && "Recurring"}
+                          {scheduleIcons.showRecurringOnly && ""}
                         </span>
                       )
                     })()}
@@ -843,11 +843,7 @@ export function TaskItem({
                       {scheduleIcons.secondaryIcon === "repeat" && (
                         <Repeat className="h-3 w-3" data-testid="repeat-icon" />
                       )}
-                      {task.dueDate
-                        ? formatDueDate(task)
-                        : scheduleIcons.showRecurringOnly
-                          ? "Recurring"
-                          : ""}
+                      {task.dueDate ? formatDueDate(task) : ""}
                     </span>
                   )
                 })()}
@@ -1355,11 +1351,7 @@ export function TaskItem({
                     {scheduleIcons.secondaryIcon === "repeat" && (
                       <Repeat className="h-3 w-3" data-testid="repeat-icon" />
                     )}
-                    {task.dueDate
-                      ? formatDueDate(task)
-                      : scheduleIcons.showRecurringOnly
-                        ? "Recurring"
-                        : ""}
+                    {task.dueDate ? formatDueDate(task) : ""}
                   </span>
                 </TaskSchedulePopover>,
               )

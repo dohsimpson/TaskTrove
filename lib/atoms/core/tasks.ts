@@ -192,7 +192,13 @@ const removeTaskFromProjectOrder = (
   })
 }
 import { playSound } from "../../utils/audio"
-import { tasksAtom, createTaskMutationAtom, deleteTaskMutationAtom, projectsAtom } from "./base"
+import {
+  tasksAtom,
+  createTaskMutationAtom,
+  updateTasksMutationAtom,
+  deleteTaskMutationAtom,
+  projectsAtom,
+} from "./base"
 import { recordOperationAtom } from "./history"
 import { log } from "../../utils/logger"
 
@@ -273,7 +279,7 @@ addTaskAtom.debugLabel = "addTaskAtom"
  */
 export const updateTaskAtom = atom(
   null,
-  (get, set, { updateRequest }: { updateRequest: UpdateTaskRequest }) => {
+  async (get, set, { updateRequest }: { updateRequest: UpdateTaskRequest }) => {
     try {
       const tasks = get(tasksAtom)
       const existingTask = tasks.find((task: Task) => task.id === updateRequest.id)
@@ -342,9 +348,14 @@ export const updateTaskAtom = atom(
         }
       }
 
-      log.info({ taskId: updateRequest.id, module: "tasks" }, "Task updated")
+      // Make the API call to persist changes
+      const updateTasksMutation = get(updateTasksMutationAtom)
+      await updateTasksMutation.mutateAsync([updateRequest])
+
+      log.info({ taskId: updateRequest.id, module: "tasks" }, "Task updated and persisted")
     } catch (error) {
       handleAtomError(error, "updateTaskAtom")
+      throw error // Re-throw so the UI can handle the error
     }
   },
 )

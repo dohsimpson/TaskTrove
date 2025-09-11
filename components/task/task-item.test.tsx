@@ -3335,8 +3335,7 @@ describe("TaskItem", () => {
         )
 
         expect(screen.getByTestId("repeat-icon")).toBeInTheDocument()
-        // For recurring tasks without due date, should show "Recurring" text instead of the RRULE pattern
-        expect(screen.getByText("Recurring")).toBeInTheDocument()
+        // For recurring tasks without due date, only shows repeat icon (no text)
       })
 
       it("displays recurring indicator with simple pattern text", () => {
@@ -3354,8 +3353,7 @@ describe("TaskItem", () => {
         )
 
         expect(screen.getByTestId("repeat-icon")).toBeInTheDocument()
-        // For recurring tasks without due date, should show "Recurring" text regardless of the pattern
-        expect(screen.getByText("Recurring")).toBeInTheDocument()
+        // For recurring tasks without due date, only shows repeat icon (no text)
       })
 
       it("shows recurring indicator in compact variant", () => {
@@ -3375,7 +3373,6 @@ describe("TaskItem", () => {
         // Compact variant now shows recurring indicators for recurring-only tasks
         expect(screen.getByTestId("repeat-icon")).toBeInTheDocument()
         expect(screen.getByTestId("task-schedule-popover")).toBeInTheDocument()
-        expect(screen.getByText("Recurring")).toBeInTheDocument()
       })
 
       it("shows recurring indicator in kanban variant", () => {
@@ -3394,7 +3391,6 @@ describe("TaskItem", () => {
 
         // Kanban variant now shows recurring indicators for recurring-only tasks
         expect(screen.getByTestId("repeat-icon")).toBeInTheDocument()
-        expect(screen.getByText("Recurring")).toBeInTheDocument()
       })
 
       it("does not display recurring indicator when no recurring pattern is set", () => {
@@ -3467,7 +3463,6 @@ describe("TaskItem", () => {
         // Compact variant shows schedule popover with recurring indicator
         expect(screen.getByTestId("task-schedule-popover")).toBeInTheDocument()
         expect(screen.getByTestId("repeat-icon")).toBeInTheDocument()
-        expect(screen.getByText("Recurring")).toBeInTheDocument()
       })
 
       it("shows schedule popover in kanban variant when only recurring pattern exists", () => {
@@ -3487,7 +3482,6 @@ describe("TaskItem", () => {
         // Kanban variant shows schedule popover with recurring indicator
         expect(screen.getByTestId("task-schedule-popover")).toBeInTheDocument()
         expect(screen.getByTestId("repeat-icon")).toBeInTheDocument()
-        expect(screen.getByText("Recurring")).toBeInTheDocument()
       })
 
       it("does not render TaskSchedulePopover for tasks without schedule data", () => {
@@ -3545,7 +3539,6 @@ describe("TaskItem", () => {
         // TaskSchedulePopover shows when there's recurring pattern
         expect(screen.getByTestId("task-schedule-popover")).toBeInTheDocument()
         expect(screen.getByTestId("repeat-icon")).toBeInTheDocument()
-        expect(screen.getByText("Recurring")).toBeInTheDocument()
       })
     })
 
@@ -3723,10 +3716,8 @@ describe("TaskItem", () => {
         )
 
         const repeatIcon = screen.getByTestId("repeat-icon")
-        const repeatText = screen.getByText("Recurring")
 
         // Should be contained in a proper span structure
-        expect(repeatIcon.parentElement).toContain(repeatText)
         expect(repeatIcon.parentElement).toHaveClass("flex", "items-center", "gap-1")
       })
 
@@ -3803,7 +3794,6 @@ describe("TaskItem", () => {
 
         // Should show recurring indicator
         expect(screen.getByTestId("repeat-icon")).toBeInTheDocument()
-        expect(screen.getByText("Recurring")).toBeInTheDocument()
       })
 
       it("handles recurring patterns in completed tasks", () => {
@@ -3823,7 +3813,6 @@ describe("TaskItem", () => {
 
         // Should still show recurring indicator for completed tasks
         expect(screen.getByTestId("repeat-icon")).toBeInTheDocument()
-        expect(screen.getByText("Recurring")).toBeInTheDocument()
 
         // Task should have completed styling (opacity)
         const taskContainer = screen.getByText("Test Task").closest("[data-task-focused]")

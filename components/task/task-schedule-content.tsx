@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
@@ -90,6 +90,24 @@ export function TaskScheduleContent({
   // Natural language input state
   const [nlInput, setNlInput] = useState("")
 
+  // Parse NLP input once and reuse the result
+  const parsedNlInput = useMemo(() => {
+    if (!nlInput.trim()) return null
+    return parseEnhancedNaturalLanguage(nlInput)
+  }, [nlInput])
+
+  // Check if the parsed result has valid values
+  const isNlInputValid = useMemo(() => {
+    if (!parsedNlInput) return false
+
+    const hasDate = parsedNlInput.dueDate !== undefined
+    const hasTime =
+      parsedNlInput.time !== undefined && convertTimeToHHMMSS(parsedNlInput.time) !== null
+    const hasRecurring = parsedNlInput.recurring !== undefined
+
+    return hasDate || hasTime || hasRecurring
+  }, [parsedNlInput])
+
   const handleUpdate = useCallback(
     (
       taskId: TaskId | undefined,
@@ -136,9 +154,7 @@ export function TaskScheduleContent({
 
   // Handle manual natural language parsing
   const handleParseInput = useCallback(() => {
-    if (!nlInput.trim()) return
-
-    const parsed = parseEnhancedNaturalLanguage(nlInput)
+    if (!parsedNlInput || !isNlInputValid) return
 
     // Collect all parsed values
     let parsedDate: Date | undefined = undefined
@@ -147,14 +163,14 @@ export function TaskScheduleContent({
     let hasAppliedValue = false
 
     // Process parsed date
-    if (parsed.dueDate) {
-      parsedDate = parsed.dueDate
+    if (parsedNlInput.dueDate) {
+      parsedDate = parsedNlInput.dueDate
       hasAppliedValue = true
     }
 
     // Process parsed time
-    if (parsed.time) {
-      const timeFormatted = convertTimeToHHMMSS(parsed.time)
+    if (parsedNlInput.time) {
+      const timeFormatted = convertTimeToHHMMSS(parsedNlInput.time)
       if (timeFormatted) {
         const [hours, minutes] = timeFormatted.split(":").map(Number)
         const timeDate = new Date()
@@ -165,8 +181,8 @@ export function TaskScheduleContent({
     }
 
     // Process parsed recurring
-    if (parsed.recurring) {
-      parsedRecurring = parsed.recurring
+    if (parsedNlInput.recurring) {
+      parsedRecurring = parsedNlInput.recurring
       hasAppliedValue = true
     }
 
@@ -175,7 +191,7 @@ export function TaskScheduleContent({
       handleUpdate(taskId, parsedDate, parsedTime, "parsed", parsedRecurring)
       setNlInput("")
     }
-  }, [nlInput, taskId, handleUpdate])
+  }, [parsedNlInput, isNlInputValid, taskId, handleUpdate])
 
   // Helper function to create time Date object
   const createTimeFromHourMinute = (hour: string, minute: string, ampm: string): Date => {
@@ -370,8 +386,8 @@ export function TaskScheduleContent({
               />
               <Button
                 onClick={handleParseInput}
-                disabled={!nlInput.trim()}
-                size="sm"
+                disabled={!nlInput.trim() || !isNlInputValid}
+                size="default"
                 variant="default"
               >
                 <ArrowRight className="h-4 w-4" />

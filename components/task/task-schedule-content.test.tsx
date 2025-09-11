@@ -1045,6 +1045,18 @@ describe("TaskScheduleContent", () => {
     })
 
     it("should enable parse button when input has text", async () => {
+      const { parseEnhancedNaturalLanguage } = await import(
+        "@/lib/utils/enhanced-natural-language-parser"
+      )
+
+      // Mock to return a valid date for "tomorrow"
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue({
+        title: "tomorrow",
+        dueDate: new Date(new Date().getTime() + 24 * 60 * 60 * 1000), // Tomorrow's date
+        labels: [],
+        originalText: "tomorrow",
+      })
+
       const user = userEvent.setup()
 
       renderWithTasks(
@@ -1059,6 +1071,65 @@ describe("TaskScheduleContent", () => {
 
       await user.type(nlInput, "tomorrow")
       expect(parseButton).not.toBeDisabled()
+    })
+
+    it("should disable parse button when input contains invalid NLP text", async () => {
+      const { parseEnhancedNaturalLanguage } = await import(
+        "@/lib/utils/enhanced-natural-language-parser"
+      )
+
+      // Mock to return no meaningful values for invalid input
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue({
+        title: "invalid",
+        labels: [],
+        originalText: "invalid",
+        // No dueDate, time, or recurring - should be invalid
+      })
+
+      const user = userEvent.setup()
+
+      renderWithTasks(
+        [mockTask],
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
+      )
+
+      const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
+      const parseButton = screen.getByRole("button", { name: "" })
+
+      expect(parseButton).toBeDisabled()
+
+      await user.type(nlInput, "invalid")
+      expect(parseButton).toBeDisabled() // Should remain disabled for invalid input
+    })
+
+    it("should disable parse button when input has invalid time format", async () => {
+      const { parseEnhancedNaturalLanguage, convertTimeToHHMMSS } = await import(
+        "@/lib/utils/enhanced-natural-language-parser"
+      )
+
+      // Mock to return invalid time parsing
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue({
+        title: "task",
+        labels: [],
+        originalText: "task at invalid-time",
+        time: "invalid-time", // Has time but it won't convert
+      })
+      vi.mocked(convertTimeToHHMMSS).mockReturnValue(null) // Invalid time conversion
+
+      const user = userEvent.setup()
+
+      renderWithTasks(
+        [mockTask],
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
+      )
+
+      const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
+      const parseButton = screen.getByRole("button", { name: "" })
+
+      expect(parseButton).toBeDisabled()
+
+      await user.type(nlInput, "task at invalid-time")
+      expect(parseButton).toBeDisabled() // Should remain disabled for invalid time format
     })
 
     it("should parse and update task when button is clicked", async () => {

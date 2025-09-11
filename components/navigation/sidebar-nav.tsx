@@ -236,6 +236,7 @@ export function SidebarNav() {
       id: "completed",
       label: "Completed",
       icon: <CheckSquare className="h-4 w-4" />,
+      count: taskCountsData.completed,
       href: "/completed",
     },
   ]

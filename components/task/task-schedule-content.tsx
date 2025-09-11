@@ -25,7 +25,7 @@ import {
   AlarmClockOff,
   Ban,
 } from "lucide-react"
-import { format } from "date-fns"
+import { format, addDays } from "date-fns"
 import type { CreateTaskRequest, Task, TaskId } from "@/lib/types"
 import { formatTaskDateTime } from "@/lib/utils/task-date-formatter"
 import { CommonRRules, buildRRule, RRuleFrequency, parseRRule } from "@/lib/types"
@@ -248,9 +248,18 @@ export function TaskScheduleContent({
   }
 
   const handleSkipToNext = () => {
-    if (!task?.recurring || !task?.dueDate) return
+    if (!task?.dueDate) return
 
-    const nextDueDate = calculateNextDueDate(task.recurring, task.dueDate, false)
+    let nextDueDate: Date | null = null
+
+    if (task.recurring) {
+      // If task has recurring pattern, calculate next occurrence
+      nextDueDate = calculateNextDueDate(task.recurring, task.dueDate, false)
+    } else {
+      // If no recurring pattern, just advance by one day using date-fns
+      nextDueDate = addDays(task.dueDate, 1)
+    }
+
     if (nextDueDate) {
       handleUpdate(taskId, nextDueDate, undefined, "skip-to-next", undefined)
     }
@@ -404,7 +413,7 @@ export function TaskScheduleContent({
               variant="ghost"
               className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSkipToNext}
-              disabled={!(task.recurring && task.dueDate)}
+              disabled={!task.dueDate}
             >
               <FastForward className="h-4 w-4 text-blue-600 mb-1" />
               <span className="text-center leading-tight">Skip</span>

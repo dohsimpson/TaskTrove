@@ -90,6 +90,11 @@ vi.mock("date-fns", () => ({
     const now = new Date()
     return new Date(date) < now
   }),
+  addDays: vi.fn((date: Date, days: number) => {
+    const result = new Date(date)
+    result.setDate(result.getDate() + days)
+    return result
+  }),
 }))
 
 // Mock the recurring task processor
@@ -814,7 +819,7 @@ describe("TaskScheduleContent", () => {
   })
 
   describe("Skip to Next Occurrence", () => {
-    it("should show skip button only when task has both recurring pattern and due date", () => {
+    it("should enable skip button when task has due date and recurring pattern", () => {
       const dueDate = new Date("2024-01-15")
       const taskWithBoth = {
         ...mockTask,
@@ -827,10 +832,11 @@ describe("TaskScheduleContent", () => {
         <TaskScheduleContent taskId={taskWithBoth.id} onClose={mockOnClose} />,
       )
 
-      expect(screen.getByText("Skip")).toBeInTheDocument()
+      const skipButton = screen.getByText("Skip").closest("button")
+      expect(skipButton).not.toBeDisabled()
     })
 
-    it("should disable skip button when task has no recurring pattern", () => {
+    it("should enable skip button when task has due date but no recurring pattern", () => {
       const taskWithOnlyDueDate = {
         ...mockTask,
         dueDate: new Date("2024-01-15"),
@@ -842,7 +848,7 @@ describe("TaskScheduleContent", () => {
       )
 
       const skipButton = screen.getByText("Skip").closest("button")
-      expect(skipButton).toBeDisabled()
+      expect(skipButton).not.toBeDisabled()
     })
 
     it("should disable skip button when task has no due date", () => {
@@ -979,6 +985,34 @@ describe("TaskScheduleContent", () => {
           dueDate: nextDate,
         },
       })
+    })
+
+    it("should advance due date by one day when task has no recurring pattern", () => {
+      const dueDate = new Date("2024-01-15")
+      const taskWithOnlyDueDate = {
+        ...mockTask,
+        dueDate,
+      }
+
+      renderWithTasks(
+        [taskWithOnlyDueDate],
+        <TaskScheduleContent taskId={taskWithOnlyDueDate.id} onClose={mockOnClose} />,
+      )
+
+      fireEvent.click(screen.getByText("Skip"))
+
+      // Should call updateTask with date advanced by one day
+      const expectedNextDate = new Date("2024-01-16")
+      expect(mockUpdateTask).toHaveBeenCalledWith({
+        updateRequest: {
+          id: TEST_TASK_ID_1,
+          dueDate: expectedNextDate,
+        },
+      })
+
+      // Should not call calculateNextDueDate since there's no recurring pattern
+      const mockCalculateNextDueDateFn = vi.mocked(calculateNextDueDate)
+      expect(mockCalculateNextDueDateFn).not.toHaveBeenCalled()
     })
   })
 

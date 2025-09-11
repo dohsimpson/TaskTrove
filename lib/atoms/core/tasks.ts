@@ -22,6 +22,7 @@ import {
   ViewStates,
 } from "../../types"
 import { matchesDueDateFilter } from "../../utils/date-filter-utils"
+import { isTaskInInbox } from "../../utils"
 import {
   DEFAULT_TASK_PRIORITY,
   DEFAULT_TASK_TITLE,
@@ -540,15 +541,15 @@ export const completedTasksAtom = atom((get) => {
 completedTasksAtom.debugLabel = "completedTasksAtom"
 
 /**
- * Inbox tasks - tasks assigned to the special inbox project
- * Uses projectId === INBOX_PROJECT_ID for filtering
+ * Inbox tasks - tasks with no project or assigned to the special inbox project
+ * Uses isTaskInInbox utility for filtering
  */
 export const inboxTasksAtom = atom((get) => {
   try {
     const activeTasks = get(activeTasksAtom)
     return activeTasks.filter((task: Task) => {
       const taskWithProject = ensureTaskProjectId(task)
-      return taskWithProject.projectId === INBOX_PROJECT_ID
+      return isTaskInInbox(taskWithProject.projectId)
     })
   } catch (error) {
     handleAtomError(error, "inboxTasksAtom")

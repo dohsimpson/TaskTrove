@@ -103,7 +103,7 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
     <div className={cn("space-y-4", className)}>
       {/* Due Date Section - Prominent */}
       <div className="space-y-3">
-        <h3 className="text-sm font-medium text-foreground">Due Date</h3>
+        <h3 className="text-sm text-foreground font-bold">Due Date</h3>
         <TaskSchedulePopover taskId={task.id}>
           <div
             className={cn(
@@ -144,7 +144,7 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
 
       {/* Organization Section - Priority & Project */}
       <div className="space-y-3">
-        <h3 className="text-sm font-medium text-foreground">Category</h3>
+        <h3 className="text-sm text-foreground font-bold">Category</h3>
         <div className="grid grid-cols-2 gap-2.5">
           {/* Priority */}
           <PriorityPopover task={task}>
@@ -185,7 +185,7 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
 
       {/* Description Section */}
       <div className="space-y-3">
-        <h3 className="text-sm font-medium text-foreground">Description</h3>
+        <h3 className="text-sm text-foreground font-bold">Description</h3>
         <EditableDiv
           value={task.description || ""}
           onChange={(value: string) => autoSave({ description: value })}
@@ -197,13 +197,13 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
 
       {/* Subtasks Section */}
       <div className="space-y-3">
-        <h3 className="text-sm font-medium text-foreground">Subtasks</h3>
+        <h3 className="text-sm text-foreground font-bold">Subtasks</h3>
         <SubtaskContent task={task} mode="inline" />
       </div>
 
       {/* Tags/Labels Section */}
       <div className="space-y-3">
-        <h3 className="text-sm font-medium text-foreground">Labels</h3>
+        <h3 className="text-sm text-foreground font-bold">Labels</h3>
         <LabelContent
           task={task}
           onAddLabel={(labelName) => {
@@ -255,7 +255,7 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
 
       {/* Comments Section */}
       <div className="space-y-3">
-        <h3 className="text-sm font-medium text-foreground">Comments</h3>
+        <h3 className="text-sm text-foreground font-bold">Comments</h3>
         <CommentContent
           task={task}
           onAddComment={(content) => addComment({ taskId: task.id, content })}
@@ -266,7 +266,7 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
       {/* Attachments Section */}
       {task.attachments.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-foreground">Attachments</h3>
+          <h3 className="text-sm text-foreground font-bold">Attachments</h3>
           <div
             className="flex items-center gap-3 p-3.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/20 border border-transparent hover:border-border/50"
             onClick={() => setExpandedAttachments(!expandedAttachments)}

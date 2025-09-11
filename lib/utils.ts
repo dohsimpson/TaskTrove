@@ -1,5 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import type { ProjectId } from "@/lib/types"
+import { INBOX_PROJECT_ID } from "@/lib/types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -24,4 +26,13 @@ export function getContrastColor(backgroundColor: string): string {
 
   // Return black for light backgrounds, white for dark
   return luminance > 0.5 ? "black" : "white"
+}
+
+/**
+ * Check if a task is in the inbox (either no projectId or explicitly set to INBOX_PROJECT_ID)
+ * @param projectId - The project ID to check (can be null/undefined)
+ * @returns true if the task is considered to be in the inbox
+ */
+export function isTaskInInbox(projectId: ProjectId | null | undefined): boolean {
+  return !projectId || projectId === INBOX_PROJECT_ID
 }

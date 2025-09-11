@@ -2,10 +2,11 @@
 
 import React from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { Folder } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Folder, Inbox } from "lucide-react"
+import { cn, isTaskInInbox } from "@/lib/utils"
 import { projectsAtom, updateTaskAtom } from "@/lib/atoms"
 import type { Task, ProjectId } from "@/lib/types"
+import { INBOX_PROJECT_ID } from "@/lib/types"
 
 interface ProjectContentProps {
   // Mode 1: Task-based (for TaskItem)
@@ -29,6 +30,9 @@ export function ProjectContent({
   const currentProjectId = task?.projectId || selectedProjectId
   const currentProject = allProjects.find((p) => p.id === currentProjectId)
 
+  // Check if currently in inbox (either no projectId or INBOX_PROJECT_ID)
+  const isInboxSelected = isTaskInInbox(currentProjectId)
+
   const handleProjectSelect = (projectId: ProjectId) => {
     if (onUpdate) {
       // Callback mode (QuickAdd)
@@ -39,11 +43,21 @@ export function ProjectContent({
     }
   }
 
+  const handleInboxSelect = () => {
+    if (onUpdate) {
+      // Callback mode (QuickAdd)
+      onUpdate(INBOX_PROJECT_ID)
+    } else if (task) {
+      // Task mode (TaskItem)
+      updateTask({ updateRequest: { id: task.id, projectId: INBOX_PROJECT_ID } })
+    }
+  }
+
   return (
-    <div className={cn("space-y-3", className)}>
+    <div className={cn("py-1", className)}>
       {/* Projects List */}
       {allProjects.length > 0 && (
-        <div className="space-y-1 max-h-48 overflow-y-auto">
+        <div className="space-y-1">
           {allProjects.map((project) => (
             <div
               key={project.id}
@@ -60,14 +74,26 @@ export function ProjectContent({
         </div>
       )}
 
-      {/* Empty State */}
-      {allProjects.length === 0 && (
-        <div className="text-center py-6 text-muted-foreground">
-          <Folder className="h-8 w-8 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">No projects available</p>
-          <p className="text-xs">Create a project first to organize your tasks</p>
+      {/* Separator */}
+      {allProjects.length > 0 && (
+        <div className="my-1">
+          <div className="bg-border h-px mx-1" />
         </div>
       )}
+
+      {/* Inbox Option */}
+      <div className="space-y-1">
+        <div
+          className={cn(
+            "flex items-center gap-3 rounded-md cursor-pointer hover:bg-accent/50 transition-all duration-200 p-2",
+            isInboxSelected && "bg-accent",
+          )}
+          onClick={handleInboxSelect}
+        >
+          <Inbox className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium flex-1">No Project (Inbox)</span>
+        </div>
+      </div>
     </div>
   )
 }

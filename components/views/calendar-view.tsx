@@ -350,7 +350,7 @@ export function CalendarView({
                   >
                     <div
                       className={`min-h-16 lg:min-h-24 h-full p-0.5 lg:p-1 border border-border cursor-pointer hover:bg-muted/50 transition-colors ${
-                        isSelected ? "ring-1 ring-foreground" : ""
+                        isSelected ? "ring-2 ring-foreground" : ""
                       } ${isTodayDate ? "bg-muted" : ""} ${!isCurrentMonth ? "opacity-40" : ""}`}
                       onClick={() => {
                         setSelectedDate(day)

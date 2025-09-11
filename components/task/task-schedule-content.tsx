@@ -11,11 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { MultiSelect } from "@/components/ui/custom/multi-select"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
   Calendar as CalendarIcon,
   Clock,
-  Trash2,
   Sun,
   Sunrise,
   ArrowRight,
@@ -24,11 +24,12 @@ import {
   FastForward,
   AlarmClockOff,
   Ban,
+  Settings,
 } from "lucide-react"
 import { format, addDays } from "date-fns"
 import type { CreateTaskRequest, Task, TaskId } from "@/lib/types"
 import { formatTaskDateTime } from "@/lib/utils/task-date-formatter"
-import { CommonRRules, buildRRule, RRuleFrequency, parseRRule } from "@/lib/types"
+import { CommonRRules, buildRRule, RRuleFrequency, RRuleWeekday, parseRRule } from "@/lib/types"
 import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
 import { useAtomValue, useSetAtom } from "jotai"
 import { tasksAtom, updateTaskAtom } from "@/lib/atoms"
@@ -62,8 +63,54 @@ export function TaskScheduleContent({
     : allTasks.find((t: Task) => t.id === taskId)
   const isMobile = useIsMobile()
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(task?.dueDate)
-  const [customInterval, setCustomInterval] = useState<string>("1")
-  const [customUnit, setCustomUnit] = useState<string>("days")
+  const [selectedMonthlyDays, setSelectedMonthlyDays] = useState<number[]>(() => {
+    // Initialize with existing monthly days from task recurring pattern
+    if (task?.recurring) {
+      const parsed = parseRRule(task.recurring)
+      if (parsed?.freq === RRuleFrequency.MONTHLY && parsed.bymonthday) {
+        return parsed.bymonthday
+      }
+    }
+    return []
+  })
+  const [selectedYearlyDates, setSelectedYearlyDates] = useState<Date[]>(() => {
+    // Initialize with existing yearly dates from task recurring pattern
+    if (task?.recurring) {
+      const parsed = parseRRule(task.recurring)
+      if (parsed?.freq === RRuleFrequency.YEARLY && parsed.bymonth && parsed.bymonthday) {
+        const dates: Date[] = []
+        // Handle multiple month/day combinations
+        for (let i = 0; i < Math.min(parsed.bymonth.length, parsed.bymonthday.length); i++) {
+          const month = parsed.bymonth[i] - 1 // Convert to 0-based month
+          const day = parsed.bymonthday[i]
+          dates.push(new Date(2024, month, day)) // Use reference year 2024
+        }
+        return dates
+      }
+    }
+    return []
+  })
+  const [selectedWeekdays, setSelectedWeekdays] = useState<number[]>(() => {
+    // Initialize with existing weekly days from task recurring pattern
+    if (task?.recurring) {
+      const parsed = parseRRule(task.recurring)
+      if (parsed?.freq === RRuleFrequency.WEEKLY && parsed.byday) {
+        // Convert RRULE weekday codes to numbers (SU=0, MO=1, etc.)
+        const weekdayMap = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 }
+        return parsed.byday.map((day) => weekdayMap[day] ?? 0)
+      }
+    }
+    return []
+  })
+  const [selectedDailyType, setSelectedDailyType] = useState<"all" | "weekdays" | "weekends">("all")
+
+  // Interval recurring pattern state
+  const [customFrequency, setCustomFrequency] = useState<"WEEKLY" | "MONTHLY" | "YEARLY">("MONTHLY")
+  const [customInterval, setCustomIntervalValue] = useState<number>(1)
+  const [customWeekdays, setCustomWeekdays] = useState<number[]>([1]) // Monday by default
+  const [customOccurrences, setCustomOccurrences] = useState<number[]>([1]) // First occurrence by default
+  const [customMonths, setCustomMonths] = useState<number[]>([1])
+  const [customPatternType, setCustomPatternType] = useState<"weekday" | "day">("weekday") // weekday or calendar day
 
   // Time selection state
   const [selectedHour, setSelectedHour] = useState<string>(() => {
@@ -212,10 +259,25 @@ export function TaskScheduleContent({
     handleUpdate(taskId, undefined, newTime, "time")
   }
 
+  // Helper function to add ordinal suffix to day numbers
+  const getDayWithSuffix = (day: number): string => {
+    if (day >= 11 && day <= 13) return `${day}th`
+    switch (day % 10) {
+      case 1:
+        return `${day}st`
+      case 2:
+        return `${day}nd`
+      case 3:
+        return `${day}rd`
+      default:
+        return `${day}th`
+    }
+  }
+
   // Helper function to get display text for RRULE
   const getRRuleDisplay = (rrule: string): string => {
     const parsed = parseRRule(rrule)
-    if (!parsed) return "Custom recurring pattern"
+    if (!parsed) return "Interval recurring pattern"
 
     const interval = parsed.interval || 1 // Default to 1 if interval is undefined
 
@@ -226,13 +288,121 @@ export function TaskScheduleContent({
       if (interval === 1) return "Weekly"
       return `Every ${interval} weeks`
     } else if (parsed.freq === RRuleFrequency.MONTHLY) {
+      if (parsed.bymonthday && parsed.bymonthday.length > 0) {
+        const dayStrings = parsed.bymonthday
+          .sort((a, b) => a - b)
+          .map((day) => (day === -1 ? "last day" : day.toString()))
+        const daysText = dayStrings.join(", ")
+        if (interval === 1)
+          return `Monthly on ${dayStrings.length > 1 ? "days" : "day"} ${daysText}`
+        return `Every ${interval} months on ${dayStrings.length > 1 ? "days" : "day"} ${daysText}`
+      }
       if (interval === 1) return "Monthly"
       return `Every ${interval} months`
     } else if (parsed.freq === RRuleFrequency.YEARLY) {
+      if (
+        parsed.bymonth &&
+        parsed.bymonthday &&
+        parsed.bymonth.length > 0 &&
+        parsed.bymonthday.length > 0
+      ) {
+        const dateStrings = []
+        for (let i = 0; i < Math.min(parsed.bymonth.length, parsed.bymonthday.length); i++) {
+          const month = parsed.bymonth[i] - 1 // Convert to 0-based month
+          const day = parsed.bymonthday[i]
+          const referenceDate = new Date(2024, month, day)
+          const monthName = referenceDate.toLocaleDateString("en-US", { month: "long" })
+          const dayWithSuffix = getDayWithSuffix(day)
+          dateStrings.push(`${monthName} ${dayWithSuffix}`)
+        }
+        const datesText = dateStrings.join(", ")
+        if (interval === 1)
+          return `Yearly on ${dateStrings.length > 1 ? "dates" : "date"} ${datesText}`
+        return `Every ${interval} years on ${dateStrings.length > 1 ? "dates" : "date"} ${datesText}`
+      }
       return "Yearly"
     }
-    return "Custom recurring pattern"
+    return "Interval recurring pattern"
   }
+
+  // Helper function to determine current recurring type for highlighting
+  const getCurrentRecurringType = ():
+    | "daily"
+    | "weekly"
+    | "monthly"
+    | "yearly"
+    | "interval"
+    | null => {
+    if (!task?.recurring) return null
+
+    const parsed = parseRRule(task.recurring)
+    if (!parsed) return "interval"
+
+    const interval = parsed.interval || 1
+
+    // Check for interval patterns (complex patterns with bysetpos, intervals > 1, etc.)
+    if (parsed.bysetpos && parsed.bysetpos.length > 0) return "interval"
+    if (interval > 1) return "interval"
+
+    // Check for complex patterns within simple frequencies
+    if (parsed.freq === RRuleFrequency.DAILY && interval === 1) {
+      // Daily with specific weekdays (weekdays/weekends) is still considered daily
+      if (parsed.byday && parsed.byday.length > 0) {
+        const weekdayCount = parsed.byday.length
+        if (weekdayCount === 5 || weekdayCount === 2) return "daily" // weekdays or weekends
+        return "interval"
+      }
+      return "daily"
+    }
+
+    if (parsed.freq === RRuleFrequency.WEEKLY && interval === 1) {
+      // Weekly with specific days is still weekly
+      return "weekly"
+    }
+
+    if (parsed.freq === RRuleFrequency.MONTHLY && interval === 1) {
+      // Monthly with specific days is still monthly
+      return "monthly"
+    }
+
+    if (parsed.freq === RRuleFrequency.YEARLY && interval === 1) {
+      // Yearly with specific dates is still yearly
+      return "yearly"
+    }
+
+    return "interval"
+  }
+
+  const currentRecurringType = getCurrentRecurringType()
+
+  // Helper function to determine current schedule preset for highlighting
+  const getCurrentSchedulePreset = (): "today" | "tomorrow" | "next-week" | null => {
+    if (!task?.dueDate) return null
+
+    const today = new Date()
+    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000)
+    const nextWeek = new Date(today)
+    nextWeek.setDate(today.getDate() + 7)
+
+    const taskDate = new Date(task.dueDate)
+
+    // Check if dates match (ignoring time)
+    const isSameDay = (date1: Date, date2: Date) => {
+      return (
+        date1.getFullYear() === date2.getFullYear() &&
+        date1.getMonth() === date2.getMonth() &&
+        date1.getDate() === date2.getDate()
+      )
+    }
+
+    if (isSameDay(taskDate, today)) return "today"
+    if (isSameDay(taskDate, tomorrow)) return "tomorrow"
+    if (isSameDay(taskDate, nextWeek)) return "next-week"
+
+    return null
+  }
+
+  const currentSchedulePreset = getCurrentSchedulePreset()
 
   const handleQuickSchedule = (type: string) => {
     const today = new Date()
@@ -288,22 +458,137 @@ export function TaskScheduleContent({
 
     switch (type) {
       case "daily":
-        rrule = CommonRRules.daily()
+        if (selectedDailyType === "weekdays") {
+          // Monday to Friday
+          rrule = buildRRule({
+            freq: RRuleFrequency.WEEKLY,
+            byday: [
+              RRuleWeekday.MO,
+              RRuleWeekday.TU,
+              RRuleWeekday.WE,
+              RRuleWeekday.TH,
+              RRuleWeekday.FR,
+            ],
+          })
+        } else if (selectedDailyType === "weekends") {
+          // Saturday and Sunday
+          rrule = buildRRule({
+            freq: RRuleFrequency.WEEKLY,
+            byday: [RRuleWeekday.SA, RRuleWeekday.SU],
+          })
+        } else {
+          // Every day
+          rrule = CommonRRules.daily()
+        }
         break
       case "weekly":
-        rrule = CommonRRules.weekly()
+        if (selectedWeekdays.length > 0) {
+          // Convert numeric weekdays to RRULE format (0=SU, 1=MO, etc.)
+          const weekdayMap = [
+            RRuleWeekday.SU,
+            RRuleWeekday.MO,
+            RRuleWeekday.TU,
+            RRuleWeekday.WE,
+            RRuleWeekday.TH,
+            RRuleWeekday.FR,
+            RRuleWeekday.SA,
+          ]
+          const weekdayCodes = selectedWeekdays.map((day) => weekdayMap[day])
+          rrule = buildRRule({ freq: RRuleFrequency.WEEKLY, byday: weekdayCodes })
+        } else {
+          // Use default weekly (same day of week as due date)
+          rrule = CommonRRules.weekly()
+        }
         break
       case "monthly":
-        rrule = CommonRRules.monthly()
-        break
-      case "custom":
-        const interval = parseInt(customInterval)
-        if (customUnit === "days") {
-          rrule = CommonRRules.everyNDays(interval)
-        } else if (customUnit === "weeks") {
-          rrule = CommonRRules.everyNWeeks(interval)
+        if (selectedMonthlyDays.length > 0) {
+          // Use specific days of the month
+          rrule = buildRRule({ freq: RRuleFrequency.MONTHLY, bymonthday: selectedMonthlyDays })
         } else {
-          rrule = buildRRule({ freq: RRuleFrequency.MONTHLY, interval })
+          // Use default monthly (same day of month as due date)
+          rrule = CommonRRules.monthly()
+        }
+        break
+      case "yearly":
+        if (selectedYearlyDates.length > 0) {
+          // Use specific months and days for yearly recurring
+          const months = selectedYearlyDates.map((date) => date.getMonth() + 1) // Convert to 1-based months
+          const days = selectedYearlyDates.map((date) => date.getDate())
+          rrule = buildRRule({
+            freq: RRuleFrequency.YEARLY,
+            interval: 1,
+            bymonth: months,
+            bymonthday: days,
+          })
+        } else {
+          // Use default yearly (same month and day as due date)
+          rrule = buildRRule({ freq: RRuleFrequency.YEARLY, interval: 1 })
+        }
+        break
+      case "interval":
+        // Generate RRULE based on interval patterns (weekday or day-based)
+        const weekdayMap = [
+          RRuleWeekday.SU,
+          RRuleWeekday.MO,
+          RRuleWeekday.TU,
+          RRuleWeekday.WE,
+          RRuleWeekday.TH,
+          RRuleWeekday.FR,
+          RRuleWeekday.SA,
+        ]
+
+        if (customPatternType === "day") {
+          // Calendar day patterns (1st day, 15th day, last day)
+          if (customFrequency === "MONTHLY") {
+            rrule = buildRRule({
+              freq: RRuleFrequency.MONTHLY,
+              interval: customInterval,
+              bymonthday: customOccurrences,
+            })
+          } else if (customFrequency === "YEARLY") {
+            rrule = buildRRule({
+              freq: RRuleFrequency.YEARLY,
+              interval: customInterval,
+              bymonthday: customOccurrences,
+              bymonth: customMonths,
+            })
+          } else {
+            // WEEKLY doesn't make sense for calendar days, fallback to weekday
+            const weekdayCodes = customWeekdays.map((day) => weekdayMap[day])
+            rrule = buildRRule({
+              freq: RRuleFrequency.WEEKLY,
+              interval: customInterval,
+              byday: weekdayCodes,
+            })
+          }
+        } else {
+          // Weekday patterns (1st Monday, 2nd Tuesday, etc.)
+          if (customFrequency === "MONTHLY") {
+            const weekdayCodes = customWeekdays.map((day) => weekdayMap[day])
+            rrule = buildRRule({
+              freq: RRuleFrequency.MONTHLY,
+              interval: customInterval,
+              byday: weekdayCodes,
+              bysetpos: customOccurrences,
+            })
+          } else if (customFrequency === "YEARLY") {
+            const weekdayCodes = customWeekdays.map((day) => weekdayMap[day])
+            rrule = buildRRule({
+              freq: RRuleFrequency.YEARLY,
+              interval: customInterval,
+              byday: weekdayCodes,
+              bysetpos: customOccurrences,
+              bymonth: customMonths,
+            })
+          } else {
+            // WEEKLY interval pattern - use selected weekdays
+            const weekdayCodes = customWeekdays.map((day) => weekdayMap[day])
+            rrule = buildRRule({
+              freq: RRuleFrequency.WEEKLY,
+              interval: customInterval,
+              byday: weekdayCodes,
+            })
+          }
         }
         break
       case "remove":
@@ -399,27 +684,43 @@ export function TaskScheduleContent({
           <div className="flex gap-1 mb-3">
             <Button
               variant="ghost"
-              className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+              className={`flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 rounded-md ${
+                currentSchedulePreset === "today"
+                  ? "bg-yellow-500/20 hover:bg-yellow-500/30"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
               onClick={() => handleQuickSchedule("today")}
             >
               <Sun className="h-4 w-4 text-yellow-500 mb-1" />
-              <span>Today</span>
+              <span className={currentSchedulePreset === "today" ? "font-medium" : ""}>Today</span>
             </Button>
             <Button
               variant="ghost"
-              className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+              className={`flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 rounded-md ${
+                currentSchedulePreset === "tomorrow"
+                  ? "bg-orange-500/20 hover:bg-orange-500/30"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
               onClick={() => handleQuickSchedule("tomorrow")}
             >
               <Sunrise className="h-4 w-4 text-orange-500 mb-1" />
-              <span>Tomorrow</span>
+              <span className={currentSchedulePreset === "tomorrow" ? "font-medium" : ""}>
+                Tomorrow
+              </span>
             </Button>
             <Button
               variant="ghost"
-              className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+              className={`flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 rounded-md ${
+                currentSchedulePreset === "next-week"
+                  ? "bg-green-500/20 hover:bg-green-500/30"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
               onClick={() => handleQuickSchedule("next-week")}
             >
-              <ArrowRight className="h-4 w-4 text-green-600 mb-1" />
-              <span>Next Week</span>
+              <ArrowRight className="h-4 w-4 text-green-500 mb-1" />
+              <span className={currentSchedulePreset === "next-week" ? "font-medium" : ""}>
+                Next Week
+              </span>
             </Button>
           </div>
 
@@ -579,68 +880,535 @@ export function TaskScheduleContent({
         <TabsContent value="recurring" className="mt-1">
           <div className="space-y-4">
             {/* Quick recurring options */}
-            <div className="flex gap-1">
+            <div className="flex gap-1 mb-3">
               <Button
                 variant="ghost"
-                className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                className={`flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 rounded-md ${
+                  currentRecurringType === "daily"
+                    ? "bg-yellow-500/20 hover:bg-yellow-500/30"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
                 onClick={() => handleRecurringSelect("daily")}
               >
                 <Sun className="h-4 w-4 text-yellow-500 mb-1" />
-                <span>Daily</span>
+                <span className={currentRecurringType === "daily" ? "font-medium" : ""}>Daily</span>
               </Button>
               <Button
                 variant="ghost"
-                className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                className={`flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 rounded-md ${
+                  currentRecurringType === "weekly"
+                    ? "bg-blue-500/20 hover:bg-blue-500/30"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
                 onClick={() => handleRecurringSelect("weekly")}
               >
                 <Repeat className="h-4 w-4 text-blue-500 mb-1" />
-                <span>Weekly</span>
+                <span className={currentRecurringType === "weekly" ? "font-medium" : ""}>
+                  Weekly
+                </span>
               </Button>
               <Button
                 variant="ghost"
-                className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                className={`flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 rounded-md ${
+                  currentRecurringType === "monthly"
+                    ? "bg-purple-500/20 hover:bg-purple-500/30"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
                 onClick={() => handleRecurringSelect("monthly")}
               >
                 <CalendarIcon className="h-4 w-4 text-purple-500 mb-1" />
-                <span>Monthly</span>
+                <span className={currentRecurringType === "monthly" ? "font-medium" : ""}>
+                  Monthly
+                </span>
               </Button>
             </div>
 
-            {/* Custom interval */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Custom interval
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  min="1"
-                  max="99"
-                  value={customInterval}
-                  onChange={(e) => setCustomInterval(e.target.value)}
-                  className="w-16 text-center"
-                  placeholder="1"
-                />
-                <Select value={customUnit} onValueChange={setCustomUnit}>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="days">days</SelectItem>
-                    <SelectItem value="weeks">weeks</SelectItem>
-                    <SelectItem value="months">months</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleRecurringSelect("custom")}
-                  className="px-3"
-                >
-                  Set
-                </Button>
-              </div>
+            {/* Second row buttons */}
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                className={`flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 rounded-md ${
+                  currentRecurringType === "yearly"
+                    ? "bg-green-500/20 hover:bg-green-500/30"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
+                onClick={() => handleRecurringSelect("yearly")}
+              >
+                <CalendarIcon className="h-4 w-4 text-green-500 mb-1" />
+                <span className={currentRecurringType === "yearly" ? "font-medium" : ""}>
+                  Yearly
+                </span>
+              </Button>
+              <Button
+                variant="ghost"
+                className={`flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 rounded-md ${
+                  currentRecurringType === "interval"
+                    ? "bg-orange-500/20 hover:bg-orange-500/30"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
+                onClick={() => handleRecurringSelect("interval")}
+              >
+                <Settings className="h-4 w-4 text-orange-500 mb-1" />
+                <span className={currentRecurringType === "interval" ? "font-medium" : ""}>
+                  Interval
+                </span>
+              </Button>
+              <Button
+                variant="ghost"
+                className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => handleRecurringSelect("remove")}
+                disabled={!task.recurring}
+              >
+                <Ban className="h-4 w-4 mb-1" />
+                <span className="text-center leading-tight">Clear</span>
+              </Button>
             </div>
+
+            {/* Monthly day picker - show when monthly is selected */}
+            {currentRecurringType === "monthly" && (
+              <div className="space-y-2">
+                <div className="border rounded-md p-3">
+                  <div className="text-xs text-gray-500 mb-3 text-center">
+                    Select days of the month
+                  </div>
+
+                  {/* Custom day grid with Last day in same row as 31 */}
+                  <div className="grid grid-cols-7 gap-1 mb-3">
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                      <Button
+                        key={day}
+                        variant={selectedMonthlyDays.includes(day) ? "default" : "outline"}
+                        size="sm"
+                        className={`h-8 w-8 p-0 text-xs ${
+                          selectedMonthlyDays.includes(day)
+                            ? "bg-primary text-primary-foreground"
+                            : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                        }`}
+                        onClick={() => {
+                          const newSelection = selectedMonthlyDays.includes(day)
+                            ? selectedMonthlyDays.filter((d) => d !== day)
+                            : [...selectedMonthlyDays, day].sort((a, b) => a - b)
+                          setSelectedMonthlyDays(newSelection)
+                        }}
+                      >
+                        {day}
+                      </Button>
+                    ))}
+
+                    {/* Last day button spanning remaining columns */}
+                    <Button
+                      variant={selectedMonthlyDays.includes(-1) ? "default" : "outline"}
+                      size="sm"
+                      className={`h-8 text-xs col-span-4 ${
+                        selectedMonthlyDays.includes(-1)
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
+                      onClick={() => {
+                        const newSelection = selectedMonthlyDays.includes(-1)
+                          ? selectedMonthlyDays.filter((d) => d !== -1)
+                          : [...selectedMonthlyDays, -1].sort((a, b) => a - b)
+                        setSelectedMonthlyDays(newSelection)
+                      }}
+                    >
+                      Last day
+                    </Button>
+                  </div>
+
+                  <div className="flex justify-center mt-2">
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        if (selectedMonthlyDays.length > 0) {
+                          handleRecurringSelect("monthly")
+                        }
+                      }}
+                      disabled={selectedMonthlyDays.length === 0}
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Yearly date picker - show when yearly is selected */}
+            {currentRecurringType === "yearly" && (
+              <div className="space-y-2">
+                {selectedYearlyDates.length > 0 && (
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                    Selected dates:{" "}
+                    {selectedYearlyDates
+                      .map((date) =>
+                        date.toLocaleDateString("en-US", {
+                          month: "long",
+                          day: "numeric",
+                        }),
+                      )
+                      .join(", ")}
+                  </div>
+                )}
+
+                <div className="border rounded-md p-3">
+                  <div className="text-xs text-gray-500 mb-3 text-center">
+                    Select date in the year
+                  </div>
+
+                  <Calendar
+                    mode="multiple"
+                    selected={selectedYearlyDates}
+                    onSelect={(dates) => setSelectedYearlyDates(dates || [])}
+                    fixedWeeks={false}
+                    showOutsideDays={false}
+                    captionLayout="label"
+                    // Set to a reference year
+                    defaultMonth={
+                      selectedYearlyDates.length > 0 ? selectedYearlyDates[0] : new Date(2024, 0, 1)
+                    }
+                    formatters={{
+                      formatCaption: (date) => date.toLocaleString("default", { month: "long" }), // Show only month name
+                    }}
+                    className="rounded-md border-0 w-full"
+                    classNames={{
+                      week: "flex w-full mt-1",
+                    }}
+                  />
+
+                  <div className="flex justify-center mt-2">
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        if (selectedYearlyDates.length > 0) {
+                          handleRecurringSelect("yearly")
+                        }
+                      }}
+                      disabled={selectedYearlyDates.length === 0}
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Weekly weekday picker - show when weekly is selected */}
+            {currentRecurringType === "weekly" && (
+              <div className="space-y-2">
+                <div className="border rounded-md p-3">
+                  <div className="text-xs text-gray-500 mb-3 text-center">
+                    Select days of the week
+                  </div>
+
+                  {/* Weekday grid */}
+                  <div className="grid grid-cols-7 gap-1 mb-3">
+                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, index) => (
+                      <Button
+                        key={day}
+                        variant={selectedWeekdays.includes(index) ? "default" : "outline"}
+                        size="sm"
+                        className={`h-8 w-8 p-0 text-xs ${
+                          selectedWeekdays.includes(index)
+                            ? "bg-primary text-primary-foreground"
+                            : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                        }`}
+                        onClick={() => {
+                          const newSelection = selectedWeekdays.includes(index)
+                            ? selectedWeekdays.filter((d) => d !== index)
+                            : [...selectedWeekdays, index].sort((a, b) => a - b)
+                          setSelectedWeekdays(newSelection)
+                        }}
+                      >
+                        {day}
+                      </Button>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-center mt-2">
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        if (selectedWeekdays.length > 0) {
+                          handleRecurringSelect("weekly")
+                        }
+                      }}
+                      disabled={selectedWeekdays.length === 0}
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Daily options - show when daily is selected */}
+            {currentRecurringType === "daily" && (
+              <div className="space-y-2">
+                <div className="border rounded-md p-3">
+                  <div className="text-xs text-gray-500 mb-3 text-center">Select daily pattern</div>
+
+                  {/* Daily pattern options */}
+                  <div className="grid grid-cols-1 gap-1 mb-3">
+                    <Button
+                      variant={selectedDailyType === "all" ? "default" : "outline"}
+                      size="sm"
+                      className={`text-xs ${
+                        selectedDailyType === "all"
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
+                      onClick={() => setSelectedDailyType("all")}
+                    >
+                      Every day
+                    </Button>
+                    <Button
+                      variant={selectedDailyType === "weekdays" ? "default" : "outline"}
+                      size="sm"
+                      className={`text-xs ${
+                        selectedDailyType === "weekdays"
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
+                      onClick={() => setSelectedDailyType("weekdays")}
+                    >
+                      Weekdays only (Mon-Fri)
+                    </Button>
+                    <Button
+                      variant={selectedDailyType === "weekends" ? "default" : "outline"}
+                      size="sm"
+                      className={`text-xs ${
+                        selectedDailyType === "weekends"
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
+                      onClick={() => setSelectedDailyType("weekends")}
+                    >
+                      Weekends only (Sat-Sun)
+                    </Button>
+                  </div>
+
+                  <div className="flex justify-center mt-2">
+                    <Button size="sm" onClick={() => handleRecurringSelect("daily")}>
+                      Apply
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Interval recurring patterns - show when interval is selected */}
+            {currentRecurringType === "interval" && (
+              <div className="space-y-2">
+                <div className="border rounded-md p-4">
+                  <div className="text-xs text-gray-500 mb-4 text-center">
+                    Create a custom recurring pattern
+                  </div>
+
+                  {/* Natural sentence UI */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 flex-wrap">
+                      <span>Every</span>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="99"
+                        value={customInterval}
+                        onChange={(e) => setCustomIntervalValue(parseInt(e.target.value) || 1)}
+                        className="h-8 w-16 text-center text-sm"
+                      />
+                      <Select
+                        value={customFrequency}
+                        onValueChange={(value: "WEEKLY" | "MONTHLY" | "YEARLY") =>
+                          setCustomFrequency(value)
+                        }
+                      >
+                        <SelectTrigger className="h-8 w-24 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="WEEKLY">
+                            {customInterval === 1 ? "week" : "weeks"}
+                          </SelectItem>
+                          <SelectItem value="MONTHLY">
+                            {customInterval === 1 ? "month" : "months"}
+                          </SelectItem>
+                          <SelectItem value="YEARLY">
+                            {customInterval === 1 ? "year" : "years"}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <span>on</span>
+                      {(customFrequency === "MONTHLY" || customFrequency === "YEARLY") && (
+                        <>
+                          <span>the</span>
+                          <MultiSelect
+                            options={
+                              customPatternType === "day"
+                                ? // Calendar day options: 1st through 31st, plus last
+                                  [
+                                    ...Array.from({ length: 31 }, (_, i) => {
+                                      const day = i + 1
+                                      const suffix =
+                                        day === 1
+                                          ? "st"
+                                          : day === 2
+                                            ? "nd"
+                                            : day === 3
+                                              ? "rd"
+                                              : "th"
+                                      return { value: day, label: `${day}${suffix}` }
+                                    }),
+                                    { value: -1, label: "last" },
+                                  ]
+                                : // Weekday options: 1st through 5th, plus last
+                                  [
+                                    { value: 1, label: "1st" },
+                                    { value: 2, label: "2nd" },
+                                    { value: 3, label: "3rd" },
+                                    { value: 4, label: "4th" },
+                                    { value: 5, label: "5th" },
+                                    { value: -1, label: "last" },
+                                  ]
+                            }
+                            value={customOccurrences}
+                            onValueChange={setCustomOccurrences}
+                            className="h-8 w-20 text-sm"
+                            size="sm"
+                            maxDisplay={2}
+                          />
+                        </>
+                      )}
+                      <Select
+                        value={customPatternType}
+                        onValueChange={(value: "day" | "weekday") => setCustomPatternType(value)}
+                      >
+                        <SelectTrigger className="h-8 w-20 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="day">day</SelectItem>
+                          <SelectItem value="weekday">weekday</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {customPatternType === "weekday" && (
+                        <MultiSelect
+                          options={[
+                            { value: 0, label: "Sunday" },
+                            { value: 1, label: "Monday" },
+                            { value: 2, label: "Tuesday" },
+                            { value: 3, label: "Wednesday" },
+                            { value: 4, label: "Thursday" },
+                            { value: 5, label: "Friday" },
+                            { value: 6, label: "Saturday" },
+                          ]}
+                          value={customWeekdays}
+                          onValueChange={setCustomWeekdays}
+                          className="h-8 w-28 text-sm"
+                          size="sm"
+                          maxDisplay={2}
+                        />
+                      )}
+                      {customFrequency === "YEARLY" && (
+                        <>
+                          <span>of</span>
+                          <MultiSelect
+                            options={[
+                              { value: 1, label: "January" },
+                              { value: 2, label: "February" },
+                              { value: 3, label: "March" },
+                              { value: 4, label: "April" },
+                              { value: 5, label: "May" },
+                              { value: 6, label: "June" },
+                              { value: 7, label: "July" },
+                              { value: 8, label: "August" },
+                              { value: 9, label: "September" },
+                              { value: 10, label: "October" },
+                              { value: 11, label: "November" },
+                              { value: 12, label: "December" },
+                            ]}
+                            value={customMonths}
+                            onValueChange={setCustomMonths}
+                            className="h-8 w-28 text-sm"
+                            size="sm"
+                            maxDisplay={2}
+                          />
+                        </>
+                      )}
+                    </div>
+
+                    {/* Preview text */}
+                    <div className="text-xs text-gray-500 text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                      {(() => {
+                        const intervalText = customInterval === 1 ? "" : customInterval + " "
+                        const frequencyText = customFrequency.toLowerCase().slice(0, -2)
+                        const pluralSuffix = customInterval > 1 ? "s" : ""
+
+                        if (customFrequency === "WEEKLY") {
+                          // For weekly, use selected weekdays
+                          const weekdays = [
+                            "Sunday",
+                            "Monday",
+                            "Tuesday",
+                            "Wednesday",
+                            "Thursday",
+                            "Friday",
+                            "Saturday",
+                          ]
+                          const weekdayNames = customWeekdays.map((day) => weekdays[day]).join(", ")
+                          return `Every ${intervalText}${frequencyText}${pluralSuffix} on ${weekdayNames || "Monday"}`
+                        }
+
+                        // Format months for yearly patterns
+                        const monthsText =
+                          customFrequency === "YEARLY" && customMonths.length > 0
+                            ? ` of ${customMonths.map((month) => new Date(2024, month - 1, 1).toLocaleDateString("en-US", { month: "long" })).join(", ")}`
+                            : ""
+
+                        if (customPatternType === "day") {
+                          // Calendar day patterns
+                          const dayTexts = customOccurrences.map((occ) => {
+                            if (occ === -1) return "last day"
+                            const suffix =
+                              occ === 1 ? "st" : occ === 2 ? "nd" : occ === 3 ? "rd" : "th"
+                            return `${occ}${suffix} day`
+                          })
+                          const dayText = dayTexts.join(", ")
+                          return `Every ${intervalText}${frequencyText}${pluralSuffix} on the ${dayText}${monthsText}`
+                        } else {
+                          // Weekday patterns
+                          const weekdays = [
+                            "Sunday",
+                            "Monday",
+                            "Tuesday",
+                            "Wednesday",
+                            "Thursday",
+                            "Friday",
+                            "Saturday",
+                          ]
+                          const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "last"]
+
+                          const occurrenceTexts = customOccurrences.map((occ) => {
+                            const ordinalIndex = occ === -1 ? 5 : occ - 1
+                            return ordinals[ordinalIndex]
+                          })
+                          const weekdayNames = customWeekdays.map((day) => weekdays[day])
+
+                          const occurrenceText = occurrenceTexts.join(", ")
+                          const weekdayText = weekdayNames.join(", ")
+
+                          return `Every ${intervalText}${frequencyText}${pluralSuffix} on the ${occurrenceText} ${weekdayText}${monthsText}`
+                        }
+                      })()}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center mt-4">
+                    <Button size="sm" onClick={() => handleRecurringSelect("interval")}>
+                      Apply
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Recurring Mode Toggle */}
             {task.recurring && (
@@ -684,17 +1452,6 @@ export function TaskScheduleContent({
                   </Button>
                 </div>
               </div>
-            )}
-
-            {task.recurring && (
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-sm h-8 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800"
-                onClick={() => handleRecurringSelect("remove")}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Remove recurring pattern
-              </Button>
             )}
           </div>
 

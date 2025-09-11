@@ -387,6 +387,7 @@ export interface RRuleBuilder {
   byday?: RRuleWeekdayType[]
   bymonth?: number[]
   bymonthday?: number[]
+  bysetpos?: number[]
 }
 
 /**
@@ -417,6 +418,10 @@ export function buildRRule(options: RRuleBuilder): string {
 
   if (options.bymonthday && options.bymonthday.length > 0) {
     parts.push(`BYMONTHDAY=${options.bymonthday.join(",")}`)
+  }
+
+  if (options.bysetpos && options.bysetpos.length > 0) {
+    parts.push(`BYSETPOS=${options.bysetpos.join(",")}`)
   }
 
   return `RRULE:${parts.join(";")}`
@@ -513,6 +518,17 @@ export function parseRRule(rrule: string): RRuleBuilder | null {
       .filter((d) => !isNaN(d) && d !== 0 && d >= -31 && d <= 31)
     if (days.length > 0) {
       result.bymonthday = days
+    }
+  }
+
+  const bysetpos = rules.get("BYSETPOS")
+  if (bysetpos) {
+    const positions = bysetpos
+      .split(",")
+      .map((p) => parseInt(p, 10))
+      .filter((p) => !isNaN(p) && p !== 0 && p >= -366 && p <= 366)
+    if (positions.length > 0) {
+      result.bysetpos = positions
     }
   }
 

@@ -19,6 +19,7 @@ interface ParsedRRule {
   byday?: string[]
   bymonthday?: number[]
   bymonth?: number[]
+  bysetpos?: number[]
 }
 
 /**
@@ -61,6 +62,9 @@ export function parseRRule(rrule: string): ParsedRRule | null {
       case "BYMONTH":
         parsed.bymonth = value.split(",").map((n) => parseInt(n, 10))
         break
+      case "BYSETPOS":
+        parsed.bysetpos = value.split(",").map((n) => parseInt(n, 10))
+        break
     }
   }
 
@@ -77,6 +81,7 @@ export function parseRRule(rrule: string): ParsedRRule | null {
     byday: parsed.byday,
     bymonthday: parsed.bymonthday,
     bymonth: parsed.bymonth,
+    bysetpos: parsed.bysetpos,
   }
 }
 
@@ -251,19 +256,36 @@ export function calculateNextDueDate(
 
     case "MONTHLY":
       if (parsed.bymonthday && parsed.bymonthday.length > 0) {
-        // Handle specific month days
-        const targetDay = parsed.bymonthday[0]
+        // Handle multiple specific month days (e.g., 15th and 30th)
+        // Always move to next interval period first (like original behavior)
         const targetYear = nextDate.getUTCFullYear()
         const targetMonth = nextDate.getUTCMonth() + interval
-        // Get last day of target month using UTC
-        const lastDayOfTargetMonth = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate()
-        const finalDay = Math.min(targetDay, lastDayOfTargetMonth)
+
+        // Handle year rollover
+        let finalYear = targetYear
+        let finalMonth = targetMonth
+        if (targetMonth > 11) {
+          finalYear += Math.floor(targetMonth / 12)
+          finalMonth = targetMonth % 12
+        }
+
+        // Find the earliest valid day from the specified days
+        const nextDay = Math.min(
+          ...parsed.bymonthday.map((day) => {
+            if (day === -1) {
+              // -1 means last day of month
+              return new Date(Date.UTC(finalYear, finalMonth + 1, 0)).getUTCDate()
+            }
+            // Clamp day to last day of month to handle edge cases (e.g., Feb 31st -> Feb 28th)
+            return Math.min(day, new Date(Date.UTC(finalYear, finalMonth + 1, 0)).getUTCDate())
+          }),
+        )
+
         // Set the date properly using UTC methods to avoid rollover and DST issues
-        // Set date to 1 first to avoid month rollover, then month, then final day
         nextDate.setUTCDate(1)
-        nextDate.setUTCFullYear(targetYear)
-        nextDate.setUTCMonth(targetMonth)
-        nextDate.setUTCDate(finalDay)
+        nextDate.setUTCFullYear(finalYear)
+        nextDate.setUTCMonth(finalMonth)
+        nextDate.setUTCDate(nextDay)
       } else {
         // Simple monthly recurrence - same day of month
         const originalDay = fromDate.getUTCDate()
@@ -282,7 +304,37 @@ export function calculateNextDueDate(
       break
 
     case "YEARLY":
-      nextDate.setUTCFullYear(nextDate.getUTCFullYear() + interval)
+      if (parsed.bymonth && parsed.bymonth.length > 0) {
+        // Handle specific months (e.g., January and June)
+        const currentMonth = nextDate.getUTCMonth() + 1 // Convert to 1-based
+        const currentYear = nextDate.getUTCFullYear()
+
+        // Find next valid month in current year or future years
+        const validMonthsInCurrentYear = parsed.bymonth.filter((month) => month > currentMonth)
+
+        if (validMonthsInCurrentYear.length > 0) {
+          // Use the earliest valid month in current year
+          const nextMonth = Math.min(...validMonthsInCurrentYear)
+          nextDate.setUTCMonth(nextMonth - 1) // Convert back to 0-based
+          // Keep the same day, but handle month-end edge cases
+          const originalDay = nextDate.getUTCDate()
+          const lastDayOfTargetMonth = new Date(Date.UTC(currentYear, nextMonth, 0)).getUTCDate()
+          nextDate.setUTCDate(Math.min(originalDay, lastDayOfTargetMonth))
+        } else {
+          // Move to next year and use earliest valid month
+          const targetYear = currentYear + interval
+          const nextMonth = Math.min(...parsed.bymonth)
+          nextDate.setUTCFullYear(targetYear)
+          nextDate.setUTCMonth(nextMonth - 1) // Convert back to 0-based
+          // Keep the same day, but handle month-end edge cases
+          const originalDay = nextDate.getUTCDate()
+          const lastDayOfTargetMonth = new Date(Date.UTC(targetYear, nextMonth, 0)).getUTCDate()
+          nextDate.setUTCDate(Math.min(originalDay, lastDayOfTargetMonth))
+        }
+      } else {
+        // Simple yearly recurrence - same month and day
+        nextDate.setUTCFullYear(nextDate.getUTCFullYear() + interval)
+      }
       break
 
     default:

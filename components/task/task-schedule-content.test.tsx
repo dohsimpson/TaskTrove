@@ -315,60 +315,6 @@ describe("TaskScheduleContent", () => {
       )
     })
 
-    it("should handle custom interval for days", async () => {
-      renderWithTasks(
-        [mockTask],
-        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} defaultTab="recurring" />,
-      )
-
-      // Set custom interval to 3
-      const intervalInput = screen.getByPlaceholderText("1")
-      fireEvent.change(intervalInput, { target: { value: "3" } })
-
-      // Select days unit (should be default)
-      const setButton = screen.getByText("Set")
-      fireEvent.click(setButton)
-
-      expect(mockUpdateTask).toHaveBeenCalledWith(
-        expect.objectContaining({
-          updateRequest: expect.objectContaining({
-            id: TEST_TASK_ID_1,
-            recurring: "RRULE:FREQ=DAILY;INTERVAL=3",
-            dueDate: expect.any(Date),
-          }),
-        }),
-      )
-    })
-
-    it("should handle custom interval for weeks", async () => {
-      renderWithTasks(
-        [mockTask],
-        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} defaultTab="recurring" />,
-      )
-
-      // Set custom interval to 2
-      const intervalInput = screen.getByPlaceholderText("1")
-      fireEvent.change(intervalInput, { target: { value: "2" } })
-
-      // Select weeks unit
-      const unitSelect = screen.getByRole("combobox")
-      fireEvent.click(unitSelect)
-      fireEvent.click(screen.getByText("weeks"))
-
-      const setButton = screen.getByText("Set")
-      fireEvent.click(setButton)
-
-      expect(mockUpdateTask).toHaveBeenCalledWith(
-        expect.objectContaining({
-          updateRequest: expect.objectContaining({
-            id: TEST_TASK_ID_1,
-            recurring: "RRULE:FREQ=WEEKLY;INTERVAL=2",
-            dueDate: expect.any(Date),
-          }),
-        }),
-      )
-    })
-
     it("should show remove recurring button when task has recurring pattern", () => {
       const taskWithRecurring = { ...mockTask, recurring: "RRULE:FREQ=DAILY" }
 
@@ -381,7 +327,7 @@ describe("TaskScheduleContent", () => {
         />,
       )
 
-      expect(screen.getByText("Remove recurring pattern")).toBeInTheDocument()
+      expect(screen.getByText("Clear")).toBeInTheDocument()
     })
 
     it("should call updateTask to remove recurring pattern", () => {
@@ -395,7 +341,7 @@ describe("TaskScheduleContent", () => {
           defaultTab="recurring"
         />,
       )
-      fireEvent.click(screen.getByText("Remove recurring pattern"))
+      fireEvent.click(screen.getByText("Clear"))
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
@@ -703,7 +649,7 @@ describe("TaskScheduleContent", () => {
       )
 
       // Should show recurring remove button and status (in recurring tab)
-      expect(screen.getByText("Remove recurring pattern")).toBeInTheDocument()
+      expect(screen.getByText("Clear")).toBeInTheDocument()
       expect(screen.getByText("Current: Daily")).toBeInTheDocument()
     })
   })

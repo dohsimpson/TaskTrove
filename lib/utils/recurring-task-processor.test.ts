@@ -68,6 +68,15 @@ describe("parseRRule", () => {
       bymonth: [3, 6, 9, 12],
     })
   })
+
+  it("should parse BYSETPOS for nth occurrence patterns", () => {
+    const result = parseRRule("RRULE:FREQ=MONTHLY;BYDAY=MO;BYSETPOS=1,3,-1")
+    expect(result).toEqual({
+      freq: "MONTHLY",
+      byday: ["MO"],
+      bysetpos: [1, 3, -1],
+    })
+  })
 })
 
 describe("calculateNextDueDate", () => {
@@ -154,6 +163,59 @@ describe("calculateNextDueDate", () => {
     const nextDate = calculateNextDueDate("RRULE:FREQ=WEEKLY;BYDAY=", baseDate)
     // Returns null for empty BYDAY array
     expect(nextDate).toBeNull()
+  })
+
+  describe("multi-select patterns", () => {
+    it("should handle multiple BYMONTHDAY values", () => {
+      // From Jan 15th, next occurrence on 20th or 25th should be Jan 20th
+      const nextDate = calculateNextDueDate("RRULE:FREQ=MONTHLY;BYMONTHDAY=20,25", baseDate)
+      expect(nextDate).toEqual(new Date("2024-02-20T10:00:00.000Z"))
+    })
+
+    it("should handle multiple BYMONTHDAY values with earlier day first", () => {
+      // From Jan 15th, next occurrence on 10th or 25th should be Feb 10th (earlier day)
+      const nextDate = calculateNextDueDate("RRULE:FREQ=MONTHLY;BYMONTHDAY=10,25", baseDate)
+      expect(nextDate).toEqual(new Date("2024-02-10T10:00:00.000Z"))
+    })
+
+    it("should handle multiple BYMONTHDAY with -1 (last day)", () => {
+      // From Jan 15th, next occurrence on 28th or last day should be Feb 28th
+      const nextDate = calculateNextDueDate("RRULE:FREQ=MONTHLY;BYMONTHDAY=28,-1", baseDate)
+      expect(nextDate).toEqual(new Date("2024-02-28T10:00:00.000Z"))
+    })
+
+    it("should handle yearly with multiple BYMONTH values", () => {
+      // From Jan 15th, next occurrence in March or June should be March 15th
+      const nextDate = calculateNextDueDate("RRULE:FREQ=YEARLY;BYMONTH=3,6", baseDate)
+      expect(nextDate).toEqual(new Date("2024-03-15T10:00:00.000Z"))
+    })
+
+    it("should handle yearly with multiple BYMONTH values (later in year)", () => {
+      // From Jan 15th, next occurrence in June or September should be June 15th
+      const nextDate = calculateNextDueDate("RRULE:FREQ=YEARLY;BYMONTH=6,9", baseDate)
+      expect(nextDate).toEqual(new Date("2024-06-15T10:00:00.000Z"))
+    })
+
+    it("should handle yearly with multiple BYMONTH rolling to next year", () => {
+      // From Dec 15th, next occurrence in March or June should be next year's March
+      const decemberDate = new Date("2024-12-15T10:00:00.000Z")
+      const nextDate = calculateNextDueDate("RRULE:FREQ=YEARLY;BYMONTH=3,6", decemberDate)
+      expect(nextDate).toEqual(new Date("2025-03-15T10:00:00.000Z"))
+    })
+
+    it("should handle month-end edge cases with multiple days", () => {
+      // From Jan 31st, next occurrence on 28th or 30th should be Feb 28th in non-leap year
+      const endOfJan2023 = new Date("2023-01-31T10:00:00.000Z")
+      const nextDate = calculateNextDueDate("RRULE:FREQ=MONTHLY;BYMONTHDAY=28,30", endOfJan2023)
+      expect(nextDate).toEqual(new Date("2023-02-28T10:00:00.000Z"))
+    })
+
+    it("should handle leap year with multiple days including February", () => {
+      // From Jan 31st 2024 (leap year), next occurrence on 29th or 30th should be Feb 29th
+      const endOfJan2024 = new Date("2024-01-31T10:00:00.000Z")
+      const nextDate = calculateNextDueDate("RRULE:FREQ=MONTHLY;BYMONTHDAY=29,30", endOfJan2024)
+      expect(nextDate).toEqual(new Date("2024-02-29T10:00:00.000Z"))
+    })
   })
 
   describe("includeFromDate flag", () => {

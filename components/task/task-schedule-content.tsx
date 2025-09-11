@@ -11,18 +11,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
   Calendar as CalendarIcon,
   Clock,
   Trash2,
-  ChevronLeft,
   Sun,
   Sunrise,
   ArrowRight,
   Repeat,
-  RotateCcw,
   X,
   FastForward,
+  AlarmClockOff,
+  Ban,
 } from "lucide-react"
 import { format } from "date-fns"
 import type { CreateTaskRequest, Task, TaskId } from "@/lib/types"
@@ -37,15 +38,20 @@ import {
   parseEnhancedNaturalLanguage,
   convertTimeToHHMMSS,
 } from "@/lib/utils/enhanced-natural-language-parser"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface TaskScheduleContentProps {
   taskId?: TaskId
-  onModeChange?: (mode: "quick" | "calendar" | "recurring") => void
   onClose?: () => void // close the popover
   isNewTask?: boolean
+  defaultTab?: "schedule" | "recurring" // for testing
 }
 
-export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskScheduleContentProps) {
+export function TaskScheduleContent({
+  taskId,
+  onClose,
+  defaultTab = "schedule",
+}: TaskScheduleContentProps) {
   const allTasks = useAtomValue(tasksAtom)
   const updateTask = useSetAtom(updateTaskAtom)
   const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
@@ -54,8 +60,7 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
   const task: Task | CreateTaskRequest | undefined = isNewTask
     ? newTask
     : allTasks.find((t: Task) => t.id === taskId)
-  const [showCalendar, setShowCalendar] = useState(false)
-  const [showRecurring, setShowRecurring] = useState(false)
+  const isMobile = useIsMobile()
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(task?.dueDate)
   const [customInterval, setCustomInterval] = useState<string>("1")
   const [customUnit, setCustomUnit] = useState<string>("days")
@@ -65,13 +70,13 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
     if (task?.dueTime) {
       return task.dueTime.getHours().toString()
     }
-    return "9"
+    return ""
   })
   const [selectedMinute, setSelectedMinute] = useState<string>(() => {
     if (task?.dueTime) {
       return task.dueTime.getMinutes().toString().padStart(2, "0")
     }
-    return "00"
+    return ""
   })
   const [selectedAmPm, setSelectedAmPm] = useState<string>(() => {
     if (task?.dueTime) {
@@ -79,7 +84,8 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
     }
     return "AM"
   })
-  const [showTimeSelector, setShowTimeSelector] = useState(false)
+  const [showInlineCalendar, setShowInlineCalendar] = useState(false)
+  const alwaysShowCalendar = !isMobile
 
   // Natural language input state
   const [nlInput, setNlInput] = useState("")
@@ -188,7 +194,6 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
   const handleTimeUpdate = () => {
     const newTime = createTimeFromHourMinute(selectedHour, selectedMinute, selectedAmPm)
     handleUpdate(taskId, undefined, newTime, "time")
-    setShowTimeSelector(false)
   }
 
   // Helper function to get display text for RRULE
@@ -308,341 +313,14 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
     handleUpdate(taskId, date, preserveTime, "custom")
   }
 
-  const toggleCalendar = () => {
-    const newMode = !showCalendar
-    setShowCalendar(newMode)
-    setShowRecurring(false)
-    onModeChange?.(newMode ? "calendar" : "quick")
-  }
-
-  const toggleRecurring = () => {
-    const newMode = !showRecurring
-    setShowRecurring(newMode)
-    setShowCalendar(false)
-    onModeChange?.(newMode ? "recurring" : "quick")
-  }
-
   if (!task) {
     console.warn("Task not found", taskId)
     return null
   }
 
-  if (showCalendar) {
-    return (
-      <div className="p-3">
-        <div className="flex items-center justify-between border-b pb-2 mb-3">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-              onClick={() => setShowCalendar(false)}
-              aria-label="Go back"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <CalendarIcon className="h-4 w-4 text-purple-600" />
-            <span className="font-medium text-sm">Pick Date</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <Calendar
-          mode="single"
-          selected={selectedDate}
-          onSelect={handleCustomDateSelect}
-          fixedWeeks={true}
-          showOutsideDays={false}
-          captionLayout="dropdown"
-          // Restrict year range to reasonable bounds for task scheduling
-          // 2 years back (for overdue tasks) to 10 years forward (for long-term planning)
-          startMonth={new Date(new Date().getFullYear() - 2, 0)}
-          endMonth={new Date(new Date().getFullYear() + 10, 11)}
-          className="rounded-md border-0 w-full"
-          classNames={{
-            week: "flex w-full mt-1",
-          }}
-        />
-      </div>
-    )
-  }
-
-  if (showRecurring) {
-    return (
-      <div className="p-3">
-        <div className="flex items-center justify-between border-b pb-2 mb-3">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-              onClick={() => setShowRecurring(false)}
-              aria-label="Go back"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Repeat className="h-4 w-4 text-green-600" />
-            <span className="font-medium text-sm">Make Recurring</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="space-y-3">
-          {/* Quick recurring options */}
-          <div className="flex gap-1 mb-3">
-            <Button
-              variant="ghost"
-              className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
-              onClick={() => handleRecurringSelect("daily")}
-            >
-              <Sun className="h-4 w-4 text-yellow-500 mb-1" />
-              <span>Daily</span>
-            </Button>
-            <Button
-              variant="ghost"
-              className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
-              onClick={() => handleRecurringSelect("weekly")}
-            >
-              <Repeat className="h-4 w-4 text-blue-500 mb-1" />
-              <span>Weekly</span>
-            </Button>
-            <Button
-              variant="ghost"
-              className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
-              onClick={() => handleRecurringSelect("monthly")}
-            >
-              <CalendarIcon className="h-4 w-4 text-purple-500 mb-1" />
-              <span>Monthly</span>
-            </Button>
-          </div>
-
-          {/* Custom interval */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Custom interval
-            </label>
-            <div className="flex gap-2">
-              <Input
-                type="number"
-                min="1"
-                max="99"
-                value={customInterval}
-                onChange={(e) => setCustomInterval(e.target.value)}
-                className="w-16 text-center"
-                placeholder="1"
-              />
-              <Select value={customUnit} onValueChange={setCustomUnit}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="days">days</SelectItem>
-                  <SelectItem value="weeks">weeks</SelectItem>
-                  <SelectItem value="months">months</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleRecurringSelect("custom")}
-                className="px-3"
-              >
-                Set
-              </Button>
-            </div>
-          </div>
-
-          {/* Recurring Mode Toggle */}
-          {task.recurring && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Calculate next due date from
-                </label>
-                <HelpPopover content="Choose how the next due date is calculated: 'Due date' always calculates from the original due date. 'Adaptive' adjusts to your actual timing - if you complete after the due date, it calculates from your completion date (i.e. today), but if you completed before due, it calculates based on your due date. Examples: Overdue weekly task, completed on Tuesday → scheduled to next Tuesday. Weekly task due this Friday, completed early on Tuesday → scheduled to next Friday." />
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={task.recurringMode !== "completedAt" ? "default" : "outline"}
-                  size="sm"
-                  className="flex-1 text-xs"
-                  onClick={() => {
-                    const updates = { recurringMode: "dueDate" as const }
-                    if (!taskId) {
-                      updateQuickAddTask({ updateRequest: updates })
-                    } else {
-                      updateTask({ updateRequest: { id: taskId, ...updates } })
-                    }
-                  }}
-                >
-                  Due date
-                </Button>
-                <Button
-                  variant={task.recurringMode === "completedAt" ? "default" : "outline"}
-                  size="sm"
-                  className="flex-1 text-xs"
-                  onClick={() => {
-                    const updates = { recurringMode: "completedAt" as const }
-                    if (!taskId) {
-                      updateQuickAddTask({ updateRequest: updates })
-                    } else {
-                      updateTask({ updateRequest: { id: taskId, ...updates } })
-                    }
-                  }}
-                >
-                  Adaptive
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {task.recurring && (
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-sm h-8 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800"
-              onClick={() => handleRecurringSelect("remove")}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Remove recurring pattern
-            </Button>
-          )}
-        </div>
-
-        {task.recurring && (
-          <div className="pt-2 mt-2 border-t">
-            <div className="text-xs text-gray-500 flex items-center gap-1">
-              <Repeat className="h-3 w-3" />
-              Current: {getRRuleDisplay(task.recurring || "")}
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  if (showTimeSelector) {
-    return (
-      <div className="p-3">
-        <div className="flex items-center justify-between border-b pb-2 mb-3">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-              onClick={() => setShowTimeSelector(false)}
-              aria-label="Go back"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Clock className="h-4 w-4 text-blue-600" />
-            <span className="font-medium text-sm">Set Time</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex gap-2 items-center justify-center">
-            <Input
-              type="number"
-              min="1"
-              max="12"
-              value={selectedHour}
-              onChange={(e) => {
-                const value = parseInt(e.target.value)
-                if (value >= 1 && value <= 12) {
-                  setSelectedHour(e.target.value)
-                } else if (e.target.value === "") {
-                  setSelectedHour("")
-                }
-              }}
-              onBlur={(e) => {
-                const value = parseInt(e.target.value)
-                if (isNaN(value) || value < 1) {
-                  setSelectedHour("1")
-                } else if (value > 12) {
-                  setSelectedHour("12")
-                }
-              }}
-              className="w-18 text-center"
-            />
-            <span className="text-lg font-medium">:</span>
-            <Input
-              type="number"
-              min="0"
-              max="59"
-              value={selectedMinute}
-              onChange={(e) => {
-                const value = parseInt(e.target.value)
-                if (value >= 0 && value <= 59) {
-                  setSelectedMinute(e.target.value)
-                } else if (e.target.value === "") {
-                  setSelectedMinute("")
-                }
-              }}
-              onBlur={(e) => {
-                const value = parseInt(e.target.value)
-                let finalValue: string
-                if (isNaN(value) || value < 0) {
-                  finalValue = "00"
-                } else if (value > 59) {
-                  finalValue = "59"
-                } else {
-                  finalValue = value.toString().padStart(2, "0")
-                }
-                setSelectedMinute(finalValue)
-              }}
-              className="w-18 text-center"
-            />
-            <Select value={selectedAmPm} onValueChange={setSelectedAmPm}>
-              <SelectTrigger className="w-18">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="AM">AM</SelectItem>
-                <SelectItem value="PM">PM</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setShowTimeSelector(false)}>
-              Cancel
-            </Button>
-            <Button className="flex-1" onClick={handleTimeUpdate}>
-              Set Time
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="p-3">
-      <div className="flex items-center justify-between border-b pb-2 mb-2">
+      <div className="flex items-center justify-between border-b pb-2 mb-3">
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4 text-blue-600" />
           <span className="font-medium text-sm">Schedule</span>
@@ -658,133 +336,353 @@ export function TaskScheduleContent({ taskId, onModeChange, onClose }: TaskSched
         </Button>
       </div>
 
-      {/* Natural Language Input */}
-      <div className="p-3">
-        <div className="flex gap-2">
-          <Input
-            placeholder="e.g., tomorrow 3PM, next monday, daily"
-            value={nlInput}
-            onChange={(e) => setNlInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleParseInput()}
-            className="text-sm flex-1"
-          />
-          <Button onClick={handleParseInput} disabled={!nlInput.trim()} size="sm" variant="default">
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      <Tabs defaultValue={defaultTab} className="w-full" data-testid="schedule-tabs">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="schedule" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            Schedule
+          </TabsTrigger>
+          <TabsTrigger value="recurring" className="flex items-center gap-2">
+            <Repeat className="h-4 w-4" />
+            Recurring
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="flex gap-1 mb-2">
-        <Button
-          variant="ghost"
-          className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
-          onClick={() => handleQuickSchedule("today")}
-        >
-          <Sun className="h-4 w-4 text-yellow-500 mb-1" />
-          <span>Today</span>
-        </Button>
-        <Button
-          variant="ghost"
-          className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
-          onClick={() => handleQuickSchedule("tomorrow")}
-        >
-          <Sunrise className="h-4 w-4 text-orange-500 mb-1" />
-          <span>Tomorrow</span>
-        </Button>
-        <Button
-          variant="ghost"
-          className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
-          onClick={() => handleQuickSchedule("next-week")}
-        >
-          <ArrowRight className="h-4 w-4 text-green-600 mb-1" />
-          <span>Next Week</span>
-        </Button>
-      </div>
+        <TabsContent value="schedule" className="mt-1">
+          {/* Natural Language Input */}
+          <div className="mb-3">
+            <div className="flex gap-2">
+              <Input
+                placeholder="e.g., tomorrow 3PM, next monday, daily"
+                value={nlInput}
+                onChange={(e) => setNlInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleParseInput()}
+                className="text-sm flex-1"
+              />
+              <Button
+                onClick={handleParseInput}
+                disabled={!nlInput.trim()}
+                size="sm"
+                variant="default"
+              >
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
 
-      <div className="space-y-1">
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-sm h-8 hover:bg-gray-100 dark:hover:bg-gray-800"
-          onClick={toggleCalendar}
-        >
-          <CalendarIcon className="h-4 w-4 mr-2 text-purple-600" />
-          Custom date
-        </Button>
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-sm h-8 hover:bg-gray-100 dark:hover:bg-gray-800"
-          onClick={() => setShowTimeSelector(true)}
-        >
-          <Clock className="h-4 w-4 mr-2 text-blue-600" />
-          Set time
-        </Button>
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-sm h-8 hover:bg-gray-100 dark:hover:bg-gray-800"
-          onClick={toggleRecurring}
-        >
-          <Repeat className="h-4 w-4 mr-2 text-green-600" />
-          Make recurring
-        </Button>
-        {task.recurring && task.dueDate && (
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-sm h-8 hover:bg-gray-100 dark:hover:bg-gray-800"
-            onClick={handleSkipToNext}
-          >
-            <FastForward className="h-4 w-4 mr-2 text-blue-600" />
-            Skip to next occurrence
-          </Button>
-        )}
-        {task.dueDate && (
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-sm h-8 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800"
-            onClick={() => handleQuickSchedule("remove")}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Remove date
-          </Button>
-        )}
-        {task.dueTime && (
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-sm h-8 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800"
-            onClick={() => handleUpdate(taskId, undefined, null, "remove-time")}
-          >
-            <Clock className="h-4 w-4 mr-2" />
-            Remove time
-          </Button>
-        )}
-        {task.recurring && (
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-sm h-8 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800"
-            onClick={() => handleRecurringSelect("remove")}
-          >
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Remove recurring
-          </Button>
-        )}
-      </div>
+          {/* Quick presets */}
+          <div className="flex gap-1 mb-3">
+            <Button
+              variant="ghost"
+              className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+              onClick={() => handleQuickSchedule("today")}
+            >
+              <Sun className="h-4 w-4 text-yellow-500 mb-1" />
+              <span>Today</span>
+            </Button>
+            <Button
+              variant="ghost"
+              className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+              onClick={() => handleQuickSchedule("tomorrow")}
+            >
+              <Sunrise className="h-4 w-4 text-orange-500 mb-1" />
+              <span>Tomorrow</span>
+            </Button>
+            <Button
+              variant="ghost"
+              className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+              onClick={() => handleQuickSchedule("next-week")}
+            >
+              <ArrowRight className="h-4 w-4 text-green-600 mb-1" />
+              <span>Next Week</span>
+            </Button>
+          </div>
 
-      {(task.dueDate || task.recurring) && (
-        <div className="pt-2 mt-2 border-t space-y-1">
+          {/* Action buttons row */}
+          <div className="flex gap-1 mb-3">
+            <Button
+              variant="ghost"
+              className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleSkipToNext}
+              disabled={!(task.recurring && task.dueDate)}
+            >
+              <FastForward className="h-4 w-4 text-blue-600 mb-1" />
+              <span className="text-center leading-tight">Skip</span>
+            </Button>
+            <Button
+              variant="ghost"
+              className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => handleQuickSchedule("remove")}
+              disabled={!task.dueDate}
+            >
+              <Ban className="h-4 w-4 mb-1" />
+              <span className="text-center leading-tight">Clear Date</span>
+            </Button>
+            <Button
+              variant="ghost"
+              className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => handleUpdate(taskId, undefined, null, "remove-time")}
+              disabled={!task.dueTime}
+            >
+              <AlarmClockOff className="h-4 w-4 mb-1" />
+              <span className="text-center leading-tight">Clear Time</span>
+            </Button>
+          </div>
+
+          {/* Calendar Toggle Button - only show when not always showing calendar */}
+          {!alwaysShowCalendar && (
+            <div className="mb-3">
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-sm h-8 hover:bg-gray-100 dark:hover:bg-gray-800"
+                onClick={() => setShowInlineCalendar(!showInlineCalendar)}
+              >
+                <CalendarIcon className="h-4 w-4 mr-2 text-purple-600" />
+                {showInlineCalendar ? "Hide calendar & time" : "Show calendar & time"}
+              </Button>
+            </div>
+          )}
+
+          {/* Collapsible Calendar & Time Selector */}
+          {(showInlineCalendar || alwaysShowCalendar) && (
+            <div className="mb-3 border rounded-md">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={handleCustomDateSelect}
+                fixedWeeks={false}
+                showOutsideDays={false}
+                captionLayout="dropdown"
+                // Restrict year range to reasonable bounds for task scheduling
+                // 2 years back (for overdue tasks) to 10 years forward (for long-term planning)
+                startMonth={new Date(new Date().getFullYear() - 2, 0)}
+                endMonth={new Date(new Date().getFullYear() + 10, 11)}
+                className="rounded-md border-0 w-full"
+                classNames={{
+                  week: "flex w-full mt-1",
+                }}
+              />
+
+              {/* Time Selector */}
+              <div className="px-3 pb-3">
+                <div className="flex gap-1 items-center">
+                  <Input
+                    type="number"
+                    min="1"
+                    max="12"
+                    value={selectedHour}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value)
+                      if (value >= 1 && value <= 12) {
+                        setSelectedHour(e.target.value)
+                        // Auto-fill minute to "00" if it's empty when hour is set
+                        if (!selectedMinute) {
+                          setSelectedMinute("00")
+                        }
+                      } else if (e.target.value === "") {
+                        setSelectedHour("")
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (e.target.value === "") return // Allow empty
+                      const value = parseInt(e.target.value)
+                      if (isNaN(value) || value < 1) {
+                        setSelectedHour("1")
+                      } else if (value > 12) {
+                        setSelectedHour("12")
+                      }
+                    }}
+                    className="w-16 text-center [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <span className="text-sm font-medium">:</span>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={selectedMinute}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value)
+                      if (value >= 0 && value <= 59) {
+                        setSelectedMinute(e.target.value)
+                      } else if (e.target.value === "") {
+                        setSelectedMinute("")
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (e.target.value === "") return // Allow empty
+                      const value = parseInt(e.target.value)
+                      let finalValue: string
+                      if (isNaN(value) || value < 0) {
+                        finalValue = "00"
+                      } else if (value > 59) {
+                        finalValue = "59"
+                      } else {
+                        finalValue = value.toString().padStart(2, "0")
+                      }
+                      setSelectedMinute(finalValue)
+                    }}
+                    className="w-16 text-center [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <Select value={selectedAmPm} onValueChange={setSelectedAmPm}>
+                    <SelectTrigger className="w-18 [&>svg]:w-3 [&>svg]:h-3">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="AM">AM</SelectItem>
+                      <SelectItem value="PM">PM</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button onClick={handleTimeUpdate} disabled={!selectedHour || !selectedMinute}>
+                    Set
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {task.dueDate && (
-            <div className="text-xs text-gray-500 flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              Due:{" "}
-              {formatTaskDateTime(task, { format: "compact" }) || format(task.dueDate, "MMM d")}
+            <div className="pt-3 mt-3 border-t">
+              <div className="text-xs text-gray-500 flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                Due:{" "}
+                {formatTaskDateTime(task, { format: "compact" }) || format(task.dueDate, "MMM d")}
+              </div>
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="recurring" className="mt-1">
+          <div className="space-y-4">
+            {/* Quick recurring options */}
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                onClick={() => handleRecurringSelect("daily")}
+              >
+                <Sun className="h-4 w-4 text-yellow-500 mb-1" />
+                <span>Daily</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                onClick={() => handleRecurringSelect("weekly")}
+              >
+                <Repeat className="h-4 w-4 text-blue-500 mb-1" />
+                <span>Weekly</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                onClick={() => handleRecurringSelect("monthly")}
+              >
+                <CalendarIcon className="h-4 w-4 text-purple-500 mb-1" />
+                <span>Monthly</span>
+              </Button>
+            </div>
+
+            {/* Custom interval */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Custom interval
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={customInterval}
+                  onChange={(e) => setCustomInterval(e.target.value)}
+                  className="w-16 text-center"
+                  placeholder="1"
+                />
+                <Select value={customUnit} onValueChange={setCustomUnit}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="days">days</SelectItem>
+                    <SelectItem value="weeks">weeks</SelectItem>
+                    <SelectItem value="months">months</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRecurringSelect("custom")}
+                  className="px-3"
+                >
+                  Set
+                </Button>
+              </div>
+            </div>
+
+            {/* Recurring Mode Toggle */}
+            {task.recurring && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Calculate next due date from
+                  </label>
+                  <HelpPopover content="Choose how the next due date is calculated: 'Due date' always calculates from the original due date. 'Adaptive' adjusts to your actual timing - if you complete after the due date, it calculates from your completion date (i.e. today), but if you completed before due, it calculates based on your due date. Examples: Overdue weekly task, completed on Tuesday → scheduled to next Tuesday. Weekly task due this Friday, completed early on Tuesday → scheduled to next Friday." />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant={task.recurringMode !== "completedAt" ? "default" : "outline"}
+                    size="sm"
+                    className="flex-1 text-xs"
+                    onClick={() => {
+                      const updates = { recurringMode: "dueDate" as const }
+                      if (!taskId) {
+                        updateQuickAddTask({ updateRequest: updates })
+                      } else {
+                        updateTask({ updateRequest: { id: taskId, ...updates } })
+                      }
+                    }}
+                  >
+                    Due date
+                  </Button>
+                  <Button
+                    variant={task.recurringMode === "completedAt" ? "default" : "outline"}
+                    size="sm"
+                    className="flex-1 text-xs"
+                    onClick={() => {
+                      const updates = { recurringMode: "completedAt" as const }
+                      if (!taskId) {
+                        updateQuickAddTask({ updateRequest: updates })
+                      } else {
+                        updateTask({ updateRequest: { id: taskId, ...updates } })
+                      }
+                    }}
+                  >
+                    Adaptive
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {task.recurring && (
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-sm h-8 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+                onClick={() => handleRecurringSelect("remove")}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Remove recurring pattern
+              </Button>
+            )}
+          </div>
+
           {task.recurring && (
-            <div className="text-xs text-gray-500 flex items-center gap-1">
-              <Repeat className="h-3 w-3" />
-              Recurring: {getRRuleDisplay(task.recurring || "")}
+            <div className="pt-3 mt-3 border-t">
+              <div className="text-xs text-gray-500 flex items-center gap-1">
+                <Repeat className="h-3 w-3" />
+                Current: {getRRuleDisplay(task.recurring || "")}
+              </div>
             </div>
           )}
-        </div>
-      )}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

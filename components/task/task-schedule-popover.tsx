@@ -25,10 +25,6 @@ export function TaskSchedulePopover({
     onOpenChange?.(newOpen)
   }
 
-  const handleModeChange = () => {
-    // Mode changes handled internally by TaskScheduleContent
-  }
-
   const handleClose = () => {
     setOpen(false)
   }
@@ -37,14 +33,8 @@ export function TaskSchedulePopover({
     <ContentPopover
       open={open}
       onOpenChange={handleOpenChange}
-      content={
-        <TaskScheduleContent
-          taskId={taskId}
-          onModeChange={handleModeChange}
-          onClose={handleClose}
-        />
-      }
-      className="w-72 p-0"
+      content={<TaskScheduleContent taskId={taskId} onClose={handleClose} />}
+      className="w-72 p-0 max-h-[50vh] overflow-y-auto"
       triggerClassName={className}
       align="start"
     >

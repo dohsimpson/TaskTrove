@@ -131,7 +131,6 @@ describe("TaskScheduleContent", () => {
   }
 
   const mockOnClose = vi.fn()
-  const mockOnModeChange = vi.fn()
 
   const renderWithTasks = (tasks: Task[], children: React.ReactNode) => {
     mockTasks = tasks
@@ -149,29 +148,43 @@ describe("TaskScheduleContent", () => {
     it("should render schedule options correctly", () => {
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
-      expect(screen.getByText("Schedule")).toBeInTheDocument()
+      // Check tab interface
+      expect(screen.getByRole("tablist")).toBeInTheDocument()
+      expect(screen.getByRole("tab", { name: /Schedule/ })).toBeInTheDocument()
+      expect(screen.getByRole("tab", { name: /Recurring/ })).toBeInTheDocument()
+
+      // Check quick schedule options (should be visible by default on Schedule tab)
       expect(screen.getByText("Today")).toBeInTheDocument()
       expect(screen.getByText("Tomorrow")).toBeInTheDocument()
       expect(screen.getByText("Next Week")).toBeInTheDocument()
-      expect(screen.getByText("Custom date")).toBeInTheDocument()
-      expect(screen.getByText("Make recurring")).toBeInTheDocument()
+      // Calendar is now always visible by default
+      expect(screen.getByRole("grid")).toBeInTheDocument() // Calendar grid
+    })
+
+    it("should always show calendar and time selector by default", () => {
+      renderWithTasks(
+        [mockTask],
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
+      )
+
+      // Calendar should be visible by default
+      expect(screen.getByRole("grid")).toBeInTheDocument()
+      // Time selector should also be visible with empty inputs by default
+      const hourInput = screen.getAllByRole("spinbutton")[0]
+      const minuteInput = screen.getAllByRole("spinbutton")[1]
+      expect(hourInput).toHaveValue(null)
+      expect(minuteInput).toHaveValue(null)
+      // Toggle button should not be present
+      expect(screen.queryByText("Show calendar & time")).not.toBeInTheDocument()
     })
 
     it("should call updateTask with correct parameters for today", () => {
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
       fireEvent.click(screen.getByText("Today"))
@@ -187,11 +200,7 @@ describe("TaskScheduleContent", () => {
     it("should call updateTask with correct parameters for tomorrow", () => {
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
       fireEvent.click(screen.getByText("Tomorrow"))
@@ -209,14 +218,10 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [taskWithDueDate],
-        <TaskScheduleContent
-          taskId={taskWithDueDate.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={taskWithDueDate.id} onClose={mockOnClose} />,
       )
 
-      expect(screen.getByText("Remove date")).toBeInTheDocument()
+      expect(screen.getByText("Clear Date")).toBeInTheDocument()
     })
 
     it("should call updateTask to remove date", () => {
@@ -224,14 +229,10 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [taskWithDueDate],
-        <TaskScheduleContent
-          taskId={taskWithDueDate.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={taskWithDueDate.id} onClose={mockOnClose} />,
       )
 
-      fireEvent.click(screen.getByText("Remove date"))
+      fireEvent.click(screen.getByText("Clear Date"))
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
@@ -243,52 +244,23 @@ describe("TaskScheduleContent", () => {
   })
 
   describe("Recurring Mode", () => {
-    it("should switch to recurring mode when Make recurring is clicked", () => {
+    it("should render both Schedule and Recurring tabs", () => {
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
-      fireEvent.click(screen.getByText("Make recurring"))
-
-      expect(mockOnModeChange).toHaveBeenCalledWith("recurring")
-      expect(screen.getByText("Make Recurring")).toBeInTheDocument()
-    })
-
-    it("should render recurring options in recurring mode", () => {
-      renderWithTasks(
-        [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
-      )
-
-      // Switch to recurring mode
-      fireEvent.click(screen.getByText("Make recurring"))
-
-      expect(screen.getByText("Daily")).toBeInTheDocument()
-      expect(screen.getByText("Weekly")).toBeInTheDocument()
-      expect(screen.getByText("Monthly")).toBeInTheDocument()
-      expect(screen.getByText("Custom interval")).toBeInTheDocument()
+      expect(screen.getByRole("tablist")).toBeInTheDocument()
+      expect(screen.getByRole("tab", { name: /Schedule/ })).toBeInTheDocument()
+      expect(screen.getByRole("tab", { name: /Recurring/ })).toBeInTheDocument()
     })
 
     it("should call updateTask with daily RRULE when Daily is clicked", () => {
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} defaultTab="recurring" />,
       )
 
-      fireEvent.click(screen.getByText("Make recurring"))
       fireEvent.click(screen.getByText("Daily"))
 
       expect(mockUpdateTask).toHaveBeenCalledWith(
@@ -305,14 +277,8 @@ describe("TaskScheduleContent", () => {
     it("should call updateTask with weekly RRULE when Weekly is clicked", () => {
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} defaultTab="recurring" />,
       )
-
-      fireEvent.click(screen.getByText("Make recurring"))
       fireEvent.click(screen.getByText("Weekly"))
 
       expect(mockUpdateTask).toHaveBeenCalledWith(
@@ -329,14 +295,8 @@ describe("TaskScheduleContent", () => {
     it("should call updateTask with monthly RRULE when Monthly is clicked", () => {
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} defaultTab="recurring" />,
       )
-
-      fireEvent.click(screen.getByText("Make recurring"))
       fireEvent.click(screen.getByText("Monthly"))
 
       expect(mockUpdateTask).toHaveBeenCalledWith(
@@ -353,14 +313,8 @@ describe("TaskScheduleContent", () => {
     it("should handle custom interval for days", async () => {
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} defaultTab="recurring" />,
       )
-
-      fireEvent.click(screen.getByText("Make recurring"))
 
       // Set custom interval to 3
       const intervalInput = screen.getByPlaceholderText("1")
@@ -384,14 +338,8 @@ describe("TaskScheduleContent", () => {
     it("should handle custom interval for weeks", async () => {
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} defaultTab="recurring" />,
       )
-
-      fireEvent.click(screen.getByText("Make recurring"))
 
       // Set custom interval to 2
       const intervalInput = screen.getByPlaceholderText("1")
@@ -424,11 +372,9 @@ describe("TaskScheduleContent", () => {
         <TaskScheduleContent
           taskId={taskWithRecurring.id}
           onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
+          defaultTab="recurring"
         />,
       )
-
-      fireEvent.click(screen.getByText("Make recurring"))
 
       expect(screen.getByText("Remove recurring pattern")).toBeInTheDocument()
     })
@@ -441,11 +387,9 @@ describe("TaskScheduleContent", () => {
         <TaskScheduleContent
           taskId={taskWithRecurring.id}
           onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
+          defaultTab="recurring"
         />,
       )
-
-      fireEvent.click(screen.getByText("Make recurring"))
       fireEvent.click(screen.getByText("Remove recurring pattern"))
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
@@ -464,11 +408,9 @@ describe("TaskScheduleContent", () => {
         <TaskScheduleContent
           taskId={taskWithRecurring.id}
           onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
+          defaultTab="recurring"
         />,
       )
-
-      fireEvent.click(screen.getByText("Make recurring"))
 
       expect(screen.getByText("Current: Daily")).toBeInTheDocument()
     })
@@ -482,11 +424,9 @@ describe("TaskScheduleContent", () => {
         <TaskScheduleContent
           taskId={taskWithDueDate.id}
           onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
+          defaultTab="recurring"
         />,
       )
-
-      fireEvent.click(screen.getByText("Make recurring"))
       fireEvent.click(screen.getByText("Weekly"))
 
       // Should preserve the original due date by only updating recurring pattern
@@ -518,11 +458,9 @@ describe("TaskScheduleContent", () => {
         <TaskScheduleContent
           taskId={taskWithoutDueDate.id}
           onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
+          defaultTab="recurring"
         />,
       )
-
-      fireEvent.click(screen.getByText("Make recurring"))
       fireEvent.click(screen.getByText("Daily"))
 
       // Should calculate a new due date for tasks without one
@@ -538,75 +476,37 @@ describe("TaskScheduleContent", () => {
     })
   })
 
-  describe("Calendar Mode", () => {
-    it("should switch to calendar mode and back", () => {
-      renderWithTasks(
-        [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
-      )
-
-      fireEvent.click(screen.getByText("Custom date"))
-
-      expect(mockOnModeChange).toHaveBeenCalledWith("calendar")
-      expect(screen.getByText("Pick Date")).toBeInTheDocument()
-
-      // Go back
-      const backButton = screen.getByLabelText("Go back")
-      fireEvent.click(backButton)
-
-      expect(screen.getByText("Schedule")).toBeInTheDocument()
-    })
-  })
-
   describe("Time Selection Mode", () => {
-    it("should show Set time button in main schedule menu", () => {
+    it("should show time selector by default with calendar", () => {
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
-      expect(screen.getByText("Set time")).toBeInTheDocument()
+      // Time selector should be visible by default with empty inputs
+      const hourInput = screen.getAllByRole("spinbutton")[0]
+      const minuteInput = screen.getAllByRole("spinbutton")[1]
+      expect(hourInput).toHaveValue(null)
+      expect(minuteInput).toHaveValue(null)
+      expect(screen.getByText("Set")).toBeInTheDocument()
+      expect(screen.getByText("Set")).toBeDisabled() // Should be disabled when inputs are empty
     })
 
-    it("should switch to time selector mode when Set time is clicked", () => {
+    it("should call updateTask with dueTime when Set button is clicked", () => {
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
-      fireEvent.click(screen.getByText("Set time"))
+      // Fill in time inputs first
+      const hourInput = screen.getAllByRole("spinbutton")[0]
+      const minuteInput = screen.getAllByRole("spinbutton")[1]
 
-      expect(screen.getByRole("button", { name: "Set Time" })).toBeInTheDocument()
-      expect(screen.getByText("Cancel")).toBeInTheDocument()
-    })
+      fireEvent.change(hourInput, { target: { value: "9" } })
+      fireEvent.change(minuteInput, { target: { value: "30" } })
 
-    it("should call updateTask with dueTime when Set Time button is clicked", () => {
-      renderWithTasks(
-        [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
-      )
-
-      // Open time selector
-      fireEvent.click(screen.getByText("Set time"))
-
-      // Click Set Time button (the one that actually sets the time)
-      fireEvent.click(screen.getByRole("button", { name: "Set Time" }))
+      // Click Set button
+      fireEvent.click(screen.getByRole("button", { name: "Set" }))
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
@@ -616,38 +516,54 @@ describe("TaskScheduleContent", () => {
       })
     })
 
-    it("should show Remove time button when task has dueTime", () => {
-      const dueTime = new Date()
-      dueTime.setHours(14, 30, 0, 0) // 2:30 PM
-      const taskWithTime = { ...mockTask, dueTime }
-
+    it("should auto-fill minute to 00 when hour is set", () => {
       renderWithTasks(
-        [taskWithTime],
-        <TaskScheduleContent
-          taskId={taskWithTime.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        [mockTask],
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
-      expect(screen.getByText("Remove time")).toBeInTheDocument()
+      // Fill in only hour input
+      const hourInput = screen.getAllByRole("spinbutton")[0]
+      const minuteInput = screen.getAllByRole("spinbutton")[1]
+
+      // Initially minute should be empty
+      expect(minuteInput).toHaveValue(null)
+
+      // When hour is entered, minute should auto-fill to "00"
+      fireEvent.change(hourInput, { target: { value: "9" } })
+
+      // Minute input should now show "00" automatically
+      expect(minuteInput).toHaveValue(0)
+
+      // Set button should now be enabled since both hour and minute are filled
+      const setButton = screen.getByRole("button", { name: "Set" })
+      expect(setButton).not.toBeDisabled()
     })
 
-    it("should call updateTask with dueTime: null when Remove time is clicked", () => {
+    it("should show Clear Time button when task has dueTime", () => {
       const dueTime = new Date()
       dueTime.setHours(14, 30, 0, 0) // 2:30 PM
       const taskWithTime = { ...mockTask, dueTime }
 
       renderWithTasks(
         [taskWithTime],
-        <TaskScheduleContent
-          taskId={taskWithTime.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={taskWithTime.id} onClose={mockOnClose} />,
       )
 
-      fireEvent.click(screen.getByText("Remove time"))
+      expect(screen.getByText("Clear Time")).toBeInTheDocument()
+    })
+
+    it("should call updateTask with dueTime: null when Clear Time is clicked", () => {
+      const dueTime = new Date()
+      dueTime.setHours(14, 30, 0, 0) // 2:30 PM
+      const taskWithTime = { ...mockTask, dueTime }
+
+      renderWithTasks(
+        [taskWithTime],
+        <TaskScheduleContent taskId={taskWithTime.id} onClose={mockOnClose} />,
+      )
+
+      fireEvent.click(screen.getByText("Clear Time"))
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
@@ -664,11 +580,7 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [taskWithTime],
-        <TaskScheduleContent
-          taskId={taskWithTime.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={taskWithTime.id} onClose={mockOnClose} />,
       )
 
       fireEvent.click(screen.getByText("Today"))
@@ -690,15 +602,11 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [taskWithDueDate],
-        <TaskScheduleContent
-          taskId={taskWithDueDate.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={taskWithDueDate.id} onClose={mockOnClose} />,
       )
 
-      // The component should show a "Remove date" button when there's a due date
-      expect(screen.getByText("Remove date")).toBeInTheDocument()
+      // The component should show a "Clear Date" button when there's a due date
+      expect(screen.getByText("Clear Date")).toBeInTheDocument()
     })
 
     it("should display due date only when no due time is set", () => {
@@ -707,11 +615,7 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [taskWithDueDate],
-        <TaskScheduleContent
-          taskId={taskWithDueDate.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={taskWithDueDate.id} onClose={mockOnClose} />,
       )
 
       // Should show date without time when no dueTime is set
@@ -727,11 +631,7 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [taskWithDateTime],
-        <TaskScheduleContent
-          taskId={taskWithDateTime.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={taskWithDateTime.id} onClose={mockOnClose} />,
       )
 
       // Should show both date and time (new concise format without "at")
@@ -754,11 +654,7 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [taskWithTimeOnly],
-        <TaskScheduleContent
-          taskId={taskWithTimeOnly.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={taskWithTimeOnly.id} onClose={mockOnClose} />,
       )
 
       // When there's only time but no date, the component may not show Due status
@@ -777,11 +673,11 @@ describe("TaskScheduleContent", () => {
         <TaskScheduleContent
           taskId={taskWithRecurring.id}
           onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
+          defaultTab="recurring"
         />,
       )
 
-      expect(screen.getByText("Recurring: Weekly")).toBeInTheDocument()
+      expect(screen.getByText("Current: Weekly")).toBeInTheDocument()
     })
 
     it("should show remove buttons when both due date and recurring are present", () => {
@@ -797,14 +693,13 @@ describe("TaskScheduleContent", () => {
         <TaskScheduleContent
           taskId={taskWithBoth.id}
           onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
+          defaultTab="recurring"
         />,
       )
 
-      // Should show both remove buttons
-      expect(screen.getByText("Remove date")).toBeInTheDocument()
-      expect(screen.getByText("Remove recurring")).toBeInTheDocument()
-      expect(screen.getByText("Recurring: Daily")).toBeInTheDocument()
+      // Should show recurring remove button and status (in recurring tab)
+      expect(screen.getByText("Remove recurring pattern")).toBeInTheDocument()
+      expect(screen.getByText("Current: Daily")).toBeInTheDocument()
     })
   })
 
@@ -817,20 +712,21 @@ describe("TaskScheduleContent", () => {
     it("should render schedule options for new task", () => {
       mockQuickAddTask = mockQuickTask
 
-      render(<TaskScheduleContent onClose={mockOnClose} onModeChange={mockOnModeChange} />)
+      render(<TaskScheduleContent onClose={mockOnClose} />)
 
-      expect(screen.getByText("Schedule")).toBeInTheDocument()
+      expect(screen.getByRole("tab", { name: /Schedule/ })).toBeInTheDocument()
       expect(screen.getByText("Today")).toBeInTheDocument()
       expect(screen.getByText("Tomorrow")).toBeInTheDocument()
       expect(screen.getByText("Next Week")).toBeInTheDocument()
-      expect(screen.getByText("Custom date")).toBeInTheDocument()
-      expect(screen.getByText("Make recurring")).toBeInTheDocument()
+      // Calendar is now always visible by default
+      expect(screen.getByRole("grid")).toBeInTheDocument() // Calendar grid
+      expect(screen.getByRole("tab", { name: /Recurring/ })).toBeInTheDocument()
     })
 
     it("should call updateQuickAddTask when setting due date for new task", () => {
       mockQuickAddTask = mockQuickTask
 
-      render(<TaskScheduleContent onClose={mockOnClose} onModeChange={mockOnModeChange} />)
+      render(<TaskScheduleContent onClose={mockOnClose} />)
 
       fireEvent.click(screen.getByText("Today"))
 
@@ -845,9 +741,8 @@ describe("TaskScheduleContent", () => {
     it("should call updateQuickAddTask when setting recurring pattern for new task", () => {
       mockQuickAddTask = mockQuickTask
 
-      render(<TaskScheduleContent onClose={mockOnClose} onModeChange={mockOnModeChange} />)
+      render(<TaskScheduleContent onClose={mockOnClose} defaultTab="recurring" />)
 
-      fireEvent.click(screen.getByText("Make recurring"))
       fireEvent.click(screen.getByText("Daily"))
 
       expect(mockUpdateQuickAddTask).toHaveBeenCalledWith(
@@ -864,9 +759,8 @@ describe("TaskScheduleContent", () => {
     it("should preserve due date when setting recurring pattern for new task", () => {
       mockQuickAddTask = { ...mockQuickTask, dueDate: new Date("2024-01-15") }
 
-      render(<TaskScheduleContent onClose={mockOnClose} onModeChange={mockOnModeChange} />)
+      render(<TaskScheduleContent onClose={mockOnClose} defaultTab="recurring" />)
 
-      fireEvent.click(screen.getByText("Make recurring"))
       fireEvent.click(screen.getByText("Weekly"))
 
       expect(mockUpdateQuickAddTask).toHaveBeenCalledWith(
@@ -899,7 +793,7 @@ describe("TaskScheduleContent", () => {
     it("should preserve recurring pattern when setting due date for new task", () => {
       mockQuickAddTask = { ...mockQuickTask, recurring: "RRULE:FREQ=DAILY" }
 
-      render(<TaskScheduleContent onClose={mockOnClose} onModeChange={mockOnModeChange} />)
+      render(<TaskScheduleContent onClose={mockOnClose} />)
 
       fireEvent.click(screen.getByText("Tomorrow"))
 
@@ -930,17 +824,13 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [taskWithBoth],
-        <TaskScheduleContent
-          taskId={taskWithBoth.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={taskWithBoth.id} onClose={mockOnClose} />,
       )
 
-      expect(screen.getByText("Skip to next occurrence")).toBeInTheDocument()
+      expect(screen.getByText("Skip")).toBeInTheDocument()
     })
 
-    it("should not show skip button when task has no recurring pattern", () => {
+    it("should disable skip button when task has no recurring pattern", () => {
       const taskWithOnlyDueDate = {
         ...mockTask,
         dueDate: new Date("2024-01-15"),
@@ -948,17 +838,14 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [taskWithOnlyDueDate],
-        <TaskScheduleContent
-          taskId={taskWithOnlyDueDate.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={taskWithOnlyDueDate.id} onClose={mockOnClose} />,
       )
 
-      expect(screen.queryByText("Skip to next occurrence")).not.toBeInTheDocument()
+      const skipButton = screen.getByText("Skip").closest("button")
+      expect(skipButton).toBeDisabled()
     })
 
-    it("should not show skip button when task has no due date", () => {
+    it("should disable skip button when task has no due date", () => {
       const taskWithOnlyRecurring = {
         ...mockTask,
         recurring: "RRULE:FREQ=DAILY",
@@ -966,14 +853,11 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [taskWithOnlyRecurring],
-        <TaskScheduleContent
-          taskId={taskWithOnlyRecurring.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={taskWithOnlyRecurring.id} onClose={mockOnClose} />,
       )
 
-      expect(screen.queryByText("Skip to next occurrence")).not.toBeInTheDocument()
+      const skipButton = screen.getByText("Skip").closest("button")
+      expect(skipButton).toBeDisabled()
     })
 
     it("should call updateTask with calculated next due date when skip button is clicked", () => {
@@ -991,14 +875,10 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [taskWithBoth],
-        <TaskScheduleContent
-          taskId={taskWithBoth.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={taskWithBoth.id} onClose={mockOnClose} />,
       )
 
-      fireEvent.click(screen.getByText("Skip to next occurrence"))
+      fireEvent.click(screen.getByText("Skip"))
 
       // Should call calculateNextDueDate with correct parameters
       expect(mockCalculateNextDueDateFn).toHaveBeenCalledWith("RRULE:FREQ=DAILY", dueDate, false)
@@ -1027,14 +907,10 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [taskWithWeekly],
-        <TaskScheduleContent
-          taskId={taskWithWeekly.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={taskWithWeekly.id} onClose={mockOnClose} />,
       )
 
-      fireEvent.click(screen.getByText("Skip to next occurrence"))
+      fireEvent.click(screen.getByText("Skip"))
 
       expect(mockCalculateNextDueDateFn).toHaveBeenCalledWith("RRULE:FREQ=WEEKLY", dueDate, false)
       expect(mockUpdateTask).toHaveBeenCalledWith({
@@ -1058,14 +934,10 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [taskWithBoth],
-        <TaskScheduleContent
-          taskId={taskWithBoth.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={taskWithBoth.id} onClose={mockOnClose} />,
       )
 
-      fireEvent.click(screen.getByText("Skip to next occurrence"))
+      fireEvent.click(screen.getByText("Skip"))
 
       expect(mockCalculateNextDueDateFn).toHaveBeenCalledWith(
         "RRULE:FREQ=DAILY;UNTIL=20240115",
@@ -1091,14 +963,10 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [taskWithCustomInterval],
-        <TaskScheduleContent
-          taskId={taskWithCustomInterval.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={taskWithCustomInterval.id} onClose={mockOnClose} />,
       )
 
-      fireEvent.click(screen.getByText("Skip to next occurrence"))
+      fireEvent.click(screen.getByText("Skip"))
 
       expect(mockCalculateNextDueDateFn).toHaveBeenCalledWith(
         "RRULE:FREQ=DAILY;INTERVAL=3",
@@ -1131,11 +999,7 @@ describe("TaskScheduleContent", () => {
     it("should render natural language input field with button", () => {
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
       const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
@@ -1151,11 +1015,7 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
       const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
@@ -1184,11 +1044,7 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
       const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
@@ -1228,11 +1084,7 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
       const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
@@ -1269,11 +1121,7 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
       const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
@@ -1310,11 +1158,7 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
       const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
@@ -1353,11 +1197,7 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
       const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
@@ -1417,7 +1257,7 @@ describe("TaskScheduleContent", () => {
       vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(parsedResult)
       mockQuickAddTask = { title: "New Task", description: "" }
 
-      render(<TaskScheduleContent onClose={mockOnClose} onModeChange={mockOnModeChange} />)
+      render(<TaskScheduleContent onClose={mockOnClose} />)
 
       const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")
       const parseButton = screen.getByRole("button", { name: "" })
@@ -1450,11 +1290,7 @@ describe("TaskScheduleContent", () => {
 
       renderWithTasks(
         [mockTask],
-        <TaskScheduleContent
-          taskId={mockTask.id}
-          onClose={mockOnClose}
-          onModeChange={mockOnModeChange}
-        />,
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
       const nlInput = screen.getByPlaceholderText("e.g., tomorrow 3PM, next monday, daily")

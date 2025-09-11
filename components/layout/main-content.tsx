@@ -73,7 +73,6 @@ export function MainContent({}: MainContentProps) {
         return (
           <CalendarView
             tasks={filteredTasks}
-            onTaskClick={toggleTaskPanel}
             onDateClick={() => {}}
             droppableId={getDroppableId()}
           />
@@ -143,7 +142,6 @@ export function MainContent({}: MainContentProps) {
             return (
               <CalendarView
                 tasks={filteredTasks}
-                onTaskClick={toggleTaskPanel}
                 onDateClick={() => {}}
                 droppableId={getDroppableId()}
                 project={projectForView}

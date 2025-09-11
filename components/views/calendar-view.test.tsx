@@ -461,7 +461,6 @@ describe("CalendarView", () => {
 
   const defaultProps = {
     tasks: mockTasks,
-    onTaskClick: vi.fn(),
     onDateClick: vi.fn(),
     droppableId: "test-droppable",
   }
@@ -536,15 +535,7 @@ describe("CalendarView", () => {
     expect(callArgs).toBeInstanceOf(Date)
   })
 
-  it("handles task click", async () => {
-    const user = userEvent.setup()
-    render(<CalendarView {...defaultProps} />)
-
-    const task = screen.getByText(`Mock Task ${TEST_TASK_ID_1}`)
-    await user.click(task)
-
-    expect(defaultProps.onTaskClick).toHaveBeenCalledWith(mockTasks[0])
-  })
+  // Task clicks are now handled internally by TaskItem component
 
   it("navigates to previous month", async () => {
     const user = userEvent.setup()
@@ -782,16 +773,7 @@ describe("CalendarView", () => {
     expect(screen.getByText(`Mock Task ${TEST_TASK_ID_3}`)).toBeInTheDocument()
   })
 
-  it("prevents event propagation when clicking on tasks", async () => {
-    const user = userEvent.setup()
-    render(<CalendarView {...defaultProps} />)
-
-    const task = screen.getByText(`Mock Task ${TEST_TASK_ID_1}`)
-    await user.click(task)
-
-    // Task click should be called
-    expect(defaultProps.onTaskClick).toHaveBeenCalled()
-  })
+  // Event propagation is now handled internally by TaskItem component
 
   describe("Priority color mapping", () => {
     it("applies correct colors for different priorities", () => {

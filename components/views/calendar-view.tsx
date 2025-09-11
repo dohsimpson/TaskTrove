@@ -47,19 +47,12 @@ const SIDE_PANEL_WIDTH = 320 // 320px = w-80 in Tailwind
 
 interface CalendarViewProps {
   tasks: Task[]
-  onTaskClick: (task: Task) => void
   onDateClick: (date: Date) => void
   droppableId: string // Required ID for the droppable sidebar
   project?: Project // Optional project context for adding tasks
 }
 
-export function CalendarView({
-  tasks,
-  onTaskClick,
-  onDateClick,
-  droppableId,
-  project,
-}: CalendarViewProps) {
+export function CalendarView({ tasks, onDateClick, droppableId, project }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [alwaysShow6Rows] = useState(true) // TODO: Extract to view settings when needed
@@ -382,18 +375,11 @@ export function CalendarView({
                                 fromCalendarDay: dayId,
                               })}
                             >
-                              <div
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  onTaskClick(task)
-                                }}
-                              >
-                                <TaskItem
-                                  taskId={task.id}
-                                  variant="calendar"
-                                  showProjectBadge={false}
-                                />
-                              </div>
+                              <TaskItem
+                                taskId={task.id}
+                                variant="calendar"
+                                showProjectBadge={false}
+                              />
                             </DraggableWrapper>
                           ))}
                         {isCurrentMonth && dayTasks.length > 3 && (
@@ -472,18 +458,11 @@ export function CalendarView({
                         fromBottom: true,
                       })}
                     >
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onTaskClick(task)
-                        }}
-                      >
-                        <TaskItem
-                          taskId={task.id}
-                          variant={compactView ? "compact" : "default"}
-                          showProjectBadge={false}
-                        />
-                      </div>
+                      <TaskItem
+                        taskId={task.id}
+                        variant={compactView ? "compact" : "default"}
+                        showProjectBadge={false}
+                      />
                     </DraggableWrapper>
                   ))
                 ) : (
@@ -514,18 +493,11 @@ export function CalendarView({
                           fromUnscheduled: true,
                         })}
                       >
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onTaskClick(task)
-                          }}
-                        >
-                          <TaskItem
-                            taskId={task.id}
-                            variant={compactView ? "compact" : "default"}
-                            showProjectBadge={true}
-                          />
-                        </div>
+                        <TaskItem
+                          taskId={task.id}
+                          variant={compactView ? "compact" : "default"}
+                          showProjectBadge={true}
+                        />
                       </DraggableWrapper>
                     ))}
                   </>

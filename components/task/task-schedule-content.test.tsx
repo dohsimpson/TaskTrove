@@ -100,6 +100,7 @@ vi.mock("date-fns", () => ({
 // Mock the recurring task processor
 vi.mock("@/lib/utils/recurring-task-processor", () => ({
   calculateNextDueDate: vi.fn(() => new Date()),
+  getRecurringReferenceDate: vi.fn((dueDate) => dueDate),
 }))
 
 // Mock the CommonRRules and related functions

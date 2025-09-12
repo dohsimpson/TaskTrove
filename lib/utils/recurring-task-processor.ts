@@ -224,6 +224,25 @@ export function dateMatchesRecurringPattern(
 /**
  * Calculate next due date based on RRULE pattern
  */
+/**
+ * Calculate the reference date for recurring task calculations based on recurringMode
+ * - For "completedAt" mode: uses the later of actionDate and dueDate to prevent backwards scheduling
+ * - For "dueDate" mode: always uses the dueDate
+ */
+export function getRecurringReferenceDate(
+  dueDate: Date,
+  recurringMode: "dueDate" | "completedAt" | undefined,
+  actionDate?: Date,
+): Date {
+  if (recurringMode === "completedAt" && actionDate) {
+    // Use Math.max to prevent infinite loop when completing/skipping tasks early.
+    // Example: Daily task due tomorrow, completed/skipped today → use tomorrow as reference, not today.
+    // This ensures we never move the schedule backwards and get stuck in a loop.
+    return new Date(Math.max(actionDate.getTime(), dueDate.getTime()))
+  }
+  return new Date(dueDate)
+}
+
 export function calculateNextDueDate(
   rrule: string,
   fromDate: Date,
@@ -681,13 +700,11 @@ export function generateNextTaskInstance(completedTask: Task): Task | null {
   }
 
   // Determine the reference date for calculating next occurrence
-  const referenceDate =
-    completedTask.recurringMode === "completedAt" && completedTask.completedAt
-      ? // Use Math.max to prevent infinite loop when completing tasks early.
-        // Example: Daily task due tomorrow, completed today → use tomorrow as reference, not today.
-        // This ensures we never move the schedule backwards and get stuck in a loop.
-        new Date(Math.max(completedTask.completedAt.getTime(), completedTask.dueDate.getTime()))
-      : new Date(completedTask.dueDate)
+  const referenceDate = getRecurringReferenceDate(
+    completedTask.dueDate,
+    completedTask.recurringMode,
+    completedTask.completedAt,
+  )
 
   const nextDueDate = calculateNextDueDate(completedTask.recurring, referenceDate)
 

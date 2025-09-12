@@ -31,7 +31,10 @@ import { format, addDays } from "date-fns"
 import type { CreateTaskRequest, Task, TaskId } from "@/lib/types"
 import { formatTaskDateTime } from "@/lib/utils/task-date-formatter"
 import { CommonRRules, buildRRule, RRuleFrequency, RRuleWeekday, parseRRule } from "@/lib/types"
-import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
+import {
+  calculateNextDueDate,
+  getRecurringReferenceDate,
+} from "@/lib/utils/recurring-task-processor"
 import { useAtomValue, useSetAtom } from "jotai"
 import { tasksAtom, updateTaskAtom } from "@/lib/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
@@ -599,8 +602,13 @@ export function TaskScheduleContent({
     let nextDueDate: Date | null = null
 
     if (task.recurring) {
-      // If task has recurring pattern, calculate next occurrence
-      nextDueDate = calculateNextDueDate(task.recurring, task.dueDate, false)
+      // Use same logic as task completion for determining reference date
+      const referenceDate = getRecurringReferenceDate(
+        task.dueDate,
+        task.recurringMode,
+        new Date(), // Use current date as the "action date" for skip
+      )
+      nextDueDate = calculateNextDueDate(task.recurring, referenceDate, false)
     } else {
       // If no recurring pattern, just advance by one day using date-fns
       nextDueDate = addDays(task.dueDate, 1)

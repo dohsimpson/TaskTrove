@@ -49,6 +49,7 @@ function ViewOptionsPopoverComponent({ onAdvancedSearch, className }: ViewOption
       contentProps={{ className: "w-80", align: "end" }}
       openDelay={250}
       closeDelay={100}
+      disabled={true} // TODO: disable for now to prevent confusion, will need to add a settings in the future.
     >
       <Button variant="ghost" size="sm" className={cn("gap-2 cursor-pointer", className)}>
         {getButtonIcon()}

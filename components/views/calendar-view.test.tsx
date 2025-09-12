@@ -170,11 +170,13 @@ vi.mock("@/components/ui/drop-target-wrapper", () => ({
     children,
     dropTargetId,
     className,
+    dropClassName,
     getData,
   }: {
     children: React.ReactNode
     dropTargetId?: string
     className?: string
+    dropClassName?: string
     getData?: () => Record<string, unknown>
   }) => {
     const data = getData ? getData() : {}
@@ -184,6 +186,7 @@ vi.mock("@/components/ui/drop-target-wrapper", () => ({
         data-droppable-type={
           data.type === "project" ? "TASK" : data.type === "label" ? "TASK" : data.type
         }
+        data-drop-class-name={dropClassName}
         className={className}
       >
         {children}
@@ -1167,6 +1170,37 @@ describe("CalendarView", () => {
           mockUseAtomValue.mockImplementation(originalImplementation)
         }
       }
+    })
+  })
+
+  describe("Drag and Drop Visual Feedback", () => {
+    it("applies dropClassName to calendar day cells for visual feedback", () => {
+      render(<CalendarView {...defaultProps} />)
+
+      // Find all calendar day drop targets
+      // Calendar days have dropTargetId format: calendar-day-YYYY-MM-DD
+      const calendarDayDropTargets = screen.getAllByTestId(/droppable-calendar-day-/)
+
+      // Verify that each calendar day has the dropClassName for visual feedback
+      calendarDayDropTargets.forEach((dropTarget) => {
+        expect(dropTarget).toHaveAttribute(
+          "data-drop-class-name",
+          "ring-2 ring-primary/50 bg-primary/10",
+        )
+      })
+    })
+
+    it("applies dropClassName to selected date task list for visual feedback", () => {
+      render(<CalendarView {...defaultProps} />)
+
+      // The selected date task list uses the droppableId prop
+      const selectedDateDropTarget = screen.getByTestId(`droppable-${defaultProps.droppableId}`)
+
+      // Verify that the dropClassName is applied for visual feedback with more subtle styling
+      expect(selectedDateDropTarget).toHaveAttribute(
+        "data-drop-class-name",
+        "ring-2 ring-primary/50 bg-primary/5",
+      )
     })
   })
 })

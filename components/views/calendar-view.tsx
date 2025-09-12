@@ -332,6 +332,7 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
                   <DropTargetWrapper
                     key={day.toISOString()}
                     dropTargetId={`calendar-day-${dayId}`}
+                    dropClassName="ring-2 ring-primary/50 bg-primary/10"
                     onDrop={({ source, location }) => {
                       handleCalendarDrop({ source, location })
                     }}
@@ -417,6 +418,7 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
               </div>
               <DropTargetWrapper
                 dropTargetId={droppableId}
+                dropClassName="ring-2 ring-primary/50 bg-primary/5"
                 onDrop={({ source }) => {
                   if (source.data && source.data.type === "draggable-item" && selectedDate) {
                     // Transform to calendar-day drop for selected date

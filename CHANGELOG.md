@@ -1,5 +1,49 @@
 # tasktrove
 
+## 0.5.0
+
+### Features
+
+🎉 Feature - Add support for calendar view
+🎉 Feature - Enhance animation for smooth UI
+🎉 Feature - Redesign kanban view
+🎉 Feature - Redesign task schedule popover
+
+### Minor Changes
+
+🎉 Feature - Enhance daily and weekly pattern selection.
+🎉 Feature - Complete shadcn migration with modern patterns and optimizations.
+🎉 Feature - Implement multi-select interval patterns for task scheduling.
+🎉 Feature - Add comprehensive BYSETPOS pattern support and fix timezone handling.
+🎉 Feature - Enhance settings UI with default page selection and consistent styling.
+🎉 Feature - Add NLP input validation for task scheduling.
+🎉 Feature - Add tooltip to disabled kanban button in view options. (#34)
+🎉 Feature - Add count badge for completed tasks in sidebar.
+🎉 Feature - Add dynamic regex support for project/label names with spaces.
+🎉 Feature - Add project context and unscheduled tasks display.
+🎉 Feature - Enhance skip button to work with non-recurring tasks.
+🎉 Feature - Add missing "in a ..." patterns and improve date precision.
+
+### Patch Changes
+
+🐛 Bug - Resolve cursor jumping and space key issues in section name editing. (#19)
+🐛 Bug - Improve dark mode color adaptation and inline helper function.
+🐛 Bug - Resolve date/time clearing and recurring text display issues.
+🐛 Bug - Fix timeout overflow causing infinite notification loops.
+🐛 Bug - Replace console.log with Sonner toast notifications in manual backup.
+🐛 Bug - Prevent editable section header from losing focus when context menu hides.
+🐛 Bug - Align skip-to-next logic with task completion for recurringMode.
+🐛 Bug - Correct open state for mobile viewport in page header.
+🐛 Bug - Display time in 12-hour format in schedule component.
+🐛 Bug - Improve drag and drop with timezone fix and enhanced UX.
+🐛 Bug - Improve recurring pattern due date management.
+🐛 Bug - Ensure side panel always takes full height.
+🐛 Bug - Prevent project section header from losing focus when context menu hides.
+🐛 Bug - Resolve side panel covering footer by using absolute positioning.
+🐛 Bug - Remove empty sections from context menus.
+🐛 Bug - Fix bugs and enhance task schedule component functionality.
+🐛 Bug - Show orphaned task in unsectioned list for project view and kanban.
+
 ## 0.4.1
 
 ### Patch Changes

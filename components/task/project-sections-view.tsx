@@ -155,7 +155,6 @@ export function ProjectSectionsView({
   const [newSectionName, setNewSectionName] = useState("")
   const [newSectionColor, setNewSectionColor] = useState("#3b82f6")
   const [editingSectionColor, setEditingSectionColor] = useState("")
-  const [hoveredSectionId, setHoveredSectionId] = useState<string | null>(null)
 
   // Track drag state for shadow rendering per section
   const [sectionDragStates, setSectionDragStates] = useState<
@@ -520,8 +519,6 @@ export function ProjectSectionsView({
     const sectionTasks = getOrderedTasksForSection(section.id)
     const sectionDroppableId = `${droppableId}-section-${sectionId}`
     const isCollapsed = collapsedSections.includes(sectionId)
-
-    const isHovered = hoveredSectionId === sectionId
     const isEditing = editingSectionId === section.id
 
     // Common drop handlers
@@ -572,11 +569,7 @@ export function ProjectSectionsView({
 
     // Render the section header (always visible)
     const sectionHeader = (
-      <div
-        className="flex items-center py-2 px-1 mb-3"
-        onMouseEnter={() => setHoveredSectionId(sectionId)}
-        onMouseLeave={() => setHoveredSectionId(null)}
-      >
+      <div className="flex items-center py-2 px-1 mb-3">
         <CollapsibleTrigger asChild>
           <Button
             variant="ghost"
@@ -635,10 +628,7 @@ export function ProjectSectionsView({
 
           {/* Section context menu for non-unsectioned sections - only show if sections are supported */}
           {section.name !== "Unsectioned" && supportsSections && project?.id && (
-            <SectionContextMenu
-              sectionId={createSectionId(section.id)}
-              isVisible={isHovered && !isEditing}
-            />
+            <SectionContextMenu sectionId={createSectionId(section.id)} isVisible={true} />
           )}
         </div>
       </div>

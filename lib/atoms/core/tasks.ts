@@ -11,6 +11,7 @@ import {
   LabelId,
   LabelIdSchema,
   Project,
+  ProjectSection,
   INBOX_PROJECT_ID,
   ensureTaskProjectId,
   createTaskId,
@@ -1187,6 +1188,118 @@ export const getTasksForViewAtom = atom((get) => {
 getTasksForViewAtom.debugLabel = "getTasksForViewAtom"
 
 // =============================================================================
+// DERIVED ATOMS
+// =============================================================================
+
+/**
+ * Derived atom that pre-computes ordered tasks for all projects.
+ * This prevents redundant calculations when displaying multiple sections.
+ */
+export const orderedTasksByProjectAtom = atom((get) => {
+  const tasks = get(tasksAtom)
+  const projects = get(projectsAtom)
+
+  // Create a map of projectId -> ordered tasks
+  const orderedTasksMap = new Map<string, Task[]>()
+
+  // Process all projects
+  for (const project of projects) {
+    const orderedTasks = getOrderedTasksForProject(project.id, tasks, projects)
+    orderedTasksMap.set(project.id, orderedTasks)
+  }
+
+  // Special case for inbox (tasks without projectId)
+  orderedTasksMap.set("inbox", getOrderedTasksForProject(INBOX_PROJECT_ID, tasks, projects))
+
+  return orderedTasksMap
+})
+orderedTasksByProjectAtom.debugLabel = "orderedTasksByProjectAtom"
+
+/**
+ * Shared atom for getting ordered tasks by section with orphan handling
+ * Returns a function that takes (projectId, sectionId) and returns ordered tasks
+ * Handles orphaned tasks (tasks with invalid section IDs) by showing them in the default section
+ */
+export const orderedTasksBySectionAtom = atom((get) => {
+  return (projectId: ProjectId | "inbox", sectionId: string | null) => {
+    try {
+      const tasks = get(filteredTasksAtom) // Use already filtered tasks
+      const currentViewState = get(currentViewStateAtom)
+      const allProjects = get(projectsAtom)
+      const orderedTasksByProject = get(orderedTasksByProjectAtom)
+
+      // Find the specific project to get its sections
+      const project =
+        projectId === "inbox" ? null : allProjects.find((p: Project) => p.id === projectId)
+
+      // Get list of existing section IDs for orphan detection
+      const existingSectionIds = new Set([
+        DEFAULT_UUID,
+        ...(project?.sections.map((s: ProjectSection) => s.id) || []),
+      ])
+
+      // Filter tasks for this section from the passed tasks (already sorted by filteredTasksAtom)
+      const sectionTasks = tasks.filter((task: Task) => {
+        // First filter by project
+        const taskProjectId = task.projectId || INBOX_PROJECT_ID
+        const targetProjectId = projectId === "inbox" ? INBOX_PROJECT_ID : projectId
+        if (taskProjectId !== targetProjectId) return false
+
+        // Then filter by section - handle orphaned tasks
+        if (sectionId === null || sectionId === DEFAULT_UUID) {
+          // Include tasks that belong to default section OR tasks with orphaned section IDs
+          return (
+            task.sectionId === DEFAULT_UUID ||
+            !task.sectionId ||
+            !existingSectionIds.has(task.sectionId)
+          )
+        }
+        return task.sectionId === sectionId
+      })
+
+      // If user has selected a specific sort (not "default"), respect it fully
+      if (currentViewState.sortBy !== "default") {
+        return sectionTasks // tasks are already sorted by filteredTasksAtom
+      }
+
+      // For "default" sort, maintain the legacy behavior for better UX in project views:
+      // Use project ordering for incomplete tasks, keep completed tasks at bottom
+      const projectIdForOrdering = projectId === "inbox" ? "inbox" : projectId
+      const orderedProjectTasks = orderedTasksByProject.get(projectIdForOrdering) || []
+      const projectTaskOrder = orderedProjectTasks.map((t) => t.id)
+
+      const sortedTasks = sectionTasks.sort((a: Task, b: Task) => {
+        // If completion status differs, completed tasks go to bottom (matches main-content.tsx)
+        if (a.completed && !b.completed) return 1
+        if (!a.completed && b.completed) return -1
+
+        // Both have same completion status, use project order for "default" sort
+        const aIndex = projectTaskOrder.indexOf(a.id)
+        const bIndex = projectTaskOrder.indexOf(b.id)
+
+        // If both tasks are in project order, maintain that order
+        if (aIndex !== -1 && bIndex !== -1) {
+          return aIndex - bIndex
+        }
+
+        // If only one is in project order, it comes first
+        if (aIndex !== -1) return -1
+        if (bIndex !== -1) return 1
+
+        // Neither in project order, maintain original order (by creation date)
+        return a.createdAt.getTime() - b.createdAt.getTime()
+      })
+
+      return sortedTasks
+    } catch (error) {
+      handleAtomError(error, "orderedTasksBySectionAtom")
+      return []
+    }
+  }
+})
+orderedTasksBySectionAtom.debugLabel = "orderedTasksBySectionAtom"
+
+// =============================================================================
 // EXPORT STRUCTURE
 // =============================================================================
 
@@ -1229,35 +1342,9 @@ export const taskAtoms = {
     baseTasksForView: baseTasksForViewAtom,
     filteredTasks: filteredTasksAtom,
     getTasksForView: getTasksForViewAtom,
+    orderedTasksByProject: orderedTasksByProjectAtom,
+    orderedTasksBySection: orderedTasksBySectionAtom,
   },
 }
-
-// Individual exports for backward compatibility
-// =============================================================================
-// DERIVED ATOMS
-// =============================================================================
-
-/**
- * Derived atom that pre-computes ordered tasks for all projects.
- * This prevents redundant calculations when displaying multiple sections.
- */
-export const orderedTasksByProjectAtom = atom((get) => {
-  const tasks = get(tasksAtom)
-  const projects = get(projectsAtom)
-
-  // Create a map of projectId -> ordered tasks
-  const orderedTasksMap = new Map<string, Task[]>()
-
-  // Process all projects
-  for (const project of projects) {
-    const orderedTasks = getOrderedTasksForProject(project.id, tasks, projects)
-    orderedTasksMap.set(project.id, orderedTasks)
-  }
-
-  // Special case for inbox (tasks without projectId)
-  orderedTasksMap.set("inbox", getOrderedTasksForProject(INBOX_PROJECT_ID, tasks, projects))
-
-  return orderedTasksMap
-})
 
 export { tasksAtom } from "./base"

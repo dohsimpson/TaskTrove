@@ -38,9 +38,9 @@ import {
   stopEditingSectionAtom,
 } from "@/lib/atoms/ui/navigation"
 import {
-  orderedTasksByProjectAtom,
   reorderTaskInViewAtom,
   moveTaskBetweenSectionsAtom,
+  taskAtoms,
 } from "@/lib/atoms/core/tasks"
 import type { Task, Project, ProjectSection } from "@/lib/types"
 import { createSectionId, createTaskId, createProjectId } from "@/lib/types"
@@ -191,7 +191,7 @@ export function ProjectSectionsView({
   const addTaskToSection = useAddTaskToSection()
   const reorderTaskInView = useSetAtom(reorderTaskInViewAtom)
   const moveTaskBetweenSections = useSetAtom(moveTaskBetweenSectionsAtom)
-  const orderedTasksByProject = useAtomValue(orderedTasksByProjectAtom)
+  const getOrderedTasksForSection = useAtomValue(taskAtoms.derived.orderedTasksBySection)
 
   const handleAddSection = () => {
     if (newSectionName.trim() && project && supportsSections) {
@@ -360,7 +360,7 @@ export function ProjectSectionsView({
       const viewId = projectId // ViewId can be a ProjectId
 
       // Get current task positions
-      const sectionTasks = getOrderedTasksForSection(targetSectionId)
+      const sectionTasks = getOrderedTasksForSection(projectId, targetSectionId)
       const sourceIndex = sectionTasks.findIndex((task: Task) => task.id === taskId)
 
       // Calculate target index from drop position
@@ -450,53 +450,6 @@ export function ProjectSectionsView({
     toggleSectionCollapse(sectionId)
   }
 
-  // Group tasks by section and order them using project taskOrder arrays
-  const getOrderedTasksForSection = (sectionId: string | null) => {
-    // Filter tasks for this section from the passed tasks (already sorted by filteredTasksAtom)
-    const sectionTasks = tasks.filter((task: Task) => {
-      // For backward compatibility, treat null as default section
-      if (sectionId === null || sectionId === DEFAULT_UUID) {
-        return task.sectionId === DEFAULT_UUID || !task.sectionId
-      }
-      return task.sectionId === sectionId
-    })
-
-    // If user has selected a specific sort (not "default"), respect it fully
-    if (currentViewState.sortBy !== "default") {
-      return sectionTasks // tasks are already sorted by filteredTasksAtom
-    }
-
-    // For "default" sort, maintain the legacy behavior for better UX in project views:
-    // Use project ordering for incomplete tasks, keep completed tasks at bottom
-    const projectId = project?.id || "inbox"
-    const orderedProjectTasks = orderedTasksByProject.get(projectId) || []
-    const projectTaskOrder = orderedProjectTasks.map((t) => t.id)
-
-    const sortedTasks = sectionTasks.sort((a: Task, b: Task) => {
-      // If completion status differs, completed tasks go to bottom (matches main-content.tsx)
-      if (a.completed && !b.completed) return 1
-      if (!a.completed && b.completed) return -1
-
-      // Both have same completion status, use project order for "default" sort
-      const aIndex = projectTaskOrder.indexOf(a.id)
-      const bIndex = projectTaskOrder.indexOf(b.id)
-
-      // If both tasks are in project order, maintain that order
-      if (aIndex !== -1 && bIndex !== -1) {
-        return aIndex - bIndex
-      }
-
-      // If only one is in project order, it comes first
-      if (aIndex !== -1) return -1
-      if (bIndex !== -1) return 1
-
-      // Neither in project order, maintain original order (by creation date)
-      return a.createdAt.getTime() - b.createdAt.getTime()
-    })
-
-    return sortedTasks
-  }
-
   // Get sections from project and ensure default section is always present
   const sectionsToShow = project ? [...project.sections] : []
 
@@ -516,7 +469,7 @@ export function ProjectSectionsView({
   const renderSection = (section: { id: string; name: string; color: string }) => {
     const displayName = section.name
     const sectionId = section.id
-    const sectionTasks = getOrderedTasksForSection(section.id)
+    const sectionTasks = getOrderedTasksForSection(project?.id || "inbox", section.id)
     const sectionDroppableId = `${droppableId}-section-${sectionId}`
     const isCollapsed = collapsedSections.includes(sectionId)
     const isEditing = editingSectionId === section.id

@@ -150,6 +150,11 @@ vi.mock("@/lib/atoms/core/tasks", () => ({
   orderedTasksByProjectAtom: vi.fn(),
   reorderTaskInViewAtom: vi.fn(),
   moveTaskBetweenSectionsAtom: vi.fn(),
+  taskAtoms: {
+    derived: {
+      orderedTasksBySection: vi.fn(),
+    },
+  },
 }))
 
 // Mock Atlaskit drag-and-drop utilities

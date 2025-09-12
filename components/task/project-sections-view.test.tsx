@@ -78,6 +78,11 @@ vi.mock("@/lib/atoms/core/tasks", () => ({
   orderedTasksByProjectAtom: { debugLabel: "orderedTasksByProjectAtom" },
   reorderTaskInViewAtom: { debugLabel: "reorderTaskInViewAtom" },
   moveTaskBetweenSectionsAtom: { debugLabel: "moveTaskBetweenSectionsAtom" },
+  taskAtoms: {
+    derived: {
+      orderedTasksBySection: { debugLabel: "orderedTasksBySection" },
+    },
+  },
 }))
 
 vi.mock("@/lib/atoms/ui/navigation", () => ({
@@ -223,6 +228,11 @@ vi.mock("@/lib/atoms/core/tasks", () => ({
   orderedTasksByProjectAtom: "mockOrderedTasksByProjectAtom",
   reorderTaskInViewAtom: "mockReorderTaskInViewAtom",
   moveTaskBetweenSectionsAtom: "mockMoveTaskBetweenSectionsAtom",
+  taskAtoms: {
+    derived: {
+      orderedTasksBySection: vi.fn(() => vi.fn(() => [])),
+    },
+  },
 }))
 
 vi.mock("@/lib/utils", () => ({
@@ -649,6 +659,20 @@ describe("ProjectSectionsView", () => {
         )
         return orderedTasksMap
       }
+      // Handle orderedTasksBySection atom - it comes as a spy function
+      if (atom && vi.isMockFunction(atom)) {
+        // This is the orderedTasksBySection atom (spy function)
+        return (projectId: string, sectionId: string | null) => {
+          return mockTasks.filter((task) => {
+            const matchesProject =
+              projectId === "inbox"
+                ? !task.projectId || task.projectId === "inbox"
+                : task.projectId === projectId
+            const matchesSection = sectionId === null || task.sectionId === sectionId
+            return matchesProject && matchesSection
+          })
+        }
+      }
       return []
     })
   })
@@ -718,6 +742,37 @@ describe("ProjectSectionsView", () => {
         )
         return orderedTasksMap
       }
+      // Handle orderedTasksBySection atom
+      if (
+        atom &&
+        typeof atom === "object" &&
+        "debugLabel" in atom &&
+        atom.debugLabel === "orderedTasksBySection"
+      ) {
+        return (projectId: string, sectionId: string | null) => {
+          return mockTasks.filter((task) => {
+            const matchesProject =
+              projectId === "inbox"
+                ? !task.projectId || task.projectId === "inbox"
+                : task.projectId === projectId
+            const matchesSection = sectionId === null || task.sectionId === sectionId
+            return matchesProject && matchesSection
+          })
+        }
+      }
+      // Handle orderedTasksBySection atom - it comes as a spy function
+      if (atom && vi.isMockFunction(atom)) {
+        return (projectId: string, sectionId: string | null) => {
+          return mockTasks.filter((task) => {
+            const matchesProject =
+              projectId === "inbox"
+                ? !task.projectId || task.projectId === "inbox"
+                : task.projectId === projectId
+            const matchesSection = sectionId === null || task.sectionId === sectionId
+            return matchesProject && matchesSection
+          })
+        }
+      }
       return []
     })
 
@@ -757,6 +812,19 @@ describe("ProjectSectionsView", () => {
           mockTasks.filter((t) => t.projectId === TEST_PROJECT_ID_1),
         )
         return orderedTasksMap
+      }
+      // Handle orderedTasksBySection atom - it comes as a spy function
+      if (atom && vi.isMockFunction(atom)) {
+        return (projectId: string, sectionId: string | null) => {
+          return mockTasks.filter((task) => {
+            const matchesProject =
+              projectId === "inbox"
+                ? !task.projectId || task.projectId === "inbox"
+                : task.projectId === projectId
+            const matchesSection = sectionId === null || task.sectionId === sectionId
+            return matchesProject && matchesSection
+          })
+        }
       }
       return []
     })
@@ -923,6 +991,19 @@ describe("ProjectSectionsView", () => {
           )
           return orderedTasksMap
         }
+        // Handle orderedTasksBySection atom - it comes as a spy function
+        if (atom && vi.isMockFunction(atom)) {
+          return (projectId: string, sectionId: string | null) => {
+            return mockTasks.filter((task) => {
+              const matchesProject =
+                projectId === "inbox"
+                  ? !task.projectId || task.projectId === "inbox"
+                  : task.projectId === projectId
+              const matchesSection = sectionId === null || task.sectionId === sectionId
+              return matchesProject && matchesSection
+            })
+          }
+        }
         return []
       })
 
@@ -985,6 +1066,19 @@ describe("ProjectSectionsView", () => {
             mockTasks.filter((t) => t.projectId === TEST_PROJECT_ID_1),
           )
           return orderedTasksMap
+        }
+        // Handle orderedTasksBySection atom - it comes as a spy function
+        if (atom && vi.isMockFunction(atom)) {
+          return (projectId: string, sectionId: string | null) => {
+            return mockTasks.filter((task) => {
+              const matchesProject =
+                projectId === "inbox"
+                  ? !task.projectId || task.projectId === "inbox"
+                  : task.projectId === projectId
+              const matchesSection = sectionId === null || task.sectionId === sectionId
+              return matchesProject && matchesSection
+            })
+          }
         }
         return []
       })
@@ -1080,6 +1174,19 @@ describe("ProjectSectionsView", () => {
           )
           return orderedTasksMap
         }
+        // Handle orderedTasksBySection atom - it comes as a spy function
+        if (atom && vi.isMockFunction(atom)) {
+          return (projectId: string, sectionId: string | null) => {
+            return mockTasksWithVariedProperties.filter((task) => {
+              const matchesProject =
+                projectId === "inbox"
+                  ? !task.projectId || task.projectId === "inbox"
+                  : task.projectId === projectId
+              const matchesSection = sectionId === null || task.sectionId === sectionId
+              return matchesProject && matchesSection
+            })
+          }
+        }
         return []
       })
     })
@@ -1117,6 +1224,32 @@ describe("ProjectSectionsView", () => {
             mockTasksWithVariedProperties.filter((t) => t.projectId === TEST_PROJECT_ID_1),
           )
           return orderedTasksMap
+        }
+        // Handle orderedTasksBySection atom - it comes as a spy function
+        if (atom && vi.isMockFunction(atom)) {
+          return (projectId: string, sectionId: string | null) => {
+            return mockTasksWithVariedProperties.filter((task) => {
+              const matchesProject =
+                projectId === "inbox"
+                  ? !task.projectId || task.projectId === "inbox"
+                  : task.projectId === projectId
+              const matchesSection = sectionId === null || task.sectionId === sectionId
+              return matchesProject && matchesSection
+            })
+          }
+        }
+        // Handle orderedTasksBySection atom - it comes as a spy function
+        if (atom && vi.isMockFunction(atom)) {
+          return (projectId: string, sectionId: string | null) => {
+            return mockTasks.filter((task) => {
+              const matchesProject =
+                projectId === "inbox"
+                  ? !task.projectId || task.projectId === "inbox"
+                  : task.projectId === projectId
+              const matchesSection = sectionId === null || task.sectionId === sectionId
+              return matchesProject && matchesSection
+            })
+          }
         }
         return []
       })
@@ -1174,6 +1307,19 @@ describe("ProjectSectionsView", () => {
           )
           return orderedTasksMap
         }
+        // Handle orderedTasksBySection atom - it comes as a spy function
+        if (atom && vi.isMockFunction(atom)) {
+          return (projectId: string, sectionId: string | null) => {
+            return mockTasks.filter((task) => {
+              const matchesProject =
+                projectId === "inbox"
+                  ? !task.projectId || task.projectId === "inbox"
+                  : task.projectId === projectId
+              const matchesSection = sectionId === null || task.sectionId === sectionId
+              return matchesProject && matchesSection
+            })
+          }
+        }
         return []
       })
 
@@ -1228,6 +1374,19 @@ describe("ProjectSectionsView", () => {
             ], // Specific order for testing
           )
           return orderedTasksMap
+        }
+        // Handle orderedTasksBySection atom - it comes as a spy function
+        if (atom && vi.isMockFunction(atom)) {
+          return (projectId: string, sectionId: string | null) => {
+            return mockTasks.filter((task) => {
+              const matchesProject =
+                projectId === "inbox"
+                  ? !task.projectId || task.projectId === "inbox"
+                  : task.projectId === projectId
+              const matchesSection = sectionId === null || task.sectionId === sectionId
+              return matchesProject && matchesSection
+            })
+          }
         }
         return []
       })

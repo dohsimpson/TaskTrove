@@ -1,15 +1,15 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
 import { useSetAtom, useAtomValue } from "jotai"
 import {
-  orderedTasksByProjectAtom,
   reorderTaskInViewAtom,
   moveTaskBetweenSectionsAtom,
+  taskAtoms,
 } from "@/lib/atoms/core/tasks"
 import { stopEditingSectionAtom } from "@/lib/atoms/ui/navigation"
 import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
@@ -90,9 +90,9 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
   >(new Map())
 
   // Add required atoms for drag and drop
-  const orderedTasksByProject = useAtomValue(orderedTasksByProjectAtom)
   const reorderTaskInView = useSetAtom(reorderTaskInViewAtom)
   const moveTaskBetweenSections = useSetAtom(moveTaskBetweenSectionsAtom)
+  const getOrderedTasksForSection = useAtomValue(taskAtoms.derived.orderedTasksBySection)
 
   // Section editing atoms
   const stopEditingSection = useSetAtom(stopEditingSectionAtom)
@@ -100,51 +100,6 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
 
   // Hook for adding tasks to sections
   const addTaskToSection = useAddTaskToSection()
-
-  // Get ordered tasks for a specific section - matches project-sections-view logic
-  const getOrderedTasksForSection = useCallback(
-    (sectionId: string | null) => {
-      // Filter tasks for this section from the passed tasks
-      const sectionTasks = tasks.filter((task) => {
-        if (sectionId === null) {
-          // For backward compatibility, treat null as default section
-          return task.sectionId === DEFAULT_SECTION_ID
-        }
-        return task.sectionId === sectionId
-      })
-
-      // Get project ordering for reference
-      const projectId = project?.id || "inbox"
-      const orderedProjectTasks = orderedTasksByProject.get(projectId) || []
-      const projectTaskOrder = orderedProjectTasks.map((t) => t.id)
-
-      // Sort section tasks: maintain project order for incomplete tasks, but keep completed tasks at bottom
-      const sortedTasks = sectionTasks.sort((a, b) => {
-        // If completion status differs, completed tasks go to bottom
-        if (a.completed && !b.completed) return 1
-        if (!a.completed && b.completed) return -1
-
-        // Both have same completion status, use project order
-        const aIndex = projectTaskOrder.indexOf(a.id)
-        const bIndex = projectTaskOrder.indexOf(b.id)
-
-        // If both tasks are in project order, maintain that order
-        if (aIndex !== -1 && bIndex !== -1) {
-          return aIndex - bIndex
-        }
-
-        // If only one is in project order, it comes first
-        if (aIndex !== -1) return -1
-        if (bIndex !== -1) return 1
-
-        // Neither in project order, maintain original order (by creation date)
-        return a.createdAt.getTime() - b.createdAt.getTime()
-      })
-
-      return sortedTasks
-    },
-    [tasks, orderedTasksByProject, project],
-  )
 
   // Handle task drop - matches project-sections-view logic
   const handleTaskDrop = (data: TaskDragData) => {
@@ -191,7 +146,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
       }
 
       const viewId = projectId // ViewId is now directly the ProjectId
-      const sectionTasks = getOrderedTasksForSection(targetSectionId)
+      const sectionTasks = getOrderedTasksForSection(projectId, targetSectionId)
       const sourceIndex = sectionTasks.findIndex((task) => task.id === taskId)
       let targetIndex = sectionTasks.length
 
@@ -281,7 +236,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
 
     const newColumns: KanbanColumn[] = []
     sectionsToShow.forEach((section) => {
-      const sectionTasks = getOrderedTasksForSection(section.id)
+      const sectionTasks = getOrderedTasksForSection(project?.id || "inbox", section.id)
       newColumns.push({
         id: section.id.toString(),
         title: section.name,

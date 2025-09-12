@@ -48,13 +48,11 @@ function CommentItem({
             <span className="text-xs font-medium text-gray-900 dark:text-gray-100">admin</span>
             {comment.createdAt && (
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="text-xs text-gray-400 cursor-pointer">
-                    {formatDistanceToNow(comment.createdAt, {
-                      addSuffix: true,
-                      includeSeconds: true,
-                    })}
-                  </span>
+                <TooltipTrigger className="text-xs text-gray-400 cursor-pointer">
+                  {formatDistanceToNow(comment.createdAt, {
+                    addSuffix: true,
+                    includeSeconds: true,
+                  })}
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="text-xs">{format(comment.createdAt, "PPpp")}</p>

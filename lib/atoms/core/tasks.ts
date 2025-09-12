@@ -275,87 +275,18 @@ addTaskAtom.debugLabel = "addTaskAtom"
 
 /**
  * Updates an existing task with new data
- * Preserves existing fields while updating specified ones
+ * Follows the same simple pattern as updateProjectAtom and updateLabelAtom
  */
 export const updateTaskAtom = atom(
   null,
   async (get, set, { updateRequest }: { updateRequest: UpdateTaskRequest }) => {
     try {
-      const tasks = get(tasksAtom)
-      const existingTask = tasks.find((task: Task) => task.id === updateRequest.id)
-
-      if (!existingTask) {
-        log.warn({ taskId: updateRequest.id, module: "tasks" }, "Task not found for update")
-        return
-      }
-
-      // Convert nullable fields to undefined to match Task type
-      const updatedTask: Task = {
-        ...existingTask,
-        ...updateRequest,
-        dueDate:
-          updateRequest.dueDate === null
-            ? undefined
-            : (updateRequest.dueDate ?? existingTask.dueDate),
-        dueTime:
-          updateRequest.dueTime === null
-            ? undefined
-            : (updateRequest.dueTime ?? existingTask.dueTime),
-        recurring:
-          updateRequest.recurring === null
-            ? undefined
-            : (updateRequest.recurring ?? existingTask.recurring),
-        estimation:
-          updateRequest.estimation === null
-            ? undefined
-            : (updateRequest.estimation ?? existingTask.estimation),
-      }
-      const updatedTasks = tasks.map((task: Task) =>
-        task.id === updateRequest.id ? updatedTask : task,
-      )
-      set(tasksAtom, updatedTasks)
-
-      // Handle notification scheduling based on changes
-      const dueDateChanged = updateRequest.dueDate !== undefined
-      const dueTimeChanged = updateRequest.dueTime !== undefined
-      const completedChanged = updateRequest.completed !== undefined
-
-      if (dueDateChanged || dueTimeChanged || completedChanged) {
-        if (updatedTask.completed) {
-          // Task completed, cancel notification
-          set(notificationAtoms.actions.cancelTask, updateRequest.id)
-          log.info(
-            { taskId: updateRequest.id, module: "tasks" },
-            "Cancelled notification for completed task",
-          )
-        } else if (updatedTask.dueDate && updatedTask.dueTime) {
-          // Task has due date/time and is not completed, reschedule notification
-          set(notificationAtoms.actions.scheduleTask, {
-            taskId: updateRequest.id,
-            task: updatedTask,
-          })
-          log.info(
-            { taskId: updateRequest.id, module: "tasks" },
-            "Rescheduled notification for updated task",
-          )
-        } else {
-          // Task no longer has due date/time, cancel notification
-          set(notificationAtoms.actions.cancelTask, updateRequest.id)
-          log.info(
-            { taskId: updateRequest.id, module: "tasks" },
-            "Cancelled notification for task without due date",
-          )
-        }
-      }
-
-      // Make the API call to persist changes
+      // Use server mutation which handles optimistic updates automatically
       const updateTasksMutation = get(updateTasksMutationAtom)
       await updateTasksMutation.mutateAsync([updateRequest])
-
-      log.info({ taskId: updateRequest.id, module: "tasks" }, "Task updated and persisted")
     } catch (error) {
       handleAtomError(error, "updateTaskAtom")
-      throw error // Re-throw so the UI can handle the error
+      throw error
     }
   },
 )

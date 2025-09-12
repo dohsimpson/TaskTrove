@@ -7,6 +7,7 @@
 
 import { Task, createTaskId } from "@/lib/types"
 import { v4 as uuidv4 } from "uuid"
+import { format } from "date-fns"
 
 /**
  * Parsed RRULE components for date calculation
@@ -99,9 +100,15 @@ function dateMatchesRecurringPattern(date: Date, rrule: string, referenceDate: D
   switch (parsed.freq) {
     case "DAILY":
       // For daily, when date === referenceDate (same day), it always matches
-      const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+      const dateUTC = new Date(
+        Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+      )
       const refUTC = new Date(
-        Date.UTC(referenceDate.getFullYear(), referenceDate.getMonth(), referenceDate.getDate()),
+        Date.UTC(
+          referenceDate.getUTCFullYear(),
+          referenceDate.getUTCMonth(),
+          referenceDate.getUTCDate(),
+        ),
       )
 
       if (dateUTC.getTime() === refUTC.getTime()) {
@@ -172,38 +179,18 @@ export function calculateNextDueDate(
     return null
   }
 
-  // If includeFromDate is true and fromDate is today, check if today matches the pattern
-  if (includeFromDate) {
-    const today = new Date()
-    // Compare dates in UTC to avoid timezone issues
-    const fromDateUTC = new Date(
-      Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth(), fromDate.getUTCDate()),
-    )
-    const todayUTC = new Date(
-      Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
-    )
+  // If includeFromDate is true, check if fromDate matches the recurring pattern
+  if (includeFromDate && dateMatchesRecurringPattern(fromDate, rrule, fromDate)) {
+    // Check UNTIL constraint before returning fromDate
+    if (parsed.until) {
+      const untilDateString = parsed.until.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3")
+      const fromDateString = format(fromDate, "yyyy-MM-dd")
 
-    // If fromDate is today and matches the recurring pattern, check UNTIL constraint first
-    if (
-      fromDateUTC.getTime() === todayUTC.getTime() &&
-      dateMatchesRecurringPattern(fromDate, rrule, fromDate)
-    ) {
-      // Check UNTIL constraint before returning today
-      if (parsed.until) {
-        const untilDate = new Date(parsed.until.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"))
-        // Compare dates, not timestamps (UNTIL means "through the end of this date")
-        const fromDateOnly = new Date(
-          Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth(), fromDate.getUTCDate()),
-        )
-        const untilDateOnly = new Date(
-          Date.UTC(untilDate.getUTCFullYear(), untilDate.getUTCMonth(), untilDate.getUTCDate()),
-        )
-        if (fromDateOnly > untilDateOnly) {
-          return null // Past the end date
-        }
+      if (fromDateString > untilDateString) {
+        return null // Past the end date
       }
-      return fromDate
     }
+    return fromDate
   }
 
   const nextDate = new Date(fromDate)

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Database, X, Bell, Settings, Menu } from "lucide-react"
@@ -216,6 +216,9 @@ export function SettingsDialog() {
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogTitle className="sr-only">Settings</DialogTitle>
+      <DialogDescription className="sr-only">
+        Configure TaskTrove application settings and preferences
+      </DialogDescription>
       <DialogContent
         className="!max-w-[95vw] h-[90vh] w-[95vw] p-0 sm:!max-w-[90vw] sm:h-[85vh] sm:w-[90vw] overflow-hidden"
         showCloseButton={false}

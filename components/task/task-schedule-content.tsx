@@ -278,6 +278,42 @@ export function TaskScheduleContent({
     [isNewTask, updateTask, updateQuickAddTask],
   )
 
+  // Handle clearing all schedule and recurring data
+  const handleClearAll = useCallback(() => {
+    // Clear task data
+    const updates = {
+      dueDate: isNewTask ? undefined : null,
+      dueTime: isNewTask ? undefined : null,
+      recurring: isNewTask ? undefined : null,
+    }
+
+    // Apply updates using appropriate function
+    if (!taskId) {
+      updateQuickAddTask({ updateRequest: updates })
+    } else {
+      updateTask({ updateRequest: { id: taskId, ...updates } })
+    }
+
+    // Clear all UI states
+    setSelectedDate(undefined)
+    setSelectedMonthlyDays([])
+    setSelectedYearlyDates([])
+    setSelectedWeekdays([])
+    setDailyInterval(1)
+    setCustomFrequency("MONTHLY")
+    setCustomIntervalValue(1)
+    setCustomWeekdays([1]) // Monday by default
+    setCustomOccurrences([1]) // First occurrence by default
+    setCustomMonths([1]) // January by default
+    setCustomPatternType("day")
+    setSelectedHour("")
+    setSelectedMinute("")
+    setSelectedAmPm("AM")
+    setShowInlineCalendar(false)
+    setShowIntervalConfig(false)
+    setNlInput("")
+  }, [isNewTask, taskId, updateTask, updateQuickAddTask])
+
   // Handle manual natural language parsing
   const handleParseInput = useCallback(() => {
     if (!parsedNlInput || !isNlInputValid) return
@@ -335,7 +371,11 @@ export function TaskScheduleContent({
   // Handle time selection
   const handleTimeUpdate = () => {
     const newTime = createTimeFromHourMinute(selectedHour, selectedMinute, selectedAmPm)
-    handleUpdate(taskId, undefined, newTime, "time")
+
+    // If no due date exists, set it to today when setting time
+    const newDate = task?.dueDate || new Date()
+
+    handleUpdate(taskId, newDate, newTime, "time")
   }
 
   // Helper function to add ordinal suffix to day numbers
@@ -427,14 +467,8 @@ export function TaskScheduleContent({
   }
 
   // Helper function to determine current recurring type for highlighting
-  const getCurrentRecurringType = ():
-    | "daily"
-    | "weekly"
-    | "monthly"
-    | "yearly"
-    | "interval"
-    | null => {
-    if (!task?.recurring) return null
+  const getCurrentRecurringType = (): "daily" | "weekly" | "monthly" | "yearly" | "interval" => {
+    if (!task?.recurring) return "interval"
 
     const parsed = parseRRule(task.recurring)
     if (!parsed) return "interval"
@@ -772,7 +806,7 @@ export function TaskScheduleContent({
     <div className="p-3">
       <div className="flex items-center justify-between border-b pb-2 mb-3">
         <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4 text-blue-600" />
+          <Clock className="h-4 w-4" />
           <span className="font-medium text-sm">Schedule</span>
         </div>
         <Button
@@ -791,10 +825,14 @@ export function TaskScheduleContent({
           <TabsTrigger value="schedule" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             Schedule
+            {(task.dueDate || task.dueTime) && (
+              <div className="w-1.5 h-1.5 bg-foreground rounded-full" />
+            )}
           </TabsTrigger>
           <TabsTrigger value="recurring" className="flex items-center gap-2">
             <Repeat className="h-4 w-4" />
             Recurring
+            {task.recurring && <div className="w-1.5 h-1.5 bg-foreground rounded-full" />}
           </TabsTrigger>
         </TabsList>
 
@@ -878,20 +916,20 @@ export function TaskScheduleContent({
             <Button
               variant="ghost"
               className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={() => handleQuickSchedule("remove")}
-              disabled={!task.dueDate}
-            >
-              <Ban className="h-4 w-4 mb-1" />
-              <span className="text-center leading-tight">Clear Date</span>
-            </Button>
-            <Button
-              variant="ghost"
-              className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={() => handleUpdate(taskId, undefined, null, "remove-time")}
               disabled={!task.dueTime}
             >
               <AlarmClockOff className="h-4 w-4 mb-1" />
               <span className="text-center leading-tight">Clear Time</span>
+            </Button>
+            <Button
+              variant="ghost"
+              className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleClearAll}
+              disabled={!task.dueDate && !task.dueTime && !task.recurring}
+            >
+              <Ban className="h-4 w-4 mb-1" />
+              <span className="text-center leading-tight">Clear</span>
             </Button>
           </div>
 
@@ -1114,9 +1152,9 @@ export function TaskScheduleContent({
                 className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => {
                   setShowIntervalConfig(false)
-                  handleRecurringSelect("remove")
+                  handleClearAll()
                 }}
-                disabled={!task.recurring}
+                disabled={!task.dueDate && !task.dueTime && !task.recurring}
               >
                 <Ban className="h-4 w-4 mb-1" />
                 <span className="text-center leading-tight">Clear</span>

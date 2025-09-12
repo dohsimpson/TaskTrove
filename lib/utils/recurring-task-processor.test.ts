@@ -238,18 +238,18 @@ describe("calculateNextDueDate", () => {
       expect(nextDate).toEqual(new Date("2024-01-20T10:00:00.000Z"))
     })
 
-    it("should not affect calculation when fromDate is in the past", () => {
+    it("should include fromDate when it matches pattern, even if in the past", () => {
       const pastDate = new Date("2024-01-19T10:00:00.000Z")
       const nextDate = calculateNextDueDate("RRULE:FREQ=DAILY", pastDate, true)
-      // Should return next day regardless of includeFromDate flag
-      expect(nextDate).toEqual(new Date("2024-01-20T10:00:00.000Z"))
+      // Should return the fromDate since it matches the daily pattern (any date matches daily)
+      expect(nextDate).toEqual(new Date("2024-01-19T10:00:00.000Z"))
     })
 
-    it("should not affect calculation when fromDate is in the future", () => {
+    it("should include fromDate when it matches pattern, even if in the future", () => {
       const futureDate = new Date("2024-01-22T10:00:00.000Z")
       const nextDate = calculateNextDueDate("RRULE:FREQ=DAILY", futureDate, true)
-      // Should return next day regardless of includeFromDate flag
-      expect(nextDate).toEqual(new Date("2024-01-23T10:00:00.000Z"))
+      // Should return the fromDate since it matches the daily pattern (any date matches daily)
+      expect(nextDate).toEqual(new Date("2024-01-22T10:00:00.000Z"))
     })
 
     it("should work with weekly recurrence when today is the due date", () => {
@@ -319,6 +319,45 @@ describe("calculateNextDueDate", () => {
       const nextDate = calculateNextDueDate("RRULE:FREQ=DAILY;UNTIL=20240119", todayDate, true)
       // Should return null since today is past the UNTIL date
       expect(nextDate).toBeNull()
+    })
+  })
+
+  describe("Timezone handling", () => {
+    it("should handle EST vs UTC timezone differences correctly for weekly RRULE", () => {
+      // Simulate Sep 11, 2024 at 9PM EST (which is 1AM UTC on Sep 12)
+      // The normalized date should be Sep 11 in local time
+      const estDate = new Date("2024-09-11T21:00:00-04:00") // 9PM EST on Sep 11
+
+      // Normalize the EST date like we do in task-schedule-content.tsx
+      // This creates Sep 11, 2024 at midnight local time
+      const normalizedEstDate = new Date(
+        estDate.getFullYear(),
+        estDate.getMonth(),
+        estDate.getDate(),
+      )
+
+      // Test weekly RRULE with includeFromDate=true
+      // Since it's a weekly pattern and we're including fromDate,
+      // it should return the normalized date (Sep 11) because any date matches weekly pattern
+      const weeklyRRule = "RRULE:FREQ=WEEKLY"
+
+      const result = calculateNextDueDate(weeklyRRule, normalizedEstDate, true)
+
+      // Should return the same date because:
+      // 1. includeFromDate=true
+      // 2. Weekly pattern matches any day (normalized date matches weekly pattern)
+      expect(result).toEqual(normalizedEstDate)
+      expect(result?.getDate()).toBe(11) // Should be Sep 11, not Sep 18
+    })
+
+    it("should handle daily recurring pattern with timezone normalization", () => {
+      // Test daily recurring with normalized dates
+      const normalizedDate = new Date(2024, 8, 11) // Sep 11, 2024 (month is 0-indexed)
+
+      const result = calculateNextDueDate("RRULE:FREQ=DAILY", normalizedDate, true)
+
+      // For daily recurring with includeFromDate=true, should return same date
+      expect(result).toEqual(normalizedDate)
     })
   })
 })

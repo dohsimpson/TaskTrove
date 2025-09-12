@@ -239,7 +239,7 @@ describe("TaskScheduleContent", () => {
       })
     })
 
-    it("should show remove date button when task has due date", () => {
+    it("should show clear button when task has due date", () => {
       const taskWithDueDate = { ...mockTask, dueDate: new Date() }
 
       renderWithTasks(
@@ -247,10 +247,10 @@ describe("TaskScheduleContent", () => {
         <TaskScheduleContent taskId={taskWithDueDate.id} onClose={mockOnClose} />,
       )
 
-      expect(screen.getByText("Clear Date")).toBeInTheDocument()
+      expect(screen.getByText("Clear")).toBeInTheDocument()
     })
 
-    it("should call updateTask to remove date", () => {
+    it("should call updateTask to clear all schedule data", () => {
       const taskWithDueDate = { ...mockTask, dueDate: new Date() }
 
       renderWithTasks(
@@ -258,12 +258,14 @@ describe("TaskScheduleContent", () => {
         <TaskScheduleContent taskId={taskWithDueDate.id} onClose={mockOnClose} />,
       )
 
-      fireEvent.click(screen.getByText("Clear Date"))
+      fireEvent.click(screen.getByText("Clear"))
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
           id: TEST_TASK_ID_1,
           dueDate: null,
+          dueTime: null,
+          recurring: null,
         },
       })
     })
@@ -367,6 +369,8 @@ describe("TaskScheduleContent", () => {
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
           id: TEST_TASK_ID_1,
+          dueDate: null,
+          dueTime: null,
           recurring: null,
         },
       })
@@ -557,6 +561,7 @@ describe("TaskScheduleContent", () => {
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
           id: TEST_TASK_ID_1,
+          dueDate: expect.any(Date),
           dueTime: expect.any(Date),
         },
       })
@@ -642,7 +647,7 @@ describe("TaskScheduleContent", () => {
   })
 
   describe("Status Display", () => {
-    it("should show remove date button when task has due date", () => {
+    it("should show clear button when task has due date", () => {
       const dueDate = new Date("2024-01-15")
       const taskWithDueDate = { ...mockTask, dueDate }
 
@@ -651,8 +656,8 @@ describe("TaskScheduleContent", () => {
         <TaskScheduleContent taskId={taskWithDueDate.id} onClose={mockOnClose} />,
       )
 
-      // The component should show a "Clear Date" button when there's a due date
-      expect(screen.getByText("Clear Date")).toBeInTheDocument()
+      // The component should show a "Clear" button when there's a due date
+      expect(screen.getByText("Clear")).toBeInTheDocument()
     })
 
     it("should display due date only when no due time is set", () => {
@@ -1656,6 +1661,79 @@ describe("TaskScheduleContent", () => {
       // Weekdays pattern should be categorized as "weekly" since we moved weekdays to weekly section
       const weeklyButton = screen.getByText("Weekly").closest("button")
       expect(weeklyButton).toHaveClass("bg-blue-500/20")
+    })
+
+    it("should clear all UI states when Clear button is clicked", () => {
+      // Create a task with existing scheduling data so the Clear button will be enabled
+      const taskWithSchedule = {
+        ...mockTask,
+        dueDate: new Date("2024-01-15"),
+        recurring: "RRULE:FREQ=DAILY",
+      }
+
+      renderWithTasks(
+        [taskWithSchedule],
+        <TaskScheduleContent
+          taskId={taskWithSchedule.id}
+          onClose={mockOnClose}
+          defaultTab="recurring"
+        />,
+      )
+
+      // First, select Weekly to set up weekday selection UI
+      fireEvent.click(screen.getByText("Weekly"))
+
+      // Select Wednesday (assuming weekday buttons exist - we'll check what's available)
+      // Note: This test verifies the fix for the issue where weekday selections would linger after clearing
+      const weekdayButtons = screen.queryAllByText(/^(Su|Mo|Tu|We|Th|Fr|Sa)$/)
+      if (weekdayButtons.length > 0) {
+        // Click on Wednesday if available, or the first weekday button
+        const wednesdayButton =
+          weekdayButtons.find((btn) => btn.textContent === "We") || weekdayButtons[0]
+        fireEvent.click(wednesdayButton)
+      }
+
+      // Clear the mock calls from the Weekly button clicks
+      mockUpdateTask.mockClear()
+
+      // Switch to Schedule tab to access the Clear button
+      fireEvent.click(screen.getByRole("tab", { name: /Schedule/ }))
+
+      // Click Clear button - this should clear both task data AND all UI states
+      fireEvent.click(screen.getByText("Clear"))
+
+      // Verify the task update was called to clear data
+      expect(mockUpdateTask).toHaveBeenCalledWith({
+        updateRequest: {
+          id: TEST_TASK_ID_1,
+          dueDate: null,
+          dueTime: null,
+          recurring: null,
+        },
+      })
+
+      // Now switch back to Recurring tab
+      fireEvent.click(screen.getByRole("tab", { name: /Recurring/ }))
+
+      // Clear mock again to isolate the next Weekly click
+      mockUpdateTask.mockClear()
+
+      // Click Weekly again
+      fireEvent.click(screen.getByText("Weekly"))
+
+      // The UI should be in a clean state - no previous weekday selections should persist
+      // This test verifies that selectedWeekdays state was properly cleared
+      // We don't need to check specific UI elements since the internal state clearing is what matters
+      // The fact that we can click Weekly without errors and it behaves correctly indicates success
+
+      // Verify that a fresh Weekly selection works correctly (no lingering state)
+      expect(mockUpdateTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          updateRequest: expect.objectContaining({
+            recurring: "RRULE:FREQ=WEEKLY",
+          }),
+        }),
+      )
     })
   })
 

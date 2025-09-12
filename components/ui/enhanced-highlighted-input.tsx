@@ -127,8 +127,11 @@ export function EnhancedHighlightedInput({
 
   // Get data from atoms with fallbacks
   const nlpEnabled = useAtomValue(nlpEnabledAtom)
-  const labels = useAtomValue(labelsAtom) || []
-  const projects = useAtomValue(visibleProjectsAtom) || []
+  const labelsFromAtom = useAtomValue(labelsAtom)
+  const projectsFromAtom = useAtomValue(visibleProjectsAtom)
+
+  const labels = useMemo(() => labelsFromAtom || [], [labelsFromAtom])
+  const projects = useMemo(() => projectsFromAtom || [], [projectsFromAtom])
 
   const [cursorPosition, setCursorPosition] = useState(0)
   const [isFocused, setIsFocused] = useState(false)

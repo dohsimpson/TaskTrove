@@ -19,8 +19,6 @@ interface EditableSectionHeaderProps {
   sectionColor: string
   /** Number of tasks in section */
   taskCount: number
-  /** Whether the section is currently being hovered */
-  isHovered: boolean
   /** Whether to show the context menu (only for non-default sections) */
   showContextMenu?: boolean
   /** Custom className for the container */
@@ -60,7 +58,6 @@ export function EditableSectionHeader({
   sectionName,
   sectionColor,
   taskCount,
-  isHovered,
   showContextMenu = true,
   className,
   nameClassName = "font-medium text-foreground",
@@ -126,10 +123,7 @@ export function EditableSectionHeader({
 
         {/* Section context menu - only show for non-default sections */}
         {showContextMenu && !isDefaultSection && (
-          <SectionContextMenu
-            sectionId={createSectionId(sectionId)}
-            isVisible={isHovered && !isEditing}
-          />
+          <SectionContextMenu sectionId={createSectionId(sectionId)} isVisible={true} />
         )}
       </div>
     </div>

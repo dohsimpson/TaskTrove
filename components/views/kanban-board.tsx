@@ -74,7 +74,6 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
   const [columns, setColumns] = useState<KanbanColumn[]>([])
-  const [hoveredSectionId, setHoveredSectionId] = useState<string | null>(null)
 
   // Track drag state for shadow rendering per column
   const [columnDragStates, setColumnDragStates] = useState<
@@ -370,14 +369,11 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                   sectionName={column.title}
                   sectionColor={column.color || DEFAULT_SECTION_COLOR}
                   taskCount={column.tasks.length}
-                  isHovered={hoveredSectionId === column.id}
                   className="px-2 py-2 border-b-2"
                   nameClassName="font-medium text-foreground"
                   nameElement="h3"
                   onSaveEdit={handleSaveEditSection(column.id)}
                   onCancelEdit={handleCancelEditSection}
-                  onMouseEnter={() => setHoveredSectionId(column.id)}
-                  onMouseLeave={() => setHoveredSectionId(null)}
                   rightContent={
                     <Button
                       variant="ghost"

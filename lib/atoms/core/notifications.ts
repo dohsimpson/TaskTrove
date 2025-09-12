@@ -13,6 +13,7 @@ import { createTaskId } from "@/lib/types"
 import { tasksAtom } from "@/lib/atoms/core/tasks"
 import { settingsAtom } from "@/lib/atoms/core/settings"
 import { playSound } from "@/lib/utils/audio"
+import { safeSetTimeout } from "@/lib/utils"
 import { log } from "@/lib/utils/logger"
 import { handleAtomError } from "../utils"
 import { showServiceWorkerNotification } from "@/lib/utils/service-worker-notifications"
@@ -266,22 +267,36 @@ const rescheduleNotificationTimerAtom = atom(null, (get, set) => {
       set(fireNotificationsAtom, nextNotifications)
     } else {
       // Schedule timer for all
-      const timerId = setTimeout(() => {
-        set(fireNotificationsAtom, nextNotifications)
-      }, timeUntil)
+      try {
+        const timerId = safeSetTimeout(() => {
+          set(fireNotificationsAtom, nextNotifications)
+        }, timeUntil)
 
-      set(activeNotificationTimerAtom, timerId)
-      set(isNotificationSystemActiveAtom, true)
+        set(activeNotificationTimerAtom, timerId)
+        set(isNotificationSystemActiveAtom, true)
 
-      log.debug(
-        {
-          count: nextNotifications.size,
-          timeUntil,
-          notifyAt: firstNotification.notifyAt.toISOString(),
-          module: "notifications",
-        },
-        "Scheduled notification timer for multiple tasks",
-      )
+        log.info(
+          {
+            count: nextNotifications.size,
+            timeUntil,
+            notifyAt: firstNotification.notifyAt.toISOString(),
+            module: "notifications",
+          },
+          "Scheduled notification timer for multiple tasks",
+        )
+      } catch (error) {
+        log.warn(
+          {
+            count: nextNotifications.size,
+            timeUntil,
+            notifyAt: firstNotification.notifyAt.toISOString(),
+            error: error instanceof Error ? error.message : String(error),
+            module: "notifications",
+          },
+          "Cannot schedule notification timer: this might be caused by delay exceeds maximum safe timeout value. Skipping scheduling.", // TODO: fix this by having a mechanism to not schedule tasks long in the future (setTimeout is not reliable for long schedule anyway)
+        )
+        // Don't set timer or activation state - effectively skips scheduling
+      }
     }
   } catch (error) {
     handleAtomError(error, "rescheduleNotificationTimerAtom")
@@ -315,7 +330,7 @@ const fireNotificationsAtom = atom(null, (get, set, notifications: ScheduledNoti
       // Convert to array for indexed iteration with staggered delays
       const notificationArray = Array.from(notifications)
       notificationArray.forEach((notification, index) => {
-        setTimeout(() => {
+        safeSetTimeout(() => {
           set(showTaskDueNotificationAtom, notification)
           log.info(
             {

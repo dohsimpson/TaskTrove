@@ -45,6 +45,7 @@ export function useNotificationSystem() {
   }, [notificationSettings.enabled])
 
   // Schedule notifications for all existing tasks with due dates
+  // TODO: this could be optimized to not react to every tasks change (also, since we are doing optimistic rendering, this actually get called twice on every task change)
   useEffect(() => {
     if (!notificationSettings.enabled || notificationPermission !== "granted") {
       return
@@ -61,14 +62,7 @@ export function useNotificationSystem() {
       },
       "Rescheduled notifications for all tasks",
     )
-  }, [
-    tasks,
-    notificationSettings.enabled,
-    true, // Always check deadlines for now
-    notificationPermission,
-    rescheduleAll,
-    scheduledNotifications.size,
-  ])
+  }, [tasks, notificationSettings.enabled, notificationPermission, rescheduleAll])
 
   // Auto-request permission on first task with due date (if enabled in settings)
   useEffect(() => {

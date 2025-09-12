@@ -645,6 +645,28 @@ describe("TaskScheduleContent", () => {
         },
       })
     })
+
+    it("should display time in 12-hour format when task has existing time", () => {
+      const dueTime = new Date()
+      dueTime.setHours(13, 22, 0, 0) // 1:22 PM in 24-hour format
+      const taskWith1PmTime = { ...mockTask, dueTime }
+
+      renderWithTasks(
+        [taskWith1PmTime],
+        <TaskScheduleContent taskId={taskWith1PmTime.id} onClose={mockOnClose} />,
+      )
+
+      // Should display "1" in the hour field, not "13"
+      const spinButtons = screen.getAllByRole("spinbutton")
+      const hourInput = spinButtons[0]
+      const minuteInput = spinButtons[1]
+
+      expect(hourInput).toHaveValue(1) // Should show 1, not 13
+      expect(minuteInput).toHaveValue(22)
+
+      // Check that PM is selected in the dropdown
+      expect(screen.getByText("PM")).toBeInTheDocument()
+    })
   })
 
   describe("Status Display", () => {

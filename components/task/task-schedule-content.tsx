@@ -194,7 +194,11 @@ export function TaskScheduleContent({
   // Time selection state
   const [selectedHour, setSelectedHour] = useState<string>(() => {
     if (task?.dueTime) {
-      return task.dueTime.getHours().toString()
+      const hours24 = task.dueTime.getHours()
+      // Convert 24-hour to 12-hour format
+      if (hours24 === 0) return "12" // Midnight -> 12 AM
+      if (hours24 <= 12) return hours24.toString()
+      return (hours24 - 12).toString() // PM hours
     }
     return ""
   })

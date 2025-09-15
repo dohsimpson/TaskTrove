@@ -35,7 +35,7 @@ import {
   DEFAULT_TASK_STATUS,
   DEFAULT_RECURRING_MODE,
 } from "../../constants/defaults"
-import { handleAtomError } from "../utils"
+import { handleAtomError, playSoundAtom } from "../utils"
 import { currentViewAtom, currentViewStateAtom, viewStatesAtom } from "../ui/views"
 import { currentRouteContextAtom } from "../ui/navigation"
 import { notificationAtoms } from "./notifications"
@@ -192,7 +192,6 @@ const removeTaskFromProjectOrder = (
     return { ...project, taskOrder: filteredOrder }
   })
 }
-import { playSound } from "../../utils/audio"
 import {
   tasksAtom,
   createTaskMutationAtom,
@@ -246,9 +245,7 @@ export const addTaskAtom = atom(null, async (get, set, taskData: CreateTaskReque
     set(recordOperationAtom, `Added task: "${taskTitle}"`)
 
     // Play task creation sound
-    playSound("confirm").catch((error) => {
-      log.warn({ error, module: "tasks" }, "Failed to play task creation sound")
-    })
+    set(playSoundAtom, { soundType: "confirm" })
 
     // Schedule notification if task has due date and time
     if (taskData.dueDate && taskData.dueTime) {
@@ -319,9 +316,7 @@ export const deleteTaskAtom = atom(null, async (get, set, taskId: TaskId) => {
     set(recordOperationAtom, `Deleted task: "${taskToDelete.title}"`)
 
     // Play deletion sound
-    playSound("whoosh").catch((error) => {
-      log.warn({ error, module: "tasks" }, "Failed to play deletion sound")
-    })
+    set(playSoundAtom, { soundType: "whoosh" })
 
     log.info({ taskId, module: "tasks" }, "Task deleted permanently")
   } catch (error) {
@@ -367,9 +362,7 @@ export const toggleTaskAtom = atom(null, (get, set, taskId: TaskId) => {
     if (willBeCompleted) {
       // Use the new clear bell sound for todo completion
       // This provides instant, satisfying feedback perfect for todos
-      playSound("bellClear").catch((error) => {
-        log.warn({ error, module: "tasks" }, "Failed to play completion sound")
-      })
+      set(playSoundAtom, { soundType: "bellClear" })
     }
   } catch (error) {
     handleAtomError(error, "toggleTaskAtom")

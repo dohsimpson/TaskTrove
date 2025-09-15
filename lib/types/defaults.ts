@@ -45,6 +45,7 @@ export const DEFAULT_NOTIFICATION_SETTINGS = {
 }
 export const DEFAULT_GENERAL_SETTINGS = {
   startView: "all" as const, // Corresponds to DEFAULT_ROUTE "/all"
+  soundEnabled: true,
 } as const
 
 /**

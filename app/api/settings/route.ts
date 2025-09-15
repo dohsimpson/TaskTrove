@@ -135,6 +135,10 @@ async function updateSettings(
         partialSettings.general?.startView ??
         fileData.settings.general?.startView ??
         DEFAULT_GENERAL_SETTINGS.startView,
+      soundEnabled:
+        partialSettings.general?.soundEnabled ??
+        fileData.settings.general?.soundEnabled ??
+        DEFAULT_GENERAL_SETTINGS.soundEnabled,
     },
     // Future settings will be merged here when implemented:
     // appearance: { ... },

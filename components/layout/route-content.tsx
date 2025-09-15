@@ -4,7 +4,6 @@ import { useAtomValue } from "jotai"
 import { pathnameAtom } from "@/lib/atoms/ui/navigation"
 import { MainContent } from "@/components/layout/main-content"
 import { SearchPage } from "@/components/pages/search-page"
-import { SoundSuiteTester } from "../debug/sound-suite-tester"
 import { Task, VoiceCommand } from "@/lib/types"
 // No longer using custom hooks - migrated to Jotai atoms
 
@@ -50,7 +49,9 @@ export function RouteContent({ onVoiceCommand, onTaskClick }: RouteContentProps)
           </p>
         </div>
 
-        <SoundSuiteTester />
+        <div className="text-center text-muted-foreground">
+          <p>Debug tools have been simplified in this version.</p>
+        </div>
       </div>
     )
   }

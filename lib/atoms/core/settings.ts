@@ -7,10 +7,9 @@
  */
 
 import { atom } from "jotai"
-import { handleAtomError } from "../utils"
+import { handleAtomError, playSoundAtom } from "../utils"
 import { recordOperationAtom } from "./history"
 import { log } from "../../utils/logger"
-import { playSound } from "../../utils/audio"
 import { settingsAtom, updateSettingsMutationAtom, dataQueryAtom } from "./base"
 import type { UserSettings, PartialUserSettings } from "../../types"
 import {
@@ -58,9 +57,7 @@ export const updateSettingsAtom = atom(
       set(recordOperationAtom, `Updated settings: ${settingsKeys}`)
 
       // Play settings update sound
-      playSound("confirm").catch((error) => {
-        log.warn({ error, module: "settings" }, "Failed to play settings update sound")
-      })
+      set(playSoundAtom, { soundType: "confirm" })
 
       log.info({ settingsKeys, module: "settings" }, "Settings updated")
     } catch (error) {

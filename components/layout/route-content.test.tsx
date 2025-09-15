@@ -133,7 +133,9 @@ describe("RouteContent", () => {
     render(<RouteContent {...defaultProps} />)
 
     expect(screen.getByText("TaskTrove Debug Tools")).toBeInTheDocument()
-    expect(screen.getByTestId("sound-suite-tester")).toBeInTheDocument()
+    expect(
+      screen.getByText("Debug tools have been simplified in this version."),
+    ).toBeInTheDocument()
 
     vi.unstubAllEnvs()
   })

@@ -3,6 +3,7 @@
 import React from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 import {
   Select,
   SelectContent,
@@ -54,13 +55,23 @@ export function GeneralForm() {
 
   // Note: During v0.5.0 migration, general property might not exist yet
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const generalSettings = (settings as { general?: { startView?: string } }).general
+  const generalSettings = (settings as { general?: { startView?: string; soundEnabled?: boolean } })
+    .general
   const currentStartView = generalSettings?.startView ?? "all"
+  const currentSoundEnabled = generalSettings?.soundEnabled ?? true
 
   const handleStartViewChange = (value: StandardViewId | "lastViewed") => {
     updateSettings({
       general: {
         startView: value,
+      },
+    })
+  }
+
+  const handleSoundEnabledChange = (enabled: boolean) => {
+    updateSettings({
+      general: {
+        soundEnabled: enabled,
       },
     })
   }
@@ -117,6 +128,23 @@ export function GeneralForm() {
               )}
             </SelectContent>
           </Select>
+        </div>
+      </SettingsCard>
+
+      {/* Sound Settings */}
+      <SettingsCard title="Audio">
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="sound-enabled">Sound Effects</Label>
+            <p className="text-sm text-muted-foreground">
+              Play sounds for task completions, notifications, and other interactions.
+            </p>
+          </div>
+          <Switch
+            id="sound-enabled"
+            checked={currentSoundEnabled}
+            onCheckedChange={handleSoundEnabledChange}
+          />
         </div>
       </SettingsCard>
 

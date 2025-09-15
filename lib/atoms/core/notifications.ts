@@ -12,10 +12,9 @@ import type {
 import { createTaskId } from "@/lib/types"
 import { tasksAtom } from "@/lib/atoms/core/tasks"
 import { settingsAtom } from "@/lib/atoms/core/settings"
-import { playSound } from "@/lib/utils/audio"
 import { safeSetTimeout } from "@/lib/utils"
 import { log } from "@/lib/utils/logger"
-import { handleAtomError } from "../utils"
+import { handleAtomError, playSoundAtom } from "../utils"
 import { showServiceWorkerNotification } from "@/lib/utils/service-worker-notifications"
 import { DEFAULT_UUID } from "@/lib/constants/defaults"
 import { DEFAULT_NOTIFICATION_SETTINGS } from "@/lib/types/defaults"
@@ -145,9 +144,7 @@ export const requestNotificationPermissionAtom = atom(null, async (get, set) => 
 
     if (permission === "granted") {
       log.info({ module: "notifications" }, "Notification permission granted")
-      playSound("confirm").catch((error: unknown) => {
-        log.warn({ error, module: "notifications" }, "Failed to play permission granted sound")
-      })
+      set(playSoundAtom, { soundType: "confirm" })
     }
 
     return validateNotificationPermission(permission)
@@ -382,10 +379,8 @@ export const showTaskDueNotificationAtom = atom(
         )
       }
 
-      // Play notification sound (always enabled for now)
-      playSound("chime").catch((error: unknown) => {
-        log.warn({ error, module: "notifications" }, "Failed to play notification sound")
-      })
+      // Play notification sound (settings-aware)
+      set(playSoundAtom, { soundType: "chime" })
 
       log.info(
         {

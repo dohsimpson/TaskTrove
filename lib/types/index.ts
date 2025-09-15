@@ -847,6 +847,8 @@ export const NotificationSettingsSchema = z.object({
 export const GeneralSettingsSchema = z.object({
   /** Default view on app launch */
   startView: z.union([z.enum(STANDARD_VIEW_IDS), z.literal("lastViewed")]),
+  /** Enable/disable sound effects */
+  soundEnabled: z.boolean().default(true),
 })
 
 export const UserSettingsSchema = z.object({
@@ -885,7 +887,7 @@ export const DataFileSchema = z.object({
   projectGroups: ProjectGroupSchema,
   labelGroups: LabelGroupSchema,
   settings: UserSettingsSchema,
-  version: VersionStringSchema.optional(),
+  version: VersionStringSchema.optional(), // TODO: make this required after v0.9.0
 })
 
 export const DataFileSerializationSchema = z.object({

@@ -284,8 +284,9 @@
       "requireInteraction": true
     },
     "general": {
-      "startView": "all"
+      "startView": "all",
+      "soundEnabled": true
     }
   },
-  "version": "v0.5.0"
+  "version": "v0.6.0"
 }

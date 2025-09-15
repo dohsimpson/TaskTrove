@@ -259,6 +259,63 @@ function v050Migration(dataFile: Json): Json {
   return JSON.parse(JSON.stringify(result))
 }
 
+function v060Migration(dataFile: Json): Json {
+  console.log("Migrating data file from v0.5.0 to v0.6.0...")
+  console.log("Adding soundEnabled field to general settings")
+
+  // Safely handle Json object type
+  if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
+    throw new Error("Migration input must be a JSON object")
+  }
+
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(dataFile)) {
+    result[key] = value
+  }
+
+  // Handle settings migration
+  if (
+    typeof result.settings === "object" &&
+    result.settings !== null &&
+    !Array.isArray(result.settings)
+  ) {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const settings = result.settings as Record<string, unknown>
+
+    // Ensure general settings exist
+    if (
+      typeof settings.general === "object" &&
+      settings.general !== null &&
+      !Array.isArray(settings.general)
+    ) {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const general = settings.general as Record<string, unknown>
+
+      // Add soundEnabled if it doesn't exist
+      if (!("soundEnabled" in general)) {
+        console.log("✓ Adding soundEnabled field to general settings")
+        general.soundEnabled = true // Default to enabled
+      }
+    } else {
+      // If general settings don't exist, create them with soundEnabled
+      console.log("✓ Creating general settings with soundEnabled field")
+      settings.general = {
+        startView: "all",
+        soundEnabled: true,
+      }
+    }
+  } else {
+    // If no settings exist at all, use defaults
+    console.log("✓ Adding complete default settings structure with soundEnabled")
+    result.settings = DEFAULT_USER_SETTINGS
+  }
+
+  console.log("✓ soundEnabled migration completed")
+
+  // Return as Json by serializing/deserializing
+  return JSON.parse(JSON.stringify(result))
+}
+
 /**
  * Migration functions for each version upgrade
  * Only define functions for versions that actually require data structure changes
@@ -278,6 +335,10 @@ const migrationFunctions: MigrationStep[] = [
   {
     version: createVersionString("v0.5.0"),
     migrate: v050Migration,
+  },
+  {
+    version: createVersionString("v0.6.0"),
+    migrate: v060Migration,
   },
 ]
 

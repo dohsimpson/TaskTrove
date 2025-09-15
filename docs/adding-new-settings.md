@@ -69,11 +69,11 @@ app/api/settings/route.ts      # Settings API endpoint
 First, define your settings schema and types:
 
 ```typescript
-// 1. Define the Zod schema
+// 1. Define the Zod schema - NO .default() or .optional()
 export const YourSettingsSchema = z.object({
-  yourField: z.boolean().default(false),
-  anotherField: z.string().default("default-value"),
-  numericField: z.number().min(0).max(100).default(50),
+  yourField: z.boolean(), // Required
+  anotherField: z.string(), // Required
+  numericField: z.number().min(0).max(100), // Required with validation
 })
 
 // 2. Generate TypeScript type
@@ -92,7 +92,7 @@ export const PartialUserSettingsSchema = z.object({
   data: DataSettingsSchema.partial().optional(),
   notifications: NotificationSettingsSchema.partial().optional(),
   general: GeneralSettingsSchema.partial().optional(),
-  yourCategory: YourSettingsSchema.partial().optional(), // Add here too
+  yourCategory: YourSettingsSchema.partial().optional(), // Partial updates only
 })
 ```
 
@@ -439,9 +439,33 @@ const settings: UserSettings = {
 
 ### 1. Type Safety
 
-- Always use Zod schemas first, then generate TypeScript types
-- Provide sensible defaults for all fields
-- Use branded types for IDs and specific value types
+- **Always use Zod schemas first**, then generate TypeScript types with `z.infer<>`
+- **NEVER use `.default()` in Zod schemas** - defaults are handled at runtime via constants
+- **NEVER use `.optional()` unless absolutely necessary** - it creates undefined states to manage
+- **Prefer required types** - handle missing fields through migrations and API updates
+- **Use branded types** for IDs and specific value types
+
+**Correct approach:**
+
+```typescript
+// ❌ WRONG - creates optional undefined states
+export const SettingsSchema = z.object({
+  field1: z.boolean().default(true), // Don't use .default()
+  field2: z.string().optional(), // Avoid .optional()
+})
+
+// ✅ CORRECT - required types with runtime defaults
+export const SettingsSchema = z.object({
+  field1: z.boolean(), // Required
+  field2: z.string(), // Required
+})
+
+// Defaults handled separately in constants
+export const DEFAULT_SETTINGS = {
+  field1: true,
+  field2: "default-value",
+} as const
+```
 
 ### 2. User Experience
 
@@ -482,6 +506,56 @@ const settings: UserSettings = {
 - Provide examples of valid values
 - Update this guide when adding new patterns
 
+### 8. Migration Considerations
+
+**CRITICAL:** Since we use required types (no `.optional()` or `.default()`), every new field needs data migration:
+
+- **Add migration function** to `lib/utils/data-migration.ts` for the next version
+- **Migration must populate required field** with value from constants (not schema default)
+- **Update tutorial data** in `lib/constants/tutorial-data.json` to include the new field
+- **Test migration** with `pnpm test:file lib/utils/data-migration.test.ts`
+- **Do NOT bump package.json version** until ready to release
+
+**Example migration function:**
+
+```typescript
+function v060Migration(dataFile: Json): Json {
+  console.log("Migrating data file from v0.5.0 to v0.6.0...")
+  console.log("Adding soundEnabled field to general settings")
+
+  // Handle settings migration
+  if (typeof result.settings === "object" && result.settings !== null) {
+    const settings = result.settings as Record<string, unknown>
+
+    if (typeof settings.general === "object" && settings.general !== null) {
+      const general = settings.general as Record<string, unknown>
+
+      // Add required field with default from constants
+      if (!("soundEnabled" in general)) {
+        console.log("✓ Adding soundEnabled field to general settings")
+        general.soundEnabled = DEFAULT_GENERAL_SETTINGS.soundEnabled
+      }
+    }
+  }
+
+  console.log("✓ soundEnabled migration completed")
+  return JSON.parse(JSON.stringify(result))
+}
+```
+
+**Required updates for new migrations:**
+
+1. Add migration function to `migrationFunctions` array
+2. Use constants for default values, not schema defaults
+3. Update tutorial data version and add required fields
+4. Only bump package.json version when releasing
+
+**Why this approach:**
+
+- **Type safety**: No undefined states from optional fields
+- **Predictability**: All fields are always present after migration
+- **Maintainability**: Single source of truth for defaults in constants
+
 ## Common Patterns
 
 ### Nested Settings Object
@@ -519,14 +593,27 @@ export const ListSettingsSchema = z.object({
 ### Conditional Settings
 
 ```typescript
+// ❌ AVOID - creates undefined states
 export const ConditionalSettingsSchema = z.object({
   enabled: z.boolean(),
   config: z
     .object({
       value: z.string(),
     })
-    .optional(), // Only required when enabled is true
+    .optional(), // Avoid .optional()
 })
+
+// ✅ BETTER - use discriminated unions or separate required fields
+export const ConditionalSettingsSchema = z.object({
+  enabled: z.boolean(),
+  configValue: z.string(), // Always required, handle logic in UI
+})
+
+// ✅ OR use discriminated union for complex cases
+export const ConditionalSettingsSchema = z.discriminatedUnion("enabled", [
+  z.object({ enabled: z.literal(false) }),
+  z.object({ enabled: z.literal(true), configValue: z.string() }),
+])
 ```
 
 This guide should cover everything needed to add new settings to TaskTrove while maintaining consistency with the existing architecture and patterns.

@@ -848,7 +848,7 @@ export const GeneralSettingsSchema = z.object({
   /** Default view on app launch */
   startView: z.union([z.enum(STANDARD_VIEW_IDS), z.literal("lastViewed")]),
   /** Enable/disable sound effects */
-  soundEnabled: z.boolean().default(true),
+  soundEnabled: z.boolean(),
 })
 
 export const UserSettingsSchema = z.object({

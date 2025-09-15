@@ -14,8 +14,10 @@ import {
 import {
   INBOX_PROJECT_ID,
   ProjectIdSchema,
+  GroupIdSchema,
   type Project,
   type Label,
+  type ProjectGroup,
   type ProjectId,
   type LabelId,
   type SectionId,
@@ -23,16 +25,29 @@ import {
   type ViewId,
   type StandardViewId,
   createProjectId,
+  createGroupId,
 } from "@/lib/types"
-import { DEFAULT_ROUTE } from "@/lib/constants/defaults"
+import { DEFAULT_GROUP_COLOR, DEFAULT_ROUTE } from "@/lib/constants/defaults"
 import { projectsAtom } from "../core/projects"
 import { labelsAtom } from "../core/labels"
-import { resolveProject, resolveLabel } from "@/lib/utils/routing"
+import { allGroupsAtom } from "../core/groups"
+import { resolveProject, resolveLabel, resolveProjectGroup } from "@/lib/utils/routing"
+import { findGroupById } from "@/lib/utils/group-utils"
+import { log } from "@/lib/utils/logger"
 
 // Internal validation functions for navigation parsing
 function isValidProjectId(id: string): id is ProjectId {
   try {
     ProjectIdSchema.parse(id)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function isValidGroupId(id: string): id is GroupId {
+  try {
+    GroupIdSchema.parse(id)
     return true
   } catch {
     return false
@@ -332,7 +347,7 @@ export interface RouteContext {
   /** Computed view ID for state management */
   viewId: ViewId
   /** Type of route being accessed */
-  routeType: "standard" | "project" | "label" | "filter"
+  routeType: "standard" | "project" | "label" | "filter" | "projectgroup"
 }
 
 /**
@@ -344,7 +359,12 @@ pathnameAtom.debugLabel = "pathnameAtom"
 /**
  * Parse route context from pathname
  */
-function parseRouteContext(pathname: string, labels?: Label[], projects?: Project[]): RouteContext {
+function parseRouteContext(
+  pathname: string,
+  labels?: Label[],
+  projects?: Project[],
+  groups?: { projectGroups: ProjectGroup; labelGroups: unknown },
+): RouteContext {
   // Handle root path as today
   if (pathname === "/" || pathname === "") {
     return {
@@ -432,6 +452,35 @@ function parseRouteContext(pathname: string, labels?: Label[], projects?: Projec
     }
   }
 
+  // Handle project group routes
+  if (firstSegment === "projectgroups" && secondSegment) {
+    // Try to resolve project group by ID or slug
+    if (groups) {
+      const group = resolveProjectGroup(secondSegment, groups.projectGroups)
+      if (group) {
+        return {
+          pathname,
+          viewId: group.id, // ViewId is the GroupId
+          routeType: "projectgroup",
+        }
+      }
+    }
+
+    // Log warning for non-existent groups
+    if (isValidGroupId(secondSegment)) {
+      log.warn(`Project group with ID '${secondSegment}' not found`)
+    } else {
+      log.warn(`Project group with slug '${secondSegment}' not found`)
+    }
+
+    // Fallback if project group not found or groups not available
+    return {
+      pathname,
+      viewId: "not-found", // Show not found component
+      routeType: "projectgroup",
+    }
+  }
+
   // Remove filter routes - not supported yet
 
   // Handle standard views and unknown routes
@@ -464,7 +513,8 @@ export const currentRouteContextAtom = atom<RouteContext>((get) => {
   const pathname = get(pathnameAtom)
   const labels = get(labelsAtom)
   const projects = get(projectsAtom)
-  return parseRouteContext(pathname, labels, projects)
+  const groups = get(allGroupsAtom)
+  return parseRouteContext(pathname, labels, projects, groups)
 })
 currentRouteContextAtom.debugLabel = "currentRouteContextAtom"
 
@@ -501,6 +551,7 @@ function generatePageInfo(
   routeContext: RouteContext,
   projects: Project[],
   labels: Label[],
+  groups?: { projectGroups: ProjectGroup; labelGroups: unknown },
 ): DynamicPageInfo {
   const { routeType, viewId } = routeContext
 
@@ -546,6 +597,30 @@ function generatePageInfo(
     }
   }
 
+  // Handle project group routes
+  if (routeType === "projectgroup") {
+    // viewId contains the group ID for projectgroup routes
+    if (groups && isValidGroupId(viewId)) {
+      const groupId = createGroupId(viewId)
+      const group = findGroupById(groups.projectGroups, groupId)
+      if (group) {
+        return {
+          title: group.name,
+          description: `All tasks in ${group.name}`,
+          iconType: "folder",
+          color: group.color || DEFAULT_GROUP_COLOR,
+        }
+      }
+    }
+    // Fallback for non-existent groups
+    return {
+      title: "Project Group",
+      description: "All tasks in project group",
+      iconType: "folder",
+      color: DEFAULT_GROUP_COLOR,
+    }
+  }
+
   // Handle filter routes
   if (routeType === "filter") {
     return {
@@ -588,8 +663,9 @@ export const dynamicPageInfoAtom = atom<DynamicPageInfo>((get) => {
   const routeContext = get(currentRouteContextAtom)
   const projects = get(projectsAtom)
   const labels = get(labelsAtom)
+  const groups = get(allGroupsAtom)
 
-  return generatePageInfo(routeContext, projects, labels)
+  return generatePageInfo(routeContext, projects, labels, groups)
 })
 dynamicPageInfoAtom.debugLabel = "dynamicPageInfoAtom"
 

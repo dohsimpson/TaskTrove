@@ -10,8 +10,10 @@ import {
   ProjectId,
   LabelId,
   LabelIdSchema,
+  GroupIdSchema,
   Project,
   ProjectSection,
+  GroupId,
   INBOX_PROJECT_ID,
   ensureTaskProjectId,
   createTaskId,
@@ -192,6 +194,7 @@ const removeTaskFromProjectOrder = (
     return { ...project, taskOrder: filteredOrder }
   })
 }
+import { collectProjectIdsFromGroup } from "../../utils/group-utils"
 import {
   tasksAtom,
   createTaskMutationAtom,
@@ -199,6 +202,7 @@ import {
   deleteTaskMutationAtom,
   projectsAtom,
 } from "./base"
+import { allGroupsAtom } from "./groups"
 import { recordOperationAtom } from "./history"
 import { log } from "../../utils/logger"
 
@@ -477,6 +481,32 @@ export const completedTasksAtom = atom((get) => {
 completedTasksAtom.debugLabel = "completedTasksAtom"
 
 /**
+ * Project group tasks atom
+ * Returns a function that takes a groupId and returns all tasks from projects in that group (and nested groups)
+ * This supports the flat task view for project groups
+ */
+export const projectGroupTasksAtom = atom((get) => {
+  return (groupId: GroupId) => {
+    try {
+      const groups = get(allGroupsAtom)
+      const activeTasks = get(activeTasksAtom)
+
+      // Get all project IDs from this group and its nested groups
+      const projectIds = collectProjectIdsFromGroup(groups, groupId)
+
+      // Return all tasks from these projects
+      return activeTasks.filter(
+        (task: Task) => task.projectId && projectIds.includes(task.projectId),
+      )
+    } catch (error) {
+      handleAtomError(error, "projectGroupTasksAtom")
+      return []
+    }
+  }
+})
+projectGroupTasksAtom.debugLabel = "projectGroupTasksAtom"
+
+/**
  * Inbox tasks - tasks with no project or assigned to the special inbox project
  * Uses isTaskInInbox utility for filtering
  */
@@ -688,6 +718,18 @@ export const baseTasksForViewAtom = atom((get) => {
             return activeTasks.filter((task: Task) => task.labels.includes(labelId))
           } catch {
             // Invalid label ID, return empty array
+            return []
+          }
+        }
+
+        if (routeContext.routeType === "projectgroup") {
+          // For project groups, get all tasks from projects within the group
+          try {
+            const groupId = GroupIdSchema.parse(routeContext.viewId)
+            const getProjectGroupTasks = get(projectGroupTasksAtom)
+            return getProjectGroupTasks(groupId)
+          } catch {
+            // Invalid group ID, return empty array
             return []
           }
         }

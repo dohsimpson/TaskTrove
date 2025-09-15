@@ -3,6 +3,7 @@
 import React from "react"
 import { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
+import { useRouter } from "next/navigation"
 import { ChevronDown, ChevronRight, FolderOpen, Folders } from "lucide-react"
 import { SidebarMenuItem, SidebarMenuButton, SidebarMenuBadge } from "@/components/ui/sidebar"
 import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
@@ -23,7 +24,7 @@ import {
   reorderProjectWithinRootAtom,
   updateProjectGroupAtom,
 } from "@/lib/atoms/core/groups"
-import { editingGroupIdAtom, stopEditingGroupAtom } from "@/lib/atoms/ui/navigation"
+import { editingGroupIdAtom, stopEditingGroupAtom, pathnameAtom } from "@/lib/atoms/ui/navigation"
 import {
   attachInstruction,
   extractInstruction,
@@ -46,6 +47,8 @@ export function DraggableProjectGroupItem({
 }: DraggableProjectGroupItemProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
+  const router = useRouter()
+  const pathname = useAtomValue(pathnameAtom)
   const projectTaskCounts = useAtomValue(projectTaskCountsAtom)
 
   // Editing state
@@ -107,8 +110,26 @@ export function DraggableProjectGroupItem({
     .map((projectId) => projects.find((p) => p.id === projectId))
     .filter((p): p is Project => !!p)
 
+  // Check if this group is currently active (being viewed)
+  const isActive = pathname === `/projectgroups/${group.slug}`
+
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded)
+  }
+
+  const handleGroupClick = (e: React.MouseEvent) => {
+    // Check if click was on the chevron specifically
+    const target = e.target
+    const isChevronClick =
+      target instanceof HTMLElement && target.closest("[data-chevron]") !== null
+
+    if (isChevronClick) {
+      // Toggle expansion if chevron was clicked
+      toggleExpanded()
+    } else if (!isEditing) {
+      // Navigate to group view if not editing and not chevron click
+      router.push(`/projectgroups/${group.slug}`)
+    }
   }
 
   // Drag and drop handlers for group header
@@ -303,7 +324,8 @@ export function DraggableProjectGroupItem({
                 )}
               <SidebarMenuButton
                 asChild={false}
-                onClick={toggleExpanded}
+                isActive={isActive}
+                onClick={handleGroupClick}
                 className={cn(
                   "w-full cursor-pointer transition-colors",
                   // Subtle highlighting when make-child instruction (dropping INTO group)
@@ -314,7 +336,7 @@ export function DraggableProjectGroupItem({
               >
                 <div className="flex items-center gap-2 w-full">
                   {/* Chevron for expand/collapse - always show for visual consistency */}
-                  <span className="flex-shrink-0">
+                  <span className="flex-shrink-0" data-chevron>
                     {isExpanded ? (
                       <ChevronDown className="h-3 w-3" />
                     ) : (

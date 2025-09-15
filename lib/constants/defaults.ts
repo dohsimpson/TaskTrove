@@ -52,6 +52,9 @@ export const DEFAULT_SECTION_NAME = "Default"
 /** Default section color for projects */
 export const DEFAULT_SECTION_COLOR = "#6b7280"
 
+/** Default section color for groups */
+export const DEFAULT_GROUP_COLOR = "#6b7280"
+
 /** Default project shared status */
 export const DEFAULT_PROJECT_SHARED = false
 
@@ -125,6 +128,7 @@ export const STANDARD_VIEW_IDS = [
   // "filters",
   "projects",
   "labels",
+  "not-found",
 ] as const
 
 /** Standard view metadata for UI display */
@@ -205,6 +209,11 @@ export const STANDARD_VIEW_METADATA: Record<
     title: "Labels",
     description: "Organize tasks with labels",
     iconType: "labels" as const,
+  },
+  "not-found": {
+    title: "Not Found",
+    description: "The requested resource could not be found",
+    iconType: "error" as const,
   },
 } as const
 

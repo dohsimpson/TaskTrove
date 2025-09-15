@@ -4,14 +4,27 @@ import {
   createSafeLabelNameSlug,
   resolveProject,
   resolveLabel,
+  resolveProjectGroup,
 } from "./routing"
-import { Project, Label, createProjectId, createLabelId } from "@/lib/types"
+import {
+  Project,
+  Label,
+  ProjectGroup,
+  createProjectId,
+  createLabelId,
+  createGroupId,
+} from "@/lib/types"
 import {
   TEST_PROJECT_ID_1,
   TEST_PROJECT_ID_2,
   TEST_LABEL_ID_1,
   TEST_LABEL_ID_2,
 } from "./test-constants"
+
+// Test constants for project groups
+const TEST_GROUP_ID_1 = createGroupId("550e8400-e29b-41d4-a716-446655440001")
+const TEST_GROUP_ID_2 = createGroupId("550e8400-e29b-41d4-a716-446655440002")
+const TEST_GROUP_ID_3 = createGroupId("550e8400-e29b-41d4-a716-446655440003")
 
 describe("routing utilities", () => {
   describe("createSafeProjectNameSlug", () => {
@@ -431,6 +444,153 @@ describe("routing utilities", () => {
     it("should return null for non-existent label", () => {
       const result = resolveLabel("non-existent", testLabels)
       expect(result).toBe(null)
+    })
+  })
+
+  describe("resolveProjectGroup", () => {
+    const testProjectGroups: ProjectGroup = {
+      id: TEST_GROUP_ID_1,
+      name: "Root Group",
+      slug: "root-group",
+      color: "#ff0000",
+      type: "project",
+      items: [
+        TEST_PROJECT_ID_1,
+        {
+          id: TEST_GROUP_ID_2,
+          name: "Nested Group",
+          slug: "nested-group",
+          color: "#00ff00",
+          type: "project",
+          items: [
+            TEST_PROJECT_ID_2,
+            {
+              id: TEST_GROUP_ID_3,
+              name: "Deep Nested Group",
+              slug: "deep-nested-group",
+              color: "#0000ff",
+              type: "project",
+              items: [TEST_PROJECT_ID_1],
+            },
+          ],
+        },
+      ],
+    }
+
+    it("should resolve project group by UUID", () => {
+      const result = resolveProjectGroup(TEST_GROUP_ID_1, testProjectGroups)
+      expect(result).toBe(testProjectGroups)
+      expect(result?.name).toBe("Root Group")
+    })
+
+    it("should resolve project group by slug", () => {
+      const result = resolveProjectGroup("nested-group", testProjectGroups)
+      expect(result).not.toBe(null)
+      expect(result?.name).toBe("Nested Group")
+      expect(result?.slug).toBe("nested-group")
+    })
+
+    it("should resolve deeply nested project group by UUID", () => {
+      const result = resolveProjectGroup(TEST_GROUP_ID_3, testProjectGroups)
+      expect(result).not.toBe(null)
+      expect(result?.name).toBe("Deep Nested Group")
+      expect(result?.id).toBe(TEST_GROUP_ID_3)
+    })
+
+    it("should resolve deeply nested project group by slug", () => {
+      const result = resolveProjectGroup("deep-nested-group", testProjectGroups)
+      expect(result).not.toBe(null)
+      expect(result?.name).toBe("Deep Nested Group")
+      expect(result?.slug).toBe("deep-nested-group")
+    })
+
+    it("should prioritize UUID over slug when both could match", () => {
+      const projectGroupsWithConflict: ProjectGroup = {
+        id: TEST_GROUP_ID_1,
+        name: "Root Group",
+        slug: "root-group",
+        color: "#ff0000",
+        type: "project",
+        items: [
+          {
+            id: TEST_GROUP_ID_2,
+            name: "UUID Group",
+            slug: TEST_GROUP_ID_1, // slug same as root group's ID
+            color: "#00ff00",
+            type: "project",
+            items: [],
+          },
+        ],
+      }
+
+      const result = resolveProjectGroup(TEST_GROUP_ID_1, projectGroupsWithConflict)
+      expect(result?.name).toBe("Root Group") // Should match by ID, not slug
+    })
+
+    it("should return null for non-existent project group", () => {
+      const result = resolveProjectGroup("non-existent-group", testProjectGroups)
+      expect(result).toBe(null)
+    })
+
+    it("should return null when projectGroups is undefined", () => {
+      const result = resolveProjectGroup("any-group", undefined)
+      expect(result).toBe(null)
+    })
+
+    it("should handle invalid UUID format gracefully", () => {
+      const result = resolveProjectGroup("not-a-uuid", testProjectGroups)
+      expect(result).toBe(null)
+    })
+
+    it("should handle empty project groups structure", () => {
+      const emptyProjectGroups: ProjectGroup = {
+        id: TEST_GROUP_ID_1,
+        name: "Empty Root",
+        slug: "empty-root",
+        color: "#ffffff",
+        type: "project",
+        items: [],
+      }
+
+      const result = resolveProjectGroup("non-existent", emptyProjectGroups)
+      expect(result).toBe(null)
+    })
+
+    it("should find root group when searching by root slug", () => {
+      const result = resolveProjectGroup("root-group", testProjectGroups)
+      expect(result).toBe(testProjectGroups)
+      expect(result?.name).toBe("Root Group")
+    })
+
+    it("should handle case-sensitive slug matching", () => {
+      const result = resolveProjectGroup("ROOT-GROUP", testProjectGroups) // uppercase
+      expect(result).toBe(null) // should not match case-insensitive
+    })
+
+    it("should return correct group when multiple groups have similar names", () => {
+      const groupsWithSimilarNames: ProjectGroup = {
+        id: TEST_GROUP_ID_1,
+        name: "Project Group",
+        slug: "project-group",
+        color: "#ff0000",
+        type: "project",
+        items: [
+          {
+            id: TEST_GROUP_ID_2,
+            name: "Project Group Two",
+            slug: "project-group-two",
+            color: "#00ff00",
+            type: "project",
+            items: [],
+          },
+        ],
+      }
+
+      const result1 = resolveProjectGroup("project-group", groupsWithSimilarNames)
+      const result2 = resolveProjectGroup("project-group-two", groupsWithSimilarNames)
+
+      expect(result1?.name).toBe("Project Group")
+      expect(result2?.name).toBe("Project Group Two")
     })
   })
 })

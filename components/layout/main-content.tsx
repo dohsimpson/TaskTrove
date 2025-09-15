@@ -111,7 +111,7 @@ export function MainContent({}: MainContentProps) {
         // Configure section support based on view type
         const getSectionSupport = (): boolean => {
           if (routeContext.routeType === "project") return true
-          return false // Only projects support sections
+          return false // Only projects support sections, projectgroups use flat view
         }
 
         // Get project for project views
@@ -122,6 +122,7 @@ export function MainContent({}: MainContentProps) {
           if (currentView === "inbox") {
             return allProjects.find((p: Project) => p.id === INBOX_PROJECT_ID)
           }
+          // For projectgroups, return undefined since we're showing aggregated tasks from multiple projects
           return undefined
         }
 

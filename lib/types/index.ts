@@ -934,8 +934,9 @@ export type StandardViewId = (typeof STANDARD_VIEW_IDS)[number]
  * - StandardViewId: Built-in views like inbox, today, etc.
  * - ProjectId: Branded UUID for project views
  * - LabelId: Branded UUID for label views
+ * - GroupId: Branded UUID for project group views
  */
-export type ViewId = StandardViewId | ProjectId | LabelId
+export type ViewId = StandardViewId | ProjectId | LabelId | GroupId
 
 // =============================================================================
 // ANALYTICS TYPES

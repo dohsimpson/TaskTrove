@@ -1,7 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { createStore } from "jotai"
 import { currentRouteContextAtom, setPathnameAtom } from "../ui/navigation"
+import { createGroupId } from "@/lib/types"
 // Removed unused imports
+
+// Test constants for project groups
+const TEST_GROUP_ID_1 = createGroupId("550e8400-e29b-41d4-a716-446655440001")
 
 /**
  * Test suite for currentRouteContextAtom
@@ -232,6 +236,116 @@ describe("currentRouteContextAtom", () => {
         // ViewId is now directly the ProjectId (no prefix)
         expect(context.viewId).toBe(expectedProjectId)
       }
+    })
+  })
+
+  describe("projectgroup routes", () => {
+    it("should parse projectgroup route with UUID correctly", () => {
+      store.set(setPathnameAtom, `/projectgroups/${TEST_GROUP_ID_1}`)
+
+      const context = store.get(currentRouteContextAtom)
+
+      expect(context).toEqual({
+        pathname: `/projectgroups/${TEST_GROUP_ID_1}`,
+        viewId: "not-found", // Show not found for non-existent UUID
+        routeType: "projectgroup",
+      })
+    })
+
+    it("should parse projectgroup route with slug correctly", () => {
+      store.set(setPathnameAtom, "/projectgroups/work-projects")
+
+      const context = store.get(currentRouteContextAtom)
+
+      expect(context).toEqual({
+        pathname: "/projectgroups/work-projects",
+        viewId: "not-found", // Show not found since no test project groups data
+        routeType: "projectgroup",
+      })
+    })
+
+    it("should handle non-existent projectgroup gracefully", () => {
+      store.set(setPathnameAtom, "/projectgroups/non-existent-group")
+
+      const context = store.get(currentRouteContextAtom)
+
+      expect(context).toEqual({
+        pathname: "/projectgroups/non-existent-group",
+        viewId: "not-found", // Show not found for non-existent group
+        routeType: "projectgroup",
+      })
+    })
+
+    it("should handle projectgroup route without ID/slug", () => {
+      store.set(setPathnameAtom, "/projectgroups")
+
+      const context = store.get(currentRouteContextAtom)
+
+      // Should fallback to standard route since no second segment
+      expect(context.routeType).toBe("standard")
+      expect(context.viewId).toBe("projectgroups") // first segment becomes viewId
+    })
+
+    it("should handle projectgroup route with empty ID/slug", () => {
+      store.set(setPathnameAtom, "/projectgroups/")
+
+      const context = store.get(currentRouteContextAtom)
+
+      // Should fallback to standard route since empty segment
+      expect(context.routeType).toBe("standard")
+      expect(context.viewId).toBe("projectgroups") // first segment becomes viewId
+    })
+
+    it("should handle projectgroup route with multiple segments", () => {
+      store.set(setPathnameAtom, "/projectgroups/work-projects/extra-segment")
+
+      const context = store.get(currentRouteContextAtom)
+
+      // Should still parse as projectgroup but show not found for non-existent group
+      expect(context).toEqual({
+        pathname: "/projectgroups/work-projects/extra-segment",
+        viewId: "not-found", // Show not found since "work-projects" doesn't exist in test data
+        routeType: "projectgroup",
+      })
+    })
+
+    it("should handle projectgroup route with URL-encoded segments", () => {
+      const encodedSlug = encodeURIComponent("work & personal projects")
+      store.set(setPathnameAtom, `/projectgroups/${encodedSlug}`)
+
+      const context = store.get(currentRouteContextAtom)
+
+      expect(context).toEqual({
+        pathname: `/projectgroups/${encodedSlug}`,
+        viewId: "not-found", // Show not found for non-existent group
+        routeType: "projectgroup",
+      })
+    })
+
+    it("should differentiate between project and projectgroup routes", () => {
+      // Test project route
+      store.set(setPathnameAtom, "/projects/my-project")
+      const projectContext = store.get(currentRouteContextAtom)
+      expect(projectContext.routeType).toBe("project")
+
+      // Test projectgroup route
+      store.set(setPathnameAtom, "/projectgroups/my-project")
+      const groupContext = store.get(currentRouteContextAtom)
+      expect(groupContext.routeType).toBe("projectgroup")
+    })
+
+    it("should handle very long projectgroup slugs", () => {
+      const longSlug =
+        "a-very-long-project-group-slug-that-contains-many-words-and-should-still-work-correctly"
+      store.set(setPathnameAtom, `/projectgroups/${longSlug}`)
+
+      const context = store.get(currentRouteContextAtom)
+
+      expect(context).toEqual({
+        pathname: `/projectgroups/${longSlug}`,
+        viewId: "not-found", // Show not found for non-existent group
+        routeType: "projectgroup",
+      })
     })
   })
 })

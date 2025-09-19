@@ -378,7 +378,7 @@ function createMutation<TResponse, TVariables, TOptimisticData = unknown>(
 
 export const dataQueryAtom = atomWithQuery(() => ({
   queryKey: ["tasks"],
-  queryFn: async () => {
+  queryFn: async (): Promise<DataFile> => {
     // Check if we're in a test environment or if API is unavailable
     if (typeof window === "undefined" || process.env.NODE_ENV === "test") {
       // In test environment, return basic test data structure that matches test expectations
@@ -457,6 +457,7 @@ export const dataQueryAtom = atomWithQuery(() => ({
             },
           },
           notifications: DEFAULT_NOTIFICATION_SETTINGS,
+          general: DEFAULT_GENERAL_SETTINGS,
         },
       }
     }
@@ -1250,7 +1251,7 @@ export const settingsAtom = atom(
       return result.data.settings
     }
     // Return minimal default settings
-    return {
+    const defaultSettings: UserSettings = {
       data: {
         autoBackup: {
           enabled: DEFAULT_AUTO_BACKUP_ENABLED,
@@ -1261,6 +1262,7 @@ export const settingsAtom = atom(
       notifications: DEFAULT_NOTIFICATION_SETTINGS,
       general: DEFAULT_GENERAL_SETTINGS,
     }
+    return defaultSettings
   },
   async (get, set, partialSettings: PartialUserSettings) => {
     try {

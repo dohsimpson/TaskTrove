@@ -11,10 +11,9 @@ export default function HomePage() {
 
   useEffect(() => {
     // Get the default page from settings, with fallback to DEFAULT_ROUTE
-    // Note: During v0.5.0 migration, general property might not exist yet
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const generalSettings = (settings as { general?: { startView?: string } }).general
-    const startView = generalSettings?.startView ?? "all"
+    const generalSettings = (settings as { general: { startView?: string } }).general
+    const startView = generalSettings.startView ?? "all"
 
     let redirectPath: string
     if (startView === "lastViewed") {

@@ -1,11 +1,15 @@
 {
   "extends": ["next/core-web-vitals", "plugin:@typescript-eslint/strict"],
   "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
   "plugins": ["@typescript-eslint"],
   "rules": {
     "react/no-unescaped-entities": "off",
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/ban-ts-comment": "error",
-    "@typescript-eslint/consistent-type-assertions": ["error", { "assertionStyle": "never" }]
+    "@typescript-eslint/consistent-type-assertions": ["error", { "assertionStyle": "never" }],
+    "@typescript-eslint/no-unnecessary-condition": "warn"
   }
 }

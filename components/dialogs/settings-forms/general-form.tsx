@@ -53,12 +53,11 @@ export function GeneralForm() {
   const settings = useAtomValue(settingsAtom)
   const updateSettings = useSetAtom(updateSettingsAtom)
 
-  // Note: During v0.5.0 migration, general property might not exist yet
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const generalSettings = (settings as { general?: { startView?: string; soundEnabled?: boolean } })
+  const generalSettings = (settings as { general: { startView?: string; soundEnabled?: boolean } })
     .general
-  const currentStartView = generalSettings?.startView ?? "all"
-  const currentSoundEnabled = generalSettings?.soundEnabled ?? true
+  const currentStartView = generalSettings.startView ?? "all"
+  const currentSoundEnabled = generalSettings.soundEnabled ?? true
 
   const handleStartViewChange = (value: StandardViewId | "lastViewed") => {
     updateSettings({

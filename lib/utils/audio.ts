@@ -6,24 +6,12 @@ import { log } from "@/lib/utils/logger"
 
 let audioContext: AudioContext | null = null
 
-// Type guard for webkit AudioContext
-function hasWebkitAudioContext(
-  win: Window,
-): win is Window & { webkitAudioContext: typeof AudioContext } {
-  return "webkitAudioContext" in win && typeof win.webkitAudioContext === "function"
-}
-
 const initAudioContext = () => {
   if (!audioContext && typeof window !== "undefined") {
     try {
       // Type-safe approach to handle webkit prefixed AudioContext
-      const AudioContextConstructor =
-        window.AudioContext ||
-        (hasWebkitAudioContext(window) ? window.webkitAudioContext : undefined)
-
-      if (AudioContextConstructor) {
-        audioContext = new AudioContextConstructor()
-      }
+      const AudioContextConstructor = window.AudioContext
+      audioContext = new AudioContextConstructor()
     } catch (error) {
       log.warn({ error, module: "audio" }, "Web Audio API not supported")
     }

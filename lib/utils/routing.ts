@@ -85,7 +85,7 @@ function collectProjectGroupSlugs(group: ProjectGroup): string[] {
   for (const item of group.items) {
     if (typeof item === "object" && "slug" in item) {
       const nestedGroup = item
-      if ("type" in nestedGroup && nestedGroup.type === "project") {
+      if ("type" in nestedGroup) {
         slugs.push(...collectProjectGroupSlugs(nestedGroup))
       }
     }
@@ -104,7 +104,7 @@ function collectLabelGroupSlugs(group: LabelGroup): string[] {
   for (const item of group.items) {
     if (typeof item === "object" && "slug" in item) {
       const nestedGroup = item
-      if ("type" in nestedGroup && nestedGroup.type === "label") {
+      if ("type" in nestedGroup) {
         slugs.push(...collectLabelGroupSlugs(nestedGroup))
       }
     }
@@ -236,10 +236,8 @@ function searchProjectGroupInTree(group: ProjectGroup, idOrSlug: string): Projec
   // Search in nested groups
   for (const item of group.items) {
     if (typeof item === "object" && "id" in item && "type" in item) {
-      if (item.type === "project") {
-        const found = searchProjectGroupInTree(item, idOrSlug)
-        if (found) return found
-      }
+      const found = searchProjectGroupInTree(item, idOrSlug)
+      if (found) return found
     }
   }
 
@@ -260,10 +258,8 @@ function searchLabelGroupInTree(group: LabelGroup, idOrSlug: string): LabelGroup
   // Search in nested groups
   for (const item of group.items) {
     if (typeof item === "object" && "id" in item && "type" in item) {
-      if (item.type === "label") {
-        const found = searchLabelGroupInTree(item, idOrSlug)
-        if (found) return found
-      }
+      const found = searchLabelGroupInTree(item, idOrSlug)
+      if (found) return found
     }
   }
 

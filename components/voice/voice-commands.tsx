@@ -218,43 +218,37 @@ export function VoiceCommands({
     if (SpeechRecognition) {
       recognitionRef.current = new SpeechRecognition()
 
-      if (recognitionRef.current) {
-        recognitionRef.current.continuous = settings.continuousListening
-        recognitionRef.current.interimResults = true
-        recognitionRef.current.lang = settings.language
+      recognitionRef.current.continuous = settings.continuousListening
+      recognitionRef.current.interimResults = true
+      recognitionRef.current.lang = settings.language
 
-        recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
-          const result = event.results[event.results.length - 1]
-          const transcript = result[0].transcript
-          const confidence = result[0].confidence
+      recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
+        const result = event.results[event.results.length - 1]
+        const transcript = result[0].transcript
+        const confidence = result[0].confidence
 
-          setCurrentTranscript(transcript)
-          setConfidence(confidence * 100)
+        setCurrentTranscript(transcript)
+        setConfidence(confidence * 100)
 
-          if (result.isFinal && confidence > settings.sensitivity / 100) {
-            processVoiceCommand(transcript, confidence)
-          }
+        if (result.isFinal && confidence > settings.sensitivity / 100) {
+          processVoiceCommand(transcript, confidence)
         }
+      }
 
-        if (recognitionRef.current) {
-          recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
-            log.error({ error: event.error, module: "voice" }, "Speech recognition error")
-            toast.error("Unable to process voice command. Please try again.")
-          }
+      recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
+        log.error({ error: event.error, module: "voice" }, "Speech recognition error")
+        toast.error("Unable to process voice command. Please try again.")
+      }
 
-          recognitionRef.current.onend = () => {
-            if (settings.continuousListening && isListening) {
-              recognitionRef.current?.start()
-            }
-          }
+      recognitionRef.current.onend = () => {
+        if (settings.continuousListening && isListening) {
+          recognitionRef.current?.start()
         }
       }
     }
 
     // Initialize speech synthesis
-    if (window.speechSynthesis) {
-      synthRef.current = window.speechSynthesis
-    }
+    synthRef.current = window.speechSynthesis
 
     return () => {
       recognitionRef.current?.stop()

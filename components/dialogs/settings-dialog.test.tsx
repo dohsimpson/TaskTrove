@@ -90,7 +90,7 @@ describe("SettingsDialog", () => {
     const sidebars = screen.getAllByText("Settings", { selector: "h2" })
     const desktopSidebar = sidebars.find((el) => {
       const aside = el.closest("aside")
-      return aside?.classList.contains("hidden") && aside?.classList.contains("md:flex")
+      return aside?.classList.contains("hidden") && aside.classList.contains("md:flex")
     })
     expect(desktopSidebar).toBeInTheDocument()
 

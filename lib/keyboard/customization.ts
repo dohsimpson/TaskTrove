@@ -310,13 +310,6 @@ export function importShortcuts(data: ExportData): ImportResult {
       }
     }
 
-    if (!data.shortcuts || typeof data.shortcuts !== "object") {
-      return {
-        success: false,
-        error: "Invalid shortcuts data",
-      }
-    }
-
     // Validate each shortcut
     for (const [key, shortcut] of Object.entries(data.shortcuts)) {
       const validation = validateCustomShortcut(shortcut)

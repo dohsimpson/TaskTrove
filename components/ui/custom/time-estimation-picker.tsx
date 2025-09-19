@@ -37,7 +37,7 @@ export function TimeEstimationPicker({
 
   // Calculate effective estimation (task estimation or sum of subtasks)
   const subtaskEstimationSum =
-    task?.subtasks?.reduce((total, subtask) => total + (subtask.estimation || 0), 0) || 0
+    task?.subtasks.reduce((total, subtask) => total + (subtask.estimation || 0), 0) || 0
   const isUsingSubtaskEstimation =
     taskId && task && (!task.estimation || task.estimation === 0) && subtaskEstimationSum > 0
 

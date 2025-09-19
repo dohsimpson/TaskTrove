@@ -49,23 +49,23 @@ export function SearchDialog() {
       }
 
       searchTimeoutRef.current = setTimeout(() => {
-        const allTasks = tasks || []
+        const allTasks = tasks
         const searchLower = query.toLowerCase()
 
         const filteredTasks = allTasks
           .filter(
             (task: Task) =>
-              task.title?.toLowerCase().includes(searchLower) ||
+              task.title.toLowerCase().includes(searchLower) ||
               task.description?.toLowerCase().includes(searchLower) ||
-              task.labels?.some((labelId) => {
-                const label = labels?.find((l) => l.id === labelId)
+              task.labels.some((labelId) => {
+                const label = labels.find((l) => l.id === labelId)
                 return label?.name.toLowerCase().includes(searchLower)
               }) ||
               // Search by project name
               (task.projectId &&
                 projects
-                  ?.find((p: Project) => p.id === task.projectId)
-                  ?.name?.toLowerCase()
+                  .find((p: Project) => p.id === task.projectId)
+                  ?.name.toLowerCase()
                   .includes(searchLower)),
           )
           .slice(0, 10) // Limit to 10 results for performance
@@ -217,7 +217,7 @@ export function SearchDialog() {
                               <FolderOpen className="h-3 w-3" />
                               <span>
                                 {highlightText(
-                                  projects?.find((p: Project) => p.id === task.projectId)?.name ||
+                                  projects.find((p: Project) => p.id === task.projectId)?.name ||
                                     "Unknown",
                                   searchValue,
                                 )}
@@ -232,8 +232,8 @@ export function SearchDialog() {
                             </div>
                           )}
                           {/* Labels */}
-                          {task.labels?.slice(0, 2).map((labelId) => {
-                            const label = labels?.find((l) => l.id === labelId)
+                          {task.labels.slice(0, 2).map((labelId) => {
+                            const label = labels.find((l) => l.id === labelId)
                             return label ? (
                               <div key={labelId} className="flex items-center gap-1">
                                 <Hash className="h-3 w-3" />
@@ -241,7 +241,7 @@ export function SearchDialog() {
                               </div>
                             ) : null
                           })}
-                          {task.labels?.length > 2 && <span>+{task.labels.length - 2} more</span>}
+                          {task.labels.length > 2 && <span>+{task.labels.length - 2} more</span>}
                         </div>
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />

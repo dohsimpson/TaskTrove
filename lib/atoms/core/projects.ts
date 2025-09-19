@@ -253,14 +253,11 @@ export const projectTaskCountsAtom = atom<Record<ProjectId, number>>((get) => {
     const projects = get(projectsAtom)
     const activeTasks = get(activeTasksAtom)
     const rawViewStates = get(viewStatesAtom)
-    const viewStates: ViewStates =
-      rawViewStates && typeof rawViewStates === "object" && !Array.isArray(rawViewStates)
-        ? rawViewStates
-        : {}
+    const viewStates: ViewStates = rawViewStates
 
     // Filter tasks based on project view's showCompleted setting
     const filterByViewCompleted = (tasks: Task[], projectId: ProjectId) => {
-      const showCompleted = viewStates[projectId]?.showCompleted ?? false
+      const showCompleted = viewStates[projectId].showCompleted
       return showCompleted ? tasks : tasks.filter((task: Task) => !task.completed)
     }
 

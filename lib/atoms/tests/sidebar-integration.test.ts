@@ -115,12 +115,10 @@ describe("Sidebar Integration", () => {
       expect(typeof project.id).toBe("string")
       expect(typeof project.name).toBe("string")
 
-      // If this project has task counts, they should be valid numbers
-      if (projectTaskCounts[project.id] !== undefined) {
-        const count = projectTaskCounts[project.id]
-        expect(typeof count).toBe("number")
-        expect(count).toBeGreaterThanOrEqual(0)
-      }
+      // All projects should have valid task counts
+      const count = projectTaskCounts[project.id]
+      expect(typeof count).toBe("number")
+      expect(count).toBeGreaterThanOrEqual(0)
     })
 
     // Task counts should only be for valid project IDs (string)

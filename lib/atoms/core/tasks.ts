@@ -390,7 +390,7 @@ export const addCommentAtom = atom(
       }
 
       const updatedTasks = tasks.map((task: Task) =>
-        task.id === taskId ? { ...task, comments: [...(task.comments || []), newComment] } : task,
+        task.id === taskId ? { ...task, comments: [...task.comments, newComment] } : task,
       )
 
       set(tasksAtom, updatedTasks)
@@ -637,14 +637,11 @@ export const taskCountsAtom = atom((get) => {
     const calendarTasks = get(calendarTasksAtom)
     const completedTasks = get(completedTasksAtom)
     const rawViewStates = get(viewStatesAtom)
-    const viewStates: ViewStates =
-      rawViewStates && typeof rawViewStates === "object" && !Array.isArray(rawViewStates)
-        ? rawViewStates
-        : {}
+    const viewStates: ViewStates = rawViewStates
 
     // Get view-specific showCompleted settings
     const getViewShowCompleted = (viewId: ViewId) => {
-      return viewStates[viewId]?.showCompleted ?? false
+      return viewStates[viewId].showCompleted
     }
 
     // Filter tasks based on each view's individual showCompleted setting
@@ -814,7 +811,7 @@ export const filteredTasksAtom = atom((get) => {
       if (activeFilters.labels === null) {
         // Show only tasks with NO labels
         result = result.filter((task: Task) => task.labels.length === 0)
-      } else if (activeFilters.labels && activeFilters.labels.length > 0) {
+      } else if (activeFilters.labels.length > 0) {
         // Show tasks with specific labels
         const labelFilter = activeFilters.labels
         result = result.filter((task: Task) =>
@@ -1221,7 +1218,6 @@ export const getTasksForViewAtom = atom((get) => {
     try {
       const tasks = get(tasksAtom)
       const projects = get(projectsAtom)
-      if (!tasks) return []
 
       // Determine project ID from view ID
       let projectId: ProjectId

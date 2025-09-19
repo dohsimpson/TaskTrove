@@ -126,7 +126,7 @@ export function getMockCallArgs(
   callIndex: number = 0,
 ): unknown[] | null {
   const call = mock.mock.calls[callIndex]
-  if (call && call.length > 0) {
+  if (call.length > 0) {
     // Return the raw call arguments - no type assertion needed
     // Callers can handle type checking themselves
     return call
@@ -142,7 +142,7 @@ export function getMockCallResult<T>(
   callIndex: number = 0,
 ): T | null {
   const result = mock.mock.results[callIndex]
-  if (result?.type === "return") {
+  if (result.type === "return") {
     // Type-safe return - assume caller knows the expected type T
     return result.value
   }

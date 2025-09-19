@@ -7,6 +7,7 @@ import {
   ErrorResponse,
   UserSettings,
 } from "@/lib/types"
+import { DEFAULT_GENERAL_SETTINGS } from "@/lib/types/defaults"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import {
@@ -17,12 +18,6 @@ import {
   type EnhancedRequest,
 } from "@/lib/middleware/api-logger"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
-import {
-  DEFAULT_AUTO_BACKUP_ENABLED,
-  DEFAULT_BACKUP_TIME,
-  DEFAULT_MAX_BACKUPS,
-} from "@/lib/constants/defaults"
-import { DEFAULT_NOTIFICATION_SETTINGS, DEFAULT_GENERAL_SETTINGS } from "@/lib/types/defaults"
 
 /**
  * GET /api/settings
@@ -107,42 +102,25 @@ async function updateSettings(
     data: {
       autoBackup: {
         enabled:
-          partialSettings.data?.autoBackup?.enabled ??
-          fileData.settings.data.autoBackup?.enabled ??
-          DEFAULT_AUTO_BACKUP_ENABLED,
+          partialSettings.data?.autoBackup?.enabled ?? fileData.settings.data.autoBackup.enabled,
         backupTime:
           partialSettings.data?.autoBackup?.backupTime ??
-          fileData.settings.data.autoBackup?.backupTime ??
-          DEFAULT_BACKUP_TIME,
+          fileData.settings.data.autoBackup.backupTime,
         maxBackups:
           partialSettings.data?.autoBackup?.maxBackups ??
-          fileData.settings.data.autoBackup?.maxBackups ??
-          DEFAULT_MAX_BACKUPS,
+          fileData.settings.data.autoBackup.maxBackups,
       },
     },
     notifications: {
-      enabled:
-        partialSettings.notifications?.enabled ??
-        fileData.settings.notifications?.enabled ??
-        DEFAULT_NOTIFICATION_SETTINGS.enabled,
+      enabled: partialSettings.notifications?.enabled ?? fileData.settings.notifications.enabled,
       requireInteraction:
         partialSettings.notifications?.requireInteraction ??
-        fileData.settings.notifications?.requireInteraction ??
-        DEFAULT_NOTIFICATION_SETTINGS.requireInteraction,
+        fileData.settings.notifications.requireInteraction,
     },
     general: {
-      startView:
-        partialSettings.general?.startView ??
-        fileData.settings.general?.startView ??
-        DEFAULT_GENERAL_SETTINGS.startView,
-      soundEnabled:
-        partialSettings.general?.soundEnabled ??
-        fileData.settings.general?.soundEnabled ??
-        DEFAULT_GENERAL_SETTINGS.soundEnabled,
-      linkifyEnabled:
-        partialSettings.general?.linkifyEnabled ??
-        fileData.settings.general?.linkifyEnabled ??
-        DEFAULT_GENERAL_SETTINGS.linkifyEnabled,
+      startView: partialSettings.general?.startView ?? fileData.settings.general.startView,
+      soundEnabled: partialSettings.general?.soundEnabled ?? fileData.settings.general.soundEnabled,
+      linkifyEnabled: partialSettings.general?.linkifyEnabled ?? fileData.settings.general.linkifyEnabled,
     },
     // Future settings will be merged here when implemented:
     // appearance: { ... },

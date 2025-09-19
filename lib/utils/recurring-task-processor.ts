@@ -55,7 +55,7 @@ export function parseRRule(rrule: string): ParsedRRule | null {
         parsed.until = value
         break
       case "BYDAY":
-        parsed.byday = value.split(",")
+        parsed.byday = value.split(",").filter((day) => day.trim() !== "")
         break
       case "BYMONTHDAY":
         parsed.bymonthday = value.split(",").map((n) => parseInt(n, 10))
@@ -114,17 +114,17 @@ function applyBysetpos(dates: Date[], bysetpos: number[]): Date[] {
   for (const pos of bysetpos) {
     if (pos === 0) continue // BYSETPOS=0 is invalid per RFC5545
 
-    let targetDate: Date | undefined
+    let targetIndex: number
     if (pos > 0) {
       // Positive: 1st, 2nd, 3rd, etc.
-      targetDate = dates[pos - 1]
+      targetIndex = pos - 1
     } else {
       // Negative: last (-1), second-to-last (-2), etc.
-      targetDate = dates[dates.length + pos]
+      targetIndex = dates.length + pos
     }
 
-    if (targetDate) {
-      result.push(targetDate)
+    if (targetIndex >= 0 && targetIndex < dates.length) {
+      result.push(dates[targetIndex])
     }
   }
 
@@ -178,7 +178,7 @@ export function dateMatchesRecurringPattern(
       return daysDiff > 0 && daysDiff % interval === 0
 
     case "WEEKLY":
-      if (parsed.byday && parsed.byday.length > 0) {
+      if (parsed.byday) {
         const weekdayMap: Record<string, number> = {
           SU: 0,
           MO: 1,
@@ -190,8 +190,8 @@ export function dateMatchesRecurringPattern(
         }
         const targetDays = parsed.byday
           .map((day) => weekdayMap[day])
-          .filter((day) => day !== undefined)
-        return targetDays.includes(date.getDay())
+          .filter((day) => typeof day === "number")
+        return targetDays.length > 0 && targetDays.includes(date.getDay())
       } else {
         // Simple weekly: same day of week, proper interval
         const weeksDiff = Math.floor(
@@ -276,7 +276,7 @@ export function calculateNextDueDate(
       break
 
     case "WEEKLY":
-      if (parsed.byday && parsed.byday.length > 0) {
+      if (parsed.byday) {
         // Handle specific weekdays with enhanced interval support
         const weekdayMap: Record<string, number> = {
           SU: 0,
@@ -290,7 +290,7 @@ export function calculateNextDueDate(
 
         const targetDays = parsed.byday
           .map((day) => weekdayMap[day])
-          .filter((day) => day !== undefined)
+          .filter((day) => typeof day === "number")
         if (targetDays.length === 0) {
           return null
         }
@@ -371,7 +371,7 @@ export function calculateNextDueDate(
         }
         const targetWeekdays = parsed.byday
           .map((day) => weekdayMap[day])
-          .filter((day) => day !== undefined)
+          .filter((day) => typeof day === "number")
 
         if (targetWeekdays.length === 0) {
           return null
@@ -485,7 +485,7 @@ export function calculateNextDueDate(
         }
         const targetWeekdays = parsed.byday
           .map((day) => weekdayMap[day])
-          .filter((day) => day !== undefined)
+          .filter((day) => typeof day === "number")
 
         if (targetWeekdays.length === 0) {
           return null

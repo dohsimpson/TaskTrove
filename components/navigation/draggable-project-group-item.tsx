@@ -145,8 +145,6 @@ export function DraggableProjectGroupItem({
     const sourceData = source.data
     const dropTargetData = location.current.dropTargets[0]?.data
 
-    if (!sourceData || !dropTargetData) return
-
     // Extract instruction using Atlassian's instruction system
     const instruction = extractSidebarInstruction(sourceData, dropTargetData)
 
@@ -253,10 +251,10 @@ export function DraggableProjectGroupItem({
       // Only show indicator if THIS element is the innermost target (following official pattern)
       const innerMost = location.current.dropTargets[0]
       const isInnermostTarget =
-        innerMost?.data.type === "sidebar-group-drop-target" && innerMost?.data.groupId === group.id
+        innerMost.data.type === "sidebar-group-drop-target" && innerMost.data.groupId === group.id
 
       if (isInnermostTarget) {
-        const instruction = extractInstruction(innerMost?.data)
+        const instruction = extractInstruction(innerMost.data)
         setGroupDragState((prev) =>
           prev
             ? {
@@ -287,7 +285,7 @@ export function DraggableProjectGroupItem({
             index,
           }
           // Use attachInstruction for proper zone detection
-          if (args?.input && args?.element) {
+          if (args?.input && args.element) {
             return attachInstruction(baseData, {
               element: args.element,
               input: args.input,
@@ -318,8 +316,8 @@ export function DraggableProjectGroupItem({
             >
               {/* Drop indicator above - show when reorder-above instruction */}
               {groupDragState?.isDraggingOver &&
-                groupDragState?.instruction?.type === "reorder-above" &&
-                groupDragState?.draggedItemRect && (
+                groupDragState.instruction?.type === "reorder-above" &&
+                groupDragState.draggedItemRect && (
                   <SidebarDropIndicator level={0} className="-top-1" />
                 )}
               <SidebarMenuButton
@@ -330,7 +328,7 @@ export function DraggableProjectGroupItem({
                   "w-full cursor-pointer transition-colors",
                   // Subtle highlighting when make-child instruction (dropping INTO group)
                   groupDragState?.isDraggingOver &&
-                    groupDragState?.instruction?.type === "make-child" &&
+                    groupDragState.instruction?.type === "make-child" &&
                     "bg-primary/10 border border-primary/20",
                 )}
               >
@@ -386,8 +384,8 @@ export function DraggableProjectGroupItem({
 
               {/* Drop indicator below group - show when reorder-below instruction */}
               {groupDragState?.isDraggingOver &&
-                groupDragState?.instruction?.type === "reorder-below" &&
-                groupDragState?.draggedItemRect && (
+                groupDragState.instruction?.type === "reorder-below" &&
+                groupDragState.draggedItemRect && (
                   <SidebarDropIndicator level={0} className="-bottom-1" />
                 )}
             </div>

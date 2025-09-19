@@ -237,29 +237,27 @@ export function TaskItem({
   if (!task && variant === "subtask") {
     // Get parent task from either prop or quick-add atom
     const parent = parentTask || quickAddTask
-    if (parent) {
-      const subtask = parent.subtasks?.find((s) => String(s.id) === String(taskId))
-      if (subtask) {
-        // Convert Subtask to Task-like object for rendering
-        task = {
-          id: createTaskId(String(subtask.id)), // Convert SubtaskId to TaskId for rendering
-          title: subtask.title,
-          completed: subtask.completed,
-          description: "",
-          priority: 4 satisfies TaskPriority,
-          dueDate: undefined,
-          projectId: INBOX_PROJECT_ID,
-          sectionId: "sectionId" in parent ? parent.sectionId : undefined,
-          labels: [],
-          subtasks: [],
-          comments: [],
-          attachments: [],
-          createdAt: new Date(),
-          status: subtask.completed ? "completed" : "active",
-          order: subtask.order || 0,
-          recurringMode: "dueDate",
-          estimation: subtask.estimation, // Include estimation from subtask
-        }
+    const subtask = parent.subtasks?.find((s) => String(s.id) === String(taskId))
+    if (subtask) {
+      // Convert Subtask to Task-like object for rendering
+      task = {
+        id: createTaskId(String(subtask.id)), // Convert SubtaskId to TaskId for rendering
+        title: subtask.title,
+        completed: subtask.completed,
+        description: "",
+        priority: 4 satisfies TaskPriority,
+        dueDate: undefined,
+        projectId: INBOX_PROJECT_ID,
+        sectionId: "sectionId" in parent ? parent.sectionId : undefined,
+        labels: [],
+        subtasks: [],
+        comments: [],
+        attachments: [],
+        createdAt: new Date(),
+        status: subtask.completed ? "completed" : "active",
+        order: subtask.order || 0,
+        recurringMode: "dueDate",
+        estimation: subtask.estimation, // Include estimation from subtask
       }
     }
   }
@@ -291,9 +289,6 @@ export function TaskItem({
 
   // Helper function to update subtasks in the appropriate context (existing task vs quick-add)
   const updateSubtasks = (updatedSubtasks: Subtask[]) => {
-    const parent = parentTask || quickAddTask
-    if (!parent) return
-
     if (parentTask && "id" in parentTask) {
       // Existing task - update global state
       updateTask({ updateRequest: { id: parentTask.id, subtasks: updatedSubtasks } })
@@ -308,7 +303,7 @@ export function TaskItem({
     if (variant !== "subtask") return
 
     const parent = parentTask || quickAddTask
-    if (!parent || !parent.subtasks) return
+    if (!parent.subtasks) return
 
     const updatedSubtasks = parent.subtasks.map((subtask) =>
       String(subtask.id) === String(task.id)
@@ -323,7 +318,7 @@ export function TaskItem({
     if (variant !== "subtask") return
 
     const parent = parentTask || quickAddTask
-    if (!parent || !parent.subtasks) return
+    if (!parent.subtasks) return
 
     const updatedSubtasks = parent.subtasks.filter(
       (subtask) => String(subtask.id) !== String(task.id),
@@ -336,7 +331,7 @@ export function TaskItem({
     if (variant !== "subtask") return
 
     const parent = parentTask || quickAddTask
-    if (!parent || !parent.subtasks) return
+    if (!parent.subtasks) return
 
     const updatedSubtasks = parent.subtasks.map((subtask) =>
       String(subtask.id) === String(task.id) ? { ...subtask, title: newTitle.trim() } : subtask,
@@ -349,7 +344,7 @@ export function TaskItem({
     if (variant !== "subtask") return
 
     const parent = parentTask || quickAddTask
-    if (!parent || !parent.subtasks) return
+    if (!parent.subtasks) return
 
     const updatedSubtasks = parent.subtasks.map((subtask) =>
       String(subtask.id) === String(task.id)
@@ -1084,7 +1079,7 @@ export function TaskItem({
             )}
 
             {/* Attachments - show if present */}
-            {task.attachments && task.attachments.length > 0 && (
+            {task.attachments.length > 0 && (
               <span className="flex items-center gap-1">
                 <Paperclip className="h-3 w-3" />
                 {task.attachments.length}
@@ -1123,7 +1118,7 @@ export function TaskItem({
   if (variant === "subtask") {
     // Get current subtask's estimation from parent
     const parent = parentTask || quickAddTask
-    const currentSubtask = parent?.subtasks?.find((s) => String(s.id) === String(taskId))
+    const currentSubtask = parent.subtasks?.find((s) => String(s.id) === String(taskId))
     const currentEstimation = currentSubtask?.estimation || 0
 
     return (

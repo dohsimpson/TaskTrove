@@ -87,12 +87,7 @@ export const v030Migration = (dataFile: Json): Json => {
   }
 
   // 1. Transform ordering.projects array to projectGroups structure
-  if (
-    result.ordering &&
-    typeof result.ordering === "object" &&
-    result.ordering !== null &&
-    !Array.isArray(result.ordering)
-  ) {
+  if (result.ordering && typeof result.ordering === "object" && !Array.isArray(result.ordering)) {
     const ordering: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(result.ordering)) {
       ordering[key] = value

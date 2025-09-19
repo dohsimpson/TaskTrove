@@ -106,8 +106,6 @@ export function DraggableProjectItem({
     const sourceData = source.data
     const dropTargetData = location.current.dropTargets[0]?.data
 
-    if (!sourceData || !dropTargetData) return
-
     // Extract instruction using Atlassian's instruction system
     const instruction = extractSidebarInstruction(sourceData, dropTargetData)
 
@@ -208,11 +206,11 @@ export function DraggableProjectItem({
       // Only show indicator if THIS element is the innermost target (following official pattern)
       const innerMost = location.current.dropTargets[0]
       const isInnermostTarget =
-        innerMost?.data.type === "sidebar-project-drop-target" &&
-        innerMost?.data.projectId === project.id
+        innerMost.data.type === "sidebar-project-drop-target" &&
+        innerMost.data.projectId === project.id
 
       if (isInnermostTarget) {
-        const instruction = extractInstruction(innerMost?.data)
+        const instruction = extractInstruction(innerMost.data)
         setDragState((prev) =>
           prev
             ? {
@@ -243,7 +241,7 @@ export function DraggableProjectItem({
             groupId,
           }
           // Use attachInstruction for proper zone detection
-          if (args?.input && args?.element) {
+          if (args?.input && args.element) {
             return attachInstruction(baseData, {
               element: args.element,
               input: args.input,
@@ -275,8 +273,8 @@ export function DraggableProjectItem({
             >
               {/* Drop indicator above - show when reorder-above instruction */}
               {dragState?.isDraggingOver &&
-                dragState?.instruction?.type === "reorder-above" &&
-                dragState?.draggedItemRect && (
+                dragState.instruction?.type === "reorder-above" &&
+                dragState.draggedItemRect && (
                   <SidebarDropIndicator level={isInGroup ? 1 : 0} className="-top-1" />
                 )}
               <SidebarMenuButton
@@ -324,8 +322,8 @@ export function DraggableProjectItem({
 
               {/* Drop indicator below - show when reorder-below instruction */}
               {dragState?.isDraggingOver &&
-                dragState?.instruction?.type === "reorder-below" &&
-                dragState?.draggedItemRect && (
+                dragState.instruction?.type === "reorder-below" &&
+                dragState.draggedItemRect && (
                   <SidebarDropIndicator level={isInGroup ? 1 : 0} className="-bottom-1" />
                 )}
             </div>

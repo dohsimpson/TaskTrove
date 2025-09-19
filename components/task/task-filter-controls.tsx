@@ -73,7 +73,7 @@ const tasksForCountsAtom = atom((get) => {
     if (activeFilters.labels === null) {
       // Show only tasks with NO labels
       result = result.filter((task: Task) => task.labels.length === 0)
-    } else if (activeFilters.labels && activeFilters.labels.length > 0) {
+    } else if (activeFilters.labels.length > 0) {
       // Show tasks with specific labels
       const labelFilter = activeFilters.labels
       result = result.filter((task: Task) =>

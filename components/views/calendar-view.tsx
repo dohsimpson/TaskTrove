@@ -69,7 +69,7 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
     if (!selectedDate) return
 
     // Use the project's default section (first section) or undefined
-    const defaultSectionId = project?.sections?.[0]?.id
+    const defaultSectionId = project?.sections[0]?.id
 
     // Open quick add with project/section prefilled
     addTaskToSection(project?.id, defaultSectionId ?? DEFAULT_UUID)
@@ -94,14 +94,6 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
       try {
         const sourceData = source.data
         const destinationData = location.current.dropTargets[0]?.data
-
-        if (!sourceData || !destinationData) {
-          log.warn(
-            { sourceData, destinationData },
-            "Missing source or destination data in calendar drop",
-          )
-          return
-        }
 
         // Check if this is a draggable item (task)
         if (sourceData.type !== "draggable-item") {
@@ -323,7 +315,7 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
             <div className="grid grid-cols-7 gap-0.5 lg:gap-1 flex-1 min-h-0">
               {calendarDays.map((day) => {
                 const dayTasks = getTasksForDate(day)
-                const isSelected = selectedDate && isSameDay(day, selectedDate)
+                const isSelected = selectedDate ? isSameDay(day, selectedDate) : false
                 const isTodayDate = isToday(day)
                 const isCurrentMonth = isSameMonth(day, currentDate)
                 const dayId = format(day, "yyyy-MM-dd")
@@ -336,7 +328,7 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
                     onDrop={({ source, location }) => {
                       handleCalendarDrop({ source, location })
                     }}
-                    canDrop={({ source }) => source.data && source.data.type === "draggable-item"}
+                    canDrop={({ source }) => source.data.type === "draggable-item"}
                     getData={() => ({
                       type: "calendar-day",
                       date: dayId,
@@ -420,7 +412,7 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
                 dropTargetId={droppableId}
                 dropClassName="ring-2 ring-primary/50 bg-primary/5"
                 onDrop={({ source }) => {
-                  if (source.data && source.data.type === "draggable-item" && selectedDate) {
+                  if (source.data.type === "draggable-item") {
                     // Transform to calendar-day drop for selected date
                     const calendarDayDrop = {
                       source,

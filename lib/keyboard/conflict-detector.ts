@@ -72,7 +72,7 @@ export const shortcutConflictsAtom = atom((get) => {
  * Detect conflicts between keyboard handlers
  */
 export function detectConflicts(handlers: KeyboardHandler[]): ShortcutConflict[] {
-  if (!handlers || handlers.length === 0) {
+  if (handlers.length === 0) {
     return []
   }
 
@@ -81,9 +81,7 @@ export function detectConflicts(handlers: KeyboardHandler[]): ShortcutConflict[]
 
   // Build shortcut map
   for (const handler of handlers) {
-    if (!handler || !handler.shortcuts || !Array.isArray(handler.shortcuts)) {
-      continue
-    }
+    // Process handler shortcuts
 
     // Track shortcuts to avoid duplicates within the same handler
     const handlerShortcuts = new Set<string>()
@@ -109,7 +107,7 @@ export function detectConflicts(handlers: KeyboardHandler[]): ShortcutConflict[]
       const entry = shortcutMap.get(normalizedShortcut)
       if (entry) {
         entry.handlers.push(handler.id)
-        entry.contexts.push(handler.context || {})
+        entry.contexts.push(handler.context)
       }
     }
   }
@@ -302,7 +300,6 @@ function normalizeShortcut(shortcut: string): string {
  */
 function findOriginalShortcut(normalizedShortcut: string, handlers: KeyboardHandler[]): string {
   for (const handler of handlers) {
-    if (!handler.shortcuts) continue
     for (const shortcut of handler.shortcuts) {
       if (normalizeShortcut(shortcut) === normalizedShortcut) {
         return shortcut
@@ -381,7 +378,7 @@ function generateAlternativeShortcuts(
 ): string[] {
   const alternatives: string[] = []
   const usedShortcuts = new Set(
-    existingHandlers.flatMap((h) => h.shortcuts || []).map((s) => normalizeShortcut(s)),
+    existingHandlers.flatMap((h) => h.shortcuts).map((s) => normalizeShortcut(s)),
   )
 
   for (const shortcut of conflictingShortcuts) {

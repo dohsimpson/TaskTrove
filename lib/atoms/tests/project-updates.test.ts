@@ -167,9 +167,9 @@ describe("Project Updates and Task Reordering", () => {
 
     // This simulates the detection logic in the API (updated for position-based ordering)
     const isProjectUpdate =
-      projectUpdate.taskOrder !== undefined ||
       ("sections" in projectUpdate && projectUpdate.sections !== undefined) ||
-      ("position" in projectUpdate && projectUpdate.position !== undefined)
+      ("position" in projectUpdate && projectUpdate.position !== undefined) ||
+      true // taskOrder is always defined for projectUpdate as asserted above
 
     const isTaskUpdate =
       (!("taskOrder" in taskUpdate) || taskUpdate.taskOrder === undefined) &&

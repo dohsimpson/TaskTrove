@@ -47,10 +47,10 @@ describe("useIsMobile", () => {
 
     // Ensure window and document are restored for subsequent tests
     if (typeof global !== "undefined") {
-      if (!global.window && typeof window !== "undefined") {
+      if (typeof window !== "undefined") {
         global.window = window
       }
-      if (!global.document && typeof document !== "undefined") {
+      if (typeof document !== "undefined") {
         global.document = document
       }
     }

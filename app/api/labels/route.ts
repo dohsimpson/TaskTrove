@@ -100,8 +100,7 @@ async function createLabel(
   const newLabel: Label = {
     id: createLabelId(uuidv4()),
     name: validation.data.name,
-    slug:
-      validation.data.slug ?? createSafeLabelNameSlug(validation.data.name, fileData.labels || []),
+    slug: validation.data.slug ?? createSafeLabelNameSlug(validation.data.name, fileData.labels),
     color: validation.data.color ?? DEFAULT_LABEL_COLORS[0],
   }
 

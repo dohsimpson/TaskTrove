@@ -38,7 +38,7 @@ export function SearchPage({ onTaskClick }: SearchPageProps) {
 
       // Simulate brief loading for better UX
       setTimeout(() => {
-        const allTasks = tasks || []
+        const allTasks = tasks
         let filteredTasks = allTasks
 
         // Apply text search
@@ -46,9 +46,9 @@ export function SearchPage({ onTaskClick }: SearchPageProps) {
           const searchLower = query.toLowerCase()
           filteredTasks = filteredTasks.filter(
             (task: Task) =>
-              task.title?.toLowerCase().includes(searchLower) ||
+              task.title.toLowerCase().includes(searchLower) ||
               task.description?.toLowerCase().includes(searchLower) ||
-              task.labels?.some((label: string) => label.toLowerCase().includes(searchLower)),
+              task.labels.some((label: string) => label.toLowerCase().includes(searchLower)),
           )
         }
 
@@ -71,8 +71,8 @@ export function SearchPage({ onTaskClick }: SearchPageProps) {
               if (filter.operator === "equals" || filter.operator === "contains") {
                 const labelName = String(filter.value)
                 filteredTasks = filteredTasks.filter((task: Task) =>
-                  task.labels?.some((labelId: LabelId) => {
-                    const label = labels?.find((l: Label) => l.id === labelId)
+                  task.labels.some((labelId: LabelId) => {
+                    const label = labels.find((l: Label) => l.id === labelId)
                     return label?.name === labelName
                   }),
                 )
@@ -144,8 +144,8 @@ export function SearchPage({ onTaskClick }: SearchPageProps) {
     <div className="p-6 space-y-6">
       <AdvancedSearch
         onSearch={handleSearch}
-        projects={projects || []}
-        labels={labels || []}
+        projects={projects}
+        labels={labels}
         assignees={[]} // Team functionality not yet migrated to atoms
         // Controlled props for live search
         controlledQuery={currentQuery}
@@ -196,12 +196,12 @@ export function SearchPage({ onTaskClick }: SearchPageProps) {
                         {/* Project */}
                         {task.projectId && (
                           <span className="bg-muted px-2 py-1 rounded">
-                            {projects?.find((p: Project) => p.id === task.projectId)?.name ||
+                            {projects.find((p: Project) => p.id === task.projectId)?.name ||
                               "Unknown Project"}
                           </span>
                         )}
                         {/* Labels */}
-                        {task.labels?.map((label: string) => (
+                        {task.labels.map((label: string) => (
                           <span
                             key={label}
                             className="bg-primary/20 text-primary px-2 py-1 rounded"

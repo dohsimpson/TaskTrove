@@ -25,8 +25,10 @@ export function getEffectiveEstimation(task: Task): {
   estimation: number
   isFromSubtasks: boolean
 } {
-  const subtaskEstimationSum =
-    task.subtasks?.reduce((total, subtask) => total + (subtask.estimation || 0), 0) || 0
+  const subtaskEstimationSum = task.subtasks.reduce(
+    (total, subtask) => total + (subtask.estimation || 0),
+    0,
+  )
   const isFromSubtasks = (!task.estimation || task.estimation === 0) && subtaskEstimationSum > 0
 
   return {

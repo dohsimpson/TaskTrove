@@ -34,7 +34,7 @@ export function QuickCommentDialog({
   const [comment, setComment] = useState("")
 
   const handleSubmit = () => {
-    if (comment.trim() && task) {
+    if (comment.trim()) {
       onAddComment(task.id, comment.trim())
       setComment("")
       onClose()
@@ -46,8 +46,6 @@ export function QuickCommentDialog({
       handleSubmit()
     }
   }
-
-  if (!task) return null
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

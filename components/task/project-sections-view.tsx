@@ -296,10 +296,10 @@ export function ProjectSectionsView({
       const sourceData = data.source.data
       // Handle the case where location might not have current.dropTargets structure
       // This happens because DropTargetWrapper uses a simplified location structure
-      const locationData = data.location.current?.dropTargets || []
+      const locationData = data.location.current.dropTargets
 
       // Ensure we have valid source data and a task being dropped
-      if (!sourceData || sourceData.type !== "task" || !sourceData.taskId) {
+      if (sourceData.type !== "task" || !sourceData.taskId) {
         log.warn({ sourceData }, "Invalid source data for task drop")
         return
       }
@@ -474,22 +474,20 @@ export function ProjectSectionsView({
     }) => {
       if (source.data.type === "task" && source.data.rect) {
         const innerMost = location.current.dropTargets[0]
-        const isOverChildTask = Boolean(innerMost && innerMost.data.type === "task-drop-target")
+        const isOverChildTask = Boolean(innerMost.data.type === "task-drop-target")
 
         const rect = source.data.rect
-        if (typeof rect === "object" && rect !== null && "height" in rect) {
+        if (typeof rect === "object" && "height" in rect && typeof rect.height === "number") {
           const height = rect.height
-          if (typeof height === "number") {
-            setSectionDragStates((prev) => {
-              const newMap = new Map(prev)
-              newMap.set(section.id, {
-                isDraggingOver: true,
-                draggedTaskRect: { height },
-                isOverChildTask,
-              })
-              return newMap
+          setSectionDragStates((prev) => {
+            const newMap = new Map(prev)
+            newMap.set(section.id, {
+              isDraggingOver: true,
+              draggedTaskRect: { height },
+              isOverChildTask,
             })
-          }
+            return newMap
+          })
         }
       }
     }
@@ -592,7 +590,7 @@ export function ProjectSectionsView({
               {/* Show shadow when dragging over collapsed section */}
               {(() => {
                 const dragState = sectionDragStates.get(section.id)
-                return dragState?.isDraggingOver && dragState?.draggedTaskRect ? (
+                return dragState && dragState.isDraggingOver && dragState.draggedTaskRect ? (
                   <TaskShadow height={dragState.draggedTaskRect.height} className="mb-2" />
                 ) : null
               })()}
@@ -615,9 +613,7 @@ export function ProjectSectionsView({
                 onDrag={({ source, location }) => {
                   if (source.data.type === "task" && source.data.rect) {
                     const innerMost = location.current.dropTargets[0]
-                    const isOverChildTask = Boolean(
-                      innerMost && innerMost.data.type === "task-drop-target",
-                    )
+                    const isOverChildTask = Boolean(innerMost.data.type === "task-drop-target")
 
                     setSectionDragStates((prev) => {
                       const newMap = new Map(prev)
@@ -653,7 +649,7 @@ export function ProjectSectionsView({
                         }
 
                         // Only use attachClosestEdge if we have proper input and element
-                        if (args?.input && args?.element) {
+                        if (args && args.input && args.element) {
                           return attachClosestEdge(baseData, {
                             element: args.element,
                             input: args.input,
@@ -666,7 +662,7 @@ export function ProjectSectionsView({
                       onDragEnter={({ source, location }) => {
                         if (source.data.type === "task" && source.data.taskId !== task.id) {
                           const innerMost = location.current.dropTargets[0]
-                          const closestEdge = extractClosestEdge(innerMost?.data)
+                          const closestEdge = extractClosestEdge(innerMost.data)
 
                           const rect = source.data.rect
                           if (typeof rect === "object" && rect !== null && "height" in rect) {
@@ -693,7 +689,7 @@ export function ProjectSectionsView({
                       onDrag={({ source, location }) => {
                         if (source.data.type === "task" && source.data.taskId !== task.id) {
                           const innerMost = location.current.dropTargets[0]
-                          const closestEdge = extractClosestEdge(innerMost?.data)
+                          const closestEdge = extractClosestEdge(innerMost.data)
 
                           setSectionDragStates((prev) => {
                             const newMap = new Map(prev)
@@ -716,10 +712,11 @@ export function ProjectSectionsView({
                       {/* Render shadow above task if dragging over this task and closest edge is top */}
                       {(() => {
                         const dragState = sectionDragStates.get(section.id)
-                        return dragState?.isDraggingOver &&
-                          dragState?.targetTaskId === task.id &&
-                          dragState?.closestEdge === "top" &&
-                          dragState?.draggedTaskRect ? (
+                        return dragState &&
+                          dragState.isDraggingOver &&
+                          dragState.targetTaskId === task.id &&
+                          dragState.closestEdge === "top" &&
+                          dragState.draggedTaskRect ? (
                           <TaskShadow height={dragState.draggedTaskRect.height} className="mb-2" />
                         ) : null
                       })()}
@@ -745,10 +742,11 @@ export function ProjectSectionsView({
                       {/* Render shadow below task if dragging over this task and closest edge is bottom */}
                       {(() => {
                         const dragState = sectionDragStates.get(section.id)
-                        return dragState?.isDraggingOver &&
-                          dragState?.targetTaskId === task.id &&
-                          dragState?.closestEdge === "bottom" &&
-                          dragState?.draggedTaskRect ? (
+                        return dragState &&
+                          dragState.isDraggingOver &&
+                          dragState.targetTaskId === task.id &&
+                          dragState.closestEdge === "bottom" &&
+                          dragState.draggedTaskRect ? (
                           <TaskShadow height={dragState.draggedTaskRect.height} className="mb-2" />
                         ) : null
                       })()}
@@ -758,9 +756,10 @@ export function ProjectSectionsView({
                   {/* Render shadow at bottom of section if dragging over section but not over any task */}
                   {(() => {
                     const dragState = sectionDragStates.get(section.id)
-                    return dragState?.isDraggingOver &&
-                      !dragState?.targetTaskId &&
-                      dragState?.draggedTaskRect ? (
+                    return dragState &&
+                      dragState.isDraggingOver &&
+                      !dragState.targetTaskId &&
+                      dragState.draggedTaskRect ? (
                       <TaskShadow height={dragState.draggedTaskRect.height} className="mb-2" />
                     ) : null
                   })()}
@@ -822,7 +821,7 @@ export function ProjectSectionsView({
                             }
 
                             // Only use attachClosestEdge if we have proper input and element
-                            if (args?.input && args?.element) {
+                            if (args && args.input && args.element) {
                               return attachClosestEdge(baseData, {
                                 element: args.element,
                                 input: args.input,
@@ -895,7 +894,7 @@ export function ProjectSectionsView({
               {sectionsToShow.map((section, index) => (
                 <div key={section.id}>
                   {/* Show add section input if this is the position being added */}
-                  {supportsSections && isAddingSection && addingSectionPosition === index && (
+                  {isAddingSection && addingSectionPosition === index && (
                     <div className="border border-border rounded-lg p-3 bg-card shadow-sm mb-4">
                       <div className="space-y-3">
                         <Input
@@ -958,56 +957,54 @@ export function ProjectSectionsView({
               ))}
 
               {/* Show add section input if this is the position being added (at the end) */}
-              {supportsSections &&
-                isAddingSection &&
-                addingSectionPosition === sectionsToShow.length && (
-                  <div className="border border-border rounded-lg p-3 bg-card shadow-sm">
-                    <div className="space-y-3">
-                      <Input
-                        value={newSectionName}
-                        onChange={(e) => setNewSectionName(e.target.value)}
-                        placeholder="Section name..."
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            handleAddSection()
-                          } else if (e.key === "Escape") {
-                            handleCancelAddSection()
-                          }
-                        }}
-                        className="text-sm"
-                        autoFocus
-                      />
-                      <ColorPicker
-                        selectedColor={newSectionColor}
-                        onColorSelect={setNewSectionColor}
+              {isAddingSection && addingSectionPosition === sectionsToShow.length && (
+                <div className="border border-border rounded-lg p-3 bg-card shadow-sm">
+                  <div className="space-y-3">
+                    <Input
+                      value={newSectionName}
+                      onChange={(e) => setNewSectionName(e.target.value)}
+                      placeholder="Section name..."
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleAddSection()
+                        } else if (e.key === "Escape") {
+                          handleCancelAddSection()
+                        }
+                      }}
+                      className="text-sm"
+                      autoFocus
+                    />
+                    <ColorPicker
+                      selectedColor={newSectionColor}
+                      onColorSelect={setNewSectionColor}
+                      size="sm"
+                      label="Color"
+                      className="text-xs"
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleAddSection}
                         size="sm"
-                        label="Color"
-                        className="text-xs"
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={handleAddSection}
-                          size="sm"
-                          variant="default"
-                          disabled={!newSectionName.trim()}
-                          className="px-3"
-                        >
-                          Add
-                        </Button>
-                        <Button
-                          onClick={handleCancelAddSection}
-                          variant="ghost"
-                          size="sm"
-                          className="px-2"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
+                        variant="default"
+                        disabled={!newSectionName.trim()}
+                        className="px-3"
+                      >
+                        Add
+                      </Button>
+                      <Button
+                        onClick={handleCancelAddSection}
+                        variant="ghost"
+                        size="sm"
+                        className="px-2"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
-              {supportsSections && sectionsToShow.length === 0 && !isAddingSection && (
+              {sectionsToShow.length === 0 && !isAddingSection && (
                 <div>
                   <AddSectionDivider
                     onAddSection={handleStartAddSection}

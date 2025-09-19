@@ -66,10 +66,10 @@ vi.mock("./comment-content", () => ({
       <div data-testid="comment-content-taskId">{taskId || "undefined"}</div>
       <div data-testid="comment-content-task">{task?.id || "undefined"}</div>
       <div data-testid="comment-content-mode">{mode}</div>
-      <div data-testid="comment-content-comments-count">{task?.comments?.length || 0}</div>
+      <div data-testid="comment-content-comments-count">{task?.comments.length}</div>
       <input
         data-testid="comment-input"
-        placeholder={task?.comments?.length ? "Add another comment..." : "Add comments..."}
+        placeholder={task?.comments.length ? "Add another comment..." : "Add comments..."}
       />
       <button data-testid="comment-submit-button" onClick={() => onAddComment?.("test comment")}>
         Submit

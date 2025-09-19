@@ -101,7 +101,7 @@ export function TaskScheduleContent({
       if (parsed?.freq === RRuleFrequency.WEEKLY && parsed.byday) {
         // Convert RRULE weekday codes to numbers (SU=0, MO=1, etc.)
         const weekdayMap = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 }
-        return parsed.byday.map((day) => weekdayMap[day] ?? 0)
+        return parsed.byday.map((day) => weekdayMap[day])
       }
     }
     return []
@@ -150,7 +150,7 @@ export function TaskScheduleContent({
       const parsed = parseRRule(task.recurring)
       if (parsed?.byday) {
         const weekdayMap = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 }
-        return parsed.byday.map((day) => weekdayMap[day] ?? 1)
+        return parsed.byday.map((day) => weekdayMap[day])
       }
     }
     return [1] // Monday by default
@@ -425,7 +425,7 @@ export function TaskScheduleContent({
       }
       if (interval === 1) return "Monthly"
       return `Every ${interval} months`
-    } else if (parsed.freq === RRuleFrequency.YEARLY) {
+    } else {
       if (
         parsed.bymonth &&
         parsed.bymonthday &&
@@ -521,23 +521,19 @@ export function TaskScheduleContent({
       return "monthly"
     }
 
-    if (parsed.freq === RRuleFrequency.YEARLY) {
-      // Simple yearly patterns are "yearly", complex ones are "interval"
-      if (parsed.byday && parsed.bysetpos) return "interval" // "first Monday of March" patterns
-      if (interval > 1) return "interval" // "every 2 years"
-      // Check for Cartesian product patterns
-      if (
-        parsed.bymonth &&
-        parsed.bymonthday &&
-        parsed.bymonth.length > 1 &&
-        parsed.bymonthday.length > 1
-      ) {
-        return "interval" // Complex multi-month/multi-day patterns
-      }
-      return "yearly"
+    // Simple yearly patterns are "yearly", complex ones are "interval"
+    if (parsed.byday && parsed.bysetpos) return "interval" // "first Monday of March" patterns
+    if (interval > 1) return "interval" // "every 2 years"
+    // Check for Cartesian product patterns
+    if (
+      parsed.bymonth &&
+      parsed.bymonthday &&
+      parsed.bymonth.length > 1 &&
+      parsed.bymonthday.length > 1
+    ) {
+      return "interval" // Complex multi-month/multi-day patterns
     }
-
-    return "interval"
+    return "yearly"
   }
 
   const currentRecurringType = getCurrentRecurringType()

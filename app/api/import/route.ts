@@ -162,20 +162,18 @@ async function importData(
         }
 
         // Check labels exist and filter out invalid ones
-        if (task.labels) {
-          const validLabels = task.labels.filter((labelId) => {
-            const labelExists = mergedData.labels.find((l) => l.id === labelId)
-            if (!labelExists) {
-              log.warn(
-                { taskId: task.id, labelId },
-                "Removing non-existent label reference from task",
-              )
-            }
-            return labelExists
-          })
-          // Update task with only valid labels
-          task.labels = validLabels
-        }
+        const validLabels = task.labels.filter((labelId) => {
+          const labelExists = mergedData.labels.find((l) => l.id === labelId)
+          if (!labelExists) {
+            log.warn(
+              { taskId: task.id, labelId },
+              "Removing non-existent label reference from task",
+            )
+          }
+          return labelExists
+        })
+        // Update task with only valid labels
+        task.labels = validLabels
 
         if (canImport) {
           mergedData.tasks.push(task)

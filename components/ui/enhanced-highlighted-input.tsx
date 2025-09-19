@@ -130,8 +130,8 @@ export function EnhancedHighlightedInput({
   const labelsFromAtom = useAtomValue(labelsAtom)
   const projectsFromAtom = useAtomValue(visibleProjectsAtom)
 
-  const labels = useMemo(() => labelsFromAtom || [], [labelsFromAtom])
-  const projects = useMemo(() => projectsFromAtom || [], [projectsFromAtom])
+  const labels = useMemo(() => labelsFromAtom, [labelsFromAtom])
+  const projects = useMemo(() => projectsFromAtom, [projectsFromAtom])
 
   const [cursorPosition, setCursorPosition] = useState(0)
   const [isFocused, setIsFocused] = useState(false)
@@ -306,7 +306,7 @@ export function EnhancedHighlightedInput({
       const range = document.createRange()
       const textNode = inputRef.current.firstChild
 
-      if (textNode && textNode.nodeType === Node.TEXT_NODE && range.getBoundingClientRect) {
+      if (textNode && textNode.nodeType === Node.TEXT_NODE) {
         range.setStart(textNode, Math.min(cursorPos, textNode.textContent?.length || 0))
         range.collapse(true)
 

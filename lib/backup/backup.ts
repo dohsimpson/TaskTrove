@@ -82,13 +82,13 @@ export async function runBackup() {
     try {
       const dataFile = await safeReadDataFile()
 
-      if (dataFile?.settings?.data?.autoBackup?.enabled === false) {
+      if (dataFile?.settings.data.autoBackup.enabled === false) {
         console.log("Auto backup is disabled in settings. Skipping backup.")
         return
       }
 
       // Use maxBackups from settings if available
-      if (dataFile?.settings?.data?.autoBackup?.maxBackups !== undefined) {
+      if (dataFile?.settings.data.autoBackup.maxBackups !== undefined) {
         maxBackups = dataFile.settings.data.autoBackup.maxBackups
       }
     } catch {

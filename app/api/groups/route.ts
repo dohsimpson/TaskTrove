@@ -18,7 +18,6 @@ import {
   BulkGroupUpdate,
   GroupId,
 } from "@/lib/types"
-import { ROOT_PROJECT_GROUP_ID, ROOT_LABEL_GROUP_ID } from "@/lib/types/defaults"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { v4 as uuidv4 } from "uuid"
@@ -153,18 +152,9 @@ async function createGroup(
         items: [],
       }
       // Add to root projectGroups items
-      if (!fileData.projectGroups) {
-        fileData.projectGroups = {
-          type: "project",
-          id: ROOT_PROJECT_GROUP_ID,
-          name: "All Projects",
-          slug: "all-projects",
-          items: [],
-        }
-      }
       fileData.projectGroups.items.push(newProjectGroup)
       newGroup = newProjectGroup
-    } else if (type === "label") {
+    } else {
       const newLabelGroup: LabelGroup = {
         type: "label",
         id: newGroupId,
@@ -175,19 +165,8 @@ async function createGroup(
         items: [],
       }
       // Add to root labelGroups items
-      if (!fileData.labelGroups) {
-        fileData.labelGroups = {
-          type: "label",
-          id: ROOT_LABEL_GROUP_ID,
-          name: "All Labels",
-          slug: "all-labels",
-          items: [],
-        }
-      }
       fileData.labelGroups.items.push(newLabelGroup)
       newGroup = newLabelGroup
-    } else {
-      return createErrorResponse("Invalid group type", `Unsupported group type: ${type}`, 400)
     }
 
     const writeSuccess = await withPerformanceLogging(
@@ -209,8 +188,8 @@ async function createGroup(
         type: newGroup.type,
         parentId: null,
         totalGroups: {
-          project: fileData.projectGroups ? 1 : 0,
-          label: fileData.labelGroups ? 1 : 0,
+          project: 1,
+          label: 1,
         },
       },
       request.context,
@@ -226,23 +205,7 @@ async function createGroup(
   }
 
   // Find parent group in appropriate tree
-  const parentResult = findGroupInTrees(
-    fileData.projectGroups || {
-      type: "project",
-      id: ROOT_PROJECT_GROUP_ID,
-      name: "All Projects",
-      slug: "all-projects",
-      items: [],
-    },
-    fileData.labelGroups || {
-      type: "label",
-      id: ROOT_LABEL_GROUP_ID,
-      name: "All Labels",
-      slug: "all-labels",
-      items: [],
-    },
-    parentId,
-  )
+  const parentResult = findGroupInTrees(fileData.projectGroups, fileData.labelGroups, parentId)
 
   if (!parentResult) {
     return createErrorResponse(
@@ -278,7 +241,7 @@ async function createGroup(
     }
     parentGroup.items.push(newProjectGroup)
     newGroup = newProjectGroup
-  } else if (parentGroup.type === "label") {
+  } else {
     const newLabelGroup: LabelGroup = {
       type: "label",
       id: newGroupId,
@@ -290,9 +253,6 @@ async function createGroup(
     }
     parentGroup.items.push(newLabelGroup)
     newGroup = newLabelGroup
-  } else {
-    // This should never happen due to type validation above, but satisfy TypeScript
-    return createErrorResponse("Invalid group type", `Unsupported group type: ${type}`, 400)
   }
 
   const writeSuccess = await withPerformanceLogging(
@@ -314,8 +274,8 @@ async function createGroup(
       type: newGroup.type,
       parentId: parentId,
       totalGroups: {
-        project: fileData.projectGroups ? 1 : 0,
-        label: fileData.labelGroups ? 1 : 0,
+        project: 1,
+        label: 1,
       },
     },
     request.context,
@@ -387,26 +347,8 @@ async function handleBulkGroupUpdate(
 
   // Replace ROOT group's items based on type
   if (bulkUpdate.type === "project") {
-    if (!fileData.projectGroups) {
-      fileData.projectGroups = {
-        type: "project",
-        id: ROOT_PROJECT_GROUP_ID,
-        name: "All Projects",
-        slug: "all-projects",
-        items: [],
-      }
-    }
     fileData.projectGroups.items = bulkUpdate.groups
-  } else if (bulkUpdate.type === "label") {
-    if (!fileData.labelGroups) {
-      fileData.labelGroups = {
-        type: "label",
-        id: ROOT_LABEL_GROUP_ID,
-        name: "All Labels",
-        slug: "all-labels",
-        items: [],
-      }
-    }
+  } else {
     fileData.labelGroups.items = bulkUpdate.groups
   }
 
@@ -427,8 +369,8 @@ async function handleBulkGroupUpdate(
       type: bulkUpdate.type,
       groupCount: bulkUpdate.groups.length,
       totalGroups: {
-        project: fileData.projectGroups ? 1 : 0,
-        label: fileData.labelGroups ? 1 : 0,
+        project: 1,
+        label: 1,
       },
     },
     request.context,
@@ -468,23 +410,7 @@ async function handleIndividualGroupUpdates(
   const updatedGroupIds: GroupId[] = []
 
   for (const update of updates) {
-    const groupResult = findGroupInTrees(
-      fileData.projectGroups || {
-        type: "project",
-        id: ROOT_PROJECT_GROUP_ID,
-        name: "All Projects",
-        slug: "all-projects",
-        items: [],
-      },
-      fileData.labelGroups || {
-        type: "label",
-        id: ROOT_LABEL_GROUP_ID,
-        name: "All Labels",
-        slug: "all-labels",
-        items: [],
-      },
-      update.id,
-    )
+    const groupResult = findGroupInTrees(fileData.projectGroups, fileData.labelGroups, update.id)
 
     if (!groupResult) {
       return createErrorResponse(`Group not found: ${update.id}`, "GROUP_NOT_FOUND", 404)
@@ -508,7 +434,7 @@ async function handleIndividualGroupUpdates(
       if (update.slug === undefined) {
         if (group.type === "project") {
           group.slug = createSafeProjectGroupNameSlug(update.name, fileData.projectGroups)
-        } else if (group.type === "label") {
+        } else {
           group.slug = createSafeLabelGroupNameSlug(update.name, fileData.labelGroups)
         }
       }
@@ -554,8 +480,8 @@ async function handleIndividualGroupUpdates(
         itemsCount: group.items.length,
       })),
       totalGroups: {
-        project: fileData.projectGroups ? 1 : 0,
-        label: fileData.labelGroups ? 1 : 0,
+        project: 1,
+        label: 1,
       },
     },
     request.context,
@@ -597,7 +523,7 @@ function removeGroupFromRootGroup(rootGroup: Group, groupId: GroupId): boolean {
         rootGroup.items = rootGroup.items.filter(
           (item) => typeof item === "string" || item.id !== groupId,
         )
-      } else if (rootGroup.type === "label") {
+      } else {
         rootGroup.items = rootGroup.items.filter(
           (item) => typeof item === "string" || item.id !== groupId,
         )
@@ -645,11 +571,9 @@ async function deleteGroup(
   // Try to remove from each ROOT group
   let deleted = false
 
-  if (fileData.projectGroups) {
-    deleted = removeGroupFromRootGroup(fileData.projectGroups, groupId)
-  }
+  deleted = removeGroupFromRootGroup(fileData.projectGroups, groupId)
 
-  if (!deleted && fileData.labelGroups) {
+  if (!deleted) {
     deleted = removeGroupFromRootGroup(fileData.labelGroups, groupId)
   }
 
@@ -672,8 +596,8 @@ async function deleteGroup(
       groupId,
       deletedCount,
       remainingGroups: {
-        project: fileData.projectGroups ? 1 : 0,
-        label: fileData.labelGroups ? 1 : 0,
+        project: 1,
+        label: 1,
       },
     },
     request.context,

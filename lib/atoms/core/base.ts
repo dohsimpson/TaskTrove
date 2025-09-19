@@ -280,7 +280,7 @@ function createMutation<TResponse, TVariables, TOptimisticData = unknown>(
       const serialized = serializationSchema.safeParse(variables, { reportInput: true })
       if (!serialized.success) {
         throw new Error(
-          `Failed to serialize ${operationName.toLowerCase()} data: ${serialized.error?.message || "Unknown validation error"}`,
+          `Failed to serialize ${operationName.toLowerCase()} data: ${serialized.error.message || "Unknown validation error"}`,
         )
       }
       serializedData = serialized.data
@@ -303,7 +303,7 @@ function createMutation<TResponse, TVariables, TOptimisticData = unknown>(
       const responseValidation = responseSchema.safeParse(data, { reportInput: true })
       if (!responseValidation.success) {
         throw new Error(
-          `Failed to parse ${operationName.toLowerCase()} response: ${responseValidation.error?.message || "Unknown validation error"}`,
+          `Failed to parse ${operationName.toLowerCase()} response: ${responseValidation.error.message || "Unknown validation error"}`,
         )
       }
 
@@ -596,7 +596,7 @@ export const createTaskMutationAtom = createMutation<CreateTaskResponse, CreateT
 
     return {
       ...oldData,
-      tasks: [...(oldData.tasks || []), optimisticTask],
+      tasks: [...oldData.tasks, optimisticTask],
     }
   },
 })
@@ -668,7 +668,7 @@ export const createLabelMutationAtom = createMutation<
 
     return {
       ...oldData,
-      labels: [...(oldData.labels || []), optimisticLabel],
+      labels: [...oldData.labels, optimisticLabel],
     }
   },
 })
@@ -715,7 +715,7 @@ export const createProjectMutationAtom = createMutation<
 
     return {
       ...oldData,
-      projects: [...(oldData.projects || []), optimisticProject],
+      projects: [...oldData.projects, optimisticProject],
     }
   },
 })
@@ -862,10 +862,6 @@ export const updateProjectGroupMutationAtom = createMutation({
   optimisticUpdateFn: (request: UpdateProjectGroupRequest, oldData: DataFile) => {
     const updateRequest = Array.isArray(request) ? request : [request]
 
-    if (!oldData.projectGroups) {
-      return oldData
-    }
-
     // Helper function to recursively update groups within ROOT structure
     const updateGroupInTree = (group: ProjectGroup): ProjectGroup => {
       const update = updateRequest.find((u) => u.id === group.id)
@@ -915,10 +911,6 @@ export const deleteProjectGroupMutationAtom = createMutation({
     message: "Group deleted successfully (test mode)",
   }),
   optimisticUpdateFn: (request: DeleteGroupRequest, oldData: DataFile) => {
-    if (!oldData.projectGroups) {
-      return oldData
-    }
-
     // Cannot delete the ROOT group itself
     if (oldData.projectGroups.id === request.id) {
       return oldData
@@ -967,34 +959,18 @@ export const bulkUpdateGroupsMutationAtom = createMutation({
     if (request.type === "project") {
       return {
         ...oldData,
-        projectGroups: oldData.projectGroups
-          ? {
-              ...oldData.projectGroups,
-              items: request.groups,
-            }
-          : {
-              type: "project" as const,
-              id: ROOT_PROJECT_GROUP_ID,
-              name: "All Projects",
-              slug: "all-projects",
-              items: request.groups,
-            },
+        projectGroups: {
+          ...oldData.projectGroups,
+          items: request.groups,
+        },
       }
-    } else if (request.type === "label") {
+    } else {
       return {
         ...oldData,
-        labelGroups: oldData.labelGroups
-          ? {
-              ...oldData.labelGroups,
-              items: request.groups,
-            }
-          : {
-              type: "label" as const,
-              id: ROOT_LABEL_GROUP_ID,
-              name: "All Labels",
-              slug: "all-labels",
-              items: request.groups,
-            },
+        labelGroups: {
+          ...oldData.labelGroups,
+          items: request.groups,
+        },
       }
     }
     return oldData
@@ -1201,43 +1177,21 @@ export const updateSettingsMutationAtom = createMutation<
     const updatedSettings: UserSettings = {
       data: {
         autoBackup: {
-          enabled:
-            variables.settings.data?.autoBackup?.enabled ??
-            oldData.settings.data.autoBackup?.enabled ??
-            DEFAULT_AUTO_BACKUP_ENABLED,
-          backupTime:
-            variables.settings.data?.autoBackup?.backupTime ??
-            oldData.settings.data.autoBackup?.backupTime ??
-            DEFAULT_BACKUP_TIME,
-          maxBackups:
-            variables.settings.data?.autoBackup?.maxBackups ??
-            oldData.settings.data.autoBackup?.maxBackups ??
-            DEFAULT_MAX_BACKUPS,
+          enabled: variables.settings.data?.autoBackup?.enabled ?? DEFAULT_AUTO_BACKUP_ENABLED,
+          backupTime: variables.settings.data?.autoBackup?.backupTime ?? DEFAULT_BACKUP_TIME,
+          maxBackups: variables.settings.data?.autoBackup?.maxBackups ?? DEFAULT_MAX_BACKUPS,
         },
       },
       notifications: {
-        enabled:
-          variables.settings.notifications?.enabled ??
-          oldData.settings.notifications?.enabled ??
-          DEFAULT_NOTIFICATION_SETTINGS.enabled,
+        enabled: variables.settings.notifications?.enabled ?? DEFAULT_NOTIFICATION_SETTINGS.enabled,
         requireInteraction:
           variables.settings.notifications?.requireInteraction ??
-          oldData.settings.notifications?.requireInteraction ??
           DEFAULT_NOTIFICATION_SETTINGS.requireInteraction,
       },
       general: {
-        startView:
-          variables.settings.general?.startView ??
-          oldData.settings.general?.startView ??
-          DEFAULT_GENERAL_SETTINGS.startView,
-        soundEnabled:
-          variables.settings.general?.soundEnabled ??
-          oldData.settings.general?.soundEnabled ??
-          DEFAULT_GENERAL_SETTINGS.soundEnabled,
-        linkifyEnabled:
-          variables.settings.general?.linkifyEnabled ??
-          oldData.settings.general?.linkifyEnabled ??
-          DEFAULT_GENERAL_SETTINGS.linkifyEnabled,
+        startView: variables.settings.general?.startView ?? DEFAULT_GENERAL_SETTINGS.startView,
+        soundEnabled: variables.settings.general?.soundEnabled ?? DEFAULT_GENERAL_SETTINGS.soundEnabled,
+        linkifyEnabled: variables.settings.general?.linkifyEnabled ?? DEFAULT_GENERAL_SETTINGS.linkifyEnabled,
       },
     }
 

@@ -56,7 +56,7 @@ vi.mock("@/components/ui/content-popover", () => ({
 // Mock LabelContent
 interface MockLabelContentProps {
   taskId?: string
-  task?: Task
+  task?: Partial<Task>
   onAddLabel: (labelName?: string) => void
   onRemoveLabel: (labelId: LabelId) => void
   mode?: "inline" | "popover"
@@ -78,7 +78,7 @@ vi.mock("./label-content", () => ({
       <div data-testid="label-content-taskId">{taskId || "undefined"}</div>
       <div data-testid="label-content-task">{task?.id || "undefined"}</div>
       <div data-testid="label-content-mode">{mode}</div>
-      <div data-testid="label-content-labels-count">{task?.labels?.length || 0}</div>
+      <div data-testid="label-content-labels-count">{task?.labels?.length ?? 0}</div>
       <div data-testid="label-content-initial-adding">{String(initialIsAdding)}</div>
       <button onClick={() => onAddLabel("test label")}>Mock Add Label</button>
       <button onClick={() => onRemoveLabel(TEST_LABEL_ID_1)}>Mock Remove Label</button>

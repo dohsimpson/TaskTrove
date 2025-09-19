@@ -67,10 +67,10 @@ export function TaskSectionPopover({
         onClick: () => handleSectionSelect(undefined),
       },
       // Project sections - with error handling for malformed sections
-      ...(project.sections || [])
+      ...project.sections
         .filter((section: ProjectSection) => {
           // Filter out any malformed sections
-          return section && section.id && section.name
+          return section.id && section.name
         })
         .map((section: ProjectSection) => {
           try {
@@ -90,9 +90,7 @@ export function TaskSectionPopover({
             return null
           }
         })
-        .filter(
-          (option): option is NonNullable<typeof option> => option !== null && option !== undefined,
-        ), // Remove any null entries from failed processing
+        .filter((option): option is NonNullable<typeof option> => option !== null), // Remove any null entries from failed processing
     ]
 
     return [{ options }]

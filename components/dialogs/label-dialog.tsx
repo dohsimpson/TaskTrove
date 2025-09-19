@@ -16,7 +16,7 @@ export function LabelDialog() {
         name: name.trim(),
         color,
         insertPosition:
-          context.insertPosition?.id && context.insertPosition?.placement
+          context.insertPosition?.id && context.insertPosition.placement
             ? {
                 id: createLabelId(context.insertPosition.id),
                 placement: context.insertPosition.placement,

@@ -196,7 +196,7 @@ describe("MainContent", () => {
     mockUseAtomValue.mockImplementation(() => {
       const value = atomValues[atomValueCallIndex]
       atomValueCallIndex++
-      return value !== undefined ? value : null
+      return value
     })
 
     // Set up useSetAtom mocks - always return a mock function

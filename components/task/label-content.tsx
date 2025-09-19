@@ -114,7 +114,7 @@ export function LabelContent({
       e.preventDefault()
       if (selectedIndex >= 0 && selectedIndex < allOptions.length) {
         const selectedOption = allOptions[selectedIndex]
-        if ("isCreate" in selectedOption && selectedOption.isCreate) {
+        if ("isCreate" in selectedOption) {
           handleAddLabel()
         } else {
           handleAddLabel(selectedOption.name)

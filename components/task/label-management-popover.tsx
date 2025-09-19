@@ -32,7 +32,7 @@ export function LabelManagementPopover({
     onOpenChange?.(newOpen)
 
     // Auto-start adding if no labels exist when opening (for existing tasks only)
-    if (newOpen && task && task.labels && task.labels.length === 0) {
+    if (newOpen && task && task.labels.length === 0) {
       setIsAdding(true)
     }
 
@@ -46,7 +46,7 @@ export function LabelManagementPopover({
     setIsAdding(adding)
 
     // Close popover if canceling add and no labels exist (for existing tasks only)
-    if (!adding && task && task.labels && task.labels.length === 0) {
+    if (!adding && task && task.labels.length === 0) {
       setOpen(false)
     }
   }

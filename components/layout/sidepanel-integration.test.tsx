@@ -154,10 +154,22 @@ describe("SidePanel Integration", () => {
 
   it("should update currentViewStateAtom when side panel is toggled", async () => {
     const store = createStore()
-    // Clear any persisted view states to start clean
-    store.set(viewStatesAtom, {})
     // Initialize the store with a specific view
     store.set(currentViewAtom, "today")
+    // Initialize view states with the today view
+    store.set(viewStatesAtom, {
+      today: {
+        viewMode: "list" as const,
+        sortBy: "created",
+        sortDirection: "desc" as const,
+        showCompleted: false,
+        searchQuery: "",
+        showSidePanel: false,
+        compactView: false,
+        collapsedSections: [],
+        activeFilters: { labels: null },
+      },
+    })
 
     const TestComponent: React.FC = () => {
       const [currentView] = useAtom(currentViewAtom)
@@ -176,9 +188,7 @@ describe("SidePanel Integration", () => {
         <div>
           <div data-testid="current-view">{currentView}</div>
           <div data-testid="current-side-panel">{String(currentViewState.showSidePanel)}</div>
-          <div data-testid="view-states-test">
-            {String(viewStates["today"]?.showSidePanel ?? "undefined")}
-          </div>
+          <div data-testid="view-states-test">{String(viewStates["today"].showSidePanel)}</div>
           <button data-testid="toggle-button" onClick={handleToggle}>
             Toggle
           </button>

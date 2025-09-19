@@ -152,8 +152,8 @@ export function TaskFilterBadges({ className }: TaskFilterBadgesProps) {
           label="No labels"
           onRemove={removeNoLabelsFilter}
         />
-      ) : (
-        activeFilters.labels?.map((labelName) => (
+      ) : Array.isArray(activeFilters.labels) ? (
+        activeFilters.labels.map((labelName) => (
           <FilterBadge
             key={`label-${labelName}`}
             icon={<Tag className="w-3 h-3" style={{ color: getLabelColor(labelName) }} />}
@@ -161,7 +161,7 @@ export function TaskFilterBadges({ className }: TaskFilterBadgesProps) {
             onRemove={() => removeLabelFilter(labelName)}
           />
         ))
-      )}
+      ) : null}
 
       {/* Due date filter */}
       {activeFilters.dueDateFilter && (

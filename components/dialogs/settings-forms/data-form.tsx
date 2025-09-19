@@ -21,11 +21,7 @@ import { SiTodoist, SiTrello, SiAsana, SiTicktick } from "@icons-pack/react-simp
 import { toast } from "sonner"
 import { dataSettingsAtom, updateDataSettingsAtom } from "@/lib/atoms/ui/user-settings-atom"
 import { queryClientAtom } from "@/lib/atoms/core/base"
-import {
-  DEFAULT_BACKUP_TIME,
-  DEFAULT_MAX_BACKUPS,
-  SUPPORTED_IMPORT_SOURCES,
-} from "@/lib/constants/defaults"
+import { DEFAULT_BACKUP_TIME, SUPPORTED_IMPORT_SOURCES } from "@/lib/constants/defaults"
 
 type UploadStatus = "idle" | "uploading" | "success" | "error"
 
@@ -454,11 +450,7 @@ export function DataForm() {
             </p>
           </div>
           <Select
-            value={
-              settings.autoBackup.maxBackups !== undefined
-                ? String(settings.autoBackup.maxBackups)
-                : String(DEFAULT_MAX_BACKUPS)
-            }
+            value={String(settings.autoBackup.maxBackups)}
             onValueChange={(value) =>
               updateSettings({
                 autoBackup: {

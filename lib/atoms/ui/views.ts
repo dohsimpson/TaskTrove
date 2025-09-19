@@ -116,7 +116,7 @@ export const updateViewStateAtom = atom(
   null,
   (get, set, { viewId, updates }: { viewId: ViewId; updates: Partial<ViewState> }) => {
     const currentViewStates = get(viewStatesAtom)
-    const currentViewState = currentViewStates[viewId] || defaultViewState
+    const currentViewState = currentViewStates[viewId] ?? defaultViewState
 
     set(viewStatesAtom, {
       ...currentViewStates,
@@ -276,12 +276,7 @@ export const currentViewStateAtom = atom<ViewState>((get) => {
   const currentView = get(currentViewAtom)
   const viewStates = get(viewStatesAtom)
 
-  // Ensure viewStates is a valid object
-  if (!viewStates || typeof viewStates !== "object") {
-    return defaultViewState
-  }
-
-  return viewStates[currentView] || defaultViewState
+  return viewStates[currentView] ?? defaultViewState
 })
 currentViewStateAtom.debugLabel = "currentViewStateAtom"
 
@@ -399,9 +394,9 @@ export const hasActiveFiltersAtom = atom<boolean>((get) => {
       return filter.length > 0
     }
     if (typeof filter === "object" && filter !== null) {
-      return Object.values(filter).some((v) => v !== undefined)
+      return Object.values(filter).length > 0
     }
-    return filter !== undefined
+    return Boolean(filter)
   })
 })
 hasActiveFiltersAtom.debugLabel = "hasActiveFiltersAtom"
@@ -419,7 +414,7 @@ export const activeFilterCountAtom = atom<number>((get) => {
   // Handle labels: null = 1 filter, array with length > 0 = array length
   if (filters.labels === null) {
     count += 1 // "no labels" filter is active
-  } else if (filters.labels && filters.labels.length > 0) {
+  } else if (filters.labels.length > 0) {
     count += filters.labels.length
   }
 
@@ -448,7 +443,7 @@ activeFilterCountAtom.debugLabel = "activeFilterCountAtom"
 export const getViewStateAtom = (viewId: ViewId) =>
   atom<ViewState>((get) => {
     const viewStates = get(viewStatesAtom)
-    return viewStates[viewId] || defaultViewState
+    return viewStates[viewId] ?? defaultViewState
   })
 
 /**

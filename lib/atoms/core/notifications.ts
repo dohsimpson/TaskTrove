@@ -106,11 +106,9 @@ export const notificationSettingsAtom = atom(
     const defaultSettings: NotificationSettings = DEFAULT_NOTIFICATION_SETTINGS
 
     // Type-safe access to notifications - all settings now include notifications by default
-    if (settings && typeof settings === "object" && "notifications" in settings) {
-      const notifications = settings.notifications
-      if (isNotificationSettings(notifications)) {
-        return notifications
-      }
+    const notifications = settings.notifications
+    if (isNotificationSettings(notifications)) {
+      return notifications
     }
     return defaultSettings
   },

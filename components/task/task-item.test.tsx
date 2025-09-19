@@ -505,26 +505,24 @@ vi.mock("@/components/ui/customizable-popover", () => ({
       onClick={() => onOpenChange?.(!open)}
     >
       {children}
-      {sections && (
-        <div data-testid="popover-sections">
-          {sections.map((section: MockCustomizablePopoverProps["sections"][0], index: number) => (
-            <div key={index} data-testid="popover-section">
-              {section.options?.map(
-                (option: MockCustomizablePopoverProps["sections"][0]["options"][0]) => (
-                  <div
-                    key={option.id}
-                    data-testid="popover-option"
-                    onClick={() => option.onClick?.()}
-                  >
-                    {option.icon}
-                    {option.label}
-                  </div>
-                ),
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+      <div data-testid="popover-sections">
+        {sections.map((section: MockCustomizablePopoverProps["sections"][0], index: number) => (
+          <div key={index} data-testid="popover-section">
+            {section.options.map(
+              (option: MockCustomizablePopoverProps["sections"][0]["options"][0]) => (
+                <div
+                  key={option.id}
+                  data-testid="popover-option"
+                  onClick={() => option.onClick?.()}
+                >
+                  {option.icon}
+                  {option.label}
+                </div>
+              ),
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   ),
 }))
@@ -2911,7 +2909,7 @@ describe("TaskItem", () => {
       const mockUseSetAtom = vi.mocked(useSetAtom)
       mockUseSetAtom.mockImplementation((atom) => {
         // Check specifically for updateTaskAtom and return our mock
-        const atomString = atom?.toString?.() || ""
+        const atomString = atom.toString() || ""
         if (atomString.includes("updateTask") || atomString.includes("updateTaskAtom")) {
           return mockUpdateTask
         }
@@ -3031,11 +3029,9 @@ describe("TaskItem", () => {
 
       // Actions menu should be available
       const actionsMenu = screen.getByTestId("task-actions-menu")
-      if (actionsMenu) {
-        const moreButton = within(actionsMenu).getByTestId("more-horizontal-icon").closest("button")
-        if (moreButton) {
-          await user.click(moreButton)
-        }
+      const moreButton = within(actionsMenu).getByTestId("more-horizontal-icon").closest("button")
+      if (moreButton) {
+        await user.click(moreButton)
       }
 
       // Test expectation
@@ -3434,7 +3430,7 @@ describe("TaskItem", () => {
 
       const mockUpdateTask = vi.fn()
       vi.mocked(useSetAtom).mockImplementation((atom) => {
-        const atomString = atom?.toString?.() || ""
+        const atomString = atom.toString() || ""
         if (atomString.includes("updateTask")) {
           return mockUpdateTask
         }

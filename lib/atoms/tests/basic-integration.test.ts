@@ -46,7 +46,7 @@ function resetTestEnvironment(): void {
 
   // Clear localStorage if needed
   try {
-    if (typeof window !== "undefined" && window.localStorage) {
+    if (typeof window !== "undefined") {
       const keysToRemove = []
       for (let i = 0; i < window.localStorage.length; i++) {
         const key = window.localStorage.key(i)
@@ -148,8 +148,8 @@ describe("TaskTrove Jotai Atoms Integration Tests", () => {
         "Task with comment not found",
       )
 
-      expect(taskWithComment.comments?.length).toBe(1)
-      expect(taskWithComment.comments?.[0]?.content).toBe("Test comment")
+      expect(taskWithComment.comments.length).toBe(1)
+      expect(taskWithComment.comments[0].content).toBe("Test comment")
 
       // Test deleting a task
       const taskCountBefore = tasksWithComment.length

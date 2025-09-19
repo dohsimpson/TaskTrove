@@ -103,6 +103,7 @@ export const currentMetricsAtom = atom<ProductivityMetrics>((get) => {
     // Calculate streak (exact algorithm from useAnalytics)
     let streak = 0
     let currentDate = new Date()
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     while (true) {
       const dayTasks = tasks.filter(
         (task: Task) =>

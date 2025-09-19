@@ -16,7 +16,7 @@ vi.mock("jotai", async (importOriginal) => {
     ...Object(actual),
     useAtom: vi.fn((atom: { debugLabel?: string; toString?: () => string }) => {
       // Return test data based on atom name/type
-      const atomStr = atom?.toString?.() || ""
+      const atomStr = atom.toString?.() || ""
 
       if (atomStr.includes("visibleProjects") || atom.debugLabel === "visibleProjectsAtom") {
         return [
@@ -49,14 +49,14 @@ vi.mock("jotai", async (importOriginal) => {
     useSetAtom: () => vi.fn(),
     useAtomValue: vi.fn((atom: { debugLabel?: string; toString?: () => string }) => {
       // Handle pathnameAtom
-      if (atom.debugLabel === "pathnameAtom" || atom?.toString?.().includes("pathname")) {
+      if (atom.debugLabel === "pathnameAtom" || atom.toString?.().includes("pathname")) {
         return "/today"
       }
       // Handle project task counts atom - try multiple ways to match it
       if (
         atom.debugLabel === "projectTaskCountsAtom" ||
-        atom?.toString?.().includes("projectTaskCounts") ||
-        (atom && Object.prototype.hasOwnProperty.call(atom, "debugLabel") && !atom.debugLabel)
+        atom.toString?.().includes("projectTaskCounts") ||
+        (Object.prototype.hasOwnProperty.call(atom, "debugLabel") && !atom.debugLabel)
       ) {
         return { "1": 7, "2": 3 }
       }
@@ -91,7 +91,7 @@ vi.mock("jotai", async (importOriginal) => {
         }
       }
       // Handle other read-only atoms by returning their default values
-      const atomStr = atom?.toString?.() || ""
+      const atomStr = atom.toString?.() || ""
       if (atomStr.includes("editingProject") || atom.debugLabel === "editingProjectIdAtom") {
         return null
       }

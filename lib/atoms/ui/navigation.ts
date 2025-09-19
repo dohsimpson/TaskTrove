@@ -141,7 +141,7 @@ export const openProjectDialogAtom = atom(
   null,
   (get, set, options?: { projectId?: ProjectId; placement?: "above" | "below" }) => {
     // Set the dialog context
-    if (options?.projectId && options?.placement) {
+    if (options?.projectId && options.placement) {
       set(projectDialogContextAtom, {
         mode: "create",
         insertPosition: {
@@ -186,7 +186,7 @@ export const openLabelDialogAtom = atom(
   null,
   (get, set, options?: { id?: LabelId; placement?: "above" | "below" }) => {
     // Set the dialog context
-    if (options?.id && options?.placement) {
+    if (options?.id && options.placement) {
       set(labelDialogContextAtom, {
         mode: "create",
         insertPosition: {
@@ -235,7 +235,7 @@ export const openSectionDialogAtom = atom(
     options?: { id?: SectionId; placement?: "above" | "below"; projectId?: ProjectId },
   ) => {
     // Set the dialog context
-    if (options?.id && options?.placement) {
+    if (options?.id && options.placement) {
       set(sectionDialogContextAtom, {
         mode: "create",
         insertPosition: {

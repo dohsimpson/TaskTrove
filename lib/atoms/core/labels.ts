@@ -112,23 +112,18 @@ export const labelTaskCountsAtom = atom<Record<LabelId, number>>((get) => {
     const labels = get(labelsAtom)
     const activeTasks = get(activeTasksAtom)
     const rawViewStates = get(viewStatesAtom)
-    const viewStates: ViewStates =
-      rawViewStates && typeof rawViewStates === "object" && !Array.isArray(rawViewStates)
-        ? rawViewStates
-        : {}
+    const viewStates: ViewStates = rawViewStates
 
     // Filter tasks based on label view's showCompleted setting
     const filterByViewCompleted = (tasks: Task[], labelId: LabelId) => {
-      const showCompleted = viewStates[labelId]?.showCompleted ?? false
+      const showCompleted = viewStates[labelId].showCompleted
       return showCompleted ? tasks : tasks.filter((task) => !task.completed)
     }
 
     const counts: Record<LabelId, number> = {}
 
     for (const label of labels) {
-      const labelTasks = activeTasks.filter(
-        (task: Task) => task.labels && task.labels.includes(label.id),
-      )
+      const labelTasks = activeTasks.filter((task: Task) => task.labels.includes(label.id))
       const filteredTasks = filterByViewCompleted(labelTasks, label.id)
       counts[label.id] = filteredTasks.length
     }

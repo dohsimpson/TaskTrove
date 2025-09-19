@@ -145,17 +145,7 @@ describe("QuickCommentDialog", () => {
   it("does not render when task is null", () => {
     // Skip rendering when task is null since the component requires a valid task
     // This test ensures the component handles null gracefully at the parent level
-    const nullTask = null
-    if (nullTask) {
-      render(
-        <QuickCommentDialog
-          task={nullTask}
-          isOpen={true}
-          onClose={mockOnClose}
-          onAddComment={mockOnAddComment}
-        />,
-      )
-    }
+    // No render call since we're testing the null case
 
     expect(screen.queryByTestId("dialog")).not.toBeInTheDocument()
   })

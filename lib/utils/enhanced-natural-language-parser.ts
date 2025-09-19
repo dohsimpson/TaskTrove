@@ -998,12 +998,10 @@ export function parseEnhancedNaturalLanguage(
     if (enabledMatches.length > 0) {
       // Take the last match for this time pattern
       const lastMatch = enabledMatches[enabledMatches.length - 1]
-      if (
-        !lastTimeMatch ||
-        (lastMatch.index !== undefined &&
-          lastTimeMatch.match.index !== undefined &&
-          lastMatch.index > lastTimeMatch.match.index)
-      ) {
+      // matchAll results always have index defined
+      const lastIndex = lastMatch.index || 0
+      const prevIndex = lastTimeMatch?.match.index || 0
+      if (!lastTimeMatch || lastIndex > prevIndex) {
         lastTimeMatch = { match: lastMatch, pattern: timePattern }
       }
     }
@@ -1033,7 +1031,10 @@ export function parseEnhancedNaturalLanguage(
     if (enabledMatches.length > 0) {
       // Take the last match for this duration pattern
       const lastMatch = enabledMatches[enabledMatches.length - 1]
-      if (!lastDurationMatch || (lastMatch.index ?? 0) > (lastDurationMatch.match.index ?? 0)) {
+      // matchAll results always have index defined
+      const currentIndex = lastMatch.index || 0
+      const lastIndex = lastDurationMatch?.match.index || 0
+      if (!lastDurationMatch || currentIndex > lastIndex) {
         lastDurationMatch = { match: lastMatch, pattern: durationPattern }
       }
     }
@@ -1062,7 +1063,10 @@ export function parseEnhancedNaturalLanguage(
     if (enabledMatches.length > 0) {
       // Take the last match for this recurring pattern
       const lastMatch = enabledMatches[enabledMatches.length - 1]
-      if (!lastRecurringMatch || (lastMatch.index ?? 0) > (lastRecurringMatch.match.index ?? 0)) {
+      // matchAll results always have index defined
+      const currentIndex = lastMatch.index || 0
+      const lastIndex = lastRecurringMatch?.match.index || 0
+      if (!lastRecurringMatch || currentIndex > lastIndex) {
         lastRecurringMatch = { match: lastMatch, pattern: recurringPattern, isDynamic: false }
       }
     }
@@ -1076,7 +1080,10 @@ export function parseEnhancedNaturalLanguage(
     if (enabledMatches.length > 0) {
       // Take the last match for this recurring pattern
       const lastMatch = enabledMatches[enabledMatches.length - 1]
-      if (!lastRecurringMatch || (lastMatch.index ?? 0) > (lastRecurringMatch.match.index ?? 0)) {
+      // matchAll results always have index defined
+      const currentIndex = lastMatch.index || 0
+      const lastIndex = lastRecurringMatch?.match.index || 0
+      if (!lastRecurringMatch || currentIndex > lastIndex) {
         lastRecurringMatch = { match: lastMatch, pattern: recurringPattern, isDynamic: true }
       }
     }
@@ -1121,7 +1128,10 @@ export function parseEnhancedNaturalLanguage(
     if (enabledMatches.length > 0) {
       // Take the last match for this date pattern
       const lastMatch = enabledMatches[enabledMatches.length - 1]
-      if (!lastDateMatch || (lastMatch.index ?? 0) > (lastDateMatch.match.index ?? 0)) {
+      // matchAll results always have index defined
+      const currentIndex = lastMatch.index || 0
+      const lastIndex = lastDateMatch?.match.index || 0
+      if (!lastDateMatch || currentIndex > lastIndex) {
         lastDateMatch = { match: lastMatch, pattern: datePattern, type: "static" }
       }
     }
@@ -1135,7 +1145,10 @@ export function parseEnhancedNaturalLanguage(
     if (enabledMatches.length > 0) {
       // Take the last match for this date pattern
       const lastMatch = enabledMatches[enabledMatches.length - 1]
-      if (!lastDateMatch || (lastMatch.index ?? 0) > (lastDateMatch.match.index ?? 0)) {
+      // matchAll results always have index defined
+      const currentIndex = lastMatch.index || 0
+      const lastIndex = lastDateMatch?.match.index || 0
+      if (!lastDateMatch || currentIndex > lastIndex) {
         lastDateMatch = { match: lastMatch, pattern: datePattern, type: "dynamic" }
       }
     }
@@ -1159,7 +1172,10 @@ export function parseEnhancedNaturalLanguage(
     if (validMatches.length > 0) {
       // Take the last match for this date pattern
       const lastMatch = validMatches[validMatches.length - 1]
-      if (!lastDateMatch || (lastMatch.index ?? 0) > (lastDateMatch.match.index ?? 0)) {
+      // matchAll results always have index defined
+      const currentIndex = lastMatch.index || 0
+      const lastIndex = lastDateMatch?.match.index || 0
+      if (!lastDateMatch || currentIndex > lastIndex) {
         lastDateMatch = { match: lastMatch, pattern: datePattern, type: "absolute" }
       }
     }
@@ -1177,13 +1193,10 @@ export function parseEnhancedNaturalLanguage(
       // Absolute patterns have getValue(match) that can return null
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       dateValue = (lastDateMatch.pattern as AbsoluteDatePattern).getValue(lastDateMatch.match)
-    } else if (lastDateMatch.type === "dynamic") {
+    } else {
       // Dynamic patterns have getValue(match)
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       dateValue = (lastDateMatch.pattern as DynamicDatePattern).getValue(lastDateMatch.match)
-    } else {
-      // Fallback - shouldn't happen if type is set correctly
-      throw new Error("Unknown date pattern type")
     }
 
     // Only set due date if we got a valid date (absolute date patterns can return null for invalid dates)

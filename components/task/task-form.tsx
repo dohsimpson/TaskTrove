@@ -62,7 +62,7 @@ export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.title?.trim()) {
+    if (!formData.title.trim()) {
       newErrors.title = "Task title is required"
     }
 

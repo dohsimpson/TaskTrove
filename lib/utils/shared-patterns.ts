@@ -362,7 +362,7 @@ export function matchesParserPattern(
     duration: DURATION_PATTERNS,
   }
 
-  const patterns = allPatterns[type] || []
+  const patterns = allPatterns[type]
 
   // Test with word boundaries - patterns expect start/end of string or spaces
   const testText = ` ${text} `

@@ -197,17 +197,15 @@ describe("createMutation Function", () => {
 
         // Verify optimistic factory was called with correct parameters
         const testVariables = { title: "Test Task" }
-        if (config.optimisticDataFactory) {
-          const optimisticData = config.optimisticDataFactory(testVariables, {
-            tasks: [],
-            projects: [],
-            labels: [],
-          })
-          expect(optimisticData).toEqual({
-            id: "optimistic-task",
-            title: "Optimistic Task",
-          })
-        }
+        const optimisticData = config.optimisticDataFactory(testVariables, {
+          tasks: [],
+          projects: [],
+          labels: [],
+        })
+        expect(optimisticData).toEqual({
+          id: "optimistic-task",
+          title: "Optimistic Task",
+        })
       })
 
       it("should handle mutation errors and execute onError lifecycle", async () => {
@@ -473,14 +471,14 @@ describe("createMutation Function", () => {
         const mutation2Variables = { title: "Task 2" }
 
         // In real scenario, these would be called simultaneously
-        const optimisticData1 = config.optimisticDataFactory?.(mutation1Variables)
-        const optimisticData2 = config.optimisticDataFactory?.(mutation2Variables)
+        const optimisticData1 = config.optimisticDataFactory(mutation1Variables)
+        const optimisticData2 = config.optimisticDataFactory(mutation2Variables)
 
         // Assert
         expect(optimisticData1).toBeDefined()
         expect(optimisticData2).toBeDefined()
-        expect(optimisticData1?.title).toBe("Task 1")
-        expect(optimisticData2?.title).toBe("Task 2")
+        expect(optimisticData1.title).toBe("Task 1")
+        expect(optimisticData2.title).toBe("Task 2")
         expect(optimisticData1?.id).not.toBe(optimisticData2?.id)
       })
 
@@ -658,8 +656,8 @@ describe("createMutation Function", () => {
           const updatedTasks = oldData.tasks.map((task) => ({
             ...task,
             title: variables.title,
-            subtasks: task.subtasks?.map((subtask) => ({ ...subtask })),
-            attachments: task.attachments?.slice(),
+            subtasks: task.subtasks.map((subtask) => ({ ...subtask })),
+            attachments: task.attachments.slice(),
           }))
 
           return {

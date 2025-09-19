@@ -59,7 +59,7 @@ function resetTestEnvironment(): void {
   store = createStore()
 
   // Clear localStorage
-  if (typeof window !== "undefined" && window.localStorage) {
+  if (typeof window !== "undefined") {
     const keysToRemove = []
     for (let i = 0; i < window.localStorage.length; i++) {
       const key = window.localStorage.key(i)
@@ -94,24 +94,24 @@ describe("History Atoms Debug Tests", () => {
       console.log("📋 tasksHistoryAtom structure:")
       console.log("  - Type:", typeof tasksHistory)
       console.log("  - Is Array:", Array.isArray(tasksHistory))
-      console.log("  - Keys:", Object.keys(tasksHistory || {}))
+      console.log("  - Keys:", Object.keys(tasksHistory))
       console.log("  - Full structure:", JSON.stringify(tasksHistory, null, 2))
 
       console.log("\n📁 projectsHistoryAtom structure:")
       console.log("  - Type:", typeof projectsHistory)
       console.log("  - Is Array:", Array.isArray(projectsHistory))
-      console.log("  - Keys:", Object.keys(projectsHistory || {}))
+      console.log("  - Keys:", Object.keys(projectsHistory))
       console.log("  - Full structure:", JSON.stringify(projectsHistory, null, 2))
 
       console.log("\n🏷️ labelsHistoryAtom structure:")
       console.log("  - Type:", typeof labelsHistory)
       console.log("  - Is Array:", Array.isArray(labelsHistory))
-      console.log("  - Keys:", Object.keys(labelsHistory || {}))
+      console.log("  - Keys:", Object.keys(labelsHistory))
       console.log("  - Full structure:", JSON.stringify(labelsHistory, null, 2))
 
       console.log("\n📊 historyStateAtom structure:")
       console.log("  - Type:", typeof historyState)
-      console.log("  - Keys:", Object.keys(historyState || {}))
+      console.log("  - Keys:", Object.keys(historyState))
       console.log("  - Full structure:", JSON.stringify(historyState, null, 2))
 
       console.log("\n🔄 lastOperationAtom:")
@@ -123,14 +123,14 @@ describe("History Atoms Debug Tests", () => {
 
       console.log("\n=== PROPERTY CHECKS ===")
 
-      if (tasksHistory && typeof tasksHistory === "object") {
+      if (typeof tasksHistory === "object") {
         console.log("✅ tasksHistoryAtom has properties:", Object.keys(tasksHistory))
         expectedHistoryProps.forEach((prop) => {
           logProperty(tasksHistory, prop)
         })
       }
 
-      if (historyState && typeof historyState === "object") {
+      if (typeof historyState === "object") {
         console.log("✅ historyStateAtom has properties:", Object.keys(historyState))
         expectedHistoryStateProps.forEach((prop) => {
           logProperty(historyState, prop)
@@ -177,8 +177,8 @@ describe("History Atoms Debug Tests", () => {
 
       console.log("📋 tasksHistoryAtom after add:")
       console.log("  - Type:", typeof tasksHistoryAfterAdd)
-      console.log("  - Keys:", Object.keys(tasksHistoryAfterAdd || {}))
-      if (tasksHistoryAfterAdd && typeof tasksHistoryAfterAdd === "object") {
+      console.log("  - Keys:", Object.keys(tasksHistoryAfterAdd))
+      if (typeof tasksHistoryAfterAdd === "object") {
         logProperty(tasksHistoryAfterAdd, "canUndo", "tasksHistory")
         logProperty(tasksHistoryAfterAdd, "canRedo", "tasksHistory")
       }
@@ -199,8 +199,8 @@ describe("History Atoms Debug Tests", () => {
 
       console.log("📁 projectsHistoryAtom after add:")
       console.log("  - Type:", typeof projectsHistoryAfterAdd)
-      console.log("  - Keys:", Object.keys(projectsHistoryAfterAdd || {}))
-      if (projectsHistoryAfterAdd && typeof projectsHistoryAfterAdd === "object") {
+      console.log("  - Keys:", Object.keys(projectsHistoryAfterAdd))
+      if (typeof projectsHistoryAfterAdd === "object") {
         logProperty(projectsHistoryAfterAdd, "canUndo", "projectsHistory")
         logProperty(projectsHistoryAfterAdd, "canRedo", "projectsHistory")
       }

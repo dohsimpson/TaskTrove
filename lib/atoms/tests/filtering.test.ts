@@ -106,8 +106,7 @@ describe("No Labels Filtering", () => {
 
       // Test the logic that should be in hasActiveFiltersAtom
       const hasActive =
-        activeFiltersWithNoLabels.labels === null ||
-        (activeFiltersWithNoLabels.labels && activeFiltersWithNoLabels.labels.length > 0)
+        activeFiltersWithNoLabels.labels === null || activeFiltersWithNoLabels.labels.length > 0
 
       expect(hasActive).toBe(true)
     })
@@ -125,8 +124,7 @@ describe("No Labels Filtering", () => {
 
       // Test the logic that should be in hasActiveFiltersAtom
       const hasActive =
-        activeFiltersWithLabels.labels === null ||
-        (activeFiltersWithLabels.labels && activeFiltersWithLabels.labels.length > 0)
+        activeFiltersWithLabels.labels === null || activeFiltersWithLabels.labels.length > 0
 
       expect(hasActive).toBe(true)
     })
@@ -145,7 +143,7 @@ describe("No Labels Filtering", () => {
       // Test the logic that should be in hasActiveFiltersAtom
       const hasActive =
         activeFiltersWithEmptyLabels.labels === null ||
-        (activeFiltersWithEmptyLabels.labels && activeFiltersWithEmptyLabels.labels.length > 0)
+        activeFiltersWithEmptyLabels.labels.length > 0
 
       expect(hasActive).toBe(false)
     })
@@ -170,7 +168,7 @@ describe("No Labels Filtering", () => {
 
       if (activeFiltersWithNoLabels.labels === null) {
         count += 1 // "no labels" filter is active
-      } else if (activeFiltersWithNoLabels.labels && activeFiltersWithNoLabels.labels.length > 0) {
+      } else if (activeFiltersWithNoLabels.labels.length > 0) {
         count += activeFiltersWithNoLabels.labels.length
       }
 
@@ -205,7 +203,7 @@ describe("No Labels Filtering", () => {
 
       if (activeFiltersWithLabels.labels === null) {
         count += 1
-      } else if (activeFiltersWithLabels.labels && activeFiltersWithLabels.labels.length > 0) {
+      } else if (activeFiltersWithLabels.labels.length > 0) {
         count += activeFiltersWithLabels.labels.length
       }
 
@@ -240,10 +238,7 @@ describe("No Labels Filtering", () => {
 
       if (activeFiltersWithEmptyLabels.labels === null) {
         count += 1
-      } else if (
-        activeFiltersWithEmptyLabels.labels &&
-        activeFiltersWithEmptyLabels.labels.length > 0
-      ) {
+      } else if (activeFiltersWithEmptyLabels.labels.length > 0) {
         count += activeFiltersWithEmptyLabels.labels.length
       }
 
@@ -280,7 +275,7 @@ describe("No Labels Filtering", () => {
 
       if (activeFiltersMultiple.labels === null) {
         count += 1
-      } else if (activeFiltersMultiple.labels && activeFiltersMultiple.labels.length > 0) {
+      } else if (activeFiltersMultiple.labels.length > 0) {
         count += activeFiltersMultiple.labels.length
       }
 
@@ -316,7 +311,7 @@ describe("No Labels Filtering", () => {
       if (filters.labels === null) {
         // Show only tasks with NO labels
         result = result.filter((task) => task.labels.length === 0)
-      } else if (filters.labels && filters.labels.length > 0) {
+      } else if (filters.labels.length > 0) {
         // Show tasks with specific labels
         const labelFilter = filters.labels
         result = result.filter((task) => task.labels.some((label) => labelFilter.includes(label)))
@@ -345,7 +340,7 @@ describe("No Labels Filtering", () => {
 
       if (filters.labels === null) {
         result = result.filter((task) => task.labels.length === 0)
-      } else if (filters.labels && filters.labels.length > 0) {
+      } else if (filters.labels.length > 0) {
         const labelFilter = filters.labels
         result = result.filter((task) => task.labels.some((label) => labelFilter.includes(label)))
       }
@@ -373,7 +368,7 @@ describe("No Labels Filtering", () => {
 
       if (filters.labels === null) {
         result = result.filter((task) => task.labels.length === 0)
-      } else if (filters.labels && filters.labels.length > 0) {
+      } else if (filters.labels.length > 0) {
         const labelFilter = filters.labels
         result = result.filter((task) => task.labels.some((label) => labelFilter.includes(label)))
       }

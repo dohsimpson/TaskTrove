@@ -23,7 +23,6 @@ import {
   DEFAULT_PROJECT_COLORS,
   DEFAULT_UUID,
 } from "@/lib/constants/defaults"
-import { ROOT_PROJECT_GROUP_ID } from "@/lib/types/defaults"
 import { createSafeProjectNameSlug } from "@/lib/utils/routing"
 import {
   withApiLogging,
@@ -108,8 +107,7 @@ async function createProject(
     id: createProjectId(uuidv4()),
     name: validation.data.name, // Required field
     slug:
-      validation.data.slug ??
-      createSafeProjectNameSlug(validation.data.name, fileData.projects || []),
+      validation.data.slug ?? createSafeProjectNameSlug(validation.data.name, fileData.projects),
     color: validation.data.color ?? DEFAULT_PROJECT_COLORS[0], // Default color if not provided
     shared: validation.data.shared ?? DEFAULT_PROJECT_SHARED,
     sections: validation.data.sections ?? [
@@ -125,15 +123,6 @@ async function createProject(
   fileData.projects.push(newProject)
 
   // Ensure the project is added to the root project group so it appears in the sidebar
-  if (!fileData.projectGroups) {
-    fileData.projectGroups = {
-      type: "project",
-      id: ROOT_PROJECT_GROUP_ID,
-      name: "All Projects",
-      slug: "all-projects",
-      items: [],
-    }
-  }
   fileData.projectGroups.items.push(newProject.id)
 
   const writeSuccess = await withPerformanceLogging(

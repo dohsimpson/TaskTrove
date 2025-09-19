@@ -92,11 +92,7 @@ const getRRuleDisplayText = (rrule: string): string => {
   if (parsedRRule.freq === "MONTHLY") {
     return interval === 1 ? "Monthly" : `Every ${interval} months`
   }
-  if (parsedRRule.freq === "YEARLY") {
-    return "Yearly"
-  }
-
-  return "Recurring"
+  return "Yearly"
 }
 
 export function QuickAddDialog() {

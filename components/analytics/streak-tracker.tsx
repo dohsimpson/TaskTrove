@@ -147,7 +147,7 @@ export function StreakTracker({ currentStreak }: StreakTrackerProps) {
             ))}
           </div>
           <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
-            <span>{format(streakCalendar[0]?.date || new Date(), "MMM d")}</span>
+            <span>{format(streakCalendar[0].date, "MMM d")}</span>
             <span>Today</span>
           </div>
         </div>

@@ -105,9 +105,9 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
   const handleTaskDrop = (data: TaskDragData) => {
     try {
       const sourceData = data.source.data
-      const locationData = data.location.current?.dropTargets || []
+      const locationData = data.location.current.dropTargets
 
-      if (!sourceData || sourceData.type !== "task" || !sourceData.taskId) {
+      if (sourceData.type !== "task" || !sourceData.taskId) {
         log.warn({ sourceData }, "Invalid source data for task drop")
         return
       }
@@ -236,7 +236,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
 
     const newColumns: KanbanColumn[] = []
     sectionsToShow.forEach((section) => {
-      const sectionTasks = getOrderedTasksForSection(project?.id || "inbox", section.id)
+      const sectionTasks = getOrderedTasksForSection(project.id || "inbox", section.id)
       newColumns.push({
         id: section.id.toString(),
         title: section.name,
@@ -360,13 +360,11 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                     onDragEnter={({ source, location }) => {
                       if (source.data.type === "task" && source.data.rect) {
                         const innerMost = location.current.dropTargets[0]
-                        const isOverChildTask = Boolean(
-                          innerMost && innerMost.data.type === "task-drop-target",
-                        )
+                        const isOverChildTask = Boolean(innerMost.data.type === "task-drop-target")
 
                         // Validate rect is a DOMRect-like object
                         const rect = source.data.rect
-                        if (typeof rect === "object" && rect !== null && "height" in rect) {
+                        if (typeof rect === "object" && "height" in rect) {
                           const height = rect.height
                           if (typeof height === "number") {
                             setColumnDragStates((prev) => {
@@ -385,9 +383,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                     onDrag={({ source, location }) => {
                       if (source.data.type === "task" && source.data.rect) {
                         const innerMost = location.current.dropTargets[0]
-                        const isOverChildTask = Boolean(
-                          innerMost && innerMost.data.type === "task-drop-target",
-                        )
+                        const isOverChildTask = Boolean(innerMost.data.type === "task-drop-target")
 
                         setColumnDragStates((prev) => {
                           const newMap = new Map(prev)
@@ -429,7 +425,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                               sectionId: column.id,
                             }
 
-                            if (args?.input && args?.element && isDragInput(args.input)) {
+                            if (args?.input && args.element && isDragInput(args.input)) {
                               return attachClosestEdge(baseData, {
                                 element: args.element,
                                 input: args.input,
@@ -442,7 +438,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                           onDragEnter={({ source, location }) => {
                             if (source.data.type === "task" && source.data.taskId !== task.id) {
                               const innerMost = location.current.dropTargets[0]
-                              const closestEdge = extractClosestEdge(innerMost?.data)
+                              const closestEdge = extractClosestEdge(innerMost.data)
 
                               const rect = source.data.rect
                               if (typeof rect === "object" && rect !== null && "height" in rect) {
@@ -469,7 +465,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                           onDrag={({ source, location }) => {
                             if (source.data.type === "task" && source.data.taskId !== task.id) {
                               const innerMost = location.current.dropTargets[0]
-                              const closestEdge = extractClosestEdge(innerMost?.data)
+                              const closestEdge = extractClosestEdge(innerMost.data)
 
                               setColumnDragStates((prev) => {
                                 const newMap = new Map(prev)
@@ -493,9 +489,9 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                           {(() => {
                             const dragState = columnDragStates.get(column.id)
                             return dragState?.isDraggingOver &&
-                              dragState?.targetTaskId === task.id &&
-                              dragState?.closestEdge === "top" &&
-                              dragState?.draggedTaskRect ? (
+                              dragState.targetTaskId === task.id &&
+                              dragState.closestEdge === "top" &&
+                              dragState.draggedTaskRect ? (
                               <TaskShadow
                                 height={dragState.draggedTaskRect.height}
                                 className="mb-3"
@@ -520,9 +516,9 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                           {(() => {
                             const dragState = columnDragStates.get(column.id)
                             return dragState?.isDraggingOver &&
-                              dragState?.targetTaskId === task.id &&
-                              dragState?.closestEdge === "bottom" &&
-                              dragState?.draggedTaskRect ? (
+                              dragState.targetTaskId === task.id &&
+                              dragState.closestEdge === "bottom" &&
+                              dragState.draggedTaskRect ? (
                               <TaskShadow
                                 height={dragState.draggedTaskRect.height}
                                 className="mb-3"
@@ -536,8 +532,8 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                       {(() => {
                         const dragState = columnDragStates.get(column.id)
                         return dragState?.isDraggingOver &&
-                          !dragState?.targetTaskId &&
-                          dragState?.draggedTaskRect ? (
+                          !dragState.targetTaskId &&
+                          dragState.draggedTaskRect ? (
                           <TaskShadow height={dragState.draggedTaskRect.height} className="mb-3" />
                         ) : null
                       })()}

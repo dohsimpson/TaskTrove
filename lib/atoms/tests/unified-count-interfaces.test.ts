@@ -120,9 +120,7 @@ describe("Unified Count Interfaces", () => {
 
     // taskCounts.total should match the sum of active tasks
     // (This is a consistency check specific to taskCountsAtom)
-    if (taskCounts.total !== undefined) {
-      expect(taskCounts.total).toBeGreaterThanOrEqual(0)
-    }
+    expect(taskCounts.total).toBeGreaterThanOrEqual(0)
   })
 
   it("should handle empty state gracefully across all atoms", () => {

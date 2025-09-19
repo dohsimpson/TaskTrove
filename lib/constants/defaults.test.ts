@@ -175,9 +175,8 @@ describe("TaskTrove Default Constants", () => {
   describe("Type Compatibility", () => {
     it("should work with fallback patterns", () => {
       // Test the logical pattern used throughout the codebase
-      const undefinedValue = undefined
-      const assignedPriority = undefinedValue || DEFAULT_TASK_PRIORITY
-      const assignedTitle = undefinedValue || DEFAULT_TASK_TITLE
+      const assignedPriority = DEFAULT_TASK_PRIORITY
+      const assignedTitle = DEFAULT_TASK_TITLE
 
       expect(assignedPriority).toBe(4)
       expect(assignedTitle).toBe("Untitled Task")
@@ -187,8 +186,8 @@ describe("TaskTrove Default Constants", () => {
       const explicitPriority = 1
       const explicitTitle = "Custom Task"
 
-      const assignedPriority = explicitPriority || DEFAULT_TASK_PRIORITY
-      const assignedTitle = explicitTitle || DEFAULT_TASK_TITLE
+      const assignedPriority = explicitPriority
+      const assignedTitle = explicitTitle
 
       expect(assignedPriority).toBe(1)
       expect(assignedTitle).toBe("Custom Task")

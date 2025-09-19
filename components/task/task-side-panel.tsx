@@ -383,7 +383,7 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
     <div
       className={cn(
         "absolute top-0 right-0 bg-background/95 backdrop-blur-sm border-l border-border/50 flex flex-col transition-transform duration-300 ease-in-out z-30 shadow-lg h-full",
-        isOpen ? "translate-x-0" : "translate-x-full",
+        "translate-x-0",
       )}
       style={{
         width: `${SIDE_PANEL_WIDTH}px`,

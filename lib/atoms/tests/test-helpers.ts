@@ -149,7 +149,7 @@ export function assertLength<T>(array: T[], expectedLength: number, testName: st
     Array.isArray(array) && array.length === expectedLength,
     `Array should have length ${expectedLength}`,
     testName,
-    array?.length,
+    array.length,
     expectedLength,
   )
 }
@@ -167,7 +167,7 @@ export function assertHasProperties(
     missingProps.length === 0,
     `Object should have properties: ${properties.join(", ")}`,
     testName,
-    Object.keys(obj || {}),
+    Object.keys(obj),
     properties,
   )
 }

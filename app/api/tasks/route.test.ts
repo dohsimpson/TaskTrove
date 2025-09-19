@@ -52,8 +52,7 @@ const mockSafeWriteDataFile = vi.mocked(safeWriteDataFile)
 
 // Helper function to safely get written data
 function getWrittenData(): DataFile {
-  const callData = mockSafeWriteDataFile.mock.calls[0]?.[0]?.data
-  if (!callData) throw new Error("No written data found in mock calls")
+  const callData = mockSafeWriteDataFile.mock.calls[0][0].data
   return DataFileSchema.parse(callData)
 }
 

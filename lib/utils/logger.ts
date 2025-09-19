@@ -20,7 +20,7 @@ const sanitizeObject = (obj: unknown, seen = new WeakSet()): unknown => {
   // Filter out DOM elements and React fiber properties (check if globals exist first)
   if (typeof Element !== "undefined" && obj instanceof Element) return "[DOM Element]"
   if (typeof Node !== "undefined" && obj instanceof Node) return "[DOM Element]"
-  if (obj.constructor?.name === "FiberNode") return "[React Fiber]"
+  if (obj.constructor.name === "FiberNode") return "[React Fiber]"
 
   seen.add(obj)
 
@@ -44,7 +44,6 @@ const sanitizeObject = (obj: unknown, seen = new WeakSet()): unknown => {
 
 // Format context object for console output
 const formatContext = (context: Record<string, unknown>): string => {
-  if (!context) return ""
   const { module, ...rest } = context
   const prefix = module ? `[${module}]` : ""
 

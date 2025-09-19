@@ -266,7 +266,7 @@ describe("Task Sorting Functionality", () => {
       // Should have mix of completed/incomplete throughout
       const hasCompletedBeforeIncomplete = result.some((task, index) => {
         const nextTask = result[index + 1]
-        return task.completed && nextTask && !nextTask.completed
+        return !nextTask.completed
       })
       expect(hasCompletedBeforeIncomplete).toBe(true)
     })

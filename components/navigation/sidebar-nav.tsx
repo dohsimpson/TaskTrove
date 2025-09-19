@@ -309,7 +309,7 @@ export function SidebarNav() {
                   <Link href={item.href}>
                     {item.icon}
                     <span>{item.label}</span>
-                    {item.count !== undefined && <SidebarMenuBadge>{item.count}</SidebarMenuBadge>}
+                    <SidebarMenuBadge>{item.count}</SidebarMenuBadge>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -354,7 +354,7 @@ export function SidebarNav() {
                         <DraggableProjectGroupItem
                           key={item.id}
                           group={item}
-                          projects={projects || []}
+                          projects={projects}
                           index={index}
                         />
                       )
@@ -398,7 +398,7 @@ export function SidebarNav() {
           <CollapsibleContent>
             <SidebarGroupContent>
               <SidebarMenu>
-                {labels?.map((label) => (
+                {labels.map((label) => (
                   <LabelMenuItem key={label.id} label={label} />
                 ))}
               </SidebarMenu>

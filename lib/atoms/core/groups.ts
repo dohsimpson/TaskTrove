@@ -27,20 +27,8 @@ export const allGroupsAtom = atom((get) => {
   // Handle TanStack Query result structure - follow same pattern as projectsAtom
   if ("data" in result && result.data) {
     return {
-      projectGroups: result.data.projectGroups ?? {
-        type: "project" as const,
-        id: ROOT_PROJECT_GROUP_ID,
-        name: "All Projects",
-        slug: "all-projects",
-        items: [],
-      },
-      labelGroups: result.data.labelGroups ?? {
-        type: "label" as const,
-        id: ROOT_LABEL_GROUP_ID,
-        name: "All Labels",
-        slug: "all-labels",
-        items: [],
-      },
+      projectGroups: result.data.projectGroups,
+      labelGroups: result.data.labelGroups,
     }
   }
 
@@ -505,8 +493,8 @@ export const projectGroupTreeAtom = atom((get) => {
       const currentPath = [...path, group.id]
 
       // Extract nested project groups
-      const nestedGroups = group.items.filter(
-        (item): item is ProjectGroup => isGroup<ProjectGroup>(item) && item.type === "project",
+      const nestedGroups = group.items.filter((item): item is ProjectGroup =>
+        isGroup<ProjectGroup>(item),
       )
 
       return {
@@ -554,7 +542,7 @@ export const groupAnalysisAtom = atom((get) => {
       if (typeof item === "string") {
         projectToGroup.set(item, group)
         projectCount++
-      } else if (isGroup<ProjectGroup>(item) && item.type === "project") {
+      } else if (isGroup<ProjectGroup>(item)) {
         const nestedCount = traverse(item, [...ancestors, group])
         projectCount += nestedCount
       }

@@ -175,7 +175,7 @@ export function PageHeader({
 
             {/* Help Button */}
             {(() => {
-              const helpContent = getHelpContent(routeContext.pathname, pageInfo.title)
+              const helpContent = getHelpContent(routeContext)
               return helpContent ? (
                 <HelpPopover
                   title={helpContent.title}

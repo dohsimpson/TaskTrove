@@ -3,15 +3,97 @@
  */
 import React from "react"
 import { HelpSection, HelpDescription, HelpList, HelpTip } from "@/components/ui/help-content"
+import type { RouteContext } from "@/lib/atoms/ui/navigation"
 
 export interface HelpContent {
   title: string
   content: React.ReactNode
 }
 
-export function getHelpContent(routeName: string, title: string): HelpContent | null {
+export function getHelpContent(routeContext: RouteContext): HelpContent | null {
+  const { pathname, routeType } = routeContext
+
+  // Handle non-standard routes first based on routeType
+  if (routeType === "label") {
+    return {
+      title: "Label View",
+      content: (
+        <HelpSection>
+          <HelpDescription>Focus on all tasks tagged with this specific label.</HelpDescription>
+          <HelpList
+            items={[
+              "View all tasks associated with this label",
+              "Add or remove this label from tasks as needed",
+              "Combine with other filters for refined views",
+              "Perfect for context-based or category-based work",
+            ]}
+          />
+          <HelpTip>
+            <strong>Label workflow:</strong> Use labels to create custom views that cut across
+            projects.
+          </HelpTip>
+        </HelpSection>
+      ),
+    }
+  }
+
+  if (routeType === "projectgroup") {
+    return {
+      title: "Project Group View",
+      content: (
+        <HelpSection>
+          <HelpDescription>
+            View all tasks from multiple related projects in one unified list.
+          </HelpDescription>
+          <HelpList
+            variant="steps"
+            items={[
+              "See tasks from all projects within this group combined",
+              "Work with tasks across related projects in a flat view",
+              "Use filters and search to focus on specific tasks",
+              "Navigate to individual projects for section-based organization",
+            ]}
+          />
+          <HelpTip variant="info">
+            <strong>Unified view:</strong> Project groups provide a consolidated task list across
+            multiple projects, perfect for getting an overview of related work areas.
+          </HelpTip>
+        </HelpSection>
+      ),
+    }
+  }
+
+  if (routeType === "project") {
+    return {
+      title: "Project View",
+      content: (
+        <HelpSection>
+          <HelpDescription>Focus on tasks within this specific project workspace.</HelpDescription>
+          <HelpList
+            variant="steps"
+            items={[
+              "View and manage all tasks within this project",
+              "Add new tasks directly to the project scope",
+              "Track overall project progress and milestones",
+              "Switch between list, kanban, and calendar views",
+            ]}
+          />
+          <HelpTip variant="info">
+            <strong>Project focus:</strong> Use this dedicated view to maintain context and avoid
+            distractions.
+          </HelpTip>
+        </HelpSection>
+      ),
+    }
+  }
+
+  // Handle standard routes only if routeType is "standard"
+  if (routeType !== "standard") {
+    return null
+  }
+
   // Normalize route name - remove leading slash and convert to lowercase
-  const normalizedRoute = routeName.replace(/^\//, "").toLowerCase()
+  const normalizedRoute = pathname.replace(/^\//, "").toLowerCase()
 
   switch (normalizedRoute) {
     case "today":
@@ -241,69 +323,6 @@ export function getHelpContent(routeName: string, title: string): HelpContent | 
       }
 
     default:
-      // Handle project pages and label pages
-      if (title.startsWith("#")) {
-        return {
-          title: "Label View",
-          content: (
-            <HelpSection>
-              <HelpDescription>Focus on all tasks tagged with this specific label.</HelpDescription>
-              <HelpList
-                items={[
-                  "View all tasks associated with this label",
-                  "Add or remove this label from tasks as needed",
-                  "Combine with other filters for refined views",
-                  "Perfect for context-based or category-based work",
-                ]}
-              />
-              <HelpTip>
-                <strong>Label workflow:</strong> Use labels to create custom views that cut across
-                projects.
-              </HelpTip>
-            </HelpSection>
-          ),
-        }
-      }
-
-      // Check if it's a project page (title doesn't match common routes)
-      const commonRoutes = [
-        "today",
-        "inbox",
-        "upcoming",
-        "completed",
-        "projects",
-        "labels",
-        "filters",
-        "analytics",
-        "search",
-        "calendar",
-      ]
-      if (!commonRoutes.includes(normalizedRoute) && title !== "TaskTrove") {
-        return {
-          title: "Project View",
-          content: (
-            <HelpSection>
-              <HelpDescription>
-                Focus on tasks within this specific project workspace.
-              </HelpDescription>
-              <HelpList
-                variant="steps"
-                items={[
-                  "View and manage all tasks within this project",
-                  "Add new tasks directly to the project scope",
-                  "Track overall project progress and milestones",
-                  "Switch between list, kanban, and calendar views",
-                ]}
-              />
-              <HelpTip variant="info">
-                <strong>Project focus:</strong> Use this dedicated view to maintain context and
-                avoid distractions.
-              </HelpTip>
-            </HelpSection>
-          ),
-        }
-      }
-
       return null
   }
 }

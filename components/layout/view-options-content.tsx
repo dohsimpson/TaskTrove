@@ -46,9 +46,26 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
 
   // Centralized view option configurations (excluding kanban which is handled by route type)
   const getViewConfig = (view: string) => {
-    // Use centralized view configuration
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    return VIEW_CONFIG_OPTIONS[view as keyof typeof VIEW_CONFIG_OPTIONS]
+    // Use centralized view configuration with fallback for unknown views
+    switch (view) {
+      case "today":
+        return VIEW_CONFIG_OPTIONS.today
+      case "inbox":
+        return VIEW_CONFIG_OPTIONS.inbox
+      case "upcoming":
+        return VIEW_CONFIG_OPTIONS.upcoming
+      case "completed":
+        return VIEW_CONFIG_OPTIONS.completed
+      case "all":
+        return VIEW_CONFIG_OPTIONS.all
+      case "calendar":
+        return VIEW_CONFIG_OPTIONS.calendar
+      default:
+        return {
+          calendarDisabled: false,
+          showCompletedDisabled: false,
+        }
+    }
   }
 
   const viewConfig = getViewConfig(currentView)

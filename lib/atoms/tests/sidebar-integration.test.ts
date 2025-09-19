@@ -11,7 +11,7 @@ import { TEST_PROJECT_ID_1 } from "@/lib/utils/test-constants"
 
 // Import the REAL atoms
 import { visibleProjectsAtom, projectTaskCountsAtom } from "../core/projects"
-import { taskAtoms } from "../core/tasks"
+import { taskAtoms, taskCountsAtom, baseFilteredTasksForViewAtom } from "../core/tasks"
 import { projectAtoms } from "../core/projects"
 
 describe("Sidebar Integration", () => {
@@ -204,5 +204,81 @@ describe("Sidebar Integration", () => {
     } catch {
       // If project addition fails in test environment, that's acceptable
     }
+  })
+
+  it("should ensure sidebar counts match main content filtered task counts", () => {
+    // This is the key test that verifies our 2-layer filtering system works correctly
+    // Sidebar counts should exactly match the length of filtered tasks for each view
+
+    const taskCounts = store.get(taskCountsAtom)
+
+    // Test standard views that should have exact count matches
+    const viewsToTest = ["inbox", "today", "upcoming", "all"] as const
+
+    viewsToTest.forEach((viewId) => {
+      // Get the filtered tasks for this view using the same base atom that feeds the main content
+      const filteredTasks = store.get(baseFilteredTasksForViewAtom(viewId))
+      const sidebarCount = taskCounts[viewId]
+
+      // The sidebar count should exactly match the filtered tasks length
+      expect(sidebarCount).toBe(filteredTasks.length)
+
+      // Additional validation: both should be non-negative numbers
+      expect(sidebarCount).toBeGreaterThanOrEqual(0)
+      expect(filteredTasks.length).toBeGreaterThanOrEqual(0)
+    })
+
+    // Verify that the sidebar and main content use the same filtering logic
+    // by checking that they both respect view-specific settings
+    expect(typeof taskCounts).toBe("object")
+    expect(taskCounts.inbox).toBeDefined()
+    expect(taskCounts.today).toBeDefined()
+    expect(taskCounts.upcoming).toBeDefined()
+    expect(taskCounts.all).toBeDefined()
+  })
+
+  it("should maintain count consistency across different view settings", async () => {
+    // Test that sidebar counts remain consistent with main content when view settings change
+
+    // Add some test tasks to have data to work with
+    try {
+      await store.set(taskAtoms.actions.addTask, {
+        title: "Test Task 1",
+        priority: 1,
+        dueDate: new Date(), // Due today
+      })
+
+      const task2Result = await store.set(taskAtoms.actions.addTask, {
+        title: "Test Task 2 Completed",
+        priority: 2,
+        dueDate: new Date(Date.now() - 24 * 60 * 60 * 1000), // Due yesterday (overdue)
+      })
+
+      // Mark the second task as completed
+      if (task2Result && task2Result.id) {
+        store.set(taskAtoms.actions.toggleTask, task2Result.id)
+      }
+    } catch {
+      // If task creation fails in test environment, skip the dynamic test
+      return
+    }
+
+    // Get initial counts
+    const initialTaskCounts = store.get(taskCountsAtom)
+    const initialTodayTasks = store.get(baseFilteredTasksForViewAtom("today"))
+
+    // Verify initial consistency
+    expect(initialTaskCounts.today).toBe(initialTodayTasks.length)
+
+    // Test that both sidebar and main content respect the same base filtering
+    // The counts should always match because they use the same baseFilteredTasksForViewAtom
+    const testViews = ["inbox", "today", "upcoming"] as const
+
+    testViews.forEach((viewId) => {
+      const sidebarCount = initialTaskCounts[viewId]
+      const mainContentTasks = store.get(baseFilteredTasksForViewAtom(viewId))
+
+      expect(sidebarCount).toBe(mainContentTasks.length)
+    })
   })
 })

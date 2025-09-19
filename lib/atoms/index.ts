@@ -204,7 +204,7 @@ export {
   overdueTasksAtom,
   taskCountsAtom,
   completedTasksTodayAtom,
-  baseTasksForViewAtom,
+  baseFilteredTasksForViewAtom,
   filteredTasksAtom,
 } from "./core/tasks"
 

@@ -56,7 +56,7 @@ vi.mock("@/lib/atoms/core/labels", () => ({
 }))
 
 vi.mock("@/lib/atoms/core/tasks", () => ({
-  baseTasksForViewAtom: { toString: () => "baseTasksForViewAtom" },
+  baseFilteredTasksForViewAtom: { toString: () => "baseFilteredTasksForViewAtom" },
 }))
 
 // Mock Jotai hooks

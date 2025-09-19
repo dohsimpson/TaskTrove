@@ -1,4 +1,5 @@
 import { atom } from "jotai"
+import { atomFamily } from "jotai/utils"
 import { isToday, isPast, isFuture } from "date-fns"
 import { v4 as uuidv4 } from "uuid"
 import {
@@ -22,7 +23,6 @@ import {
   createCommentId,
   UpdateTaskRequest,
   CreateTaskRequest,
-  ViewStates,
 } from "../../types"
 import { matchesDueDateFilter } from "../../utils/date-filter-utils"
 import { isTaskInInbox } from "../../utils"
@@ -632,40 +632,117 @@ export const calendarTasksAtom = atom((get) => {
 calendarTasksAtom.debugLabel = "calendarTasksAtom"
 
 /**
+ * Base filtered tasks for view atom family - Layer 1: Common filtering logic shared by sidebar and main content
+ * Creates individual atoms for each viewId with view-specific task filtering + per-view showCompleted/showOverdue settings
+ * Used by both taskCountsAtom (for sidebar counts) and filteredTasksAtom (as base for main content)
+ */
+export const baseFilteredTasksForViewAtom = atomFamily((viewId: ViewId) =>
+  atom((get) => {
+    try {
+      const viewStates = get(viewStatesAtom)
+      const routeContext = get(currentRouteContextAtom)
+
+      // Get view-specific settings
+      const viewState = getViewStateOrDefault(viewStates, viewId)
+      const showCompleted = viewState.showCompleted
+      const showOverdue = viewState.showOverdue
+
+      // Get base tasks for the specified view
+      let result: Task[]
+      switch (viewId) {
+        case "today":
+          result = get(todayTasksAtom)
+          break
+        case "upcoming":
+          result = get(upcomingTasksAtom)
+          break
+        case "inbox":
+          result = get(inboxTasksAtom)
+          break
+        case "completed":
+          result = get(completedTasksAtom)
+          break
+        case "all":
+          result = get(activeTasksAtom)
+          break
+        default:
+          // Use route context to determine if this is a project or label view
+          const activeTasks = get(activeTasksAtom)
+
+          if (routeContext.routeType === "project") {
+            result = activeTasks.filter((task: Task) => task.projectId === routeContext.viewId)
+          } else if (routeContext.routeType === "label") {
+            try {
+              const labelId = LabelIdSchema.parse(viewId)
+              result = activeTasks.filter((task: Task) => task.labels.includes(labelId))
+            } catch {
+              result = []
+            }
+          } else if (routeContext.routeType === "projectgroup") {
+            try {
+              const groupId = GroupIdSchema.parse(routeContext.viewId)
+              const getProjectGroupTasks = get(projectGroupTasksAtom)
+              result = getProjectGroupTasks(groupId)
+            } catch {
+              result = []
+            }
+          } else {
+            result = activeTasks
+          }
+          break
+      }
+
+      // For completed view, always show all completed tasks
+      if (viewId === "completed") {
+        return result
+      }
+
+      // Apply per-view showCompleted setting
+      if (!showCompleted) {
+        result = result.filter((task: Task) => !task.completed)
+      }
+
+      // Apply per-view showOverdue setting
+      if (!showOverdue) {
+        result = result.filter((task: Task) => {
+          if (!task.dueDate) return true
+          return !(isPast(task.dueDate) && !isToday(task.dueDate))
+        })
+      }
+
+      return result
+    } catch (error) {
+      handleAtomError(error, `baseFilteredTasksForViewAtom(${viewId})`)
+      return []
+    }
+  }),
+)
+
+/**
  * Task counts for different categories
- * Uses the same derived atoms as filtering to ensure consistency
  */
 export const taskCountsAtom = atom((get) => {
   try {
     const activeTasks = get(activeTasksAtom)
-    const inboxTasks = get(inboxTasksAtom)
-    const todayTasks = get(todayTasksAtom)
-    const upcomingTasks = get(upcomingTasksAtom)
-    const overdueTasks = get(overdueTasksAtom)
-    const calendarTasks = get(calendarTasksAtom)
     const completedTasks = get(completedTasksAtom)
-    const rawViewStates = get(viewStatesAtom)
-    const viewStates: ViewStates = rawViewStates
+    const calendarTasks = get(calendarTasksAtom)
+    const viewStates = get(viewStatesAtom)
 
-    // Get view-specific showCompleted settings
-    const getViewShowCompleted = (viewId: ViewId) => {
-      return getViewStateOrDefault(viewStates, viewId).showCompleted
-    }
-
-    // Filter tasks based on each view's individual showCompleted setting
-    const filterByViewCompleted = (tasks: Task[], viewId: ViewId) => {
-      return getViewShowCompleted(viewId) ? tasks : tasks.filter((task: Task) => !task.completed)
-    }
-
+    // Use the new base filtered tasks atomFamily for consistent counts
     return {
       total: activeTasks.length,
-      inbox: filterByViewCompleted(inboxTasks, "inbox").length,
-      today: filterByViewCompleted(todayTasks, "today").length,
-      upcoming: filterByViewCompleted(upcomingTasks, "upcoming").length,
-      calendar: filterByViewCompleted(calendarTasks, "calendar").length,
-      overdue: filterByViewCompleted(overdueTasks, "today").length,
+      inbox: get(baseFilteredTasksForViewAtom("inbox")).length,
+      today: get(baseFilteredTasksForViewAtom("today")).length,
+      upcoming: get(baseFilteredTasksForViewAtom("upcoming")).length,
+      calendar: getViewStateOrDefault(viewStates, "calendar").showCompleted
+        ? calendarTasks.length
+        : calendarTasks.filter((task: Task) => !task.completed).length,
+      overdue: get(overdueTasksAtom).filter((task: Task) => {
+        const showCompleted = getViewStateOrDefault(viewStates, "today").showCompleted
+        return showCompleted || !task.completed
+      }).length,
       completed: completedTasks.length, // Always show all completed tasks in completed section
-      all: filterByViewCompleted(activeTasks, "all").length,
+      all: get(baseFilteredTasksForViewAtom("all")).length,
       active: activeTasks.filter((task: Task) => !task.completed).length,
     }
   } catch (error) {
@@ -707,96 +784,23 @@ export const completedTasksTodayAtom = atom((get) => {
 completedTasksTodayAtom.debugLabel = "completedTasksTodayAtom"
 
 /**
- * Base tasks for current view atom (performance optimized)
- * Uses specific task atoms as foundation for better Jotai memoization
- * Only recomputes when base data or view changes, not UI state
- */
-export const baseTasksForViewAtom = atom((get) => {
-  try {
-    const currentView = get(currentViewAtom)
-
-    // Use specific pre-filtered atoms for better performance
-    switch (currentView) {
-      case "today":
-        return get(todayTasksAtom)
-      case "upcoming":
-        return get(upcomingTasksAtom)
-      case "inbox":
-        return get(inboxTasksAtom)
-      case "completed":
-        return get(completedTasksAtom)
-      default:
-        // Use route context to determine if this is a project or label view
-        const routeContext = get(currentRouteContextAtom)
-        const activeTasks = get(activeTasksAtom)
-
-        if (routeContext.routeType === "project") {
-          // Use the viewId from route context which contains the project ID for project routes
-          return activeTasks.filter((task: Task) => task.projectId === routeContext.viewId)
-        }
-
-        if (routeContext.routeType === "label") {
-          // For labels, we need to validate viewId is a LabelId before using it
-          try {
-            const labelId = LabelIdSchema.parse(currentView)
-            return activeTasks.filter((task: Task) => task.labels.includes(labelId))
-          } catch {
-            // Invalid label ID, return empty array
-            return []
-          }
-        }
-
-        if (routeContext.routeType === "projectgroup") {
-          // For project groups, get all tasks from projects within the group
-          try {
-            const groupId = GroupIdSchema.parse(routeContext.viewId)
-            const getProjectGroupTasks = get(projectGroupTasksAtom)
-            return getProjectGroupTasks(groupId)
-          } catch {
-            // Invalid group ID, return empty array
-            return []
-          }
-        }
-
-        return activeTasks
-    }
-  } catch (error) {
-    handleAtomError(error, "baseTasksForViewAtom")
-    return []
-  }
-})
-baseTasksForViewAtom.debugLabel = "baseTasksForViewAtom"
-
-/**
- * Comprehensive filtered tasks atom (refactored for performance)
- * Uses baseTasksForViewAtom as foundation, then applies UI filters
- * Now only recomputes UI concerns (search, show completed, sorting)
+ * Comprehensive filtered tasks atom - Layer 2: UI-specific filtering
+ * Uses baseFilteredTasksForViewAtom as foundation, then applies UI-only filters
+ * Only handles search, advanced filters, and sorting
  */
 export const filteredTasksAtom = atom((get) => {
   try {
-    // Use optimized base tasks that are pre-filtered by view
-    const baseTasks = get(baseTasksForViewAtom)
-    const viewState = get(currentViewStateAtom)
+    // Layer 1: Get base filtered tasks with common filtering logic
     const currentView = get(currentViewAtom)
+    const viewState = get(currentViewStateAtom)
     const searchQuery = viewState.searchQuery
 
-    let result = baseTasks
+    // Start with base filtered tasks (already has view filtering + per-view showCompleted/showOverdue)
+    let result = get(baseFilteredTasksForViewAtom(currentView))
 
-    // Apply show completed filter (only UI concern now)
-    // Skip this filter for the "completed" view since it should always show completed tasks
-    if (!viewState.showCompleted && currentView !== "completed") {
-      result = result.filter((task: Task) => !task.completed)
-    }
+    // Layer 2: Apply UI-specific filters
 
-    // Apply show overdue filter (only UI concern now)
-    if (!viewState.showOverdue) {
-      result = result.filter((task: Task) => {
-        if (!task.dueDate) return true
-        return !(isPast(task.dueDate) && !isToday(task.dueDate))
-      })
-    }
-
-    // Apply search query filter (only UI concern now)
+    // Apply search query filter (UI-only concern)
     if (searchQuery) {
       result = result.filter(
         (task: Task) =>
@@ -805,7 +809,7 @@ export const filteredTasksAtom = atom((get) => {
       )
     }
 
-    // Apply advanced filters from viewState.activeFilters
+    // Apply advanced filters from viewState.activeFilters (UI-only concern)
     const activeFilters = viewState.activeFilters
     if (activeFilters) {
       // Filter by project IDs
@@ -862,7 +866,7 @@ export const filteredTasksAtom = atom((get) => {
       }
     }
 
-    // Apply sorting based on viewState.sortBy
+    // Apply sorting based on viewState.sortBy (UI-only concern)
     return result.sort((a: Task, b: Task) => {
       const direction = viewState.sortDirection === "asc" ? 1 : -1
 
@@ -1406,7 +1410,7 @@ export const taskAtoms = {
     calendarTasks: calendarTasksAtom,
     taskCounts: taskCountsAtom,
     completedTasksToday: completedTasksTodayAtom,
-    baseTasksForView: baseTasksForViewAtom,
+    baseFilteredTasksForView: baseFilteredTasksForViewAtom,
     filteredTasks: filteredTasksAtom,
     getTasksForView: getTasksForViewAtom,
     orderedTasksByProject: orderedTasksByProjectAtom,

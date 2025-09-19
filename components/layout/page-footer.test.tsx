@@ -6,8 +6,9 @@ import { PageFooter } from "./page-footer"
 // Mock the atoms instead of importing them
 vi.mock("@/lib/atoms", () => ({
   completedTasksTodayAtom: { toString: () => "completedTasksTodayAtom" },
-  todayTasksAtom: { toString: () => "todayTasksAtom" },
+  baseFilteredTasksForViewAtom: vi.fn(() => ({ toString: () => "baseFilteredTasksForViewAtom" })),
   toggleTaskAtom: { toString: () => "toggleTaskAtom" },
+  toggleTaskPanelWithViewStateAtom: { toString: () => "toggleTaskPanelWithViewStateAtom" },
   // Focus timer atoms
   focusTimerStateAtom: { toString: () => "focusTimerStateAtom" },
   activeFocusTimerAtom: { toString: () => "activeFocusTimerAtom" },
@@ -69,6 +70,15 @@ vi.mock("@/components/ui/custom/task-checkbox", () => ({
   ),
 }))
 
+// Mock the TaskDueDate component
+vi.mock("@/components/ui/custom/task-due-date", () => ({
+  TaskDueDate: ({ dueDate, className }: { dueDate?: Date | null; className?: string }) => (
+    <span className={className} data-testid="task-due-date">
+      {dueDate ? "Jan 1" : ""}
+    </span>
+  ),
+}))
+
 // Mock useAtomValue and useSetAtom
 vi.mock("jotai", async () => {
   const actual = await vi.importActual("jotai")
@@ -91,6 +101,9 @@ vi.mock("date-fns", () => ({
 }))
 
 describe("PageFooter Popover Tests", () => {
+  const mockToggleTask = vi.fn()
+  const mockToggleTaskPanel = vi.fn()
+
   const mockCompletedTasks: Task[] = [
     {
       id: TEST_TASK_ID_1,
@@ -177,12 +190,27 @@ describe("PageFooter Popover Tests", () => {
     vi.clearAllMocks()
   })
 
-  it("should show completed tasks popover with correct count when clicking completed today button", async () => {
+  const setupMocks = async () => {
     const { useAtomValue, useSetAtom } = await import("jotai")
     const mockUseAtomValue = vi.mocked(useAtomValue)
     const mockUseSetAtom = vi.mocked(useSetAtom)
 
-    mockUseSetAtom.mockReturnValue(vi.fn())
+    mockUseSetAtom.mockImplementation((atom: unknown) => {
+      const atomString = atom?.toString?.() || ""
+      if (atomString.includes("toggleTaskAtom")) {
+        return mockToggleTask
+      }
+      if (atomString.includes("toggleTaskPanel")) {
+        return mockToggleTaskPanel
+      }
+      return vi.fn()
+    })
+
+    return { mockUseAtomValue, mockUseSetAtom }
+  }
+
+  it("should show completed tasks popover with correct count when clicking completed today button", async () => {
+    const { mockUseAtomValue } = await setupMocks()
     // Mock the atom values
     mockUseAtomValue
       .mockReturnValueOnce(mockCompletedTasks) // completedTasksTodayAtom
@@ -224,11 +252,7 @@ describe("PageFooter Popover Tests", () => {
   })
 
   it("should show due today tasks popover with correct count when clicking due today button", async () => {
-    const { useAtomValue, useSetAtom } = await import("jotai")
-    const mockUseAtomValue = vi.mocked(useAtomValue)
-    const mockUseSetAtom = vi.mocked(useSetAtom)
-
-    mockUseSetAtom.mockReturnValue(vi.fn())
+    const { mockUseAtomValue } = await setupMocks()
     // Mock the atom values
     mockUseAtomValue
       .mockReturnValueOnce([]) // completedTasksTodayAtom
@@ -271,5 +295,80 @@ describe("PageFooter Popover Tests", () => {
     expect(checkboxes[1]).not.toBeChecked()
     // Third should be checked (completed)
     expect(checkboxes[2]).toBeChecked()
+  })
+
+  it("should toggle task panel when clicking on a task in the footer", async () => {
+    const { mockUseAtomValue } = await setupMocks()
+
+    // Mock the atom values
+    mockUseAtomValue
+      .mockReturnValueOnce([]) // completedTasksTodayAtom
+      .mockReturnValueOnce(mockDueTodayTasks) // todayTasksAtom
+      // Focus timer atoms
+      .mockReturnValueOnce(null) // activeFocusTimerAtom
+      .mockReturnValueOnce("stopped") // focusTimerStatusAtom
+      .mockReturnValueOnce(null) // activeFocusTaskAtom
+      .mockReturnValueOnce("0:00") // focusTimerDisplayAtom
+
+    render(<PageFooter />)
+
+    // Open the due today popover
+    const dueButton = screen.getByRole("button", { name: /due today/i })
+    fireEvent.click(dueButton)
+
+    // Wait for popover content to appear
+    await waitFor(() => {
+      expect(screen.getByText("Due Today")).toBeInTheDocument()
+    })
+
+    // Find and click on the first task (not on the checkbox)
+    const taskTitle = screen.getByText("Due Today Task 1")
+    const taskContainer = taskTitle.closest("div")
+    expect(taskContainer).toBeInTheDocument()
+
+    if (taskContainer) {
+      fireEvent.click(taskContainer)
+    }
+
+    // Verify that the task panel toggle was called with the correct task
+    expect(mockToggleTaskPanel).toHaveBeenCalledWith(mockDueTodayTasks[0])
+  })
+
+  it("should not toggle task panel when clicking on interactive elements in footer", async () => {
+    const { mockUseAtomValue } = await setupMocks()
+
+    // Mock the atom values
+    mockUseAtomValue
+      .mockReturnValueOnce([]) // completedTasksTodayAtom
+      .mockReturnValueOnce(mockDueTodayTasks) // todayTasksAtom
+      // Focus timer atoms
+      .mockReturnValueOnce(null) // activeFocusTimerAtom
+      .mockReturnValueOnce("stopped") // focusTimerStatusAtom
+      .mockReturnValueOnce(null) // activeFocusTaskAtom
+      .mockReturnValueOnce("0:00") // focusTimerDisplayAtom
+
+    render(<PageFooter />)
+
+    // Open the due today popover
+    const dueButton = screen.getByRole("button", { name: /due today/i })
+    fireEvent.click(dueButton)
+
+    // Wait for popover content to appear
+    await waitFor(() => {
+      expect(screen.getByText("Due Today")).toBeInTheDocument()
+    })
+
+    // Click on a checkbox (interactive element)
+    const checkboxes = screen.getAllByTestId("task-checkbox")
+    expect(checkboxes.length).toBeGreaterThan(0)
+    const firstCheckbox = checkboxes[0]
+    if (firstCheckbox) {
+      fireEvent.click(firstCheckbox)
+    }
+
+    // Verify that the task panel toggle was NOT called
+    expect(mockToggleTaskPanel).not.toHaveBeenCalled()
+    // But the toggle task should have been called
+    expect(mockToggleTask).toHaveBeenCalledWith(TEST_TASK_ID_1)
   })
 })

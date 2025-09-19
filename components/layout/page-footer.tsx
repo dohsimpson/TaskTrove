@@ -2,12 +2,17 @@
 
 import { useAtomValue, useSetAtom } from "jotai"
 import { CheckCircle, Calendar } from "lucide-react"
-import { completedTasksTodayAtom, todayTasksAtom, toggleTaskAtom } from "@/lib/atoms"
+import {
+  completedTasksTodayAtom,
+  baseFilteredTasksForViewAtom,
+  toggleTaskAtom,
+  toggleTaskPanelWithViewStateAtom,
+} from "@/lib/atoms"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { Button } from "@/components/ui/button"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
+import { TaskDueDate } from "@/components/ui/custom/task-due-date"
 import type { Task } from "@/lib/types"
-import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { FocusTimerDisplay } from "@/components/task/focus-timer-display"
 
@@ -25,6 +30,25 @@ function TaskListContent({
   icon: React.ReactNode
 }) {
   const toggleTask = useSetAtom(toggleTaskAtom)
+  const toggleTaskPanel = useSetAtom(toggleTaskPanelWithViewStateAtom)
+
+  const handleTaskClick = (e: React.MouseEvent, task: Task) => {
+    // Don't trigger if clicking on buttons or interactive elements
+    const target = e.target
+    if (
+      !(target instanceof HTMLElement) ||
+      target.closest("button") ||
+      target.closest("[data-action]") ||
+      target.closest('[role="button"]') ||
+      target.closest("input") ||
+      target.closest("select") ||
+      target.closest("textarea")
+    ) {
+      return
+    }
+    // Use atom action to open task panel
+    toggleTaskPanel(task)
+  }
 
   return (
     <div className="space-y-3 p-4">
@@ -46,18 +70,23 @@ function TaskListContent({
             <div
               key={task.id}
               className={cn(
-                "flex items-center gap-2 p-2 rounded hover:bg-accent/50 text-sm transition-all duration-200",
+                "flex items-center gap-2 p-2 rounded hover:bg-accent/50 text-sm transition-all duration-200 cursor-pointer",
                 task.completed && "opacity-60",
               )}
+              onClick={(e) => handleTaskClick(e, task)}
             >
               <TaskCheckbox checked={task.completed} onCheckedChange={() => toggleTask(task.id)} />
               <span className={`truncate flex-1 ${task.completed ? "line-through" : ""}`}>
                 {task.title}
               </span>
               {task.dueDate && (
-                <span className="text-xs text-muted-foreground ml-auto flex-shrink-0">
-                  {format(new Date(task.dueDate), "MMM d")}
-                </span>
+                <TaskDueDate
+                  dueDate={task.dueDate}
+                  dueTime={task.dueTime}
+                  recurring={task.recurring}
+                  completed={task.completed}
+                  className="text-xs ml-auto flex-shrink-0"
+                />
               )}
             </div>
           ))}
@@ -72,9 +101,9 @@ function TaskListContent({
 }
 
 export function PageFooter({ className }: PageFooterProps) {
-  // Task counts
+  // Task counts - using the same filtered atom as the "today" view for consistency
   const completedTasksToday = useAtomValue(completedTasksTodayAtom)
-  const todayTasks = useAtomValue(todayTasksAtom)
+  const todayTasks = useAtomValue(baseFilteredTasksForViewAtom("today"))
   const dueTodayCount = todayTasks.length
 
   return (

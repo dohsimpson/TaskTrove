@@ -1,11 +1,9 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Flag, Tag, Folder, X, AlertTriangle, Repeat } from "lucide-react"
-import { format, isPast, isToday } from "date-fns"
+import { Flag, Tag, Folder, X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { getScheduleIcons } from "@/lib/color-utils"
-import { formatTaskDateTimeBadge } from "@/lib/utils/task-date-formatter"
+import { TaskDueDate } from "@/components/ui/custom/task-due-date"
 
 interface ParsedTask {
   title: string
@@ -67,42 +65,13 @@ export function MetadataPills({
           variant="secondary"
           className="inline-flex items-center gap-1 h-6 px-2 text-xs hover:bg-gray-200 transition-colors group"
         >
-          {(() => {
-            const isOverdue = Boolean(
-              parsedTask.dueDate &&
-                isPast(parsedTask.dueDate) &&
-                !isToday(parsedTask.dueDate) &&
-                !parsedTask.completed,
-            )
-            const scheduleIcons = getScheduleIcons(
-              parsedTask.dueDate || undefined,
-              parsedTask.recurring,
-              parsedTask.completed,
-              isOverdue,
-            )
-            return (
-              <>
-                {scheduleIcons.primaryIcon === "overdue" && (
-                  <AlertTriangle className="w-3 h-3 text-red-500" />
-                )}
-                {scheduleIcons.primaryIcon === "calendar" && <Calendar className="w-3 h-3" />}
-                {scheduleIcons.primaryIcon === "repeat" && <Repeat className="w-3 h-3" />}
-                {scheduleIcons.secondaryIcon === "repeat" && <Repeat className="w-3 h-3" />}
-                <span>
-                  {parsedTask.dueDate
-                    ? formatTaskDateTimeBadge(parsedTask) || (
-                        <>
-                          {format(parsedTask.dueDate, "MMM d")}
-                          {parsedTask.dueTime && ` at ${parsedTask.dueTime}`}
-                        </>
-                      )
-                    : scheduleIcons.showRecurringOnly
-                      ? "Recurring"
-                      : null}
-                </span>
-              </>
-            )
-          })()}
+          <TaskDueDate
+            dueDate={parsedTask.dueDate}
+            dueTime={parsedTask.dueTime}
+            recurring={parsedTask.recurring}
+            completed={parsedTask.completed}
+            className="text-xs"
+          />
           <button
             type="button"
             onClick={onRemoveDate}

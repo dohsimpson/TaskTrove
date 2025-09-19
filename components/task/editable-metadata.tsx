@@ -1,19 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { Calendar, Flag, Folder, AlertTriangle, Repeat } from "lucide-react"
+import { Calendar, Flag, Folder } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { CustomizablePopover, type PopoverSection } from "@/components/ui/customizable-popover"
+import { TaskDueDate } from "@/components/ui/custom/task-due-date"
 import { cn } from "@/lib/utils"
-import { format, isToday, isTomorrow, isPast } from "date-fns"
-import {
-  getPriorityTextColor,
-  getPriorityLabel,
-  getDueDateTextColor,
-  getScheduleIcons,
-} from "@/lib/color-utils"
+import { getPriorityTextColor, getPriorityLabel } from "@/lib/color-utils"
 
 interface Project {
   id: string
@@ -43,12 +38,6 @@ export function EditableMetadata({
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [priorityPopoverOpen, setPriorityPopoverOpen] = useState(false)
   const [projectPopoverOpen, setProjectPopoverOpen] = useState(false)
-
-  const formatDueDate = (date: Date) => {
-    if (isToday(date)) return "Today"
-    if (isTomorrow(date)) return "Tomorrow"
-    return format(date, "MMM d")
-  }
 
   // Generate priority popover sections
   const getPrioritySections = (): PopoverSection[] => {
@@ -117,30 +106,16 @@ export function EditableMetadata({
       {/* Due Date/Recurring */}
       <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
         <PopoverTrigger asChild>
-          {(() => {
-            const isOverdue = dueDate && isPast(dueDate) && !isToday(dueDate) && !completed
-            const scheduleIcons = getScheduleIcons(dueDate, recurring, completed, isOverdue)
-            return (
-              <span
-                className={cn(
-                  "flex items-center gap-1 cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-md transition-colors text-sm",
-                  dueDate ? getDueDateTextColor(dueDate, completed) : "text-gray-500",
-                )}
-              >
-                {scheduleIcons.primaryIcon === "overdue" && (
-                  <AlertTriangle className="h-3 w-3 text-red-500" />
-                )}
-                {scheduleIcons.primaryIcon === "calendar" && <Calendar className="h-3 w-3" />}
-                {scheduleIcons.primaryIcon === "repeat" && <Repeat className="h-3 w-3" />}
-                {scheduleIcons.secondaryIcon === "repeat" && <Repeat className="h-3 w-3" />}
-                {dueDate
-                  ? formatDueDate(dueDate)
-                  : scheduleIcons.showRecurringOnly
-                    ? "Recurring"
-                    : "Add date"}
-              </span>
-            )
-          })()}
+          <span className="flex items-center gap-1 cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-md transition-colors text-sm text-gray-500">
+            {dueDate || recurring ? (
+              <TaskDueDate dueDate={dueDate} recurring={recurring} completed={completed} />
+            ) : (
+              <>
+                <Calendar className="h-3 w-3" />
+                Add date
+              </>
+            )}
+          </span>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <CalendarComponent

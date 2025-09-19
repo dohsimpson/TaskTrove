@@ -8,14 +8,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { EnhancedHighlightedInput } from "@/components/ui/enhanced-highlighted-input"
+import { TaskDueDate } from "@/components/ui/custom/task-due-date"
 import {
   Calendar,
   Tag,
-  Repeat,
   X,
   Folder,
   Flag,
-  AlertTriangle,
   MoreHorizontal,
   CheckSquare,
   MessageSquare,
@@ -54,15 +53,12 @@ import {
   ProjectIdSchema,
   isValidPriority,
   createLabelId,
-  parseRRule,
 } from "@/lib/types"
 import { PLACEHOLDER_TASK_INPUT } from "@/lib/constants/defaults"
-import { format, isToday, isPast } from "date-fns"
-import { formatTaskDateTimeBadge } from "@/lib/utils/task-date-formatter"
 import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
 import { log } from "@/lib/utils/logger"
 import { convertTimeToHHMMSS } from "@/lib/utils/enhanced-natural-language-parser"
-import { getPriorityTextColor, getDueDateTextColor } from "@/lib/color-utils"
+import { getPriorityTextColor } from "@/lib/color-utils"
 import { v4 as uuidv4 } from "uuid"
 import { useDebouncedParse } from "@/hooks/use-debounced-parse"
 
@@ -74,25 +70,6 @@ interface AutocompleteItem {
   label: string
   icon: React.ReactNode
   type: AutocompleteType
-}
-
-// Helper function to display RRULE patterns
-const getRRuleDisplayText = (rrule: string): string => {
-  const parsedRRule = parseRRule(rrule)
-  if (!parsedRRule) return "Recurring"
-
-  const interval = parsedRRule.interval || 1 // Default to 1 if interval is undefined
-
-  if (parsedRRule.freq === "DAILY") {
-    return interval === 1 ? "Daily" : `Every ${interval} days`
-  }
-  if (parsedRRule.freq === "WEEKLY") {
-    return interval === 1 ? "Weekly" : `Every ${interval} weeks`
-  }
-  if (parsedRRule.freq === "MONTHLY") {
-    return interval === 1 ? "Monthly" : `Every ${interval} months`
-  }
-  return "Yearly"
 }
 
 export function QuickAddDialog() {
@@ -512,34 +489,22 @@ export function QuickAddDialog() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={cn(
-                    "h-8 px-2 gap-1 text-xs sm:text-sm min-w-0",
-                    newTask.dueDate
-                      ? getDueDateTextColor(newTask.dueDate, false)
-                      : newTask.recurring
-                        ? "text-foreground"
-                        : "text-muted-foreground",
-                  )}
+                  className="h-8 px-2 gap-1 text-xs sm:text-sm min-w-0"
+                  asChild
                 >
-                  {newTask.recurring ? (
-                    <Repeat className="h-3 w-3 flex-shrink-0" />
-                  ) : newTask.dueDate && isPast(newTask.dueDate) && !isToday(newTask.dueDate) ? (
-                    <AlertTriangle className="h-3 w-3 text-red-500 flex-shrink-0" />
+                  {newTask.dueDate || newTask.recurring ? (
+                    <TaskDueDate
+                      dueDate={newTask.dueDate}
+                      dueTime={newTask.dueTime}
+                      recurring={newTask.recurring}
+                      completed={false}
+                    />
                   ) : (
-                    <Calendar className="h-3 w-3 flex-shrink-0" />
+                    <span className="flex items-center gap-1 text-muted-foreground">
+                      <Calendar className="h-3 w-3 flex-shrink-0" />
+                      <span className="whitespace-nowrap hidden sm:inline">Date</span>
+                    </span>
                   )}
-                  <span
-                    className={cn(
-                      "whitespace-nowrap",
-                      newTask.recurring || newTask.dueDate ? "" : "hidden sm:inline",
-                    )}
-                  >
-                    {newTask.recurring
-                      ? getRRuleDisplayText(newTask.recurring)
-                      : newTask.dueDate
-                        ? formatTaskDateTimeBadge(newTask) || format(newTask.dueDate, "MMM d")
-                        : "Date"}
-                  </span>
                 </Button>
               </TaskSchedulePopover>
 

@@ -5,6 +5,7 @@ import { useSetAtom, useAtomValue } from "jotai"
 import { v4 as uuidv4 } from "uuid"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
+import { TaskDueDate } from "@/components/ui/custom/task-due-date"
 import { Badge } from "@/components/ui/badge"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { LinkifiedText } from "@/components/ui/custom/linkified-text"
@@ -18,26 +19,17 @@ import {
   Paperclip,
   Flag,
   CheckSquare,
-  Repeat,
   Star,
   Folder,
   Tag,
-  AlertTriangle,
   ClockFading,
   Play,
   Pause,
   Square,
 } from "lucide-react"
-import { isToday, isPast } from "date-fns"
 import { cn, getContrastColor } from "@/lib/utils"
-import { formatTaskDateTimeBadge } from "@/lib/utils/task-date-formatter"
 import { formatTime, getEffectiveEstimation } from "@/lib/utils/time-estimation"
-import {
-  getPriorityColor,
-  getPriorityTextColor,
-  getDueDateTextColor,
-  getScheduleIcons,
-} from "@/lib/color-utils"
+import { getPriorityColor, getPriorityTextColor } from "@/lib/color-utils"
 import { TaskSchedulePopover } from "./task-schedule-popover"
 import { CommentManagementPopover } from "./comment-management-popover"
 import { SubtaskPopover } from "./subtask-popover"
@@ -359,10 +351,6 @@ export function TaskItem({
     setShowEstimationPicker(true)
   }
 
-  const formatDueDate = (task: { dueDate?: Date | null; dueTime?: Date | null }) => {
-    return formatTaskDateTimeBadge(task) || ""
-  }
-
   // Compact variant specific helpers
   const shouldShowSchedule = variant === "compact" && (task.dueDate || task.recurring)
 
@@ -524,45 +512,14 @@ export function TaskItem({
                 {/* Due Date/Recurring - Show all dates and recurring in compact variant */}
                 {shouldShowSchedule ? (
                   <TaskSchedulePopover taskId={task.id}>
-                    {(() => {
-                      const isOverdue =
-                        task.dueDate &&
-                        isPast(task.dueDate) &&
-                        !isToday(task.dueDate) &&
-                        !task.completed
-                      const scheduleIcons = getScheduleIcons(
-                        task.dueDate,
-                        task.recurring,
-                        task.completed,
-                        isOverdue,
-                      )
-                      return (
-                        <span
-                          className={cn(
-                            "flex items-center gap-1 cursor-pointer hover:opacity-100 text-xs flex-shrink-0",
-                            getDueDateTextColor(task.dueDate, task.completed, variant),
-                          )}
-                        >
-                          {scheduleIcons.primaryIcon === "overdue" && (
-                            <AlertTriangle
-                              className="h-3 w-3 text-red-500"
-                              data-testid="alert-triangle-icon"
-                            />
-                          )}
-                          {scheduleIcons.primaryIcon === "calendar" && (
-                            <Calendar className="h-3 w-3" data-testid="calendar-icon" />
-                          )}
-                          {scheduleIcons.primaryIcon === "repeat" && (
-                            <Repeat className="h-3 w-3" data-testid="repeat-icon" />
-                          )}
-                          {scheduleIcons.secondaryIcon === "repeat" && (
-                            <Repeat className="h-3 w-3" data-testid="repeat-icon" />
-                          )}
-                          {task.dueDate && formatDueDate(task)}
-                          {scheduleIcons.showRecurringOnly && ""}
-                        </span>
-                      )
-                    })()}
+                    <TaskDueDate
+                      dueDate={task.dueDate}
+                      dueTime={task.dueTime}
+                      recurring={task.recurring}
+                      completed={task.completed}
+                      variant={variant}
+                      className="cursor-pointer hover:opacity-100 text-xs flex-shrink-0"
+                    />
                   </TaskSchedulePopover>
                 ) : (
                   <TaskSchedulePopover taskId={task.id}>
@@ -806,44 +763,13 @@ export function TaskItem({
             {/* Due date/recurring - show if present */}
             {task.dueDate || task.recurring ? (
               <TaskSchedulePopover taskId={task.id}>
-                {(() => {
-                  const isOverdue =
-                    task.dueDate &&
-                    isPast(task.dueDate) &&
-                    !isToday(task.dueDate) &&
-                    !task.completed
-                  const scheduleIcons = getScheduleIcons(
-                    task.dueDate,
-                    task.recurring,
-                    task.completed,
-                    isOverdue,
-                  )
-                  return (
-                    <span
-                      className={cn(
-                        "flex items-center gap-1 cursor-pointer hover:opacity-100",
-                        getDueDateTextColor(task.dueDate, task.completed),
-                      )}
-                    >
-                      {scheduleIcons.primaryIcon === "overdue" && (
-                        <AlertTriangle
-                          className="h-3 w-3 text-red-500"
-                          data-testid="alert-triangle-icon"
-                        />
-                      )}
-                      {scheduleIcons.primaryIcon === "calendar" && (
-                        <Calendar className="h-3 w-3" data-testid="calendar-icon" />
-                      )}
-                      {scheduleIcons.primaryIcon === "repeat" && (
-                        <Repeat className="h-3 w-3" data-testid="repeat-icon" />
-                      )}
-                      {scheduleIcons.secondaryIcon === "repeat" && (
-                        <Repeat className="h-3 w-3" data-testid="repeat-icon" />
-                      )}
-                      {task.dueDate ? formatDueDate(task) : ""}
-                    </span>
-                  )
-                })()}
+                <TaskDueDate
+                  dueDate={task.dueDate}
+                  dueTime={task.dueTime}
+                  recurring={task.recurring}
+                  completed={task.completed}
+                  className="cursor-pointer hover:opacity-100"
+                />
               </TaskSchedulePopover>
             ) : (
               <TaskSchedulePopover taskId={task.id}>
@@ -1318,40 +1244,16 @@ export function TaskItem({
             // Left side - Fixed width items
             // Due Date/Recurring - Now clickable with popover
             if (task.dueDate || task.recurring) {
-              const isOverdue =
-                task.dueDate && isPast(task.dueDate) && !isToday(task.dueDate) && !task.completed
-              const scheduleIcons = getScheduleIcons(
-                task.dueDate,
-                task.recurring,
-                task.completed,
-                isOverdue,
-              )
               leftMetadataItems.push(
                 <TaskSchedulePopover key="due-date" taskId={task.id}>
-                  <span
-                    className={cn(
-                      "flex items-center gap-1 cursor-pointer hover:opacity-100",
-                      METADATA_COLUMN_WIDTH,
-                      getDueDateTextColor(task.dueDate, task.completed, variant),
-                    )}
-                  >
-                    {scheduleIcons.primaryIcon === "overdue" && (
-                      <AlertTriangle
-                        className="h-3 w-3 text-red-500"
-                        data-testid="alert-triangle-icon"
-                      />
-                    )}
-                    {scheduleIcons.primaryIcon === "calendar" && (
-                      <Calendar className="h-3 w-3" data-testid="calendar-icon" />
-                    )}
-                    {scheduleIcons.primaryIcon === "repeat" && (
-                      <Repeat className="h-3 w-3" data-testid="repeat-icon" />
-                    )}
-                    {scheduleIcons.secondaryIcon === "repeat" && (
-                      <Repeat className="h-3 w-3" data-testid="repeat-icon" />
-                    )}
-                    {task.dueDate ? formatDueDate(task) : ""}
-                  </span>
+                  <TaskDueDate
+                    dueDate={task.dueDate}
+                    dueTime={task.dueTime}
+                    recurring={task.recurring}
+                    completed={task.completed}
+                    variant={variant}
+                    className={cn("cursor-pointer hover:opacity-100", METADATA_COLUMN_WIDTH)}
+                  />
                 </TaskSchedulePopover>,
               )
             } else {

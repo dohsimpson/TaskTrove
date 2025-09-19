@@ -9,10 +9,11 @@ import {
   updateFiltersAtom,
   clearActiveFiltersAtom,
   currentViewStateAtom,
+  currentViewAtom,
 } from "@/lib/atoms/ui/views"
 import { projectAtoms } from "@/lib/atoms"
 import { labelsAtom } from "@/lib/atoms/core/labels"
-import { baseTasksForViewAtom } from "@/lib/atoms/core/tasks"
+import { baseFilteredTasksForViewAtom } from "@/lib/atoms/core/tasks"
 import type { Task, Project, Label as LabelType } from "@/lib/types"
 import { type ProjectId } from "@/lib/types"
 import { cn } from "@/lib/utils"
@@ -39,16 +40,12 @@ import {
 
 // Derived atom to get tasks filtered by everything EXCEPT due date filter for accurate preset counts
 const tasksForCountsAtom = atom((get) => {
-  const baseTasks = get(baseTasksForViewAtom)
+  const currentView = get(currentViewAtom)
   const viewState = get(currentViewStateAtom)
   const searchQuery = viewState.searchQuery
 
-  let result = baseTasks
-
-  // Apply show completed filter
-  if (!viewState.showCompleted) {
-    result = result.filter((task: Task) => !task.completed)
-  }
+  // Start with base filtered tasks (already includes view filtering + per-view showCompleted/showOverdue)
+  let result = get(baseFilteredTasksForViewAtom(currentView))
 
   // Apply search query filter
   if (searchQuery) {

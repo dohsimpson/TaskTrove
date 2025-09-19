@@ -7,6 +7,8 @@ import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import { Badge } from "@/components/ui/badge"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
+import { LinkifiedText } from "@/components/ui/custom/linkified-text"
+import { LinkifiedEditableDiv } from "@/components/ui/custom/linkified-editable-div"
 import { TimeEstimationPopover } from "./time-estimation-popover"
 import { FocusTimerPopover } from "./focus-timer-popover"
 import { LabelManagementPopover } from "./label-management-popover"
@@ -499,7 +501,7 @@ export function TaskItem({
 
               {/* Title - constrained width to prevent overflow */}
               <div className="flex-1 min-w-0 max-w-full">
-                <EditableDiv
+                <LinkifiedEditableDiv
                   as="span"
                   value={task.title}
                   onChange={(newTitle) => {
@@ -508,7 +510,7 @@ export function TaskItem({
                     }
                   }}
                   className={cn(
-                    "text-sm cursor-text hover:bg-accent px-1 py-0.5 rounded transition-colors truncate block w-fit",
+                    "text-sm truncate block w-fit",
                     "max-w-full md:max-w-[200px] lg:max-w-[300px]", // Responsive max-width
                     task.completed ? "line-through text-muted-foreground" : "text-foreground",
                   )}
@@ -790,7 +792,7 @@ export function TaskItem({
             />
 
             {/* Title */}
-            <EditableDiv
+            <LinkifiedEditableDiv
               as="h4"
               value={task.title}
               onChange={(newTitle) =>
@@ -1110,7 +1112,9 @@ export function TaskItem({
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleTaskClick}
       >
-        <span className="truncate text-xs">{task.title}</span>
+        <LinkifiedText as="span" className="truncate text-xs">
+          {task.title}
+        </LinkifiedText>
       </div>
     )
   }
@@ -1137,7 +1141,7 @@ export function TaskItem({
           onCheckedChange={() => handleSubtaskToggle()}
           className="mr-3"
         />
-        <EditableDiv
+        <LinkifiedEditableDiv
           as="span"
           value={task.title}
           onChange={(newTitle) => {
@@ -1146,7 +1150,7 @@ export function TaskItem({
             }
           }}
           className={cn(
-            "flex-1 text-sm leading-5 cursor-text hover:bg-accent/80 px-2 py-1 rounded transition-colors border border-transparent hover:border-accent mr-3",
+            "flex-1 text-sm leading-5 border border-transparent hover:border-accent mr-3",
             task.completed ? "line-through text-muted-foreground" : "text-foreground",
           )}
           data-action="edit"
@@ -1239,7 +1243,7 @@ export function TaskItem({
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="flex items-start gap-2 flex-1 min-w-0">
               {/* Title - Responsive max-width */}
-              <EditableDiv
+              <LinkifiedEditableDiv
                 as="h3"
                 value={task.title}
                 onChange={(newTitle) => {
@@ -1248,7 +1252,7 @@ export function TaskItem({
                   }
                 }}
                 className={cn(
-                  "font-medium text-sm sm:text-[15px] leading-5 cursor-text hover:bg-accent px-1 py-0.5 rounded transition-colors w-fit",
+                  "font-medium text-sm sm:text-[15px] leading-5 w-fit",
                   "max-w-[200px] sm:max-w-[300px] md:max-w-[400px] lg:max-w-lg",
                   task.completed ? "line-through text-muted-foreground" : "text-foreground",
                 )}

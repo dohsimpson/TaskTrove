@@ -68,6 +68,8 @@
     "jotai": "^2.12.5",
     "jotai-history": "^0.4.3",
     "jotai-tanstack-query": "^0.9.2",
+    "linkify-react": "^4.3.2",
+    "linkifyjs": "^4.3.2",
     "lucide-react": "^0.542.0",
     "motion": "^12.23.7",
     "next": "15.2.4",

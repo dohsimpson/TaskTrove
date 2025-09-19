@@ -53,11 +53,9 @@ export function GeneralForm() {
   const settings = useAtomValue(settingsAtom)
   const updateSettings = useSetAtom(updateSettingsAtom)
 
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const generalSettings = (settings as { general: { startView?: string; soundEnabled?: boolean } })
-    .general
-  const currentStartView = generalSettings.startView ?? "all"
-  const currentSoundEnabled = generalSettings.soundEnabled ?? true
+  const currentStartView = settings.general.startView
+  const currentSoundEnabled = settings.general.soundEnabled
+  const currentLinkifyEnabled = settings.general.linkifyEnabled
 
   const handleStartViewChange = (value: StandardViewId | "lastViewed") => {
     updateSettings({
@@ -71,6 +69,14 @@ export function GeneralForm() {
     updateSettings({
       general: {
         soundEnabled: enabled,
+      },
+    })
+  }
+
+  const handleLinkifyEnabledChange = (enabled: boolean) => {
+    updateSettings({
+      general: {
+        linkifyEnabled: enabled,
       },
     })
   }
@@ -143,6 +149,23 @@ export function GeneralForm() {
             id="sound-enabled"
             checked={currentSoundEnabled}
             onCheckedChange={handleSoundEnabledChange}
+          />
+        </div>
+      </SettingsCard>
+
+      {/* Linkify Settings */}
+      <SettingsCard title="Links">
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="linkify-enabled">Auto-convert URLs to Links</Label>
+            <p className="text-sm text-muted-foreground">
+              Automatically convert URLs in task titles to clickable links.
+            </p>
+          </div>
+          <Switch
+            id="linkify-enabled"
+            checked={currentLinkifyEnabled}
+            onCheckedChange={handleLinkifyEnabledChange}
           />
         </div>
       </SettingsCard>

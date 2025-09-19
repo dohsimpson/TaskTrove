@@ -1186,6 +1186,8 @@ export const updateSettingsMutationAtom = createMutation<
         startView: variables.settings.general?.startView ?? DEFAULT_GENERAL_SETTINGS.startView,
         soundEnabled:
           variables.settings.general?.soundEnabled ?? DEFAULT_GENERAL_SETTINGS.soundEnabled,
+        linkifyEnabled:
+          variables.settings.general?.linkifyEnabled ?? DEFAULT_GENERAL_SETTINGS.linkifyEnabled,
       },
     }
     return {
@@ -1232,6 +1234,10 @@ export const updateSettingsMutationAtom = createMutation<
           variables.settings.general?.soundEnabled ??
           oldData.settings.general?.soundEnabled ??
           DEFAULT_GENERAL_SETTINGS.soundEnabled,
+        linkifyEnabled:
+          variables.settings.general?.linkifyEnabled ??
+          oldData.settings.general?.linkifyEnabled ??
+          DEFAULT_GENERAL_SETTINGS.linkifyEnabled,
       },
     }
 

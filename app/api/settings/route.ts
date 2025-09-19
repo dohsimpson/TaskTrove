@@ -139,6 +139,10 @@ async function updateSettings(
         partialSettings.general?.soundEnabled ??
         fileData.settings.general?.soundEnabled ??
         DEFAULT_GENERAL_SETTINGS.soundEnabled,
+      linkifyEnabled:
+        partialSettings.general?.linkifyEnabled ??
+        fileData.settings.general?.linkifyEnabled ??
+        DEFAULT_GENERAL_SETTINGS.linkifyEnabled,
     },
     // Future settings will be merged here when implemented:
     // appearance: { ... },

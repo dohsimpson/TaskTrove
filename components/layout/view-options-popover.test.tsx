@@ -1,6 +1,6 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import { Provider } from "jotai"
 import { mockUseToast, mockNextThemes } from "@/test-utils"
 import { ViewOptionsPopover } from "./view-options-popover"
@@ -350,11 +350,15 @@ describe("ViewOptionsPopover", () => {
     const triggerButton = screen.getAllByTestId("button")[0]
 
     // Simulate hover and immediate leave
-    fireEvent.mouseEnter(triggerButton)
-    fireEvent.mouseLeave(triggerButton)
+    act(() => {
+      fireEvent.mouseEnter(triggerButton)
+      fireEvent.mouseLeave(triggerButton)
+    })
 
     // Fast-forward time to ensure timeout would have been cleared
-    vi.advanceTimersByTime(1000)
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
 
     // Component should still be functional
     expect(triggerButton).toBeInTheDocument()

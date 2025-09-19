@@ -851,6 +851,8 @@ export const GeneralSettingsSchema = z.object({
   startView: z.union([z.enum(STANDARD_VIEW_IDS), z.literal("lastViewed")]),
   /** Enable/disable sound effects */
   soundEnabled: z.boolean(),
+  /** Enable/disable auto-linkification of URLs in task titles */
+  linkifyEnabled: z.boolean(),
 })
 
 export const UserSettingsSchema = z.object({

@@ -18,6 +18,7 @@ import {
   TEST_SUBTASK_ID_1,
   TEST_SUBTASK_ID_2,
 } from "@/lib/utils/test-constants"
+import { DEFAULT_USER_SETTINGS } from "@/lib/types/defaults"
 
 // Mock focus timer functions (simplified since we mock the component)
 const mockIsTaskTimerActive = vi.fn(() => false)
@@ -82,6 +83,7 @@ vi.mock("@/lib/atoms", () => ({
   stopFocusTimerAtom: "stopFocusTimerAtom",
   stopAllFocusTimersAtom: "stopAllFocusTimersAtom",
   focusTimerAtoms: "focusTimerAtoms",
+  settingsAtom: { toString: () => "settingsAtom" },
   formatElapsedTime: vi.fn((ms: number) => {
     const seconds = Math.floor(ms / 1000)
     const minutes = Math.floor(seconds / 60)
@@ -110,6 +112,27 @@ vi.mock("@/hooks/use-focus-timer-display", () => ({
     task: null,
     displayTime: "00:00",
   }),
+}))
+
+// Mock LinkifiedText component
+vi.mock("@/components/ui/custom/linkified-text", () => ({
+  LinkifiedText: ({
+    children,
+    className,
+    onClick,
+    as: Component = "span",
+    ...props
+  }: {
+    children?: React.ReactNode
+    className?: string
+    onClick?: () => void
+    as?: React.ElementType
+    [key: string]: unknown
+  }) => (
+    <Component data-testid="linkified-text" className={className} onClick={onClick} {...props}>
+      {children}
+    </Component>
+  ),
 }))
 
 // Mock component interfaces
@@ -799,6 +822,9 @@ describe("TaskItem", () => {
       if (atomString?.includes("activeFocusTimerAtom")) {
         return null
       }
+      if (atomString?.includes("settingsAtom")) {
+        return DEFAULT_USER_SETTINGS
+      }
       return []
     })
 
@@ -929,6 +955,9 @@ describe("TaskItem", () => {
         if (atomString?.includes("isTaskTimerActive")) {
           return mockIsTaskTimerActive
         }
+        if (atomString?.includes("settingsAtom")) {
+          return DEFAULT_USER_SETTINGS
+        }
         return []
       })
 
@@ -1001,6 +1030,9 @@ describe("TaskItem", () => {
         if (atomString?.includes("isTaskTimerActive")) {
           return mockIsTaskTimerActive
         }
+        if (atomString?.includes("settingsAtom")) {
+          return DEFAULT_USER_SETTINGS
+        }
         return []
       })
 
@@ -1023,6 +1055,16 @@ describe("TaskItem", () => {
         </Provider>,
       )
 
+      // Click on the linkified text to enter edit mode
+      const linkifiedText = screen
+        .getAllByTestId("linkified-text")
+        .find((el) => el.textContent === "Test Task")
+      expect(linkifiedText).toBeInTheDocument()
+      if (linkifiedText) {
+        fireEvent.click(linkifiedText)
+      }
+
+      // Now find the editable div that appears after clicking
       const editableDiv = screen
         .getAllByTestId("editable-div")
         .find((el) => el.textContent === "Test Task")
@@ -1037,6 +1079,16 @@ describe("TaskItem", () => {
         </Provider>,
       )
 
+      // Click on the linkified text to enter edit mode
+      const linkifiedText = screen
+        .getAllByTestId("linkified-text")
+        .find((el) => el.textContent === "Test Task")
+      expect(linkifiedText).toBeInTheDocument()
+      if (linkifiedText) {
+        fireEvent.click(linkifiedText)
+      }
+
+      // Now find the editable div that appears after clicking
       const titleDiv = screen
         .getAllByTestId("editable-div")
         .find((el) => el.textContent === "Test Task")
@@ -1068,6 +1120,16 @@ describe("TaskItem", () => {
         </Provider>,
       )
 
+      // Click on the linkified text to enter edit mode
+      const linkifiedText = screen
+        .getAllByTestId("linkified-text")
+        .find((el) => el.textContent === "Test Task")
+      expect(linkifiedText).toBeInTheDocument()
+      if (linkifiedText) {
+        fireEvent.click(linkifiedText)
+      }
+
+      // Now find the editable div that appears after clicking
       const titleDiv = screen
         .getAllByTestId("editable-div")
         .find((el) => el.textContent === "Test Task")
@@ -1094,6 +1156,16 @@ describe("TaskItem", () => {
         </Provider>,
       )
 
+      // Click on the linkified text to enter edit mode
+      const linkifiedText = screen
+        .getAllByTestId("linkified-text")
+        .find((el) => el.textContent === "Test Task")
+      expect(linkifiedText).toBeInTheDocument()
+      if (linkifiedText) {
+        fireEvent.click(linkifiedText)
+      }
+
+      // Now find the editable div that appears after clicking
       const titleDiv = screen
         .getAllByTestId("editable-div")
         .find((el) => el.textContent === "Test Task")
@@ -2275,7 +2347,19 @@ describe("TaskItem", () => {
         </Provider>,
       )
 
-      const titleElement = screen.getByText("Test Task")
+      // Find and click the linkified text to enter edit mode
+      const linkifiedText = screen
+        .getAllByTestId("linkified-text")
+        .find((el) => el.textContent === "Test Task")
+      expect(linkifiedText).toBeInTheDocument()
+      if (linkifiedText) {
+        fireEvent.click(linkifiedText)
+      }
+
+      // Now find the editable div that appears
+      const titleElement = screen
+        .getAllByTestId("editable-div")
+        .find((el) => el.textContent === "Test Task")
       expect(titleElement).toBeInTheDocument()
       expect(titleElement).toHaveClass("font-medium")
       expect(titleElement).toHaveClass("text-sm")
@@ -3008,9 +3092,8 @@ describe("TaskItem", () => {
 
       // Should have text-focused hover styling for better editability indication
       expect(editableText).toHaveClass("cursor-text")
-      expect(editableText).toHaveClass("hover:bg-accent/80")
-      expect(editableText).toHaveClass("px-2", "py-1", "rounded")
-      expect(editableText).toHaveClass("border", "border-transparent", "hover:border-accent")
+      expect(editableText).toHaveClass("hover:bg-accent")
+      expect(editableText).toHaveClass("px-1", "py-0.5", "rounded")
       expect(editableText).toHaveClass("transition-colors")
     })
 
@@ -3129,6 +3212,26 @@ describe("TaskItem", () => {
         }
         if (atomString?.includes("labelsFromIdsAtom")) {
           return () => []
+        }
+        if (atomString?.includes("settingsAtom")) {
+          return {
+            general: {
+              linkifyEnabled: true,
+              startView: "all",
+              soundEnabled: true,
+            },
+            data: {
+              autoBackup: {
+                enabled: true,
+                backupTime: "02:00",
+                maxBackups: 7,
+              },
+            },
+            notifications: {
+              enabled: true,
+              requireInteraction: true,
+            },
+          }
         }
         return []
       })
@@ -3305,6 +3408,26 @@ describe("TaskItem", () => {
         }
         if (atomString?.includes("labelsFromIdsAtom")) {
           return () => []
+        }
+        if (atomString?.includes("settingsAtom")) {
+          return {
+            general: {
+              linkifyEnabled: true,
+              startView: "all",
+              soundEnabled: true,
+            },
+            data: {
+              autoBackup: {
+                enabled: true,
+                backupTime: "02:00",
+                maxBackups: 7,
+              },
+            },
+            notifications: {
+              enabled: true,
+              requireInteraction: true,
+            },
+          }
         }
         return []
       })

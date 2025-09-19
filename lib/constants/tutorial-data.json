@@ -285,7 +285,8 @@
     },
     "general": {
       "startView": "all",
-      "soundEnabled": true
+      "soundEnabled": true,
+      "linkifyEnabled": true
     }
   },
   "version": "v0.6.0"

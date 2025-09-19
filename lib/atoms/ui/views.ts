@@ -515,7 +515,7 @@ export const activeFilterCountAtom = atom<number>((get) => {
   // Handle labels: null = 1 filter, array with length > 0 = array length
   if (filters.labels === null) {
     count += 1 // "no labels" filter is active
-  } else if (filters.labels.length > 0) {
+  } else if (filters.labels && filters.labels.length > 0) {
     count += filters.labels.length
   }
 

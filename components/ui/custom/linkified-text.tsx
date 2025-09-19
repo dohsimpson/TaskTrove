@@ -34,6 +34,7 @@ export function LinkifiedText({
   const linkifyOptions = {
     target: "_blank",
     rel: "noopener noreferrer",
+    defaultProtocol: "https",
     className:
       "underline decoration-1 underline-offset-2 hover:decoration-2 transition-all duration-150",
   }

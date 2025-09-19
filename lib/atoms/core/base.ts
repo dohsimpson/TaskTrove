@@ -1173,25 +1173,34 @@ export const updateSettingsMutationAtom = createMutation<
     }
   },
   optimisticUpdateFn: (variables: UpdateSettingsRequest, oldData: DataFile) => {
-    // Merge partial settings with current settings
+    // Merge partial settings with current settings, preserving existing values
     const updatedSettings: UserSettings = {
       data: {
         autoBackup: {
-          enabled: variables.settings.data?.autoBackup?.enabled ?? DEFAULT_AUTO_BACKUP_ENABLED,
-          backupTime: variables.settings.data?.autoBackup?.backupTime ?? DEFAULT_BACKUP_TIME,
-          maxBackups: variables.settings.data?.autoBackup?.maxBackups ?? DEFAULT_MAX_BACKUPS,
+          enabled:
+            variables.settings.data?.autoBackup?.enabled ??
+            oldData.settings.data.autoBackup.enabled,
+          backupTime:
+            variables.settings.data?.autoBackup?.backupTime ??
+            oldData.settings.data.autoBackup.backupTime,
+          maxBackups:
+            variables.settings.data?.autoBackup?.maxBackups ??
+            oldData.settings.data.autoBackup.maxBackups,
         },
       },
       notifications: {
-        enabled: variables.settings.notifications?.enabled ?? DEFAULT_NOTIFICATION_SETTINGS.enabled,
+        enabled:
+          variables.settings.notifications?.enabled ?? oldData.settings.notifications.enabled,
         requireInteraction:
           variables.settings.notifications?.requireInteraction ??
-          DEFAULT_NOTIFICATION_SETTINGS.requireInteraction,
+          oldData.settings.notifications.requireInteraction,
       },
       general: {
-        startView: variables.settings.general?.startView ?? DEFAULT_GENERAL_SETTINGS.startView,
-        soundEnabled: variables.settings.general?.soundEnabled ?? DEFAULT_GENERAL_SETTINGS.soundEnabled,
-        linkifyEnabled: variables.settings.general?.linkifyEnabled ?? DEFAULT_GENERAL_SETTINGS.linkifyEnabled,
+        startView: variables.settings.general?.startView ?? oldData.settings.general.startView,
+        soundEnabled:
+          variables.settings.general?.soundEnabled ?? oldData.settings.general.soundEnabled,
+        linkifyEnabled:
+          variables.settings.general?.linkifyEnabled ?? oldData.settings.general.linkifyEnabled,
       },
     }
 

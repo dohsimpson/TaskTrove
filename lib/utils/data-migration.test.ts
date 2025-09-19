@@ -7,6 +7,8 @@ import {
   getLatestAvailableMigration,
   v030Migration,
   v040Migration,
+  v050Migration,
+  v060Migration,
 } from "./data-migration"
 import type { Json } from "@/lib/types"
 import { createVersionString, createProjectId, createLabelId, DataFileSchema } from "@/lib/types"
@@ -798,6 +800,313 @@ describe("Data Migration Utility", () => {
       expect(v040Result).toHaveProperty("settings")
       expect(v040Result).toHaveProperty("projectGroups")
       expect(v040Result).toHaveProperty("labelGroups")
+    })
+  })
+
+  describe("v0.5.0 Migration Function", () => {
+    it("should add general settings structure when missing", () => {
+      const v040DataWithoutGeneral = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: {
+          data: {
+            autoBackup: {
+              enabled: false,
+              backupTime: "20:00",
+              maxBackups: 10,
+            },
+          },
+          notifications: {
+            enabled: true,
+            requireInteraction: true,
+          },
+          // No general settings - should be added
+        },
+        version: "v0.4.0",
+      })
+
+      const result = v050Migration(v040DataWithoutGeneral)
+
+      expect(result).toHaveProperty("settings")
+      const settings = (result as any).settings
+      expect(settings).toHaveProperty("general")
+      expect(settings.general).toEqual({
+        startView: "all",
+      })
+    })
+
+    it("should migrate behavior settings to general settings", () => {
+      const v040DataWithBehavior = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: {
+          data: {
+            autoBackup: {
+              enabled: false,
+              backupTime: "20:00",
+              maxBackups: 10,
+            },
+          },
+          notifications: {
+            enabled: true,
+            requireInteraction: true,
+          },
+          behavior: {
+            startView: "lastViewed",
+          },
+        },
+        version: "v0.4.0",
+      })
+
+      const result = v050Migration(v040DataWithBehavior)
+
+      expect(result).toHaveProperty("settings")
+      const settings = (result as any).settings
+      expect(settings).toHaveProperty("general")
+      expect(settings.general).toEqual({
+        startView: "lastViewed",
+      })
+      expect(settings).not.toHaveProperty("behavior")
+    })
+
+    it("should add complete default settings when missing", () => {
+      const v040DataWithoutSettings = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        version: "v0.4.0",
+      })
+
+      const result = v050Migration(v040DataWithoutSettings)
+
+      expect(result).toHaveProperty("settings")
+      const settings = (result as any).settings
+      expect(settings).toEqual(DEFAULT_USER_SETTINGS)
+    })
+  })
+
+  describe("v0.6.0 Migration Function", () => {
+    it("should add soundEnabled and linkifyEnabled fields to general settings", () => {
+      const v050DataWithoutNewFields = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: {
+          data: {
+            autoBackup: {
+              enabled: false,
+              backupTime: "20:00",
+              maxBackups: 10,
+            },
+          },
+          notifications: {
+            enabled: true,
+            requireInteraction: true,
+          },
+          general: {
+            startView: "all",
+          },
+        },
+        version: "v0.5.0",
+      })
+
+      const result = v060Migration(v050DataWithoutNewFields)
+
+      expect(result).toHaveProperty("settings")
+      const settings = (result as any).settings
+      expect(settings).toHaveProperty("general")
+      expect(settings.general).toEqual({
+        startView: "all",
+        soundEnabled: true,
+        linkifyEnabled: true,
+      })
+    })
+
+    it("should preserve existing soundEnabled and linkifyEnabled fields", () => {
+      const v050DataWithExistingFields = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: {
+          data: {
+            autoBackup: {
+              enabled: false,
+              backupTime: "20:00",
+              maxBackups: 10,
+            },
+          },
+          notifications: {
+            enabled: true,
+            requireInteraction: true,
+          },
+          general: {
+            startView: "lastViewed",
+            soundEnabled: false,
+            linkifyEnabled: false,
+          },
+        },
+        version: "v0.5.0",
+      })
+
+      const result = v060Migration(v050DataWithExistingFields)
+
+      expect(result).toHaveProperty("settings")
+      const settings = (result as any).settings
+      expect(settings).toHaveProperty("general")
+      expect(settings.general).toEqual({
+        startView: "lastViewed",
+        soundEnabled: false,
+        linkifyEnabled: false,
+      })
+    })
+
+    it("should create general settings with both fields when missing", () => {
+      const v050DataWithoutGeneralSettings = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: {
+          data: {
+            autoBackup: {
+              enabled: false,
+              backupTime: "20:00",
+              maxBackups: 10,
+            },
+          },
+          notifications: {
+            enabled: true,
+            requireInteraction: true,
+          },
+          // No general settings at all
+        },
+        version: "v0.5.0",
+      })
+
+      const result = v060Migration(v050DataWithoutGeneralSettings)
+
+      expect(result).toHaveProperty("settings")
+      const settings = (result as any).settings
+      expect(settings).toHaveProperty("general")
+      expect(settings.general).toEqual({
+        startView: "all",
+        soundEnabled: true,
+        linkifyEnabled: true,
+      })
+    })
+
+    it("should add complete default settings when missing", () => {
+      const v050DataWithoutSettings = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        version: "v0.5.0",
+      })
+
+      const result = v060Migration(v050DataWithoutSettings)
+
+      expect(result).toHaveProperty("settings")
+      const settings = (result as any).settings
+      expect(settings).toEqual(DEFAULT_USER_SETTINGS)
     })
   })
 

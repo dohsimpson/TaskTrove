@@ -35,7 +35,7 @@ export function LinkifiedText({
     target: "_blank",
     rel: "noopener noreferrer",
     className:
-      "text-blue-600 hover:text-blue-800 underline decoration-1 underline-offset-2 hover:decoration-2 transition-all duration-150",
+      "underline decoration-1 underline-offset-2 hover:decoration-2 transition-all duration-150",
   }
 
   return (

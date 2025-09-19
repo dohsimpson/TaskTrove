@@ -35,7 +35,7 @@ import {
   createProjectMutationAtom,
   deleteProjectMutationAtom,
 } from "./base"
-import { viewStatesAtom } from "../ui/views"
+import { viewStatesAtom, getViewStateOrDefault } from "../ui/views"
 import { recordOperationAtom } from "./history"
 import { log } from "../../utils/logger"
 
@@ -257,7 +257,7 @@ export const projectTaskCountsAtom = atom<Record<ProjectId, number>>((get) => {
 
     // Filter tasks based on project view's showCompleted setting
     const filterByViewCompleted = (tasks: Task[], projectId: ProjectId) => {
-      const showCompleted = viewStates[projectId].showCompleted
+      const showCompleted = getViewStateOrDefault(viewStates, projectId).showCompleted
       return showCompleted ? tasks : tasks.filter((task: Task) => !task.completed)
     }
 

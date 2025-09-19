@@ -4,7 +4,7 @@ import { Label, Task, LabelId, ViewStates, CreateLabelRequest } from "../../type
 import { createLabelMutationAtom, labelsAtom, deleteLabelMutationAtom } from "./base"
 import { recordOperationAtom } from "./history"
 import { activeTasksAtom } from "./tasks"
-import { viewStatesAtom } from "../ui/views"
+import { viewStatesAtom, getViewStateOrDefault } from "../ui/views"
 
 /**
  * Core label atoms for TaskTrove
@@ -116,7 +116,7 @@ export const labelTaskCountsAtom = atom<Record<LabelId, number>>((get) => {
 
     // Filter tasks based on label view's showCompleted setting
     const filterByViewCompleted = (tasks: Task[], labelId: LabelId) => {
-      const showCompleted = viewStates[labelId].showCompleted
+      const showCompleted = getViewStateOrDefault(viewStates, labelId).showCompleted
       return showCompleted ? tasks : tasks.filter((task) => !task.completed)
     }
 

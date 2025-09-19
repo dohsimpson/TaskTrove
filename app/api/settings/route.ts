@@ -7,7 +7,6 @@ import {
   ErrorResponse,
   UserSettings,
 } from "@/lib/types"
-import { DEFAULT_GENERAL_SETTINGS } from "@/lib/types/defaults"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import {
@@ -120,7 +119,8 @@ async function updateSettings(
     general: {
       startView: partialSettings.general?.startView ?? fileData.settings.general.startView,
       soundEnabled: partialSettings.general?.soundEnabled ?? fileData.settings.general.soundEnabled,
-      linkifyEnabled: partialSettings.general?.linkifyEnabled ?? fileData.settings.general.linkifyEnabled,
+      linkifyEnabled:
+        partialSettings.general?.linkifyEnabled ?? fileData.settings.general.linkifyEnabled,
     },
     // Future settings will be merged here when implemented:
     // appearance: { ... },

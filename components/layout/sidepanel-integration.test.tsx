@@ -163,6 +163,7 @@ describe("SidePanel Integration", () => {
         sortBy: "created",
         sortDirection: "desc" as const,
         showCompleted: false,
+        showOverdue: false,
         searchQuery: "",
         showSidePanel: false,
         compactView: false,

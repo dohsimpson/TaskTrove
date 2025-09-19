@@ -1,16 +1,15 @@
 import { atom } from "jotai"
-import { ViewState, SortConfig, ViewStatesSchema, ViewStates, Task, ViewId } from "@/lib/types"
 import {
-  DEFAULT_VIEW_MODE,
-  DEFAULT_SORT_BY,
-  DEFAULT_SORT_DIRECTION,
-  DEFAULT_SHOW_COMPLETED,
-  DEFAULT_SHOW_OVERDUE,
-  DEFAULT_SEARCH_QUERY,
-  DEFAULT_SHOW_SIDE_PANEL,
-  DEFAULT_COMPACT_VIEW,
-  DEFAULT_ACTIVE_FILTERS,
-} from "../../constants/defaults"
+  ViewState,
+  SortConfig,
+  ViewStatesSchema,
+  ViewStates,
+  Task,
+  ViewId,
+  ViewStateSchema,
+} from "@/lib/types"
+import { DEFAULT_VIEW_STATE } from "@/lib/types/defaults"
+import { DEFAULT_ACTIVE_FILTERS, STANDARD_VIEW_IDS } from "../../constants/defaults"
 import { createAtomWithStorage } from "@/lib/atoms/utils"
 import { log } from "../../utils/logger"
 import { showTaskPanelAtom, selectedTaskIdAtom } from "./dialogs"
@@ -29,20 +28,108 @@ import { tasksAtom } from "../core/tasks"
 // =============================================================================
 
 /**
- * Default view state configuration
- * Matches the defaultViewState from useTaskManager
+ * Create default ViewStates object with all standard views initialized
  */
-const defaultViewState: ViewState = {
-  viewMode: DEFAULT_VIEW_MODE,
-  sortBy: DEFAULT_SORT_BY,
-  sortDirection: DEFAULT_SORT_DIRECTION,
-  showCompleted: DEFAULT_SHOW_COMPLETED,
-  showOverdue: DEFAULT_SHOW_OVERDUE,
-  searchQuery: DEFAULT_SEARCH_QUERY,
-  showSidePanel: DEFAULT_SHOW_SIDE_PANEL,
-  compactView: DEFAULT_COMPACT_VIEW,
-  collapsedSections: [],
-  activeFilters: DEFAULT_ACTIVE_FILTERS,
+function createDefaultViewStates(): ViewStates {
+  const defaultStates: ViewStates = {}
+
+  // Initialize all standard views with default state
+  for (const viewId of STANDARD_VIEW_IDS) {
+    defaultStates[viewId] = { ...DEFAULT_VIEW_STATE }
+  }
+
+  return defaultStates
+}
+
+/**
+ * Safely gets ViewState for a given viewId, creating default if missing
+ * @internal Helper to prevent undefined access errors
+ */
+export function getViewStateOrDefault(viewStates: ViewStates, viewId: ViewId): ViewState {
+  if (viewId in viewStates) {
+    return viewStates[viewId]
+  }
+  // Return default for missing views (new projects, labels, etc.)
+  return { ...DEFAULT_VIEW_STATE }
+}
+
+/**
+ * Migrates ViewStates data when schema validation fails
+ * Preserves valid user preferences while backfilling missing/invalid fields with defaults
+ * @internal Exported for testing purposes
+ */
+export function migrateViewStates(data: unknown): ViewStates {
+  const migrated: ViewStates = {}
+
+  if (typeof data !== "object" || data === null) {
+    log.warn({ module: "views" }, "Invalid ViewStates data type, returning empty object")
+    return migrated
+  }
+
+  for (const [viewId, viewState] of Object.entries(data)) {
+    if (typeof viewState !== "object" || viewState === null || Array.isArray(viewState)) {
+      continue
+    }
+
+    // Try to validate the individual ViewState
+    const stateResult = ViewStateSchema.safeParse(viewState)
+    if (stateResult.success) {
+      // Valid ViewState, use as-is
+      migrated[viewId] = stateResult.data
+    } else {
+      // Partial migration: preserve valid fields, add defaults for missing/invalid ones
+      const preservedFields: Partial<ViewState> = {}
+
+      // Safely extract valid fields from the old ViewState
+      if (typeof viewState === "object" && viewState !== null) {
+        for (const [key, value] of Object.entries(viewState)) {
+          if (key in DEFAULT_VIEW_STATE) {
+            // Type-safe field preservation with explicit checks
+            if (
+              key === "viewMode" &&
+              (value === "list" || value === "kanban" || value === "calendar")
+            ) {
+              preservedFields.viewMode = value
+            } else if (key === "sortDirection" && (value === "asc" || value === "desc")) {
+              preservedFields.sortDirection = value
+            } else if (key === "sortBy" && typeof value === "string") {
+              preservedFields.sortBy = value
+            } else if (key === "showCompleted" && typeof value === "boolean") {
+              preservedFields.showCompleted = value
+            } else if (key === "showOverdue" && typeof value === "boolean") {
+              preservedFields.showOverdue = value
+            } else if (key === "searchQuery" && typeof value === "string") {
+              preservedFields.searchQuery = value
+            } else if (key === "showSidePanel" && typeof value === "boolean") {
+              preservedFields.showSidePanel = value
+            } else if (key === "compactView" && typeof value === "boolean") {
+              preservedFields.compactView = value
+            } else if (key === "collapsedSections" && Array.isArray(value)) {
+              preservedFields.collapsedSections = value.filter((item) => typeof item === "string")
+            }
+          }
+        }
+      }
+
+      // Merge preserved fields with defaults
+      migrated[viewId] = {
+        ...DEFAULT_VIEW_STATE,
+        ...preservedFields,
+      }
+
+      log.info(
+        {
+          module: "views",
+          viewId,
+          preservedFields: Object.keys(preservedFields),
+          validationError: stateResult.error.issues,
+        },
+        "Migrated ViewState with partial data preservation",
+      )
+    }
+  }
+
+  return migrated
 }
 
 // =============================================================================
@@ -56,7 +143,7 @@ const defaultViewState: ViewState = {
  */
 export const viewStatesAtom = createAtomWithStorage<ViewStates>(
   "view-states",
-  {},
+  createDefaultViewStates(),
   {
     getOnInit: true,
     serialize: (viewStates) => {
@@ -80,16 +167,26 @@ export const viewStatesAtom = createAtomWithStorage<ViewStates>(
         return {}
       }
 
+      // Try full validation first
       const result = ViewStatesSchema.safeParse(parsed)
       if (result.success) {
         return result.data
-      } else {
-        log.warn(
-          { module: "views", error: result.error },
-          "Invalid view states data in localStorage, using empty object",
-        )
-        return {}
       }
+
+      // If full validation fails, attempt graceful migration
+      log.warn(
+        { module: "views", error: result.error },
+        "Schema validation failed, attempting migration",
+      )
+
+      const migrated = migrateViewStates(parsed)
+
+      log.info(
+        { module: "views", preservedViews: Object.keys(migrated).length },
+        "ViewStates migration completed",
+      )
+
+      return migrated
     },
   },
 )
@@ -116,7 +213,7 @@ export const updateViewStateAtom = atom(
   null,
   (get, set, { viewId, updates }: { viewId: ViewId; updates: Partial<ViewState> }) => {
     const currentViewStates = get(viewStatesAtom)
-    const currentViewState = currentViewStates[viewId] ?? defaultViewState
+    const currentViewState = currentViewStates[viewId] ?? DEFAULT_VIEW_STATE
 
     set(viewStatesAtom, {
       ...currentViewStates,
@@ -276,7 +373,7 @@ export const currentViewStateAtom = atom<ViewState>((get) => {
   const currentView = get(currentViewAtom)
   const viewStates = get(viewStatesAtom)
 
-  return viewStates[currentView] ?? defaultViewState
+  return viewStates[currentView] ?? DEFAULT_VIEW_STATE
 })
 currentViewStateAtom.debugLabel = "currentViewStateAtom"
 
@@ -443,7 +540,7 @@ activeFilterCountAtom.debugLabel = "activeFilterCountAtom"
 export const getViewStateAtom = (viewId: ViewId) =>
   atom<ViewState>((get) => {
     const viewStates = get(viewStatesAtom)
-    return viewStates[viewId] ?? defaultViewState
+    return viewStates[viewId] ?? DEFAULT_VIEW_STATE
   })
 
 /**
@@ -452,7 +549,7 @@ export const getViewStateAtom = (viewId: ViewId) =>
  */
 export const resetCurrentViewStateAtom = atom(null, (get, set) => {
   const currentView = get(currentViewAtom)
-  set(updateViewStateAtom, { viewId: currentView, updates: defaultViewState })
+  set(updateViewStateAtom, { viewId: currentView, updates: DEFAULT_VIEW_STATE })
 })
 resetCurrentViewStateAtom.debugLabel = "resetCurrentViewStateAtom"
 
@@ -461,7 +558,7 @@ resetCurrentViewStateAtom.debugLabel = "resetCurrentViewStateAtom"
  * Usage: set(resetViewStateAtom, projectId)
  */
 export const resetViewStateAtom = atom(null, (get, set, viewId: ViewId) => {
-  set(updateViewStateAtom, { viewId, updates: defaultViewState })
+  set(updateViewStateAtom, { viewId, updates: DEFAULT_VIEW_STATE })
 })
 resetViewStateAtom.debugLabel = "resetViewStateAtom"
 

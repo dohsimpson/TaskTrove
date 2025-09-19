@@ -1,10 +1,19 @@
-import type { DataFile, ProjectGroup, LabelGroup } from "./index"
+import type { DataFile, ProjectGroup, LabelGroup, ViewState } from "./index"
 import { createGroupId } from "./index"
 import {
   DEFAULT_UUID,
   DEFAULT_AUTO_BACKUP_ENABLED,
   DEFAULT_BACKUP_TIME,
   DEFAULT_MAX_BACKUPS,
+  DEFAULT_VIEW_MODE,
+  DEFAULT_SORT_BY,
+  DEFAULT_SORT_DIRECTION,
+  DEFAULT_SHOW_COMPLETED,
+  DEFAULT_SHOW_OVERDUE,
+  DEFAULT_SEARCH_QUERY,
+  DEFAULT_SHOW_SIDE_PANEL,
+  DEFAULT_COMPACT_VIEW,
+  DEFAULT_ACTIVE_FILTERS,
 } from "../constants/defaults"
 
 /**
@@ -48,6 +57,23 @@ export const DEFAULT_GENERAL_SETTINGS = {
   soundEnabled: true,
   linkifyEnabled: true,
 } as const
+
+/**
+ * Default view state configuration
+ * Matches the defaultViewState from useTaskManager
+ */
+export const DEFAULT_VIEW_STATE: ViewState = {
+  viewMode: DEFAULT_VIEW_MODE,
+  sortBy: DEFAULT_SORT_BY,
+  sortDirection: DEFAULT_SORT_DIRECTION,
+  showCompleted: DEFAULT_SHOW_COMPLETED,
+  showOverdue: DEFAULT_SHOW_OVERDUE,
+  searchQuery: DEFAULT_SEARCH_QUERY,
+  showSidePanel: DEFAULT_SHOW_SIDE_PANEL,
+  compactView: DEFAULT_COMPACT_VIEW,
+  collapsedSections: [],
+  activeFilters: DEFAULT_ACTIVE_FILTERS,
+}
 
 /**
  * Default user settings structure

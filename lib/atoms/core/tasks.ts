@@ -38,7 +38,12 @@ import {
   DEFAULT_RECURRING_MODE,
 } from "../../constants/defaults"
 import { handleAtomError, playSoundAtom } from "../utils"
-import { currentViewAtom, currentViewStateAtom, viewStatesAtom } from "../ui/views"
+import {
+  currentViewAtom,
+  currentViewStateAtom,
+  viewStatesAtom,
+  getViewStateOrDefault,
+} from "../ui/views"
 import { currentRouteContextAtom } from "../ui/navigation"
 import { notificationAtoms } from "./notifications"
 // Task ordering utilities - inline implementation after task-ordering-operations.ts removal
@@ -641,7 +646,7 @@ export const taskCountsAtom = atom((get) => {
 
     // Get view-specific showCompleted settings
     const getViewShowCompleted = (viewId: ViewId) => {
-      return viewStates[viewId].showCompleted
+      return getViewStateOrDefault(viewStates, viewId).showCompleted
     }
 
     // Filter tasks based on each view's individual showCompleted setting

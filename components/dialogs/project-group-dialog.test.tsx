@@ -229,7 +229,11 @@ describe("ProjectGroupDialog", () => {
     fireEvent.click(testButton)
 
     expect(consoleSpy).toHaveBeenCalled()
-    const transformResult = consoleSpy.mock.calls[0][1]
+    const consoleCall = consoleSpy.mock.calls[0]
+    if (!consoleCall || consoleCall[1] === undefined) {
+      throw new Error("Expected consoleSpy to have been called with transform result")
+    }
+    const transformResult = consoleCall[1]
     expect(transformResult).toEqual({
       name: "Test Group",
       description: "Test description",
@@ -251,7 +255,11 @@ describe("ProjectGroupDialog", () => {
     fireEvent.click(testButton)
 
     expect(consoleSpy).toHaveBeenCalled()
-    const transformResult = consoleSpy.mock.calls[0][1]
+    const consoleCall = consoleSpy.mock.calls[0]
+    if (!consoleCall || consoleCall[1] === undefined) {
+      throw new Error("Expected consoleSpy to have been called with transform result")
+    }
+    const transformResult = consoleCall[1]
     expect(transformResult.name).toBe("Test Group") // Should be trimmed
     expect(transformResult.description).toBe("Test description") // Should be trimmed
 

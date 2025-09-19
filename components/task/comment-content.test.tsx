@@ -738,7 +738,11 @@ describe("CommentContent", () => {
       expect(screen.getByText("Second comment")).toBeInTheDocument()
 
       // Simulate deletion by updating task prop
-      const updatedTask = { ...task, comments: [comments[1]] }
+      const secondComment = comments[1]
+      if (!secondComment) {
+        throw new Error("Expected to have a second comment in test data")
+      }
+      const updatedTask = { ...task, comments: [secondComment] }
       rerender(<CommentContent task={updatedTask} />)
 
       // Only second comment should remain

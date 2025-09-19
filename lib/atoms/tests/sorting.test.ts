@@ -198,7 +198,11 @@ describe("Task Sorting Functionality", () => {
 
       // All incomplete should come before all completed
       const firstCompletedIndex = ids.findIndex((id) => [TEST_TASK_ID_2, TASK_ID_5].includes(id))
-      const lastIncompleteIndex = ids.lastIndexOf(incompleteIds[incompleteIds.length - 1])
+      const lastIncompleteId = incompleteIds[incompleteIds.length - 1]
+      if (!lastIncompleteId) {
+        throw new Error("Expected to have incomplete tasks")
+      }
+      const lastIncompleteIndex = ids.lastIndexOf(lastIncompleteId)
 
       expect(lastIncompleteIndex).toBeLessThan(firstCompletedIndex)
     })
@@ -259,14 +263,18 @@ describe("Task Sorting Functionality", () => {
       const result = store.get(mockFilteredTasksAtom)
 
       // First task should be priority 1 (Alpha Task, completed)
-      expect(result[0].id).toBe(TEST_TASK_ID_2)
-      expect(result[0].completed).toBe(true)
-      expect(result[0].priority).toBe(1)
+      const firstTask = result[0]
+      if (!firstTask) {
+        throw new Error("Expected first task to exist")
+      }
+      expect(firstTask.id).toBe(TEST_TASK_ID_2)
+      expect(firstTask.completed).toBe(true)
+      expect(firstTask.priority).toBe(1)
 
       // Should have mix of completed/incomplete throughout
       const hasCompletedBeforeIncomplete = result.some((task, index) => {
         const nextTask = result[index + 1]
-        return !nextTask.completed
+        return nextTask && !nextTask.completed
       })
       expect(hasCompletedBeforeIncomplete).toBe(true)
     })
@@ -297,7 +305,11 @@ describe("Task Sorting Functionality", () => {
 
       // Tasks without dates should come at the end
       expect(tasksWithoutDates.length).toBe(1) // Delta Task has no due date
-      expect(result[result.length - 1].id).toBe(TASK_ID_4) // Delta Task should be last
+      const lastTask = result[result.length - 1]
+      if (!lastTask) {
+        throw new Error("Expected to find last task")
+      }
+      expect(lastTask.id).toBe(TASK_ID_4) // Delta Task should be last
     })
 
     it("should sort by due date descending when direction is desc", () => {
@@ -320,7 +332,11 @@ describe("Task Sorting Functionality", () => {
       expect(dates).toEqual([...dates].sort((a, b) => b - a))
 
       // Tasks without dates should come at the beginning when desc
-      expect(result[0].id).toBe(TASK_ID_4) // Delta Task should be first
+      const firstTask = result[0]
+      if (!firstTask) {
+        throw new Error("Expected to find first task")
+      }
+      expect(firstTask.id).toBe(TASK_ID_4) // Delta Task should be first
     })
 
     it("should mix completed and incomplete tasks when sorting by due date", () => {
@@ -334,8 +350,12 @@ describe("Task Sorting Functionality", () => {
       expect(incompleteCount).toBe(3)
 
       // First task should be earliest due date (Alpha Task - 2024-01-10, completed)
-      expect(result[0].id).toBe(TEST_TASK_ID_2)
-      expect(result[0].dueDate?.toISOString()).toBe(new Date("2024-01-10").toISOString())
+      const firstTaskWithDate = result[0]
+      if (!firstTaskWithDate) {
+        throw new Error("Expected to find first task")
+      }
+      expect(firstTaskWithDate.id).toBe(TEST_TASK_ID_2)
+      expect(firstTaskWithDate.dueDate?.toISOString()).toBe(new Date("2024-01-10").toISOString())
     })
   })
 
@@ -400,8 +420,12 @@ describe("Task Sorting Functionality", () => {
       expect(createdDates).toEqual([...createdDates].sort((a, b) => a - b))
 
       // First should be Beta Task (2024-01-08)
-      expect(result[0].id).toBe(TASK_ID_3)
-      expect(result[0].title).toBe("Beta Task")
+      const firstTask = result[0]
+      if (!firstTask) {
+        throw new Error("Expected to find first task")
+      }
+      expect(firstTask.id).toBe(TASK_ID_3)
+      expect(firstTask.title).toBe("Beta Task")
     })
 
     it("should sort by creation date descending when direction is desc", () => {
@@ -422,8 +446,12 @@ describe("Task Sorting Functionality", () => {
       expect(createdDates).toEqual([...createdDates].sort((a, b) => b - a))
 
       // First should be Echo Task (2024-01-16)
-      expect(result[0].id).toBe(TASK_ID_5)
-      expect(result[0].title).toBe("Echo Task")
+      const firstTask = result[0]
+      if (!firstTask) {
+        throw new Error("Expected to find first task")
+      }
+      expect(firstTask.id).toBe(TASK_ID_5)
+      expect(firstTask.title).toBe("Echo Task")
     })
   })
 
@@ -482,9 +510,15 @@ describe("Task Sorting Functionality", () => {
       const result = store.get(mockFilteredTasksAtom)
 
       // With desc direction, completed tasks should come first
-      expect(result[0].completed).toBe(true)
-      expect(result[1].completed).toBe(true)
-      expect(result[2].completed).toBe(false)
+      const firstTask = result[0]
+      const secondTask = result[1]
+      const thirdTask = result[2]
+      if (!firstTask || !secondTask || !thirdTask) {
+        throw new Error("Expected to find first three tasks")
+      }
+      expect(firstTask.completed).toBe(true)
+      expect(secondTask.completed).toBe(true)
+      expect(thirdTask.completed).toBe(false)
     })
   })
 
@@ -532,7 +566,11 @@ describe("Task Sorting Functionality", () => {
 
       const result = store.get(mockFilteredTasksAtom)
       expect(result).toHaveLength(1)
-      expect(result[0].title).toBe("Minimal Task")
+      const firstTask = result[0]
+      if (!firstTask) {
+        throw new Error("Expected to find first task")
+      }
+      expect(firstTask.title).toBe("Minimal Task")
     })
 
     it("should handle unknown sort options gracefully", () => {
@@ -693,10 +731,14 @@ describe("Task Sorting Functionality", () => {
         })
 
         expect(todayTasks.length).toBe(1)
-        expect(todayTasks[0].id).toBe("22222222-2222-4222-8222-222222222222")
+        const firstTodayTask = todayTasks[0]
+        if (!firstTodayTask) {
+          throw new Error("Expected to find first today task")
+        }
+        expect(firstTodayTask.id).toBe("22222222-2222-4222-8222-222222222222")
         // Note: isToday() checks against actual current date, not our fixed date
         // So we test the logic directly instead of using isToday()
-        const taskDate = todayTasks[0].dueDate ? new Date(todayTasks[0].dueDate) : new Date()
+        const taskDate = firstTodayTask.dueDate ? new Date(firstTodayTask.dueDate) : new Date()
         const fixedDate = new Date(fixedToday)
         taskDate.setHours(0, 0, 0, 0)
         fixedDate.setHours(0, 0, 0, 0)
@@ -1039,7 +1081,11 @@ describe("Task Sorting Functionality", () => {
 
         // Tasks without due dates should not appear in date-specific filters
         expect(todayTasks.length).toBe(1)
-        expect(todayTasks[0].id).toBe("99999999-9999-4999-8999-999999999999")
+        const firstTodayTask = todayTasks[0]
+        if (!firstTodayTask) {
+          throw new Error("Expected to find first today task")
+        }
+        expect(firstTodayTask.id).toBe("99999999-9999-4999-8999-999999999999")
 
         expect(upcomingTasks.length).toBe(0) // No upcoming tasks in this test
       })

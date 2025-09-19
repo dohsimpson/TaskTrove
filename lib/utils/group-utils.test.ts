@@ -432,8 +432,13 @@ describe("group-utils", () => {
 
       const result = getAllGroupsFlat(deepGroup)
       expect(result).toHaveLength(10)
-      expect(result[0].name).toBe("Level 1")
-      expect(result[9].name).toBe("Level 10")
+      const firstGroup = result[0]
+      const lastGroup = result[9]
+      if (!firstGroup || !lastGroup) {
+        throw new Error("Expected to find first and last groups in result")
+      }
+      expect(firstGroup.name).toBe("Level 1")
+      expect(lastGroup.name).toBe("Level 10")
     })
 
     it("should handle mixed content types in items", () => {

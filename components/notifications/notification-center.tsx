@@ -161,14 +161,18 @@ export function NotificationCenter({
     let current: Record<string, unknown> = newSettings
 
     for (let i = 0; i < keys.length - 1; i++) {
-      const value = current[keys[i]]
+      const keyAtIndex = keys[i]
+      if (!keyAtIndex) return // Invalid key, exit early
+      const value = current[keyAtIndex]
       if (isRecord(value)) {
         current = value
       } else {
         return // Invalid path, exit early
       }
     }
-    current[keys[keys.length - 1]] = value
+    const lastKey = keys[keys.length - 1]
+    if (!lastKey) return // Invalid key, exit early
+    current[lastKey] = value
 
     onUpdateSettings(newSettings)
   }

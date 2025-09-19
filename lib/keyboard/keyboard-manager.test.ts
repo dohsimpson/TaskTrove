@@ -380,8 +380,12 @@ describe("Keyboard Manager System", () => {
 
       const conflicts = ContextMatcher.findShortcutConflicts(handlers, mockContext)
       expect(conflicts).toHaveLength(1)
-      expect(conflicts[0].shortcut).toBe("Escape")
-      expect(conflicts[0].handlers).toHaveLength(2)
+      const firstConflict = conflicts[0]
+      if (!firstConflict) {
+        throw new Error("Expected to find first conflict")
+      }
+      expect(firstConflict.shortcut).toBe("Escape")
+      expect(firstConflict.handlers).toHaveLength(2)
     })
 
     it("should not report conflicts for different contexts", () => {

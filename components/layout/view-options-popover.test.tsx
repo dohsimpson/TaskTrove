@@ -332,7 +332,11 @@ describe("ViewOptionsPopover", () => {
   it("triggers hover handlers on mouse events", async () => {
     renderWithJotai(<ViewOptionsPopover />)
 
-    const triggerButton = screen.getAllByTestId("button")[0]
+    const triggerButtons = screen.getAllByTestId("button")
+    const triggerButton = triggerButtons[0]
+    if (!triggerButton) {
+      throw new Error("Expected to find trigger button")
+    }
 
     // Test that hover events can be triggered without error
     fireEvent.mouseEnter(triggerButton)
@@ -347,7 +351,11 @@ describe("ViewOptionsPopover", () => {
 
     renderWithJotai(<ViewOptionsPopover />)
 
-    const triggerButton = screen.getAllByTestId("button")[0]
+    const triggerButtons = screen.getAllByTestId("button")
+    const triggerButton = triggerButtons[0]
+    if (!triggerButton) {
+      throw new Error("Expected to find trigger button")
+    }
 
     // Simulate hover and immediate leave
     act(() => {

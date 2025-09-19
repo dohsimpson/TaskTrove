@@ -98,10 +98,14 @@ describe("Project Updates and Task Reordering", () => {
     const mutation = store.get(updateProjectsMutationAtom)
 
     // Update project with reordered tasks
+    if (testProjects.length === 0) {
+      throw new Error("Expected to find test projects")
+    }
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const updatedProject = {
       ...testProjects[0],
       taskOrder: [TEST_TASK_ID_2, TEST_TASK_ID_1], // Reordered
-    }
+    } as Project
 
     await mutation.mutateAsync([updatedProject])
 
@@ -273,7 +277,11 @@ describe("Project Updates and Task Reordering", () => {
       )
 
       // Verify section boundaries were preserved
-      const updatedTaskOrder = result[0].taskOrder
+      const firstResult = result[0]
+      if (!firstResult) {
+        throw new Error("Expected to find first result")
+      }
+      const updatedTaskOrder = firstResult.taskOrder
 
       // task-b should now be first in section-1, followed by task-a
       // task-c should remain in its position (different section)
@@ -330,7 +338,11 @@ describe("Project Updates and Task Reordering", () => {
         mockTasks,
       )
 
-      const updatedTaskOrder = result[0].taskOrder
+      const firstResult = result[0]
+      if (!firstResult) {
+        throw new Error("Expected to find first result")
+      }
+      const updatedTaskOrder = firstResult.taskOrder
 
       // task-default-uuid should come first, followed by task-no-section
       // task-other-section should remain unchanged (different section)
@@ -403,7 +415,11 @@ describe("Project Updates and Task Reordering", () => {
         mockTasks,
       )
 
-      const updatedTaskOrder = result[0].taskOrder
+      const firstResult = result[0]
+      if (!firstResult) {
+        throw new Error("Expected to find first result")
+      }
+      const updatedTaskOrder = firstResult.taskOrder
 
       // task-4 should be first sec-a task, other sec-a tasks follow
       // sec-b tasks should remain in their relative positions

@@ -203,6 +203,9 @@ describe("DraggableProjectGroupItem", () => {
       // Verify that attachInstruction was called with correct parameters
       expect(mockAttachInstruction).toHaveBeenCalled()
       const lastCall = mockAttachInstruction.mock.calls[mockAttachInstruction.mock.calls.length - 1]
+      if (!lastCall || !lastCall[0]) {
+        throw new Error("Expected mockAttachInstruction to have been called with arguments")
+      }
 
       // Check that it was called with data parameter
       expect(lastCall[0]).toMatchObject({

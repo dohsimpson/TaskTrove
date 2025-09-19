@@ -994,13 +994,18 @@ describe("generateNextTaskInstance", () => {
     if (nextTask) {
       // All subtasks in the new instance should be reset to not completed
       expect(nextTask.subtasks).toHaveLength(2)
-      expect(nextTask.subtasks[0].completed).toBe(false)
-      expect(nextTask.subtasks[1].completed).toBe(false)
+      const firstSubtask = nextTask.subtasks[0]
+      const secondSubtask = nextTask.subtasks[1]
+      if (!firstSubtask || !secondSubtask) {
+        throw new Error("Expected to find first two subtasks")
+      }
+      expect(firstSubtask.completed).toBe(false)
+      expect(secondSubtask.completed).toBe(false)
       // But titles and IDs should be preserved
-      expect(nextTask.subtasks[0].title).toBe("Prep notes")
-      expect(nextTask.subtasks[1].title).toBe("Send invites")
-      expect(nextTask.subtasks[0].id).toBe(createSubtaskId("550e8400-e29b-41d4-a716-446655440013"))
-      expect(nextTask.subtasks[1].id).toBe(createSubtaskId("550e8400-e29b-41d4-a716-446655440014"))
+      expect(firstSubtask.title).toBe("Prep notes")
+      expect(secondSubtask.title).toBe("Send invites")
+      expect(firstSubtask.id).toBe(createSubtaskId("550e8400-e29b-41d4-a716-446655440013"))
+      expect(secondSubtask.id).toBe(createSubtaskId("550e8400-e29b-41d4-a716-446655440014"))
     }
   })
 })

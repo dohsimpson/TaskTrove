@@ -1540,6 +1540,9 @@ describe("TaskItem", () => {
 
       // Click on a checkbox (interactive element)
       const checkbox = screen.getAllByTestId("checkbox")[0]
+      if (!checkbox) {
+        throw new Error("Expected to find checkbox")
+      }
       await user.click(checkbox)
 
       // Note: onTaskClick is no longer supported in atomic interface
@@ -2982,7 +2985,11 @@ describe("TaskItem", () => {
       // Verify that the function was called with the correct task ID and subtasks structure
       const calls = mockUpdateTask.mock.calls
       expect(calls.length).toBeGreaterThan(0)
-      expect(calls[0][0]).toMatchObject({
+      const firstCall = calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected mockUpdateTask to have been called with arguments")
+      }
+      expect(firstCall[0]).toMatchObject({
         updateRequest: {
           id: TEST_TASK_ID_1,
           subtasks: expect.arrayContaining([
@@ -3162,10 +3169,14 @@ describe("TaskItem", () => {
 
       // Should display the estimation (1 hour = 3600 seconds should show as "1h")
       const estimationButtons = screen.getAllByText("1h")
-      expect(estimationButtons[0]).toBeInTheDocument()
+      const firstEstimationButton = estimationButtons[0]
+      expect(firstEstimationButton).toBeInTheDocument()
 
       // Click the estimation button to open the picker
-      fireEvent.click(estimationButtons[0])
+      if (!firstEstimationButton) {
+        throw new Error("Expected to find estimation button")
+      }
+      fireEvent.click(firstEstimationButton)
 
       // Wait for the picker to open and verify it has the correct initial value
       await waitFor(() => {

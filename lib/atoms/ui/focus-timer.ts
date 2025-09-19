@@ -163,6 +163,7 @@ export const startFocusTimerAtom = atom(null, (get, set, taskId: TaskId) => {
   if (existingTimerIndex >= 0) {
     // Resume existing timer
     const existingTimer = currentState.activeTimers[existingTimerIndex]
+    if (!existingTimer) return
     if (existingTimer.pausedAt) {
       // Calculate elapsed time up to pause point
       const startTime = new Date(existingTimer.startedAt).getTime()
@@ -221,6 +222,7 @@ export const pauseFocusTimerAtom = atom(null, (get, set, taskId: TaskId) => {
   if (timerIndex === -1) return
 
   const timer = currentState.activeTimers[timerIndex]
+  if (!timer) return
   const updatedTimer: FocusTimer = {
     ...timer,
     pausedAt: new Date().toISOString(),

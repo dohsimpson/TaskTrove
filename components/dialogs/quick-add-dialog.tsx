@@ -203,7 +203,9 @@ export function QuickAddDialog() {
       const timeDate = new Date()
       const timeFormatted = convertTimeToHHMMSS(parsed.time)
       if (timeFormatted) {
-        const [hours, minutes] = timeFormatted.split(":").map(Number)
+        const timeParts = timeFormatted.split(":").map(Number)
+        const hours = timeParts[0] ?? 0
+        const minutes = timeParts[1] ?? 0
         timeDate.setHours(hours, minutes, 0, 0)
         updateNewTask({ updateRequest: { dueTime: timeDate } })
       }

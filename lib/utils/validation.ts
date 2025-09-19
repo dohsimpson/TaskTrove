@@ -297,7 +297,7 @@ export function validateRRule(val: string | undefined, ctx: z.RefinementCtx): vo
 
       const [, position, dayCode] = dayMatch
 
-      if (!validDays.includes(dayCode)) {
+      if (!dayCode || !validDays.includes(dayCode)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `Invalid BYDAY day code: "${dayCode}". Must be one of: ${validDays.join(", ")}`,

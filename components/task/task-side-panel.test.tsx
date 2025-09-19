@@ -536,6 +536,9 @@ describe("TaskSidePanel", () => {
     render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
     const checkbox = screen.getAllByTestId("checkbox")[0]
+    if (!checkbox) {
+      throw new Error("Expected to find checkbox")
+    }
     await userEvent.click(checkbox)
 
     expect(mockUpdateTask).toHaveBeenCalledWith({
@@ -582,6 +585,9 @@ describe("TaskSidePanel", () => {
     render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
     const titleEditableDiv = screen.getAllByTestId("editable-div")[0]
+    if (!titleEditableDiv) {
+      throw new Error("Expected to find title editable div")
+    }
     expect(titleEditableDiv).toHaveAttribute("data-value", "Test Task")
 
     await userEvent.click(titleEditableDiv)
@@ -707,6 +713,9 @@ describe("TaskSidePanel", () => {
 
     // Trigger an edit through EditableDiv
     const titleEditableDiv = screen.getAllByTestId("editable-div")[0]
+    if (!titleEditableDiv) {
+      throw new Error("Expected to find title editable div")
+    }
     await userEvent.click(titleEditableDiv)
 
     // Verify that the update function was called (auto-save functionality)
@@ -865,6 +874,9 @@ describe("TaskSidePanel", () => {
       render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
       const titleEditableDiv = screen.getAllByTestId("editable-div")[0]
+      if (!titleEditableDiv) {
+        throw new Error("Expected to find title editable div")
+      }
       await userEvent.click(titleEditableDiv)
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
@@ -879,6 +891,9 @@ describe("TaskSidePanel", () => {
       render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
       const descriptionEditableDiv = screen.getAllByTestId("editable-div")[1]
+      if (!descriptionEditableDiv) {
+        throw new Error("Expected to find description editable div")
+      }
       await userEvent.click(descriptionEditableDiv)
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
@@ -931,6 +946,9 @@ describe("TaskSidePanel", () => {
       render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
       const titleEditableDiv = screen.getAllByTestId("editable-div")[0]
+      if (!titleEditableDiv) {
+        throw new Error("Expected to find title editable div")
+      }
       await userEvent.click(titleEditableDiv)
 
       // Verify that the debounced auto-save is called
@@ -948,6 +966,9 @@ describe("TaskSidePanel", () => {
       render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
       const titleEditableDiv = screen.getAllByTestId("editable-div")[0]
+      if (!titleEditableDiv) {
+        throw new Error("Expected to find title editable div")
+      }
       await userEvent.click(titleEditableDiv)
 
       // The auto-save indicator might be shown briefly
@@ -959,6 +980,12 @@ describe("TaskSidePanel", () => {
       render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
       const [titleEditableDiv, descriptionEditableDiv] = screen.getAllByTestId("editable-div")
+      if (!titleEditableDiv) {
+        throw new Error("Expected to find title editable div")
+      }
+      if (!descriptionEditableDiv) {
+        throw new Error("Expected to find description editable div")
+      }
 
       await userEvent.click(titleEditableDiv)
       expect(mockUpdateTask).toHaveBeenCalledWith({
@@ -1181,6 +1208,9 @@ describe("TaskSidePanel", () => {
         const { rerender } = render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
         const mobileCheckbox = screen.getAllByTestId("checkbox")[0]
+        if (!mobileCheckbox) {
+          throw new Error("Expected to find mobile checkbox")
+        }
         await userEvent.click(mobileCheckbox)
 
         expect(mockUpdateTask).toHaveBeenCalledWith({
@@ -1198,6 +1228,9 @@ describe("TaskSidePanel", () => {
         rerender(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
         const desktopCheckbox = screen.getAllByTestId("checkbox")[0]
+        if (!desktopCheckbox) {
+          throw new Error("Expected to find desktop checkbox")
+        }
         await userEvent.click(desktopCheckbox)
 
         expect(mockUpdateTask).toHaveBeenCalledWith({
@@ -1245,6 +1278,9 @@ describe("TaskSidePanel", () => {
         const { rerender } = render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
         const mobileTitle = screen.getAllByTestId("editable-div")[0]
+        if (!mobileTitle) {
+          throw new Error("Expected to find mobile title editable div")
+        }
         await userEvent.click(mobileTitle)
 
         expect(mockUpdateTask).toHaveBeenCalledWith({
@@ -1262,6 +1298,9 @@ describe("TaskSidePanel", () => {
         rerender(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
         const desktopTitle = screen.getAllByTestId("editable-div")[0]
+        if (!desktopTitle) {
+          throw new Error("Expected to find desktop title editable div")
+        }
         await userEvent.click(desktopTitle)
 
         expect(mockUpdateTask).toHaveBeenCalledWith({

@@ -223,7 +223,14 @@ export function AnalyticsDashboard() {
                   </h4>
                   <p className="text-sm text-blue-800 dark:text-blue-200">
                     {projectAnalytics.length > 0 &&
-                      `${projectAnalytics.sort((a, b) => b.completionRate - a.completionRate)[0]?.projectName} with ${Math.round(projectAnalytics.sort((a, b) => b.completionRate - a.completionRate)[0]?.completionRate)}% completion rate`}
+                      (() => {
+                        const topProject = projectAnalytics.sort(
+                          (a, b) => b.completionRate - a.completionRate,
+                        )[0]
+                        return topProject
+                          ? `${topProject.projectName} with ${Math.round(topProject.completionRate)}% completion rate`
+                          : ""
+                      })()}
                   </p>
                 </div>
                 <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">

@@ -86,7 +86,11 @@ describe("POST /api/tasks - Task Creation", () => {
     expect(responseData.taskIds[0]).toBe("12345678-1234-4123-8123-123456789012")
 
     // Get the created task from the written data
-    const writtenData = mockWriteDataFile.mock.calls[0][0].data
+    const writeArgs = mockWriteDataFile.mock.calls[0]
+    if (!writeArgs || !writeArgs[0]) {
+      throw new Error("Expected mockWriteDataFile to have been called with arguments")
+    }
+    const writtenData = writeArgs[0].data
     const createdTask = writtenData.tasks.find(
       (task: { id: string }) => task.id === responseData.taskIds[0],
     )
@@ -103,7 +107,11 @@ describe("POST /api/tasks - Task Creation", () => {
   it("should handle client-provided due date with recurring pattern", async () => {
     const clientDueDate = new Date()
     clientDueDate.setDate(clientDueDate.getDate() + 7) // Next week
-    const dueDateString = clientDueDate.toISOString().split("T")[0] // Format as YYYY-MM-DD
+    const dueDateParts = clientDueDate.toISOString().split("T")
+    const dueDateString = dueDateParts[0] // Format as YYYY-MM-DD
+    if (!dueDateString) {
+      throw new Error("Failed to format due date")
+    }
 
     const request = new NextRequest("http://localhost:3000/api/tasks", {
       method: "POST",
@@ -125,7 +133,11 @@ describe("POST /api/tasks - Task Creation", () => {
     expect(responseData.taskIds).toHaveLength(1)
 
     // Get the created task from the written data
-    const writtenData = mockWriteDataFile.mock.calls[0][0].data
+    const writeArgs = mockWriteDataFile.mock.calls[0]
+    if (!writeArgs || !writeArgs[0]) {
+      throw new Error("Expected mockWriteDataFile to have been called with arguments")
+    }
+    const writtenData = writeArgs[0].data
     const createdTask = writtenData.tasks.find(
       (task: { id: string }) => task.id === responseData.taskIds[0],
     )
@@ -168,7 +180,11 @@ describe("POST /api/tasks - Task Creation", () => {
     expect(responseData.taskIds).toHaveLength(1)
 
     // Get the created task from the written data
-    const writtenData = mockWriteDataFile.mock.calls[0][0].data
+    const writeArgs = mockWriteDataFile.mock.calls[0]
+    if (!writeArgs || !writeArgs[0]) {
+      throw new Error("Expected mockWriteDataFile to have been called with arguments")
+    }
+    const writtenData = writeArgs[0].data
     const createdTask = writtenData.tasks.find(
       (task: { id: string }) => task.id === responseData.taskIds[0],
     )
@@ -205,7 +221,11 @@ describe("POST /api/tasks - Task Creation", () => {
     expect(responseData.taskIds).toHaveLength(1)
 
     // Get the created task from the written data
-    const writtenData = mockWriteDataFile.mock.calls[0][0].data
+    const writeArgs = mockWriteDataFile.mock.calls[0]
+    if (!writeArgs || !writeArgs[0]) {
+      throw new Error("Expected mockWriteDataFile to have been called with arguments")
+    }
+    const writtenData = writeArgs[0].data
     const createdTask = writtenData.tasks.find(
       (task: { id: string }) => task.id === responseData.taskIds[0],
     )
@@ -240,7 +260,11 @@ describe("POST /api/tasks - Task Creation", () => {
     expect(responseData.success).toBe(true)
 
     // Get the created task from the written data
-    const writtenData = mockWriteDataFile.mock.calls[0][0].data
+    const writeArgs = mockWriteDataFile.mock.calls[0]
+    if (!writeArgs || !writeArgs[0]) {
+      throw new Error("Expected mockWriteDataFile to have been called with arguments")
+    }
+    const writtenData = writeArgs[0].data
     const createdTask = writtenData.tasks.find(
       (task: { id: string }) => task.id === responseData.taskIds[0],
     )
@@ -282,7 +306,11 @@ describe("POST /api/tasks - Task Creation", () => {
     expect(responseData.success).toBe(true)
 
     // Get the created task from the written data
-    const writtenData = mockWriteDataFile.mock.calls[0][0].data
+    const writeArgs = mockWriteDataFile.mock.calls[0]
+    if (!writeArgs || !writeArgs[0]) {
+      throw new Error("Expected mockWriteDataFile to have been called with arguments")
+    }
+    const writtenData = writeArgs[0].data
     const createdTask = writtenData.tasks.find(
       (task: { id: string }) => task.id === responseData.taskIds[0],
     )

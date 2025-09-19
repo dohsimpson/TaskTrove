@@ -214,6 +214,9 @@ describe("migrateViewStates", () => {
         }
 
         const result = migrateViewStates(data)
+        if (!result.test) {
+          throw new Error("Expected result.test to be defined")
+        }
         expect(result.test.viewMode).toBe(mode)
       })
     })
@@ -227,6 +230,9 @@ describe("migrateViewStates", () => {
         }
 
         const result = migrateViewStates(data)
+        if (!result.test) {
+          throw new Error("Expected result.test to be defined")
+        }
         expect(result.test.sortDirection).toBe(direction)
       })
     })
@@ -246,6 +252,9 @@ describe("migrateViewStates", () => {
       const result = migrateViewStates(complexData)
 
       // Should preserve simple valid fields
+      if (!result.today) {
+        throw new Error("Expected result.today to be defined")
+      }
       expect(result.today.viewMode).toBe("list")
       expect(result.today.searchQuery).toBe("valid search")
       // activeFilters should be reset to default due to validation failure

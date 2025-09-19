@@ -64,7 +64,11 @@ describe("CustomizablePopover", () => {
     const firstOption = screen.getByText("First Option")
     fireEvent.click(firstOption)
 
-    expect(mockOptions[0].onClick).toHaveBeenCalledOnce()
+    const firstMockOption = mockOptions[0]
+    if (!firstMockOption) {
+      throw new Error("Expected to have first mock option")
+    }
+    expect(firstMockOption.onClick).toHaveBeenCalledOnce()
   })
 
   it("renders options with icons", () => {

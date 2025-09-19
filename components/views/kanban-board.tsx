@@ -360,6 +360,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                     onDragEnter={({ source, location }) => {
                       if (source.data.type === "task" && source.data.rect) {
                         const innerMost = location.current.dropTargets[0]
+                        if (!innerMost) return
                         const isOverChildTask = Boolean(innerMost.data.type === "task-drop-target")
 
                         // Validate rect is a DOMRect-like object
@@ -383,6 +384,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                     onDrag={({ source, location }) => {
                       if (source.data.type === "task" && source.data.rect) {
                         const innerMost = location.current.dropTargets[0]
+                        if (!innerMost) return
                         const isOverChildTask = Boolean(innerMost.data.type === "task-drop-target")
 
                         setColumnDragStates((prev) => {
@@ -438,6 +440,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                           onDragEnter={({ source, location }) => {
                             if (source.data.type === "task" && source.data.taskId !== task.id) {
                               const innerMost = location.current.dropTargets[0]
+                              if (!innerMost) return
                               const closestEdge = extractClosestEdge(innerMost.data)
 
                               const rect = source.data.rect
@@ -465,6 +468,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                           onDrag={({ source, location }) => {
                             if (source.data.type === "task" && source.data.taskId !== task.id) {
                               const innerMost = location.current.dropTargets[0]
+                              if (!innerMost) return
                               const closestEdge = extractClosestEdge(innerMost.data)
 
                               setColumnDragStates((prev) => {

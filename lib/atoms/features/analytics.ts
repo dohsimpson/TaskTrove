@@ -298,10 +298,16 @@ export const timeOfDayDataAtom = atom<TimeOfDayData[]>((get) => {
     tasks.forEach((task: Task) => {
       if (task.completedAt) {
         const hour = task.completedAt.getHours()
-        hourlyData[hour].completed++
+        const hourData = hourlyData[hour]
+        if (hourData) {
+          hourData.completed++
+        }
       }
       const createdHour = task.createdAt.getHours()
-      hourlyData[createdHour].created++
+      const createdHourData = hourlyData[createdHour]
+      if (createdHourData) {
+        createdHourData.created++
+      }
     })
 
     return hourlyData

@@ -309,34 +309,42 @@ const DYNAMIC_DATE_PATTERNS: DynamicDatePattern[] = [
   {
     pattern: new RegExp(`${WORD_BOUNDARY_START}(in (\\d+) days?)${WORD_BOUNDARY_END}`, "gi"),
     getValue: (match: RegExpMatchArray) => {
-      const days = parseInt(match[2]) // match[2] because match[1] is the full capture, match[2] is the number
+      const daysStr = match[2]
+      if (!daysStr) return null
+      const days = parseInt(daysStr) // match[2] because match[1] is the full capture, match[2] is the number
       return addDays(new Date(), days)
     },
-    display: (match: RegExpMatchArray) => `In ${match[2]} days`,
+    display: (match: RegExpMatchArray) => `In ${match[2] || "?"} days`,
   },
   {
     pattern: new RegExp(`${WORD_BOUNDARY_START}(in (\\d+) weeks?)${WORD_BOUNDARY_END}`, "gi"),
     getValue: (match: RegExpMatchArray) => {
-      const weeks = parseInt(match[2])
+      const weeksStr = match[2]
+      if (!weeksStr) return null
+      const weeks = parseInt(weeksStr)
       return addWeeks(new Date(), weeks)
     },
-    display: (match: RegExpMatchArray) => `In ${match[2]} weeks`,
+    display: (match: RegExpMatchArray) => `In ${match[2] || "?"} weeks`,
   },
   {
     pattern: new RegExp(`${WORD_BOUNDARY_START}(in (\\d+) months?)${WORD_BOUNDARY_END}`, "gi"),
     getValue: (match: RegExpMatchArray) => {
-      const months = parseInt(match[2])
+      const monthsStr = match[2]
+      if (!monthsStr) return null
+      const months = parseInt(monthsStr)
       return addMonths(new Date(), months)
     },
-    display: (match: RegExpMatchArray) => `In ${match[2]} months`,
+    display: (match: RegExpMatchArray) => `In ${match[2] || "?"} months`,
   },
   {
     pattern: new RegExp(`${WORD_BOUNDARY_START}(in (\\d+) years?)${WORD_BOUNDARY_END}`, "gi"),
     getValue: (match: RegExpMatchArray) => {
-      const years = parseInt(match[2])
+      const yearsStr = match[2]
+      if (!yearsStr) return null
+      const years = parseInt(yearsStr)
       return addYears(new Date(), years)
     },
-    display: (match: RegExpMatchArray) => `In ${match[2]} years`,
+    display: (match: RegExpMatchArray) => `In ${match[2] || "?"} years`,
   },
 ]
 
@@ -395,8 +403,11 @@ const ABSOLUTE_DATE_PATTERNS: AbsoluteDatePattern[] = [
       "gi",
     ),
     getValue: (match: RegExpMatchArray) => {
-      const monthName = match[2].toLowerCase()
-      const day = parseInt(match[3])
+      const monthNameStr = match[2]
+      const dayStr = match[3]
+      if (!monthNameStr || !dayStr) return null
+      const monthName = monthNameStr.toLowerCase()
+      const day = parseInt(dayStr)
       // Type-safe month name lookup using proper type guard
       if (!isValidMonthName(monthName)) return null
       const monthIndex = MONTH_NAMES[monthName]
@@ -432,8 +443,11 @@ const ABSOLUTE_DATE_PATTERNS: AbsoluteDatePattern[] = [
       "gi",
     ),
     getValue: (match: RegExpMatchArray) => {
-      const day = parseInt(match[2])
-      const monthName = match[3].toLowerCase()
+      const dayStr = match[2]
+      const monthNameStr = match[3]
+      if (!dayStr || !monthNameStr) return null
+      const day = parseInt(dayStr)
+      const monthName = monthNameStr.toLowerCase()
       // Type-safe month name lookup using proper type guard
       if (!isValidMonthName(monthName)) return null
       const monthIndex = MONTH_NAMES[monthName]
@@ -469,8 +483,11 @@ const ABSOLUTE_DATE_PATTERNS: AbsoluteDatePattern[] = [
       "gi",
     ),
     getValue: (match: RegExpMatchArray) => {
-      const part1 = parseInt(match[2])
-      const part2 = parseInt(match[3])
+      const part1Str = match[2]
+      const part2Str = match[3]
+      if (!part1Str || !part2Str) return null
+      const part1 = parseInt(part1Str)
+      const part2 = parseInt(part2Str)
 
       // Basic validation - both parts must be reasonable
       if (part1 < 1 || part1 > 31 || part2 < 1 || part2 > 31) {
@@ -519,7 +536,7 @@ const ABSOLUTE_DATE_PATTERNS: AbsoluteDatePattern[] = [
 
       return targetDate
     },
-    display: (match: RegExpMatchArray) => match[1],
+    display: (match: RegExpMatchArray) => match[1] || "",
   },
 ]
 
@@ -557,7 +574,7 @@ interface StaticDatePattern {
 
 interface DynamicDatePattern {
   pattern: RegExp
-  getValue: (match: RegExpMatchArray) => Date
+  getValue: (match: RegExpMatchArray) => Date | null
   display: (match: RegExpMatchArray) => string
 }
 
@@ -775,19 +792,19 @@ export function convertToRRule(recurringValue: string): string {
     default:
       // Handle dynamic patterns like "every-3-days", "every-2-weeks", "every-6-months"
       const dynamicDayMatch = recurringValue.match(/^every-(\d+)-days?$/)
-      if (dynamicDayMatch) {
+      if (dynamicDayMatch && dynamicDayMatch[1]) {
         const interval = parseInt(dynamicDayMatch[1], 10)
         return CommonRRules.everyNDays(interval)
       }
 
       const dynamicWeekMatch = recurringValue.match(/^every-(\d+)-weeks?$/)
-      if (dynamicWeekMatch) {
+      if (dynamicWeekMatch && dynamicWeekMatch[1]) {
         const interval = parseInt(dynamicWeekMatch[1], 10)
         return CommonRRules.everyNWeeks(interval)
       }
 
       const dynamicMonthMatch = recurringValue.match(/^every-(\d+)-months?$/)
-      if (dynamicMonthMatch) {
+      if (dynamicMonthMatch && dynamicMonthMatch[1]) {
         const interval = parseInt(dynamicMonthMatch[1], 10)
         return buildRRule({ freq: RRuleFrequency.MONTHLY, interval })
       }
@@ -848,7 +865,9 @@ export function parseEnhancedNaturalLanguage(
     if (enabledProjects.length > 0) {
       // Take the last project match and extract the name (remove #)
       const lastProject = enabledProjects[enabledProjects.length - 1]
-      parsed.project = lastProject.substring(1)
+      if (lastProject) {
+        parsed.project = lastProject.substring(1)
+      }
 
       // Remove all project matches from clean text
       if (config?.projects && config.projects.length > 0) {
@@ -905,8 +924,9 @@ export function parseEnhancedNaturalLanguage(
 
     // All patterns now use capture groups, so always check match[1]
     const enabledMatches = matches.filter((match) => {
-      const checkValue = match[1].toLowerCase()
-      return !disabledSections.has(checkValue)
+      const checkValue = match[1]
+      if (!checkValue) return false
+      return !disabledSections.has(checkValue.toLowerCase())
     })
 
     for (const match of enabledMatches) {
@@ -942,6 +962,7 @@ export function parseEnhancedNaturalLanguage(
         )
         if (existingMatchIndex !== -1) {
           const existingMatch = filteredMatches[existingMatchIndex]
+          if (!existingMatch) continue
           // Replace if current match is longer
           if (match[0].length > existingMatch[0].length) {
             filteredMatches[existingMatchIndex] = match
@@ -993,11 +1014,16 @@ export function parseEnhancedNaturalLanguage(
   const allTimeMatches: RegExpMatchArray[] = []
   for (const timePattern of TIME_PATTERNS) {
     const matches = [...cleanText.matchAll(timePattern.pattern)]
-    const enabledMatches = matches.filter((match) => !disabledSections.has(match[1].toLowerCase()))
+    const enabledMatches = matches.filter((match) => {
+      const checkValue = match[1]
+      if (!checkValue) return false
+      return !disabledSections.has(checkValue.toLowerCase())
+    })
     allTimeMatches.push(...enabledMatches)
     if (enabledMatches.length > 0) {
       // Take the last match for this time pattern
       const lastMatch = enabledMatches[enabledMatches.length - 1]
+      if (!lastMatch) continue
       // matchAll results always have index defined
       const lastIndex = lastMatch.index || 0
       const prevIndex = lastTimeMatch?.match.index || 0
@@ -1010,6 +1036,7 @@ export function parseEnhancedNaturalLanguage(
     if (lastTimeMatch.pattern.extractTime) {
       // For "at 3PM" patterns, extract just the time part, removing "at "
       const timeStr = lastTimeMatch.match[1]
+      if (!timeStr) return parsed
       parsed.time = timeStr.replace(/^at\s+/i, "").trim()
     } else {
       // For standalone time patterns, use the captured group
@@ -1026,11 +1053,16 @@ export function parseEnhancedNaturalLanguage(
   const allDurationMatches: RegExpMatchArray[] = []
   for (const durationPattern of DURATION_PATTERNS) {
     const matches = [...cleanText.matchAll(durationPattern.pattern)]
-    const enabledMatches = matches.filter((match) => !disabledSections.has(match[1].toLowerCase()))
+    const enabledMatches = matches.filter((match) => {
+      const checkValue = match[1]
+      if (!checkValue) return false
+      return !disabledSections.has(checkValue.toLowerCase())
+    })
     allDurationMatches.push(...enabledMatches)
     if (enabledMatches.length > 0) {
       // Take the last match for this duration pattern
       const lastMatch = enabledMatches[enabledMatches.length - 1]
+      if (!lastMatch) continue
       // matchAll results always have index defined
       const currentIndex = lastMatch.index || 0
       const lastIndex = lastDurationMatch?.match.index || 0
@@ -1058,16 +1090,25 @@ export function parseEnhancedNaturalLanguage(
   // Check static recurring patterns
   for (const recurringPattern of RECURRING_PATTERNS) {
     const matches = [...cleanText.matchAll(recurringPattern.pattern)]
-    const enabledMatches = matches.filter((match) => !disabledSections.has(match[1].toLowerCase()))
+    const enabledMatches = matches.filter((match) => {
+      const checkValue = match[1]
+      if (!checkValue) return false
+      return !disabledSections.has(checkValue.toLowerCase())
+    })
     allRecurringMatches.push(...enabledMatches)
     if (enabledMatches.length > 0) {
       // Take the last match for this recurring pattern
       const lastMatch = enabledMatches[enabledMatches.length - 1]
+      if (!lastMatch) continue
       // matchAll results always have index defined
       const currentIndex = lastMatch.index || 0
       const lastIndex = lastRecurringMatch?.match.index || 0
       if (!lastRecurringMatch || currentIndex > lastIndex) {
-        lastRecurringMatch = { match: lastMatch, pattern: recurringPattern, isDynamic: false }
+        lastRecurringMatch = {
+          match: lastMatch,
+          pattern: recurringPattern,
+          isDynamic: false,
+        }
       }
     }
   }
@@ -1075,16 +1116,25 @@ export function parseEnhancedNaturalLanguage(
   // Check dynamic recurring patterns
   for (const recurringPattern of DYNAMIC_RECURRING_PATTERNS) {
     const matches = [...cleanText.matchAll(recurringPattern.pattern)]
-    const enabledMatches = matches.filter((match) => !disabledSections.has(match[1].toLowerCase()))
+    const enabledMatches = matches.filter((match) => {
+      const checkValue = match[1]
+      if (!checkValue) return false
+      return !disabledSections.has(checkValue.toLowerCase())
+    })
     allRecurringMatches.push(...enabledMatches)
     if (enabledMatches.length > 0) {
       // Take the last match for this recurring pattern
       const lastMatch = enabledMatches[enabledMatches.length - 1]
+      if (!lastMatch) continue
       // matchAll results always have index defined
       const currentIndex = lastMatch.index || 0
       const lastIndex = lastRecurringMatch?.match.index || 0
       if (!lastRecurringMatch || currentIndex > lastIndex) {
-        lastRecurringMatch = { match: lastMatch, pattern: recurringPattern, isDynamic: true }
+        lastRecurringMatch = {
+          match: lastMatch,
+          pattern: recurringPattern,
+          isDynamic: true,
+        }
       }
     }
   }
@@ -1128,11 +1178,16 @@ export function parseEnhancedNaturalLanguage(
     if (enabledMatches.length > 0) {
       // Take the last match for this date pattern
       const lastMatch = enabledMatches[enabledMatches.length - 1]
+      if (!lastMatch) continue
       // matchAll results always have index defined
       const currentIndex = lastMatch.index || 0
       const lastIndex = lastDateMatch?.match.index || 0
       if (!lastDateMatch || currentIndex > lastIndex) {
-        lastDateMatch = { match: lastMatch, pattern: datePattern, type: "static" }
+        lastDateMatch = {
+          match: lastMatch,
+          pattern: datePattern,
+          type: "static",
+        }
       }
     }
   }
@@ -1140,16 +1195,25 @@ export function parseEnhancedNaturalLanguage(
   // Check dynamic date patterns
   for (const datePattern of DYNAMIC_DATE_PATTERNS) {
     const matches = [...cleanText.matchAll(datePattern.pattern)]
-    const enabledMatches = matches.filter((match) => !disabledSections.has(match[1].toLowerCase()))
+    const enabledMatches = matches.filter((match) => {
+      const checkValue = match[1]
+      if (!checkValue) return false
+      return !disabledSections.has(checkValue.toLowerCase())
+    })
     allDateMatches.push(...enabledMatches)
     if (enabledMatches.length > 0) {
       // Take the last match for this date pattern
       const lastMatch = enabledMatches[enabledMatches.length - 1]
+      if (!lastMatch) continue
       // matchAll results always have index defined
       const currentIndex = lastMatch.index || 0
       const lastIndex = lastDateMatch?.match.index || 0
       if (!lastDateMatch || currentIndex > lastIndex) {
-        lastDateMatch = { match: lastMatch, pattern: datePattern, type: "dynamic" }
+        lastDateMatch = {
+          match: lastMatch,
+          pattern: datePattern,
+          type: "dynamic",
+        }
       }
     }
   }
@@ -1158,7 +1222,11 @@ export function parseEnhancedNaturalLanguage(
   const validAbsoluteDateMatches: RegExpMatchArray[] = []
   for (const datePattern of ABSOLUTE_DATE_PATTERNS) {
     const matches = [...cleanText.matchAll(datePattern.pattern)]
-    const enabledMatches = matches.filter((match) => !disabledSections.has(match[1].toLowerCase()))
+    const enabledMatches = matches.filter((match) => {
+      const checkValue = match[1]
+      if (!checkValue) return false
+      return !disabledSections.has(checkValue.toLowerCase())
+    })
 
     // Only include matches that result in valid dates
     const validMatches = enabledMatches.filter((match) => {
@@ -1172,11 +1240,16 @@ export function parseEnhancedNaturalLanguage(
     if (validMatches.length > 0) {
       // Take the last match for this date pattern
       const lastMatch = validMatches[validMatches.length - 1]
+      if (!lastMatch) continue
       // matchAll results always have index defined
       const currentIndex = lastMatch.index || 0
       const lastIndex = lastDateMatch?.match.index || 0
       if (!lastDateMatch || currentIndex > lastIndex) {
-        lastDateMatch = { match: lastMatch, pattern: datePattern, type: "absolute" }
+        lastDateMatch = {
+          match: lastMatch,
+          pattern: datePattern,
+          type: "absolute",
+        }
       }
     }
   }
@@ -1230,8 +1303,11 @@ export function convertTimeToHHMMSS(timeString: string): string | null {
   // Handle 24-hour format (e.g., "17:00", "09:30")
   const twentyFourHourMatch = cleanTime.match(/^(\d{1,2}):(\d{2})$/)
   if (twentyFourHourMatch) {
-    const hours = parseInt(twentyFourHourMatch[1], 10)
-    const minutes = parseInt(twentyFourHourMatch[2], 10)
+    const hoursStr = twentyFourHourMatch[1]
+    const minutesStr = twentyFourHourMatch[2]
+    if (!hoursStr || !minutesStr) return null
+    const hours = parseInt(hoursStr, 10)
+    const minutes = parseInt(minutesStr, 10)
     if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
       return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`
     }
@@ -1240,9 +1316,11 @@ export function convertTimeToHHMMSS(timeString: string): string | null {
   // Handle AM/PM format (e.g., "9AM", "2:30PM", "11:45AM")
   const ampmMatch = cleanTime.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/)
   if (ampmMatch) {
-    let hours = parseInt(ampmMatch[1], 10)
-    const minutes = parseInt(ampmMatch[2] || "0", 10)
+    const hoursStr = ampmMatch[1]
     const ampm = ampmMatch[3]
+    if (!hoursStr || !ampm) return null
+    let hours = parseInt(hoursStr, 10)
+    const minutes = parseInt(ampmMatch[2] || "0", 10)
 
     // Convert to 24-hour format
     if (ampm === "PM" && hours !== 12) {

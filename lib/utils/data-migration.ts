@@ -390,6 +390,10 @@ export function migrateDataFile(dataFile: Json): DataFile {
     // Apply migrations sequentially up to target
     for (let i = startIndex; i < migrationFunctions.length; i++) {
       const step = migrationFunctions[i]
+      if (!step) {
+        console.error(`Migration step at index ${i} is undefined`)
+        continue
+      }
 
       // Stop if we exceed the target version
       if (isVersionLessThan(target, step.version)) {
@@ -424,7 +428,17 @@ export function migrateDataFile(dataFile: Json): DataFile {
     }
 
     // Validate the final result against the current DataFile schema
-    const result = DataFileSchema.parse(workingData)
+    let result
+    try {
+      result = DataFileSchema.parse(workingData)
+    } catch (parseError) {
+      // Handle schema validation errors with proper error message format
+      console.error(`✗ Migration failed:`, parseError)
+      console.error(`Aborting migration - returning to original state (${currentVersion})`)
+      throw new Error(
+        `Migration failed: ${parseError instanceof Error ? parseError.message : String(parseError)}. Data reverted to original state.`,
+      )
+    }
     console.log(`Data migration completed. Final version: ${result.version || currentVersion}`)
     return result
   } catch (error) {
@@ -449,7 +463,11 @@ export function getLatestAvailableMigration(): VersionString | null {
   }
 
   // Return the last migration version since array is sorted
-  return migrationFunctions[migrationFunctions.length - 1].version
+  const lastMigration = migrationFunctions[migrationFunctions.length - 1]
+  if (!lastMigration) {
+    return null
+  }
+  return lastMigration.version
 }
 
 /**

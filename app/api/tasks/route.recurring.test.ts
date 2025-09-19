@@ -614,7 +614,13 @@ describe("API Route - Recurring Tasks Integration", () => {
     )
 
     // Verify the completedAt timestamp was set to a recent time (within last few seconds)
-    const callArgs = mockProcessRecurringTaskCompletion.mock.calls[0][0]
+    const mockCallArgs = mockProcessRecurringTaskCompletion.mock.calls[0]
+    if (!mockCallArgs || !mockCallArgs[0]) {
+      throw new Error(
+        "Expected mockProcessRecurringTaskCompletion to have been called with arguments",
+      )
+    }
+    const callArgs = mockCallArgs[0]
     expect(callArgs.completedAt).toBeDefined()
     if (callArgs.completedAt) {
       const completedAtTime = callArgs.completedAt.getTime()

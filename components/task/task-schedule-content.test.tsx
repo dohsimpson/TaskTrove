@@ -552,6 +552,9 @@ describe("TaskScheduleContent", () => {
       // Fill in time inputs first
       const hourInput = screen.getAllByRole("spinbutton")[0]
       const minuteInput = screen.getAllByRole("spinbutton")[1]
+      if (!hourInput || !minuteInput) {
+        throw new Error("Expected to find hour and minute inputs")
+      }
 
       fireEvent.change(hourInput, { target: { value: "9" } })
       fireEvent.change(minuteInput, { target: { value: "30" } })
@@ -577,6 +580,9 @@ describe("TaskScheduleContent", () => {
       // Fill in only hour input
       const hourInput = screen.getAllByRole("spinbutton")[0]
       const minuteInput = screen.getAllByRole("spinbutton")[1]
+      if (!hourInput || !minuteInput) {
+        throw new Error("Expected to find hour and minute inputs")
+      }
 
       // Initially minute should be empty
       expect(minuteInput).toHaveValue(null)
@@ -1713,6 +1719,9 @@ describe("TaskScheduleContent", () => {
         // Click on Wednesday if available, or the first weekday button
         const wednesdayButton =
           weekdayButtons.find((btn) => btn.textContent === "We") || weekdayButtons[0]
+        if (!wednesdayButton) {
+          throw new Error("Expected to find weekday button")
+        }
         fireEvent.click(wednesdayButton)
       }
 

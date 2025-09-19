@@ -454,8 +454,12 @@ describe("MainLayoutWrapper - Colored Header Icons", () => {
 
     // This test verifies the logic exists - the actual color application
     // is tested through the getPageIcon function implementation
-    expect(mockProjectsData[0].color).toBe("#ff6b6b")
-    expect(mockProjectsData[0].id).toBe("test-project")
+    const firstProject = mockProjectsData[0]
+    if (!firstProject) {
+      throw new Error("Expected mock project data to exist")
+    }
+    expect(firstProject.color).toBe("#ff6b6b")
+    expect(firstProject.id).toBe("test-project")
   })
 
   it("should use label colors for label header icons", () => {
@@ -466,8 +470,12 @@ describe("MainLayoutWrapper - Colored Header Icons", () => {
 
     // This test verifies the logic exists - the actual color application
     // is tested through the getPageIcon function implementation
-    expect(mockLabelsData[0].color).toBe("#4ecdc4")
-    expect(mockLabelsData[0].name).toBe("important")
+    const firstLabel = mockLabelsData[0]
+    if (!firstLabel) {
+      throw new Error("Expected mock label data to exist")
+    }
+    expect(firstLabel.color).toBe("#4ecdc4")
+    expect(firstLabel.name).toBe("important")
   })
 
   it("should fallback to gray color when project/label not found", () => {

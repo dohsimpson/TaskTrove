@@ -146,6 +146,7 @@ export function DraggableProjectGroupItem({
     const dropTargetData = location.current.dropTargets[0]?.data
 
     // Extract instruction using Atlassian's instruction system
+    if (!dropTargetData) return
     const instruction = extractSidebarInstruction(sourceData, dropTargetData)
 
     console.log("📍 Extracted instruction:", instruction)
@@ -250,6 +251,8 @@ export function DraggableProjectGroupItem({
     ) {
       // Only show indicator if THIS element is the innermost target (following official pattern)
       const innerMost = location.current.dropTargets[0]
+      if (!innerMost) return
+
       const isInnermostTarget =
         innerMost.data.type === "sidebar-group-drop-target" && innerMost.data.groupId === group.id
 

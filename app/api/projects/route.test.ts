@@ -178,6 +178,9 @@ describe("PATCH /api/projects", () => {
     // Verify that the file was written with the regenerated slug
     expect(mockSafeWriteDataFile).toHaveBeenCalled()
     const writeCall = mockSafeWriteDataFile.mock.calls[0]
+    if (!writeCall || !writeCall[0]) {
+      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
+    }
     const writtenData = writeCall[0].data
     const updatedProject = writtenData.projects.find(
       (p: { id: string }) => p.id === TEST_PROJECT_ID_1,
@@ -215,6 +218,9 @@ describe("PATCH /api/projects", () => {
     // Verify that explicit slug is preserved
     expect(mockSafeWriteDataFile).toHaveBeenCalled()
     const writeCall = mockSafeWriteDataFile.mock.calls[0]
+    if (!writeCall || !writeCall[0]) {
+      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
+    }
     const writtenData = writeCall[0].data
     const updatedProject = writtenData.projects.find(
       (p: { id: string }) => p.id === TEST_PROJECT_ID_1,
@@ -278,6 +284,9 @@ describe("PATCH /api/projects", () => {
     // Verify that the file was written with both projects (one updated, one unchanged)
     expect(mockSafeWriteDataFile).toHaveBeenCalled()
     const writeCall = mockSafeWriteDataFile.mock.calls[0]
+    if (!writeCall || !writeCall[0]) {
+      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
+    }
     const writtenData = writeCall[0].data
 
     // Both projects should still exist - one updated, one unchanged
@@ -364,11 +373,18 @@ describe("POST /api/projects", () => {
     // Verify that the file was written with the new project
     expect(mockSafeWriteDataFile).toHaveBeenCalled()
     const writeCall = mockSafeWriteDataFile.mock.calls[0]
+    if (!writeCall || !writeCall[0]) {
+      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
+    }
     const writtenData = writeCall[0].data
 
     expect(writtenData.projects).toHaveLength(2)
-    expect(writtenData.projects[1].name).toBe("New Test Project")
-    expect(writtenData.projects[1].color).toBe("#10b981")
+    const newProject = writtenData.projects[1]
+    if (!newProject) {
+      throw new Error("Expected new project to exist")
+    }
+    expect(newProject.name).toBe("New Test Project")
+    expect(newProject.color).toBe("#10b981")
   })
 
   it("should create a project with default color when not provided", async () => {
@@ -468,11 +484,17 @@ describe("POST /api/projects", () => {
     // Verify that the project was added to the root project group
     expect(mockSafeWriteDataFile).toHaveBeenCalled()
     const writeCall = mockSafeWriteDataFile.mock.calls[0]
+    if (!writeCall || !writeCall[0]) {
+      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
+    }
     const writtenData = writeCall[0].data
 
     // Check that project was added to projects array
     expect(writtenData.projects).toHaveLength(2)
     const newProject = writtenData.projects[1]
+    if (!newProject) {
+      throw new Error("Expected new project to exist")
+    }
     expect(newProject.name).toBe("New Project for Sidebar")
     expect(newProject.color).toBe("#8b5cf6")
 
@@ -537,10 +559,17 @@ describe("DELETE /api/projects", () => {
     // Verify that the file was written without the deleted project
     expect(mockSafeWriteDataFile).toHaveBeenCalled()
     const writeCall = mockSafeWriteDataFile.mock.calls[0]
+    if (!writeCall || !writeCall[0]) {
+      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
+    }
     const writtenData = writeCall[0].data
 
     expect(writtenData.projects).toHaveLength(1)
-    expect(writtenData.projects[0].id).toBe(TEST_PROJECT_ID_2)
+    const remainingProject = writtenData.projects[0]
+    if (!remainingProject) {
+      throw new Error("Expected remaining project to exist")
+    }
+    expect(remainingProject.id).toBe(TEST_PROJECT_ID_2)
     expect(
       writtenData.projects.find((p: { id: string }) => p.id === TEST_PROJECT_ID_1),
     ).toBeUndefined()
@@ -600,6 +629,9 @@ describe("DELETE /api/projects", () => {
 
     // Verify that both original projects still exist
     const writeCall = mockSafeWriteDataFile.mock.calls[0]
+    if (!writeCall || !writeCall[0]) {
+      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
+    }
     const writtenData = writeCall[0].data
     expect(writtenData.projects).toHaveLength(2)
   })

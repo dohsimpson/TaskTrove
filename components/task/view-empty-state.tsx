@@ -74,7 +74,11 @@ const VIEW_CONFIGS: Record<string, ViewConfig> = {
 function getViewConfig(viewId: ViewId, projectName?: string, labelName?: string): ViewConfig {
   // Handle standard views
   if (typeof viewId === "string" && viewId in VIEW_CONFIGS) {
-    return VIEW_CONFIGS[viewId]
+    const config = VIEW_CONFIGS[viewId]
+    if (!config) {
+      throw new Error(`Missing configuration for view: ${viewId}`)
+    }
+    return config
   }
 
   // Handle project views (UUID)

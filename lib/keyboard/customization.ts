@@ -102,6 +102,7 @@ export const applyUserShortcutsAtom = atom(null, (get, set) => {
   // Update handlers with user-customized shortcuts
   for (const [handlerShortcutKey, customShortcut] of Object.entries(userShortcuts)) {
     const [handlerId, originalShortcut] = handlerShortcutKey.split("-", 2)
+    if (!handlerId) continue
     const handler = handlers.get(handlerId)
 
     if (handler) {
@@ -484,6 +485,12 @@ export function validateCustomShortcut(shortcut: string): ValidationResult {
     const parts = trimmed.split("+")
     const potentialModifiers = parts.slice(0, -1)
     const key = parts[parts.length - 1]
+    if (!key) {
+      return {
+        isValid: false,
+        error: "Invalid shortcut format: missing key",
+      }
+    }
 
     // If all parts are single characters and none are standard modifiers, treat as sequence
     const isSequenceShortcut =

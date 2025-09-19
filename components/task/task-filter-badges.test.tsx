@@ -362,7 +362,11 @@ describe("TaskFilterBadges", () => {
       render(<TaskFilterBadges />)
 
       const removeButtons = screen.getAllByTestId("x-icon")
-      await userEvent.click(removeButtons[0])
+      const firstRemoveButton = removeButtons[0]
+      if (!firstRemoveButton) {
+        throw new Error("Expected to find remove button")
+      }
+      await userEvent.click(firstRemoveButton)
 
       expect(mockUpdateFilters).toHaveBeenCalled()
     })

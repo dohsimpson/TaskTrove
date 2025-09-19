@@ -426,8 +426,9 @@ export function EnhancedHighlightedInput({
           case "Tab":
           case "Enter":
             e.preventDefault()
-            if (autocomplete.items[autocomplete.selectedIndex]) {
-              handleAutocompleteSelect(autocomplete.items[autocomplete.selectedIndex])
+            const selectedItem = autocomplete.items[autocomplete.selectedIndex]
+            if (selectedItem) {
+              handleAutocompleteSelect(selectedItem)
             }
             break
 

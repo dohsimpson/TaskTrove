@@ -165,8 +165,12 @@ describe("Ordered Tasks By Section Atom", () => {
       const section1Tasks = getOrderedTasksForSection(TEST_PROJECT_ID_1, TEST_SECTION_ID_1)
 
       expect(section1Tasks).toHaveLength(1)
-      expect(section1Tasks[0].id).toBe(TEST_TASK_ID_1)
-      expect(section1Tasks[0].sectionId).toBe(TEST_SECTION_ID_1)
+      const firstTask = section1Tasks[0]
+      if (!firstTask) {
+        throw new Error("Expected first task in section1")
+      }
+      expect(firstTask.id).toBe(TEST_TASK_ID_1)
+      expect(firstTask.sectionId).toBe(TEST_SECTION_ID_1)
     })
 
     it("should return tasks for different valid sections separately", () => {
@@ -175,10 +179,18 @@ describe("Ordered Tasks By Section Atom", () => {
       const section2Tasks = getOrderedTasksForSection(TEST_PROJECT_ID_1, TEST_SECTION_ID_2)
 
       expect(section1Tasks).toHaveLength(1)
-      expect(section1Tasks[0].id).toBe(TEST_TASK_ID_1)
+      const section1FirstTask = section1Tasks[0]
+      if (!section1FirstTask) {
+        throw new Error("Expected first task in section1")
+      }
+      expect(section1FirstTask.id).toBe(TEST_TASK_ID_1)
 
       expect(section2Tasks).toHaveLength(1)
-      expect(section2Tasks[0].id).toBe(TEST_TASK_ID_2)
+      const section2FirstTask = section2Tasks[0]
+      if (!section2FirstTask) {
+        throw new Error("Expected first task in section2")
+      }
+      expect(section2FirstTask.id).toBe(TEST_TASK_ID_2)
     })
   })
 
@@ -242,8 +254,12 @@ describe("Ordered Tasks By Section Atom", () => {
 
       // Should only return the task from the requested project
       expect(section1Tasks).toHaveLength(1)
-      expect(section1Tasks[0].id).toBe(TEST_TASK_ID_1)
-      expect(section1Tasks[0].projectId).toBe(TEST_PROJECT_ID_1)
+      const firstTask = section1Tasks[0]
+      if (!firstTask) {
+        throw new Error("Expected to find first task")
+      }
+      expect(firstTask.id).toBe(TEST_TASK_ID_1)
+      expect(firstTask.projectId).toBe(TEST_PROJECT_ID_1)
     })
 
     it("should handle inbox context correctly", () => {
@@ -297,13 +313,16 @@ describe("Ordered Tasks By Section Atom", () => {
 
       // Tasks should be sorted by creation date (earliest first)
       expect(defaultSectionTasks).toHaveLength(2)
-      expect(defaultSectionTasks[0].createdAt.getTime()).toBeLessThanOrEqual(
-        defaultSectionTasks[1].createdAt.getTime(),
-      )
+      const firstTask = defaultSectionTasks[0]
+      const secondTask = defaultSectionTasks[1]
+      if (!firstTask || !secondTask) {
+        throw new Error("Expected to find first two tasks")
+      }
+      expect(firstTask.createdAt.getTime()).toBeLessThanOrEqual(secondTask.createdAt.getTime())
 
       // Specifically check the order based on our test data
-      expect(defaultSectionTasks[0].id).toBe(TEST_TASK_ID_3) // 2024-01-12
-      expect(defaultSectionTasks[1].id).toBe(TEST_TASK_ID_4) // 2024-01-13
+      expect(firstTask.id).toBe(TEST_TASK_ID_3) // 2024-01-12
+      expect(secondTask.id).toBe(TEST_TASK_ID_4) // 2024-01-13
     })
   })
 
@@ -341,7 +360,11 @@ describe("Ordered Tasks By Section Atom", () => {
 
       // Task with non-existent section should appear in default section
       expect(defaultTasks).toHaveLength(1)
-      expect(defaultTasks[0].id).toBe(taskInEmptyProject.id)
+      const firstTask = defaultTasks[0]
+      if (!firstTask) {
+        throw new Error("Expected to find first task")
+      }
+      expect(firstTask.id).toBe(taskInEmptyProject.id)
     })
 
     it("should handle empty task list", () => {
@@ -395,9 +418,13 @@ describe("Ordered Tasks By Section Atom", () => {
       // making tasks in that section "orphaned"
 
       // Remove section 2 from the project
+      const firstSection = testProject.sections[0]
+      if (!firstSection) {
+        throw new Error("Expected to find first section")
+      }
       const modifiedProject: Project = {
         ...testProject,
-        sections: [testProject.sections[0]], // Only keep section 1
+        sections: [firstSection], // Only keep section 1
       }
 
       store.set(mockProjectsAtom, [modifiedProject])

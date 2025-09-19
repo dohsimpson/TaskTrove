@@ -278,14 +278,22 @@ describe("Groups Atoms", () => {
       const tree = await store.get(projectGroupTreeAtom)
 
       expect(tree).toHaveLength(1)
-      expect(tree[0].group).toEqual(mockParentProjectGroup)
-      expect(tree[0].children).toHaveLength(2)
-      expect(tree[0].depth).toBe(0)
-      expect(tree[0].path).toEqual([TEST_GROUP_ID_3])
+      const firstTreeNode = tree[0]
+      if (!firstTreeNode) {
+        throw new Error("Expected first tree node to exist")
+      }
+      expect(firstTreeNode.group).toEqual(mockParentProjectGroup)
+      expect(firstTreeNode.children).toHaveLength(2)
+      expect(firstTreeNode.depth).toBe(0)
+      expect(firstTreeNode.path).toEqual([TEST_GROUP_ID_3])
 
-      expect(tree[0].children[0].group).toEqual(mockProjectGroup)
-      expect(tree[0].children[0].depth).toBe(1)
-      expect(tree[0].children[0].path).toEqual([TEST_GROUP_ID_3, TEST_GROUP_ID_1])
+      const firstChild = firstTreeNode.children[0]
+      if (!firstChild) {
+        throw new Error("Expected first child to exist")
+      }
+      expect(firstChild.group).toEqual(mockProjectGroup)
+      expect(firstChild.depth).toBe(1)
+      expect(firstChild.path).toEqual([TEST_GROUP_ID_3, TEST_GROUP_ID_1])
     })
 
     it("should generate breadcrumbs for groups", async () => {
@@ -399,9 +407,22 @@ describe("Groups Atoms", () => {
       store = createStore() // Reset store with new data
       const tree = await store.get(projectGroupTreeAtom)
 
-      expect(tree[0].children[0].children).toHaveLength(1)
-      expect(tree[0].children[0].children[0].depth).toBe(2)
-      expect(tree[0].children[0].children[0].group).toEqual(deeplyNested)
+      const rootNode = tree[0]
+      if (!rootNode || !rootNode.children) {
+        throw new Error("Expected to find root node with children")
+      }
+      const firstChild = rootNode.children[0]
+      if (!firstChild || !firstChild.children) {
+        throw new Error("Expected to find first child with children")
+      }
+      expect(firstChild.children).toHaveLength(1)
+
+      const deepChild = firstChild.children[0]
+      if (!deepChild) {
+        throw new Error("Expected to find deep child")
+      }
+      expect(deepChild.depth).toBe(2)
+      expect(deepChild.group).toEqual(deeplyNested)
     })
   })
 

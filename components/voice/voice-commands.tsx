@@ -224,8 +224,13 @@ export function VoiceCommands({
 
       recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
         const result = event.results[event.results.length - 1]
-        const transcript = result[0].transcript
-        const confidence = result[0].confidence
+        if (!result) return
+
+        const alternative = result[0]
+        if (!alternative) return
+
+        const transcript = alternative.transcript
+        const confidence = alternative.confidence
 
         setCurrentTranscript(transcript)
         setConfidence(confidence * 100)

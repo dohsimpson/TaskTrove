@@ -362,7 +362,11 @@ describe("Logger", () => {
 
       log.info({ module: "test", structure: parent }, "Nested circular")
 
-      const expectedCall = mockConsole.log.mock.calls[0][0]
+      const firstCall = mockConsole.log.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected to find console.log call with arguments")
+      }
+      const expectedCall = firstCall[0]
       expect(expectedCall).toContain("[test]")
       expect(expectedCall).toContain('"name":"parent"')
       expect(expectedCall).toContain("[Circular]")
@@ -393,7 +397,11 @@ describe("Logger", () => {
 
       log.warn({ module: "test", data: problematicObj }, "Problematic object")
 
-      const expectedCall = mockConsole.warn.mock.calls[0][0]
+      const firstCall = mockConsole.warn.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected to find console.warn call with arguments")
+      }
+      const expectedCall = firstCall[0]
       expect(expectedCall).toMatch(/\[test\] \[Serialization Error:.*\] Problematic object/)
     })
 
@@ -451,7 +459,11 @@ describe("Logger", () => {
       const timer = startTimer("test operation")
       timer.end({ data: problematicObj })
 
-      const expectedCall = mockConsole.log.mock.calls[0][0]
+      const firstCall = mockConsole.log.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected to find console.log call with arguments")
+      }
+      const expectedCall = firstCall[0]
       expect(expectedCall).toMatch(/Completed test operation in 500ms \[Serialization Error:.*\]/)
     })
   })

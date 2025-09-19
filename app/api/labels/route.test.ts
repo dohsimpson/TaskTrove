@@ -168,6 +168,9 @@ describe("PATCH /api/labels", () => {
     // Verify that the file was written with the regenerated slug
     expect(mockSafeWriteDataFile).toHaveBeenCalled()
     const writeCall = mockSafeWriteDataFile.mock.calls[0]
+    if (!writeCall || !writeCall[0]) {
+      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
+    }
     const writtenData = writeCall[0].data
     const updatedLabel = writtenData.labels.find((l: { id: string }) => l.id === TEST_LABEL_ID_1)
 
@@ -203,6 +206,9 @@ describe("PATCH /api/labels", () => {
     // Verify that explicit slug is preserved
     expect(mockSafeWriteDataFile).toHaveBeenCalled()
     const writeCall = mockSafeWriteDataFile.mock.calls[0]
+    if (!writeCall || !writeCall[0]) {
+      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
+    }
     const writtenData = writeCall[0].data
     const updatedLabel = writtenData.labels.find((l: { id: string }) => l.id === TEST_LABEL_ID_1)
 
@@ -424,7 +430,11 @@ describe("POST /api/labels", () => {
     expect(mockSafeWriteDataFile).toHaveBeenCalledTimes(1)
 
     // Verify the label was added to the data
-    const writeCall = mockSafeWriteDataFile.mock.calls[0][0]
+    const writeArgs = mockSafeWriteDataFile.mock.calls[0]
+    if (!writeArgs || !writeArgs[0]) {
+      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
+    }
+    const writeCall = writeArgs[0]
     expect(writeCall.data.labels).toHaveLength(2)
     expect(writeCall.data.labels[1]).toEqual({
       id: "12345678-1234-4123-8123-123456789012",
@@ -454,7 +464,11 @@ describe("POST /api/labels", () => {
     expect(responseData.success).toBe(true)
 
     // Verify the label was created with default color
-    const writeCall = mockSafeWriteDataFile.mock.calls[0][0]
+    const writeArgs = mockSafeWriteDataFile.mock.calls[0]
+    if (!writeArgs || !writeArgs[0]) {
+      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
+    }
+    const writeCall = writeArgs[0]
     expect(writeCall.data.labels[1]).toEqual({
       id: "12345678-1234-4123-8123-123456789012",
       name: "Label Without Color",

@@ -346,20 +346,8 @@ export const addProjectSectionAtom = atom(
             throw new Error(`Section "${data.sectionName}" already exists`)
           }
 
-          // Generate random color if not provided
-          const colors = [
-            "#ef4444",
-            "#f59e0b",
-            "#3b82f6",
-            "#8b5cf6",
-            "#10b981",
-            "#f97316",
-            "#06b6d4",
-            "#84cc16",
-            "#ec4899",
-            "#6366f1",
-          ]
-          const sectionColor = data.color || colors[Math.floor(Math.random() * colors.length)]
+          // Use provided color or default
+          const sectionColor = data.color || DEFAULT_SECTION_COLOR
 
           const newSection: ProjectSection = {
             id: createSectionId(uuidv4()),
@@ -564,7 +552,12 @@ export const moveProjectSectionAtom = atom(
         return // Already at bottom or not found
 
       const newSections = [...project.sections]
-      const [movedSection] = newSections.splice(currentIndex, 1)
+      const removedSections = newSections.splice(currentIndex, 1)
+      const movedSection = removedSections[0]
+
+      if (!movedSection) {
+        throw new Error("Failed to find section to move")
+      }
 
       // Insert at new position based on direction
       const newIndex = data.direction === "up" ? currentIndex - 1 : currentIndex + 1

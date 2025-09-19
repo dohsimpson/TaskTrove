@@ -141,6 +141,7 @@ export function getConflictSeverity(conflict: ShortcutConflict): ConflictSeverit
     for (let j = i + 1; j < contexts.length; j++) {
       const context1 = contexts[i]
       const context2 = contexts[j]
+      if (!context1 || !context2) continue
 
       // Check for direct overlap (same requirements)
       const sameContext = areContextsSimilar(context1, context2)
@@ -318,7 +319,9 @@ function resolveBypriority(conflict: ShortcutConflict): ConflictResolution {
   let targetHandler = conflict.handlers[0]
 
   for (let i = 0; i < conflict.handlers.length; i++) {
-    const priority = conflict.contexts[i].priority || 0
+    const context = conflict.contexts[i]
+    if (!context) continue
+    const priority = context.priority || 0
     if (priority < lowestPriority) {
       lowestPriority = priority
       targetHandler = conflict.handlers[i]

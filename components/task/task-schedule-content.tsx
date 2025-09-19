@@ -85,9 +85,13 @@ export function TaskScheduleContent({
         const dates: Date[] = []
         // Handle multiple month/day combinations
         for (let i = 0; i < Math.min(parsed.bymonth.length, parsed.bymonthday.length); i++) {
-          const month = parsed.bymonth[i] - 1 // Convert to 0-based month
-          const day = parsed.bymonthday[i]
-          dates.push(new Date(new Date().getFullYear(), month, day)) // Use current year
+          const monthValue = parsed.bymonth[i]
+          const dayValue = parsed.bymonthday[i]
+          if (monthValue !== undefined && dayValue !== undefined) {
+            const month = monthValue - 1 // Convert to 0-based month
+            const day = dayValue
+            dates.push(new Date(new Date().getFullYear(), month, day)) // Use current year
+          }
         }
         return dates
       }
@@ -341,10 +345,14 @@ export function TaskScheduleContent({
     if (parsedNlInput.time) {
       const timeFormatted = convertTimeToHHMMSS(parsedNlInput.time)
       if (timeFormatted) {
-        const [hours, minutes] = timeFormatted.split(":").map(Number)
-        const timeDate = new Date()
-        timeDate.setHours(hours, minutes, 0, 0)
-        parsedTime = timeDate
+        const timeParts = timeFormatted.split(":").map(Number)
+        const hours = timeParts[0]
+        const minutes = timeParts[1]
+        if (hours !== undefined && minutes !== undefined) {
+          const timeDate = new Date()
+          timeDate.setHours(hours, minutes, 0, 0)
+          parsedTime = timeDate
+        }
         hasAppliedValue = true
       }
     }
@@ -445,7 +453,9 @@ export function TaskScheduleContent({
           const dateStrings = []
           if (parsed.bymonth.length === 1) {
             // One month, multiple days
-            const month = parsed.bymonth[0] - 1
+            const monthValue = parsed.bymonth[0]
+            if (monthValue === undefined) return "Invalid month data"
+            const month = monthValue - 1
             const monthName = new Date(2024, month, 1).toLocaleDateString("en-US", {
               month: "long",
             })
@@ -453,7 +463,9 @@ export function TaskScheduleContent({
             dateStrings.push(`${monthName} ${dayList}`)
           } else {
             // Multiple months, one day
-            const day = parsed.bymonthday[0]
+            const dayValue = parsed.bymonthday[0]
+            if (dayValue === undefined) return "Invalid day data"
+            const day = dayValue
             const dayWithSuffix = getDayWithSuffix(day)
             for (const month of parsed.bymonth) {
               const monthName = new Date(2024, month - 1, 1).toLocaleDateString("en-US", {
@@ -622,7 +634,7 @@ export function TaskScheduleContent({
   const handleRecurringSelect = (type: string) => {
     if (!task) return
 
-    let rrule: string
+    let rrule: string | null = null
 
     switch (type) {
       case "daily":
@@ -648,7 +660,9 @@ export function TaskScheduleContent({
             RRuleWeekday.FR,
             RRuleWeekday.SA,
           ]
-          const weekdayCodes = selectedWeekdays.map((day) => weekdayMap[day])
+          const weekdayCodes = selectedWeekdays
+            .map((day) => weekdayMap[day])
+            .filter((code) => code !== undefined)
           rrule = buildRRule({ freq: RRuleFrequency.WEEKLY, byday: weekdayCodes })
         } else {
           // Use default weekly (same day of week as due date) - only if no UI selection made
@@ -682,23 +696,28 @@ export function TaskScheduleContent({
 
           // If all dates are in the same month, create a simple RRULE
           if (datesByMonth.size === 1) {
-            const [month, days] = Array.from(datesByMonth.entries())[0]
-            rrule = buildRRule({
-              freq: RRuleFrequency.YEARLY,
-              interval: 1,
-              bymonth: [month],
-              bymonthday: days,
-            })
+            const firstEntry = Array.from(datesByMonth.entries())[0]
+            if (firstEntry) {
+              const [month, days] = firstEntry
+              rrule = buildRRule({
+                freq: RRuleFrequency.YEARLY,
+                interval: 1,
+                bymonth: [month],
+                bymonthday: days,
+              })
+            }
           } else {
             // Multiple months: for now, use the first selected date to avoid Cartesian product
             // TODO: Future enhancement could create multiple RRULEs or use RDATE
             const firstDate = selectedYearlyDates[0]
-            rrule = buildRRule({
-              freq: RRuleFrequency.YEARLY,
-              interval: 1,
-              bymonth: [firstDate.getMonth() + 1],
-              bymonthday: [firstDate.getDate()],
-            })
+            if (firstDate) {
+              rrule = buildRRule({
+                freq: RRuleFrequency.YEARLY,
+                interval: 1,
+                bymonth: [firstDate.getMonth() + 1],
+                bymonthday: [firstDate.getDate()],
+              })
+            }
             console.warn(
               "Multiple months selected for yearly pattern. Using first date only to avoid Cartesian product.",
             )
@@ -743,7 +762,9 @@ export function TaskScheduleContent({
         } else {
           // Weekday patterns (1st Monday, 2nd Tuesday, etc.)
           if (customFrequency === "MONTHLY") {
-            const weekdayCodes = customWeekdays.map((day) => weekdayMap[day])
+            const weekdayCodes = customWeekdays
+              .map((day) => weekdayMap[day])
+              .filter((code) => code !== undefined)
             rrule = buildRRule({
               freq: RRuleFrequency.MONTHLY,
               interval: customInterval,
@@ -751,7 +772,9 @@ export function TaskScheduleContent({
               bysetpos: customOccurrences,
             })
           } else if (customFrequency === "YEARLY") {
-            const weekdayCodes = customWeekdays.map((day) => weekdayMap[day])
+            const weekdayCodes = customWeekdays
+              .map((day) => weekdayMap[day])
+              .filter((code) => code !== undefined)
             rrule = buildRRule({
               freq: RRuleFrequency.YEARLY,
               interval: customInterval,
@@ -761,7 +784,9 @@ export function TaskScheduleContent({
             })
           } else {
             // WEEKLY interval pattern - use selected weekdays
-            const weekdayCodes = customWeekdays.map((day) => weekdayMap[day])
+            const weekdayCodes = customWeekdays
+              .map((day) => weekdayMap[day])
+              .filter((code) => code !== undefined)
             rrule = buildRRule({
               freq: RRuleFrequency.WEEKLY,
               interval: customInterval,
@@ -779,21 +804,23 @@ export function TaskScheduleContent({
 
     // If task already has a due date, preserve it and just add recurring pattern
     // If no due date, calculate one based on the recurring pattern
-    if (task.dueDate) {
-      // Keep existing due date and time, just add recurring pattern
-      handleUpdate(taskId, undefined, undefined, type, rrule)
-    } else {
-      // Calculate a due date for tasks without one
-      // Use normalized date (start of day) to avoid time zone issues with late-night pattern creation
-      const today = new Date()
-      const normalizedToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-      const nextDueDate = calculateNextDueDate(rrule, normalizedToday, true)
-      if (nextDueDate) {
-        // Don't set default time when creating a new recurring task
-        handleUpdate(taskId, nextDueDate, undefined, type, rrule)
-      } else {
-        // Fallback: just set recurring pattern without due date
+    if (rrule) {
+      if (task.dueDate) {
+        // Keep existing due date and time, just add recurring pattern
         handleUpdate(taskId, undefined, undefined, type, rrule)
+      } else {
+        // Calculate a due date for tasks without one
+        // Use normalized date (start of day) to avoid time zone issues with late-night pattern creation
+        const today = new Date()
+        const normalizedToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+        const nextDueDate = calculateNextDueDate(rrule, normalizedToday, true)
+        if (nextDueDate) {
+          // Don't set default time when creating a new recurring task
+          handleUpdate(taskId, nextDueDate, undefined, type, rrule)
+        } else {
+          // Fallback: just set recurring pattern without due date
+          handleUpdate(taskId, undefined, undefined, type, rrule)
+        }
       }
     }
   }

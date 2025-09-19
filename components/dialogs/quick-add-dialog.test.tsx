@@ -2079,7 +2079,7 @@ describe("QuickAddDialog", () => {
 
         // Check if this effect both reads from and writes to the same state
         // Look for updateNewTask calls in the effect body
-        if (fullEffect.includes("updateNewTask")) {
+        if (fullEffect.includes("updateNewTask") && dependencyArray) {
           // Check for circular dependency patterns
           const hasNewTaskDependency =
             dependencyArray.includes("newTask.recurring") ||

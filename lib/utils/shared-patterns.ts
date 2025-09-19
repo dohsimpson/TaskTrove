@@ -105,12 +105,14 @@ export function generatePrioritySuggestions(): AutocompleteSuggestion[] {
     const match = pattern.pattern.source.match(/\(([!]+)\)/)
     if (match) {
       const exclamations = match[1]
-      suggestions.push({
-        type: "priority",
-        value: exclamations,
-        display: exclamations,
-        description: `Priority ${pattern.level} - ${pattern.level === 1 ? "Highest" : pattern.level === 2 ? "High" : pattern.level === 3 ? "Medium" : "Low"}`,
-      })
+      if (exclamations) {
+        suggestions.push({
+          type: "priority",
+          value: exclamations,
+          display: exclamations,
+          description: `Priority ${pattern.level} - ${pattern.level === 1 ? "Highest" : pattern.level === 2 ? "High" : pattern.level === 3 ? "Medium" : "Low"}`,
+        })
+      }
     }
   })
 

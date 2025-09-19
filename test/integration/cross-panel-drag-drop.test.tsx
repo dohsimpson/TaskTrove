@@ -328,12 +328,17 @@ describe("Cross-Panel Drag and Drop", () => {
     )
 
     // Verify tasks are rendered as draggable
-    expect(screen.getByTestId(`draggable-${mockTasks[0].id}`)).toBeInTheDocument()
-    expect(screen.getByTestId(`draggable-${mockTasks[1].id}`)).toBeInTheDocument()
+    const firstTask = mockTasks[0]
+    const secondTask = mockTasks[1]
+    if (!firstTask || !secondTask) {
+      throw new Error("Expected to find first two mock tasks")
+    }
+    expect(screen.getByTestId(`draggable-${firstTask.id}`)).toBeInTheDocument()
+    expect(screen.getByTestId(`draggable-${secondTask.id}`)).toBeInTheDocument()
 
     // Verify drag attributes
-    const draggableTask1 = screen.getByTestId(`draggable-${mockTasks[0].id}`)
-    expect(draggableTask1).toHaveAttribute("data-draggable-id", mockTasks[0].id)
+    const draggableTask1 = screen.getByTestId(`draggable-${firstTask.id}`)
+    expect(draggableTask1).toHaveAttribute("data-draggable-id", firstTask.id)
     expect(draggableTask1).toHaveAttribute("data-index", "0")
   })
 
@@ -372,7 +377,11 @@ describe("Cross-Panel Drag and Drop", () => {
       <CrossPanelTestComponent tasks={mockTasks} projects={mockProjects} labels={mockLabels} />,
     )
 
-    const draggableTask = screen.getByTestId(`draggable-${mockTasks[1].id}`)
+    const taskToProject = mockTasks[1]
+    if (!taskToProject) {
+      throw new Error("Expected to find second mock task")
+    }
+    const draggableTask = screen.getByTestId(`draggable-${taskToProject.id}`)
     const projectDropZone = screen.getByTestId("project-drop-zone-project-1")
 
     // Simulate drag start
@@ -380,7 +389,7 @@ describe("Cross-Panel Drag and Drop", () => {
 
     // Simulate setting active drag data (this would be done by the real drag system)
     Object.defineProperty(projectDropZone, "dataset", {
-      value: { activeDrag: JSON.stringify({ type: "draggable-item", taskId: mockTasks[1].id }) },
+      value: { activeDrag: JSON.stringify({ type: "draggable-item", taskId: taskToProject.id }) },
       writable: true,
     })
 
@@ -388,7 +397,7 @@ describe("Cross-Panel Drag and Drop", () => {
     fireEvent.mouseUp(projectDropZone)
 
     // Verify the correct handler was called
-    expect(mockHandleTaskDropOnProject).toHaveBeenCalledWith(mockTasks[1].id, "project-1")
+    expect(mockHandleTaskDropOnProject).toHaveBeenCalledWith(taskToProject.id, "project-1")
   })
 
   it("simulates task drop on label and calls correct handler", async () => {
@@ -396,15 +405,24 @@ describe("Cross-Panel Drag and Drop", () => {
       <CrossPanelTestComponent tasks={mockTasks} projects={mockProjects} labels={mockLabels} />,
     )
 
-    const draggableTask = screen.getByTestId(`draggable-${mockTasks[0].id}`)
+    const taskToLabel = mockTasks[0]
+    if (!taskToLabel) {
+      throw new Error("Expected to find first mock task")
+    }
+    const draggableTask = screen.getByTestId(`draggable-${taskToLabel.id}`)
     const labelDropZone = screen.getByTestId("label-drop-zone-label-2")
 
     // Simulate drag start
     fireEvent.mouseDown(draggableTask)
 
+    const firstTask = mockTasks[0]
+    if (!firstTask) {
+      throw new Error("Expected to find first mock task")
+    }
+
     // Simulate setting active drag data
     Object.defineProperty(labelDropZone, "dataset", {
-      value: { activeDrag: JSON.stringify({ type: "draggable-item", taskId: mockTasks[0].id }) },
+      value: { activeDrag: JSON.stringify({ type: "draggable-item", taskId: firstTask.id }) },
       writable: true,
     })
 
@@ -412,7 +430,7 @@ describe("Cross-Panel Drag and Drop", () => {
     fireEvent.mouseUp(labelDropZone)
 
     // Verify the correct handler was called
-    expect(mockHandleTaskDropOnLabel).toHaveBeenCalledWith(mockTasks[0].id, "label-2")
+    expect(mockHandleTaskDropOnLabel).toHaveBeenCalledWith(firstTask.id, "label-2")
   })
 
   it("provides visual feedback structure for drag operations", () => {
@@ -494,8 +512,13 @@ describe("Cross-Panel Drag and Drop", () => {
       <CrossPanelTestComponent tasks={mockTasks} projects={mockProjects} labels={mockLabels} />,
     )
 
+    const firstTask = mockTasks[0]
+    if (!firstTask) {
+      throw new Error("Expected to find first mock task")
+    }
+
     // Verify draggable elements have correct data structure
-    const draggableTask = screen.getByTestId(`draggable-${mockTasks[0].id}`)
+    const draggableTask = screen.getByTestId(`draggable-${firstTask.id}`)
     expect(draggableTask).toHaveAttribute("data-type", "draggable-item")
 
     // Verify drop zones have correct type structure

@@ -359,7 +359,11 @@ describe("AnalyticsDashboard", () => {
   it("handles date range changes in productivity charts", () => {
     render(<AnalyticsDashboard />)
 
-    const changeDateRangeButton = screen.getAllByText("Change Date Range")[0]
+    const changeDateRangeButtons = screen.getAllByText("Change Date Range")
+    const changeDateRangeButton = changeDateRangeButtons[0]
+    if (!changeDateRangeButton) {
+      throw new Error("Expected to find Change Date Range button")
+    }
     fireEvent.click(changeDateRangeButton)
 
     expect(mockSetDateRange).toHaveBeenCalledWith("week")

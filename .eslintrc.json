@@ -11,5 +11,13 @@
     "@typescript-eslint/ban-ts-comment": "error",
     "@typescript-eslint/consistent-type-assertions": ["error", { "assertionStyle": "never" }],
     "@typescript-eslint/no-unnecessary-condition": "error"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx"],
+      "rules": {
+        "@typescript-eslint/no-unnecessary-condition": "off"
+      }
+    }
+  ]
 }

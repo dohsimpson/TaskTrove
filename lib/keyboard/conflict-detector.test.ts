@@ -271,10 +271,14 @@ describe("Keyboard Conflict Detection System", () => {
       const resolution = resolveConflicts([conflict], "priority")
 
       expect(resolution.length).toBe(1)
-      expect(resolution[0].type).toBe("priority")
-      expect(resolution[0].action).toBe("remove_handler")
-      expect(resolution[0].targetHandler).toBe("task-shortcuts") // Lower priority
-      expect(resolution[0].shortcut).toBe("Space")
+      const firstResolution = resolution[0]
+      if (!firstResolution) {
+        throw new Error("Expected to find first resolution")
+      }
+      expect(firstResolution.type).toBe("priority")
+      expect(firstResolution.action).toBe("remove_handler")
+      expect(firstResolution.targetHandler).toBe("task-shortcuts") // Lower priority
+      expect(firstResolution.shortcut).toBe("Space")
     })
 
     it("should resolve conflicts by modifying shortcuts", () => {
@@ -290,9 +294,13 @@ describe("Keyboard Conflict Detection System", () => {
       const resolution = resolveConflicts([conflict], "modify")
 
       expect(resolution.length).toBe(1)
-      expect(resolution[0].type).toBe("modify")
-      expect(resolution[0].action).toBe("modify_shortcut")
-      expect(resolution[0].newShortcut).toBeDefined()
+      const modifyResolution = resolution[0]
+      if (!modifyResolution) {
+        throw new Error("Expected to find modify resolution")
+      }
+      expect(modifyResolution.type).toBe("modify")
+      expect(modifyResolution.action).toBe("modify_shortcut")
+      expect(modifyResolution.newShortcut).toBeDefined()
     })
 
     it("should handle ignore resolution strategy", () => {
@@ -308,9 +316,13 @@ describe("Keyboard Conflict Detection System", () => {
       const resolution = resolveConflicts([conflict], "ignore")
 
       expect(resolution.length).toBe(1)
-      expect(resolution[0].type).toBe("ignore")
-      expect(resolution[0].action).toBe("ignore")
-      expect(resolution[0].reason).toContain("Different contexts")
+      const ignoreResolution = resolution[0]
+      if (!ignoreResolution) {
+        throw new Error("Expected to find ignore resolution")
+      }
+      expect(ignoreResolution.type).toBe("ignore")
+      expect(ignoreResolution.action).toBe("ignore")
+      expect(ignoreResolution.reason).toContain("Different contexts")
     })
   })
 
@@ -347,7 +359,11 @@ describe("Keyboard Conflict Detection System", () => {
 
       expect(validation.isValid).toBe(false)
       expect(validation.conflicts.length).toBeGreaterThan(0)
-      expect(validation.conflicts[0].shortcut).toBe("Cmd+N")
+      const firstConflict = validation.conflicts[0]
+      if (!firstConflict) {
+        throw new Error("Expected to find first conflict")
+      }
+      expect(firstConflict.shortcut).toBe("Cmd+N")
     })
 
     it("should suggest alternative shortcuts for conflicts", () => {
@@ -423,7 +439,11 @@ describe("Keyboard Conflict Detection System", () => {
 
       const conflicts = detectConflicts(handlers)
       expect(conflicts.length).toBe(1)
-      expect(conflicts[0].shortcut).toBe("G+T")
+      const firstSequenceConflict = conflicts[0]
+      if (!firstSequenceConflict) {
+        throw new Error("Expected to find first sequence conflict")
+      }
+      expect(firstSequenceConflict.shortcut).toBe("G+T")
     })
   })
 
@@ -442,9 +462,15 @@ describe("Keyboard Conflict Detection System", () => {
       const modifyResolution = resolveConflicts([conflict], "modify")
       const ignoreResolution = resolveConflicts([conflict], "ignore")
 
-      expect(priorityResolution[0].type).toBe("priority")
-      expect(modifyResolution[0].type).toBe("modify")
-      expect(ignoreResolution[0].type).toBe("ignore")
+      const firstPriorityRes = priorityResolution[0]
+      const firstModifyRes = modifyResolution[0]
+      const firstIgnoreRes = ignoreResolution[0]
+      if (!firstPriorityRes || !firstModifyRes || !firstIgnoreRes) {
+        throw new Error("Expected to find all resolution types")
+      }
+      expect(firstPriorityRes.type).toBe("priority")
+      expect(firstModifyRes.type).toBe("modify")
+      expect(firstIgnoreRes.type).toBe("ignore")
     })
   })
 })

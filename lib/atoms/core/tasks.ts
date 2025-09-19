@@ -248,6 +248,9 @@ export const addTaskAtom = atom(null, async (get, set, taskData: CreateTaskReque
 
     // Get the created task ID from the response
     const createdTaskId = result.taskIds[0]
+    if (!createdTaskId) {
+      throw new Error("Failed to create task: no task ID returned")
+    }
 
     // Record the operation for undo/redo feedback using the title from taskData
     const taskTitle = taskData.title || DEFAULT_TASK_TITLE

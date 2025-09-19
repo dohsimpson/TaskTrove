@@ -81,7 +81,11 @@ describe("useKeyboardShortcuts", () => {
       )
 
       expect(mockRegisterHandler).toHaveBeenCalledOnce()
-      const registeredHandler = mockRegisterHandler.mock.calls[0][0]
+      const firstCall = mockRegisterHandler.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected mockRegisterHandler to have been called with handler")
+      }
+      const registeredHandler = firstCall[0]
 
       expect(registeredHandler.shortcuts).toEqual(["Cmd+N", "Escape"])
       expect(registeredHandler.context.requiresComponent).toBe("test-component")
@@ -149,7 +153,11 @@ describe("useKeyboardShortcuts", () => {
 
       renderHook(() => useKeyboardShortcuts(shortcuts))
 
-      const registeredHandler = mockRegisterHandler.mock.calls[0][0]
+      const firstCall = mockRegisterHandler.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected mockRegisterHandler to have been called with handler")
+      }
+      const registeredHandler = firstCall[0]
       const mockEvent = new KeyboardEvent("keydown", { key: "n", metaKey: true })
       const mockContext = {}
 
@@ -168,7 +176,11 @@ describe("useKeyboardShortcuts", () => {
       renderHook(() => useGlobalShortcuts(shortcuts))
 
       expect(mockRegisterHandler).toHaveBeenCalledOnce()
-      const registeredHandler = mockRegisterHandler.mock.calls[0][0]
+      const firstCall = mockRegisterHandler.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected mockRegisterHandler to have been called with handler")
+      }
+      const registeredHandler = firstCall[0]
 
       expect(registeredHandler.context.excludeDialogs).toBe(true)
       expect(registeredHandler.context.priority).toBe(10)
@@ -180,7 +192,11 @@ describe("useKeyboardShortcuts", () => {
 
       renderHook(() => useGlobalShortcuts(shortcuts))
 
-      const registeredHandler = mockRegisterHandler.mock.calls[0][0]
+      const firstCall = mockRegisterHandler.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected mockRegisterHandler to have been called with handler")
+      }
+      const registeredHandler = firstCall[0]
       const mockEvent = new KeyboardEvent("keydown", { key: "n", metaKey: true })
       const mockContext = {}
 
@@ -199,7 +215,11 @@ describe("useKeyboardShortcuts", () => {
       renderHook(() => useDialogShortcuts(shortcuts, "quick-add"))
 
       expect(mockRegisterHandler).toHaveBeenCalledOnce()
-      const registeredHandler = mockRegisterHandler.mock.calls[0][0]
+      const firstCall = mockRegisterHandler.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected mockRegisterHandler to have been called with handler")
+      }
+      const registeredHandler = firstCall[0]
 
       expect(registeredHandler.context.requiresDialog).toBe("quick-add")
       expect(registeredHandler.context.priority).toBe(20)
@@ -214,7 +234,11 @@ describe("useKeyboardShortcuts", () => {
       renderHook(() => useTaskShortcuts(shortcuts))
 
       expect(mockRegisterHandler).toHaveBeenCalledOnce()
-      const registeredHandler = mockRegisterHandler.mock.calls[0][0]
+      const firstCall = mockRegisterHandler.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected mockRegisterHandler to have been called with handler")
+      }
+      const registeredHandler = firstCall[0]
 
       expect(registeredHandler.context.requiresTask).toBe(true)
       expect(registeredHandler.context.priority).toBe(25)
@@ -229,7 +253,11 @@ describe("useKeyboardShortcuts", () => {
       renderHook(() => useViewShortcuts(shortcuts, "kanban"))
 
       expect(mockRegisterHandler).toHaveBeenCalledOnce()
-      const registeredHandler = mockRegisterHandler.mock.calls[0][0]
+      const firstCall = mockRegisterHandler.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected mockRegisterHandler to have been called with handler")
+      }
+      const registeredHandler = firstCall[0]
 
       expect(registeredHandler.context.requiresView).toBe("kanban")
       expect(registeredHandler.context.priority).toBe(15)
@@ -244,7 +272,11 @@ describe("useKeyboardShortcuts", () => {
       renderHook(() => useFocusShortcuts(shortcuts, "[data-task-item]"))
 
       expect(mockRegisterHandler).toHaveBeenCalledOnce()
-      const registeredHandler = mockRegisterHandler.mock.calls[0][0]
+      const firstCall = mockRegisterHandler.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected mockRegisterHandler to have been called with handler")
+      }
+      const registeredHandler = firstCall[0]
 
       expect(registeredHandler.context.requiresElement).toBe("[data-task-item]")
       expect(registeredHandler.context.requiresFocus).toBe(true)
@@ -279,7 +311,11 @@ describe("useKeyboardShortcuts", () => {
 
       renderHook(() => useKeyboardShortcuts(shortcuts, { priority: 50 }))
 
-      const registeredHandler = mockRegisterHandler.mock.calls[0][0]
+      const firstCall = mockRegisterHandler.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected mockRegisterHandler to have been called with handler")
+      }
+      const registeredHandler = firstCall[0]
       expect(registeredHandler.context.priority).toBe(50)
     })
 
@@ -289,7 +325,11 @@ describe("useKeyboardShortcuts", () => {
 
       renderHook(() => useKeyboardShortcuts(shortcuts))
 
-      const registeredHandler = mockRegisterHandler.mock.calls[0][0]
+      const firstCall = mockRegisterHandler.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected mockRegisterHandler to have been called with handler")
+      }
+      const registeredHandler = firstCall[0]
       expect(registeredHandler.context.requiresNoTyping).toBe(true)
     })
 
@@ -299,7 +339,11 @@ describe("useKeyboardShortcuts", () => {
 
       renderHook(() => useKeyboardShortcuts(shortcuts, { requiresNoTyping: false }))
 
-      const registeredHandler = mockRegisterHandler.mock.calls[0][0]
+      const firstCall = mockRegisterHandler.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected mockRegisterHandler to have been called with handler")
+      }
+      const registeredHandler = firstCall[0]
       expect(registeredHandler.context.requiresNoTyping).toBe(false)
     })
 
@@ -318,7 +362,11 @@ describe("useKeyboardShortcuts", () => {
         }),
       )
 
-      const registeredHandler = mockRegisterHandler.mock.calls[0][0]
+      const firstCall = mockRegisterHandler.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected mockRegisterHandler to have been called with handler")
+      }
+      const registeredHandler = firstCall[0]
       expect(registeredHandler.context.requiresView).toBe("today")
       expect(registeredHandler.context.requiresDialog).toBe("quick-add")
       expect(registeredHandler.context.excludeDialogs).toBe(false)

@@ -63,6 +63,9 @@ describe("TaskActionsMenu", () => {
 
       const buttons = screen.getAllByRole("button")
       const deleteButton = buttons[0] // First button is delete
+      if (!deleteButton) {
+        throw new Error("Expected to find delete button")
+      }
       fireEvent.click(deleteButton)
 
       // Should show confirmation dialog
@@ -79,6 +82,9 @@ describe("TaskActionsMenu", () => {
       // Click delete button
       const buttons = screen.getAllByRole("button")
       const deleteButton = buttons[0] // First button is delete
+      if (!deleteButton) {
+        throw new Error("Expected to find delete button")
+      }
       fireEvent.click(deleteButton)
 
       // Confirm deletion
@@ -97,6 +103,9 @@ describe("TaskActionsMenu", () => {
       // Open delete dialog
       const buttons = screen.getAllByRole("button")
       const deleteButton = buttons[0] // First button is delete
+      if (!deleteButton) {
+        throw new Error("Expected to find delete button")
+      }
       fireEvent.click(deleteButton)
 
       // Cancel deletion
@@ -115,6 +124,9 @@ describe("TaskActionsMenu", () => {
       // Open delete dialog
       const buttons = screen.getAllByRole("button")
       const deleteButton = buttons[0] // First button is delete
+      if (!deleteButton) {
+        throw new Error("Expected to find delete button")
+      }
       fireEvent.click(deleteButton)
 
       // Should show task title in message

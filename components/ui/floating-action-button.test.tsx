@@ -126,7 +126,11 @@ describe("FloatingActionButton", () => {
       firstActionButton?.click()
     })
 
-    expect(mockActions[0].onClick).toHaveBeenCalledOnce()
+    const firstMockAction = mockActions[0]
+    if (!firstMockAction) {
+      throw new Error("Expected to have first mock action")
+    }
+    expect(firstMockAction.onClick).toHaveBeenCalledOnce()
   })
 
   it("closes FAB when action button is clicked", () => {

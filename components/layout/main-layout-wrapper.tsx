@@ -264,7 +264,7 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
     }
 
     const currentIndex = getCurrentThemeIndex()
-    const nextTheme = themes[(currentIndex + 1) % themes.length]
+    const nextTheme = themes[(currentIndex + 1) % themes.length] || "light"
     setTheme(nextTheme)
     toast.success(`Switched to ${nextTheme} theme`)
   }, [theme, setTheme])

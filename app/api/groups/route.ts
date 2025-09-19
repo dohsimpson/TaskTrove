@@ -517,6 +517,8 @@ function removeGroupFromRootGroup(rootGroup: Group, groupId: GroupId): boolean {
   const nestedGroups = rootGroup.items.filter(isGroup<Group>)
   for (let i = 0; i < nestedGroups.length; i++) {
     const group = nestedGroups[i]
+    if (!group) continue
+
     if (group.id === groupId) {
       // Remove from ROOT group's items with proper type narrowing
       if (rootGroup.type === "project") {
@@ -531,7 +533,7 @@ function removeGroupFromRootGroup(rootGroup: Group, groupId: GroupId): boolean {
       return true
     }
 
-    // Recursively search in nested groups
+    // Recursively search in nested groups - group is guaranteed to be defined here
     if (removeGroupFromRootGroup(group, groupId)) {
       return true
     }

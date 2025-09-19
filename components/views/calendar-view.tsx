@@ -101,6 +101,12 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
           return
         }
 
+        // Check if destination data exists
+        if (!destinationData) {
+          log.warn("No destination data for calendar drop")
+          return
+        }
+
         // Check if dropping on calendar day
         if (destinationData.type !== "calendar-day") {
           log.warn(
@@ -131,7 +137,21 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
 
         // Convert date string to Date object in local timezone
         // Parse the date components to avoid UTC conversion issues
-        const [year, month, day] = targetDate.split("-").map(Number)
+        const parts = targetDate.split("-").map(Number)
+        if (parts.length !== 3) {
+          log.warn({ targetDate }, "Invalid date format: expected YYYY-MM-DD")
+          return
+        }
+
+        const year = parts[0]
+        const month = parts[1]
+        const day = parts[2]
+
+        if (year === undefined || month === undefined || day === undefined) {
+          log.warn({ targetDate }, "Invalid date components")
+          return
+        }
+
         const dueDate = new Date(year, month - 1, day) // month is 0-indexed
         if (isNaN(dueDate.getTime())) {
           log.warn({ targetDate }, "Invalid date format in calendar drop")

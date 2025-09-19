@@ -239,10 +239,16 @@ export function useAnalytics(tasks: Task[], projects: any[], labels: any[]) {
     tasks.forEach((task) => {
       if (task.completedAt) {
         const hour = task.completedAt.getHours()
-        hourlyData[hour].completed++
+        const hourData = hourlyData[hour]
+        if (hourData) {
+          hourData.completed++
+        }
       }
       const createdHour = task.createdAt.getHours()
-      hourlyData[createdHour].created++
+      const createdHourData = hourlyData[createdHour]
+      if (createdHourData) {
+        createdHourData.created++
+      }
     })
 
     return hourlyData

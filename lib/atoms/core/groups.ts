@@ -600,7 +600,13 @@ export const reorderProjectWithinGroupAtom = atom(
 
       // Create new items array with project moved to new position
       const newItems = [...group.items]
-      const [movedProject] = newItems.splice(currentIndex, 1)
+      const removedItems = newItems.splice(currentIndex, 1)
+      const movedProject = removedItems[0]
+
+      if (!movedProject) {
+        throw new Error("Failed to find project to move")
+      }
+
       newItems.splice(newIndex, 0, movedProject)
 
       // Update the group via the API
@@ -719,13 +725,24 @@ export const reorderGroupAtom = atom(
 
       // Validate that the item at fromIndex is actually the group we expect
       const itemToMove = rootItems[fromIndex]
-      if (typeof itemToMove === "string" || !("id" in itemToMove) || itemToMove.id !== groupId) {
+      if (
+        !itemToMove ||
+        typeof itemToMove === "string" ||
+        !("id" in itemToMove) ||
+        itemToMove.id !== groupId
+      ) {
         throw new Error(`Group ${groupId} not found at index ${fromIndex}`)
       }
 
       // Create new items array with group moved to new position
       const newItems = [...rootItems]
-      const [movedItem] = newItems.splice(fromIndex, 1)
+      const removedItems = newItems.splice(fromIndex, 1)
+      const movedItem = removedItems[0]
+
+      if (!movedItem) {
+        throw new Error(`Failed to move group ${groupId}`)
+      }
+
       newItems.splice(toIndex, 0, movedItem)
 
       // Update the root group's items array

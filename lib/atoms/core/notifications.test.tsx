@@ -181,10 +181,18 @@ describe("Notification Atoms - Set Uniqueness", () => {
       const resultArray = Array.from(result.current)
       const taskIds = resultArray.map((n) => n.taskId)
 
-      expect(taskIds).toContain(notifications[0].taskId) // Task 1
-      expect(taskIds).toContain(notifications[3].taskId) // Task 4 (earliest)
-      expect(taskIds).not.toContain(notifications[1].taskId) // Task 2 (outside tolerance)
-      expect(taskIds).not.toContain(notifications[2].taskId) // Task 3 (outside tolerance)
+      const notif0 = notifications[0]
+      const notif1 = notifications[1]
+      const notif2 = notifications[2]
+      const notif3 = notifications[3]
+      if (!notif0 || !notif1 || !notif2 || !notif3) {
+        throw new Error("Expected to find all four notifications")
+      }
+
+      expect(taskIds).toContain(notif0.taskId) // Task 1
+      expect(taskIds).toContain(notif3.taskId) // Task 4 (earliest)
+      expect(taskIds).not.toContain(notif1.taskId) // Task 2 (outside tolerance)
+      expect(taskIds).not.toContain(notif2.taskId) // Task 3 (outside tolerance)
     })
   })
 

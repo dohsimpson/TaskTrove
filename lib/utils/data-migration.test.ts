@@ -1394,9 +1394,17 @@ describe("Data Migration Utility", () => {
       expect(migratedData.tasks).toHaveLength(2)
       expect(migratedData.projects).toHaveLength(1)
       expect(migratedData.labels).toHaveLength(1)
-      expect(migratedData.tasks[0].title).toBe("Test Task 1")
-      expect(migratedData.projects[0].name).toBe("Test Project")
-      expect(migratedData.labels[0].name).toBe("test-label")
+
+      const firstTask = migratedData.tasks[0]
+      const firstProject = migratedData.projects[0]
+      const firstLabel = migratedData.labels[0]
+      if (!firstTask || !firstProject || !firstLabel) {
+        throw new Error("Expected to find first task, project, and label")
+      }
+
+      expect(firstTask.title).toBe("Test Task 1")
+      expect(firstProject.name).toBe("Test Project")
+      expect(firstLabel.name).toBe("test-label")
     })
   })
 })

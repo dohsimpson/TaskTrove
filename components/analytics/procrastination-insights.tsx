@@ -99,7 +99,7 @@ export function ProcrastinationInsights({ tasks }: ProcrastinationInsightsProps)
     })
 
     const topProblematicLabel = Array.from(labelCounts.entries()).sort((a, b) => b[1] - a[1])[0]
-    if (topProblematicLabel[1] >= 3) {
+    if (topProblematicLabel && topProblematicLabel[1] >= 3) {
       insights.push({
         type: "info",
         title: "Pattern in Task Type",

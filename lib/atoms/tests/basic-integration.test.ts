@@ -149,7 +149,11 @@ describe("TaskTrove Jotai Atoms Integration Tests", () => {
       )
 
       expect(taskWithComment.comments.length).toBe(1)
-      expect(taskWithComment.comments[0].content).toBe("Test comment")
+      const firstComment = taskWithComment.comments[0]
+      if (!firstComment) {
+        throw new Error("Expected to find first comment")
+      }
+      expect(firstComment?.content).toBe("Test comment")
 
       // Test deleting a task
       const taskCountBefore = tasksWithComment.length
@@ -248,6 +252,9 @@ describe("TaskTrove Jotai Atoms Integration Tests", () => {
       if (projects.length === 0) return
 
       const project = projects[0]
+      if (!project) {
+        throw new Error("Expected to find first project")
+      }
 
       // Set current project
       store.set(projectAtoms.currentProjectId, project.id)

@@ -107,7 +107,11 @@ describe("useIsMobile", () => {
     window.innerWidth = 500
 
     // Get the change handler that was registered
-    const changeHandler = mockMediaQueryList.addEventListener.mock.calls[0][1]
+    const firstCall = mockMediaQueryList.addEventListener.mock.calls[0]
+    if (!firstCall || !firstCall[1]) {
+      throw new Error("Expected addEventListener to have been called with handler")
+    }
+    const changeHandler = firstCall[1]
 
     // Simulate the media query change
     act(() => {
@@ -129,7 +133,11 @@ describe("useIsMobile", () => {
     window.innerWidth = 1024
 
     // Get the change handler that was registered
-    const changeHandler = mockMediaQueryList.addEventListener.mock.calls[0][1]
+    const firstCall = mockMediaQueryList.addEventListener.mock.calls[0]
+    if (!firstCall || !firstCall[1]) {
+      throw new Error("Expected addEventListener to have been called with handler")
+    }
+    const changeHandler = firstCall[1]
 
     // Simulate the media query change
     act(() => {
@@ -183,7 +191,11 @@ describe("useIsMobile", () => {
     const { result } = renderHook(() => useIsMobile())
 
     // Get the change handler
-    const changeHandler = mockMediaQueryList.addEventListener.mock.calls[0][1]
+    const firstCall = mockMediaQueryList.addEventListener.mock.calls[0]
+    if (!firstCall || !firstCall[1]) {
+      throw new Error("Expected addEventListener to be called with handler")
+    }
+    const changeHandler = firstCall[1]
 
     // Simulate rapid changes
     act(() => {

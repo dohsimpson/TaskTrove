@@ -534,7 +534,11 @@ describe("CalendarView", () => {
 
     // Verify that onDateClick was called (the exact date may vary due to date mocking complexities)
     expect(defaultProps.onDateClick).toHaveBeenCalled()
-    const callArgs = defaultProps.onDateClick.mock.calls[0][0]
+    const firstCall = defaultProps.onDateClick.mock.calls[0]
+    if (!firstCall || !firstCall[0]) {
+      throw new Error("Expected onDateClick to have been called with arguments")
+    }
+    const callArgs = firstCall[0]
     expect(callArgs).toBeInstanceOf(Date)
   })
 
@@ -1026,7 +1030,19 @@ describe("CalendarView", () => {
       // Test the exact parsing logic used in handleCalendarDrop
       // This validates the string-to-number parsing that prevents timezone bugs
       const targetDate = "2024-01-05"
-      const [year, month, day] = targetDate.split("-").map(Number)
+      const parts = targetDate.split("-").map(Number)
+
+      if (parts.length !== 3) {
+        throw new Error("Expected date string to split into 3 parts")
+      }
+
+      const year = parts[0]
+      const month = parts[1]
+      const day = parts[2]
+
+      if (year === undefined || month === undefined || day === undefined) {
+        throw new Error("Expected all date parts to be defined")
+      }
 
       // The key fix: verify that string parsing extracts correct components
       expect(year).toBe(2024)
@@ -1075,7 +1091,19 @@ describe("CalendarView", () => {
       ]
 
       testCases.forEach(({ input, expectedYear, expectedMonth, expectedDay }) => {
-        const [year, month, day] = input.split("-").map(Number)
+        const parts = input.split("-").map(Number)
+
+        if (parts.length !== 3) {
+          throw new Error(`Expected date string ${input} to split into 3 parts`)
+        }
+
+        const year = parts[0]
+        const month = parts[1]
+        const day = parts[2]
+
+        if (year === undefined || month === undefined || day === undefined) {
+          throw new Error(`Expected all date parts to be defined for ${input}`)
+        }
 
         expect(year).toBe(expectedYear)
         expect(month).toBe(expectedMonth)

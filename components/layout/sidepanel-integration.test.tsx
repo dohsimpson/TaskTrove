@@ -189,7 +189,9 @@ describe("SidePanel Integration", () => {
         <div>
           <div data-testid="current-view">{currentView}</div>
           <div data-testid="current-side-panel">{String(currentViewState.showSidePanel)}</div>
-          <div data-testid="view-states-test">{String(viewStates["today"].showSidePanel)}</div>
+          <div data-testid="view-states-test">
+            {String(viewStates["today"]?.showSidePanel ?? false)}
+          </div>
           <button data-testid="toggle-button" onClick={handleToggle}>
             Toggle
           </button>

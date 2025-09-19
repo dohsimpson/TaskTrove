@@ -243,6 +243,10 @@ export function matchesShortcut(shortcut: string, event: globalThis.KeyboardEven
   const key = parts[parts.length - 1] // Last part is always the key
   const modifiers = parts.slice(0, -1) // Everything before the key
 
+  if (!key) {
+    return false // Invalid shortcut format
+  }
+
   // Check key match first (most specific)
   // Handle case insensitive matching for letters
   const eventKey = event.key.toLowerCase()

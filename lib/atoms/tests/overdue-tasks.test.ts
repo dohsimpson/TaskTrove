@@ -229,7 +229,11 @@ describe("overdueTasksAtom", () => {
 
       const overdueTasks = store.get(overdueTasksAtom)
       expect(overdueTasks).toHaveLength(1) // Only yesterday's task should be overdue
-      expect(overdueTasks[0].title).toBe("Yesterday 11 PM local")
+      const firstOverdueTask = overdueTasks[0]
+      if (!firstOverdueTask) {
+        throw new Error("Expected to find first overdue task")
+      }
+      expect(firstOverdueTask.title).toBe("Yesterday 11 PM local")
     })
   })
 

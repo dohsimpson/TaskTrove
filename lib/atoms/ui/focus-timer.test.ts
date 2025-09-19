@@ -224,9 +224,13 @@ describe("Focus Timer Atoms", () => {
 
       const state = store.get(focusTimerStateAtom)
       expect(state.activeTimers).toHaveLength(1)
-      expect(state.activeTimers[0].taskId).toBe(taskId1)
-      expect(state.activeTimers[0].startedAt).toBe("2024-01-01T12:00:00.000Z")
-      expect(state.activeTimers[0].elapsed).toBe(0)
+      const firstTimer = state.activeTimers[0]
+      if (!firstTimer) {
+        throw new Error("Expected to find first active timer")
+      }
+      expect(firstTimer.taskId).toBe(taskId1)
+      expect(firstTimer.startedAt).toBe("2024-01-01T12:00:00.000Z")
+      expect(firstTimer.elapsed).toBe(0)
     })
 
     it("stops existing timer before starting new one", () => {
@@ -239,7 +243,11 @@ describe("Focus Timer Atoms", () => {
 
       const state = store.get(focusTimerStateAtom)
       expect(state.activeTimers).toHaveLength(1)
-      expect(state.activeTimers[0].taskId).toBe(taskId2)
+      const firstTimer = state.activeTimers[0]
+      if (!firstTimer) {
+        throw new Error("Expected to find first active timer")
+      }
+      expect(firstTimer.taskId).toBe(taskId2)
     })
 
     it("resumes paused timer for same task", () => {
@@ -256,8 +264,12 @@ describe("Focus Timer Atoms", () => {
       store.set(startFocusTimerAtom, taskId1)
 
       const state = store.get(focusTimerStateAtom)
-      expect(state.activeTimers[0].pausedAt).toBeUndefined()
-      expect(state.activeTimers[0].elapsed).toBe(180000) // Accumulated 3 minutes
+      const firstTimer = state.activeTimers[0]
+      if (!firstTimer) {
+        throw new Error("Expected to find first active timer")
+      }
+      expect(firstTimer.pausedAt).toBeUndefined()
+      expect(firstTimer.elapsed).toBe(180000) // Accumulated 3 minutes
     })
   })
 
@@ -275,7 +287,11 @@ describe("Focus Timer Atoms", () => {
       store.set(pauseFocusTimerAtom, taskId1)
 
       const state = store.get(focusTimerStateAtom)
-      expect(state.activeTimers[0].pausedAt).toBe("2024-01-01T12:00:00.000Z")
+      const firstTimer = state.activeTimers[0]
+      if (!firstTimer) {
+        throw new Error("Expected to find first active timer")
+      }
+      expect(firstTimer.pausedAt).toBe("2024-01-01T12:00:00.000Z")
     })
 
     it("does nothing if timer is not running", () => {

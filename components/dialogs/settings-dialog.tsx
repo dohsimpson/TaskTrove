@@ -73,7 +73,7 @@ const settingsCategories: SettingsCategory[] = [
 
 function SettingsContent() {
   const closeDialog = useSetAtom(closeSettingsDialogAtom)
-  const [activeCategory, setActiveCategory] = useState(settingsCategories[0].id)
+  const [activeCategory, setActiveCategory] = useState(settingsCategories[0]?.id || "general")
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
 
   // Get active category info

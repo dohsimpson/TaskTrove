@@ -488,10 +488,11 @@ function parseRouteContext(
 
   // For known standard views, use proper typing. For unknown routes, cast to ViewId
   // to allow the system to handle them gracefully with fallback behavior
-  const validatedViewId: ViewId = isStandardViewId(viewId)
-    ? viewId
-    : // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ((viewId || "inbox") as ViewId)
+  const validatedViewId: ViewId =
+    viewId && isStandardViewId(viewId)
+      ? viewId
+      : // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        ((viewId || "inbox") as ViewId)
 
   return {
     pathname,

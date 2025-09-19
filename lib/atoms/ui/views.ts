@@ -47,7 +47,10 @@ function createDefaultViewStates(): ViewStates {
  */
 export function getViewStateOrDefault(viewStates: ViewStates, viewId: ViewId): ViewState {
   if (viewId in viewStates) {
-    return viewStates[viewId]
+    const viewState = viewStates[viewId]
+    if (viewState) {
+      return viewState
+    }
   }
   // Return default for missing views (new projects, labels, etc.)
   return { ...DEFAULT_VIEW_STATE }
@@ -247,8 +250,9 @@ export const setViewOptionsAtom = atom(null, (get, set, updates: Partial<ViewSta
     if (updates.showSidePanel) {
       // When enabling side panel, open task panel with first task if available
       const allTasks = get(tasksAtom)
-      if (allTasks.length > 0) {
-        set(selectedTaskIdAtom, allTasks[0].id)
+      const firstTask = allTasks[0]
+      if (firstTask) {
+        set(selectedTaskIdAtom, firstTask.id)
         set(showTaskPanelAtom, true)
       }
     } else {

@@ -315,7 +315,11 @@ describe("Shared Patterns", () => {
         results[category] = {}
 
         patterns.forEach((pattern) => {
-          const parserSupports = matchesParserPattern(pattern, typeMap[category])
+          const categoryType = typeMap[category]
+          if (!categoryType) {
+            throw new Error(`Unknown category type: ${category}`)
+          }
+          const parserSupports = matchesParserPattern(pattern, categoryType)
 
           // Check autocomplete
           let autocompleteSupports = false
@@ -371,7 +375,11 @@ describe("Shared Patterns", () => {
             )
           }
 
-          results[category][pattern] = {
+          const categoryResults = results[category]
+          if (!categoryResults) {
+            throw new Error(`Category results not initialized: ${category}`)
+          }
+          categoryResults[pattern] = {
             parser: parserSupports,
             autocomplete: autocompleteSupports,
             highlighting: highlightingSupports,

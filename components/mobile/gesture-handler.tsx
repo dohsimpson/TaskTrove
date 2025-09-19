@@ -103,6 +103,8 @@ export function GestureHandler({
       if (!config.enabled) return
 
       const touch = e.touches[0]
+      if (!touch) return
+
       const now = Date.now()
 
       touchStartRef.current = {
@@ -117,15 +119,18 @@ export function GestureHandler({
       if (e.touches.length === 2 && config.gestures.pinch.enabled) {
         const touch1 = e.touches[0]
         const touch2 = e.touches[1]
-        const distance = Math.sqrt(
-          Math.pow(touch2.clientX - touch1.clientX, 2) +
-            Math.pow(touch2.clientY - touch1.clientY, 2),
-        )
-        const center = {
-          x: (touch1.clientX + touch2.clientX) / 2,
-          y: (touch1.clientY + touch2.clientY) / 2,
+
+        if (touch1 && touch2) {
+          const distance = Math.sqrt(
+            Math.pow(touch2.clientX - touch1.clientX, 2) +
+              Math.pow(touch2.clientY - touch1.clientY, 2),
+          )
+          const center = {
+            x: (touch1.clientX + touch2.clientX) / 2,
+            y: (touch1.clientY + touch2.clientY) / 2,
+          }
+          pinchStartRef.current = { distance, center }
         }
-        pinchStartRef.current = { distance, center }
       }
 
       // Start long press timer
@@ -154,24 +159,27 @@ export function GestureHandler({
       if (e.touches.length === 2 && config.gestures.pinch.enabled && pinchStartRef.current) {
         const touch1 = e.touches[0]
         const touch2 = e.touches[1]
-        const distance = Math.sqrt(
-          Math.pow(touch2.clientX - touch1.clientX, 2) +
-            Math.pow(touch2.clientY - touch1.clientY, 2),
-        )
 
-        const distanceDiff = distance - pinchStartRef.current.distance
-        const threshold = config.gestures.pinch.threshold
+        if (touch1 && touch2) {
+          const distance = Math.sqrt(
+            Math.pow(touch2.clientX - touch1.clientX, 2) +
+              Math.pow(touch2.clientY - touch1.clientY, 2),
+          )
 
-        if (Math.abs(distanceDiff) > threshold) {
-          const gesture: GestureEvent = {
-            type: "pinch",
-            direction: distanceDiff > 0 ? "out" : "in",
-            distance: Math.abs(distanceDiff),
-            position: pinchStartRef.current.center,
-            timestamp: new Date(),
+          const distanceDiff = distance - pinchStartRef.current.distance
+          const threshold = config.gestures.pinch.threshold
+
+          if (Math.abs(distanceDiff) > threshold) {
+            const gesture: GestureEvent = {
+              type: "pinch",
+              direction: distanceDiff > 0 ? "out" : "in",
+              distance: Math.abs(distanceDiff),
+              position: pinchStartRef.current.center,
+              timestamp: new Date(),
+            }
+            handleGesture(gesture)
+            pinchStartRef.current = { distance, center: pinchStartRef.current.center }
           }
-          handleGesture(gesture)
-          pinchStartRef.current = { distance, center: pinchStartRef.current.center }
         }
       }
 
@@ -189,6 +197,8 @@ export function GestureHandler({
       if (!config.enabled || !touchStartRef.current) return
 
       const touch = e.changedTouches[0]
+      if (!touch) return
+
       const now = Date.now()
 
       touchEndRef.current = {

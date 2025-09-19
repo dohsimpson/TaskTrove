@@ -67,7 +67,7 @@ export function ProductivityChart({
         <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
           <p className="font-medium text-gray-900 dark:text-gray-100">{label}</p>
           <p className="text-sm" style={{ color: config.color }}>
-            {config.label}: {payload[0].value}
+            {config.label}: {payload[0]?.value ?? 0}
             {metric === "focusTime" && " min"}
           </p>
         </div>

@@ -818,7 +818,11 @@ describe("TaskFilterControls", () => {
       }
 
       expect(result).toHaveLength(1)
-      expect(result[0].id).toBe(createTaskId("12345678-1234-4234-8234-123456789013"))
+      const firstResult = result[0]
+      if (!firstResult) {
+        throw new Error("Expected result to have at least one task")
+      }
+      expect(firstResult.id).toBe(createTaskId("12345678-1234-4234-8234-123456789013"))
     })
   })
 })

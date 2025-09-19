@@ -37,6 +37,7 @@ export function parseRRule(rrule: string): ParsedRRule | null {
 
   for (const part of parts) {
     const [key, value] = part.split("=")
+    if (!key || value === undefined) continue
 
     switch (key) {
       case "FREQ":
@@ -124,7 +125,10 @@ function applyBysetpos(dates: Date[], bysetpos: number[]): Date[] {
     }
 
     if (targetIndex >= 0 && targetIndex < dates.length) {
-      result.push(dates[targetIndex])
+      const targetDate = dates[targetIndex]
+      if (targetDate) {
+        result.push(targetDate)
+      }
     }
   }
 
@@ -291,6 +295,7 @@ export function calculateNextDueDate(
         const targetDays = parsed.byday
           .map((day) => weekdayMap[day])
           .filter((day) => typeof day === "number")
+
         if (targetDays.length === 0) {
           return null
         }
@@ -405,6 +410,9 @@ export function calculateNextDueDate(
 
         // Use the earliest matching date and preserve the original time
         const targetDate = filteredDates[0]
+        if (!targetDate) {
+          return null
+        }
         // Store original time
         const originalHours = nextDate.getHours()
         const originalMinutes = nextDate.getMinutes()
@@ -526,6 +534,9 @@ export function calculateNextDueDate(
 
         // Use the earliest matching date and preserve the original time
         const targetDate = filteredDates[0]
+        if (!targetDate) {
+          return null
+        }
         // Store original time
         const originalHours = nextDate.getHours()
         const originalMinutes = nextDate.getMinutes()
@@ -603,6 +614,9 @@ export function calculateNextDueDate(
           // Sort and use earliest candidate
           candidates.sort((a, b) => a.getTime() - b.getTime())
           const targetDate = candidates[0]
+          if (!targetDate) {
+            return null
+          }
 
           nextDate.setFullYear(targetDate.getFullYear())
           nextDate.setMonth(targetDate.getMonth())
@@ -651,6 +665,9 @@ export function calculateNextDueDate(
     }
 
     const [, year, month, day] = untilMatch
+    if (!year || !month || !day) {
+      return null
+    }
     const untilDate = new Date(`${year}-${month}-${day}`)
 
     // Validate that the date is actually valid (not Feb 31st, etc.)

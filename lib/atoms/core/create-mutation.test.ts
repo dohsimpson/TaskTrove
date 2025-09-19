@@ -43,7 +43,12 @@ vi.mock("@tanstack/react-query", () => ({
 // Helper function to get valid priority
 const getValidPriority = (index: number): 1 | 2 | 3 | 4 => {
   const priorities: readonly [1, 2, 3, 4] = [1, 2, 3, 4]
-  return priorities[index % 4]
+  const priorityIndex = index % 4
+  const priority = priorities[priorityIndex]
+  if (!priority) {
+    throw new Error(`Invalid priority index: ${priorityIndex}`)
+  }
+  return priority
 }
 
 // Mock implementations to isolate the factory function behavior
@@ -311,8 +316,12 @@ describe("createMutation Function", () => {
 
         // Assert
         expect(updatedData.tasks).toHaveLength(1)
-        expect(updatedData.tasks[0].completed).toBe(true)
-        expect(updatedData.tasks[0].title).toBe("Existing Task")
+        const firstTask = updatedData.tasks[0]
+        if (!firstTask) {
+          throw new Error("Expected first task to exist")
+        }
+        expect(firstTask.completed).toBe(true)
+        expect(firstTask.title).toBe("Existing Task")
       })
     })
 
@@ -357,7 +366,11 @@ describe("createMutation Function", () => {
 
         // Assert
         expect(rollbackData).toEqual(previousData)
-        expect(rollbackData.tasks[0].title).toBe("Original Task")
+        const firstTask = rollbackData.tasks[0]
+        if (!firstTask) {
+          throw new Error("Expected to find first task in rollback data")
+        }
+        expect(firstTask.title).toBe("Original Task")
       })
     })
 
@@ -666,14 +679,23 @@ describe("createMutation Function", () => {
           }
         }
 
-        const originalTitle = complexData.tasks[0].title
+        const originalTask = complexData.tasks[0]
+        if (!originalTask) {
+          throw new Error("Expected to find first task in complex data")
+        }
+        const originalTitle = originalTask.title
         const updatedData = optimisticUpdateFn({ title: "Updated Title" }, complexData)
 
+        const updatedTask = updatedData.tasks[0]
+        if (!updatedTask) {
+          throw new Error("Expected to find first task in updated data")
+        }
+
         // Assert - Original data should remain unchanged
-        expect(complexData.tasks[0].title).toBe(originalTitle)
-        expect(updatedData.tasks[0].title).toBe("Updated Title")
-        expect(updatedData.tasks[0].subtasks).toEqual(complexData.tasks[0].subtasks)
-        expect(updatedData.tasks[0].subtasks).not.toBe(complexData.tasks[0].subtasks) // Different reference
+        expect(originalTask.title).toBe(originalTitle)
+        expect(updatedTask.title).toBe("Updated Title")
+        expect(updatedTask.subtasks).toEqual(originalTask.subtasks)
+        expect(updatedTask.subtasks).not.toBe(originalTask.subtasks) // Different reference
       })
     })
   })

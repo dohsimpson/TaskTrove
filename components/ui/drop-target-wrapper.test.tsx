@@ -266,7 +266,11 @@ describe("DropTargetWrapper", () => {
 
     // Verify getData was called with an object containing input and element
     expect(getData).toHaveBeenCalled()
-    const callArgs = getData.mock.calls[0][0]
+    const firstCall = getData.mock.calls[0]
+    if (!firstCall || !firstCall[0]) {
+      throw new Error("Expected getData to have been called with arguments")
+    }
+    const callArgs = firstCall[0]
     expect(callArgs).toHaveProperty("input")
     expect(callArgs).toHaveProperty("element")
     expect(dataWithElement).toHaveProperty("hasElement", true)

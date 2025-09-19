@@ -474,6 +474,7 @@ export function ProjectSectionsView({
     }) => {
       if (source.data.type === "task" && source.data.rect) {
         const innerMost = location.current.dropTargets[0]
+        if (!innerMost) return
         const isOverChildTask = Boolean(innerMost.data.type === "task-drop-target")
 
         const rect = source.data.rect
@@ -613,6 +614,7 @@ export function ProjectSectionsView({
                 onDrag={({ source, location }) => {
                   if (source.data.type === "task" && source.data.rect) {
                     const innerMost = location.current.dropTargets[0]
+                    if (!innerMost) return
                     const isOverChildTask = Boolean(innerMost.data.type === "task-drop-target")
 
                     setSectionDragStates((prev) => {
@@ -662,6 +664,7 @@ export function ProjectSectionsView({
                       onDragEnter={({ source, location }) => {
                         if (source.data.type === "task" && source.data.taskId !== task.id) {
                           const innerMost = location.current.dropTargets[0]
+                          if (!innerMost) return
                           const closestEdge = extractClosestEdge(innerMost.data)
 
                           const rect = source.data.rect
@@ -689,6 +692,7 @@ export function ProjectSectionsView({
                       onDrag={({ source, location }) => {
                         if (source.data.type === "task" && source.data.taskId !== task.id) {
                           const innerMost = location.current.dropTargets[0]
+                          if (!innerMost) return
                           const closestEdge = extractClosestEdge(innerMost.data)
 
                           setSectionDragStates((prev) => {

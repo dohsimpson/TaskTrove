@@ -91,9 +91,11 @@ describe("RRULE Validation", () => {
       }
       const result = CreateTaskRequestSchema.safeParse(task)
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain(
-        'must be a valid RRULE starting with "RRULE:"',
-      )
+      const firstIssue = result.error?.issues[0]
+      if (!firstIssue) {
+        throw new Error("Expected to find first validation issue")
+      }
+      expect(firstIssue.message).toContain('must be a valid RRULE starting with "RRULE:"')
     })
 
     it("should reject RRULE without FREQ", () => {
@@ -103,7 +105,11 @@ describe("RRULE Validation", () => {
       }
       const result = CreateTaskRequestSchema.safeParse(task)
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain("RRULE must contain FREQ")
+      const freqIssue = result.error?.issues[0]
+      if (!freqIssue) {
+        throw new Error("Expected to find FREQ validation issue")
+      }
+      expect(freqIssue.message).toContain("RRULE must contain FREQ")
     })
 
     it("should reject invalid FREQ value", () => {
@@ -113,7 +119,11 @@ describe("RRULE Validation", () => {
       }
       const result = CreateTaskRequestSchema.safeParse(task)
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain("Invalid FREQ value")
+      const invalidFreqIssue = result.error?.issues[0]
+      if (!invalidFreqIssue) {
+        throw new Error("Expected to find invalid FREQ validation issue")
+      }
+      expect(invalidFreqIssue.message).toContain("Invalid FREQ value")
     })
 
     it("should reject invalid INTERVAL", () => {
@@ -123,7 +133,11 @@ describe("RRULE Validation", () => {
       }
       const result = CreateTaskRequestSchema.safeParse(task)
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain("Invalid INTERVAL value")
+      const intervalIssue = result.error?.issues[0]
+      if (!intervalIssue) {
+        throw new Error("Expected to find INTERVAL validation issue")
+      }
+      expect(intervalIssue.message).toContain("Invalid INTERVAL value")
     })
 
     it("should reject invalid COUNT", () => {
@@ -133,7 +147,11 @@ describe("RRULE Validation", () => {
       }
       const result = CreateTaskRequestSchema.safeParse(task)
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain("Invalid COUNT value")
+      const countIssue = result.error?.issues[0]
+      if (!countIssue) {
+        throw new Error("Expected to find COUNT validation issue")
+      }
+      expect(countIssue.message).toContain("Invalid COUNT value")
     })
 
     it("should reject both COUNT and UNTIL", () => {
@@ -143,7 +161,11 @@ describe("RRULE Validation", () => {
       }
       const result = CreateTaskRequestSchema.safeParse(task)
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain("cannot contain both COUNT and UNTIL")
+      const countUntilIssue = result.error?.issues[0]
+      if (!countUntilIssue) {
+        throw new Error("Expected to find COUNT/UNTIL validation issue")
+      }
+      expect(countUntilIssue.message).toContain("cannot contain both COUNT and UNTIL")
     })
 
     it("should reject invalid UNTIL format", () => {
@@ -153,7 +175,11 @@ describe("RRULE Validation", () => {
       }
       const result = CreateTaskRequestSchema.safeParse(task)
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain("Invalid UNTIL value")
+      const untilIssue = result.error?.issues[0]
+      if (!untilIssue) {
+        throw new Error("Expected to find UNTIL validation issue")
+      }
+      expect(untilIssue.message).toContain("Invalid UNTIL value")
     })
 
     it("should reject invalid BYDAY", () => {
@@ -163,7 +189,11 @@ describe("RRULE Validation", () => {
       }
       const result = CreateTaskRequestSchema.safeParse(task)
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain("Invalid BYDAY day code")
+      const bydayIssue = result.error?.issues[0]
+      if (!bydayIssue) {
+        throw new Error("Expected to find BYDAY validation issue")
+      }
+      expect(bydayIssue.message).toContain("Invalid BYDAY day code")
     })
 
     it("should reject invalid BYMONTH", () => {
@@ -173,7 +203,11 @@ describe("RRULE Validation", () => {
       }
       const result = CreateTaskRequestSchema.safeParse(task)
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain("Invalid BYMONTH value")
+      const bymonthIssue = result.error?.issues[0]
+      if (!bymonthIssue) {
+        throw new Error("Expected to find BYMONTH validation issue")
+      }
+      expect(bymonthIssue.message).toContain("Invalid BYMONTH value")
     })
 
     it("should reject invalid BYMONTHDAY", () => {
@@ -183,7 +217,11 @@ describe("RRULE Validation", () => {
       }
       const result = CreateTaskRequestSchema.safeParse(task)
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain("Invalid BYMONTHDAY value")
+      const bymonthdayIssue = result.error?.issues[0]
+      if (!bymonthdayIssue) {
+        throw new Error("Expected to find BYMONTHDAY validation issue")
+      }
+      expect(bymonthdayIssue.message).toContain("Invalid BYMONTHDAY value")
     })
 
     it("should reject malformed RRULE part", () => {
@@ -193,7 +231,11 @@ describe("RRULE Validation", () => {
       }
       const result = CreateTaskRequestSchema.safeParse(task)
       expect(result.success).toBe(false)
-      expect(result.error?.issues[0].message).toContain("Invalid RRULE format")
+      const formatIssue = result.error?.issues[0]
+      if (!formatIssue) {
+        throw new Error("Expected to find RRULE format validation issue")
+      }
+      expect(formatIssue.message).toContain("Invalid RRULE format")
     })
   })
 

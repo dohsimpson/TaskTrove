@@ -37,7 +37,11 @@ function InputOTPSlot({
   index: number
 }) {
   const inputOTPContext = React.useContext(OTPInputContext)
-  const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index]
+  const slot = inputOTPContext.slots[index]
+  if (!slot) {
+    throw new Error(`OTP slot at index ${index} is not available`)
+  }
+  const { char, hasFakeCaret, isActive } = slot
 
   return (
     <div

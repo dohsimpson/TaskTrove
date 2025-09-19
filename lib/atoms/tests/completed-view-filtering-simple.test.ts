@@ -251,9 +251,13 @@ describe("Completed View Filtering Fix", () => {
 
       // With the fix, this should now show the completed task
       expect(filteredTasks).toHaveLength(1)
-      expect(filteredTasks[0].id).toBe(bugTask.id)
-      expect(filteredTasks[0].completed).toBe(true)
-      expect(filteredTasks[0].title).toBe("Task completed today")
+      const firstTask = filteredTasks[0]
+      if (!firstTask) {
+        throw new Error("Expected to find first filtered task")
+      }
+      expect(firstTask.id).toBe(bugTask.id)
+      expect(firstTask.completed).toBe(true)
+      expect(firstTask.title).toBe("Task completed today")
 
       // Before the fix, this would have been:
       // expect(filteredTasks).toHaveLength(0); // Bug: No tasks found

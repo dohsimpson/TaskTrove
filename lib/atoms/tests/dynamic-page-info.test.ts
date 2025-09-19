@@ -143,7 +143,7 @@ function parseRouteContext(pathname: string, labels?: Label[], projects?: Projec
 
   // For known standard views, use proper typing. For unknown routes, use fallback
   // to allow the system to handle them gracefully with fallback behavior
-  const validatedViewId: ViewId = isStandardViewId(viewId) ? viewId : "inbox" // Use 'inbox' as fallback for unknown routes
+  const validatedViewId: ViewId = viewId && isStandardViewId(viewId) ? viewId : "inbox" // Use 'inbox' as fallback for unknown routes
 
   return {
     pathname,

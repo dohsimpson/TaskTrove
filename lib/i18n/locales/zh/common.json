@@ -1,0 +1,78 @@
+{
+  "app": {
+    "name": "TaskTrove",
+    "description": "您的个人任务管理助手"
+  },
+  "navigation": {
+    "today": "今天",
+    "upcoming": "即将到来",
+    "all": "所有任务",
+    "completed": "已完成",
+    "projects": "项目",
+    "labels": "标签",
+    "inbox": "收件箱",
+    "calendar": "日历",
+    "analytics": "分析",
+    "profile": "个人资料"
+  },
+  "tasks": {
+    "task": "任务",
+    "tasks": "任务",
+    "addTask": "添加任务",
+    "editTask": "编辑任务",
+    "deleteTask": "删除任务",
+    "completeTask": "完成任务",
+    "uncompleteTask": "标记为未完成",
+    "title": "标题",
+    "description": "描述",
+    "dueDate": "截止日期",
+    "priority": "优先级",
+    "project": "项目",
+    "labels": "标签",
+    "noTasks": "未找到任务",
+    "filter": "筛选任务"
+  },
+  "projects": {
+    "project": "项目",
+    "projects": "项目",
+    "addProject": "添加项目",
+    "editProject": "编辑项目",
+    "deleteProject": "删除项目",
+    "projectName": "项目名称",
+    "projectDescription": "项目描述",
+    "noProjects": "未找到项目"
+  },
+  "labels": {
+    "label": "标签",
+    "labels": "标签",
+    "addLabel": "添加标签",
+    "editLabel": "编辑标签",
+    "deleteLabel": "删除标签",
+    "labelName": "标签名称",
+    "labelColor": "标签颜色",
+    "noLabels": "未找到标签"
+  },
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "add": "添加",
+    "close": "关闭",
+    "confirm": "确认",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "warning": "警告",
+    "info": "信息"
+  },
+  "settings": {
+    "settings": "设置",
+    "general": "常规",
+    "appearance": "外观",
+    "language": "语言",
+    "languageDescription": "选择您偏好的界面语言",
+    "theme": "主题",
+    "notifications": "通知"
+  }
+}

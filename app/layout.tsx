@@ -6,6 +6,8 @@ import { HydrateWrapper } from "@/providers/hydrate-wrapper"
 // import { ThemeProvider } from '@/components/theme/theme-provider'
 import { ThemeProvider } from "next-themes"
 import { Toaster } from "@/components/ui/custom/toaster"
+import { LanguageProvider } from "@/components/providers/language-provider"
+import { getLanguage } from "@/lib/i18n/server"
 
 export const metadata: Metadata = {
   title: "TaskTrove",
@@ -15,21 +17,25 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const language = await getLanguage()
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={language} suppressHydrationWarning>
       <head />
       <body>
         <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem>
-          <JotaiProvider>
-            <HydrateWrapper>
-              <MainLayoutWrapper>{children}</MainLayoutWrapper>
-            </HydrateWrapper>
-          </JotaiProvider>
+          <LanguageProvider initialLanguage={language}>
+            <JotaiProvider>
+              <HydrateWrapper>
+                <MainLayoutWrapper>{children}</MainLayoutWrapper>
+              </HydrateWrapper>
+            </JotaiProvider>
+          </LanguageProvider>
           <Toaster />
         </ThemeProvider>
       </body>

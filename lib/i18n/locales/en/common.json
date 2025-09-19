@@ -1,0 +1,78 @@
+{
+  "app": {
+    "name": "TaskTrove",
+    "description": "Your personal task management companion"
+  },
+  "navigation": {
+    "today": "Today",
+    "upcoming": "Upcoming",
+    "all": "All Tasks",
+    "completed": "Completed",
+    "projects": "Projects",
+    "labels": "Labels",
+    "inbox": "Inbox",
+    "calendar": "Calendar",
+    "analytics": "Analytics",
+    "profile": "Profile"
+  },
+  "tasks": {
+    "task": "Task",
+    "tasks": "Tasks",
+    "addTask": "Add task",
+    "editTask": "Edit task",
+    "deleteTask": "Delete task",
+    "completeTask": "Complete task",
+    "uncompleteTask": "Mark as incomplete",
+    "title": "Title",
+    "description": "Description",
+    "dueDate": "Due date",
+    "priority": "Priority",
+    "project": "Project",
+    "labels": "Labels",
+    "noTasks": "No tasks found",
+    "filter": "Filter tasks"
+  },
+  "projects": {
+    "project": "Project",
+    "projects": "Projects",
+    "addProject": "Add project",
+    "editProject": "Edit project",
+    "deleteProject": "Delete project",
+    "projectName": "Project name",
+    "projectDescription": "Project description",
+    "noProjects": "No projects found"
+  },
+  "labels": {
+    "label": "Label",
+    "labels": "Labels",
+    "addLabel": "Add label",
+    "editLabel": "Edit label",
+    "deleteLabel": "Delete label",
+    "labelName": "Label name",
+    "labelColor": "Label color",
+    "noLabels": "No labels found"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info"
+  },
+  "settings": {
+    "settings": "Settings",
+    "general": "General",
+    "appearance": "Appearance",
+    "language": "Language",
+    "languageDescription": "Choose your preferred language for the interface",
+    "theme": "Theme",
+    "notifications": "Notifications"
+  }
+}

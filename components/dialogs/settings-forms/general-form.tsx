@@ -16,7 +16,15 @@ import { SettingsCard } from "@/components/ui/custom/settings-card"
 import { settingsAtom, updateSettingsAtom } from "@/lib/atoms"
 import type { StandardViewId } from "@/lib/types"
 import { START_VIEW_METADATA } from "@/lib/constants/defaults"
-import { Inbox, Calendar, Clock, CheckSquare, ListCheck, Home } from "lucide-react"
+import { Inbox, Calendar, Clock, CheckSquare, ListCheck, Home, Languages } from "lucide-react"
+import { useTranslation } from "@/hooks/use-translation"
+import { languages, type Language } from "@/lib/i18n/settings"
+
+// Language display names
+const languageNames: Record<Language, string> = {
+  en: "English",
+  zh: "中文 (Chinese)",
+}
 
 // Icon mapping for UI components
 const ICON_MAP = {
@@ -52,6 +60,7 @@ const lastViewedOption = allStartViewOptions.find((option) => option.value === "
 export function GeneralForm() {
   const settings = useAtomValue(settingsAtom)
   const updateSettings = useSetAtom(updateSettingsAtom)
+  const { language, setLanguage, t } = useTranslation()
 
   const currentStartView = settings.general.startView
   const currentSoundEnabled = settings.general.soundEnabled
@@ -81,6 +90,10 @@ export function GeneralForm() {
     })
   }
 
+  const handleLanguageChange = (newLanguage: Language) => {
+    setLanguage(newLanguage)
+  }
+
   const selectedOption = allStartViewOptions.find((option) => option.value === currentStartView)
 
   return (
@@ -91,7 +104,7 @@ export function GeneralForm() {
           <div className="space-y-0.5">
             <Label htmlFor="start-view">When you open TaskTrove, show</Label>
             <p className="text-sm text-muted-foreground">
-              Choose which page you want to see when you first open TaskTrove.
+              Choose which page you want to see when you first open TaskTrove
             </p>
           </div>
           <Select value={currentStartView} onValueChange={handleStartViewChange}>
@@ -136,13 +149,43 @@ export function GeneralForm() {
         </div>
       </SettingsCard>
 
+      {/* Language Settings */}
+      <SettingsCard title={t("settings.language")}>
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="language-select">{t("settings.language")}</Label>
+            <p className="text-sm text-muted-foreground">{t("settings.languageDescription")}</p>
+          </div>
+          <Select value={language} onValueChange={handleLanguageChange}>
+            <SelectTrigger id="language-select" className="w-auto min-w-[180px]">
+              <SelectValue>
+                <div className="flex items-center gap-2">
+                  <Languages className="w-4 h-4" />
+                  <span>{languageNames[language]}</span>
+                </div>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {languages.map((lng) => (
+                <SelectItem key={lng} value={lng}>
+                  <div className="flex items-center gap-2 w-full">
+                    <Languages className="w-4 h-4 flex-shrink-0" />
+                    <span className="font-medium">{languageNames[lng]}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </SettingsCard>
+
       {/* Sound Settings */}
       <SettingsCard title="Audio">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <Label htmlFor="sound-enabled">Sound Effects</Label>
             <p className="text-sm text-muted-foreground">
-              Play sounds for task completions, notifications, and other interactions.
+              Play sounds for task completions, notifications, and other interactions
             </p>
           </div>
           <Switch
@@ -159,7 +202,7 @@ export function GeneralForm() {
           <div className="space-y-0.5">
             <Label htmlFor="linkify-enabled">Auto-convert URLs to Links</Label>
             <p className="text-sm text-muted-foreground">
-              Automatically convert URLs in task titles to clickable links.
+              Automatically convert URLs in task titles to clickable links
             </p>
           </div>
           <Switch

@@ -166,12 +166,14 @@ export const {
   setSorting,
   setSearchQuery,
   setShowCompleted,
+  setShowOverdue,
   isListView,
   isKanbanView,
   isCalendarView,
   searchQuery,
   sortConfig,
   showCompleted,
+  showOverdue,
 } = viewAtoms
 
 // =============================================================================
@@ -197,6 +199,7 @@ export {
   completedTasksAtom,
   inboxTasksAtom,
   todayTasksAtom,
+  todayOnlyAtom,
   upcomingTasksAtom,
   overdueTasksAtom,
   taskCountsAtom,
@@ -254,6 +257,7 @@ export {
   setSortingAtom,
   setSearchQueryAtom,
   setShowCompletedAtom,
+  setShowOverdueAtom,
   setCompactViewAtom,
   currentViewStateAtom,
   isListViewAtom,
@@ -262,6 +266,7 @@ export {
   searchQueryAtom,
   sortConfigAtom,
   showCompletedAtom,
+  showOverdueAtom,
   compactViewAtom,
   collapsedSectionsAtom,
   toggleSectionCollapseAtom,

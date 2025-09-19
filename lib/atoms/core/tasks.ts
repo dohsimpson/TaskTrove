@@ -1,5 +1,5 @@
 import { atom } from "jotai"
-import { isToday } from "date-fns"
+import { isToday, isPast, isFuture } from "date-fns"
 import { v4 as uuidv4 } from "uuid"
 import {
   Task,
@@ -525,20 +525,44 @@ export const inboxTasksAtom = atom((get) => {
 inboxTasksAtom.debugLabel = "inboxTasksAtom"
 
 /**
- * Tasks due today
- * Uses the same date comparison logic as main-content.tsx filtering
+ * Tasks due exactly today (strict date match)
+ * Maintains the original "today only" logic for specific use cases
+ */
+export const todayOnlyAtom = atom((get) => {
+  try {
+    const activeTasks = get(activeTasksAtom)
+    return activeTasks.filter((task: Task) => {
+      if (!task.dueDate) return false
+      return isToday(task.dueDate)
+    })
+  } catch (error) {
+    handleAtomError(error, "todayOnlyAtom")
+    return []
+  }
+})
+todayOnlyAtom.debugLabel = "todayOnlyAtom"
+
+/**
+ * Tasks due today (including overdue tasks)
  */
 export const todayTasksAtom = atom((get) => {
   try {
     const activeTasks = get(activeTasksAtom)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
 
     return activeTasks.filter((task: Task) => {
       if (!task.dueDate) return false
-      const taskDate = new Date(task.dueDate)
-      taskDate.setHours(0, 0, 0, 0)
-      return taskDate.getTime() === today.getTime()
+
+      // Always include tasks due exactly today
+      if (isToday(task.dueDate)) {
+        return true
+      }
+
+      // Include overdue tasks (past but not today)
+      if (isPast(task.dueDate) && !isToday(task.dueDate)) {
+        return true
+      }
+
+      return false
     })
   } catch (error) {
     handleAtomError(error, "todayTasksAtom")
@@ -554,17 +578,10 @@ todayTasksAtom.debugLabel = "todayTasksAtom"
 export const upcomingTasksAtom = atom((get) => {
   try {
     const activeTasks = get(activeTasksAtom)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-
     return activeTasks.filter((task: Task) => {
       if (!task.dueDate) return false
-      const taskDate = new Date(task.dueDate)
-      taskDate.setHours(0, 0, 0, 0)
-      // Correct logic: all tasks from tomorrow onwards (for counts/analytics)
-      return taskDate.getTime() >= tomorrow.getTime()
+      // Upcoming = future tasks that are not today (i.e. tomorrow onwards)
+      return isFuture(task.dueDate) && !isToday(task.dueDate)
     })
   } catch (error) {
     handleAtomError(error, "upcomingTasksAtom")
@@ -575,13 +592,15 @@ upcomingTasksAtom.debugLabel = "upcomingTasksAtom"
 
 /**
  * Overdue tasks
- * Filters active tasks with due dates in the past
+ * Filters active tasks with due dates before today (date-only comparison)
  */
 export const overdueTasksAtom = atom((get) => {
   try {
     const activeTasks = get(activeTasksAtom)
-    const now = new Date()
-    return activeTasks.filter((task: Task) => task.dueDate && task.dueDate < now)
+    return activeTasks.filter((task: Task) => {
+      if (!task.dueDate) return false
+      return isPast(task.dueDate) && !isToday(task.dueDate)
+    })
   } catch (error) {
     handleAtomError(error, "overdueTasksAtom")
     return []
@@ -762,6 +781,14 @@ export const filteredTasksAtom = atom((get) => {
     // Skip this filter for the "completed" view since it should always show completed tasks
     if (!viewState.showCompleted && currentView !== "completed") {
       result = result.filter((task: Task) => !task.completed)
+    }
+
+    // Apply show overdue filter (only UI concern now)
+    if (!viewState.showOverdue) {
+      result = result.filter((task: Task) => {
+        if (!task.dueDate) return true
+        return !(isPast(task.dueDate) && !isToday(task.dueDate))
+      })
     }
 
     // Apply search query filter (only UI concern now)
@@ -1369,6 +1396,7 @@ export const taskAtoms = {
     completedTasks: completedTasksAtom,
     inboxTasks: inboxTasksAtom,
     todayTasks: todayTasksAtom,
+    todayOnly: todayOnlyAtom,
     upcomingTasks: upcomingTasksAtom,
     overdueTasks: overdueTasksAtom,
     calendarTasks: calendarTasksAtom,

@@ -5,6 +5,7 @@ import {
   DEFAULT_SORT_BY,
   DEFAULT_SORT_DIRECTION,
   DEFAULT_SHOW_COMPLETED,
+  DEFAULT_SHOW_OVERDUE,
   DEFAULT_SEARCH_QUERY,
   DEFAULT_SHOW_SIDE_PANEL,
   DEFAULT_COMPACT_VIEW,
@@ -36,6 +37,7 @@ const defaultViewState: ViewState = {
   sortBy: DEFAULT_SORT_BY,
   sortDirection: DEFAULT_SORT_DIRECTION,
   showCompleted: DEFAULT_SHOW_COMPLETED,
+  showOverdue: DEFAULT_SHOW_OVERDUE,
   searchQuery: DEFAULT_SEARCH_QUERY,
   showSidePanel: DEFAULT_SHOW_SIDE_PANEL,
   compactView: DEFAULT_COMPACT_VIEW,
@@ -196,6 +198,15 @@ setShowCompletedAtom.debugLabel = "setShowCompletedAtom"
 
 /**
  * @deprecated Use setViewOptionsAtom instead
+ * Toggles overdue task visibility for current view
+ */
+export const setShowOverdueAtom = atom(null, (get, set, show: boolean) => {
+  set(setViewOptionsAtom, { showOverdue: show })
+})
+setShowOverdueAtom.debugLabel = "setShowOverdueAtom"
+
+/**
+ * @deprecated Use setViewOptionsAtom instead
  * Toggles compact view for current view
  */
 export const setCompactViewAtom = atom(null, (get, set, compact: boolean) => {
@@ -336,6 +347,16 @@ export const showCompletedAtom = atom<boolean>((get) => {
   return viewState.showCompleted
 })
 showCompletedAtom.debugLabel = "showCompletedAtom"
+
+/**
+ * Gets whether overdue tasks are shown
+ * Used for task filtering and toggle controls
+ */
+export const showOverdueAtom = atom<boolean>((get) => {
+  const viewState = get(currentViewStateAtom)
+  return viewState.showOverdue
+})
+showOverdueAtom.debugLabel = "showOverdueAtom"
 
 /**
  * Gets whether compact view is enabled
@@ -506,6 +527,7 @@ export const viewAtoms = {
   setSorting: setSortingAtom,
   setSearchQuery: setSearchQueryAtom,
   setShowCompleted: setShowCompletedAtom,
+  setShowOverdue: setShowOverdueAtom,
   setCompactView: setCompactViewAtom,
   toggleSectionCollapse: toggleSectionCollapseAtom,
   resetCurrentViewState: resetCurrentViewStateAtom,
@@ -522,6 +544,7 @@ export const viewAtoms = {
   searchQuery: searchQueryAtom,
   sortConfig: sortConfigAtom,
   showCompleted: showCompletedAtom,
+  showOverdue: showOverdueAtom,
   compactView: compactViewAtom,
   collapsedSections: collapsedSectionsAtom,
   // Filter state

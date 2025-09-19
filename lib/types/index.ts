@@ -297,6 +297,8 @@ export const ViewStateSchema = z.object({
   sortDirection: z.enum(["asc", "desc"]),
   /** Whether to show completed tasks */
   showCompleted: z.boolean(),
+  /** Whether to show overdue tasks */
+  showOverdue: z.boolean(),
   /** Current search query */
   searchQuery: z.string(),
   /** Whether to show the side panel */

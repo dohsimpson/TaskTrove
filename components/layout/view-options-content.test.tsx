@@ -139,6 +139,7 @@ vi.mock("lucide-react", () => ({
   SidebarOpen: () => <div data-testid="sidebar-open-icon" />,
   Minimize2: () => <div data-testid="minimize2-icon" />,
   CheckSquare: () => <div data-testid="check-square-icon" />,
+  AlertTriangle: () => <div data-testid="alert-triangle-icon" />,
 }))
 
 // Mock atoms
@@ -149,6 +150,7 @@ const mockAtoms = {
     sortBy: "default",
     sortDirection: "asc",
     showCompleted: false,
+    showOverdue: true,
     searchQuery: "",
     showSidePanel: false,
     compactView: false,
@@ -232,11 +234,12 @@ describe("ViewOptionsContent", () => {
     renderWithJotai(<ViewOptionsContent />)
 
     expect(screen.getByText("Completed Tasks")).toBeInTheDocument()
+    expect(screen.getByText("Overdue Tasks")).toBeInTheDocument()
     expect(screen.getByText("Side Panel")).toBeInTheDocument()
     expect(screen.getByText("Compact View")).toBeInTheDocument()
 
     const switches = screen.getAllByTestId("switch")
-    expect(switches.length).toBeGreaterThanOrEqual(3)
+    expect(switches.length).toBeGreaterThanOrEqual(4)
   })
 
   it("renders sort controls", () => {

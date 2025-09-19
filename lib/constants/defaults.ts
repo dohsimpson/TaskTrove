@@ -74,6 +74,9 @@ export const DEFAULT_SORT_DIRECTION = "asc" as const
 /** Default show completed tasks */
 export const DEFAULT_SHOW_COMPLETED = false
 
+/** Default show overdue tasks */
+export const DEFAULT_SHOW_OVERDUE = true
+
 /** Default show side panel */
 export const DEFAULT_SHOW_SIDE_PANEL = false
 

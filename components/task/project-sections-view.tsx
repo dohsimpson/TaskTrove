@@ -99,23 +99,6 @@ interface ProjectSectionsViewProps {
  *
  * This unified approach ensures consistent drag-and-drop behavior, keyboard shortcuts,
  * and task interactions across all views while eliminating code duplication.
- *
- * @example
- * // For project views with sections
- * <ProjectSectionsView
- *   tasks={projectTasks}
- *   project={currentProject}
- *   supportsSections={true}
- *   droppableId="project-123"
- * />
- *
- * @example
- * // For inbox/today views without sections
- * <ProjectSectionsView
- *   tasks={inboxTasks}
- *   supportsSections={false}
- *   droppableId="inbox"
- * />
  */
 export function ProjectSectionsView({
   droppableId,

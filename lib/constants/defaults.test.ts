@@ -17,6 +17,7 @@ import {
   DEFAULT_SORT_BY,
   DEFAULT_SORT_DIRECTION,
   DEFAULT_SHOW_COMPLETED,
+  DEFAULT_SHOW_OVERDUE,
   DEFAULT_SEARCH_QUERY,
   DEFAULT_SHOW_SIDE_PANEL,
   DEFAULT_COMPACT_VIEW,
@@ -96,6 +97,7 @@ describe("TaskTrove Default Constants", () => {
 
     it("should have correct boolean view defaults", () => {
       expect(DEFAULT_SHOW_COMPLETED).toBe(false)
+      expect(DEFAULT_SHOW_OVERDUE).toBe(true)
       expect(DEFAULT_SHOW_SIDE_PANEL).toBe(false)
       expect(DEFAULT_COMPACT_VIEW).toBe(false)
     })

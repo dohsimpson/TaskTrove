@@ -28,6 +28,7 @@ import {
   SidebarOpen,
   Minimize2,
   CheckSquare,
+  AlertTriangle,
 } from "lucide-react"
 import { HelpPopover } from "@/components/ui/help-popover"
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
@@ -182,6 +183,10 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
                       <strong>Completed Tasks:</strong> Show or hide tasks that have been completed
                     </li>
                     <li>
+                      <strong>Overdue Tasks:</strong> Show or hide tasks that are past their due
+                      date
+                    </li>
+                    <li>
                       <strong>Side Panel:</strong> Toggle the side panel for additional task details
                     </li>
                     <li>
@@ -209,6 +214,19 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
               checked={viewState.showCompleted}
               onCheckedChange={(checked) => setViewOptions({ showCompleted: checked })}
               disabled={isShowCompletedDisabled()}
+              className="cursor-pointer"
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Label htmlFor="show-overdue" className="text-sm font-medium flex items-center gap-2">
+              <AlertTriangle className="h-3 w-3" />
+              Overdue Tasks
+            </Label>
+            <Switch
+              id="show-overdue"
+              checked={viewState.showOverdue}
+              onCheckedChange={(checked) => setViewOptions({ showOverdue: checked })}
               className="cursor-pointer"
             />
           </div>

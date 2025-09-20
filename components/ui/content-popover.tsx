@@ -17,6 +17,7 @@ interface ContentPopoverProps {
   open?: boolean
   triggerMode?: "click" | "hover"
   debounceDelay?: number
+  onOpenAutoFocus?: (event: Event) => void
 }
 
 export function ContentPopover({
@@ -30,6 +31,7 @@ export function ContentPopover({
   open,
   triggerMode,
   debounceDelay = 200,
+  onOpenAutoFocus = (event) => event.preventDefault(),
 }: ContentPopoverProps) {
   const [internalHoverState, setInternalHoverState] = useState(false)
   const settings = useAtomValue(settingsAtom)
@@ -73,7 +75,12 @@ export function ContentPopover({
         <PopoverTrigger asChild className={triggerClassName}>
           {children}
         </PopoverTrigger>
-        <PopoverContent className={className} align={align} side={side}>
+        <PopoverContent
+          className={className}
+          align={align}
+          side={side}
+          onOpenAutoFocus={onOpenAutoFocus}
+        >
           {content}
         </PopoverContent>
       </Popover>
@@ -114,6 +121,7 @@ export function ContentPopover({
         side={side}
         onMouseEnter={handleContentMouseEnter}
         onMouseLeave={handleContentMouseLeave}
+        onOpenAutoFocus={onOpenAutoFocus}
       >
         {content}
       </PopoverContent>

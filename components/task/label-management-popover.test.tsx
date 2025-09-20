@@ -182,24 +182,22 @@ describe("LabelManagementPopover", () => {
   })
 
   describe("Props Handling", () => {
-    it("supports taskId prop", async () => {
+    it("supports task prop", async () => {
       const user = userEvent.setup()
+      const task = createMockTask()
       const onAddLabel = vi.fn()
       const onRemoveLabel = vi.fn()
 
       render(
-        <LabelManagementPopover
-          taskId="test-task-id"
-          onAddLabel={onAddLabel}
-          onRemoveLabel={onRemoveLabel}
-        >
+        <LabelManagementPopover task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel}>
           <button>Open Labels</button>
         </LabelManagementPopover>,
       )
 
       await user.click(screen.getByText("Open Labels"))
 
-      expect(screen.getByTestId("label-content-taskId")).toHaveTextContent("test-task-id")
+      expect(screen.getByTestId("label-content-taskId")).toHaveTextContent("undefined")
+      expect(screen.getByTestId("label-content-task")).toHaveTextContent(task.id)
     })
 
     it("supports legacy task prop", async () => {
@@ -219,26 +217,21 @@ describe("LabelManagementPopover", () => {
       expect(screen.getByTestId("label-content-task")).toHaveTextContent(task.id)
     })
 
-    it("supports both taskId and task props together", async () => {
+    it("passes task prop correctly to LabelContent", async () => {
       const user = userEvent.setup()
       const task = createMockTask()
       const onAddLabel = vi.fn()
       const onRemoveLabel = vi.fn()
 
       render(
-        <LabelManagementPopover
-          taskId="explicit-task-id"
-          task={task}
-          onAddLabel={onAddLabel}
-          onRemoveLabel={onRemoveLabel}
-        >
+        <LabelManagementPopover task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel}>
           <button>Open Labels</button>
         </LabelManagementPopover>,
       )
 
       await user.click(screen.getByText("Open Labels"))
 
-      expect(screen.getByTestId("label-content-taskId")).toHaveTextContent("explicit-task-id")
+      expect(screen.getByTestId("label-content-taskId")).toHaveTextContent("undefined")
       expect(screen.getByTestId("label-content-task")).toHaveTextContent(task.id)
     })
 
@@ -385,11 +378,7 @@ describe("LabelManagementPopover", () => {
       const onRemoveLabel = vi.fn()
 
       render(
-        <LabelManagementPopover
-          taskId="some-id"
-          onAddLabel={onAddLabel}
-          onRemoveLabel={onRemoveLabel}
-        >
+        <LabelManagementPopover onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel}>
           <button>Open Labels</button>
         </LabelManagementPopover>,
       )
@@ -481,11 +470,7 @@ describe("LabelManagementPopover", () => {
       const onRemoveLabel = vi.fn()
 
       render(
-        <LabelManagementPopover
-          taskId="some-id"
-          onAddLabel={onAddLabel}
-          onRemoveLabel={onRemoveLabel}
-        >
+        <LabelManagementPopover onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel}>
           <button>Open Labels</button>
         </LabelManagementPopover>,
       )
@@ -509,19 +494,14 @@ describe("LabelManagementPopover", () => {
       const onRemoveLabel = vi.fn()
 
       render(
-        <LabelManagementPopover
-          taskId="test-id"
-          task={task}
-          onAddLabel={onAddLabel}
-          onRemoveLabel={onRemoveLabel}
-        >
+        <LabelManagementPopover task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel}>
           <button>Open Labels</button>
         </LabelManagementPopover>,
       )
 
       await user.click(screen.getByText("Open Labels"))
 
-      expect(screen.getByTestId("label-content-taskId")).toHaveTextContent("test-id")
+      expect(screen.getByTestId("label-content-taskId")).toHaveTextContent("undefined")
       expect(screen.getByTestId("label-content-task")).toHaveTextContent(task.id)
       expect(screen.getByTestId("label-content-mode")).toHaveTextContent("popover")
     })

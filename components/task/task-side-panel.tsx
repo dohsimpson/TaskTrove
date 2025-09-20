@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
 import { v4 as uuidv4 } from "uuid"
 import { useLanguage } from "@/components/providers/language-provider"
@@ -35,8 +35,15 @@ import { ProjectPopover } from "./project-popover"
 import { SubtaskContent } from "./subtask-content"
 import { LabelContent } from "./label-content"
 import { CommentContent } from "./comment-content"
+import { TaskActionsMenu } from "./task-actions-menu"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
-import { updateTaskAtom, addCommentAtom, projectsAtom, selectedTaskAtom } from "@/lib/atoms"
+import {
+  updateTaskAtom,
+  addCommentAtom,
+  projectsAtom,
+  selectedTaskAtom,
+  deleteTaskAtom,
+} from "@/lib/atoms"
 import { log } from "@/lib/utils/logger"
 import { labelsAtom, addLabelAtom } from "@/lib/atoms/core/labels"
 import { Task, createLabelId, type LabelId } from "@/lib/types"
@@ -61,11 +68,22 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
   const updateTask = useSetAtom(updateTaskAtom)
   const addComment = useSetAtom(addCommentAtom)
   const addLabel = useSetAtom(addLabelAtom)
+  const deleteTask = useSetAtom(deleteTaskAtom)
 
   // Atom values
   const task = useAtomValue(selectedTaskAtom)
   const allLabels = useAtomValue(labelsAtom)
   const allProjects = useAtomValue(projectsAtom)
+
+  // Context menu - always visible in side panel
+  const [actionsMenuOpen, setActionsMenuOpen] = useState(false)
+
+  // clean up states when side panel is closed
+  useEffect(() => {
+    if (!isOpen) {
+      setActionsMenuOpen(false)
+    }
+  }, [isOpen])
 
   // Auto-save with debouncing
   const debouncedSave = useDebouncedCallback((updates: Partial<Task>) => {
@@ -380,6 +398,14 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
                   <Star className="h-4 w-4 text-yellow-500 fill-current flex-shrink-0" />
                 )}
               </div>
+              <TaskActionsMenu
+                task={task}
+                isVisible={true}
+                onDeleteClick={() => deleteTask(task.id)}
+                variant="compact"
+                open={actionsMenuOpen}
+                onOpenChange={setActionsMenuOpen}
+              />
               <DrawerClose asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
                   <X className="h-4 w-4" />
@@ -444,6 +470,14 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
                 <Star className="h-4 w-4 text-yellow-500 fill-current flex-shrink-0" />
               )}
             </div>
+            <TaskActionsMenu
+              task={task}
+              isVisible={true}
+              onDeleteClick={() => deleteTask(task.id)}
+              variant="compact"
+              open={actionsMenuOpen}
+              onOpenChange={setActionsMenuOpen}
+            />
             <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 flex-shrink-0">
               <X className="h-4 w-4" />
             </Button>

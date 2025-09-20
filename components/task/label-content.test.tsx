@@ -329,16 +329,11 @@ describe("LabelContent", () => {
     })
 
     it("supports taskId prop for future compatibility", () => {
+      const task = createMockTask()
       const onAddLabel = vi.fn()
       const onRemoveLabel = vi.fn()
 
-      render(
-        <LabelContent
-          taskId="test-task-id"
-          onAddLabel={onAddLabel}
-          onRemoveLabel={onRemoveLabel}
-        />,
-      )
+      render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
       // Should render without errors (taskId is currently logged but not used)
       expect(screen.getByTestId("label-input")).toBeInTheDocument()

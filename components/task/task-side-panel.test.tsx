@@ -39,6 +39,14 @@ vi.mock("@/hooks/use-debounced-callback", () => ({
   useDebouncedCallback: vi.fn((callback: DebouncedCallback) => callback),
 }))
 
+vi.mock("@/hooks/use-context-menu-visibility", () => ({
+  useContextMenuVisibility: vi.fn(() => ({
+    isVisible: true,
+    isMenuOpen: false,
+    handleMenuOpenChange: vi.fn(),
+  })),
+}))
+
 vi.mock("@/lib/atoms", () => ({
   updateTaskAtom: "mockUpdateTaskAtom",
   addCommentAtom: "mockAddCommentAtom",
@@ -46,6 +54,7 @@ vi.mock("@/lib/atoms", () => ({
   selectedTaskAtom: "mockSelectedTaskAtom",
   projectsAtom: "mockProjectsAtom",
   settingsAtom: "mockSettingsAtom",
+  deleteTaskAtom: "mockDeleteTaskAtom",
 }))
 
 vi.mock("@/lib/atoms/core/labels", () => ({
@@ -365,6 +374,14 @@ vi.mock("@/components/ui/custom/task-checkbox", () => ({
       onChange={(e) => onCheckedChange?.(e.target.checked)}
       data-testid="checkbox"
     />
+  ),
+}))
+
+vi.mock("./task-actions-menu", () => ({
+  TaskActionsMenu: ({ isVisible }: { isVisible: boolean }) => (
+    <div data-testid="task-actions-menu" style={{ display: isVisible ? "block" : "none" }}>
+      Actions Menu
+    </div>
   ),
 }))
 

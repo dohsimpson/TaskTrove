@@ -15,7 +15,7 @@ import { useTranslation } from "@/lib/i18n/client"
 import type { Task, LabelId, Label } from "@/lib/types"
 
 interface LabelContentProps {
-  taskId?: string
+  // taskId?: string
   task?: Task // Deprecated - use taskId instead, or provided for quick-add context
   onAddLabel: (labelName?: string) => void
   onRemoveLabel: (labelId: LabelId) => void
@@ -26,7 +26,7 @@ interface LabelContentProps {
 }
 
 export function LabelContent({
-  taskId,
+  // taskId,
   task,
   onAddLabel,
   onRemoveLabel,
@@ -35,8 +35,6 @@ export function LabelContent({
   onAddingChange,
   initialIsAdding = false,
 }: LabelContentProps) {
-  console.log(taskId) // TODO: placeholder to prevent linter complaining about unused var, remove me
-
   // Translation setup
   const { language } = useLanguage()
   const { t } = useTranslation(language, "task")

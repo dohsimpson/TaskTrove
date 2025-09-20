@@ -6,8 +6,7 @@ import { LabelContent } from "./label-content"
 import type { Task, LabelId } from "@/lib/types"
 
 interface LabelManagementPopoverProps {
-  taskId?: string
-  task?: Task // Deprecated - use taskId instead
+  task?: Task
   onAddLabel: (labelName?: string) => void
   onRemoveLabel: (labelId: LabelId) => void
   children: React.ReactNode
@@ -16,7 +15,6 @@ interface LabelManagementPopoverProps {
 }
 
 export function LabelManagementPopover({
-  taskId,
   task,
   onAddLabel,
   onRemoveLabel,
@@ -59,7 +57,6 @@ export function LabelManagementPopover({
       onOpenChange={handleOpenChange}
       content={
         <LabelContent
-          taskId={taskId}
           task={task}
           onAddLabel={onAddLabel}
           onRemoveLabel={onRemoveLabel}

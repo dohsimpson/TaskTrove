@@ -61,7 +61,95 @@ if [ -n "$unstaged_files" ] || [ -n "$untracked_files" ]; then
   fi
 fi
 
-# Cleanup function to remove our marker on script exit
+# Check for git commit --amend operations
+# Walk up process tree to find git command with --amend
+find_git_amend() {
+    local pid=$1
+    local max_depth=10
+    local depth=0
+
+    # Validate input
+    if [ -z "$pid" ] || [ "$pid" -le 0 ]; then
+        return 1
+    fi
+
+    while [ $depth -lt $max_depth ] && [ $pid -gt 1 ]; do
+        local cmd=$(ps -ocommand= -p $pid 2>/dev/null || echo "")
+        if [ -n "$cmd" ] && echo "$cmd" | grep -qE "git.*--amend"; then
+            echo "found"
+            return 0
+        fi
+        # Get parent PID, handle potential failures gracefully
+        local new_pid=$(ps -oppid= -p $pid 2>/dev/null | tr -d ' ' || echo "0")
+        if [ -z "$new_pid" ] || [ "$new_pid" = "0" ] || [ "$new_pid" = "$pid" ]; then
+            break
+        fi
+        pid=$new_pid
+        depth=$((depth + 1))
+    done
+    return 1
+}
+
+IS_AMEND=$(find_git_amend $$ || echo "")
+if [ -n "$IS_AMEND" ]; then
+  # Check if HEAD exists (we have commits) and if we have staged changes
+  staged_files=$(git diff --cached --name-only)
+  if git rev-parse --verify HEAD >/dev/null 2>&1 && [ -n "$staged_files" ]; then
+    # Generate hash of current staged state for uniqueness
+    amend_staged_hash=$(git diff --cached --name-status | shasum -a 256 | cut -d' ' -f1)
+    current_amend_state="amend_${amend_staged_hash}"
+
+    # Handle both regular .git directory and worktree setups
+    if [ -d ".git" ]; then
+      git_dir=".git"
+    else
+      git_dir=$(git rev-parse --git-dir)
+    fi
+    amend_marker_file="${git_dir}/husky-amend-warned-$$"
+    current_time=$(date +%s)
+
+    # Clean up stale amend markers (older than 5 minutes)
+    find "${git_dir}" -name "husky-amend-warned-*" -type f 2>/dev/null | while read -r file; do
+      if [ -f "$file" ]; then
+        file_time=$(stat -f %m "$file" 2>/dev/null || stat -c %Y "$file" 2>/dev/null)
+        if [ $((current_time - file_time)) -gt 300 ]; then
+          rm -f "$file"
+        fi
+      fi
+    done
+
+    # Check if we've already warned about this exact amend state
+    warned_about_amend=false
+    for existing_amend_marker in "${git_dir}"/husky-amend-warned-*; do
+      if [ -f "$existing_amend_marker" ] && [ "$(cat "$existing_amend_marker" 2>/dev/null)" = "$current_amend_state" ]; then
+        warned_about_amend=true
+        rm -f "$existing_amend_marker"  # Remove it since we're proceeding
+        break
+      fi
+    done
+
+    if [ "$warned_about_amend" = false ]; then
+      echo "🚨 Warning: About to amend the previous commit!"
+      echo "   Current HEAD commit (this will be modified):"
+      git log -1 --oneline --no-decorate HEAD | sed 's/^/     /'
+      echo ""
+      echo "   Staged files that will be added to the above commit:"
+      echo "$staged_files" | sed 's/^/     /'
+      echo ""
+      echo "⚠️  Amending will permanently modify the above commit!"
+      echo "   If the HEAD commit is made by you AND you're sure you want to amend, run the command again."
+      echo "   This warning helps prevent accidental amends that could overwrite previous commits."
+
+      # Store the current amend state to allow retry
+      echo "$current_amend_state" > "$amend_marker_file"
+      exit 1
+    else
+      echo "ℹ️  Proceeding with amend (confirmed)..."
+    fi
+  fi
+fi
+
+# Cleanup function to remove our markers on script exit
 cleanup() {
   # Handle both regular .git directory and worktree setups
   if [ -d ".git" ]; then
@@ -70,8 +158,21 @@ cleanup() {
     git_dir=$(git rev-parse --git-dir)
   fi
   rm -f "${git_dir}/husky-warned-$$"
+  rm -f "${git_dir}/husky-amend-warned-$$"
 }
+
+# Signal handler to kill child processes and exit
+handle_signal() {
+  echo ""
+  echo "🚫 Pre-commit hook cancelled"
+  # Kill all child processes in this process group
+  kill -TERM -$$ 2>/dev/null || true
+  exit 130
+}
+
+# Set up traps for cleanup and signal handling
 trap cleanup EXIT
+trap handle_signal INT TERM
 
 npx lint-staged
 pnpm check

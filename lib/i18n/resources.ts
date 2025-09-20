@@ -6,6 +6,7 @@ import resourcesToBackend from "i18next-resources-to-backend"
  * 2. Colocated dialog translations from components/dialogs/
  * 3. Colocated settings translations from components/dialogs/settings-forms/
  * 4. Colocated layout translations from components/layout/
+ * 5. Colocated navigation translations from components/navigation/
  */
 export function createCombinedResourceBackend() {
   return resourcesToBackend(async (language: string, namespace: string) => {
@@ -49,6 +50,17 @@ export function createCombinedResourceBackend() {
         return layoutTranslations
       } catch (error) {
         console.warn(`Failed to load colocated layout translation for ${language}:`, error)
+      }
+    }
+
+    if (namespace === "navigation") {
+      try {
+        const navigationTranslations = await import(
+          `@/components/navigation/i18n/${language}/navigation.json`
+        )
+        return navigationTranslations
+      } catch (error) {
+        console.warn(`Failed to load colocated navigation translation for ${language}:`, error)
       }
     }
 

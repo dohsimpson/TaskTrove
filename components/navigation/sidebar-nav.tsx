@@ -72,8 +72,14 @@ import {
 } from "@/lib/atoms/ui/navigation"
 import { openSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
 import { ROOT_PROJECT_GROUP_ID } from "@/lib/types/defaults"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 
 export function SidebarNav() {
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "navigation")
+
   // Get data from atoms instead of props
   const [projects] = useAtom(visibleProjectsAtom)
   const [labels] = useAtom(labelAtoms.labels)
@@ -199,42 +205,42 @@ export function SidebarNav() {
   const mainNavItems = [
     {
       id: "all",
-      label: "All Tasks",
+      label: t("mainNav.allTasks", "All Tasks"),
       icon: <ListCheck className="h-4 w-4" />,
       count: taskCountsData.all,
       href: "/all",
     },
     {
       id: "inbox",
-      label: "Inbox",
+      label: t("mainNav.inbox", "Inbox"),
       icon: <Inbox className="h-4 w-4" />,
       count: taskCountsData.inbox,
       href: "/inbox",
     },
     {
       id: "today",
-      label: "Today",
+      label: t("mainNav.today", "Today"),
       icon: <Calendar className="h-4 w-4" />,
       count: taskCountsData.today,
       href: "/today",
     },
     {
       id: "upcoming",
-      label: "Upcoming",
+      label: t("mainNav.upcoming", "Upcoming"),
       icon: <Clock className="h-4 w-4" />,
       count: taskCountsData.upcoming,
       href: "/upcoming",
     },
     {
       id: "calendar",
-      label: "Calendar",
+      label: t("mainNav.calendar", "Calendar"),
       icon: <Calendar className="h-4 w-4" />,
       count: taskCountsData.calendar,
       href: "/calendar",
     },
     {
       id: "completed",
-      label: "Completed",
+      label: t("mainNav.completed", "Completed"),
       icon: <CheckSquare className="h-4 w-4" />,
       count: taskCountsData.completed,
       href: "/completed",
@@ -244,17 +250,17 @@ export function SidebarNav() {
   const moreNavItems = [
     {
       id: "settings",
-      label: "Settings",
+      label: t("moreNav.settings", "Settings"),
       icon: <Settings className="h-4 w-4" />,
       onClick: openSettingsDialog,
     },
     {
       id: "shortcuts",
-      label: "Shortcuts",
+      label: t("moreNav.shortcuts", "Shortcuts"),
       icon: <Keyboard className="h-4 w-4" />,
       href: "/shortcuts",
       comingSoon: true,
-      featureName: "Keyboard Shortcuts",
+      featureName: t("moreNav.shortcuts", "Keyboard Shortcuts"),
     },
   ]
 
@@ -283,7 +289,7 @@ export function SidebarNav() {
           onMouseLeave={() => searchIconRef.current?.stopAnimation()}
         >
           <SearchIcon ref={searchIconRef} size={20} />
-          <span className="text-sm font-medium">Search</span>
+          <span className="text-sm font-medium">{t("quickActions.search", "Search")}</span>
         </Button>
         <Button
           variant="ghost"
@@ -293,7 +299,7 @@ export function SidebarNav() {
           onMouseLeave={() => plusIconRef.current?.stopAnimation()}
         >
           <PlusIcon ref={plusIconRef} size={20} />
-          <span className="text-sm font-medium">Add</span>
+          <span className="text-sm font-medium">{t("quickActions.add", "Add")}</span>
         </Button>
       </div>
 
@@ -327,7 +333,7 @@ export function SidebarNav() {
             <div className="flex items-center justify-between w-full">
               <CollapsibleTrigger className="flex items-center text-xs font-semibold text-muted-foreground uppercase tracking-wide hover:text-foreground">
                 <ChevronDown className="h-3 w-3 mr-2 transition-transform group-data-[state=closed]/collapsible:-rotate-90" />
-                Projects
+                {t("sections.projects", "Projects")}
               </CollapsibleTrigger>
               <SidebarGroupAction onClick={() => openProjectDialog()}>
                 <Plus className="h-3 w-3" />
@@ -388,7 +394,7 @@ export function SidebarNav() {
             <div className="flex items-center justify-between w-full">
               <CollapsibleTrigger className="flex items-center text-xs font-semibold text-muted-foreground uppercase tracking-wide hover:text-foreground">
                 <ChevronDown className="h-3 w-3 mr-2 transition-transform group-data-[state=closed]/collapsible:-rotate-90" />
-                Labels
+                {t("sections.labels", "Labels")}
               </CollapsibleTrigger>
               <SidebarGroupAction onClick={() => openLabelDialog()}>
                 <Plus className="h-3 w-3" />
@@ -415,7 +421,7 @@ export function SidebarNav() {
           <SidebarGroupLabel>
             <CollapsibleTrigger className="flex items-center text-xs font-semibold text-muted-foreground uppercase tracking-wide hover:text-foreground">
               <ChevronDown className="h-3 w-3 mr-2 transition-transform group-data-[state=closed]/collapsible:-rotate-90" />
-              More
+              {t("sections.more", "More")}
             </CollapsibleTrigger>
           </SidebarGroupLabel>
           <CollapsibleContent>

@@ -1,13 +1,9 @@
 import type { Metadata } from "next"
 import "./globals.css"
-import { JotaiProvider } from "@/providers/index"
-import { MainLayoutWrapper } from "@/components/layout/main-layout-wrapper"
-import { HydrateWrapper } from "@/providers/hydrate-wrapper"
-// import { ThemeProvider } from '@/components/theme/theme-provider'
 import { ThemeProvider } from "next-themes"
 import { Toaster } from "@/components/ui/custom/toaster"
-import { LanguageProvider } from "@/components/providers/language-provider"
 import { getLanguage } from "@/lib/i18n/server"
+import { DynamicClientApp } from "@/components/dynamic-client-app"
 
 export const metadata: Metadata = {
   title: "TaskTrove",
@@ -29,13 +25,7 @@ export default async function RootLayout({
       <head />
       <body>
         <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem>
-          <LanguageProvider initialLanguage={language}>
-            <JotaiProvider>
-              <HydrateWrapper>
-                <MainLayoutWrapper>{children}</MainLayoutWrapper>
-              </HydrateWrapper>
-            </JotaiProvider>
-          </LanguageProvider>
+          <DynamicClientApp initialLanguage={language}>{children}</DynamicClientApp>
           <Toaster />
         </ThemeProvider>
       </body>

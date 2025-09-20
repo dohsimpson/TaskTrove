@@ -1,0 +1,23 @@
+{
+  "mainNav": {
+    "allTasks": "所有任务",
+    "inbox": "收件箱",
+    "today": "今天",
+    "upcoming": "即将到来",
+    "calendar": "日历",
+    "completed": "已完成"
+  },
+  "moreNav": {
+    "settings": "设置",
+    "shortcuts": "快捷键"
+  },
+  "quickActions": {
+    "search": "搜索",
+    "add": "添加"
+  },
+  "sections": {
+    "projects": "项目",
+    "labels": "标签",
+    "more": "更多"
+  }
+}

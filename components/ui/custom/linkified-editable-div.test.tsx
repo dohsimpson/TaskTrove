@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen, fireEvent } from "@/test-utils"
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { LinkifiedEditableDiv } from "./linkified-editable-div"
 

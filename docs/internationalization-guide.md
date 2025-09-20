@@ -549,6 +549,69 @@ vi.mock("jotai", () => ({
 - If custom mocks are necessary, ensure they include all exports that test-utils needs
 - Document which exports are required when adding new provider infrastructure
 
+### Missing Provider Export in Custom Jotai Mocks
+
+**Problem:** Tests with custom Jotai mocks fail after switching to `@/test-utils` with:
+
+```
+Error: [vitest] No "Provider" export is defined on the "jotai" mock.
+Did you forget to return it from "vi.mock"?
+```
+
+**Root Cause:**
+
+- `@/test-utils` includes `TestJotaiProvider` which requires the `Provider` export from Jotai
+- Custom Jotai mocks in test files may not include all exports that the test infrastructure needs
+- This commonly occurs when tests have extensive custom atom mocking
+
+**✅ Solution:**
+
+Add the missing `Provider` export to custom Jotai mocks:
+
+```typescript
+// In test files with custom Jotai mocks
+vi.mock("jotai", () => ({
+  useAtomValue: vi.fn(/* ... */),
+  useSetAtom: vi.fn(/* ... */),
+  useAtom: vi.fn(/* ... */),
+  atom: vi.fn(/* ... */),
+  Provider: vi.fn(({ children }) => children), // Add this line!
+}))
+```
+
+**Important:** Use `vi.fn(({ children }) => children)` rather than wrapping in a div to avoid interfering with components that return `null`:
+
+```typescript
+// ❌ Wrong - creates wrapper div that interferes with null renders
+Provider: ({ children }) => <div>{children}</div>
+
+// ✅ Correct - passes children through without wrapper
+Provider: vi.fn(({ children }) => children)
+```
+
+**Example Fix:**
+
+```diff
+// In components/task/task-filter-badges.test.tsx
+vi.mock("jotai", () => ({
+  useAtomValue: vi.fn((atom) => { /* existing mock logic */ }),
+  useSetAtom: vi.fn((atom) => { /* existing mock logic */ }),
++ Provider: vi.fn(({ children }) => children),
+}))
+```
+
+**When This Happens:**
+
+- Tests have custom Jotai mocks for complex atom interactions
+- Test files predate the `@/test-utils` infrastructure
+- Custom mocks don't include all exports required by test providers
+
+**Prevention:**
+
+- Include `Provider` export in all custom Jotai mocks from the start
+- Document required exports when creating new test infrastructure
+- Consider using test-utils atom initialization instead of extensive custom mocks
+
 ### Debug Tools
 
 Add temporary debugging:

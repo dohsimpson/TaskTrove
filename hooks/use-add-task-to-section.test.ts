@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { renderHook } from "@testing-library/react"
+import { renderHook } from "@/test-utils"
 import { useAddTaskToSection } from "./use-add-task-to-section"
 
 describe("useAddTaskToSection", () => {

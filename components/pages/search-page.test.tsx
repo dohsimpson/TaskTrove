@@ -5,6 +5,7 @@ import { describe, it, expect, vi } from "vitest"
 vi.mock("jotai", () => ({
   useAtom: vi.fn(() => ["", vi.fn()]),
   useAtomValue: vi.fn(() => []),
+  Provider: vi.fn(({ children }) => children),
 }))
 
 vi.mock("lucide-react", () => ({

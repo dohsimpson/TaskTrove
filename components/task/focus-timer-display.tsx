@@ -1,6 +1,8 @@
 "use client"
 
 import { useSetAtom } from "jotai"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import { Coffee, Pause, Play, Square } from "lucide-react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
@@ -14,6 +16,10 @@ interface FocusTimerDisplayProps {
 }
 
 function FocusTimerDetailsContent() {
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
+
   const { activeTimer, status, task, displayTime } = useFocusTimerDisplay()
   const pauseTimer = useSetAtom(pauseFocusTimerAtom)
   const resumeTimer = useSetAtom(startFocusTimerAtom)
@@ -22,7 +28,7 @@ function FocusTimerDetailsContent() {
   if (!activeTimer) {
     return (
       <div className="p-4 text-center text-muted-foreground">
-        <p className="text-sm">No active focus timer</p>
+        <p className="text-sm">{t("focusTimer.noActiveTimer", "No active focus timer")}</p>
       </div>
     )
   }
@@ -45,10 +51,14 @@ function FocusTimerDetailsContent() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Coffee className="h-4 w-4" />
-          <span className="font-medium text-sm">Focus Timer</span>
+          <span className="font-medium text-sm">{t("focusTimer.title", "Focus Timer")}</span>
         </div>
         <span className="text-xs text-muted-foreground">
-          {status === "running" ? "Running" : status === "paused" ? "Paused" : "Stopped"}
+          {status === "running"
+            ? t("focusTimer.running", "Running")
+            : status === "paused"
+              ? t("focusTimer.paused", "Paused")
+              : t("focusTimer.stopped", "Stopped")}
         </span>
       </div>
 
@@ -65,7 +75,11 @@ function FocusTimerDetailsContent() {
         )}
         <div className="text-2xl font-mono font-medium text-foreground">{displayTime}</div>
         <div className="text-sm text-muted-foreground mt-1">
-          {status === "running" ? "Running" : status === "paused" ? "Paused" : "Stopped"}
+          {status === "running"
+            ? t("focusTimer.running", "Running")
+            : status === "paused"
+              ? t("focusTimer.paused", "Paused")
+              : t("focusTimer.stopped", "Stopped")}
         </div>
       </div>
 
@@ -80,12 +94,12 @@ function FocusTimerDetailsContent() {
           {status === "running" ? (
             <>
               <Pause className="h-3 w-3" />
-              Pause
+              {t("focusTimer.pause", "Pause")}
             </>
           ) : (
             <>
               <Play className="h-3 w-3" />
-              Resume
+              {t("focusTimer.resume", "Resume")}
             </>
           )}
         </Button>
@@ -97,7 +111,7 @@ function FocusTimerDetailsContent() {
           className="flex items-center gap-1 hover:bg-red-50 hover:text-red-700 hover:border-red-200"
         >
           <Square className="h-3 w-3" />
-          Stop
+          {t("focusTimer.stop", "Stop")}
         </Button>
       </div>
     </div>

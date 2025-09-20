@@ -6,7 +6,9 @@ import { Flag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { updateTaskAtom } from "@/lib/atoms"
 import { isValidPriority } from "@/lib/types"
-import { getPriorityLabel, getPriorityTextColor } from "@/lib/color-utils"
+import { getPriorityTextColor } from "@/lib/color-utils"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import type { Task } from "@/lib/types"
 
 interface PriorityContentProps {
@@ -16,6 +18,10 @@ interface PriorityContentProps {
 }
 
 export function PriorityContent({ task, className, onPrioritySelect }: PriorityContentProps) {
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
+
   const updateTask = useSetAtom(updateTaskAtom)
 
   const handlePriorityUpdate = (priority: number) => {
@@ -23,6 +29,11 @@ export function PriorityContent({ task, className, onPrioritySelect }: PriorityC
       updateTask({ updateRequest: { id: task.id, priority } })
       onPrioritySelect?.()
     }
+  }
+
+  const getPriorityLabel = (priority: number): string => {
+    if (priority === 4) return t("priority.noPriority", "No priority")
+    return t(`priority.priority${priority}`, `Priority ${priority}`)
   }
 
   const priorities = [

@@ -1,6 +1,6 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { TaskSidePanel } from "./task-side-panel"
 import { DEFAULT_SECTION_COLORS, DEFAULT_UUID } from "@/lib/constants/defaults"
@@ -12,10 +12,6 @@ interface MockJotaiAtom {
   debugLabel: undefined
   read: ReturnType<typeof vi.fn>
   write: ReturnType<typeof vi.fn>
-}
-
-interface JotaiProviderProps {
-  children: React.ReactNode
 }
 
 // Create hoisted mocks
@@ -30,7 +26,7 @@ const mockJotai = vi.hoisted(() => ({
       write: vi.fn(),
     }),
   ),
-  Provider: ({ children }: JotaiProviderProps) => <div>{children}</div>,
+  Provider: vi.fn(({ children }) => children), // Don't wrap in div to avoid interfering with null renders
 }))
 
 // Mock dependencies

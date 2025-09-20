@@ -4,7 +4,7 @@ export const defaultNS = "common"
 export const cookieName = "i18next"
 
 // Available namespaces
-export const namespaces = ["common", "dialogs", "settings", "layout", "navigation"] as const
+export const namespaces = ["common", "dialogs", "settings", "layout", "navigation", "task"] as const
 
 export type Language = (typeof languages)[number]
 

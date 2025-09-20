@@ -63,6 +63,8 @@ import {
 import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } from "@/lib/types"
 import { INBOX_PROJECT_ID, createTaskId, createLabelId } from "@/lib/types"
 import { TimeEstimationPicker } from "../ui/custom/time-estimation-picker"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 
 // Responsive width for metadata columns to ensure consistent alignment
 const METADATA_COLUMN_WIDTH = "w-auto sm:w-20 md:w-24"
@@ -105,6 +107,10 @@ function shouldShowFocusTimer(taskId: TaskId, activeTimer: { taskId: TaskId } | 
 
 // Helper component for focus timer trigger button
 function FocusTimerTrigger({ taskId, className }: { taskId: TaskId; className?: string }) {
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
+
   const isTaskTimerActive = useAtomValue(isTaskTimerActiveAtom)
   const timerStatus = useAtomValue(focusTimerStatusAtom)
   const startTimer = useSetAtom(startFocusTimerAtom)
@@ -147,7 +153,7 @@ function FocusTimerTrigger({ taskId, className }: { taskId: TaskId; className?: 
           "flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
           className,
         )}
-        title="Start focus timer"
+        title={t("focusTimer.start", "Start focus timer")}
       >
         <Play className="h-3 w-3" />
       </span>
@@ -160,14 +166,18 @@ function FocusTimerTrigger({ taskId, className }: { taskId: TaskId; className?: 
       <span
         onClick={handlePauseResumeClick}
         className={cn("cursor-pointer text-muted-foreground hover:text-foreground")}
-        title={isThisTaskRunning ? "Pause timer" : "Resume timer"}
+        title={
+          isThisTaskRunning
+            ? t("focusTimer.pause", "Pause timer")
+            : t("focusTimer.resume", "Resume timer")
+        }
       >
         {isThisTaskRunning ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
       </span>
       <span
         onClick={handleStopClick}
         className="cursor-pointer text-muted-foreground hover:text-foreground text-red-500"
-        title="Stop timer"
+        title={t("focusTimer.stop", "Stop timer")}
       >
         <Square className="h-3 w-3" />
       </span>
@@ -192,6 +202,10 @@ export function TaskItem({
   // Subtask-specific props
   parentTask,
 }: TaskItemProps) {
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
+
   const [isHovered, setIsHovered] = useState(false)
   // Compact variant specific state
   const [labelsExpanded, setLabelsExpanded] = useState(false)
@@ -754,7 +768,7 @@ export function TaskItem({
                 "font-medium text-sm text-foreground line-clamp-2 flex-1 min-w-0",
                 task.completed && "line-through text-muted-foreground",
               )}
-              placeholder="Enter task title..."
+              placeholder={t("placeholders.taskTitle", "Enter task title...")}
             />
           </div>
 
@@ -825,7 +839,7 @@ export function TaskItem({
             onChange={(newDescription) => {
               updateTask({ updateRequest: { id: task.id, description: newDescription } })
             }}
-            placeholder="Add description..."
+            placeholder={t("placeholders.addDescription", "Add description...")}
             className={cn(
               "text-xs cursor-text hover:bg-accent px-1 py-0.5 rounded transition-colors min-w-48 max-w-sm",
               // Only apply line-clamp when not editing, otherwise use max-height with scroll
@@ -1216,7 +1230,7 @@ export function TaskItem({
               onChange={(newDescription) => {
                 updateTask({ updateRequest: { id: task.id, description: newDescription } })
               }}
-              placeholder="Add description..."
+              placeholder={t("placeholders.addDescription", "Add description...")}
               className={cn(
                 "text-xs sm:text-sm cursor-text hover:bg-accent px-1 py-0.5 rounded transition-colors max-h-20 overflow-y-auto",
                 "min-w-[150px] sm:min-w-[200px] md:min-w-64",

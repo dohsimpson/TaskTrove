@@ -1,4 +1,4 @@
-import { render, act } from "@testing-library/react"
+import { render, act } from "@/test-utils"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { FocusTimerDisplay } from "./focus-timer-display"
 import { TEST_TASK_ID_1 } from "@/lib/utils/test-constants"
@@ -44,6 +44,7 @@ vi.mock("jotai", () => ({
     }
     return vi.fn()
   },
+  Provider: vi.fn(({ children }) => children),
 }))
 
 // Mock the atoms module

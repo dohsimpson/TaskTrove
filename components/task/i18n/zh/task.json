@@ -1,0 +1,145 @@
+{
+  "focusTimer": {
+    "title": "专注计时器",
+    "start": "开始专注计时器",
+    "startTimer": "开始计时器",
+    "pause": "暂停",
+    "resume": "恢复",
+    "stop": "停止",
+    "running": "运行中",
+    "paused": "已暂停",
+    "stopped": "已停止",
+    "ready": "就绪",
+    "noActiveTimer": "没有活跃的专注计时器",
+    "task": "任务："
+  },
+  "placeholders": {
+    "taskTitle": "输入任务标题...",
+    "addDescription": "添加描述..."
+  },
+  "comments": {
+    "title": "评论 ({{count}})",
+    "addComment": "添加评论",
+    "addComments": "添加评论...",
+    "addAnotherComment": "添加另一条评论...",
+    "commentCount": "{{count}} 条评论",
+    "commentCountSingular": "{{count}} 条评论"
+  },
+  "sidePanel": {
+    "sections": {
+      "dueDate": "截止日期",
+      "category": "分类",
+      "description": "描述",
+      "subtasks": "子任务",
+      "labels": "标签",
+      "comments": "评论",
+      "attachments": "附件"
+    },
+    "dueDate": {
+      "today": "今天",
+      "tomorrow": "明天",
+      "addDueDate": "添加截止日期"
+    },
+    "priority": {
+      "label": "优先级"
+    },
+    "project": {
+      "label": "项目"
+    },
+    "attachments": {
+      "count": "{{count}} 个附件",
+      "countSingular": "{{count}} 个附件"
+    },
+    "shortcuts": {
+      "toggle": "切换",
+      "close": "关闭"
+    },
+    "autoSave": {
+      "saving": "保存中..."
+    }
+  },
+  "priority": {
+    "noPriority": "无优先级",
+    "priority1": "优先级 1",
+    "priority2": "优先级 2",
+    "priority3": "优先级 3"
+  },
+  "project": {
+    "noProject": "无项目（收件箱）"
+  },
+  "labels": {
+    "searchPlaceholder": "搜索或创建标签...",
+    "createLabel": "创建 \"{{name}}\""
+  },
+  "subtasks": {
+    "title": "子任务",
+    "addSubtask": "添加子任务",
+    "addSubtasks": "添加子任务...",
+    "addAnotherSubtask": "添加另一个子任务..."
+  },
+  "schedule": {
+    "title": "日程安排",
+    "placeholder": "例如：明天下午3点、下周一、每天",
+    "today": "今天",
+    "tomorrow": "明天",
+    "nextWeek": "下周",
+    "skip": "跳过",
+    "clearTime": "清除时间",
+    "clear": "清除",
+    "showCalendar": "显示日历和时间",
+    "hideCalendar": "隐藏日历和时间",
+    "due": "截止：",
+    "set": "设置",
+    "recurring": "重复"
+  },
+  "recurring": {
+    "daily": "每天",
+    "weekly": "每周",
+    "monthly": "每月",
+    "yearly": "每年",
+    "interval": "间隔",
+    "selectDaysOfMonth": "选择月中的天数",
+    "selectDaysOfWeek": "选择一周中的天数",
+    "selectDateInYear": "选择年中的日期",
+    "selectedDates": "已选日期：",
+    "setDailyInterval": "设置每日间隔",
+    "every": "每",
+    "day": "天",
+    "days": "天",
+    "week": "周",
+    "weeks": "周",
+    "month": "月",
+    "months": "月",
+    "year": "年",
+    "years": "年",
+    "apply": "应用",
+    "weekdays": "工作日",
+    "weekends": "周末",
+    "lastDay": "最后一天",
+    "createCustomPattern": "创建自定义重复模式",
+    "on": "在",
+    "the": "第",
+    "of": "的",
+    "calculateNextFrom": "计算下一个截止日期基于",
+    "dueDate": "截止日期",
+    "adaptive": "自适应",
+    "current": "当前："
+  },
+  "timeEstimation": {
+    "title": "时间估算",
+    "helpText": "估算完成这个任务需要多长时间。这有助于规划和跟踪你的生产力。",
+    "helpTextSubtasks": "此估算是根据子任务估算的总和计算的。在此处设置直接估算将覆盖计算值。",
+    "calculatedFromSubtasks": "从子任务计算",
+    "customDuration": "自定义时长",
+    "hour": "小时",
+    "minute": "分钟",
+    "clear": "清除",
+    "done": "完成",
+    "errors": {
+      "hourNumber": "必须是数字 (0-99)",
+      "hourRange": "小时数必须在 0-99 之间",
+      "minuteNumber": "必须是数字 (0-59)",
+      "minuteRange": "分钟数必须在 0-59 之间"
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import React from "react"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen, fireEvent } from "@/test-utils"
 import { describe, it, expect, vi } from "vitest"
 import { NavUser } from "./nav-user"
 import { SidebarProvider } from "@/components/ui/sidebar"

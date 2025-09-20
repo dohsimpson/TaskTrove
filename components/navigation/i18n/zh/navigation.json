@@ -19,5 +19,16 @@
     "projects": "项目",
     "labels": "标签",
     "more": "更多"
+  },
+  "footer": {
+    "updateTo": "更新到 {{version}}",
+    "newVersion": "新版本：{{version}}"
+  },
+  "userMenu": {
+    "github": "Github",
+    "community": "社区",
+    "reportBug": "报告错误",
+    "about": "关于",
+    "upgradeToPro": "升级到专业版"
   }
 }

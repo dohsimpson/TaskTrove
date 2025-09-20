@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor } from "@/test-utils"
 import { vi, describe, it, expect, beforeEach } from "vitest"
 import { TaskSchedulePopover } from "./task-schedule-popover"
 import type { Task } from "@/lib/types"

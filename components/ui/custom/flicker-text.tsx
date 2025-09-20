@@ -62,7 +62,8 @@ export function FlickerText({ children, className, flickerDuration = "0.8s" }: F
     }
   `
 
-  const shouldShowGlow = isHovered && theme !== "light" && systemTheme !== "light"
+  const shouldShowGlow =
+    isHovered && (theme === "dark" || (theme === "system" && systemTheme === "dark"))
 
   const baseStyles = cn(
     className,

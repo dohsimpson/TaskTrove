@@ -10,6 +10,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
 import { labelsFromIdsAtom, labelsAtom } from "@/lib/atoms/core/labels"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import type { Task, LabelId, Label } from "@/lib/types"
 
 interface LabelContentProps {
@@ -34,6 +36,11 @@ export function LabelContent({
   initialIsAdding = false,
 }: LabelContentProps) {
   console.log(taskId) // TODO: placeholder to prevent linter complaining about unused var, remove me
+
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
+
   const [newLabel, setNewLabel] = useState("")
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const commandRef = useRef<HTMLDivElement>(null)
@@ -172,7 +179,7 @@ export function LabelContent({
           <PopoverTrigger asChild>
             <div className="flex-1">
               <Input
-                placeholder="Search or create labels..."
+                placeholder={t("labels.searchPlaceholder", "Search or create labels...")}
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -219,7 +226,7 @@ export function LabelContent({
                           )}
                         >
                           <Plus className="h-3 w-3 mr-2" />
-                          Create &quot;{newLabel.trim()}&quot;
+                          {t("labels.createLabel", 'Create "{{name}}"', { name: newLabel.trim() })}
                         </CommandItem>
                       )}
                   </CommandGroup>

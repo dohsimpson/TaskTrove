@@ -1,6 +1,6 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { TaskFilterBadges } from "./task-filter-badges"
 import type { Project, Label } from "@/lib/types"
@@ -69,6 +69,7 @@ vi.mock("jotai", () => ({
     if (atomStr.includes("updateFilters")) return mockUpdateFilters
     return vi.fn()
   }),
+  Provider: vi.fn(({ children }) => children), // Add this for @/test-utils compatibility
 }))
 
 // Mock UI components

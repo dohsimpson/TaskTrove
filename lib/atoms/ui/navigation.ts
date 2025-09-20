@@ -34,6 +34,7 @@ import { allGroupsAtom } from "../core/groups"
 import { resolveProject, resolveLabel, resolveProjectGroup } from "@/lib/utils/routing"
 import { findGroupById } from "@/lib/utils/group-utils"
 import { log } from "@/lib/utils/logger"
+import { STANDARD_VIEW_IDS, STANDARD_VIEW_METADATA } from "@/lib/constants/defaults"
 
 // Internal validation functions for navigation parsing
 function isValidProjectId(id: string): id is ProjectId {
@@ -53,8 +54,6 @@ function isValidGroupId(id: string): id is GroupId {
     return false
   }
 }
-
-import { STANDARD_VIEW_IDS, STANDARD_VIEW_METADATA } from "@/lib/constants/defaults"
 
 /**
  * Validates if a string is a standard view identifier

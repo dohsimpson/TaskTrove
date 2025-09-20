@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor } from "@/test-utils"
 import { vi, describe, it, expect, beforeEach } from "vitest"
 import { TaskScheduleContent } from "./task-schedule-content"
 import type { Task } from "@/lib/types"
@@ -54,6 +54,7 @@ vi.mock("jotai", () => {
       return mockUpdateTask
     }),
     atom: createMockAtom,
+    Provider: vi.fn(({ children }) => children),
   }
 })
 
@@ -159,7 +160,7 @@ describe("TaskScheduleContent", () => {
 
   const mockOnClose = vi.fn()
 
-  const renderWithTasks = (tasks: Task[], children: React.ReactNode) => {
+  const renderWithTasks = (tasks: Task[], children: React.ReactElement) => {
     mockTasks = tasks
     return render(children)
   }

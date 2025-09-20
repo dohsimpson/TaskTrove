@@ -1,7 +1,7 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { mockUseToast } from "@/test-utils"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen, fireEvent } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { TaskId, createTaskId } from "@/lib/types"
 
@@ -20,6 +20,7 @@ vi.mock("jotai", () => ({
       return []
     return []
   }),
+  Provider: vi.fn(({ children }) => children),
 }))
 
 // Mock atoms

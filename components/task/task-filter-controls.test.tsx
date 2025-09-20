@@ -1,6 +1,6 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { TaskFilterControls } from "./task-filter-controls"
 import type { Project, Label, Task, ViewState } from "@/lib/types"
@@ -87,6 +87,7 @@ vi.mock("jotai", () => ({
     return vi.fn()
   }),
   atom: vi.fn((value) => ({ init: value, toString: () => "mockAtom" })),
+  Provider: vi.fn(({ children }) => children),
 }))
 
 // Mock date-fns

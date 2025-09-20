@@ -1,4 +1,4 @@
-import { renderHook, act, waitFor } from "@testing-library/react"
+import { renderHook, act, waitFor } from "@/test-utils"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import React from "react"
 import { Provider } from "jotai"

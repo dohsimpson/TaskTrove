@@ -1,6 +1,6 @@
 import React from "react"
 import { describe, it, expect, vi, afterEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen } from "@/test-utils"
 import { AppSidebarFooter } from "./sidebar-footer"
 import { SidebarProvider } from "@/components/ui/sidebar"
 

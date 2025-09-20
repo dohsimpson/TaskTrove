@@ -6,6 +6,7 @@ import { dynamicPageInfoAtom, currentRouteContextAtom } from "@/lib/atoms/ui/nav
 import { tasksAtom } from "@/lib/atoms"
 import { openQuickAddAtom, openProjectDialogAtom } from "@/lib/atoms/ui/navigation"
 import { openSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
+import { STANDARD_VIEW_METADATA } from "@/lib/constants/defaults"
 
 import { Button } from "@/components/ui/button"
 import { useSidebar } from "@/components/ui/sidebar"
@@ -97,6 +98,37 @@ export function PageHeader({
   // Get dynamic page info from atom
   const pageInfo = useAtomValue(dynamicPageInfoAtom)
 
+  // Type guard to check if viewId is a valid standard view key
+  const isValidStandardViewId = (viewId: string): viewId is keyof typeof STANDARD_VIEW_METADATA => {
+    return viewId in STANDARD_VIEW_METADATA
+  }
+
+  // Helper function to get translated page info for standard views
+  const getTranslatedPageInfo = () => {
+    // Check if this is a standard view that should be translated
+    if (routeContext.routeType === "standard" && routeContext.viewId) {
+      const viewIdString = String(routeContext.viewId)
+      // Check if it's a valid standard view key using type guard
+      if (isValidStandardViewId(viewIdString)) {
+        const metadata = STANDARD_VIEW_METADATA[viewIdString]
+        return {
+          title: t(`standardViews.${viewIdString}.title`, metadata.title || pageInfo.title),
+          description: t(
+            `standardViews.${viewIdString}.description`,
+            metadata.description || pageInfo.description,
+          ),
+        }
+      }
+    }
+    // For non-standard views (projects, labels, etc.), use original info
+    return {
+      title: pageInfo.title,
+      description: pageInfo.description,
+    }
+  }
+
+  const translatedPageInfo = getTranslatedPageInfo()
+
   // Set mounted to true after hydration to prevent theme mismatch
   useEffect(() => {
     setMounted(true)
@@ -175,7 +207,7 @@ export function PageHeader({
                 {getPageIcon(pageInfo.iconType, pageInfo.color)}
               </div>
               <div>
-                <h1 className="text-2xl text-foreground">{pageInfo.title}</h1>
+                <h1 className="text-2xl text-foreground">{translatedPageInfo.title}</h1>
               </div>
             </div>
 

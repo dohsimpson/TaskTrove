@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest"
-import { renderHook, act } from "@testing-library/react"
+import { renderHook, act } from "@/test-utils"
 import { extractSidebarInstruction, useSidebarDragState } from "./use-sidebar-drag-state"
 import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
 import { ROOT_PROJECT_GROUP_ID } from "@/lib/types/defaults"

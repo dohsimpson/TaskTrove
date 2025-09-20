@@ -1,6 +1,6 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from "vitest"
-import { render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { LabelContent } from "./label-content"
 import type { Task, Label, LabelId } from "@/lib/types"
@@ -26,6 +26,7 @@ vi.mock("jotai", () => ({
     if (atom.toString().includes("labelsAtom")) return mockAllLabels
     return vi.fn()
   }),
+  Provider: vi.fn(({ children }) => children),
 }))
 
 // Mock atoms

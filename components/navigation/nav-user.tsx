@@ -21,6 +21,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { AboutModal } from "@/components/dialogs/about-modal"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 
 interface UserData {
   name: string
@@ -33,28 +35,32 @@ interface NavUserProps {
 }
 
 export function NavUser({ user }: NavUserProps) {
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "navigation")
+
   const { isMobile } = useSidebar()
   const [aboutModalOpen, setAboutModalOpen] = useState(false)
 
   const contextMenuItems = [
     {
       icon: SiGithub,
-      label: "Github",
+      label: t("userMenu.github", "Github"),
       onClick: () => window.open("https://github.com/dohsimpson/TaskTrove", "_blank"),
     },
     {
       icon: SiDiscord,
-      label: "Community",
+      label: t("userMenu.community", "Community"),
       onClick: () => window.open("https://discord.gg/d8TCEtv8", "_blank"),
     },
     {
       icon: Bug,
-      label: "Report Bug",
+      label: t("userMenu.reportBug", "Report Bug"),
       onClick: () => window.open("https://github.com/dohsimpson/TaskTrove/discussions", "_blank"),
     },
     {
       icon: Info,
-      label: "About",
+      label: t("userMenu.about", "About"),
       onClick: () => setAboutModalOpen(true),
     },
   ]
@@ -106,7 +112,7 @@ export function NavUser({ user }: NavUserProps) {
                   onClick={() => window.open("https://tasktrove.io/#pricing", "_blank")}
                 >
                   <Sparkles />
-                  Upgrade to Pro
+                  {t("userMenu.upgradeToPro", "Upgrade to Pro")}
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />

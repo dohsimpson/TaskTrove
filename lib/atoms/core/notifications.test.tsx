@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { createStore, Provider } from "jotai"
-import { renderHook } from "@testing-library/react"
+import { renderHook } from "@/test-utils"
 import { useAtomValue } from "jotai"
 import React from "react"
 import { notificationAtoms } from "./notifications"

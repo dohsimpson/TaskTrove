@@ -13,6 +13,8 @@ import { updateTaskAtom, tasksAtom } from "@/lib/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
 import type { Task, TaskComment, CreateTaskRequest } from "@/lib/types"
 import { createCommentId, createTaskId } from "@/lib/types"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 
 interface CommentContentProps {
   taskId?: string // Optional for quick-add mode
@@ -85,6 +87,10 @@ export function CommentContent({
   mode = "inline",
   className,
 }: CommentContentProps) {
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
+
   const allTasks = useAtomValue(tasksAtom)
   const updateTask = useSetAtom(updateTaskAtom)
   const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
@@ -187,12 +193,14 @@ export function CommentContent({
           <div className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium text-sm">
-              {commentsLength > 0 ? `Comments (${commentsLength})` : "Add Comment"}
+              {commentsLength > 0
+                ? t("comments.title", "Comments ({{count}})", { count: commentsLength })
+                : t("comments.addComment", "Add Comment")}
             </span>
           </div>
           {commentsLength > 0 && (
             <span className="text-xs text-muted-foreground">
-              {commentsLength} comment{commentsLength !== 1 ? "s" : ""}
+              {t("comments.commentCount", "{{count}} 条评论", { count: commentsLength })}
             </span>
           )}
         </div>
@@ -221,7 +229,11 @@ export function CommentContent({
       {/* Add Comment Section - Always visible input with button */}
       <div className="flex gap-2">
         <Input
-          placeholder={commentsLength > 0 ? "Add another comment..." : "Add comments..."}
+          placeholder={
+            commentsLength > 0
+              ? t("comments.addAnotherComment", "Add another comment...")
+              : t("comments.addComments", "Add comments...")
+          }
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           onKeyDown={handleKeyDown}

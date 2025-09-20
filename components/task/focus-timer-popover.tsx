@@ -2,6 +2,8 @@
 
 import React, { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import { Coffee, Play, Pause, Square } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ContentPopover } from "@/components/ui/content-popover"
@@ -23,6 +25,10 @@ interface FocusTimerPopoverProps {
 }
 
 function FocusTimerContent({ taskId }: { taskId: TaskId }) {
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
+
   const tasks = useAtomValue(tasksAtom)
   const isTaskTimerActive = useAtomValue(isTaskTimerActiveAtom)
   const { activeTimer, status, displayTime } = useFocusTimerDisplay()
@@ -57,17 +63,23 @@ function FocusTimerContent({ taskId }: { taskId: TaskId }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Coffee className="h-4 w-4" />
-          <span className="font-medium text-sm">Focus Timer</span>
+          <span className="font-medium text-sm">{t("focusTimer.title", "Focus Timer")}</span>
         </div>
         <span className="text-xs text-muted-foreground">
-          {isThisTaskRunning ? "Running" : isThisTaskPaused ? "Paused" : "Ready"}
+          {isThisTaskRunning
+            ? t("focusTimer.running", "Running")
+            : isThisTaskPaused
+              ? t("focusTimer.paused", "Paused")
+              : t("focusTimer.ready", "Ready")}
         </span>
       </div>
 
       {/* Task Info */}
       {task && (
         <div className="border-b pb-3">
-          <p className="text-sm font-medium text-foreground mb-1">Task:</p>
+          <p className="text-sm font-medium text-foreground mb-1">
+            {t("focusTimer.task", "Task:")}
+          </p>
           <p className="text-sm text-muted-foreground line-clamp-2">{task.title}</p>
         </div>
       )}
@@ -77,7 +89,11 @@ function FocusTimerContent({ taskId }: { taskId: TaskId }) {
         <div className="text-center py-2">
           <div className="text-lg font-mono font-medium text-foreground">{displayTime}</div>
           <div className="text-xs text-muted-foreground mt-1">
-            {isThisTaskRunning ? "Running" : isThisTaskPaused ? "Paused" : "Stopped"}
+            {isThisTaskRunning
+              ? t("focusTimer.running", "Running")
+              : isThisTaskPaused
+                ? t("focusTimer.paused", "Paused")
+                : t("focusTimer.stopped", "Stopped")}
           </div>
         </div>
       )}
@@ -92,7 +108,7 @@ function FocusTimerContent({ taskId }: { taskId: TaskId }) {
             className="flex items-center gap-2"
           >
             <Coffee className="h-3 w-3" />
-            Start Timer
+            {t("focusTimer.startTimer", "Start Timer")}
           </Button>
         ) : (
           <>
@@ -105,12 +121,12 @@ function FocusTimerContent({ taskId }: { taskId: TaskId }) {
               {isThisTaskRunning ? (
                 <>
                   <Pause className="h-3 w-3" />
-                  Pause
+                  {t("focusTimer.pause", "Pause")}
                 </>
               ) : (
                 <>
                   <Play className="h-3 w-3" />
-                  Resume
+                  {t("focusTimer.resume", "Resume")}
                 </>
               )}
             </Button>
@@ -122,7 +138,7 @@ function FocusTimerContent({ taskId }: { taskId: TaskId }) {
               className="flex items-center gap-1 hover:bg-red-50 hover:text-red-700 hover:border-red-200"
             >
               <Square className="h-3 w-3" />
-              Stop
+              {t("focusTimer.stop", "Stop")}
             </Button>
           </>
         )}

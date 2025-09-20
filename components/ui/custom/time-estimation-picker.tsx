@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -28,6 +30,10 @@ export function TimeEstimationPicker({
   open,
   setOpen,
 }: TimeEstimationPickerProps) {
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
+
   // Get task data and update function for existing tasks
   const tasks = useAtomValue(tasksAtom)
   const updateTask = useSetAtom(updateTaskAtom)
@@ -106,11 +112,14 @@ export function TimeEstimationPicker({
 
     const parsed = parseInt(trimmed)
     if (isNaN(parsed)) {
-      return { value: 0, error: "Must be a number (0-99)" }
+      return { value: 0, error: t("timeEstimation.errors.hourNumber", "Must be a number (0-99)") }
     }
 
     if (parsed < 0 || parsed > 99) {
-      return { value: Math.max(0, Math.min(parsed, 99)), error: "Hours must be between 0-99" }
+      return {
+        value: Math.max(0, Math.min(parsed, 99)),
+        error: t("timeEstimation.errors.hourRange", "Hours must be between 0-99"),
+      }
     }
 
     return { value: parsed, error: "" }
@@ -122,11 +131,14 @@ export function TimeEstimationPicker({
 
     const parsed = parseInt(trimmed)
     if (isNaN(parsed)) {
-      return { value: 0, error: "Must be a number (0-59)" }
+      return { value: 0, error: t("timeEstimation.errors.minuteNumber", "Must be a number (0-59)") }
     }
 
     if (parsed < 0 || parsed > 59) {
-      return { value: Math.max(0, Math.min(parsed, 59)), error: "Minutes must be between 0-59" }
+      return {
+        value: Math.max(0, Math.min(parsed, 59)),
+        error: t("timeEstimation.errors.minuteRange", "Minutes must be between 0-59"),
+      }
     }
 
     return { value: parsed, error: "" }
@@ -205,12 +217,20 @@ export function TimeEstimationPicker({
         <div className="p-4 space-y-4">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Label className="text-sm font-medium">Time Estimation</Label>
+              <Label className="text-sm font-medium">
+                {t("timeEstimation.title", "Time Estimation")}
+              </Label>
               <HelpPopover
                 content={
                   isUsingSubtaskEstimation
-                    ? "This estimation is calculated from the sum of subtask estimations. Setting a direct estimation here will override the calculated value."
-                    : "Estimate how long this task will take to complete. This helps with planning and tracking your productivity."
+                    ? t(
+                        "timeEstimation.helpTextSubtasks",
+                        "This estimation is calculated from the sum of subtask estimations. Setting a direct estimation here will override the calculated value.",
+                      )
+                    : t(
+                        "timeEstimation.helpText",
+                        "Estimate how long this task will take to complete. This helps with planning and tracking your productivity.",
+                      )
                 }
                 align="start"
               />
@@ -218,7 +238,7 @@ export function TimeEstimationPicker({
             {isUsingSubtaskEstimation && (
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="text-xs">
-                  Calculated from subtasks
+                  {t("timeEstimation.calculatedFromSubtasks", "Calculated from subtasks")}
                 </Badge>
               </div>
             )}
@@ -240,7 +260,9 @@ export function TimeEstimationPicker({
           </div>
 
           <div className="space-y-3">
-            <Label className="text-xs font-medium">Custom Duration</Label>
+            <Label className="text-xs font-medium">
+              {t("timeEstimation.customDuration", "Custom Duration")}
+            </Label>
             <div className="flex items-center justify-center gap-2">
               <div className="flex flex-col items-center space-y-1">
                 <Input
@@ -253,7 +275,9 @@ export function TimeEstimationPicker({
                     hourError ? "border-destructive focus-visible:border-destructive" : ""
                   }`}
                 />
-                <Label className="text-xs text-muted-foreground font-medium">Hour</Label>
+                <Label className="text-xs text-muted-foreground font-medium">
+                  {t("timeEstimation.hour", "Hour")}
+                </Label>
               </div>
 
               <div className="text-lg font-bold text-muted-foreground pb-4">:</div>
@@ -269,7 +293,9 @@ export function TimeEstimationPicker({
                     minuteError ? "border-destructive focus-visible:border-destructive" : ""
                   }`}
                 />
-                <Label className="text-xs text-muted-foreground font-medium">Minute</Label>
+                <Label className="text-xs text-muted-foreground font-medium">
+                  {t("timeEstimation.minute", "Minute")}
+                </Label>
               </div>
             </div>
             {hourError && <p className="text-xs text-destructive text-center">{hourError}</p>}
@@ -278,10 +304,10 @@ export function TimeEstimationPicker({
 
           <div className="flex justify-between gap-2 pt-2">
             <Button variant="outline" size="sm" onClick={handleClear}>
-              Clear
+              {t("timeEstimation.clear", "Clear")}
             </Button>
             <Button size="sm" onClick={handleDone}>
-              Done
+              {t("timeEstimation.done", "Done")}
             </Button>
           </div>
         </div>

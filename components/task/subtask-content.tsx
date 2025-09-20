@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils"
 import { formatTime } from "@/lib/utils/time-estimation"
 import { updateTaskAtom, tasksAtom } from "@/lib/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import type { Task, Subtask, CreateTaskRequest } from "@/lib/types"
 import { createSubtaskId, createTaskId } from "@/lib/types"
 
@@ -31,6 +33,10 @@ export function SubtaskContent({
   className,
   persistEstimationOnAdd = true,
 }: SubtaskContentProps) {
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
+
   const allTasks = useAtomValue(tasksAtom)
   const updateTask = useSetAtom(updateTaskAtom)
   const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
@@ -119,7 +125,9 @@ export function SubtaskContent({
           <div className="flex items-center gap-2">
             <CheckSquare className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium text-sm">
-              {totalSubtasks > 0 ? "Subtasks" : "Add Subtask"}
+              {totalSubtasks > 0
+                ? t("subtasks.title", "Subtasks")
+                : t("subtasks.addSubtask", "Add Subtask")}
             </span>
           </div>
           {totalSubtasks > 0 && (
@@ -159,7 +167,11 @@ export function SubtaskContent({
       {/* Add New Subtask Section - Always visible input with button */}
       <div className="flex gap-1">
         <Input
-          placeholder={totalSubtasks > 0 ? "Add another subtask..." : "Add subtasks..."}
+          placeholder={
+            totalSubtasks > 0
+              ? t("subtasks.addAnotherSubtask", "Add another subtask...")
+              : t("subtasks.addSubtasks", "Add subtasks...")
+          }
           value={newSubtaskTitle}
           onChange={(e) => setNewSubtaskTitle(e.target.value)}
           onKeyDown={handleKeyDown}

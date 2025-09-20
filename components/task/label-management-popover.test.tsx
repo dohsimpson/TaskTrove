@@ -1,6 +1,6 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { LabelManagementPopover } from "./label-management-popover"
 import type { Task, LabelId } from "@/lib/types"

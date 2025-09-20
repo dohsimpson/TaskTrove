@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen } from "@/test-utils"
 import { describe, it, expect, vi } from "vitest"
 import { ViewEmptyState } from "./view-empty-state"
 import { createProjectId, createLabelId } from "@/lib/types"

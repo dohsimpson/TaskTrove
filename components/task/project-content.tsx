@@ -5,6 +5,8 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { Folder, Inbox } from "lucide-react"
 import { cn, isTaskInInbox } from "@/lib/utils"
 import { projectsAtom, updateTaskAtom } from "@/lib/atoms"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import type { Task, ProjectId } from "@/lib/types"
 import { INBOX_PROJECT_ID } from "@/lib/types"
 
@@ -23,6 +25,10 @@ export function ProjectContent({
   onUpdate,
   className,
 }: ProjectContentProps) {
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
+
   const allProjects = useAtomValue(projectsAtom)
   const updateTask = useSetAtom(updateTaskAtom)
 
@@ -91,7 +97,9 @@ export function ProjectContent({
           onClick={handleInboxSelect}
         >
           <Inbox className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium flex-1">No Project (Inbox)</span>
+          <span className="text-sm font-medium flex-1">
+            {t("project.noProject", "No Project (Inbox)")}
+          </span>
         </div>
       </div>
     </div>

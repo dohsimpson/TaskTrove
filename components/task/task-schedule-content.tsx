@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useCallback, useMemo } from "react"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
@@ -57,6 +59,10 @@ export function TaskScheduleContent({
   onClose,
   defaultTab = "schedule",
 }: TaskScheduleContentProps) {
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
+
   const allTasks = useAtomValue(tasksAtom)
   const updateTask = useSetAtom(updateTaskAtom)
   const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
@@ -842,7 +848,7 @@ export function TaskScheduleContent({
       <div className="flex items-center justify-between border-b pb-2 mb-3">
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4" />
-          <span className="font-medium text-sm">Schedule</span>
+          <span className="font-medium text-sm">{t("schedule.title", "Schedule")}</span>
         </div>
         <Button
           variant="ghost"
@@ -859,14 +865,14 @@ export function TaskScheduleContent({
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="schedule" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
-            Schedule
+            {t("schedule.title", "Schedule")}
             {(task.dueDate || task.dueTime) && (
               <div className="w-1.5 h-1.5 bg-foreground rounded-full" />
             )}
           </TabsTrigger>
           <TabsTrigger value="recurring" className="flex items-center gap-2">
             <Repeat className="h-4 w-4" />
-            Recurring
+            {t("schedule.recurring", "Recurring")}
             {task.recurring && <div className="w-1.5 h-1.5 bg-foreground rounded-full" />}
           </TabsTrigger>
         </TabsList>
@@ -876,7 +882,7 @@ export function TaskScheduleContent({
           <div className="mb-3">
             <div className="flex gap-2">
               <Input
-                placeholder="e.g., tomorrow 3PM, next monday, daily"
+                placeholder={t("schedule.placeholder", "e.g., tomorrow 3PM, next monday, daily")}
                 value={nlInput}
                 onChange={(e) => setNlInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleParseInput()}
@@ -905,7 +911,9 @@ export function TaskScheduleContent({
               onClick={() => handleQuickSchedule("today")}
             >
               <Sun className="h-4 w-4 text-yellow-500 mb-1" />
-              <span className={currentSchedulePreset === "today" ? "font-medium" : ""}>Today</span>
+              <span className={currentSchedulePreset === "today" ? "font-medium" : ""}>
+                {t("schedule.today", "Today")}
+              </span>
             </Button>
             <Button
               variant="ghost"
@@ -918,7 +926,7 @@ export function TaskScheduleContent({
             >
               <Sunrise className="h-4 w-4 text-orange-500 mb-1" />
               <span className={currentSchedulePreset === "tomorrow" ? "font-medium" : ""}>
-                Tomorrow
+                {t("schedule.tomorrow", "Tomorrow")}
               </span>
             </Button>
             <Button
@@ -932,7 +940,7 @@ export function TaskScheduleContent({
             >
               <ArrowRight className="h-4 w-4 text-green-500 mb-1" />
               <span className={currentSchedulePreset === "next-week" ? "font-medium" : ""}>
-                Next Week
+                {t("schedule.nextWeek", "Next Week")}
               </span>
             </Button>
           </div>
@@ -946,7 +954,7 @@ export function TaskScheduleContent({
               disabled={!task.dueDate}
             >
               <FastForward className="h-4 w-4 text-blue-600 mb-1" />
-              <span className="text-center leading-tight">Skip</span>
+              <span className="text-center leading-tight">{t("schedule.skip", "Skip")}</span>
             </Button>
             <Button
               variant="ghost"
@@ -955,7 +963,9 @@ export function TaskScheduleContent({
               disabled={!task.dueTime}
             >
               <AlarmClockOff className="h-4 w-4 mb-1" />
-              <span className="text-center leading-tight">Clear Time</span>
+              <span className="text-center leading-tight">
+                {t("schedule.clearTime", "Clear Time")}
+              </span>
             </Button>
             <Button
               variant="ghost"
@@ -964,7 +974,7 @@ export function TaskScheduleContent({
               disabled={!task.dueDate && !task.dueTime && !task.recurring}
             >
               <Ban className="h-4 w-4 mb-1" />
-              <span className="text-center leading-tight">Clear</span>
+              <span className="text-center leading-tight">{t("schedule.clear", "Clear")}</span>
             </Button>
           </div>
 
@@ -977,7 +987,9 @@ export function TaskScheduleContent({
                 onClick={() => setShowInlineCalendar(!showInlineCalendar)}
               >
                 <CalendarIcon className="h-4 w-4 mr-2 text-purple-600" />
-                {showInlineCalendar ? "Hide calendar & time" : "Show calendar & time"}
+                {showInlineCalendar
+                  ? t("schedule.hideCalendar", "Hide calendar & time")
+                  : t("schedule.showCalendar", "Show calendar & time")}
               </Button>
             </div>
           )}
@@ -1072,7 +1084,7 @@ export function TaskScheduleContent({
                     </SelectContent>
                   </Select>
                   <Button onClick={handleTimeUpdate} disabled={!selectedHour || !selectedMinute}>
-                    Set
+                    {t("schedule.set", "Set")}
                   </Button>
                 </div>
               </div>
@@ -1083,7 +1095,7 @@ export function TaskScheduleContent({
             <div className="pt-3 mt-3 border-t">
               <div className="text-xs text-gray-500 flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                Due:{" "}
+                {t("schedule.due", "Due:")}{" "}
                 {formatTaskDateTime(task, { format: "compact" }) || format(task.dueDate, "MMM d")}
               </div>
             </div>
@@ -1107,7 +1119,9 @@ export function TaskScheduleContent({
                 }}
               >
                 <Sun className="h-4 w-4 text-yellow-500 mb-1" />
-                <span className={currentRecurringType === "daily" ? "font-medium" : ""}>Daily</span>
+                <span className={currentRecurringType === "daily" ? "font-medium" : ""}>
+                  {t("recurring.daily", "Daily")}
+                </span>
               </Button>
               <Button
                 variant="ghost"
@@ -1123,7 +1137,7 @@ export function TaskScheduleContent({
               >
                 <Repeat className="h-4 w-4 text-blue-500 mb-1" />
                 <span className={currentRecurringType === "weekly" ? "font-medium" : ""}>
-                  Weekly
+                  {t("recurring.weekly", "Weekly")}
                 </span>
               </Button>
               <Button
@@ -1140,7 +1154,7 @@ export function TaskScheduleContent({
               >
                 <CalendarIcon className="h-4 w-4 text-purple-500 mb-1" />
                 <span className={currentRecurringType === "monthly" ? "font-medium" : ""}>
-                  Monthly
+                  {t("recurring.monthly", "Monthly")}
                 </span>
               </Button>
             </div>
@@ -1161,7 +1175,7 @@ export function TaskScheduleContent({
               >
                 <CalendarDays className="h-4 w-4 text-green-500 mb-1" />
                 <span className={currentRecurringType === "yearly" ? "font-medium" : ""}>
-                  Yearly
+                  {t("recurring.yearly", "Yearly")}
                 </span>
               </Button>
               <Button
@@ -1179,7 +1193,7 @@ export function TaskScheduleContent({
                     currentRecurringType === "interval" || showIntervalConfig ? "font-medium" : ""
                   }
                 >
-                  Interval
+                  {t("recurring.interval", "Interval")}
                 </span>
               </Button>
               <Button
@@ -1192,7 +1206,7 @@ export function TaskScheduleContent({
                 disabled={!task.dueDate && !task.dueTime && !task.recurring}
               >
                 <Ban className="h-4 w-4 mb-1" />
-                <span className="text-center leading-tight">Clear</span>
+                <span className="text-center leading-tight">{t("schedule.clear", "Clear")}</span>
               </Button>
             </div>
 
@@ -1201,7 +1215,7 @@ export function TaskScheduleContent({
               <div className="space-y-2">
                 <div className="border rounded-md p-3">
                   <div className="text-xs text-gray-500 mb-3 text-center">
-                    Select days of the month
+                    {t("recurring.selectDaysOfMonth", "Select days of the month")}
                   </div>
 
                   {/* Custom day grid with Last day in same row as 31 */}
@@ -1257,7 +1271,7 @@ export function TaskScheduleContent({
                         }
                       }}
                     >
-                      Last day
+                      {t("recurring.lastDay", "Last day")}
                     </Button>
                   </div>
 
@@ -1273,7 +1287,7 @@ export function TaskScheduleContent({
                       }}
                       disabled={selectedMonthlyDays.length === 0}
                     >
-                      Apply
+                      {t("recurring.apply", "Apply")}
                     </Button>
                   </div>
                 </div>
@@ -1285,7 +1299,7 @@ export function TaskScheduleContent({
               <div className="space-y-2">
                 {selectedYearlyDates.length > 0 && (
                   <div className="text-xs text-gray-600 dark:text-gray-400">
-                    Selected dates:{" "}
+                    {t("recurring.selectedDates", "Selected dates:")}{" "}
                     {selectedYearlyDates
                       .map((date) =>
                         date.toLocaleDateString("en-US", {
@@ -1299,7 +1313,7 @@ export function TaskScheduleContent({
 
                 <div className="border rounded-md p-3">
                   <div className="text-xs text-gray-500 mb-3 text-center">
-                    Select date in the year
+                    {t("recurring.selectDateInYear", "Select date in the year")}
                   </div>
 
                   <Calendar
@@ -1336,7 +1350,7 @@ export function TaskScheduleContent({
                       }}
                       disabled={selectedYearlyDates.length === 0}
                     >
-                      Apply
+                      {t("recurring.apply", "Apply")}
                     </Button>
                   </div>
                 </div>
@@ -1348,7 +1362,7 @@ export function TaskScheduleContent({
               <div className="space-y-2">
                 <div className="border rounded-md p-3">
                   <div className="text-xs text-gray-500 mb-3 text-center">
-                    Select days of the week
+                    {t("recurring.selectDaysOfWeek", "Select days of the week")}
                   </div>
 
                   {/* Preset buttons */}
@@ -1371,7 +1385,7 @@ export function TaskScheduleContent({
                         setSelectedWeekdays([1, 2, 3, 4, 5]) // Mon-Fri
                       }}
                     >
-                      Weekdays
+                      {t("recurring.weekdays", "Weekdays")}
                     </Button>
                     <Button
                       variant={
@@ -1391,7 +1405,7 @@ export function TaskScheduleContent({
                         setSelectedWeekdays([0, 6]) // Sun, Sat
                       }}
                     >
-                      Weekends
+                      {t("recurring.weekends", "Weekends")}
                     </Button>
                   </div>
 
@@ -1431,7 +1445,7 @@ export function TaskScheduleContent({
                       }}
                       disabled={selectedWeekdays.length === 0}
                     >
-                      Apply
+                      {t("recurring.apply", "Apply")}
                     </Button>
                   </div>
                 </div>
@@ -1442,11 +1456,13 @@ export function TaskScheduleContent({
             {currentRecurringType === "daily" && !showIntervalConfig && (
               <div className="space-y-2">
                 <div className="border rounded-md p-3">
-                  <div className="text-xs text-gray-500 mb-3 text-center">Set daily interval</div>
+                  <div className="text-xs text-gray-500 mb-3 text-center">
+                    {t("recurring.setDailyInterval", "Set daily interval")}
+                  </div>
 
                   {/* Daily interval input */}
                   <div className="flex items-center justify-center gap-2 mb-3">
-                    <span className="text-sm">Every</span>
+                    <span className="text-sm">{t("recurring.every", "Every")}</span>
                     <Input
                       type="number"
                       min="1"
@@ -1460,7 +1476,11 @@ export function TaskScheduleContent({
                       }}
                       className="h-8 w-16 text-center text-sm"
                     />
-                    <span className="text-sm">{dailyInterval === 1 ? "day" : "days"}</span>
+                    <span className="text-sm">
+                      {dailyInterval === 1
+                        ? t("recurring.day", "day")
+                        : t("recurring.days", "days")}
+                    </span>
                   </div>
 
                   <div className="flex justify-center mt-2">
@@ -1472,7 +1492,7 @@ export function TaskScheduleContent({
                         handleRecurringSelect("daily")
                       }}
                     >
-                      Apply
+                      {t("recurring.apply", "Apply")}
                     </Button>
                   </div>
                 </div>
@@ -1484,13 +1504,13 @@ export function TaskScheduleContent({
               <div className="space-y-2">
                 <div className="border rounded-md p-4">
                   <div className="text-xs text-gray-500 mb-4 text-center">
-                    Create a custom recurring pattern
+                    {t("recurring.createCustomPattern", "Create a custom recurring pattern")}
                   </div>
 
                   {/* Natural sentence UI */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 flex-wrap">
-                      <span>Every</span>
+                      <span>{t("recurring.every", "Every")}</span>
                       <Input
                         type="number"
                         min="1"
@@ -1514,20 +1534,26 @@ export function TaskScheduleContent({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="WEEKLY">
-                            {customInterval === 1 ? "week" : "weeks"}
+                            {customInterval === 1
+                              ? t("recurring.week", "week")
+                              : t("recurring.weeks", "weeks")}
                           </SelectItem>
                           <SelectItem value="MONTHLY">
-                            {customInterval === 1 ? "month" : "months"}
+                            {customInterval === 1
+                              ? t("recurring.month", "month")
+                              : t("recurring.months", "months")}
                           </SelectItem>
                           <SelectItem value="YEARLY">
-                            {customInterval === 1 ? "year" : "years"}
+                            {customInterval === 1
+                              ? t("recurring.year", "year")
+                              : t("recurring.years", "years")}
                           </SelectItem>
                         </SelectContent>
                       </Select>
-                      <span>on</span>
+                      <span>{t("recurring.on", "on")}</span>
                       {(customFrequency === "MONTHLY" || customFrequency === "YEARLY") && (
                         <>
-                          <span>the</span>
+                          <span>{t("recurring.the", "the")}</span>
                           <MultiSelect
                             options={
                               customPatternType === "day"
@@ -1606,7 +1632,7 @@ export function TaskScheduleContent({
                       )}
                       {customFrequency === "YEARLY" && (
                         <>
-                          <span>of</span>
+                          <span>{t("recurring.of", "of")}</span>
                           <MultiSelect
                             options={[
                               { value: 1, label: "January" },
@@ -1708,7 +1734,7 @@ export function TaskScheduleContent({
                         setShowIntervalConfig(false)
                       }}
                     >
-                      Apply
+                      {t("recurring.apply", "Apply")}
                     </Button>
                   </div>
                 </div>
@@ -1720,7 +1746,7 @@ export function TaskScheduleContent({
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Calculate next due date from
+                    {t("recurring.calculateNextFrom", "Calculate next due date from")}
                   </label>
                   <HelpPopover content="Choose how the next due date is calculated: 'Due date' always calculates from the original due date. 'Adaptive' adjusts to your actual timing - if you complete after the due date, it calculates from your completion date (i.e. today), but if you completed before due, it calculates based on your due date. Examples: Overdue weekly task, completed on Tuesday → scheduled to next Tuesday. Weekly task due this Friday, completed early on Tuesday → scheduled to next Friday." />
                 </div>
@@ -1738,7 +1764,7 @@ export function TaskScheduleContent({
                       }
                     }}
                   >
-                    Due date
+                    {t("recurring.dueDate", "Due date")}
                   </Button>
                   <Button
                     variant={task.recurringMode === "completedAt" ? "default" : "outline"}
@@ -1753,7 +1779,7 @@ export function TaskScheduleContent({
                       }
                     }}
                   >
-                    Adaptive
+                    {t("recurring.adaptive", "Adaptive")}
                   </Button>
                 </div>
               </div>
@@ -1764,7 +1790,7 @@ export function TaskScheduleContent({
             <div className="pt-3 mt-3 border-t">
               <div className="text-xs text-gray-500 flex items-center gap-1">
                 <Repeat className="h-3 w-3" />
-                Current: {getRRuleDisplay(task.recurring || "")}
+                {t("recurring.current", "Current:")} {getRRuleDisplay(task.recurring || "")}
               </div>
             </div>
           )}

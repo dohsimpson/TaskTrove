@@ -1,6 +1,6 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { CommentContent } from "./comment-content"
 import type { Task, TaskComment, CreateTaskRequest } from "@/lib/types"
@@ -33,6 +33,7 @@ vi.mock("jotai", () => ({
     return []
   }),
   atom: vi.fn((value) => ({ init: value, toString: () => "mockAtom" })),
+  Provider: vi.fn(({ children }) => children),
 }))
 
 // Mock atoms

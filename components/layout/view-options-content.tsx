@@ -32,12 +32,18 @@ import {
 } from "lucide-react"
 import { HelpPopover } from "@/components/ui/help-popover"
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 
 interface ViewOptionsContentProps {
   onAdvancedSearch?: () => void
 }
 
 export function ViewOptionsContent({}: ViewOptionsContentProps) {
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "layout")
+
   const currentView = useAtomValue(currentViewAtom)
   const viewState = useAtomValue(currentViewStateAtom)
   const showTaskPanel = useAtomValue(showTaskPanelAtom)
@@ -99,34 +105,58 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
       {/* Header */}
       <div className="flex items-center gap-2 pb-3 border-b">
         <Settings2 className="h-5 w-5" />
-        <h3 className="text-lg font-semibold text-foreground">View Options</h3>
+        <h3 className="text-lg font-semibold text-foreground">
+          {t("viewOptions.title", "View Options")}
+        </h3>
         <HelpPopover
-          title="View Options"
+          title={t("viewOptions.title", "View Options")}
           content={
             <div className="space-y-3">
-              <p>Customize how you view and organize your tasks:</p>
+              <p>
+                {t(
+                  "viewOptions.help.description",
+                  "Customize how you view and organize your tasks:",
+                )}
+              </p>
               <ul className="list-disc pl-4 space-y-1">
                 <li>
-                  <strong>View Mode:</strong> Switch between list, kanban board, and calendar
-                  layouts
+                  <strong>{t("viewOptions.help.viewMode.label", "View Mode:")}</strong>{" "}
+                  {t(
+                    "viewOptions.help.viewMode.description",
+                    "Switch between list, kanban board, and calendar layouts",
+                  )}
                 </li>
                 <li>
-                  <strong>Display Options:</strong> Toggle completed tasks, side panel, and compact
-                  view
+                  <strong>{t("viewOptions.help.displayOptions.label", "Display Options:")}</strong>{" "}
+                  {t(
+                    "viewOptions.help.displayOptions.description",
+                    "Toggle completed tasks, side panel, and compact view",
+                  )}
                 </li>
                 <li>
-                  <strong>Sort & Filter:</strong> Organize tasks by priority, due date, or other
-                  criteria
+                  <strong>{t("viewOptions.help.sortFilter.label", "Sort & Filter:")}</strong>{" "}
+                  {t(
+                    "viewOptions.help.sortFilter.description",
+                    "Organize tasks by priority, due date, or other criteria",
+                  )}
                 </li>
                 <li>
-                  <strong>Advanced Filters:</strong> Access powerful filtering options for complex
-                  queries
+                  <strong>
+                    {t("viewOptions.help.advancedFilters.label", "Advanced Filters:")}
+                  </strong>{" "}
+                  {t(
+                    "viewOptions.help.advancedFilters.description",
+                    "Access powerful filtering options for complex queries",
+                  )}
                 </li>
               </ul>
               <div className="mt-3 p-2 bg-muted rounded-md">
                 <p className="text-sm text-muted-foreground">
-                  <strong>Tip:</strong> Your view preferences are saved per route and will persist
-                  between sessions.
+                  <strong>{t("viewOptions.help.tip.label", "Tip:")}</strong>{" "}
+                  {t(
+                    "viewOptions.help.tip.description",
+                    "Your view preferences are saved per route and will persist between sessions.",
+                  )}
                 </p>
               </div>
             </div>
@@ -137,7 +167,9 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
       <div className="space-y-4 pt-4">
         {/* View Mode Section */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium">View Mode</Label>
+          <Label className="text-sm font-medium">
+            {t("viewOptions.viewMode.label", "View Mode")}
+          </Label>
           <div className="grid grid-cols-3 gap-1">
             {(
               ["list", "kanban", "calendar"] satisfies readonly ("list" | "kanban" | "calendar")[]
@@ -156,7 +188,7 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
                   className="justify-center capitalize cursor-pointer"
                 >
                   {getViewModeIcon(mode)}
-                  <span className="ml-1">{mode}</span>
+                  <span className="ml-1">{t(`viewOptions.viewMode.${mode}`, mode)}</span>
                 </Button>
               )
 
@@ -168,7 +200,9 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
                       <div>{button}</div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Only available for projects</p>
+                      <p>
+                        {t("viewOptions.viewMode.kanbanTooltip", "Only available for projects")}
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 )
@@ -184,31 +218,64 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
         {/* Display Options Section */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Label className="text-sm font-medium">Display Options</Label>
+            <Label className="text-sm font-medium">
+              {t("viewOptions.displayOptions.label", "Display Options")}
+            </Label>
             <HelpPopover
-              title="Display Options"
+              title={t("viewOptions.displayOptions.label", "Display Options")}
               content={
                 <div className="space-y-3">
-                  <p>Control what's visible in your task view:</p>
+                  <p>
+                    {t(
+                      "viewOptions.displayOptions.help.description",
+                      "Control what's visible in your task view:",
+                    )}
+                  </p>
                   <ul className="list-disc pl-4 space-y-1">
                     <li>
-                      <strong>Completed Tasks:</strong> Show or hide tasks that have been completed
+                      <strong>
+                        {t("viewOptions.displayOptions.completed.label", "Completed Tasks:")}
+                      </strong>{" "}
+                      {t(
+                        "viewOptions.displayOptions.completed.description",
+                        "Show or hide tasks that have been completed",
+                      )}
                     </li>
                     <li>
-                      <strong>Overdue Tasks:</strong> Show or hide tasks that are past their due
-                      date
+                      <strong>
+                        {t("viewOptions.displayOptions.overdue.label", "Overdue Tasks:")}
+                      </strong>{" "}
+                      {t(
+                        "viewOptions.displayOptions.overdue.description",
+                        "Show or hide tasks that are past their due date",
+                      )}
                     </li>
                     <li>
-                      <strong>Side Panel:</strong> Toggle the side panel for additional task details
+                      <strong>
+                        {t("viewOptions.displayOptions.sidePanel.label", "Side Panel:")}
+                      </strong>{" "}
+                      {t(
+                        "viewOptions.displayOptions.sidePanel.description",
+                        "Toggle the side panel for additional task details",
+                      )}
                     </li>
                     <li>
-                      <strong>Compact View:</strong> Use a more condensed layout to fit more tasks
-                      on screen
+                      <strong>
+                        {t("viewOptions.displayOptions.compact.label", "Compact View:")}
+                      </strong>{" "}
+                      {t(
+                        "viewOptions.displayOptions.compact.description",
+                        "Use a more condensed layout to fit more tasks on screen",
+                      )}
                     </li>
                   </ul>
                   <div className="mt-3 p-2 bg-muted rounded-md">
                     <p className="text-sm text-muted-foreground">
-                      💡 Tip: These settings are saved per view and will persist between sessions
+                      💡{" "}
+                      {t(
+                        "viewOptions.displayOptions.help.tip",
+                        "Tip: These settings are saved per view and will persist between sessions",
+                      )}
                     </p>
                   </div>
                 </div>
@@ -219,7 +286,7 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
           <div className="flex items-center justify-between">
             <Label htmlFor="show-completed" className="text-sm font-medium flex items-center gap-2">
               <CheckSquare className="h-3 w-3" />
-              Completed Tasks
+              {t("viewOptions.displayOptions.completed.title", "Completed Tasks")}
             </Label>
             <Switch
               id="show-completed"
@@ -233,7 +300,7 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
           <div className="flex items-center justify-between">
             <Label htmlFor="show-overdue" className="text-sm font-medium flex items-center gap-2">
               <AlertTriangle className="h-3 w-3" />
-              Overdue Tasks
+              {t("viewOptions.displayOptions.overdue.title", "Overdue Tasks")}
             </Label>
             <Switch
               id="show-overdue"
@@ -249,7 +316,7 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
               className="text-sm font-medium flex items-center gap-2"
             >
               <SidebarOpen className="h-3 w-3" />
-              Side Panel
+              {t("viewOptions.displayOptions.sidePanel.title", "Side Panel")}
             </Label>
             <Switch
               id="show-side-panel"
@@ -262,7 +329,7 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
           <div className="flex items-center justify-between">
             <Label htmlFor="compact-view" className="text-sm font-medium flex items-center gap-2">
               <Minimize2 className="h-3 w-3" />
-              Compact View
+              {t("viewOptions.displayOptions.compact.title", "Compact View")}
             </Label>
             <Switch
               id="compact-view"
@@ -278,37 +345,69 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
         {/* Sort Section */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Label className="text-sm font-medium">Sort</Label>
+            <Label className="text-sm font-medium">{t("viewOptions.sort.label", "Sort")}</Label>
             <HelpPopover
-              title="Sorting Options"
+              title={t("viewOptions.sort.title", "Sorting Options")}
               content={
                 <div className="space-y-3">
-                  <p>Choose how to organize your tasks:</p>
+                  <p>
+                    {t("viewOptions.sort.help.description", "Choose how to organize your tasks:")}
+                  </p>
                   <ul className="list-disc pl-4 space-y-1">
                     <li>
-                      <strong>Default (Unsorted):</strong> Shows tasks in their natural order with
-                      completed tasks at the bottom
+                      <strong>
+                        {t("viewOptions.sort.help.default.label", "Default (Unsorted):")}
+                      </strong>{" "}
+                      {t(
+                        "viewOptions.sort.help.default.description",
+                        "Shows tasks in their natural order with completed tasks at the bottom",
+                      )}
                     </li>
                     <li>
-                      <strong>Due Date:</strong> Sorts all tasks by due date, mixing completed and
-                      incomplete
+                      <strong>{t("viewOptions.sort.help.dueDate.label", "Due Date:")}</strong>{" "}
+                      {t(
+                        "viewOptions.sort.help.dueDate.description",
+                        "Sorts all tasks by due date, mixing completed and incomplete",
+                      )}
                     </li>
                     <li>
-                      <strong>Priority:</strong> Orders by priority level (1=highest, 4=lowest)
+                      <strong>{t("viewOptions.sort.help.priority.label", "Priority:")}</strong>{" "}
+                      {t(
+                        "viewOptions.sort.help.priority.description",
+                        "Orders by priority level (1=highest, 4=lowest)",
+                      )}
                     </li>
                     <li>
-                      <strong>Title:</strong> Alphabetical sorting by task name
+                      <strong>{t("viewOptions.sort.help.title.label", "Title:")}</strong>{" "}
+                      {t(
+                        "viewOptions.sort.help.title.description",
+                        "Alphabetical sorting by task name",
+                      )}
                     </li>
                     <li>
-                      <strong>Created Date:</strong> Orders by when tasks were created
+                      <strong>
+                        {t("viewOptions.sort.help.createdDate.label", "Created Date:")}
+                      </strong>{" "}
+                      {t(
+                        "viewOptions.sort.help.createdDate.description",
+                        "Orders by when tasks were created",
+                      )}
                     </li>
                     <li>
-                      <strong>Status:</strong> Groups by completion status, then by kanban column
+                      <strong>{t("viewOptions.sort.help.status.label", "Status:")}</strong>{" "}
+                      {t(
+                        "viewOptions.sort.help.status.description",
+                        "Groups by completion status, then by kanban column",
+                      )}
                     </li>
                   </ul>
                   <div className="mt-3 p-2 bg-muted rounded-md">
                     <p className="text-sm text-muted-foreground">
-                      💡 Tip: Use the arrow button to toggle between ascending and descending order
+                      💡{" "}
+                      {t(
+                        "viewOptions.sort.help.tip",
+                        "Tip: Use the arrow button to toggle between ascending and descending order",
+                      )}
                     </p>
                   </div>
                 </div>
@@ -318,7 +417,7 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
 
           <div className="space-y-2">
             <Label htmlFor="sort-by" className="text-xs text-muted-foreground">
-              Sort by
+              {t("viewOptions.sort.sortBy", "Sort by")}
             </Label>
             <div className="flex gap-2">
               <Select
@@ -326,26 +425,28 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
                 onValueChange={(sortBy) => setViewOptions({ sortBy })}
               >
                 <SelectTrigger className="h-8 flex-1 cursor-pointer">
-                  <SelectValue placeholder="Select sort option" />
+                  <SelectValue
+                    placeholder={t("viewOptions.sort.placeholder", "Select sort option")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="default" className="cursor-pointer">
-                    Default (Unsorted)
+                    {t("viewOptions.sort.options.default", "Default (Unsorted)")}
                   </SelectItem>
                   <SelectItem value="dueDate" className="cursor-pointer">
-                    Due Date
+                    {t("viewOptions.sort.options.dueDate", "Due Date")}
                   </SelectItem>
                   <SelectItem value="priority" className="cursor-pointer">
-                    Priority
+                    {t("viewOptions.sort.options.priority", "Priority")}
                   </SelectItem>
                   <SelectItem value="title" className="cursor-pointer">
-                    Title
+                    {t("viewOptions.sort.options.title", "Title")}
                   </SelectItem>
                   <SelectItem value="createdAt" className="cursor-pointer">
-                    Created Date
+                    {t("viewOptions.sort.options.createdAt", "Created Date")}
                   </SelectItem>
                   <SelectItem value="status" className="cursor-pointer">
-                    Status
+                    {t("viewOptions.sort.options.status", "Status")}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -359,7 +460,9 @@ export function ViewOptionsContent({}: ViewOptionsContentProps) {
                   })
                 }
                 title={
-                  viewState.sortDirection === "asc" ? "Change to Descending" : "Change to Ascending"
+                  viewState.sortDirection === "asc"
+                    ? t("viewOptions.sort.direction.changeToDesc", "Change to Descending")
+                    : t("viewOptions.sort.direction.changeToAsc", "Change to Ascending")
                 }
               >
                 {viewState.sortDirection === "asc" ? (

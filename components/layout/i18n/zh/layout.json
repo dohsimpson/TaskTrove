@@ -47,5 +47,111 @@
     "openSidebar": "打开侧边栏",
     "currentTheme": "当前主题：{{theme}}。点击切换主题。",
     "clickToCycleThemes": "点击切换主题。"
+  },
+  "viewOptions": {
+    "title": "视图选项",
+    "help": {
+      "description": "自定义您查看和组织任务的方式：",
+      "viewMode": {
+        "label": "视图模式：",
+        "description": "在列表、看板和日历布局之间切换"
+      },
+      "displayOptions": {
+        "label": "显示选项：",
+        "description": "切换已完成任务、侧边面板和紧凑视图"
+      },
+      "sortFilter": {
+        "label": "排序和筛选：",
+        "description": "按优先级、截止日期或其他条件组织任务"
+      },
+      "advancedFilters": {
+        "label": "高级筛选：",
+        "description": "使用强大的筛选选项进行复杂查询"
+      },
+      "tip": {
+        "label": "提示：",
+        "description": "您的视图偏好设置会按路由保存，并在会话之间保持。"
+      }
+    },
+    "viewMode": {
+      "label": "视图模式",
+      "list": "列表",
+      "kanban": "看板",
+      "calendar": "日历",
+      "kanbanTooltip": "仅适用于项目"
+    },
+    "displayOptions": {
+      "label": "显示选项",
+      "help": {
+        "description": "控制任务视图中的可见内容：",
+        "tip": "提示：这些设置会按视图保存，并在会话之间保持"
+      },
+      "completed": {
+        "title": "已完成任务",
+        "label": "已完成任务：",
+        "description": "显示或隐藏已完成的任务"
+      },
+      "overdue": {
+        "title": "逾期任务",
+        "label": "逾期任务：",
+        "description": "显示或隐藏已超过截止日期的任务"
+      },
+      "sidePanel": {
+        "title": "侧边面板",
+        "label": "侧边面板：",
+        "description": "切换侧边面板以查看额外的任务详情"
+      },
+      "compact": {
+        "title": "紧凑视图",
+        "label": "紧凑视图：",
+        "description": "使用更紧凑的布局以在屏幕上显示更多任务"
+      }
+    },
+    "sort": {
+      "label": "排序",
+      "title": "排序选项",
+      "sortBy": "排序方式",
+      "placeholder": "选择排序选项",
+      "help": {
+        "description": "选择如何组织您的任务：",
+        "default": {
+          "label": "默认（未排序）：",
+          "description": "以自然顺序显示任务，已完成任务在底部"
+        },
+        "dueDate": {
+          "label": "截止日期：",
+          "description": "按截止日期对所有任务进行排序，混合已完成和未完成任务"
+        },
+        "priority": {
+          "label": "优先级：",
+          "description": "按优先级排序（1=最高，4=最低）"
+        },
+        "title": {
+          "label": "标题：",
+          "description": "按任务名称字母顺序排序"
+        },
+        "createdDate": {
+          "label": "创建日期：",
+          "description": "按任务创建时间排序"
+        },
+        "status": {
+          "label": "状态：",
+          "description": "按完成状态分组，然后按看板列"
+        },
+        "tip": "提示：使用箭头按钮在升序和降序之间切换"
+      },
+      "options": {
+        "default": "默认（未排序）",
+        "dueDate": "截止日期",
+        "priority": "优先级",
+        "title": "标题",
+        "createdAt": "创建日期",
+        "status": "状态"
+      },
+      "direction": {
+        "changeToDesc": "更改为降序",
+        "changeToAsc": "更改为升序"
+      }
+    }
   }
 }

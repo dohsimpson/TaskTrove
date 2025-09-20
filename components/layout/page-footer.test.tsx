@@ -1,6 +1,6 @@
 "use client"
 
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor } from "@/test-utils"
 import { vi, describe, it, expect, beforeEach } from "vitest"
 import { PageFooter } from "./page-footer"
 // Mock the atoms instead of importing them

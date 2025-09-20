@@ -33,6 +33,8 @@ import { CommandPalette } from "@/components/search/command-palette"
 import { HelpPopover } from "@/components/ui/help-popover"
 import { getHelpContent } from "@/lib/help-content"
 import { useTheme } from "next-themes"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 // import { ToolbarUndoRedo } from "@/components/history/undo-redo-buttons"
 
 interface PageHeaderProps {
@@ -56,6 +58,10 @@ export function PageHeader({
   const { theme, setTheme } = useTheme()
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "layout")
 
   // Atom state and actions
   const routeContext = useAtomValue(currentRouteContextAtom)
@@ -144,7 +150,7 @@ export function PageHeader({
                 variant="ghost"
                 size="icon"
                 onClick={toggleSidebar}
-                title="Collapse sidebar"
+                title={t("header.collapseSidebar", "Collapse sidebar")}
                 className="cursor-pointer"
               >
                 <PanelRightOpen className="h-4 w-4" />
@@ -155,7 +161,7 @@ export function PageHeader({
                 variant="ghost"
                 size="icon"
                 onClick={toggleSidebar}
-                title="Open sidebar"
+                title={t("header.openSidebar", "Open sidebar")}
                 className="cursor-pointer"
               >
                 <PanelRightClose className="h-4 w-4" />
@@ -230,7 +236,11 @@ export function PageHeader({
             onClick={toggleTheme}
             className="cursor-pointer"
             title={
-              mounted ? `Current theme: ${theme}. Click to cycle themes.` : "Click to cycle themes."
+              mounted
+                ? t("header.currentTheme", "Current theme: {{theme}}. Click to cycle themes.", {
+                    theme,
+                  })
+                : t("header.clickToCycleThemes", "Click to cycle themes.")
             }
           >
             {mounted ? getThemeIcon() : <Monitor className="h-4 w-4" />}

@@ -15,6 +15,8 @@ import { TaskDueDate } from "@/components/ui/custom/task-due-date"
 import type { Task } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { FocusTimerDisplay } from "@/components/task/focus-timer-display"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 
 interface PageFooterProps {
   className?: string
@@ -31,6 +33,10 @@ function TaskListContent({
 }) {
   const toggleTask = useSetAtom(toggleTaskAtom)
   const toggleTaskPanel = useSetAtom(toggleTaskPanelWithViewStateAtom)
+
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "layout")
 
   const handleTaskClick = (e: React.MouseEvent, task: Task) => {
     // Don't trigger if clicking on buttons or interactive elements
@@ -59,7 +65,8 @@ function TaskListContent({
           <span className="font-medium text-sm">{title}</span>
         </div>
         <span className="text-xs text-muted-foreground">
-          {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
+          {tasks.length}{" "}
+          {tasks.length === 1 ? t("footer.task", "task") : t("footer.tasks", "tasks")}
         </span>
       </div>
 
@@ -93,7 +100,9 @@ function TaskListContent({
         </div>
       ) : (
         <div className="text-center text-muted-foreground py-4">
-          <p className="text-sm">No {title.toLowerCase()}</p>
+          <p className="text-sm">
+            {t("footer.no", "No {{title}}", { title: title.toLowerCase() })}
+          </p>
         </div>
       )}
     </div>
@@ -106,6 +115,10 @@ export function PageFooter({ className }: PageFooterProps) {
   const todayTasks = useAtomValue(baseFilteredTasksForViewAtom("today"))
   const dueTodayCount = todayTasks.length
 
+  // Translation setup
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "layout")
+
   return (
     <div
       className={`bg-background border-t border-muted-foreground/60 px-4 py-2 flex items-center justify-between text-sm ${className}`}
@@ -116,7 +129,7 @@ export function PageFooter({ className }: PageFooterProps) {
           content={
             <TaskListContent
               tasks={Array.isArray(completedTasksToday) ? completedTasksToday : []}
-              title="Completed Today"
+              title={t("footer.completedToday", "Completed Today")}
               icon={<CheckCircle className="h-4 w-4" />}
             />
           }
@@ -133,7 +146,7 @@ export function PageFooter({ className }: PageFooterProps) {
             <span className="font-medium text-foreground">
               {Array.isArray(completedTasksToday) ? completedTasksToday.length : 0}
             </span>{" "}
-            completed today
+            {t("footer.completedTodayLabel", "completed today")}
           </Button>
         </ContentPopover>
 
@@ -141,7 +154,7 @@ export function PageFooter({ className }: PageFooterProps) {
           content={
             <TaskListContent
               tasks={todayTasks}
-              title="Due Today"
+              title={t("footer.dueToday", "Due Today")}
               icon={<Calendar className="h-4 w-4" />}
             />
           }
@@ -155,7 +168,8 @@ export function PageFooter({ className }: PageFooterProps) {
             className="flex items-center gap-1 h-auto px-0 py-0 hover:bg-transparent hover:text-foreground cursor-pointer"
           >
             <Calendar className="size-4" />
-            <span className="font-medium text-foreground">{dueTodayCount}</span> due today
+            <span className="font-medium text-foreground">{dueTodayCount}</span>{" "}
+            {t("footer.dueTodayLabel", "due today")}
           </Button>
         </ContentPopover>
       </div>

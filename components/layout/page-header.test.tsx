@@ -1,6 +1,6 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen } from "@/test-utils"
 import { mockNextNavigation, mockUseToast, mockNextThemes } from "@/test-utils"
 
 // Mock Next.js router using centralized utilities
@@ -82,6 +82,7 @@ vi.mock("jotai", () => ({
     return undefined
   }),
   useSetAtom: vi.fn(() => vi.fn()),
+  Provider: vi.fn(({ children }) => children),
 }))
 
 // Mock all atom modules

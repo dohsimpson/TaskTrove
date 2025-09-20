@@ -853,6 +853,8 @@ export const GeneralSettingsSchema = z.object({
   soundEnabled: z.boolean(),
   /** Enable/disable auto-linkification of URLs in task titles */
   linkifyEnabled: z.boolean(),
+  /** Enable/disable popover hover open behavior */
+  popoverHoverOpen: z.boolean(),
 })
 
 export const UserSettingsSchema = z.object({

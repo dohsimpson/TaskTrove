@@ -1,8 +1,19 @@
 import React from "react"
 import { flushSync } from "react-dom"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { render, screen, fireEvent, waitFor, act } from "@/test-utils"
-import { mockNextThemes } from "@/test-utils"
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+  mockNextThemes,
+  mockContentPopoverComponent,
+  mockHelpPopoverComponent,
+  mockTimeEstimationPopoverComponent,
+  mockSubtaskPopoverComponent,
+  handleSettingsAtomInMock,
+} from "@/test-utils"
 import { QuickAddDialog } from "./quick-add-dialog"
 import type { Project, LabelId, TaskPriority } from "@/lib/types"
 import { createLabelId } from "@/lib/types"
@@ -158,6 +169,23 @@ vi.mock("@/components/ui/popover", () => ({
   PopoverContent: ({ children }: MockComponentProps) => (
     <div data-testid="popover-content">{children}</div>
   ),
+}))
+
+// Mock UI components that use ContentPopover
+vi.mock("@/components/ui/content-popover", () => ({
+  ContentPopover: mockContentPopoverComponent,
+}))
+
+vi.mock("@/components/ui/help-popover", () => ({
+  HelpPopover: mockHelpPopoverComponent,
+}))
+
+vi.mock("@/components/task/time-estimation-popover", () => ({
+  TimeEstimationPopover: mockTimeEstimationPopoverComponent,
+}))
+
+vi.mock("@/components/task/subtask-popover", () => ({
+  SubtaskPopover: mockSubtaskPopoverComponent,
 }))
 
 // Mock the constants
@@ -433,6 +461,8 @@ describe("QuickAddDialog", () => {
         const state = (globalThis as any).nlpEnabledState
         return state ? state.value : true
       }
+      const settingsResult = handleSettingsAtomInMock(atom)
+      if (settingsResult) return settingsResult
       if (atomStr.includes("label") || atomStr.includes("Label")) return mockLabels
       if (atomStr.includes("project") || atomStr.includes("Project")) return mockProjects
       if (atomStr.includes("route") || atomStr.includes("context")) return mockRouteContext

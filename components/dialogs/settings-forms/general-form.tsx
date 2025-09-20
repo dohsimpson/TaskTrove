@@ -67,6 +67,7 @@ export function GeneralForm() {
   const currentStartView = settings.general.startView
   const currentSoundEnabled = settings.general.soundEnabled
   const currentLinkifyEnabled = settings.general.linkifyEnabled
+  const currentPopoverHoverOpen = settings.general.popoverHoverOpen
 
   const handleStartViewChange = (value: StandardViewId | "lastViewed") => {
     updateSettings({
@@ -88,6 +89,14 @@ export function GeneralForm() {
     updateSettings({
       general: {
         linkifyEnabled: enabled,
+      },
+    })
+  }
+
+  const handlePopoverHoverOpenChange = (enabled: boolean) => {
+    updateSettings({
+      general: {
+        popoverHoverOpen: enabled,
       },
     })
   }
@@ -228,6 +237,28 @@ export function GeneralForm() {
             id="linkify-enabled"
             checked={currentLinkifyEnabled}
             onCheckedChange={handleLinkifyEnabledChange}
+          />
+        </div>
+      </SettingsCard>
+
+      {/* Popover Settings */}
+      <SettingsCard title={t("general.popovers.title", "Popovers")}>
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="popover-hover-open">
+              {t("general.popovers.hoverOpen.label", "Open on Hover")}
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              {t(
+                "general.popovers.hoverOpen.description",
+                "Allow popovers to open when you hover over them, in addition to clicking",
+              )}
+            </p>
+          </div>
+          <Switch
+            id="popover-hover-open"
+            checked={currentPopoverHoverOpen}
+            onCheckedChange={handlePopoverHoverOpenChange}
           />
         </div>
       </SettingsCard>

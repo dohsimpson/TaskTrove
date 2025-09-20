@@ -1,4 +1,12 @@
-import { render, screen, fireEvent, waitFor } from "@/test-utils"
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  mockContentPopoverComponent,
+  mockHelpPopoverComponent,
+  handleSettingsAtomInMock,
+} from "@/test-utils"
 import { vi, describe, it, expect, beforeEach } from "vitest"
 import { TaskScheduleContent } from "./task-schedule-content"
 import type { Task } from "@/lib/types"
@@ -16,6 +24,15 @@ vi.mock("@/hooks/use-debounced-parse", () => ({
 vi.mock("@/lib/utils/enhanced-natural-language-parser", () => ({
   parseEnhancedNaturalLanguage: vi.fn(),
   convertTimeToHHMMSS: vi.fn(),
+}))
+
+// Mock UI components that use ContentPopover
+vi.mock("@/components/ui/content-popover", () => ({
+  ContentPopover: mockContentPopoverComponent,
+}))
+
+vi.mock("@/components/ui/help-popover", () => ({
+  HelpPopover: mockHelpPopoverComponent,
 }))
 
 // Mock jotai to provide test data
@@ -41,6 +58,8 @@ vi.mock("jotai", () => {
       if (atom.debugLabel?.includes("quickAdd") || atom.toString().includes("quickAdd")) {
         return mockQuickAddTask
       }
+      const settingsResult = handleSettingsAtomInMock(atom)
+      if (settingsResult) return settingsResult
       return mockTasks
     }),
     useSetAtom: vi.fn((atom) => {

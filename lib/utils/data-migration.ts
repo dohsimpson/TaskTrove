@@ -256,7 +256,9 @@ export function v050Migration(dataFile: Json): Json {
 
 export function v060Migration(dataFile: Json): Json {
   console.log("Migrating data file from v0.5.0 to v0.6.0...")
-  console.log("Adding soundEnabled and linkifyEnabled fields to general settings")
+  console.log(
+    "Adding soundEnabled, linkifyEnabled, and popoverHoverOpen fields to general settings",
+  )
 
   // Safely handle Json object type
   if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
@@ -297,22 +299,33 @@ export function v060Migration(dataFile: Json): Json {
         console.log("✓ Adding linkifyEnabled field to general settings")
         general.linkifyEnabled = true // Default to enabled
       }
+
+      // Add popoverHoverOpen if it doesn't exist
+      if (!("popoverHoverOpen" in general)) {
+        console.log("✓ Adding popoverHoverOpen field to general settings")
+        general.popoverHoverOpen = false // Default to disabled
+      }
     } else {
-      // If general settings don't exist, create them with both fields
-      console.log("✓ Creating general settings with soundEnabled and linkifyEnabled fields")
+      // If general settings don't exist, create them with all required fields
+      console.log(
+        "✓ Creating general settings with soundEnabled, linkifyEnabled, and popoverHoverOpen fields",
+      )
       settings.general = {
         startView: "all",
         soundEnabled: true,
         linkifyEnabled: true,
+        popoverHoverOpen: false,
       }
     }
   } else {
     // If no settings exist at all, use defaults
-    console.log("✓ Adding complete default settings structure with soundEnabled and linkifyEnabled")
+    console.log(
+      "✓ Adding complete default settings structure with soundEnabled, linkifyEnabled, and popoverHoverOpen",
+    )
     result.settings = DEFAULT_USER_SETTINGS
   }
 
-  console.log("✓ soundEnabled and linkifyEnabled migration completed")
+  console.log("✓ soundEnabled, linkifyEnabled, and popoverHoverOpen migration completed")
 
   // Return as Json by serializing/deserializing
   return JSON.parse(JSON.stringify(result))

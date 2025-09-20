@@ -45,6 +45,7 @@ vi.mock("@/lib/atoms", () => ({
   sortedProjectsAtom: "mockSortedProjectsAtom",
   selectedTaskAtom: "mockSelectedTaskAtom",
   projectsAtom: "mockProjectsAtom",
+  settingsAtom: "mockSettingsAtom",
 }))
 
 vi.mock("@/lib/atoms/core/labels", () => ({
@@ -474,6 +475,24 @@ describe("TaskSidePanel", () => {
     { id: "label-2", name: "Another Label", color: "#00ff00" },
   ]
 
+  const mockSettings = {
+    general: {
+      startView: "all" as const,
+      soundEnabled: true,
+      linkifyEnabled: true,
+      popoverHoverOpen: false,
+    },
+    notifications: {
+      enabled: true,
+      requireInteraction: true,
+    },
+    backup: {
+      enabled: true,
+      backupTime: "02:00",
+      maxBackups: 7,
+    },
+  }
+
   beforeEach(() => {
     vi.clearAllMocks()
 
@@ -491,6 +510,7 @@ describe("TaskSidePanel", () => {
       if (atom === "mockSortedLabelsAtom") return mockAllLabels
       if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
       if (atom === "mockSortedProjectsAtom") return mockProjects
+      if (atom === "mockSettingsAtom") return mockSettings
       return []
     })
   })
@@ -511,6 +531,7 @@ describe("TaskSidePanel", () => {
       if (atom === "mockSortedLabelsAtom") return mockAllLabels
       if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
       if (atom === "mockSortedProjectsAtom") return mockProjects
+      if (atom === "mockSettingsAtom") return mockSettings
       return []
     })
 
@@ -625,6 +646,7 @@ describe("TaskSidePanel", () => {
       if (atom === "mockSortedLabelsAtom") return mockAllLabels
       if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
       if (atom === "mockSortedProjectsAtom") return mockProjects
+      if (atom === "mockSettingsAtom") return mockSettings
       return []
     })
 
@@ -769,6 +791,7 @@ describe("TaskSidePanel", () => {
       if (atom === "mockSortedLabelsAtom") return mockAllLabels
       if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
       if (atom === "mockSortedProjectsAtom") return mockProjects
+      if (atom === "mockSettingsAtom") return mockSettings
       return []
     })
 
@@ -800,6 +823,7 @@ describe("TaskSidePanel", () => {
       if (atom === "mockSortedLabelsAtom") return mockAllLabels
       if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
       if (atom === "mockSortedProjectsAtom") return mockProjects
+      if (atom === "mockSettingsAtom") return mockSettings
       return []
     })
 
@@ -818,6 +842,7 @@ describe("TaskSidePanel", () => {
       if (atom === "mockSortedLabelsAtom") return mockAllLabels
       if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
       if (atom === "mockSortedProjectsAtom") return mockProjects
+      if (atom === "mockSettingsAtom") return mockSettings
       return []
     })
 
@@ -836,6 +861,7 @@ describe("TaskSidePanel", () => {
       if (atom === "mockSortedLabelsAtom") return mockAllLabels
       if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
       if (atom === "mockSortedProjectsAtom") return mockProjects
+      if (atom === "mockSettingsAtom") return mockSettings
       return []
     })
 
@@ -855,6 +881,7 @@ describe("TaskSidePanel", () => {
         if (atom === "mockSortedLabelsAtom") return mockAllLabels
         if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
         if (atom === "mockSortedProjectsAtom") return mockProjects
+        if (atom === "mockSettingsAtom") return mockSettings
         return []
       })
 
@@ -909,6 +936,7 @@ describe("TaskSidePanel", () => {
         if (atom === "mockSortedLabelsAtom") return mockAllLabels
         if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
         if (atom === "mockSortedProjectsAtom") return mockProjects
+        if (atom === "mockSettingsAtom") return mockSettings
         return []
       })
 
@@ -1362,6 +1390,7 @@ describe("TaskSidePanel", () => {
           if (atom === "mockSortedLabelsAtom") return mockAllLabels
           if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
           if (atom === "mockSortedProjectsAtom") return mockProjects
+          if (atom === "mockSettingsAtom") return mockSettings
           return []
         })
 
@@ -1676,6 +1705,7 @@ describe("TaskSidePanel", () => {
         if (atom === "mockSortedLabelsAtom") return mockAllLabels
         if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
         if (atom === "mockSortedProjectsAtom") return mockProjects
+        if (atom === "mockSettingsAtom") return mockSettings
         return []
       })
 
@@ -1696,6 +1726,7 @@ describe("TaskSidePanel", () => {
         if (atom === "mockSortedLabelsAtom") return mockAllLabels
         if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
         if (atom === "mockSortedProjectsAtom") return mockProjects
+        if (atom === "mockSettingsAtom") return mockSettings
         return []
       })
 
@@ -1719,6 +1750,7 @@ describe("TaskSidePanel", () => {
         if (atom === "mockSortedLabelsAtom") return mockAllLabels
         if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
         if (atom === "mockSortedProjectsAtom") return mockProjects
+        if (atom === "mockSettingsAtom") return mockSettings
         return []
       })
 
@@ -1740,6 +1772,7 @@ describe("TaskSidePanel", () => {
         if (atom === "mockSortedLabelsAtom") return mockAllLabels
         if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
         if (atom === "mockSortedProjectsAtom") return mockProjects
+        if (atom === "mockSettingsAtom") return mockSettings
         return []
       })
 
@@ -1761,6 +1794,7 @@ describe("TaskSidePanel", () => {
         if (atom === "mockSortedLabelsAtom") return mockAllLabels
         if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
         if (atom === "mockSortedProjectsAtom") return mockProjects
+        if (atom === "mockSettingsAtom") return mockSettings
         return []
       })
 
@@ -1782,6 +1816,7 @@ describe("TaskSidePanel", () => {
         if (atom === "mockSortedLabelsAtom") return mockAllLabels
         if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
         if (atom === "mockSortedProjectsAtom") return mockProjects
+        if (atom === "mockSettingsAtom") return mockSettings
         return []
       })
 

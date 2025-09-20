@@ -92,6 +92,13 @@
         "label": "自动转换网址为链接",
         "description": "自动将任务标题中的网址转换为可点击的链接"
       }
+    },
+    "popovers": {
+      "title": "弹出窗口",
+      "hoverOpen": {
+        "label": "悬停打开",
+        "description": "允许弹出窗口在悬停时打开，除了点击之外"
+      }
     }
   },
   "notifications": {

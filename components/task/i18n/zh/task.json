@@ -26,29 +26,37 @@
     "commentCountSingular": "{{count}} 条评论"
   },
   "sidePanel": {
-    "sections": {
-      "dueDate": "截止日期",
-      "category": "分类",
-      "description": "描述",
-      "subtasks": "子任务",
-      "labels": "标签",
-      "comments": "评论",
-      "attachments": "附件"
-    },
+    "title": "任务详情：{{- title}}",
     "dueDate": {
+      "title": "截止日期",
       "today": "今天",
       "tomorrow": "明天",
-      "addDueDate": "添加截止日期"
+      "placeholder": "添加截止日期"
     },
-    "priority": {
-      "label": "优先级"
+    "category": {
+      "title": "分类",
+      "priority": "优先级",
+      "project": "项目"
     },
-    "project": {
-      "label": "项目"
+    "description": {
+      "title": "描述",
+      "placeholder": "添加描述..."
+    },
+    "subtasks": {
+      "title": "子任务"
+    },
+    "labels": {
+      "title": "标签"
+    },
+    "comments": {
+      "title": "评论"
     },
     "attachments": {
-      "count": "{{count}} 个附件",
-      "countSingular": "{{count}} 个附件"
+      "title": "附件",
+      "count": "{{count}} 个附件"
+    },
+    "taskTitle": {
+      "placeholder": "任务标题..."
     },
     "shortcuts": {
       "toggle": "切换",

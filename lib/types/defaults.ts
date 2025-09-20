@@ -56,6 +56,7 @@ export const DEFAULT_GENERAL_SETTINGS = {
   startView: "all" as const, // Corresponds to DEFAULT_ROUTE "/all"
   soundEnabled: true,
   linkifyEnabled: true,
+  popoverHoverOpen: false,
 } as const
 
 /**

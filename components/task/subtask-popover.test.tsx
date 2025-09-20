@@ -1,6 +1,13 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen } from "@/test-utils"
+import {
+  render,
+  screen,
+  mockContentPopoverComponent,
+  mockHelpPopoverComponent,
+  mockTimeEstimationPopoverComponent,
+  handleSettingsAtomInMock,
+} from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { Provider } from "jotai"
 import { SubtaskPopover } from "./subtask-popover"
@@ -12,6 +19,19 @@ import {
   TEST_SUBTASK_ID_2,
   TEST_SUBTASK_ID_3,
 } from "@/lib/utils/test-constants"
+
+// Mock UI components that use ContentPopover
+vi.mock("@/components/ui/content-popover", () => ({
+  ContentPopover: mockContentPopoverComponent,
+}))
+
+vi.mock("@/components/ui/help-popover", () => ({
+  HelpPopover: mockHelpPopoverComponent,
+}))
+
+vi.mock("@/components/task/time-estimation-popover", () => ({
+  TimeEstimationPopover: mockTimeEstimationPopoverComponent,
+}))
 
 // Mock atom functions
 const mockUpdateTask = vi.fn()
@@ -105,36 +125,16 @@ interface MockSimpleComponentProps {
   children: React.ReactNode
 }
 
-// Mock Jotai
+// Mock Jotai with settings atom support
 vi.mock("jotai", () => ({
   useSetAtom: vi.fn(() => mockUpdateTask),
-  useAtomValue: vi.fn(() => []), // Return empty array for atoms that return lists
+  useAtomValue: vi.fn((atom: unknown) => {
+    const settingsResult = handleSettingsAtomInMock(atom)
+    if (settingsResult) return settingsResult
+    return [] // Return empty array for atoms that return lists
+  }),
   atom: vi.fn((value) => ({ init: value, toString: () => "mockAtom" })),
   Provider: ({ children }: MockProviderProps) => children,
-}))
-
-// Mock atoms
-vi.mock("@/lib/atoms", () => ({
-  updateTaskAtom: vi.fn(),
-  toggleTaskAtom: vi.fn(),
-  deleteTaskAtom: vi.fn(),
-  addCommentAtom: vi.fn(),
-  toggleTaskPanelAtom: vi.fn(),
-  toggleTaskSelectionAtom: vi.fn(),
-  sortedProjectsAtom: vi.fn(),
-  tasksAtom: vi.fn(),
-}))
-
-vi.mock("@/lib/atoms/core/labels", () => ({
-  sortedLabelsAtom: vi.fn(),
-  addLabelAtom: vi.fn(),
-  labelsFromIdsAtom: vi.fn(),
-}))
-
-// Mock dialog atoms
-vi.mock("@/lib/atoms/ui/dialogs", () => ({
-  quickAddTaskAtom: vi.fn(),
-  updateQuickAddTaskAtom: vi.fn(),
 }))
 
 // Mock UI components
@@ -403,13 +403,13 @@ describe("SubtaskPopover", () => {
     it("renders trigger when task has subtasks", () => {
       renderSubtaskPopover()
       expect(screen.getByText("Trigger")).toBeInTheDocument()
-      expect(screen.getAllByTestId("popover")).toHaveLength(3) // Subtask popover + time estimation popovers
+      expect(screen.getAllByTestId("popover")).toHaveLength(2) // Subtask popover + time estimation popover in add section
     })
 
     it("renders popover for tasks without subtasks", () => {
       renderSubtaskPopover(mockTaskWithoutSubtasks)
       expect(screen.getByText("Trigger")).toBeInTheDocument()
-      expect(screen.getAllByTestId("popover")).toHaveLength(3) // Subtask popover + time estimation popover in add section
+      expect(screen.getAllByTestId("popover")).toHaveLength(2) // Subtask popover + time estimation popover in add section
     })
 
     it("displays correct subtask count in header when subtasks exist", () => {

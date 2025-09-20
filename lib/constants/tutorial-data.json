@@ -286,7 +286,8 @@
     "general": {
       "startView": "all",
       "soundEnabled": true,
-      "linkifyEnabled": true
+      "linkifyEnabled": true,
+      "popoverHoverOpen": false
     }
   },
   "version": "v0.6.0"

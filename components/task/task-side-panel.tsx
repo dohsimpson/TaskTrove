@@ -3,6 +3,8 @@
 import { useState, useCallback } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
 import { v4 as uuidv4 } from "uuid"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import {
   X,
   Star,
@@ -52,6 +54,8 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
   const isMobile = useIsMobile()
   const [expandedAttachments, setExpandedAttachments] = useState(false)
   const [isAutoSaving, setIsAutoSaving] = useState(false)
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
 
   // Atom actions
   const updateTask = useSetAtom(updateTaskAtom)
@@ -103,7 +107,9 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
     <div className={cn("space-y-4", className)}>
       {/* Due Date Section - Prominent */}
       <div className="space-y-3">
-        <h3 className="text-sm text-foreground font-bold">Due Date</h3>
+        <h3 className="text-sm text-foreground font-bold">
+          {t("sidePanel.dueDate.title", "Due Date")}
+        </h3>
         <TaskSchedulePopover taskId={task.id}>
           <div
             className={cn(
@@ -132,11 +138,11 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
               {task.dueDate
                 ? formatTaskDateTime(task, { format: "full" }) ||
                   (isToday(task.dueDate)
-                    ? "Today"
+                    ? t("sidePanel.dueDate.today", "Today")
                     : isTomorrow(task.dueDate)
-                      ? "Tomorrow"
+                      ? t("sidePanel.dueDate.tomorrow", "Tomorrow")
                       : format(task.dueDate, "MMM d, yyyy"))
-                : "Add due date"}
+                : t("sidePanel.dueDate.placeholder", "Add due date")}
             </span>
           </div>
         </TaskSchedulePopover>
@@ -144,7 +150,9 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
 
       {/* Organization Section - Priority & Project */}
       <div className="space-y-3">
-        <h3 className="text-sm text-foreground font-bold">Category</h3>
+        <h3 className="text-sm text-foreground font-bold">
+          {t("sidePanel.category.title", "Category")}
+        </h3>
         <div className="grid grid-cols-2 gap-2.5">
           {/* Priority */}
           <PriorityPopover task={task}>
@@ -156,7 +164,9 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
             >
               <Flag className="h-4 w-4" />
               <span className="text-sm font-medium">
-                {task.priority < 4 ? `P${task.priority}` : "Priority"}
+                {task.priority < 4
+                  ? `P${task.priority}`
+                  : t("sidePanel.category.priority", "Priority")}
               </span>
             </div>
           </PriorityPopover>
@@ -174,7 +184,9 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
                 ) : (
                   <>
                     <Folder className="h-4 w-4" />
-                    <span className="text-sm font-medium">Project</span>
+                    <span className="text-sm font-medium">
+                      {t("sidePanel.category.project", "Project")}
+                    </span>
                   </>
                 )
               })()}
@@ -185,25 +197,31 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
 
       {/* Description Section */}
       <div className="space-y-3">
-        <h3 className="text-sm text-foreground font-bold">Description</h3>
+        <h3 className="text-sm text-foreground font-bold">
+          {t("sidePanel.description.title", "Description")}
+        </h3>
         <EditableDiv
           value={task.description || ""}
           onChange={(value: string) => autoSave({ description: value })}
           className="text-sm text-muted-foreground hover:bg-accent/50 px-4 py-3 rounded-lg bg-muted/20 border border-transparent hover:border-border/50 min-h-[60px] transition-all duration-200 min-w-56 max-w-lg"
-          placeholder="Add description..."
+          placeholder={t("sidePanel.description.placeholder", "Add description...")}
           multiline={true}
         />
       </div>
 
       {/* Subtasks Section */}
       <div className="space-y-3">
-        <h3 className="text-sm text-foreground font-bold">Subtasks</h3>
+        <h3 className="text-sm text-foreground font-bold">
+          {t("sidePanel.subtasks.title", "Subtasks")}
+        </h3>
         <SubtaskContent task={task} mode="inline" />
       </div>
 
       {/* Tags/Labels Section */}
       <div className="space-y-3">
-        <h3 className="text-sm text-foreground font-bold">Labels</h3>
+        <h3 className="text-sm text-foreground font-bold">
+          {t("sidePanel.labels.title", "Labels")}
+        </h3>
         <LabelContent
           task={task}
           onAddLabel={(labelName) => {
@@ -255,7 +273,9 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
 
       {/* Comments Section */}
       <div className="space-y-3">
-        <h3 className="text-sm text-foreground font-bold">Comments</h3>
+        <h3 className="text-sm text-foreground font-bold">
+          {t("sidePanel.comments.title", "Comments")}
+        </h3>
         <CommentContent
           task={task}
           onAddComment={(content) => addComment({ taskId: task.id, content })}
@@ -266,14 +286,22 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
       {/* Attachments Section */}
       {task.attachments.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm text-foreground font-bold">Attachments</h3>
+          <h3 className="text-sm text-foreground font-bold">
+            {t("sidePanel.attachments.title", "Attachments")}
+          </h3>
           <div
             className="flex items-center gap-3 p-3.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/20 border border-transparent hover:border-border/50"
             onClick={() => setExpandedAttachments(!expandedAttachments)}
           >
             <Paperclip className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground font-medium">
-              {task.attachments.length} attachment{task.attachments.length !== 1 ? "s" : ""}
+              {task.attachments.length === 1
+                ? t("sidePanel.attachments.count", "{{count}} attachment", {
+                    count: task.attachments.length,
+                  })
+                : t("sidePanel.attachments.count", "{{count}} attachments", {
+                    count: task.attachments.length,
+                  })}
             </span>
             <ChevronRight
               className={cn(
@@ -305,13 +333,13 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
               <kbd className="px-2 py-1 bg-muted/50 border border-border/50 rounded text-xs font-mono">
                 Space
               </kbd>
-              <span>Toggle</span>
+              <span>{t("sidePanel.shortcuts.toggle", "Toggle")}</span>
             </div>
             <div className="flex items-center gap-1">
               <kbd className="px-2 py-1 bg-muted/50 border border-border/50 rounded text-xs font-mono">
                 Esc
               </kbd>
-              <span>Close</span>
+              <span>{t("sidePanel.shortcuts.close", "Close")}</span>
             </div>
           </div>
         </div>
@@ -327,7 +355,9 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
       <Drawer open={isOpen} onOpenChange={() => onClose()} direction="bottom">
         <DrawerContent className="!max-h-[60vh] focus:outline-none [&>div:first-child]:cursor-grab [&>div:first-child]:active:cursor-grabbing">
           <DrawerHeader className="pb-2">
-            <DrawerTitle className="sr-only">Task Details: {task.title}</DrawerTitle>
+            <DrawerTitle className="sr-only">
+              {t("sidePanel.title", "Task Details: {{- title}}", { title: task.title })}
+            </DrawerTitle>
             <div className="flex items-center gap-3">
               <TaskCheckbox
                 checked={task.completed}
@@ -344,7 +374,7 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
                     "text-lg font-medium w-fit max-w-xs hover:bg-accent px-2 py-1 rounded min-w-0",
                     task.completed ? "line-through text-muted-foreground" : "text-foreground",
                   )}
-                  placeholder="Task title..."
+                  placeholder={t("sidePanel.taskTitle.placeholder", "Task title...")}
                 />
                 {task.favorite && (
                   <Star className="h-4 w-4 text-yellow-500 fill-current flex-shrink-0" />
@@ -369,7 +399,7 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
             <div className="flex-shrink-0 border-t border-border/50 bg-background/95 backdrop-blur-sm">
               <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground px-4 py-3">
                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                <span>Saving...</span>
+                <span>{t("sidePanel.autoSave.saving", "Saving...")}</span>
               </div>
             </div>
           )}

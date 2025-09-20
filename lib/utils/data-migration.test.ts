@@ -930,7 +930,7 @@ describe("Data Migration Utility", () => {
   })
 
   describe("v0.6.0 Migration Function", () => {
-    it("should add soundEnabled and linkifyEnabled fields to general settings", () => {
+    it("should add soundEnabled, linkifyEnabled, and popoverHoverOpen fields to general settings", () => {
       const v050DataWithoutNewFields = createJsonData({
         tasks: [],
         projects: [],
@@ -977,10 +977,11 @@ describe("Data Migration Utility", () => {
         startView: "all",
         soundEnabled: true,
         linkifyEnabled: true,
+        popoverHoverOpen: false,
       })
     })
 
-    it("should preserve existing soundEnabled and linkifyEnabled fields", () => {
+    it("should preserve existing soundEnabled and linkifyEnabled fields and add popoverHoverOpen", () => {
       const v050DataWithExistingFields = createJsonData({
         tasks: [],
         projects: [],
@@ -1029,10 +1030,11 @@ describe("Data Migration Utility", () => {
         startView: "lastViewed",
         soundEnabled: false,
         linkifyEnabled: false,
+        popoverHoverOpen: false,
       })
     })
 
-    it("should create general settings with both fields when missing", () => {
+    it("should create general settings with all required fields when missing", () => {
       const v050DataWithoutGeneralSettings = createJsonData({
         tasks: [],
         projects: [],
@@ -1077,6 +1079,7 @@ describe("Data Migration Utility", () => {
         startView: "all",
         soundEnabled: true,
         linkifyEnabled: true,
+        popoverHoverOpen: false,
       })
     })
 

@@ -1,6 +1,15 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent } from "@/test-utils"
+import {
+  render,
+  screen,
+  fireEvent,
+  mockContentPopoverComponent,
+  mockHelpPopoverComponent,
+  mockTimeEstimationPopoverComponent,
+  mockSubtaskPopoverComponent,
+  handleSettingsAtomInMock,
+} from "@/test-utils"
 import { QuickAddDialog } from "./quick-add-dialog"
 import type { Project } from "@/lib/types"
 
@@ -81,6 +90,7 @@ vi.mock("@/components/ui/button", () => ({
       {children}
     </button>
   ),
+  buttonVariants: () => "mock-button-variant-class",
 }))
 
 vi.mock("@/components/ui/switch", () => ({
@@ -121,6 +131,19 @@ vi.mock("lucide-react", () => ({
   MoreHorizontal: () => <span data-testid="more-horizontal-icon">⋯</span>,
   CheckSquare: () => <span data-testid="check-square-icon">☑️</span>,
   MessageSquare: () => <span data-testid="message-square-icon">💬</span>,
+  ArrowRight: () => <span data-testid="arrow-right-icon">→</span>,
+  Sun: () => <span data-testid="sun-icon">☀️</span>,
+  Moon: () => <span data-testid="moon-icon">🌙</span>,
+  Sunrise: () => <span data-testid="sunrise-icon">🌅</span>,
+  FastForward: () => <span data-testid="fast-forward-icon">⏩</span>,
+  AlarmClockOff: () => <span data-testid="alarm-clock-off-icon">⏰🚫</span>,
+  Ban: () => <span data-testid="ban-icon">🚫</span>,
+  CalendarClock: () => <span data-testid="calendar-clock-icon">📅⏰</span>,
+  CalendarDays: () => <span data-testid="calendar-days-icon">📅📋</span>,
+  ChevronLeftIcon: () => <span data-testid="chevron-left-icon">←</span>,
+  ChevronRightIcon: () => <span data-testid="chevron-right-icon">→</span>,
+  ChevronDownIcon: () => <span data-testid="chevron-down-icon">↓</span>,
+  Inbox: () => <span data-testid="inbox-icon">📥</span>,
 }))
 
 vi.mock("@radix-ui/react-visually-hidden", () => ({
@@ -158,16 +181,36 @@ const mockRouteContext = {
   routeParams: {},
 }
 
+// Mock UI components that use ContentPopover
+vi.mock("@/components/ui/content-popover", () => ({
+  ContentPopover: mockContentPopoverComponent,
+}))
+
+vi.mock("@/components/ui/help-popover", () => ({
+  HelpPopover: mockHelpPopoverComponent,
+}))
+
+vi.mock("@/components/task/time-estimation-popover", () => ({
+  TimeEstimationPopover: mockTimeEstimationPopoverComponent,
+}))
+
+vi.mock("@/components/task/subtask-popover", () => ({
+  SubtaskPopover: mockSubtaskPopoverComponent,
+}))
+
 vi.mock("jotai", async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>()
   return {
     ...actual,
     atom: actual.atom,
     useAtomValue: vi.fn((atom) => {
+      if (!atom) return []
       if (atom.toString().includes("showQuickAddAtom")) return true
       if (atom.toString().includes("sortedLabelsAtom")) return mockLabels
       if (atom.toString().includes("visibleProjectsAtom")) return mockProjects
       if (atom.toString().includes("currentRouteContextAtom")) return mockRouteContext
+      const settingsResult = handleSettingsAtomInMock(atom)
+      if (settingsResult) return settingsResult
       return []
     }),
     useSetAtom: vi.fn(() => vi.fn()),
@@ -178,6 +221,7 @@ vi.mock("@/lib/atoms/core/labels", () => ({
   sortedLabelsAtom: "mockSortedLabelsAtom",
   addLabelAtom: "mockAddLabelAtom",
   labelsAtom: "mockLabelsAtom",
+  labelsFromIdsAtom: "mockLabelsFromIdsAtom",
   labelAtoms: {
     labels: "mockLabelsAtom",
     sortedLabels: "mockSortedLabelsAtom",
@@ -440,7 +484,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
     it("should render enhanced highlighted input without conflicting styles", () => {
       render(<QuickAddDialog />)
 
-      const contentEditable = screen.getByRole("combobox")
+      const contentEditable = screen.getByRole("combobox", {
+        name: "Quick add task input with natural language parsing",
+      })
       expect(contentEditable).toBeInTheDocument()
 
       // Should have exact classes from working example (no conflicts)
@@ -461,7 +507,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
     it("should have properly positioned overlay element", () => {
       render(<QuickAddDialog />)
 
-      const contentEditable = screen.getByRole("combobox")
+      const contentEditable = screen.getByRole("combobox", {
+        name: "Quick add task input with natural language parsing",
+      })
       const container = contentEditable.parentElement
       const overlay = container?.querySelector(".absolute.inset-0")
 
@@ -478,7 +526,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
     it("should maintain alignment when switching between empty and filled states", () => {
       render(<QuickAddDialog />)
 
-      const contentEditable = screen.getByRole("combobox")
+      const contentEditable = screen.getByRole("combobox", {
+        name: "Quick add task input with natural language parsing",
+      })
       const overlay = contentEditable.parentElement?.querySelector(".absolute.inset-0")
 
       // Store initial classes
@@ -509,7 +559,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
     it("should render highlighted tokens without padding that causes shift", () => {
       render(<QuickAddDialog />)
 
-      const contentEditable = screen.getByRole("combobox")
+      const contentEditable = screen.getByRole("combobox", {
+        name: "Quick add task input with natural language parsing",
+      })
 
       // Simulate input with multiple token types
       fireEvent.input(contentEditable, {
@@ -537,7 +589,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
     it("should handle disabled sections without affecting alignment", () => {
       render(<QuickAddDialog />)
 
-      const contentEditable = screen.getByRole("combobox")
+      const contentEditable = screen.getByRole("combobox", {
+        name: "Quick add task input with natural language parsing",
+      })
 
       // Add content with tokens
       fireEvent.input(contentEditable, {
@@ -567,7 +621,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
       expect(dialogContent).toBeInTheDocument()
 
       // Input should be positioned correctly within this context
-      const contentEditable = screen.getByRole("combobox")
+      const contentEditable = screen.getByRole("combobox", {
+        name: "Quick add task input with natural language parsing",
+      })
       const inputContainer = contentEditable.parentElement
 
       expect(inputContainer).toHaveClass("relative")
@@ -578,7 +634,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
     it("should handle focus states correctly within dialog", () => {
       render(<QuickAddDialog />)
 
-      const contentEditable = screen.getByRole("combobox")
+      const contentEditable = screen.getByRole("combobox", {
+        name: "Quick add task input with natural language parsing",
+      })
 
       // Should have autoFocus
       expect(contentEditable).toHaveAttribute(
@@ -597,7 +655,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
     it("should position autocomplete dropdown correctly relative to input", () => {
       render(<QuickAddDialog />)
 
-      const contentEditable = screen.getByRole("combobox")
+      const contentEditable = screen.getByRole("combobox", {
+        name: "Quick add task input with natural language parsing",
+      })
 
       // Trigger autocomplete with #
       fireEvent.input(contentEditable, { target: { textContent: "#" } })
@@ -620,7 +680,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
     it("should display parsed element pills without affecting input alignment", () => {
       render(<QuickAddDialog />)
 
-      const contentEditable = screen.getByRole("combobox")
+      const contentEditable = screen.getByRole("combobox", {
+        name: "Quick add task input with natural language parsing",
+      })
 
       // Add complex content
       fireEvent.input(contentEditable, {
@@ -647,7 +709,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
     it("should handle rapid input changes without layout thrashing", () => {
       render(<QuickAddDialog />)
 
-      const contentEditable = screen.getByRole("combobox")
+      const contentEditable = screen.getByRole("combobox", {
+        name: "Quick add task input with natural language parsing",
+      })
 
       // Store initial classes
       const initialClasses = contentEditable.className
@@ -676,7 +740,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
     it("should maintain consistent rendering during debounced parsing", async () => {
       render(<QuickAddDialog />)
 
-      const contentEditable = screen.getByRole("combobox")
+      const contentEditable = screen.getByRole("combobox", {
+        name: "Quick add task input with natural language parsing",
+      })
       const overlay = contentEditable.parentElement?.querySelector(".absolute.inset-0")
 
       // Input with debounced parsing
@@ -694,7 +760,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
     it("should handle very long content without horizontal scroll issues", () => {
       render(<QuickAddDialog />)
 
-      const contentEditable = screen.getByRole("combobox")
+      const contentEditable = screen.getByRole("combobox", {
+        name: "Quick add task input with natural language parsing",
+      })
 
       // Very long content that might cause overflow
       const longContent = "A".repeat(200) + " #project @label"
@@ -709,7 +777,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
     it("should handle special characters and emojis without breaking alignment", () => {
       render(<QuickAddDialog />)
 
-      const contentEditable = screen.getByRole("combobox")
+      const contentEditable = screen.getByRole("combobox", {
+        name: "Quick add task input with natural language parsing",
+      })
 
       // Content with emojis and special characters
       const specialContent = "🚀 Task with émojis & spëcial chars #project @urgent"
@@ -724,7 +794,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
     it("should recover gracefully from any potential CSS conflicts", () => {
       render(<QuickAddDialog />)
 
-      const contentEditable = screen.getByRole("combobox")
+      const contentEditable = screen.getByRole("combobox", {
+        name: "Quick add task input with natural language parsing",
+      })
 
       // Verify the critical CSS classes are present (not computed styles in test env)
       expect(contentEditable).toHaveClass("p-3") // Consistent padding

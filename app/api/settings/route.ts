@@ -121,6 +121,8 @@ async function updateSettings(
       soundEnabled: partialSettings.general?.soundEnabled ?? fileData.settings.general.soundEnabled,
       linkifyEnabled:
         partialSettings.general?.linkifyEnabled ?? fileData.settings.general.linkifyEnabled,
+      popoverHoverOpen:
+        partialSettings.general?.popoverHoverOpen ?? fileData.settings.general.popoverHoverOpen,
     },
     // Future settings will be merged here when implemented:
     // appearance: { ... },

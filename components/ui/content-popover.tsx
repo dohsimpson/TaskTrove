@@ -1,7 +1,9 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from "react"
+import { useAtomValue } from "jotai"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { settingsAtom } from "@/lib/atoms"
 
 interface ContentPopoverProps {
   children: React.ReactNode // Trigger element
@@ -12,7 +14,7 @@ interface ContentPopoverProps {
   side?: "top" | "right" | "bottom" | "left"
   onOpenChange?: (open: boolean) => void
   open?: boolean
-  triggerMode?: "click" | "hover" // New prop for trigger behavior
+  triggerMode?: "click" | "hover" // Override for trigger behavior (defaults to user's popoverHoverOpen setting)
   openDelay?: number // Hover open delay
   closeDelay?: number // Hover close delay
 }
@@ -26,13 +28,18 @@ export function ContentPopover({
   side = "bottom",
   onOpenChange,
   open,
-  triggerMode = "hover",
+  triggerMode,
   openDelay = 250,
   closeDelay = 100,
 }: ContentPopoverProps) {
   const [internalOpen, setInternalOpen] = useState(false)
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const settings = useAtomValue(settingsAtom)
+
+  // Determine effective trigger mode: use prop if provided, otherwise use setting
+  const effectiveTriggerMode =
+    triggerMode ?? (settings.general.popoverHoverOpen ? "hover" : "click")
 
   // Use external open state if provided, otherwise internal state
   const isOpen = open !== undefined ? open : internalOpen
@@ -58,7 +65,7 @@ export function ContentPopover({
   }, [])
 
   // Click mode (default behavior)
-  if (triggerMode === "click") {
+  if (effectiveTriggerMode === "click") {
     return (
       <Popover open={isOpen} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild className={triggerClassName}>

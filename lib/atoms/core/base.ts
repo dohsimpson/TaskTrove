@@ -1164,6 +1164,8 @@ export const updateSettingsMutationAtom = createMutation<
           variables.settings.general?.soundEnabled ?? DEFAULT_GENERAL_SETTINGS.soundEnabled,
         linkifyEnabled:
           variables.settings.general?.linkifyEnabled ?? DEFAULT_GENERAL_SETTINGS.linkifyEnabled,
+        popoverHoverOpen:
+          variables.settings.general?.popoverHoverOpen ?? DEFAULT_GENERAL_SETTINGS.popoverHoverOpen,
       },
     }
     return {
@@ -1201,6 +1203,8 @@ export const updateSettingsMutationAtom = createMutation<
           variables.settings.general?.soundEnabled ?? oldData.settings.general.soundEnabled,
         linkifyEnabled:
           variables.settings.general?.linkifyEnabled ?? oldData.settings.general.linkifyEnabled,
+        popoverHoverOpen:
+          variables.settings.general?.popoverHoverOpen ?? oldData.settings.general.popoverHoverOpen,
       },
     }
 

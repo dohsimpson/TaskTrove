@@ -1,0 +1,34 @@
+{
+  "footer": {
+    "newVersion": "Nouvelle version : {{version}}",
+    "updateTo": "Mettre à jour vers {{version}}"
+  },
+  "mainNav": {
+    "allTasks": "Toutes les tâches",
+    "calendar": "Calendrier",
+    "completed": "Terminées",
+    "inbox": "Boîte de réception",
+    "today": "Aujourd'hui",
+    "upcoming": "À venir"
+  },
+  "moreNav": {
+    "settings": "Paramètres",
+    "shortcuts": "Raccourcis"
+  },
+  "quickActions": {
+    "add": "Ajouter",
+    "search": "Rechercher"
+  },
+  "sections": {
+    "labels": "Étiquettes",
+    "more": "Plus",
+    "projects": "Projets"
+  },
+  "userMenu": {
+    "about": "À propos",
+    "community": "Communauté",
+    "github": "Github",
+    "reportBug": "Signaler un bug",
+    "upgradeToPro": "Passer à Pro"
+  }
+}

@@ -25,6 +25,10 @@ import { languages, type Language } from "@/lib/i18n/settings"
 const languageNames: Record<Language, string> = {
   en: "English",
   zh: "中文 (Chinese)",
+  fr: "Français (French)",
+  de: "Deutsch (German)",
+  es: "Español (Spanish)",
+  nl: "Nederlands (Dutch)",
 }
 
 // Icon mapping for UI components

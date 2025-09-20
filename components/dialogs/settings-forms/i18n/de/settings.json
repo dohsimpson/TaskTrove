@@ -1,0 +1,143 @@
+{
+  "data": {
+    "title": "Daten und Speicher",
+    "autoBackup": {
+      "title": "Automatisches Backup",
+      "description": "Automatisch Backup-Dateien für Aufgaben und Projekte erstellen.",
+      "backupTime": {
+        "label": "Backup-Zeit",
+        "description": "Zeit für automatische Backups wählen"
+      },
+      "dockerNotice": {
+        "title": "Docker-Umgebung",
+        "description": "In einer Docker-Umgebung werden Backup-Dateien in /app/data/backups innerhalb des Containers gespeichert. Stellen Sie sicher, dass Sie ein Volume mounten, um Backups zu persistieren."
+      },
+      "enable": {
+        "label": "Automatische Backups aktivieren",
+        "description": "Ihre Daten regelmäßig automatisch sichern"
+      },
+      "manualBackup": {
+        "button": "Jetzt manuell sichern"
+      },
+      "maxBackups": {
+        "label": "Maximale Anzahl von Backups",
+        "description": "Anzahl der zu behaltenden Backup-Dateien"
+      }
+    },
+    "taskImport": {
+      "title": "Aufgaben-Import",
+      "description": "Aufgaben aus anderen Aufgabenverwaltungsanwendungen importieren.",
+      "step1": {
+        "title": "Schritt 1: Ihre Daten exportieren",
+        "description": "Klicken Sie auf einen Aufgabenverwaltungsdienst unten, um den Import-Assistenten zu öffnen. Folgen Sie den Anweisungen, um Ihre Daten zu exportieren und in das TaskTrove-Format zu konvertieren.",
+        "todoist": "Daten aus Todoist exportieren:",
+        "todoistInstructions": "Einstellungen → Integrationen → Als CSV exportieren",
+        "notion": "Daten aus Notion exportieren:",
+        "notionInstructions": "Datenbank auswählen → ... → Exportieren → CSV",
+        "trello": "Daten aus Trello exportieren:",
+        "trelloInstructions": "Board-Menü → Mehr → Drucken und exportieren → Als JSON exportieren"
+      },
+      "step2": {
+        "title": "Schritt 2: Konvertierte Datei hochladen",
+        "description": "Nach der Verwendung des obigen Import-Assistenten laden Sie eine JSON-Datei herunter. Laden Sie diese Datei hier hoch, um Ihre Aufgaben, Projekte und Etiketten in TaskTrove zu importieren.",
+        "supportedFormats": "Unterstützte Formate: CSV (Todoist, Notion), JSON (Trello)",
+        "important": {
+          "title": "Wichtig:",
+          "description": "Laden Sie nur die JSON-Datei hoch, die vom Import-Assistenten heruntergeladen wurde. Reguläre Exporte aus anderen Apps funktionieren nicht."
+        }
+      },
+      "upload": {
+        "button": "JSON-Datei hochladen",
+        "dragDrop": "Datei hier ablegen oder klicken zum Auswählen",
+        "supportedFormats": "Unterstützt CSV- und JSON-Dateien",
+        "uploading": "Hochladen...",
+        "processing": "Verarbeitung...",
+        "error": {
+          "uploadFailed": "Upload fehlgeschlagen: {{- message}}",
+          "processingFailed": "Verarbeitung fehlgeschlagen: {{- message}}"
+        },
+        "success": {
+          "title": "Import erfolgreich!",
+          "tasks": "{{count}} Aufgaben",
+          "projects": "{{count}} Projekte",
+          "labels": "{{count}} Etiketten",
+          "imported": "{{items}} importiert",
+          "alreadyExisted": "{{items}} existierten bereits",
+          "noNewItems": "Keine neuen Elemente"
+        }
+      }
+    }
+  },
+  "general": {
+    "audio": {
+      "title": "Audio",
+      "soundEffects": {
+        "label": "Soundeffekte",
+        "description": "Töne für Aufgabenabschluss, Benachrichtigungen und andere Interaktionen abspielen"
+      }
+    },
+    "defaultPage": {
+      "title": "Standardseite",
+      "label": "Beim Öffnen von TaskTrove anzeigen",
+      "description": "Wählen Sie die Seite, die beim ersten Öffnen von TaskTrove angezeigt werden soll"
+    },
+    "language": {
+      "title": "Sprache",
+      "label": "Sprache",
+      "description": "Anzeigesprache der Anwendung auswählen"
+    },
+    "links": {
+      "title": "Links",
+      "autoConvert": {
+        "label": "URLs automatisch zu Links konvertieren",
+        "description": "URLs in Aufgabentiteln automatisch zu anklickbaren Links konvertieren"
+      }
+    },
+    "popovers": {
+      "title": "Popovers",
+      "hoverOpen": {
+        "label": "Hover-Öffnung",
+        "description": "Popovers beim Hovern öffnen lassen, zusätzlich zum Klicken"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "notificationsBlocked": {
+        "title": "Benachrichtigungen blockiert",
+        "retryInstructions": "Bitte versuchen Sie zuerst die Schaltfläche \"Wiederholen\". Wenn das nicht funktioniert, müssen Sie Benachrichtigungen manuell in Ihren Browsereinstellungen aktivieren.",
+        "manualInstructions": "Der Browser hat keinen Berechtigungsdialog angezeigt. Um Benachrichtigungen zu aktivieren, klicken Sie auf das 🔒-Symbol in der Adressleiste oder gehen Sie zu Browsereinstellungen → Datenschutz und Sicherheit → Website-Einstellungen → Benachrichtigungen und aktualisieren Sie dann die Seite."
+      },
+      "secureConnectionRequired": {
+        "title": "Sichere Verbindung erforderlich",
+        "description": "Benachrichtigungen erfordern eine sichere Verbindung (HTTPS) oder localhost. Bitte greifen Sie über HTTPS auf diese Website zu oder führen Sie sie auf localhost aus, um Benachrichtigungen zu aktivieren."
+      }
+    },
+    "general": {
+      "title": "Allgemeine Einstellungen",
+      "enableNotifications": {
+        "label": "Benachrichtigungen aktivieren",
+        "description": "Alle Benachrichtigungen ein- oder ausschalten"
+      },
+      "requireInteraction": {
+        "label": "Interaktion erforderlich",
+        "description": "Benachrichtigungen bleiben sichtbar, bis Sie mit ihnen interagieren"
+      }
+    },
+    "permissionStatus": {
+      "title": "Berechtigungsstatus",
+      "browserNotifications": "Browser-Benachrichtigungen",
+      "requiresHttps": "Benachrichtigungen erfordern HTTPS",
+      "enabled": "Aktiviert",
+      "blocked": "Blockiert",
+      "notEnabled": "Nicht aktiviert",
+      "requesting": "Anfragend",
+      "enable": "Aktivieren",
+      "retry": "Wiederholen",
+      "tryAgain": "Erneut versuchen",
+      "retryTooltip": "Berechtigung erneut anfordern",
+      "browserSettingsTooltip": "Browser erfordert möglicherweise manuelle Einstellungsänderungen",
+      "testNotification": "Benachrichtigung testen"
+    }
+  }
+}

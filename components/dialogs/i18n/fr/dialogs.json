@@ -1,0 +1,253 @@
+{
+  "about": {
+    "by": "Créé par :",
+    "description": "Informations sur la version et le développeur de l'application TaskTrove",
+    "madeWith": "Fait avec",
+    "sponsorMe": "Me parrainer",
+    "starOnGitHub": "Étoiler sur GitHub",
+    "title": "À propos de TaskTrove"
+  },
+  "baseDialog": {
+    "buttons": {
+      "add": "Ajouter {{type}}"
+    },
+    "color": {
+      "label": "Couleur"
+    },
+    "description": {
+      "label": "Description (optionnelle)",
+      "placeholder": "Saisir la description {{type}}"
+    },
+    "label": "Étiquette",
+    "name": {
+      "label": "Nom {{type}}",
+      "placeholder": "Saisir le nom {{type}}"
+    },
+    "parent": {
+      "none": "Aucun (niveau racine)",
+      "placeholder": "Sélectionner {{type}}"
+    },
+    "project": "Projet",
+    "projectGroup": "Groupe",
+    "section": "Section",
+    "title": "Ajouter nouveau {{type}}"
+  },
+  "common": {
+    "cancel": "Annuler"
+  },
+  "data": {
+    "autoBackup": {
+      "backupTime": {
+        "label": "Heure de sauvegarde",
+        "description": "Choisir l'heure pour les sauvegardes automatiques"
+      },
+      "dockerNotice": {
+        "title": "Environnement Docker",
+        "description": "Dans un environnement Docker, les fichiers de sauvegarde sont stockés dans /app/data/backups à l'intérieur du conteneur. Assurez-vous de monter un volume pour persister les sauvegardes."
+      },
+      "enable": {
+        "label": "Activer les sauvegardes automatiques",
+        "description": "Sauvegarder automatiquement vos données périodiquement"
+      },
+      "manualBackup": {
+        "button": "Sauvegarde manuelle maintenant"
+      },
+      "maxBackups": {
+        "label": "Nombre maximum de sauvegardes",
+        "description": "Nombre de fichiers de sauvegarde à conserver"
+      }
+    },
+    "taskImport": {
+      "step1": {
+        "title": "Étape 1 : Exporter vos données",
+        "description": "Cliquez sur un service de gestion de tâches ci-dessous pour ouvrir l'assistant d'importation. Suivez les instructions pour exporter et convertir vos données au format TaskTrove.",
+        "todoist": "Exporter les données depuis Todoist :",
+        "todoistInstructions": "Paramètres → Intégrations → Exporter au format CSV",
+        "notion": "Exporter les données depuis Notion :",
+        "notionInstructions": "Sélectionner la base de données → ... → Exporter → CSV",
+        "trello": "Exporter les données depuis Trello :",
+        "trelloInstructions": "Menu du tableau → Plus → Imprimer et exporter → Exporter comme JSON"
+      },
+      "step2": {
+        "title": "Étape 2 : Télécharger le fichier converti",
+        "description": "Après avoir utilisé l'assistant d'importation ci-dessus, vous téléchargerez un fichier JSON. Téléchargez ce fichier ici pour importer vos tâches, projets et étiquettes dans TaskTrove.",
+        "supportedFormats": "Formats supportés : CSV (Todoist, Notion), JSON (Trello)",
+        "important": {
+          "title": "Important :",
+          "description": "Téléchargez uniquement le fichier JSON téléchargé depuis l'assistant d'importation. Les exports réguliers d'autres applications ne fonctionneront pas."
+        }
+      },
+      "upload": {
+        "button": "Télécharger fichier JSON",
+        "dragDrop": "Glissez-déposez le fichier ici, ou cliquez pour sélectionner",
+        "supportedFormats": "Supporte les fichiers CSV et JSON",
+        "uploading": "Téléchargement...",
+        "processing": "Traitement...",
+        "error": {
+          "uploadFailed": "Échec du téléchargement : {{- message}}",
+          "processingFailed": "Échec du traitement : {{- message}}"
+        },
+        "success": {
+          "title": "Importation réussie !",
+          "tasks": "{{count}} tâches",
+          "projects": "{{count}} projets",
+          "labels": "{{count}} étiquettes",
+          "imported": "Importé {{items}}",
+          "alreadyExisted": "{{items}} existaient déjà",
+          "noNewItems": "Aucun nouvel élément"
+        }
+      }
+    }
+  },
+  "delete": {
+    "bulk": {
+      "confirm": "Supprimer les tâches",
+      "description": "Êtes-vous sûr de vouloir supprimer {{count}} tâches ? Cette action ne peut pas être annulée.",
+      "title": "Supprimer les tâches"
+    },
+    "default": {
+      "confirm": "Supprimer",
+      "description": "Êtes-vous sûr de vouloir supprimer cet élément ?",
+      "title": "Supprimer l'élément"
+    },
+    "group": {
+      "confirm": "Supprimer le groupe",
+      "description": "Êtes-vous sûr de vouloir supprimer \"{{- name}}\" ? Cette action ne peut pas être annulée et supprimera le groupe et tous ses sous-groupes. Les projets et tâches dans le groupe ne seront pas supprimés.",
+      "title": "Supprimer le groupe"
+    },
+    "history": {
+      "confirm": "Vider l'historique",
+      "description": "Ceci effacera définitivement tout l'historique d'annulation/rétablissement pour les tâches, projets et étiquettes. Cette action ne peut pas être annulée.",
+      "title": "Vider tout l'historique"
+    },
+    "label": {
+      "confirm": "Supprimer l'étiquette",
+      "description": "Êtes-vous sûr de vouloir supprimer \"{{- name}}\" ? Cette action ne peut pas être annulée et retirera cette étiquette de toutes les tâches.",
+      "title": "Supprimer l'étiquette"
+    },
+    "project": {
+      "confirm": "Supprimer le projet",
+      "description": "Êtes-vous sûr de vouloir supprimer \"{{- name}}\" ? Cette action ne peut pas être annulée et supprimera toutes les tâches de ce projet.",
+      "title": "Supprimer le projet"
+    },
+    "section": {
+      "confirm": "Supprimer la section",
+      "description": "Êtes-vous sûr de vouloir supprimer \"{{- name}}\" ? Cette action ne peut pas être annulée et toutes les tâches de cette section seront déplacées vers la section par défaut.",
+      "title": "Supprimer la section"
+    },
+    "task": {
+      "confirm": "Supprimer",
+      "description": "Êtes-vous sûr de vouloir supprimer \"{{- name}}\" ? Cette action ne peut pas être annulée.",
+      "title": "Supprimer la tâche"
+    }
+  },
+  "general": {
+    "audio": {
+      "soundEffects": {
+        "label": "Effets sonores",
+        "description": "Jouer des sons pour l'achèvement de tâches, les notifications et autres interactions"
+      }
+    },
+    "defaultPage": {
+      "title": "Page par défaut",
+      "label": "Afficher lors de l'ouverture de TaskTrove",
+      "description": "Choisir la page à voir lors de la première ouverture de TaskTrove"
+    },
+    "language": {
+      "title": "Langue",
+      "label": "Langue",
+      "description": "Sélectionner la langue d'affichage de l'application"
+    },
+    "links": {
+      "autoConvert": {
+        "label": "Convertir automatiquement les URLs en liens",
+        "description": "Convertir automatiquement les URLs dans les titres de tâches en liens cliquables"
+      }
+    },
+    "popovers": {
+      "hoverOpen": {
+        "label": "Ouverture au survol",
+        "description": "Permettre aux popover de s'ouvrir au survol, en plus du clic"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "notificationsBlocked": {
+        "title": "Notifications bloquées",
+        "retryInstructions": "Veuillez d'abord essayer le bouton \"Réessayer\". Si cela ne fonctionne pas, vous devez activer manuellement les notifications dans les paramètres de votre navigateur.",
+        "manualInstructions": "Le navigateur n'a pas affiché la boîte de dialogue de permission. Pour activer les notifications, cliquez sur l'icône 🔒 dans la barre d'adresse ou allez dans les paramètres du navigateur → Confidentialité et sécurité → Paramètres du site → Notifications, puis actualisez la page."
+      },
+      "secureConnectionRequired": {
+        "title": "Connexion sécurisée requise",
+        "description": "Les notifications nécessitent une connexion sécurisée (HTTPS) ou localhost. Veuillez accéder à ce site via HTTPS ou exécuter sur localhost pour activer les notifications."
+      }
+    },
+    "general": {
+      "enableNotifications": {
+        "label": "Activer les notifications",
+        "description": "Activer ou désactiver toutes les notifications"
+      },
+      "requireInteraction": {
+        "label": "Nécessite une interaction",
+        "description": "Les notifications restent visibles jusqu'à ce que vous interagissiez avec elles"
+      }
+    },
+    "permissionStatus": {
+      "title": "État des permissions",
+      "browserNotifications": "Notifications du navigateur",
+      "requiresHttps": "Les notifications nécessitent HTTPS",
+      "enabled": "Activé",
+      "blocked": "Bloqué",
+      "notEnabled": "Non activé",
+      "requesting": "En cours de demande",
+      "enable": "Activer",
+      "retry": "Réessayer",
+      "tryAgain": "Essayer à nouveau",
+      "retryTooltip": "Essayer à nouveau de demander la permission",
+      "browserSettingsTooltip": "Le navigateur peut nécessiter des modifications manuelles des paramètres",
+      "testNotification": "Tester la notification"
+    }
+  },
+  "projectDialog": {
+    "buttons": {
+      "add": "Ajouter {{type}}"
+    },
+    "color": {
+      "label": "Couleur"
+    },
+    "group": "Groupe",
+    "name": {
+      "label": "Nom {{type}}",
+      "placeholder": "Saisir le nom {{type}}"
+    },
+    "project": "Projet",
+    "title": "Ajouter nouveau {{type}}",
+    "type": {
+      "label": "Type"
+    }
+  },
+  "quickAdd": {
+    "buttons": {
+      "comments": "Commentaires",
+      "date": "Date",
+      "label": "Étiquette",
+      "priority": "Priorité",
+      "project": "Projet",
+      "section": "Section",
+      "subtasks": "Sous-tâches"
+    },
+    "description": {
+      "placeholder": "Description"
+    },
+    "smartParsing": {
+      "help": "L'analyse intelligente est une fonctionnalité expérimentale qui peut automatiquement détecter et extraire les détails des tâches de votre saisie. Elle peut reconnaître les priorités (P1-P4), les dates d'échéance (demain, la semaine prochaine, etc.), les noms de projets (#projet), les étiquettes (@étiquette) et les modèles de récurrence (quotidien, hebdomadaire).",
+      "label": "Analyse intelligente"
+    },
+    "title": "Ajout rapide de tâche"
+  },
+  "settings": {
+    "language": "Langue",
+    "languageDescription": "Sélectionner la langue d'affichage de l'application"
+  }
+}

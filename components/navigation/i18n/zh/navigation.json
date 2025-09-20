@@ -1,34 +1,34 @@
 {
+  "footer": {
+    "newVersion": "新版本：{{version}}",
+    "updateTo": "更新到 {{version}}"
+  },
   "mainNav": {
     "allTasks": "所有任务",
+    "calendar": "日历",
+    "completed": "已完成",
     "inbox": "收件箱",
     "today": "今天",
-    "upcoming": "即将到来",
-    "calendar": "日历",
-    "completed": "已完成"
+    "upcoming": "即将到来"
   },
   "moreNav": {
     "settings": "设置",
     "shortcuts": "快捷键"
   },
   "quickActions": {
-    "search": "搜索",
-    "add": "添加"
+    "add": "添加",
+    "search": "搜索"
   },
   "sections": {
-    "projects": "项目",
     "labels": "标签",
-    "more": "更多"
-  },
-  "footer": {
-    "updateTo": "更新到 {{version}}",
-    "newVersion": "新版本：{{version}}"
+    "more": "更多",
+    "projects": "项目"
   },
   "userMenu": {
-    "github": "Github",
-    "community": "社区",
-    "reportBug": "报告错误",
     "about": "关于",
+    "community": "社区",
+    "github": "Github",
+    "reportBug": "报告错误",
     "upgradeToPro": "升级到专业版"
   }
 }

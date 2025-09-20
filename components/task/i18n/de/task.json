@@ -1,0 +1,153 @@
+{
+  "comments": {
+    "addAnotherComment": "Einen weiteren Kommentar hinzufügen...",
+    "addComment": "Kommentar hinzufügen",
+    "addComments": "Kommentare hinzufügen...",
+    "commentCount": "{{count}} Kommentare",
+    "commentCountSingular": "{{count}} Kommentar",
+    "title": "Kommentare ({{count}})"
+  },
+  "focusTimer": {
+    "noActiveTimer": "Kein aktiver Fokus-Timer",
+    "pause": "Pausieren",
+    "paused": "Pausiert",
+    "ready": "Bereit",
+    "resume": "Fortsetzen",
+    "running": "Läuft",
+    "start": "Fokus-Timer starten",
+    "startTimer": "Timer starten",
+    "stop": "Stoppen",
+    "stopped": "Gestoppt",
+    "task": "Aufgabe:",
+    "title": "Fokus-Timer"
+  },
+  "labels": {
+    "createLabel": "\"{{name}}\" erstellen",
+    "searchPlaceholder": "Etikett suchen oder erstellen..."
+  },
+  "placeholders": {
+    "addDescription": "Beschreibung hinzufügen...",
+    "taskTitle": "Aufgabentitel eingeben..."
+  },
+  "priority": {
+    "noPriority": "Keine Priorität",
+    "priority1": "Priorität 1",
+    "priority2": "Priorität 2",
+    "priority3": "Priorität 3"
+  },
+  "project": {
+    "noProject": "Kein Projekt (Eingang)"
+  },
+  "recurring": {
+    "adaptive": "Anpassungsfähig",
+    "apply": "Anwenden",
+    "calculateNextFrom": "Nächstes Fälligkeitsdatum berechnen von",
+    "createCustomPattern": "Benutzerdefiniertes Wiederholungsmuster erstellen",
+    "current": "Aktuell:",
+    "daily": "Täglich",
+    "day": "Tag",
+    "days": "Tage",
+    "dueDate": "Fälligkeitsdatum",
+    "every": "Alle",
+    "interval": "Intervall",
+    "lastDay": "Letzter Tag",
+    "month": "Monat",
+    "monthly": "Monatlich",
+    "months": "Monate",
+    "of": "von",
+    "on": "am",
+    "selectDateInYear": "Datum im Jahr auswählen",
+    "selectDaysOfMonth": "Tage des Monats auswählen",
+    "selectDaysOfWeek": "Wochentage auswählen",
+    "selectedDates": "Ausgewählte Daten:",
+    "setDailyInterval": "Tägliches Intervall festlegen",
+    "the": "der/die/das",
+    "week": "Woche",
+    "weekdays": "Wochentage",
+    "weekends": "Wochenenden",
+    "weekly": "Wöchentlich",
+    "weeks": "Wochen",
+    "year": "Jahr",
+    "yearly": "Jährlich",
+    "years": "Jahre"
+  },
+  "schedule": {
+    "clear": "Löschen",
+    "clearTime": "Zeit löschen",
+    "due": "Fällig:",
+    "hideCalendar": "Kalender und Zeit ausblenden",
+    "nextWeek": "Nächste Woche",
+    "placeholder": "Z.B.: morgen 15 Uhr, nächsten Montag, täglich",
+    "recurring": "Wiederkehrend",
+    "set": "Festlegen",
+    "showCalendar": "Kalender und Zeit anzeigen",
+    "skip": "Überspringen",
+    "title": "Zeitplanung",
+    "today": "Heute",
+    "tomorrow": "Morgen"
+  },
+  "sidePanel": {
+    "attachments": {
+      "count": "{{count}} Anhänge",
+      "title": "Anhänge"
+    },
+    "autoSave": {
+      "saving": "Speichern..."
+    },
+    "category": {
+      "priority": "Priorität",
+      "project": "Projekt",
+      "title": "Kategorie"
+    },
+    "comments": {
+      "title": "Kommentare"
+    },
+    "description": {
+      "placeholder": "Beschreibung hinzufügen...",
+      "title": "Beschreibung"
+    },
+    "dueDate": {
+      "placeholder": "Fälligkeitsdatum hinzufügen",
+      "title": "Fälligkeitsdatum",
+      "today": "Heute",
+      "tomorrow": "Morgen"
+    },
+    "labels": {
+      "title": "Etiketten"
+    },
+    "shortcuts": {
+      "close": "Schließen",
+      "toggle": "Umschalten"
+    },
+    "subtasks": {
+      "title": "Unteraufgaben"
+    },
+    "taskTitle": {
+      "placeholder": "Aufgabentitel..."
+    },
+    "title": "Aufgabendetails: {{- title}}"
+  },
+  "subtasks": {
+    "addAnotherSubtask": "Eine weitere Unteraufgabe hinzufügen...",
+    "addSubtask": "Unteraufgabe hinzufügen",
+    "addSubtasks": "Unteraufgaben hinzufügen...",
+    "title": "Unteraufgaben"
+  },
+  "timeEstimation": {
+    "calculatedFromSubtasks": "Aus Unteraufgaben berechnet",
+    "clear": "Löschen",
+    "customDuration": "Benutzerdefinierte Dauer",
+    "done": "Fertig",
+    "errors": {
+      "hourNumber": "Muss eine Zahl sein (0-99)",
+      "hourRange": "Stunden müssen zwischen 0 und 99 liegen",
+      "minuteNumber": "Muss eine Zahl sein (0-59)",
+      "minuteRange": "Minuten müssen zwischen 0 und 59 liegen"
+    },
+    "helpText": "Schätzen Sie, wie lange diese Aufgabe dauern wird. Dies hilft bei der Planung und Verfolgung Ihrer Produktivität.",
+    "helpTextSubtasks": "Diese Schätzung wird aus der Summe der Unteraufgaben-Schätzungen berechnet. Eine direkte Schätzung hier überschreibt den berechneten Wert.",
+    "hour": "Stunde",
+    "minute": "Minute",
+    "title": "Zeitschätzung"
+  }
+}

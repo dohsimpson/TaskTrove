@@ -1,0 +1,153 @@
+{
+  "comments": {
+    "addAnotherComment": "Ajouter un autre commentaire...",
+    "addComment": "Ajouter un commentaire",
+    "addComments": "Ajouter des commentaires...",
+    "commentCount": "{{count}} commentaires",
+    "commentCountSingular": "{{count}} commentaire",
+    "title": "Commentaires ({{count}})"
+  },
+  "focusTimer": {
+    "noActiveTimer": "Aucun minuteur de concentration actif",
+    "pause": "Pause",
+    "paused": "En pause",
+    "ready": "Prêt",
+    "resume": "Reprendre",
+    "running": "En cours",
+    "start": "Démarrer le minuteur de concentration",
+    "startTimer": "Démarrer le minuteur",
+    "stop": "Arrêter",
+    "stopped": "Arrêté",
+    "task": "Tâche :",
+    "title": "Minuteur de concentration"
+  },
+  "labels": {
+    "createLabel": "Créer \"{{name}}\"",
+    "searchPlaceholder": "Rechercher ou créer une étiquette..."
+  },
+  "placeholders": {
+    "addDescription": "Ajouter une description...",
+    "taskTitle": "Saisir le titre de la tâche..."
+  },
+  "priority": {
+    "noPriority": "Aucune priorité",
+    "priority1": "Priorité 1",
+    "priority2": "Priorité 2",
+    "priority3": "Priorité 3"
+  },
+  "project": {
+    "noProject": "Aucun projet (Boîte de réception)"
+  },
+  "recurring": {
+    "adaptive": "Adaptatif",
+    "apply": "Appliquer",
+    "calculateNextFrom": "Calculer la prochaine échéance à partir de",
+    "createCustomPattern": "Créer un modèle de récurrence personnalisé",
+    "current": "Actuel :",
+    "daily": "Quotidien",
+    "day": "jour",
+    "days": "jours",
+    "dueDate": "Date d'échéance",
+    "every": "Tous les",
+    "interval": "Intervalle",
+    "lastDay": "Dernier jour",
+    "month": "mois",
+    "monthly": "Mensuel",
+    "months": "mois",
+    "of": "de",
+    "on": "le",
+    "selectDateInYear": "Sélectionner la date dans l'année",
+    "selectDaysOfMonth": "Sélectionner les jours du mois",
+    "selectDaysOfWeek": "Sélectionner les jours de la semaine",
+    "selectedDates": "Dates sélectionnées :",
+    "setDailyInterval": "Définir l'intervalle quotidien",
+    "the": "le",
+    "week": "semaine",
+    "weekdays": "Jours ouvrables",
+    "weekends": "Week-ends",
+    "weekly": "Hebdomadaire",
+    "weeks": "semaines",
+    "year": "année",
+    "yearly": "Annuel",
+    "years": "années"
+  },
+  "schedule": {
+    "clear": "Effacer",
+    "clearTime": "Effacer l'heure",
+    "due": "Échéance :",
+    "hideCalendar": "Masquer le calendrier et l'heure",
+    "nextWeek": "Semaine prochaine",
+    "placeholder": "Ex : demain 15h, lundi prochain, tous les jours",
+    "recurring": "Récurrent",
+    "set": "Définir",
+    "showCalendar": "Afficher le calendrier et l'heure",
+    "skip": "Ignorer",
+    "title": "Planification",
+    "today": "Aujourd'hui",
+    "tomorrow": "Demain"
+  },
+  "sidePanel": {
+    "attachments": {
+      "count": "{{count}} pièces jointes",
+      "title": "Pièces jointes"
+    },
+    "autoSave": {
+      "saving": "Sauvegarde en cours..."
+    },
+    "category": {
+      "priority": "Priorité",
+      "project": "Projet",
+      "title": "Catégorie"
+    },
+    "comments": {
+      "title": "Commentaires"
+    },
+    "description": {
+      "placeholder": "Ajouter une description...",
+      "title": "Description"
+    },
+    "dueDate": {
+      "placeholder": "Ajouter une date d'échéance",
+      "title": "Date d'échéance",
+      "today": "Aujourd'hui",
+      "tomorrow": "Demain"
+    },
+    "labels": {
+      "title": "Étiquettes"
+    },
+    "shortcuts": {
+      "close": "Fermer",
+      "toggle": "Basculer"
+    },
+    "subtasks": {
+      "title": "Sous-tâches"
+    },
+    "taskTitle": {
+      "placeholder": "Titre de la tâche..."
+    },
+    "title": "Détails de la tâche : {{- title}}"
+  },
+  "subtasks": {
+    "addAnotherSubtask": "Ajouter une autre sous-tâche...",
+    "addSubtask": "Ajouter une sous-tâche",
+    "addSubtasks": "Ajouter des sous-tâches...",
+    "title": "Sous-tâches"
+  },
+  "timeEstimation": {
+    "calculatedFromSubtasks": "Calculé à partir des sous-tâches",
+    "clear": "Effacer",
+    "customDuration": "Durée personnalisée",
+    "done": "Terminé",
+    "errors": {
+      "hourNumber": "Doit être un nombre (0-99)",
+      "hourRange": "Les heures doivent être entre 0 et 99",
+      "minuteNumber": "Doit être un nombre (0-59)",
+      "minuteRange": "Les minutes doivent être entre 0 et 59"
+    },
+    "helpText": "Estimez combien de temps cette tâche prendra à terminer. Cela aide à planifier et suivre votre productivité.",
+    "helpTextSubtasks": "Cette estimation est calculée à partir de la somme des estimations des sous-tâches. Définir une estimation directe ici remplacera la valeur calculée.",
+    "hour": "heure",
+    "minute": "minute",
+    "title": "Estimation de temps"
+  }
+}

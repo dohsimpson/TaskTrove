@@ -1,0 +1,195 @@
+{
+  "crash": {
+    "notAvailable": {
+      "title": "Test de plantage non disponible",
+      "description": "Le test de plantage n'est disponible qu'en environnement de développement."
+    }
+  },
+  "debug": {
+    "available": {
+      "title": "Outils de débogage TaskTrove",
+      "description": "Outils de débogage et de test pour l'environnement de développement uniquement. Cette page n'est pas disponible en production.",
+      "simplified": "Les outils de débogage ont été simplifiés dans cette version."
+    },
+    "notAvailable": {
+      "title": "Outils de débogage non disponibles",
+      "description": "Les outils de débogage ne sont disponibles qu'en environnement de développement pour des raisons de sécurité et de performance."
+    }
+  },
+  "empty": {
+    "notifications": {
+      "title": "Notifications",
+      "description": "Les notifications sont temporairement désactivées pendant la migration",
+      "action": "Retour"
+    },
+    "performance": {
+      "title": "Surveillance des performances",
+      "description": "La surveillance des performances est temporairement désactivée pendant la migration",
+      "action": "Retour"
+    },
+    "voice": {
+      "title": "Commandes vocales",
+      "description": "Les commandes vocales sont temporairement désactivées pendant la migration",
+      "action": "Retour"
+    }
+  },
+  "footer": {
+    "task": "tâche",
+    "tasks": "tâches",
+    "no": "Aucune {{title}}",
+    "completedToday": "Terminées aujourd'hui",
+    "completedTodayLabel": "Terminées aujourd'hui",
+    "dueToday": "Échues aujourd'hui",
+    "dueTodayLabel": "Échues aujourd'hui"
+  },
+  "header": {
+    "collapseSidebar": "Réduire la barre latérale",
+    "openSidebar": "Ouvrir la barre latérale",
+    "currentTheme": "Thème actuel : {{theme}}. Cliquez pour changer de thème.",
+    "clickToCycleThemes": "Cliquez pour changer de thème."
+  },
+  "viewOptions": {
+    "title": "Options d'affichage",
+    "help": {
+      "description": "Personnalisez la façon dont vous visualisez et organisez vos tâches :",
+      "viewMode": {
+        "label": "Mode d'affichage :",
+        "description": "Basculer entre les mises en page liste, kanban et calendrier"
+      },
+      "displayOptions": {
+        "label": "Options d'affichage :",
+        "description": "Basculer les tâches terminées, le panneau latéral et la vue compacte"
+      },
+      "sortFilter": {
+        "label": "Tri et filtrage :",
+        "description": "Organiser les tâches par priorité, date d'échéance ou autres critères"
+      },
+      "advancedFilters": {
+        "label": "Filtres avancés :",
+        "description": "Utiliser des options de filtrage puissantes pour des requêtes complexes"
+      },
+      "tip": {
+        "label": "Astuce :",
+        "description": "Vos préférences d'affichage sont sauvegardées par route et persistent entre les sessions."
+      }
+    },
+    "viewMode": {
+      "label": "Mode d'affichage",
+      "list": "Liste",
+      "kanban": "Kanban",
+      "calendar": "Calendrier",
+      "kanbanTooltip": "Uniquement pour les projets"
+    },
+    "displayOptions": {
+      "label": "Options d'affichage",
+      "help": {
+        "description": "Contrôlez ce qui est visible dans la vue des tâches :",
+        "tip": "Astuce : Ces paramètres sont sauvegardés par vue et persistent entre les sessions"
+      },
+      "completed": {
+        "title": "Tâches terminées",
+        "label": "Tâches terminées :",
+        "description": "Afficher ou masquer les tâches terminées"
+      },
+      "overdue": {
+        "title": "Tâches en retard",
+        "label": "Tâches en retard :",
+        "description": "Afficher ou masquer les tâches qui ont dépassé leur date d'échéance"
+      },
+      "sidePanel": {
+        "title": "Panneau latéral",
+        "label": "Panneau latéral :",
+        "description": "Basculer le panneau latéral pour voir des détails supplémentaires sur les tâches"
+      },
+      "compact": {
+        "title": "Vue compacte",
+        "label": "Vue compacte :",
+        "description": "Utiliser une mise en page plus compacte pour afficher plus de tâches à l'écran"
+      }
+    },
+    "sort": {
+      "label": "Tri",
+      "title": "Options de tri",
+      "sortBy": "Trier par",
+      "placeholder": "Sélectionner une option de tri",
+      "help": {
+        "description": "Choisissez comment organiser vos tâches :",
+        "default": {
+          "label": "Par défaut (non trié) :",
+          "description": "Afficher les tâches dans l'ordre naturel, tâches terminées en bas"
+        },
+        "dueDate": {
+          "label": "Date d'échéance :",
+          "description": "Trier toutes les tâches par date d'échéance, mélangeant terminées et non terminées"
+        },
+        "priority": {
+          "label": "Priorité :",
+          "description": "Trier par priorité (1=plus haute, 4=plus basse)"
+        },
+        "title": {
+          "label": "Titre :",
+          "description": "Trier par nom de tâche par ordre alphabétique"
+        },
+        "createdDate": {
+          "label": "Date de création :",
+          "description": "Trier par heure de création de la tâche"
+        },
+        "status": {
+          "label": "Statut :",
+          "description": "Grouper par statut d'achèvement, puis par colonne kanban"
+        },
+        "tip": "Astuce : Utilisez les boutons fléchés pour basculer entre croissant et décroissant"
+      },
+      "options": {
+        "default": "Par défaut (non trié)",
+        "dueDate": "Date d'échéance",
+        "priority": "Priorité",
+        "title": "Titre",
+        "createdAt": "Date de création",
+        "status": "Statut"
+      },
+      "direction": {
+        "changeToDesc": "Changer en décroissant",
+        "changeToAsc": "Changer en croissant"
+      }
+    }
+  },
+  "standardViews": {
+    "all": {
+      "title": "Toutes les tâches",
+      "description": "Voir toutes les tâches en un seul endroit"
+    },
+    "inbox": {
+      "title": "Boîte de réception",
+      "description": "Commencer avec les tâches non organisées"
+    },
+    "today": {
+      "title": "Aujourd'hui",
+      "description": "Se concentrer sur les tâches d'aujourd'hui"
+    },
+    "upcoming": {
+      "title": "À venir",
+      "description": "Voir les tâches à venir"
+    },
+    "completed": {
+      "title": "Terminées",
+      "description": "Voir les tâches terminées"
+    },
+    "calendar": {
+      "title": "Calendrier",
+      "description": "Voir les tâches en format calendrier"
+    },
+    "projects": {
+      "title": "Projets",
+      "description": "Gérer et organiser les projets"
+    },
+    "labels": {
+      "title": "Étiquettes",
+      "description": "Organiser les tâches avec des étiquettes"
+    },
+    "not-found": {
+      "title": "Non trouvé",
+      "description": "La ressource demandée est introuvable"
+    }
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "comments": {
+    "addAnotherComment": "Agregar otro comentario...",
+    "addComment": "Agregar comentario",
+    "addComments": "Agregar comentarios...",
+    "commentCount": "{{count}} comentarios",
+    "commentCountSingular": "{{count}} comentario",
+    "title": "Comentarios ({{count}})"
+  },
+  "focusTimer": {
+    "noActiveTimer": "No hay temporizador de concentración activo",
+    "pause": "Pausar",
+    "paused": "Pausado",
+    "ready": "Listo",
+    "resume": "Reanudar",
+    "running": "Ejecutándose",
+    "start": "Iniciar temporizador de concentración",
+    "startTimer": "Iniciar temporizador",
+    "stop": "Detener",
+    "stopped": "Detenido",
+    "task": "Tarea:",
+    "title": "Temporizador de concentración"
+  },
+  "labels": {
+    "createLabel": "Crear \"{{name}}\"",
+    "searchPlaceholder": "Buscar o crear etiqueta..."
+  },
+  "placeholders": {
+    "addDescription": "Agregar descripción...",
+    "taskTitle": "Ingresar título de la tarea..."
+  },
+  "priority": {
+    "noPriority": "Sin prioridad",
+    "priority1": "Prioridad 1",
+    "priority2": "Prioridad 2",
+    "priority3": "Prioridad 3"
+  },
+  "project": {
+    "noProject": "Sin proyecto (Bandeja de entrada)"
+  },
+  "recurring": {
+    "adaptive": "Adaptativo",
+    "apply": "Aplicar",
+    "calculateNextFrom": "Calcular próxima fecha de vencimiento desde",
+    "createCustomPattern": "Crear patrón de recurrencia personalizado",
+    "current": "Actual:",
+    "daily": "Diario",
+    "day": "día",
+    "days": "días",
+    "dueDate": "Fecha de vencimiento",
+    "every": "Cada",
+    "interval": "Intervalo",
+    "lastDay": "Último día",
+    "month": "mes",
+    "monthly": "Mensual",
+    "months": "meses",
+    "of": "de",
+    "on": "el",
+    "selectDateInYear": "Seleccionar fecha en el año",
+    "selectDaysOfMonth": "Seleccionar días del mes",
+    "selectDaysOfWeek": "Seleccionar días de la semana",
+    "selectedDates": "Fechas seleccionadas:",
+    "setDailyInterval": "Establecer intervalo diario",
+    "the": "el/la",
+    "week": "semana",
+    "weekdays": "Días laborables",
+    "weekends": "Fines de semana",
+    "weekly": "Semanal",
+    "weeks": "semanas",
+    "year": "año",
+    "yearly": "Anual",
+    "years": "años"
+  },
+  "schedule": {
+    "clear": "Limpiar",
+    "clearTime": "Limpiar hora",
+    "due": "Vence:",
+    "hideCalendar": "Ocultar calendario y hora",
+    "nextWeek": "Próxima semana",
+    "placeholder": "Ej: mañana 3pm, próximo lunes, todos los días",
+    "recurring": "Recurrente",
+    "set": "Establecer",
+    "showCalendar": "Mostrar calendario y hora",
+    "skip": "Omitir",
+    "title": "Programación",
+    "today": "Hoy",
+    "tomorrow": "Mañana"
+  },
+  "sidePanel": {
+    "attachments": {
+      "count": "{{count}} archivos adjuntos",
+      "title": "Archivos adjuntos"
+    },
+    "autoSave": {
+      "saving": "Guardando..."
+    },
+    "category": {
+      "priority": "Prioridad",
+      "project": "Proyecto",
+      "title": "Categoría"
+    },
+    "comments": {
+      "title": "Comentarios"
+    },
+    "description": {
+      "placeholder": "Agregar descripción...",
+      "title": "Descripción"
+    },
+    "dueDate": {
+      "placeholder": "Agregar fecha de vencimiento",
+      "title": "Fecha de vencimiento",
+      "today": "Hoy",
+      "tomorrow": "Mañana"
+    },
+    "labels": {
+      "title": "Etiquetas"
+    },
+    "shortcuts": {
+      "close": "Cerrar",
+      "toggle": "Alternar"
+    },
+    "subtasks": {
+      "title": "Subtareas"
+    },
+    "taskTitle": {
+      "placeholder": "Título de la tarea..."
+    },
+    "title": "Detalles de la tarea: {{- title}}"
+  },
+  "subtasks": {
+    "addAnotherSubtask": "Agregar otra subtarea...",
+    "addSubtask": "Agregar subtarea",
+    "addSubtasks": "Agregar subtareas...",
+    "title": "Subtareas"
+  },
+  "timeEstimation": {
+    "calculatedFromSubtasks": "Calculado desde subtareas",
+    "clear": "Limpiar",
+    "customDuration": "Duración personalizada",
+    "done": "Hecho",
+    "errors": {
+      "hourNumber": "Debe ser un número (0-99)",
+      "hourRange": "Las horas deben estar entre 0 y 99",
+      "minuteNumber": "Debe ser un número (0-59)",
+      "minuteRange": "Los minutos deben estar entre 0 y 59"
+    },
+    "helpText": "Estima cuánto tiempo tomará completar esta tarea. Esto ayuda a planificar y rastrear tu productividad.",
+    "helpTextSubtasks": "Esta estimación se calcula desde la suma de las estimaciones de subtareas. Establecer una estimación directa aquí anulará el valor calculado.",
+    "hour": "hora",
+    "minute": "minuto",
+    "title": "Estimación de tiempo"
+  }
+}

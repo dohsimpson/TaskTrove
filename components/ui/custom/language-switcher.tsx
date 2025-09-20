@@ -14,6 +14,10 @@ import { Languages } from "lucide-react"
 const languageNames: Record<Language, string> = {
   en: "English",
   zh: "中文",
+  fr: "Français",
+  de: "Deutsch",
+  es: "Español",
+  nl: "Nederlands",
 }
 
 interface LanguageSwitcherProps {

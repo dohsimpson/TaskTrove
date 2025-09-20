@@ -1,21 +1,21 @@
-// i18next-parser configuration for components/dialogs colocated translations
+// i18next-parser configuration for components/task colocated translations
 export default {
-  // Target only dialog components
+  // Target only task components
   input: [
-    "components/dialogs/**/*.{ts,tsx}",
+    "components/task/**/*.{ts,tsx}",
     // Exclude test files
-    "!components/dialogs/**/*.test.{ts,tsx}",
-    "!components/dialogs/**/*.spec.{ts,tsx}",
+    "!components/task/**/*.test.{ts,tsx}",
+    "!components/task/**/*.spec.{ts,tsx}",
   ],
 
   // Colocated translation files
-  output: "components/dialogs/i18n/$LOCALE/dialogs.json",
+  output: "components/task/i18n/$LOCALE/task.json",
 
   // Only generate non-English files (English uses inline defaults)
   locales: ["zh", "fr", "de", "es", "nl"],
 
-  // Use dialogs as the namespace for all dialog components
-  defaultNamespace: "dialogs",
+  // Use task as the namespace for all task components
+  defaultNamespace: "task",
 
   // Configure lexers for TypeScript React
   lexers: {

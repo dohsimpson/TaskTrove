@@ -1,0 +1,153 @@
+{
+  "comments": {
+    "addAnotherComment": "Nog een opmerking toevoegen...",
+    "addComment": "Opmerking toevoegen",
+    "addComments": "Opmerkingen toevoegen...",
+    "commentCount": "{{count}} opmerkingen",
+    "commentCountSingular": "{{count}} opmerking",
+    "title": "Opmerkingen ({{count}})"
+  },
+  "focusTimer": {
+    "noActiveTimer": "Geen actieve focus timer",
+    "pause": "Pauzeren",
+    "paused": "Gepauzeerd",
+    "ready": "Klaar",
+    "resume": "Hervatten",
+    "running": "Actief",
+    "start": "Focus timer starten",
+    "startTimer": "Timer starten",
+    "stop": "Stoppen",
+    "stopped": "Gestopt",
+    "task": "Taak:",
+    "title": "Focus timer"
+  },
+  "labels": {
+    "createLabel": "\"{{name}}\" aanmaken",
+    "searchPlaceholder": "Zoeken of label aanmaken..."
+  },
+  "placeholders": {
+    "addDescription": "Beschrijving toevoegen...",
+    "taskTitle": "Taaknaam invoeren..."
+  },
+  "priority": {
+    "noPriority": "Geen prioriteit",
+    "priority1": "Prioriteit 1",
+    "priority2": "Prioriteit 2",
+    "priority3": "Prioriteit 3"
+  },
+  "project": {
+    "noProject": "Geen project (Inbox)"
+  },
+  "recurring": {
+    "adaptive": "Adaptief",
+    "apply": "Toepassen",
+    "calculateNextFrom": "Volgende vervaldatum berekenen vanaf",
+    "createCustomPattern": "Aangepast herhalingspatroon maken",
+    "current": "Huidig:",
+    "daily": "Dagelijks",
+    "day": "dag",
+    "days": "dagen",
+    "dueDate": "Vervaldatum",
+    "every": "Elke",
+    "interval": "Interval",
+    "lastDay": "Laatste dag",
+    "month": "maand",
+    "monthly": "Maandelijks",
+    "months": "maanden",
+    "of": "van",
+    "on": "op",
+    "selectDateInYear": "Datum in het jaar selecteren",
+    "selectDaysOfMonth": "Dagen van de maand selecteren",
+    "selectDaysOfWeek": "Dagen van de week selecteren",
+    "selectedDates": "Geselecteerde datums:",
+    "setDailyInterval": "Dagelijks interval instellen",
+    "the": "de",
+    "week": "week",
+    "weekdays": "Werkdagen",
+    "weekends": "Weekenden",
+    "weekly": "Wekelijks",
+    "weeks": "weken",
+    "year": "jaar",
+    "yearly": "Jaarlijks",
+    "years": "jaren"
+  },
+  "schedule": {
+    "clear": "Wissen",
+    "clearTime": "Tijd wissen",
+    "due": "Vervalt:",
+    "hideCalendar": "Kalender en tijd verbergen",
+    "nextWeek": "Volgende week",
+    "placeholder": "Bijv: morgen 15:00, volgende maandag, elke dag",
+    "recurring": "Herhalend",
+    "set": "Instellen",
+    "showCalendar": "Kalender en tijd tonen",
+    "skip": "Overslaan",
+    "title": "Planning",
+    "today": "Vandaag",
+    "tomorrow": "Morgen"
+  },
+  "sidePanel": {
+    "attachments": {
+      "count": "{{count}} bijlagen",
+      "title": "Bijlagen"
+    },
+    "autoSave": {
+      "saving": "Opslaan..."
+    },
+    "category": {
+      "priority": "Prioriteit",
+      "project": "Project",
+      "title": "Categorie"
+    },
+    "comments": {
+      "title": "Opmerkingen"
+    },
+    "description": {
+      "placeholder": "Beschrijving toevoegen...",
+      "title": "Beschrijving"
+    },
+    "dueDate": {
+      "placeholder": "Vervaldatum toevoegen",
+      "title": "Vervaldatum",
+      "today": "Vandaag",
+      "tomorrow": "Morgen"
+    },
+    "labels": {
+      "title": "Labels"
+    },
+    "shortcuts": {
+      "close": "Sluiten",
+      "toggle": "Wisselen"
+    },
+    "subtasks": {
+      "title": "Subtaken"
+    },
+    "taskTitle": {
+      "placeholder": "Taaknaam..."
+    },
+    "title": "Taakdetails: {{- title}}"
+  },
+  "subtasks": {
+    "addAnotherSubtask": "Nog een subtaak toevoegen...",
+    "addSubtask": "Subtaak toevoegen",
+    "addSubtasks": "Subtaken toevoegen...",
+    "title": "Subtaken"
+  },
+  "timeEstimation": {
+    "calculatedFromSubtasks": "Berekend vanuit subtaken",
+    "clear": "Wissen",
+    "customDuration": "Aangepaste duur",
+    "done": "Klaar",
+    "errors": {
+      "hourNumber": "Moet een getal zijn (0-99)",
+      "hourRange": "Uren moeten tussen 0 en 99 zijn",
+      "minuteNumber": "Moet een getal zijn (0-59)",
+      "minuteRange": "Minuten moeten tussen 0 en 59 zijn"
+    },
+    "helpText": "Schat in hoeveel tijd het kost om deze taak te voltooien. Dit helpt bij het plannen en bijhouden van je productiviteit.",
+    "helpTextSubtasks": "Deze schatting wordt berekend uit de som van subtaakschattingen. Een directe schatting hier instellen overschrijft de berekende waarde.",
+    "hour": "uur",
+    "minute": "minuut",
+    "title": "Tijdschatting"
+  }
+}

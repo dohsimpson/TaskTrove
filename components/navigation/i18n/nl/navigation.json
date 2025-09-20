@@ -1,0 +1,34 @@
+{
+  "footer": {
+    "newVersion": "Nieuwe versie: {{version}}",
+    "updateTo": "Update naar {{version}}"
+  },
+  "mainNav": {
+    "allTasks": "Alle taken",
+    "calendar": "Kalender",
+    "completed": "Voltooid",
+    "inbox": "Inbox",
+    "today": "Vandaag",
+    "upcoming": "Binnenkort"
+  },
+  "moreNav": {
+    "settings": "Instellingen",
+    "shortcuts": "Snelkoppelingen"
+  },
+  "quickActions": {
+    "add": "Toevoegen",
+    "search": "Zoeken"
+  },
+  "sections": {
+    "labels": "Labels",
+    "more": "Meer",
+    "projects": "Projecten"
+  },
+  "userMenu": {
+    "about": "Over",
+    "community": "Gemeenschap",
+    "github": "Github",
+    "reportBug": "Bug melden",
+    "upgradeToPro": "Upgrade naar Pro"
+  }
+}

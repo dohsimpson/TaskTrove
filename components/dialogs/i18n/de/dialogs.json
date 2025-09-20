@@ -1,0 +1,253 @@
+{
+  "about": {
+    "by": "Erstellt von:",
+    "description": "TaskTrove Anwendungsversion und Entwicklerinformationen",
+    "madeWith": "Erstellt mit",
+    "sponsorMe": "Mich sponsern",
+    "starOnGitHub": "Auf GitHub bewerten",
+    "title": "Über TaskTrove"
+  },
+  "baseDialog": {
+    "buttons": {
+      "add": "{{type}} hinzufügen"
+    },
+    "color": {
+      "label": "Farbe"
+    },
+    "description": {
+      "label": "Beschreibung (optional)",
+      "placeholder": "{{type}}-Beschreibung eingeben"
+    },
+    "label": "Etikett",
+    "name": {
+      "label": "{{type}}-Name",
+      "placeholder": "{{type}}-Name eingeben"
+    },
+    "parent": {
+      "none": "Keine (Wurzelebene)",
+      "placeholder": "{{type}} auswählen"
+    },
+    "project": "Projekt",
+    "projectGroup": "Gruppe",
+    "section": "Bereich",
+    "title": "Neue {{type}} hinzufügen"
+  },
+  "common": {
+    "cancel": "Abbrechen"
+  },
+  "data": {
+    "autoBackup": {
+      "backupTime": {
+        "label": "Backup-Zeit",
+        "description": "Zeit für automatische Backups wählen"
+      },
+      "dockerNotice": {
+        "title": "Docker-Umgebung",
+        "description": "In einer Docker-Umgebung werden Backup-Dateien in /app/data/backups innerhalb des Containers gespeichert. Stellen Sie sicher, dass Sie ein Volume mounten, um Backups zu persistieren."
+      },
+      "enable": {
+        "label": "Automatische Backups aktivieren",
+        "description": "Ihre Daten regelmäßig automatisch sichern"
+      },
+      "manualBackup": {
+        "button": "Jetzt manuell sichern"
+      },
+      "maxBackups": {
+        "label": "Maximale Anzahl von Backups",
+        "description": "Anzahl der zu behaltenden Backup-Dateien"
+      }
+    },
+    "taskImport": {
+      "step1": {
+        "title": "Schritt 1: Ihre Daten exportieren",
+        "description": "Klicken Sie auf einen Aufgabenverwaltungsdienst unten, um den Import-Assistenten zu öffnen. Folgen Sie den Anweisungen, um Ihre Daten zu exportieren und in das TaskTrove-Format zu konvertieren.",
+        "todoist": "Daten aus Todoist exportieren:",
+        "todoistInstructions": "Einstellungen → Integrationen → Als CSV exportieren",
+        "notion": "Daten aus Notion exportieren:",
+        "notionInstructions": "Datenbank auswählen → ... → Exportieren → CSV",
+        "trello": "Daten aus Trello exportieren:",
+        "trelloInstructions": "Board-Menü → Mehr → Drucken und exportieren → Als JSON exportieren"
+      },
+      "step2": {
+        "title": "Schritt 2: Konvertierte Datei hochladen",
+        "description": "Nach der Verwendung des obigen Import-Assistenten laden Sie eine JSON-Datei herunter. Laden Sie diese Datei hier hoch, um Ihre Aufgaben, Projekte und Etiketten in TaskTrove zu importieren.",
+        "supportedFormats": "Unterstützte Formate: CSV (Todoist, Notion), JSON (Trello)",
+        "important": {
+          "title": "Wichtig:",
+          "description": "Laden Sie nur die JSON-Datei hoch, die vom Import-Assistenten heruntergeladen wurde. Reguläre Exporte aus anderen Apps funktionieren nicht."
+        }
+      },
+      "upload": {
+        "button": "JSON-Datei hochladen",
+        "dragDrop": "Datei hier ablegen oder klicken zum Auswählen",
+        "supportedFormats": "Unterstützt CSV- und JSON-Dateien",
+        "uploading": "Hochladen...",
+        "processing": "Verarbeitung...",
+        "error": {
+          "uploadFailed": "Upload fehlgeschlagen: {{- message}}",
+          "processingFailed": "Verarbeitung fehlgeschlagen: {{- message}}"
+        },
+        "success": {
+          "title": "Import erfolgreich!",
+          "tasks": "{{count}} Aufgaben",
+          "projects": "{{count}} Projekte",
+          "labels": "{{count}} Etiketten",
+          "imported": "{{items}} importiert",
+          "alreadyExisted": "{{items}} existierten bereits",
+          "noNewItems": "Keine neuen Elemente"
+        }
+      }
+    }
+  },
+  "delete": {
+    "bulk": {
+      "confirm": "Aufgaben löschen",
+      "description": "Sind Sie sicher, dass Sie {{count}} Aufgaben löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "title": "Aufgaben löschen"
+    },
+    "default": {
+      "confirm": "Löschen",
+      "description": "Sind Sie sicher, dass Sie dieses Element löschen möchten?",
+      "title": "Element löschen"
+    },
+    "group": {
+      "confirm": "Gruppe löschen",
+      "description": "Sind Sie sicher, dass Sie \"{{- name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden und löscht die Gruppe und alle ihre Untergruppen. Projekte und Aufgaben in der Gruppe werden nicht gelöscht.",
+      "title": "Gruppe löschen"
+    },
+    "history": {
+      "confirm": "Verlauf löschen",
+      "description": "Dies löscht dauerhaft den gesamten Rückgängig-/Wiederholen-Verlauf für Aufgaben, Projekte und Etiketten. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "title": "Gesamten Verlauf löschen"
+    },
+    "label": {
+      "confirm": "Etikett löschen",
+      "description": "Sind Sie sicher, dass Sie \"{{- name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden und entfernt dieses Etikett von allen Aufgaben.",
+      "title": "Etikett löschen"
+    },
+    "project": {
+      "confirm": "Projekt löschen",
+      "description": "Sind Sie sicher, dass Sie \"{{- name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden und löscht alle Aufgaben in diesem Projekt.",
+      "title": "Projekt löschen"
+    },
+    "section": {
+      "confirm": "Bereich löschen",
+      "description": "Sind Sie sicher, dass Sie \"{{- name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden und alle Aufgaben in diesem Bereich werden in den Standardbereich verschoben.",
+      "title": "Bereich löschen"
+    },
+    "task": {
+      "confirm": "Löschen",
+      "description": "Sind Sie sicher, dass Sie \"{{- name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "title": "Aufgabe löschen"
+    }
+  },
+  "general": {
+    "audio": {
+      "soundEffects": {
+        "label": "Soundeffekte",
+        "description": "Töne für Aufgabenabschluss, Benachrichtigungen und andere Interaktionen abspielen"
+      }
+    },
+    "defaultPage": {
+      "title": "Standardseite",
+      "label": "Beim Öffnen von TaskTrove anzeigen",
+      "description": "Wählen Sie die Seite, die beim ersten Öffnen von TaskTrove angezeigt werden soll"
+    },
+    "language": {
+      "title": "Sprache",
+      "label": "Sprache",
+      "description": "Anzeigesprache der Anwendung auswählen"
+    },
+    "links": {
+      "autoConvert": {
+        "label": "URLs automatisch zu Links konvertieren",
+        "description": "URLs in Aufgabentiteln automatisch zu anklickbaren Links konvertieren"
+      }
+    },
+    "popovers": {
+      "hoverOpen": {
+        "label": "Hover-Öffnung",
+        "description": "Popovers beim Hovern öffnen lassen, zusätzlich zum Klicken"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "notificationsBlocked": {
+        "title": "Benachrichtigungen blockiert",
+        "retryInstructions": "Bitte versuchen Sie zuerst die Schaltfläche \"Wiederholen\". Wenn das nicht funktioniert, müssen Sie Benachrichtigungen manuell in Ihren Browsereinstellungen aktivieren.",
+        "manualInstructions": "Der Browser hat keinen Berechtigungsdialog angezeigt. Um Benachrichtigungen zu aktivieren, klicken Sie auf das 🔒-Symbol in der Adressleiste oder gehen Sie zu Browsereinstellungen → Datenschutz und Sicherheit → Website-Einstellungen → Benachrichtigungen und aktualisieren Sie dann die Seite."
+      },
+      "secureConnectionRequired": {
+        "title": "Sichere Verbindung erforderlich",
+        "description": "Benachrichtigungen erfordern eine sichere Verbindung (HTTPS) oder localhost. Bitte greifen Sie über HTTPS auf diese Website zu oder führen Sie sie auf localhost aus, um Benachrichtigungen zu aktivieren."
+      }
+    },
+    "general": {
+      "enableNotifications": {
+        "label": "Benachrichtigungen aktivieren",
+        "description": "Alle Benachrichtigungen ein- oder ausschalten"
+      },
+      "requireInteraction": {
+        "label": "Interaktion erforderlich",
+        "description": "Benachrichtigungen bleiben sichtbar, bis Sie mit ihnen interagieren"
+      }
+    },
+    "permissionStatus": {
+      "title": "Berechtigungsstatus",
+      "browserNotifications": "Browser-Benachrichtigungen",
+      "requiresHttps": "Benachrichtigungen erfordern HTTPS",
+      "enabled": "Aktiviert",
+      "blocked": "Blockiert",
+      "notEnabled": "Nicht aktiviert",
+      "requesting": "Anfragend",
+      "enable": "Aktivieren",
+      "retry": "Wiederholen",
+      "tryAgain": "Erneut versuchen",
+      "retryTooltip": "Berechtigung erneut anfordern",
+      "browserSettingsTooltip": "Browser erfordert möglicherweise manuelle Einstellungsänderungen",
+      "testNotification": "Benachrichtigung testen"
+    }
+  },
+  "projectDialog": {
+    "buttons": {
+      "add": "{{type}} hinzufügen"
+    },
+    "color": {
+      "label": "Farbe"
+    },
+    "group": "Gruppe",
+    "name": {
+      "label": "{{type}}-Name",
+      "placeholder": "{{type}}-Name eingeben"
+    },
+    "project": "Projekt",
+    "title": "Neue {{type}} hinzufügen",
+    "type": {
+      "label": "Typ"
+    }
+  },
+  "quickAdd": {
+    "buttons": {
+      "comments": "Kommentare",
+      "date": "Datum",
+      "label": "Etikett",
+      "priority": "Priorität",
+      "project": "Projekt",
+      "section": "Bereich",
+      "subtasks": "Unteraufgaben"
+    },
+    "description": {
+      "placeholder": "Beschreibung"
+    },
+    "smartParsing": {
+      "help": "Smart Parsing ist eine experimentelle Funktion, die automatisch Aufgabendetails aus Ihrer Eingabe erkennen und extrahieren kann. Es kann Prioritäten (P1-P4), Fälligkeitsdaten (morgen, nächste Woche, usw.), Projektnamen (#projekt), Etiketten (@etikett) und Wiederholungsmuster (täglich, wöchentlich) erkennen.",
+      "label": "Smart Parsing"
+    },
+    "title": "Aufgabe schnell hinzufügen"
+  },
+  "settings": {
+    "language": "Sprache",
+    "languageDescription": "Anzeigesprache der Anwendung auswählen"
+  }
+}

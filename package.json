@@ -25,7 +25,11 @@
     "i18n:extract:settings": "i18next-parser --config i18next-parser-settings.config.js",
     "i18n:extract:settings:watch": "i18next-parser --config i18next-parser-settings.config.js --watch",
     "i18n:extract:layout": "i18next-parser --config i18next-parser-layout.config.js",
-    "i18n:extract:layout:watch": "i18next-parser --config i18next-parser-layout.config.js --watch"
+    "i18n:extract:layout:watch": "i18next-parser --config i18next-parser-layout.config.js --watch",
+    "i18n:extract:navigation": "i18next-parser --config i18next-parser-navigation.config.js",
+    "i18n:extract:navigation:watch": "i18next-parser --config i18next-parser-navigation.config.js --watch",
+    "i18n:extract:task": "i18next-parser --config i18next-parser-task.config.js",
+    "i18n:extract:task:watch": "i18next-parser --config i18next-parser-task.config.js --watch"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.4",

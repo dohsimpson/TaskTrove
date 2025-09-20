@@ -401,6 +401,198 @@ return resourcesToBackend(async (language, namespace) => {
 
 ## Testing and Validation
 
+### Translation Key Validation
+
+After implementing translations, it's crucial to validate that all language files have complete and consistent key structures. Here are proven methods for ensuring translation completeness:
+
+#### Key Count Validation
+
+**Compare key counts between languages to ensure parity:**
+
+```bash
+# Count keys in all translation files for a specific language
+echo "=== Dutch Translation Key Counts ==="
+echo -n "Navigation: " && jq 'paths(scalars) as $p | $p | join(".")' components/navigation/i18n/nl/navigation.json | wc -l
+echo -n "Task: " && jq 'paths(scalars) as $p | $p | join(".")' components/task/i18n/nl/task.json | wc -l
+echo -n "Layout: " && jq 'paths(scalars) as $p | $p | join(".")' components/layout/i18n/nl/layout.json | wc -l
+echo -n "Dialogs: " && jq 'paths(scalars) as $p | $p | join(".")' components/dialogs/i18n/nl/dialogs.json | wc -l
+echo -n "Settings: " && jq 'paths(scalars) as $p | $p | join(".")' components/dialogs/settings-forms/i18n/nl/settings.json | wc -l
+
+# Compare against reference language (e.g., Spanish)
+echo "=== Reference Spanish Key Counts ==="
+echo -n "Navigation: " && jq 'paths(scalars) as $p | $p | join(".")' components/navigation/i18n/es/navigation.json | wc -l
+echo -n "Task: " && jq 'paths(scalars) as $p | $p | join(".")' components/task/i18n/es/task.json | wc -l
+echo -n "Layout: " && jq 'paths(scalars) as $p | $p | join(".")' components/layout/i18n/es/layout.json | wc -l
+echo -n "Dialogs: " && jq 'paths(scalars) as $p | $p | join(".")' components/dialogs/i18n/es/dialogs.json | wc -l
+echo -n "Settings: " && jq 'paths(scalars) as $p | $p | join(".")' components/dialogs/settings-forms/i18n/es/settings.json | wc -l
+```
+
+#### Total Translation Coverage
+
+**Get overall translation statistics:**
+
+```bash
+# Count total translation keys for a language
+echo "=== Total Translation Coverage ==="
+echo -n "Total Dutch keys: " && find components -name "*.json" -path "*/i18n/nl/*" -exec jq 'paths(scalars) as $p | $p | join(".")' {} \; | wc -l
+echo -n "Total Spanish keys: " && find components -name "*.json" -path "*/i18n/es/*" -exec jq 'paths(scalars) as $p | $p | join(".")' {} \; | wc -l
+
+# Count number of translation files
+echo -n "Translation files (Dutch): " && find components -name "*.json" -path "*/i18n/nl/*" | wc -l
+echo -n "Translation files (Spanish): " && find components -name "*.json" -path "*/i18n/es/*" | wc -l
+```
+
+#### Key Structure Validation
+
+**Verify key structures match between languages:**
+
+```bash
+# Extract and compare key structures
+jq -r 'paths(scalars) as $p | $p | join(".")' components/dialogs/i18n/nl/dialogs.json | sort > /tmp/nl-keys.txt
+jq -r 'paths(scalars) as $p | $p | join(".")' components/dialogs/i18n/es/dialogs.json | sort > /tmp/es-keys.txt
+
+# Find missing keys
+echo "=== Keys in Spanish but missing in Dutch ==="
+comm -23 /tmp/es-keys.txt /tmp/nl-keys.txt
+
+echo "=== Keys in Dutch but missing in Spanish ==="
+comm -13 /tmp/es-keys.txt /tmp/nl-keys.txt
+
+# Clean up
+rm /tmp/nl-keys.txt /tmp/es-keys.txt
+```
+
+#### Validation Script Example
+
+**Create a reusable validation script (`scripts/validate-translations.sh`):**
+
+```bash
+#!/bin/bash
+set -e
+
+LANG1=${1:-"es"}  # Reference language
+LANG2=${2:-"nl"}  # Language to validate
+
+echo "=== Validating Translation Completeness: $LANG2 vs $LANG1 ==="
+
+# Find all translation files for reference language
+COMPONENTS=$(find components -name "*.json" -path "*/i18n/$LANG1/*" | sed 's|/i18n/.*||' | sort -u)
+
+for component in $COMPONENTS; do
+    NAMESPACE=$(basename $component)
+    REF_FILE=$(find $component -name "*.json" -path "*/i18n/$LANG1/*")
+    TARGET_FILE=$(find $component -name "*.json" -path "*/i18n/$LANG2/*" 2>/dev/null || echo "")
+
+    if [[ -z "$TARGET_FILE" ]]; then
+        echo "❌ Missing translation file for $NAMESPACE"
+        continue
+    fi
+
+    REF_COUNT=$(jq 'paths(scalars) as $p | $p | join(".")' "$REF_FILE" | wc -l)
+    TARGET_COUNT=$(jq 'paths(scalars) as $p | $p | join(".")' "$TARGET_FILE" | wc -l)
+
+    if [[ $REF_COUNT -eq $TARGET_COUNT ]]; then
+        echo "✅ $NAMESPACE: $TARGET_COUNT keys"
+    else
+        echo "❌ $NAMESPACE: $TARGET_COUNT keys (expected $REF_COUNT)"
+    fi
+done
+
+# Total counts
+TOTAL_REF=$(find components -name "*.json" -path "*/i18n/$LANG1/*" -exec jq 'paths(scalars) as $p | $p | join(".")' {} \; | wc -l)
+TOTAL_TARGET=$(find components -name "*.json" -path "*/i18n/$LANG2/*" -exec jq 'paths(scalars) as $p | $p | join(".")' {} \; | wc -l)
+
+echo "=== Summary ==="
+echo "Reference ($LANG1): $TOTAL_REF keys"
+echo "Target ($LANG2): $TOTAL_TARGET keys"
+
+if [[ $TOTAL_REF -eq $TOTAL_TARGET ]]; then
+    echo "✅ Translation completeness: PASSED"
+    exit 0
+else
+    echo "❌ Translation completeness: FAILED"
+    exit 1
+fi
+```
+
+**Usage:**
+
+```bash
+# Make script executable
+chmod +x scripts/validate-translations.sh
+
+# Validate Dutch against Spanish
+./scripts/validate-translations.sh es nl
+
+# Validate French against Spanish
+./scripts/validate-translations.sh es fr
+```
+
+#### NPM Script Integration
+
+**Add validation scripts to `package.json`:**
+
+```json
+{
+  "scripts": {
+    "i18n:validate": "./scripts/validate-translations.sh es",
+    "i18n:validate:nl": "./scripts/validate-translations.sh es nl",
+    "i18n:validate:fr": "./scripts/validate-translations.sh es fr",
+    "i18n:validate:de": "./scripts/validate-translations.sh es de",
+    "i18n:validate:all": "npm-run-all i18n:validate:*",
+    "i18n:check": "npm run i18n:extract:all && npm run i18n:validate:all"
+  }
+}
+```
+
+#### Expected Output
+
+**Successful validation should show:**
+
+```
+=== Validating Translation Completeness: nl vs es ===
+✅ navigation: 20 keys
+✅ task: 107 keys
+✅ layout: 103 keys
+✅ dialogs: 135 keys
+✅ settings: 79 keys
+=== Summary ===
+Reference (es): 444 keys
+Target (nl): 444 keys
+✅ Translation completeness: PASSED
+```
+
+#### Common Validation Issues
+
+**Empty Objects vs Missing Keys:**
+
+```bash
+# Check for empty translation objects that prevent fallbacks
+echo "=== Checking for Empty Translation Objects ==="
+find components -name "*.json" -path "*/i18n/nl/*" -exec sh -c '
+    if jq -e ".. | objects | select(. == {})" "$1" >/dev/null 2>&1; then
+        echo "⚠️  Empty objects found in: $1"
+        jq ".. | objects | select(. == {})" "$1"
+    fi
+' _ {} \;
+```
+
+**Enhanced Structure Validation:**
+
+Sometimes reference languages get enhanced with additional keys (like `title` fields). Use this to detect structural differences:
+
+```bash
+# Compare enhanced vs basic structures
+echo "=== Structure Enhancement Check ==="
+echo "Layout keys - Dutch: $(jq 'paths(scalars) as $p | $p | join(".")' components/layout/i18n/nl/layout.json | wc -l)"
+echo "Layout keys - Enhanced Spanish: $(jq 'paths(scalars) as $p | $p | join(".")' components/layout/i18n/es/layout.json | wc -l)"
+
+# If counts differ, the structure needs updating
+if [[ $(jq 'paths(scalars) as $p | $p | join(".")' components/layout/i18n/nl/layout.json | wc -l) -ne $(jq 'paths(scalars) as $p | $p | join(".")' components/layout/i18n/es/layout.json | wc -l) ]]; then
+    echo "❌ Dutch layout structure needs updating to match enhanced Spanish version"
+fi
+```
+
 ### Automated Checks
 
 ```bash
@@ -409,8 +601,11 @@ pnpm typecheck
 
 # 2. JSON syntax validation (included in typecheck)
 
-# 3. Extract and compare
-pnpm i18n:extract:components
+# 3. Translation key validation
+pnpm i18n:validate:all
+
+# 4. Extract and compare
+pnpm i18n:extract:all
 git diff components/*/i18n/
 ```
 

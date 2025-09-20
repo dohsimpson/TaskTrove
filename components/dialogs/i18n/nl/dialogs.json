@@ -1,0 +1,253 @@
+{
+  "about": {
+    "by": "Gemaakt door:",
+    "description": "Versie- en ontwikkelaarsinformatie van de TaskTrove applicatie",
+    "madeWith": "Gemaakt met",
+    "sponsorMe": "Sponsor mij",
+    "starOnGitHub": "Ster op GitHub",
+    "title": "Over TaskTrove"
+  },
+  "baseDialog": {
+    "buttons": {
+      "add": "{{type}} toevoegen"
+    },
+    "color": {
+      "label": "Kleur"
+    },
+    "description": {
+      "label": "Beschrijving (optioneel)",
+      "placeholder": "Voer beschrijving van {{type}} in"
+    },
+    "label": "Label",
+    "name": {
+      "label": "Naam van {{type}}",
+      "placeholder": "Voer naam van {{type}} in"
+    },
+    "parent": {
+      "none": "Geen (rootniveau)",
+      "placeholder": "{{type}} selecteren"
+    },
+    "project": "Project",
+    "projectGroup": "Groep",
+    "section": "Sectie",
+    "title": "Nieuwe {{type}} toevoegen"
+  },
+  "common": {
+    "cancel": "Annuleren"
+  },
+  "data": {
+    "autoBackup": {
+      "backupTime": {
+        "description": "Tijd kiezen voor automatische back-ups",
+        "label": "Back-up tijd"
+      },
+      "dockerNotice": {
+        "description": "In een Docker-omgeving worden back-upbestanden opgeslagen in /app/data/backups binnen de container. Zorg ervoor dat je een volume hebt gekoppeld om back-ups te behouden.",
+        "title": "Docker-omgeving"
+      },
+      "enable": {
+        "description": "Je gegevens automatisch periodiek back-uppen",
+        "label": "Automatische back-ups inschakelen"
+      },
+      "manualBackup": {
+        "button": "Nu handmatige back-up maken"
+      },
+      "maxBackups": {
+        "description": "Aantal back-upbestanden om te behouden",
+        "label": "Maximum aantal back-ups"
+      }
+    },
+    "taskImport": {
+      "step1": {
+        "description": "Klik op een taakbeheerservice hieronder om de import wizard te openen. Volg de instructies om je gegevens te exporteren en om te zetten naar TaskTrove-formaat.",
+        "notion": "Gegevens exporteren vanuit Notion:",
+        "notionInstructions": "Database selecteren → ... → Exporteren → CSV",
+        "title": "Stap 1: Je gegevens exporteren",
+        "todoist": "Gegevens exporteren vanuit Todoist:",
+        "todoistInstructions": "Instellingen → Integraties → Exporteren als CSV",
+        "trello": "Gegevens exporteren vanuit Trello:",
+        "trelloInstructions": "Bordmenu → Meer → Afdrukken en exporteren → Exporteren als JSON"
+      },
+      "step2": {
+        "description": "Na het gebruik van de bovenstaande import wizard download je een JSON-bestand. Upload dat bestand hier om je taken, projecten en labels te importeren in TaskTrove.",
+        "important": {
+          "description": "Upload alleen het JSON-bestand dat is gedownload vanuit de import wizard. Reguliere exports van andere apps werken niet.",
+          "title": "Belangrijk:"
+        },
+        "supportedFormats": "Ondersteunde formaten: CSV (Todoist, Notion), JSON (Trello)",
+        "title": "Stap 2: Geconverteerd bestand uploaden"
+      },
+      "upload": {
+        "button": "JSON-bestand uploaden",
+        "dragDrop": "Sleep het bestand hierheen of klik om te selecteren",
+        "error": {
+          "processingFailed": "Verwerkingsfout: {{- message}}",
+          "uploadFailed": "Uploadfout: {{- message}}"
+        },
+        "processing": "Verwerken...",
+        "success": {
+          "alreadyExisted": "{{items}} bestonden al",
+          "imported": "{{items}} geïmporteerd",
+          "labels": "{{count}} labels",
+          "noNewItems": "Geen nieuwe items",
+          "projects": "{{count}} projecten",
+          "tasks": "{{count}} taken",
+          "title": "Import succesvol!"
+        },
+        "supportedFormats": "Ondersteunt CSV- en JSON-bestanden",
+        "uploading": "Uploaden..."
+      }
+    }
+  },
+  "delete": {
+    "bulk": {
+      "confirm": "Taken verwijderen",
+      "description": "Weet je zeker dat je {{count}} taken wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "title": "Taken verwijderen"
+    },
+    "default": {
+      "confirm": "Verwijderen",
+      "description": "Weet je zeker dat je dit item wilt verwijderen?",
+      "title": "Item verwijderen"
+    },
+    "group": {
+      "confirm": "Groep verwijderen",
+      "description": "Weet je zeker dat je \"{{- name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt en verwijdert de groep en alle subgroepen. Projecten en taken in de groep worden niet verwijderd.",
+      "title": "Groep verwijderen"
+    },
+    "history": {
+      "confirm": "Geschiedenis wissen",
+      "description": "Dit verwijdert permanent alle ongedaan maken/opnieuw doen geschiedenis voor taken, projecten en labels. Deze actie kan niet ongedaan worden gemaakt.",
+      "title": "Alle geschiedenis wissen"
+    },
+    "label": {
+      "confirm": "Label verwijderen",
+      "description": "Weet je zeker dat je \"{{- name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt en verwijdert dit label van alle taken.",
+      "title": "Label verwijderen"
+    },
+    "project": {
+      "confirm": "Project verwijderen",
+      "description": "Weet je zeker dat je \"{{- name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt en verwijdert alle taken in dit project.",
+      "title": "Project verwijderen"
+    },
+    "section": {
+      "confirm": "Sectie verwijderen",
+      "description": "Weet je zeker dat je \"{{- name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt en alle taken in deze sectie worden verplaatst naar de standaardsectie.",
+      "title": "Sectie verwijderen"
+    },
+    "task": {
+      "confirm": "Verwijderen",
+      "description": "Weet je zeker dat je \"{{- name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "title": "Taak verwijderen"
+    }
+  },
+  "general": {
+    "audio": {
+      "soundEffects": {
+        "description": "Geluiden afspelen voor voltooide taken, notificaties en andere interacties",
+        "label": "Geluidseffecten"
+      }
+    },
+    "defaultPage": {
+      "description": "Kies de pagina om te tonen bij het voor het eerst openen van TaskTrove",
+      "label": "Tonen bij openen van TaskTrove",
+      "title": "Standaardpagina"
+    },
+    "language": {
+      "description": "Selecteer de weergavetaal van de applicatie",
+      "label": "Taal",
+      "title": "Taal"
+    },
+    "links": {
+      "autoConvert": {
+        "description": "Zet automatisch URL's in taaktitels om naar klikbare links",
+        "label": "Zet automatisch URL's om naar links"
+      }
+    },
+    "popovers": {
+      "hoverOpen": {
+        "description": "Sta toe dat popovers openen bij hover, naast klikken",
+        "label": "Openen bij hover"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "notificationsBlocked": {
+        "manualInstructions": "De browser toonde geen toestemmingsdialoog. Om notificaties in te schakelen, klik op het 🔒 pictogram in de adresbalk of ga naar browserinstellingen → Privacy en beveiliging → Site-instellingen → Notificaties, en ververs vervolgens de pagina.",
+        "retryInstructions": "Probeer eerst de \"Opnieuw\" knop. Als dat niet werkt, moet je notificaties handmatig inschakelen in je browserinstellingen.",
+        "title": "Notificaties geblokkeerd"
+      },
+      "secureConnectionRequired": {
+        "description": "Notificaties vereisen een beveiligde verbinding (HTTPS) of localhost. Ga naar deze site via HTTPS of voer het uit op localhost om notificaties in te schakelen.",
+        "title": "Beveiligde verbinding vereist"
+      }
+    },
+    "general": {
+      "enableNotifications": {
+        "description": "Alle notificaties aan- of uitzetten",
+        "label": "Notificaties inschakelen"
+      },
+      "requireInteraction": {
+        "description": "Notificaties blijven zichtbaar totdat je ermee interacteert",
+        "label": "Interactie vereist"
+      }
+    },
+    "permissionStatus": {
+      "blocked": "Geblokkeerd",
+      "browserNotifications": "Browsernotificaties",
+      "browserSettingsTooltip": "Browser kan handmatige wijzigingen in instellingen vereisen",
+      "enable": "Inschakelen",
+      "enabled": "Ingeschakeld",
+      "notEnabled": "Niet ingeschakeld",
+      "requesting": "Aanvragen",
+      "requiresHttps": "Notificaties vereisen HTTPS",
+      "retry": "Opnieuw",
+      "retryTooltip": "Probeer opnieuw toestemming aan te vragen",
+      "testNotification": "Notificatie testen",
+      "title": "Toestemmingsstatus",
+      "tryAgain": "Opnieuw proberen"
+    }
+  },
+  "projectDialog": {
+    "buttons": {
+      "add": "{{type}} toevoegen"
+    },
+    "color": {
+      "label": "Kleur"
+    },
+    "group": "Groep",
+    "name": {
+      "label": "Naam van {{type}}",
+      "placeholder": "Voer naam van {{type}} in"
+    },
+    "project": "Project",
+    "title": "Nieuwe {{type}} toevoegen",
+    "type": {
+      "label": "Type"
+    }
+  },
+  "quickAdd": {
+    "buttons": {
+      "comments": "Opmerkingen",
+      "date": "Datum",
+      "label": "Label",
+      "priority": "Prioriteit",
+      "project": "Project",
+      "section": "Sectie",
+      "subtasks": "Subtaken"
+    },
+    "description": {
+      "placeholder": "Beschrijving"
+    },
+    "smartParsing": {
+      "help": "Slimme analyse is een experimentele functie die automatisch taakdetails kan detecteren en extraheren uit je invoer. Het kan prioriteiten (P1-P4), vervaldatums (morgen, volgende week, etc.), projectnamen (#project), labels (@label) en herhalingspatronen (dagelijks, wekelijks) herkennen.",
+      "label": "Slimme analyse"
+    },
+    "title": "Taak snel toevoegen"
+  },
+  "settings": {
+    "language": "Taal",
+    "languageDescription": "Selecteer de weergavetaal van de applicatie"
+  }
+}

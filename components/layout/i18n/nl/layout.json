@@ -1,0 +1,195 @@
+{
+  "crash": {
+    "notAvailable": {
+      "title": "Crashtest niet beschikbaar",
+      "description": "De crashtest is alleen beschikbaar in de ontwikkelomgeving."
+    }
+  },
+  "debug": {
+    "available": {
+      "title": "TaskTrove Debug Tools",
+      "description": "Debug- en testtools alleen voor ontwikkelomgeving. Deze pagina is niet beschikbaar in productie.",
+      "simplified": "Debug tools zijn vereenvoudigd in deze versie."
+    },
+    "notAvailable": {
+      "title": "Debug Tools niet beschikbaar",
+      "description": "Debug tools zijn alleen beschikbaar in de ontwikkelomgeving om veiligheids- en prestatieredenen."
+    }
+  },
+  "empty": {
+    "notifications": {
+      "title": "Meldingen",
+      "description": "Meldingen zijn tijdelijk uitgeschakeld tijdens de migratie",
+      "action": "Terug"
+    },
+    "performance": {
+      "title": "Prestatiemonitoring",
+      "description": "Prestatiemonitoring is tijdelijk uitgeschakeld tijdens de migratie",
+      "action": "Terug"
+    },
+    "voice": {
+      "title": "Spraakopdrachten",
+      "description": "Spraakopdrachten zijn tijdelijk uitgeschakeld tijdens de migratie",
+      "action": "Terug"
+    }
+  },
+  "footer": {
+    "task": "taak",
+    "tasks": "taken",
+    "no": "Geen {{title}}",
+    "completedToday": "Vandaag voltooid",
+    "completedTodayLabel": "vandaag voltooid",
+    "dueToday": "Vandaag vervalt",
+    "dueTodayLabel": "vandaag vervalt"
+  },
+  "header": {
+    "collapseSidebar": "Zijpaneel inklappen",
+    "openSidebar": "Zijpaneel openen",
+    "currentTheme": "Huidig thema: {{theme}}. Klik om door thema's te bladeren.",
+    "clickToCycleThemes": "Klik om door thema's te bladeren."
+  },
+  "viewOptions": {
+    "title": "Weergave-opties",
+    "help": {
+      "description": "Pas aan hoe je je taken bekijkt en organiseert:",
+      "viewMode": {
+        "label": "Weergavemodus:",
+        "description": "Schakelen tussen lijst-, kanban- en kalenderlay-outs"
+      },
+      "displayOptions": {
+        "label": "Weergave-opties:",
+        "description": "Voltooide taken, zijpaneel en compacte weergave aan/uit"
+      },
+      "sortFilter": {
+        "label": "Sorteren & Filteren:",
+        "description": "Taken organiseren op prioriteit, vervaldatum of andere criteria"
+      },
+      "advancedFilters": {
+        "label": "Geavanceerde filters:",
+        "description": "Krachtige filteropties gebruiken voor complexe zoekopdrachten"
+      },
+      "tip": {
+        "label": "Tip:",
+        "description": "Je weergavevoorkeuren worden per route opgeslagen en blijven bestaan tussen sessies."
+      }
+    },
+    "viewMode": {
+      "label": "Weergavemodus",
+      "list": "Lijst",
+      "kanban": "Kanban",
+      "calendar": "Kalender",
+      "kanbanTooltip": "Alleen beschikbaar voor projecten"
+    },
+    "displayOptions": {
+      "label": "Weergave-opties",
+      "help": {
+        "description": "Bepaal wat zichtbaar is in de taakweergave:",
+        "tip": "Tip: Deze instellingen worden per weergave opgeslagen en blijven bestaan tussen sessies"
+      },
+      "completed": {
+        "title": "Voltooide taken",
+        "label": "Voltooide taken:",
+        "description": "Voltooide taken tonen of verbergen"
+      },
+      "overdue": {
+        "title": "Achterstallige taken",
+        "label": "Achterstallige taken:",
+        "description": "Taken tonen of verbergen die hun vervaldatum hebben overschreden"
+      },
+      "sidePanel": {
+        "title": "Zijpaneel",
+        "label": "Zijpaneel:",
+        "description": "Zijpaneel in-/uitschakelen voor extra taakdetails"
+      },
+      "compact": {
+        "title": "Compacte weergave",
+        "label": "Compacte weergave:",
+        "description": "Compactere lay-out gebruiken om meer taken op het scherm te tonen"
+      }
+    },
+    "sort": {
+      "label": "Sorteren",
+      "title": "Sorteeropties",
+      "sortBy": "Sorteren op",
+      "placeholder": "Selecteer sorteeroptie",
+      "help": {
+        "description": "Kies hoe je taken wilt organiseren:",
+        "default": {
+          "label": "Standaard (ongesorteerd):",
+          "description": "Taken in natuurlijke volgorde tonen, voltooide taken onderaan"
+        },
+        "dueDate": {
+          "label": "Vervaldatum:",
+          "description": "Alle taken sorteren op vervaldatum, voltooide en onvoltooide door elkaar"
+        },
+        "priority": {
+          "label": "Prioriteit:",
+          "description": "Sorteren op prioriteit (1=hoogste, 4=laagste)"
+        },
+        "title": {
+          "label": "Titel:",
+          "description": "Alfabetisch sorteren op taaknaam"
+        },
+        "createdDate": {
+          "label": "Aanmaakdatum:",
+          "description": "Sorteren op tijdstip van taakaanmaak"
+        },
+        "status": {
+          "label": "Status:",
+          "description": "Groeperen op voltooiingsstatus, daarna op kanbankolom"
+        },
+        "tip": "Tip: Gebruik de pijlknoppen om te wisselen tussen oplopend en aflopend"
+      },
+      "options": {
+        "default": "Standaard (ongesorteerd)",
+        "dueDate": "Vervaldatum",
+        "priority": "Prioriteit",
+        "title": "Titel",
+        "createdAt": "Aanmaakdatum",
+        "status": "Status"
+      },
+      "direction": {
+        "changeToDesc": "Wijzigen naar aflopend",
+        "changeToAsc": "Wijzigen naar oplopend"
+      }
+    }
+  },
+  "standardViews": {
+    "all": {
+      "title": "Alle taken",
+      "description": "Alle taken op één plek bekijken"
+    },
+    "inbox": {
+      "title": "Inbox",
+      "description": "Beginnen met ongeorganiseerde taken"
+    },
+    "today": {
+      "title": "Vandaag",
+      "description": "Focussen op taken van vandaag"
+    },
+    "upcoming": {
+      "title": "Binnenkort",
+      "description": "Aankomende taken bekijken"
+    },
+    "completed": {
+      "title": "Voltooid",
+      "description": "Voltooide taken bekijken"
+    },
+    "calendar": {
+      "title": "Kalender",
+      "description": "Taken in kalenderformaat bekijken"
+    },
+    "projects": {
+      "title": "Projecten",
+      "description": "Projecten beheren en organiseren"
+    },
+    "labels": {
+      "title": "Labels",
+      "description": "Taken organiseren met labels"
+    },
+    "not-found": {
+      "title": "Niet gevonden",
+      "description": "De gevraagde bron kon niet worden gevonden"
+    }
+  }
+}

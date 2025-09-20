@@ -1,0 +1,195 @@
+{
+  "crash": {
+    "notAvailable": {
+      "title": "Absturztest nicht verfügbar",
+      "description": "Der Absturztest ist nur in der Entwicklungsumgebung verfügbar."
+    }
+  },
+  "debug": {
+    "available": {
+      "title": "TaskTrove Debug-Tools",
+      "description": "Debug- und Test-Tools nur für die Entwicklungsumgebung. Diese Seite ist in der Produktion nicht verfügbar.",
+      "simplified": "Die Debug-Tools wurden in dieser Version vereinfacht."
+    },
+    "notAvailable": {
+      "title": "Debug-Tools nicht verfügbar",
+      "description": "Debug-Tools sind aus Sicherheits- und Leistungsgründen nur in der Entwicklungsumgebung verfügbar."
+    }
+  },
+  "empty": {
+    "notifications": {
+      "title": "Benachrichtigungen",
+      "description": "Benachrichtigungen sind während der Migration vorübergehend deaktiviert",
+      "action": "Zurück"
+    },
+    "performance": {
+      "title": "Leistungsüberwachung",
+      "description": "Die Leistungsüberwachung ist während der Migration vorübergehend deaktiviert",
+      "action": "Zurück"
+    },
+    "voice": {
+      "title": "Sprachbefehle",
+      "description": "Sprachbefehle sind während der Migration vorübergehend deaktiviert",
+      "action": "Zurück"
+    }
+  },
+  "footer": {
+    "task": "Aufgabe",
+    "tasks": "Aufgaben",
+    "no": "Keine {{title}}",
+    "completedToday": "Heute abgeschlossen",
+    "completedTodayLabel": "Heute abgeschlossen",
+    "dueToday": "Heute fällig",
+    "dueTodayLabel": "Heute fällig"
+  },
+  "header": {
+    "collapseSidebar": "Seitenleiste einklappen",
+    "openSidebar": "Seitenleiste öffnen",
+    "currentTheme": "Aktuelles Design: {{theme}}. Klicken zum Wechseln des Designs.",
+    "clickToCycleThemes": "Klicken zum Wechseln des Designs."
+  },
+  "viewOptions": {
+    "title": "Anzeigeoptionen",
+    "help": {
+      "description": "Passen Sie an, wie Sie Ihre Aufgaben anzeigen und organisieren:",
+      "viewMode": {
+        "label": "Anzeigemodus:",
+        "description": "Zwischen Listen-, Kanban- und Kalenderansichten wechseln"
+      },
+      "displayOptions": {
+        "label": "Anzeigeoptionen:",
+        "description": "Abgeschlossene Aufgaben, Seitenpanel und kompakte Ansicht umschalten"
+      },
+      "sortFilter": {
+        "label": "Sortierung und Filterung:",
+        "description": "Aufgaben nach Priorität, Fälligkeitsdatum oder anderen Kriterien organisieren"
+      },
+      "advancedFilters": {
+        "label": "Erweiterte Filter:",
+        "description": "Leistungsstarke Filteroptionen für komplexe Abfragen verwenden"
+      },
+      "tip": {
+        "label": "Tipp:",
+        "description": "Ihre Anzeigeeinstellungen werden pro Route gespeichert und bleiben zwischen Sitzungen erhalten."
+      }
+    },
+    "viewMode": {
+      "label": "Anzeigemodus",
+      "list": "Liste",
+      "kanban": "Kanban",
+      "calendar": "Kalender",
+      "kanbanTooltip": "Nur für Projekte"
+    },
+    "displayOptions": {
+      "label": "Anzeigeoptionen",
+      "help": {
+        "description": "Steuern Sie, was in der Aufgabenansicht sichtbar ist:",
+        "tip": "Tipp: Diese Einstellungen werden pro Ansicht gespeichert und bleiben zwischen Sitzungen erhalten"
+      },
+      "completed": {
+        "title": "Abgeschlossene Aufgaben",
+        "label": "Abgeschlossene Aufgaben:",
+        "description": "Abgeschlossene Aufgaben anzeigen oder ausblenden"
+      },
+      "overdue": {
+        "title": "Überfällige Aufgaben",
+        "label": "Überfällige Aufgaben:",
+        "description": "Aufgaben anzeigen oder ausblenden, die ihr Fälligkeitsdatum überschritten haben"
+      },
+      "sidePanel": {
+        "title": "Seitenpanel",
+        "label": "Seitenpanel:",
+        "description": "Seitenpanel umschalten, um zusätzliche Aufgabendetails zu sehen"
+      },
+      "compact": {
+        "title": "Kompakte Ansicht",
+        "label": "Kompakte Ansicht:",
+        "description": "Kompakteres Layout verwenden, um mehr Aufgaben auf dem Bildschirm anzuzeigen"
+      }
+    },
+    "sort": {
+      "label": "Sortierung",
+      "title": "Sortieroptionen",
+      "sortBy": "Sortieren nach",
+      "placeholder": "Sortieroption auswählen",
+      "help": {
+        "description": "Wählen Sie, wie Ihre Aufgaben organisiert werden sollen:",
+        "default": {
+          "label": "Standard (unsortiert):",
+          "description": "Aufgaben in natürlicher Reihenfolge anzeigen, abgeschlossene Aufgaben unten"
+        },
+        "dueDate": {
+          "label": "Fälligkeitsdatum:",
+          "description": "Alle Aufgaben nach Fälligkeitsdatum sortieren, abgeschlossene und unabgeschlossene gemischt"
+        },
+        "priority": {
+          "label": "Priorität:",
+          "description": "Nach Priorität sortieren (1=höchste, 4=niedrigste)"
+        },
+        "title": {
+          "label": "Titel:",
+          "description": "Nach Aufgabennamen alphabetisch sortieren"
+        },
+        "createdDate": {
+          "label": "Erstellungsdatum:",
+          "description": "Nach Aufgabenerstellungszeit sortieren"
+        },
+        "status": {
+          "label": "Status:",
+          "description": "Nach Abschlussstatus gruppieren, dann nach Kanban-Spalte"
+        },
+        "tip": "Tipp: Verwenden Sie die Pfeil-Schaltflächen, um zwischen aufsteigend und absteigend zu wechseln"
+      },
+      "options": {
+        "default": "Standard (unsortiert)",
+        "dueDate": "Fälligkeitsdatum",
+        "priority": "Priorität",
+        "title": "Titel",
+        "createdAt": "Erstellungsdatum",
+        "status": "Status"
+      },
+      "direction": {
+        "changeToDesc": "Zu absteigend ändern",
+        "changeToAsc": "Zu aufsteigend ändern"
+      }
+    }
+  },
+  "standardViews": {
+    "all": {
+      "title": "Alle Aufgaben",
+      "description": "Alle Aufgaben an einem Ort anzeigen"
+    },
+    "inbox": {
+      "title": "Eingang",
+      "description": "Mit unorganisierten Aufgaben beginnen"
+    },
+    "today": {
+      "title": "Heute",
+      "description": "Auf heutige Aufgaben fokussieren"
+    },
+    "upcoming": {
+      "title": "Anstehend",
+      "description": "Anstehende Aufgaben anzeigen"
+    },
+    "completed": {
+      "title": "Abgeschlossen",
+      "description": "Abgeschlossene Aufgaben anzeigen"
+    },
+    "calendar": {
+      "title": "Kalender",
+      "description": "Aufgaben im Kalenderformat anzeigen"
+    },
+    "projects": {
+      "title": "Projekte",
+      "description": "Projekte verwalten und organisieren"
+    },
+    "labels": {
+      "title": "Etiketten",
+      "description": "Aufgaben mit Etiketten organisieren"
+    },
+    "not-found": {
+      "title": "Nicht gefunden",
+      "description": "Die angeforderte Ressource konnte nicht gefunden werden"
+    }
+  }
+}

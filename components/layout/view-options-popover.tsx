@@ -8,7 +8,7 @@ import { currentViewStateAtom } from "@/lib/atoms/ui/views"
 import { Button } from "@/components/ui/button"
 import { Settings2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { HoverPopover } from "@/components/ui/custom/hover-popover"
+import { ContentPopover } from "@/components/ui/content-popover"
 import { ViewOptionsContent } from "./view-options-content"
 
 interface ViewOptionsProps {
@@ -44,18 +44,16 @@ function ViewOptionsPopoverComponent({ onAdvancedSearch, className }: ViewOption
   }
 
   return (
-    <HoverPopover
+    <ContentPopover
       content={<ViewOptionsContent onAdvancedSearch={onAdvancedSearch} />}
-      contentProps={{ className: "w-80", align: "end" }}
-      openDelay={250}
-      closeDelay={100}
-      disabled={true} // TODO: disable for now to prevent confusion, will need to add a settings in the future.
+      className="w-80"
+      align="end"
     >
       <Button variant="ghost" size="sm" className={cn("gap-2 cursor-pointer", className)}>
         {getButtonIcon()}
         {getViewIndicator()}
       </Button>
-    </HoverPopover>
+    </ContentPopover>
   )
 }
 

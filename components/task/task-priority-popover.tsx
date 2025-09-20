@@ -1,6 +1,8 @@
 "use client"
 
-import { CustomizablePopover, PopoverSection } from "@/components/ui/customizable-popover"
+import React from "react"
+import { ContentPopover } from "@/components/ui/content-popover"
+import { Button } from "@/components/ui/button"
 import { Flag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { updateTaskAtom } from "@/lib/atoms/core/tasks"
@@ -17,6 +19,7 @@ interface TaskPriorityPopoverProps {
   contentClassName?: string
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  triggerMode?: "click" | "hover"
 }
 
 export function TaskPriorityPopover({
@@ -28,6 +31,7 @@ export function TaskPriorityPopover({
   contentClassName = "w-48 p-1",
   open,
   onOpenChange,
+  triggerMode,
 }: TaskPriorityPopoverProps) {
   const updateTask = useSetAtom(updateTaskAtom)
 
@@ -60,39 +64,52 @@ export function TaskPriorityPopover({
     }
   }
 
-  const getPrioritySections = (): PopoverSection[] => {
-    return [
-      {
-        options: [1, 2, 3].map((p) => ({
-          id: p,
-          label: getPriorityLabel(p),
-          icon: <Flag className={cn("h-3 w-3", getPriorityColor(p))} />,
-          onClick: () => handlePriorityUpdate(p),
-        })),
-      },
-      {
-        options: [
-          {
-            id: 4,
-            label: getPriorityLabel(4),
-            icon: <Flag className={cn("h-3 w-3", getPriorityColor(4))} />,
-            onClick: () => handlePriorityUpdate(4),
-          },
-        ],
-      },
-    ]
-  }
+  // Create the priority content directly
+  const priorityContent = (
+    <div className="space-y-1">
+      {/* High priorities: P1, P2, P3 */}
+      <div className="space-y-0.5">
+        {[1, 2, 3].map((priority) => (
+          <Button
+            key={priority}
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start h-8"
+            onClick={() => handlePriorityUpdate(priority)}
+          >
+            <Flag className={cn("h-3 w-3 mr-2", getPriorityColor(priority))} />
+            <span>{getPriorityLabel(priority)}</span>
+          </Button>
+        ))}
+      </div>
+
+      {/* Divider */}
+      <div className="h-px bg-gray-200 dark:bg-gray-700 my-1" />
+
+      {/* No priority */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="w-full justify-start h-8"
+        onClick={() => handlePriorityUpdate(4)}
+      >
+        <Flag className={cn("h-3 w-3 mr-2", getPriorityColor(4))} />
+        <span>{getPriorityLabel(4)}</span>
+      </Button>
+    </div>
+  )
 
   return (
-    <CustomizablePopover
-      sections={getPrioritySections()}
-      contentClassName={contentClassName}
+    <ContentPopover
+      content={priorityContent}
+      className={contentClassName}
       align={align}
       open={open}
       onOpenChange={onOpenChange}
+      triggerMode={triggerMode}
     >
       <div className={className}>{children}</div>
-    </CustomizablePopover>
+    </ContentPopover>
   )
 }
 

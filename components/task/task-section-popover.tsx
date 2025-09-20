@@ -1,16 +1,16 @@
 "use client"
 
+import React from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Square, SquareX } from "lucide-react"
-
-import { CustomizablePopover, PopoverSection } from "@/components/ui/customizable-popover"
+import { Button } from "@/components/ui/button"
+import { ContentPopover } from "@/components/ui/content-popover"
 import { projectsAtom } from "@/lib/atoms"
 import { updateTaskAtom } from "@/lib/atoms/core/tasks"
 import type { TaskId, ProjectSection, SectionId, ProjectId } from "@/lib/types"
 import { createSectionId, createTaskId } from "@/lib/types"
 
 // Constants
-const NO_SECTION_OPTION_ID = "no-section" as const
 const DEFAULT_SECTION_COLOR = "#6b7280" as const
 
 interface TaskSectionPopoverProps {
@@ -21,6 +21,7 @@ interface TaskSectionPopoverProps {
   className?: string
   align?: "start" | "center" | "end"
   contentClassName?: string
+  triggerMode?: "click" | "hover"
 }
 
 export function TaskSectionPopover({
@@ -31,78 +32,99 @@ export function TaskSectionPopover({
   className,
   align = "end",
   contentClassName = "w-48 p-1",
+  triggerMode,
 }: TaskSectionPopoverProps) {
   const projects = useAtomValue(projectsAtom)
   const updateTask = useSetAtom(updateTaskAtom)
 
-  const getPopoverSections = (): PopoverSection[] => {
-    const handleSectionSelect = (sectionId?: SectionId) => {
-      if (onUpdate) {
-        onUpdate(sectionId)
-      } else if (taskId) {
-        updateTask({
-          updateRequest: {
-            id: createTaskId(taskId),
-            sectionId: sectionId,
-          },
-        })
-      }
+  const handleSectionSelect = (sectionId?: SectionId) => {
+    if (onUpdate) {
+      onUpdate(sectionId)
+    } else if (taskId) {
+      updateTask({
+        updateRequest: {
+          id: createTaskId(taskId),
+          sectionId: sectionId,
+        },
+      })
     }
+  }
 
-    // Find the project to get its sections
-    const project = projectId ? projects.find((p) => p.id === projectId) : null
+  // Find the project to get its sections
+  const project = projectId ? projects.find((p) => p.id === projectId) : null
 
-    if (!project) {
-      // Return empty sections array when no project is found
-      // This prevents the popover from showing any options
-      return []
-    }
+  if (!project) {
+    // Return empty content when no project is found
+    const emptyContent = (
+      <div className="p-2 text-center text-muted-foreground text-sm">No sections available</div>
+    )
 
-    const options = [
-      // "No section" option
-      {
-        id: NO_SECTION_OPTION_ID,
-        label: "No section",
-        icon: <SquareX className="w-3 h-3 text-muted-foreground" />,
-        onClick: () => handleSectionSelect(undefined),
-      },
-      // Project sections - with error handling for malformed sections
-      ...project.sections
+    return (
+      <ContentPopover
+        content={emptyContent}
+        className={contentClassName}
+        align={align}
+        triggerMode={triggerMode}
+      >
+        <div className={className}>{children}</div>
+      </ContentPopover>
+    )
+  }
+
+  // Create the sections content directly
+  const sectionsContent = (
+    <div className="space-y-0.5">
+      {/* "No section" option */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="w-full justify-start h-8"
+        onClick={() => handleSectionSelect(undefined)}
+      >
+        <SquareX className="w-3 h-3 mr-2 text-muted-foreground" />
+        <span>No section</span>
+      </Button>
+
+      {/* Project sections - with error handling for malformed sections */}
+      {project.sections
         .filter((section: ProjectSection) => {
           // Filter out any malformed sections
           return section.id && section.name
         })
         .map((section: ProjectSection) => {
           try {
-            return {
-              id: String(section.id), // Convert to string to match PopoverOption interface
-              label: section.name,
-              icon: (
+            return (
+              <Button
+                key={section.id}
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start h-8"
+                onClick={() => handleSectionSelect(createSectionId(section.id))}
+              >
                 <Square
-                  className="w-3 h-3"
+                  className="w-3 h-3 mr-2"
                   style={{ color: section.color || DEFAULT_SECTION_COLOR }}
                 />
-              ),
-              onClick: () => handleSectionSelect(createSectionId(section.id)),
-            }
+                <span>{section.name}</span>
+              </Button>
+            )
           } catch (error) {
             console.warn("Error processing section:", section, error)
             return null
           }
         })
-        .filter((option): option is NonNullable<typeof option> => option !== null), // Remove any null entries from failed processing
-    ]
-
-    return [{ options }]
-  }
+        .filter((button): button is NonNullable<typeof button> => button !== null)}
+    </div>
+  )
 
   return (
-    <CustomizablePopover
-      sections={getPopoverSections()}
-      contentClassName={contentClassName}
+    <ContentPopover
+      content={sectionsContent}
+      className={contentClassName}
       align={align}
+      triggerMode={triggerMode}
     >
       <div className={className}>{children}</div>
-    </CustomizablePopover>
+    </ContentPopover>
   )
 }

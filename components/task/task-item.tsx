@@ -460,11 +460,9 @@ export function TaskItem({
       <div
         className={cn(
           "group/task relative rounded border border-border border-l-3 transition-all duration-200",
-          "hover:shadow-sm hover:scale-[1.005] active:scale-[1.002]",
+          "hover:shadow-md dark:hover:shadow-gray-300/30",
           task.completed && "opacity-60",
-          isSelected
-            ? "bg-accent text-accent-foreground border-accent-foreground/20"
-            : "bg-card hover:bg-card",
+          isSelected ? "bg-accent text-accent-foreground border-accent-foreground/20" : "bg-card",
           "cursor-pointer",
           getPriorityColor(task.priority, variant),
           className,
@@ -734,7 +732,7 @@ export function TaskItem({
     return (
       <div
         className={cn(
-          "group/task relative p-3 border border-border border-l-3 rounded-lg shadow-xs cursor-pointer hover:shadow-md hover:scale-[1.005] active:scale-[1.002] transition-all duration-200",
+          "group/task relative p-3 border border-border border-l-3 rounded-lg shadow-xs cursor-pointer hover:shadow-md dark:hover:shadow-gray-300/30 transition-all duration-200",
           task.completed && "opacity-60",
           isSelected ? "bg-accent text-accent-foreground border-accent-foreground/20" : "bg-card",
           getPriorityColor(task.priority, variant),
@@ -1139,7 +1137,7 @@ export function TaskItem({
     <div
       className={cn(
         "group relative p-2 sm:p-3 md:p-4 rounded-lg border border-border border-l-3 transition-all duration-200",
-        "hover:shadow-md hover:scale-[1.005] active:scale-[1.002]",
+        "hover:shadow-md dark:hover:shadow-gray-300/30",
         task.completed && "opacity-60",
         isSelected ? "bg-accent text-accent-foreground border-accent-foreground/20" : "bg-card",
         "cursor-pointer",

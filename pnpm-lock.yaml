@@ -113,6 +113,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.83.0
         version: 5.83.0(react@19.1.0)
+      '@uidotdev/usehooks':
+        specifier: ^2.4.1
+        version: 2.4.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       accept-language:
         specifier: ^3.0.20
         version: 3.0.20
@@ -2320,6 +2323,13 @@ packages:
     resolution: {integrity: sha512-oy5sRkhxkExUX/MHEY08sbc/CFVmf8JvLWobM5TPpEcWEsWYulXPncOxSq26NSBVyQz8/P9N4NqAZYIIz2YMfg==}
     engines: {node: '>=20.6.0'}
     hasBin: true
+
+  '@uidotdev/usehooks@2.4.1':
+    resolution: {integrity: sha512-1I+RwWyS+kdv3Mv0Vmc+p0dPYH0DTRAo04HLyXReYBL9AeseDWUJyi4THuksBJcu9F0Pih69Ak150VDnqbVnXg==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
 
   '@unrs/resolver-binding-android-arm-eabi@1.11.1':
     resolution: {integrity: sha512-ppLRUgHVaGRWUx0R0Ut06Mjo9gBaBkg3v/8AxusGLhsIotbBLuRk51rAzqLC8gq6NyyAojEXglNjzf6R948DNw==}
@@ -7564,6 +7574,11 @@ snapshots:
       '@typescript/native-preview-linux-x64': 7.0.0-dev.20250723.1
       '@typescript/native-preview-win32-arm64': 7.0.0-dev.20250723.1
       '@typescript/native-preview-win32-x64': 7.0.0-dev.20250723.1
+
+  '@uidotdev/usehooks@2.4.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   '@unrs/resolver-binding-android-arm-eabi@1.11.1':
     optional: true

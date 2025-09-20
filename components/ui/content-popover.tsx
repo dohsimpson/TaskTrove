@@ -1,22 +1,22 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useAtomValue } from "jotai"
+import { useDebounce } from "@uidotdev/usehooks"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { settingsAtom } from "@/lib/atoms"
 
 interface ContentPopoverProps {
-  children: React.ReactNode // Trigger element
-  content: React.ReactNode // Content to show in popover
-  className?: string // Content className
-  triggerClassName?: string // Trigger className
+  children: React.ReactNode
+  content: React.ReactNode
+  className?: string
+  triggerClassName?: string
   align?: "start" | "center" | "end"
   side?: "top" | "right" | "bottom" | "left"
   onOpenChange?: (open: boolean) => void
   open?: boolean
-  triggerMode?: "click" | "hover" // Override for trigger behavior (defaults to user's popoverHoverOpen setting)
-  openDelay?: number // Hover open delay
-  closeDelay?: number // Hover close delay
+  triggerMode?: "click" | "hover"
+  debounceDelay?: number
 }
 
 export function ContentPopover({
@@ -29,40 +29,42 @@ export function ContentPopover({
   onOpenChange,
   open,
   triggerMode,
-  openDelay = 250,
-  closeDelay = 100,
+  debounceDelay = 200,
 }: ContentPopoverProps) {
-  const [internalOpen, setInternalOpen] = useState(false)
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [internalHoverState, setInternalHoverState] = useState(false)
   const settings = useAtomValue(settingsAtom)
 
   // Determine effective trigger mode: use prop if provided, otherwise use setting
   const effectiveTriggerMode =
     triggerMode ?? (settings.general.popoverHoverOpen ? "hover" : "click")
 
-  // Use external open state if provided, otherwise internal state
-  const isOpen = open !== undefined ? open : internalOpen
+  // For hover mode, use debounced state; for click mode, use external/internal open state
+  const debouncedHoverState = useDebounce(internalHoverState, debounceDelay)
+
+  // Sync debounced hover state to external state when both external state and hover mode are used
+  useEffect(() => {
+    if (open !== undefined && effectiveTriggerMode === "hover") {
+      onOpenChange?.(debouncedHoverState)
+    }
+  }, [debouncedHoverState, open, effectiveTriggerMode, onOpenChange])
+
+  // Determine the actual open state
+  const isOpen =
+    open !== undefined
+      ? open
+      : effectiveTriggerMode === "hover"
+        ? debouncedHoverState
+        : internalHoverState
 
   const handleOpenChange = (newOpen: boolean) => {
-    if (open !== undefined) {
+    if (open !== undefined && effectiveTriggerMode === "click") {
       onOpenChange?.(newOpen)
-    } else {
-      setInternalOpen(newOpen)
+    } else if (open === undefined && effectiveTriggerMode === "click") {
+      setInternalHoverState(newOpen)
     }
+    // For hover mode with external state: state is synced via useEffect
+    // For hover mode with internal state: state is controlled by debounced hover state
   }
-
-  // Cleanup timeouts on unmount
-  useEffect(() => {
-    return () => {
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current)
-      }
-      if (closeTimeoutRef.current) {
-        clearTimeout(closeTimeoutRef.current)
-      }
-    }
-  }, [])
 
   // Click mode (default behavior)
   if (effectiveTriggerMode === "click") {
@@ -78,47 +80,21 @@ export function ContentPopover({
     )
   }
 
-  // Hover mode behavior
+  // Hover mode behavior with debounced state
   const handleMouseEnter = () => {
-    // Clear any existing timeouts
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current)
-    }
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current)
-    }
-
-    // Set timeout to open after specified delay
-    hoverTimeoutRef.current = setTimeout(() => {
-      handleOpenChange(true)
-    }, openDelay)
+    setInternalHoverState(true)
   }
 
   const handleMouseLeave = () => {
-    // Clear the timeout if mouse leaves before delay completes
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current)
-    }
-
-    // Set a delay before closing to allow mouse to enter popover content
-    closeTimeoutRef.current = setTimeout(() => {
-      handleOpenChange(false)
-    }, closeDelay)
+    setInternalHoverState(false)
   }
 
   const handleContentMouseEnter = () => {
-    // Clear both timeouts when entering popover content
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current)
-    }
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current)
-    }
+    setInternalHoverState(true)
   }
 
   const handleContentMouseLeave = () => {
-    // Close when leaving popover content
-    handleOpenChange(false)
+    setInternalHoverState(false)
   }
 
   return (

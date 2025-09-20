@@ -1,0 +1,51 @@
+{
+  "crash": {
+    "notAvailable": {
+      "title": "崩溃测试不可用",
+      "description": "崩溃测试仅在开发环境中可用。"
+    }
+  },
+  "debug": {
+    "available": {
+      "title": "TaskTrove 调试工具",
+      "description": "仅开发环境的调试和测试工具。此页面在生产环境中不可用。",
+      "simplified": "此版本中的调试工具已简化。"
+    },
+    "notAvailable": {
+      "title": "调试工具不可用",
+      "description": "出于安全和性能原因，调试工具仅在开发环境中可用。"
+    }
+  },
+  "empty": {
+    "notifications": {
+      "title": "通知",
+      "description": "通知功能在迁移期间暂时禁用",
+      "action": "返回"
+    },
+    "performance": {
+      "title": "性能监控",
+      "description": "性能监控在迁移期间暂时禁用",
+      "action": "返回"
+    },
+    "voice": {
+      "title": "语音命令",
+      "description": "语音命令在迁移期间暂时禁用",
+      "action": "返回"
+    }
+  },
+  "footer": {
+    "task": "项任务",
+    "tasks": "项任务",
+    "no": "没有{{title}}",
+    "completedToday": "今日已完成",
+    "completedTodayLabel": "今日已完成",
+    "dueToday": "今日到期",
+    "dueTodayLabel": "今日到期"
+  },
+  "header": {
+    "collapseSidebar": "收起侧边栏",
+    "openSidebar": "打开侧边栏",
+    "currentTheme": "当前主题：{{theme}}。点击切换主题。",
+    "clickToCycleThemes": "点击切换主题。"
+  }
+}

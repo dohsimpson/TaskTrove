@@ -61,6 +61,8 @@ import { convertTimeToHHMMSS } from "@/lib/utils/enhanced-natural-language-parse
 import { getPriorityTextColor } from "@/lib/color-utils"
 import { v4 as uuidv4 } from "uuid"
 import { useDebouncedParse } from "@/hooks/use-debounced-parse"
+import { useTranslation } from "@/lib/i18n/client"
+import { useLanguage } from "@/components/providers/language-provider"
 
 // Enhanced autocomplete interface
 type AutocompleteType = "project" | "label" | "date"
@@ -76,6 +78,10 @@ export function QuickAddDialog() {
   // Dialog state atoms
   const open = useAtomValue(showQuickAddAtom)
   const closeDialog = useSetAtom(closeQuickAddAtom)
+
+  // Translation hooks
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "dialogs")
 
   // Route context for current project
   const routeContext = useAtomValue(currentRouteContextAtom)
@@ -454,7 +460,7 @@ export function QuickAddDialog() {
         showCloseButton={false}
       >
         <VisuallyHidden>
-          <DialogTitle>Quick Add Task</DialogTitle>
+          <DialogTitle>{t("quickAdd.title", "Quick Add Task")}</DialogTitle>
         </VisuallyHidden>
         <div className="flex flex-col justify-between gap-1">
           {/* Main Input */}
@@ -473,7 +479,7 @@ export function QuickAddDialog() {
 
             {/* Description */}
             <Textarea
-              placeholder="Description"
+              placeholder={t("quickAdd.description.placeholder", "Description")}
               value={newTask.description ?? ""}
               onChange={(e) => updateNewTask({ updateRequest: { description: e.target.value } })}
               className="border-0 shadow-none focus-visible:ring-0 placeholder:text-gray-400 resize-none p-2 bg-muted/50 min-h-16 sm:min-h-24"
@@ -502,7 +508,9 @@ export function QuickAddDialog() {
                   ) : (
                     <span className="flex items-center gap-1 text-muted-foreground">
                       <Calendar className="h-3 w-3 flex-shrink-0" />
-                      <span className="whitespace-nowrap hidden sm:inline">Date</span>
+                      <span className="whitespace-nowrap hidden sm:inline">
+                        {t("quickAdd.buttons.date", "Date")}
+                      </span>
                     </span>
                   )}
                 </Button>
@@ -531,7 +539,9 @@ export function QuickAddDialog() {
                       newTask.priority && newTask.priority < 4 ? "" : "hidden sm:inline",
                     )}
                   >
-                    {newTask.priority && newTask.priority < 4 ? `P${newTask.priority}` : "Priority"}
+                    {newTask.priority && newTask.priority < 4
+                      ? `P${newTask.priority}`
+                      : t("quickAdd.buttons.priority", "Priority")}
                   </span>
                 </Button>
               </TaskPriorityPopover>
@@ -544,7 +554,9 @@ export function QuickAddDialog() {
                   className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
                 >
                   <Tag className="h-3 w-3 flex-shrink-0" />
-                  <span className="hidden sm:inline whitespace-nowrap">Label</span>
+                  <span className="hidden sm:inline whitespace-nowrap">
+                    {t("quickAdd.buttons.label", "Label")}
+                  </span>
                 </Button>
               </LabelManagementPopover>
 
@@ -575,7 +587,7 @@ export function QuickAddDialog() {
                             project && project.id !== INBOX_PROJECT_ID ? "" : "hidden sm:inline",
                           )}
                         >
-                          {project ? project.name : "Project"}
+                          {project ? project.name : t("quickAdd.buttons.project", "Project")}
                         </span>
                       </>
                     )
@@ -598,10 +610,13 @@ export function QuickAddDialog() {
             <div className="flex items-center gap-2 mt-2 sm:mt-0 flex-shrink-0">
               <div className="flex items-center gap-1">
                 <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  Smart Parsing
+                  {t("quickAdd.smartParsing.label", "Smart Parsing")}
                 </span>
                 <HelpPopover
-                  content="Smart Parsing is an experimental feature that automatically detects and extracts task details from your input. It can identify priorities (P1-P4), due dates (tomorrow, next week, etc.), project names (#project), labels (@label), and recurring patterns (daily, weekly)."
+                  content={t(
+                    "quickAdd.smartParsing.help",
+                    "Smart Parsing is an experimental feature that automatically detects and extracts task details from your input. It can identify priorities (P1-P4), due dates (tomorrow, next week, etc.), project names (#project), labels (@label), and recurring patterns (daily, weekly).",
+                  )}
                   side="left"
                   align="center"
                 />
@@ -628,7 +643,9 @@ export function QuickAddDialog() {
                   className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
                 >
                   <CheckSquare className="h-3 w-3 flex-shrink-0" />
-                  <span className="hidden sm:inline whitespace-nowrap">Subtasks</span>
+                  <span className="hidden sm:inline whitespace-nowrap">
+                    {t("quickAdd.buttons.subtasks", "Subtasks")}
+                  </span>
                 </Button>
               </SubtaskPopover>
 
@@ -640,7 +657,9 @@ export function QuickAddDialog() {
                   className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
                 >
                   <MessageSquare className="h-3 w-3 flex-shrink-0" />
-                  <span className="hidden sm:inline whitespace-nowrap">Comments</span>
+                  <span className="hidden sm:inline whitespace-nowrap">
+                    {t("quickAdd.buttons.comments", "Comments")}
+                  </span>
                 </Button>
               </CommentManagementPopover>
 
@@ -669,7 +688,7 @@ export function QuickAddDialog() {
                             style={{ color: section?.color || undefined }}
                           />
                           <span className="hidden sm:inline whitespace-nowrap truncate max-w-16 sm:max-w-24">
-                            {section ? section.name : "Section"}
+                            {section ? section.name : t("quickAdd.buttons.section", "Section")}
                           </span>
                         </>
                       )
@@ -731,7 +750,7 @@ export function QuickAddDialog() {
           {/* Bottom Section */}
           <div className="flex items-center justify-end gap-3 pt-2">
             <Button variant="ghost" onClick={handleCloseDialog} className="text-xs sm:text-sm">
-              Cancel
+              {t("common.cancel", "Cancel")}
             </Button>
             <Button
               onClick={handleSubmit}

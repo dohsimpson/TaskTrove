@@ -22,6 +22,8 @@ import { toast } from "sonner"
 import { dataSettingsAtom, updateDataSettingsAtom } from "@/lib/atoms/ui/user-settings-atom"
 import { queryClientAtom } from "@/lib/atoms/core/base"
 import { DEFAULT_BACKUP_TIME, SUPPORTED_IMPORT_SOURCES } from "@/lib/constants/defaults"
+import { useTranslation } from "@/lib/i18n/client"
+import { useLanguage } from "@/components/providers/language-provider"
 
 type UploadStatus = "idle" | "uploading" | "success" | "error"
 
@@ -44,6 +46,9 @@ export function DataForm() {
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle")
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
+
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "settings")
 
   // Calendar functionality not implemented yet
   // const handleCalendarUpdate = (field: keyof typeof settings.calendar, value: string | boolean) => {
@@ -211,16 +216,23 @@ export function DataForm() {
 
       {/* Task Import */}
       <SettingsCard
-        title="Task Import"
-        description="Import tasks from other task management applications."
+        title={t("data.taskImport.title", "Task Import")}
+        description={t(
+          "data.taskImport.description",
+          "Import tasks from other task management applications.",
+        )}
         icon={Upload}
         experimental
       >
         <div className="space-y-3">
-          <Label className="text-base font-semibold">Step 1: Export Your Data</Label>
+          <Label className="text-base font-semibold">
+            {t("data.taskImport.step1.title", "Step 1: Export Your Data")}
+          </Label>
           <p className="text-sm text-muted-foreground">
-            Click your task management service below to open the import assistant. Follow the
-            instructions to export and convert your data to TaskTrove format.
+            {t(
+              "data.taskImport.step1.description",
+              "Click your task management service below to open the import assistant. Follow the instructions to export and convert your data to TaskTrove format.",
+            )}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {SUPPORTED_IMPORT_SOURCES.map((source) => (
@@ -245,10 +257,14 @@ export function DataForm() {
         <Separator />
 
         <div className="space-y-3">
-          <Label className="text-base font-semibold">Step 2: Upload Converted File</Label>
+          <Label className="text-base font-semibold">
+            {t("data.taskImport.step2.title", "Step 2: Upload Converted File")}
+          </Label>
           <p className="text-sm text-muted-foreground">
-            After using the import assistant above, you'll download a JSON file. Upload that file
-            here to import your tasks, projects, and labels into TaskTrove.
+            {t(
+              "data.taskImport.step2.description",
+              "After using the import assistant above, you'll download a JSON file. Upload that file here to import your tasks, projects, and labels into TaskTrove.",
+            )}
           </p>
           <div className="p-3 bg-muted rounded-lg border">
             <div className="flex items-start gap-2">
@@ -256,10 +272,14 @@ export function DataForm() {
                 !
               </div>
               <div className="text-sm">
-                <div className="font-medium">Important:</div>
+                <div className="font-medium">
+                  {t("data.taskImport.step2.important.title", "Important:")}
+                </div>
                 <div className="text-muted-foreground">
-                  Only upload the JSON file you downloaded from the import assistant. Regular
-                  exports from other apps won't work.
+                  {t(
+                    "data.taskImport.step2.important.description",
+                    "Only upload the JSON file you downloaded from the import assistant. Regular exports from other apps won't work.",
+                  )}
                 </div>
               </div>
             </div>
@@ -287,7 +307,9 @@ export function DataForm() {
                     <Upload className="size-5" />
                   )}
                   <div className="font-medium">
-                    {uploadStatus === "uploading" ? "Uploading..." : "Upload JSON File"}
+                    {uploadStatus === "uploading"
+                      ? t("data.taskImport.upload.uploading", "Uploading...")
+                      : t("data.taskImport.upload.button", "Upload JSON File")}
                   </div>
                 </span>
               </Button>
@@ -298,20 +320,38 @@ export function DataForm() {
               <div className="flex items-center gap-2 text-green-600">
                 <CheckCircle2 className="size-5" />
                 <div className="text-sm">
-                  <div className="font-medium">Import successful!</div>
+                  <div className="font-medium">
+                    {t("data.taskImport.upload.success.title", "Import successful!")}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     {(() => {
                       const parts = []
 
                       if (uploadResult.importedTasks > 0)
-                        parts.push(`${uploadResult.importedTasks} tasks`)
+                        parts.push(
+                          t("data.taskImport.upload.success.tasks", "{{count}} tasks", {
+                            count: uploadResult.importedTasks,
+                          }),
+                        )
                       if (uploadResult.importedProjects > 0)
-                        parts.push(`${uploadResult.importedProjects} projects`)
+                        parts.push(
+                          t("data.taskImport.upload.success.projects", "{{count}} projects", {
+                            count: uploadResult.importedProjects,
+                          }),
+                        )
                       if (uploadResult.importedLabels > 0)
-                        parts.push(`${uploadResult.importedLabels} labels`)
+                        parts.push(
+                          t("data.taskImport.upload.success.labels", "{{count}} labels", {
+                            count: uploadResult.importedLabels,
+                          }),
+                        )
 
                       let message =
-                        parts.length > 0 ? parts.join(", ") + " imported" : "No new items"
+                        parts.length > 0
+                          ? t("data.taskImport.upload.success.imported", "{{items}} imported", {
+                              items: parts.join(", "),
+                            })
+                          : t("data.taskImport.upload.success.noNewItems", "No new items")
 
                       // Detailed duplicates breakdown
                       const duplicateParts = []
@@ -319,23 +359,39 @@ export function DataForm() {
                         uploadResult.duplicateTasksSkipped &&
                         uploadResult.duplicateTasksSkipped > 0
                       ) {
-                        duplicateParts.push(`${uploadResult.duplicateTasksSkipped} tasks`)
+                        duplicateParts.push(
+                          t("data.taskImport.upload.success.tasks", "{{count}} tasks", {
+                            count: uploadResult.duplicateTasksSkipped,
+                          }),
+                        )
                       }
                       if (
                         uploadResult.duplicateProjectsSkipped &&
                         uploadResult.duplicateProjectsSkipped > 0
                       ) {
-                        duplicateParts.push(`${uploadResult.duplicateProjectsSkipped} projects`)
+                        duplicateParts.push(
+                          t("data.taskImport.upload.success.projects", "{{count}} projects", {
+                            count: uploadResult.duplicateProjectsSkipped,
+                          }),
+                        )
                       }
                       if (
                         uploadResult.duplicateLabelsSkipped &&
                         uploadResult.duplicateLabelsSkipped > 0
                       ) {
-                        duplicateParts.push(`${uploadResult.duplicateLabelsSkipped} labels`)
+                        duplicateParts.push(
+                          t("data.taskImport.upload.success.labels", "{{count}} labels", {
+                            count: uploadResult.duplicateLabelsSkipped,
+                          }),
+                        )
                       }
 
                       if (duplicateParts.length > 0) {
-                        const duplicatesMessage = `${duplicateParts.join(", ")} already existed`
+                        const duplicatesMessage = t(
+                          "data.taskImport.upload.success.alreadyExisted",
+                          "{{items}} already existed",
+                          { items: duplicateParts.join(", ") },
+                        )
                         message += ` • ${duplicatesMessage}`
                       }
 
@@ -350,7 +406,9 @@ export function DataForm() {
               <div className="flex items-center gap-2 text-red-600">
                 <XCircle className="size-5" />
                 <div className="text-sm">
-                  <div className="font-medium">Import failed</div>
+                  <div className="font-medium">
+                    {t("data.taskImport.upload.error.title", "Import failed")}
+                  </div>
                   <div className="text-xs text-muted-foreground">{uploadError}</div>
                 </div>
               </div>
@@ -361,8 +419,11 @@ export function DataForm() {
 
       {/* Auto Backup Settings */}
       <SettingsCard
-        title="Auto Backup"
-        description="Automatically backup your data daily to protect against data loss."
+        title={t("data.autoBackup.title", "Auto Backup")}
+        description={t(
+          "data.autoBackup.description",
+          "Automatically backup your data daily to protect against data loss.",
+        )}
         icon={Archive}
         experimental
       >
@@ -374,9 +435,14 @@ export function DataForm() {
                 !
               </div>
               <div className="text-sm">
-                <div className="font-medium">Docker Users:</div>
+                <div className="font-medium">
+                  {t("data.autoBackup.dockerNotice.title", "Docker Users:")}
+                </div>
                 <div className="text-muted-foreground">
-                  You must mount the backups directory as a volume to access backup files:{" "}
+                  {t(
+                    "data.autoBackup.dockerNotice.description",
+                    "You must mount the backups directory as a volume to access backup files:",
+                  )}{" "}
                   <code className="px-1 py-0.5 bg-muted rounded text-xs">
                     -v ./backups:/app/backups
                   </code>
@@ -388,7 +454,8 @@ export function DataForm() {
                     rel="noopener noreferrer"
                     className="text-primary hover:underline text-xs flex items-center gap-1"
                   >
-                    See backup setup guide <ExternalLink className="w-3 h-3" />
+                    {t("data.autoBackup.dockerNotice.guide", "See backup setup guide")}{" "}
+                    <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
               </div>
@@ -398,9 +465,14 @@ export function DataForm() {
 
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <Label htmlFor="auto-backup">Enable Auto Backup</Label>
+            <Label htmlFor="auto-backup">
+              {t("data.autoBackup.enable.label", "Enable Auto Backup")}
+            </Label>
             <p className="text-sm text-muted-foreground">
-              Creates a zip backup of your data daily at the configured time
+              {t(
+                "data.autoBackup.enable.description",
+                "Creates a zip backup of your data daily at the configured time",
+              )}
             </p>
           </div>
           <Switch
@@ -420,9 +492,14 @@ export function DataForm() {
         {settings.autoBackup.enabled && (
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="backup-time">Backup Time</Label>
+              <Label htmlFor="backup-time">
+                {t("data.autoBackup.backupTime.label", "Backup Time")}
+              </Label>
               <p className="text-sm text-muted-foreground">
-                Time to run daily backup (24-hour format)
+                {t(
+                  "data.autoBackup.backupTime.description",
+                  "Time to run daily backup (24-hour format)",
+                )}
               </p>
             </div>
             <Input
@@ -464,7 +541,9 @@ export function DataForm() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="-1">No limit</SelectItem>
+              <SelectItem value="-1">
+                {t("data.autoBackup.maxBackups.noLimit", "No limit")}
+              </SelectItem>
               {[3, 5, 7, 10, 14, 21, 30, 90, 365].map((num) => (
                 <SelectItem key={num} value={String(num)}>
                   {num}
@@ -494,7 +573,7 @@ export function DataForm() {
             className="w-full"
           >
             <Archive className="size-4 mr-2" />
-            Trigger Manual Backup Now
+            {t("data.autoBackup.manualBackup.button", "Trigger Manual Backup Now")}
           </Button>
         </div>
       </SettingsCard>

@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button"
 import { Star, Heart } from "lucide-react"
 import { TaskTroveLogo } from "@/components/ui/custom/tasktrove-logo"
 import packageJson from "@/package.json"
+import { useTranslation } from "@/lib/i18n/client"
+import { useLanguage } from "@/components/providers/language-provider"
 
 interface AboutModalProps {
   open: boolean
@@ -19,14 +21,19 @@ interface AboutModalProps {
 
 export function AboutModal({ open, onOpenChange }: AboutModalProps) {
   const version = packageJson.version
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "dialogs")
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle aria-label="About TaskTrove"></DialogTitle>
+          <DialogTitle aria-label={t("about.title", "About TaskTrove")}></DialogTitle>
           <DialogDescription className="sr-only">
-            Information about TaskTrove application version and developer
+            {t(
+              "about.description",
+              "Information about TaskTrove application version and developer",
+            )}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2 text-center py-4">
@@ -42,9 +49,9 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
           <div className="space-y-4">
             {/* Attribution Text */}
             <div className="flex items-center justify-center gap-1 text-sm">
-              <span>made with</span>
+              <span>{t("about.madeWith", "made with")}</span>
               <span className="text-red-500">❤️</span>
-              <span>by</span>
+              <span>{t("about.by", "by")}</span>
               <Button
                 variant="link"
                 size="sm"
@@ -63,7 +70,7 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
                 onClick={() => window.open("https://github.com/dohsimpson/TaskTrove", "_blank")}
               >
                 <Star className="size-4 mr-2 text-yellow-600 group-hover:animate-[breathe_3s_ease-in-out_infinite]" />
-                Star on GitHub
+                {t("about.starOnGitHub", "Star on GitHub")}
               </Button>
 
               <Button
@@ -73,7 +80,7 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
                 onClick={() => window.open("https://github.com/sponsors/dohsimpson", "_blank")}
               >
                 <Heart className="size-4 mr-2 text-pink-600 group-hover:animate-[breathe_3s_ease-in-out_infinite]" />
-                Sponsor Me
+                {t("about.sponsorMe", "Sponsor Me")}
               </Button>
             </div>
           </div>

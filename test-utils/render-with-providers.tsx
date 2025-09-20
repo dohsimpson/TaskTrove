@@ -2,6 +2,7 @@ import React, { ReactElement } from "react"
 import { render, RenderOptions } from "@testing-library/react"
 import { TestJotaiProvider } from "./jotai-mocks"
 import { MockRouter } from "./mock-router"
+import { LanguageProvider } from "@/components/providers/language-provider"
 
 // Use a simple div wrapper instead of ThemeProvider for tests
 const TestThemeProvider = ({ children }: { children: React.ReactNode }) => <>{children}</>
@@ -26,7 +27,9 @@ const AllTheProviders = ({
   return (
     <MockRouter {...routerConfig}>
       <TestThemeProvider>
-        <TestJotaiProvider initialValues={initialAtomValues}>{children}</TestJotaiProvider>
+        <LanguageProvider initialLanguage="en">
+          <TestJotaiProvider initialValues={initialAtomValues}>{children}</TestJotaiProvider>
+        </LanguageProvider>
       </TestThemeProvider>
     </MockRouter>
   )

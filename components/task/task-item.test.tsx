@@ -386,6 +386,24 @@ vi.mock("@/components/ui/custom/editable-div", () => ({
       }
     }
 
+    // Filter out component-specific props that shouldn't be passed to DOM
+    const domProps = Object.fromEntries(
+      Object.entries(props).filter(
+        ([key]) =>
+          ![
+            "value",
+            "onChange",
+            "onCancel",
+            "placeholder",
+            "multiline",
+            "allowEmpty",
+            "autoFocus",
+            "onEditingChange",
+            "cursorPosition",
+          ].includes(key),
+      ),
+    )
+
     return React.createElement(
       Component,
       {
@@ -400,7 +418,7 @@ vi.mock("@/components/ui/custom/editable-div", () => ({
         "data-placeholder": placeholder,
         "data-multiline": multiline,
         "data-allow-empty": allowEmpty,
-        ...props,
+        ...domProps,
       },
       value || placeholder,
     )

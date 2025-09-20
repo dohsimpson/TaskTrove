@@ -20,12 +20,18 @@ import { showProjectDialogAtom } from "@/lib/atoms/ui/dialogs"
 import { closeProjectDialogAtom } from "@/lib/atoms/ui/navigation"
 import { addProjectAtom } from "@/lib/atoms/core/projects"
 import { addProjectGroupAtom } from "@/lib/atoms/core/groups"
+import { useTranslation } from "@/lib/i18n/client"
+import { useLanguage } from "@/components/providers/language-provider"
 
 export function ProjectDialog() {
   const [entityType, setEntityType] = useState<"project" | "projectGroup">("project")
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [selectedColor, setSelectedColor] = useState<string>(COLOR_OPTIONS[0].value)
+
+  // Translation hooks
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "dialogs")
 
   const open = useAtomValue(showProjectDialogAtom)
   const closeDialog = useSetAtom(closeProjectDialogAtom)
@@ -69,18 +75,23 @@ export function ProjectDialog() {
     closeDialog()
   }
 
-  const capitalizedType = entityType === "projectGroup" ? "Group" : "Project"
+  const capitalizedType =
+    entityType === "projectGroup"
+      ? t("projectDialog.group", "Group")
+      : t("projectDialog.project", "Project")
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New {capitalizedType}</DialogTitle>
+          <DialogTitle>
+            {t("projectDialog.title", "Add New {{type}}", { type: capitalizedType })}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Type</Label>
+            <Label>{t("projectDialog.type.label", "Type")}</Label>
             <ToggleGroup
               type="single"
               value={entityType}
@@ -92,11 +103,11 @@ export function ProjectDialog() {
               variant="outline"
               className="justify-start"
             >
-              <ToggleGroupItem value="project" aria-label="Project">
-                Project
+              <ToggleGroupItem value="project" aria-label={t("projectDialog.project", "Project")}>
+                {t("projectDialog.project", "Project")}
               </ToggleGroupItem>
-              <ToggleGroupItem value="projectGroup" aria-label="Group">
-                Group
+              <ToggleGroupItem value="projectGroup" aria-label={t("projectDialog.group", "Group")}>
+                {t("projectDialog.group", "Group")}
               </ToggleGroupItem>
             </ToggleGroup>
           </div>
@@ -104,10 +115,17 @@ export function ProjectDialog() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor={`${entityType}-name`}>{capitalizedType} Name</Label>
+            <Label htmlFor={`${entityType}-name`}>
+              {t("projectDialog.name.label", "{{type}} Name", { type: capitalizedType })}
+            </Label>
             <Input
               id={`${entityType}-name`}
-              placeholder={`Enter ${entityType === "projectGroup" ? "group" : "project"} name`}
+              placeholder={t("projectDialog.name.placeholder", "Enter {{type}} name", {
+                type:
+                  entityType === "projectGroup"
+                    ? t("projectDialog.group", "group").toLowerCase()
+                    : t("projectDialog.project", "project").toLowerCase(),
+              })}
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoFocus
@@ -130,15 +148,15 @@ export function ProjectDialog() {
           <ColorPicker
             selectedColor={selectedColor}
             onColorSelect={setSelectedColor}
-            label="Color"
+            label={t("projectDialog.color.label", "Color")}
           />
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleCancel}>
-              Cancel
+              {t("common.cancel", "Cancel")}
             </Button>
             <Button type="submit" disabled={!isValid}>
-              Add {capitalizedType}
+              {t("projectDialog.buttons.add", "Add {{type}}", { type: capitalizedType })}
             </Button>
           </DialogFooter>
         </form>

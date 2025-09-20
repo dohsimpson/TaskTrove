@@ -3,6 +3,9 @@ export const languages = [fallbackLng, "zh"] as const
 export const defaultNS = "common"
 export const cookieName = "i18next"
 
+// Available namespaces
+export const namespaces = ["common", "dialogs", "settings", "layout"] as const
+
 export type Language = (typeof languages)[number]
 
 export function isValidLanguage(lng: string): lng is Language {
@@ -18,6 +21,9 @@ export function getOptions(lng = fallbackLng, ns = defaultNS) {
     lng,
     fallbackNS: defaultNS,
     defaultNS,
-    ns,
+    ns: Array.isArray(ns) ? ns : [ns],
+    // Preload all namespaces for better performance
+    load: "all" as const,
+    preload: languages,
   }
 }

@@ -1,6 +1,8 @@
 "use client"
 
 import { useAtomValue } from "jotai"
+import { useTranslation } from "@/lib/i18n/client"
+import { useLanguage } from "@/components/providers/language-provider"
 import { pathnameAtom } from "@/lib/atoms/ui/navigation"
 import { MainContent } from "@/components/layout/main-content"
 import { SearchPage } from "@/components/pages/search-page"
@@ -15,6 +17,8 @@ interface RouteContentProps {
 }
 
 export function RouteContent({ onVoiceCommand, onTaskClick }: RouteContentProps) {
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "layout")
   const pathname = useAtomValue(pathnameAtom)
 
   // Handle search page
@@ -29,10 +33,14 @@ export function RouteContent({ onVoiceCommand, onTaskClick }: RouteContentProps)
       return (
         <div className="container mx-auto py-16 px-4 max-w-2xl">
           <div className="text-center space-y-4">
-            <h1 className="text-2xl font-bold">Debug Tools Not Available</h1>
+            <h1 className="text-2xl font-bold">
+              {t("debug.notAvailable.title", "Debug Tools Not Available")}
+            </h1>
             <p className="text-muted-foreground">
-              Debug tools are only available in development environment for security and performance
-              reasons.
+              {t(
+                "debug.notAvailable.description",
+                "Debug tools are only available in development environment for security and performance reasons.",
+              )}
             </p>
           </div>
         </div>
@@ -42,15 +50,21 @@ export function RouteContent({ onVoiceCommand, onTaskClick }: RouteContentProps)
     return (
       <div className="container mx-auto py-8 px-4 max-w-6xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">TaskTrove Debug Tools</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            {t("debug.available.title", "TaskTrove Debug Tools")}
+          </h1>
           <p className="text-muted-foreground">
-            Development-only debugging and testing utilities. This page is not available in
-            production.
+            {t(
+              "debug.available.description",
+              "Development-only debugging and testing utilities. This page is not available in production.",
+            )}
           </p>
         </div>
 
         <div className="text-center text-muted-foreground">
-          <p>Debug tools have been simplified in this version.</p>
+          <p>
+            {t("debug.available.simplified", "Debug tools have been simplified in this version.")}
+          </p>
         </div>
       </div>
     )
@@ -63,9 +77,14 @@ export function RouteContent({ onVoiceCommand, onTaskClick }: RouteContentProps)
       return (
         <div className="container mx-auto py-16 px-4 max-w-2xl">
           <div className="text-center space-y-4">
-            <h1 className="text-2xl font-bold">Crash Test Not Available</h1>
+            <h1 className="text-2xl font-bold">
+              {t("crash.notAvailable.title", "Crash Test Not Available")}
+            </h1>
             <p className="text-muted-foreground">
-              Crash test is only available in development environment.
+              {t(
+                "crash.notAvailable.description",
+                "Crash test is only available in development environment.",
+              )}
             </p>
           </div>
         </div>

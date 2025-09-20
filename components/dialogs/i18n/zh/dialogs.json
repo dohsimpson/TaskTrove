@@ -1,0 +1,161 @@
+{
+  "about": {
+    "by": "制作，作者：",
+    "description": "TaskTrove 应用程序版本和开发者信息",
+    "madeWith": "用",
+    "sponsorMe": "赞助我",
+    "starOnGitHub": "在 GitHub 点赞",
+    "title": "关于 TaskTrove"
+  },
+  "baseDialog": {
+    "buttons": {
+      "add": "添加{{type}}"
+    },
+    "color": {
+      "label": "颜色"
+    },
+    "description": {
+      "label": "描述（可选）",
+      "placeholder": "输入{{type}}描述"
+    },
+    "label": "标签",
+    "name": {
+      "label": "{{type}}名称",
+      "placeholder": "输入{{type}}名称"
+    },
+    "parent": {
+      "none": "无（根级别）",
+      "placeholder": "选择{{type}}"
+    },
+    "project": "项目",
+    "projectGroup": "组",
+    "section": "分区",
+    "title": "添加新{{type}}"
+  },
+  "common": {
+    "cancel": "取消"
+  },
+  "data": {
+    "autoBackup": {
+      "backupTime": {},
+      "dockerNotice": {},
+      "enable": {},
+      "manualBackup": {},
+      "maxBackups": {}
+    },
+    "taskImport": {
+      "step1": {},
+      "step2": {
+        "important": {}
+      },
+      "upload": {
+        "error": {},
+        "success": {}
+      }
+    }
+  },
+  "delete": {
+    "bulk": {
+      "confirm": "删除任务",
+      "description": "您确定要删除 {{count}} 个任务吗？此操作无法撤销。",
+      "title": "删除任务"
+    },
+    "default": {
+      "confirm": "删除",
+      "description": "您确定要删除此项目吗？",
+      "title": "删除项目"
+    },
+    "group": {
+      "confirm": "删除组",
+      "description": "您确定要删除\"{{- name}}\"吗？此操作无法撤销，将删除该组及其所有子组。组内的项目和任务不会被删除。",
+      "title": "删除组"
+    },
+    "history": {
+      "confirm": "清除历史记录",
+      "description": "这将永久清除任务、项目和标签的所有撤销/重做历史记录。此操作无法撤销。",
+      "title": "清除所有历史记录"
+    },
+    "label": {
+      "confirm": "删除标签",
+      "description": "您确定要删除\"{{- name}}\"吗？此操作无法撤销，将从所有任务中移除此标签。",
+      "title": "删除标签"
+    },
+    "project": {
+      "confirm": "删除项目",
+      "description": "您确定要删除\"{{- name}}\"吗？此操作无法撤销，将移除此项目中的所有任务。",
+      "title": "删除项目"
+    },
+    "section": {
+      "confirm": "删除分区",
+      "description": "您确定要删除\"{{- name}}\"吗？此操作无法撤销，此分区中的所有任务将移动到默认分区。",
+      "title": "删除分区"
+    },
+    "task": {
+      "confirm": "删除",
+      "description": "您确定要删除\"{{- name}}\"吗？此操作无法撤销。",
+      "title": "删除任务"
+    }
+  },
+  "general": {
+    "audio": {
+      "soundEffects": {}
+    },
+    "defaultPage": {},
+    "language": {},
+    "links": {
+      "autoConvert": {}
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "notificationsBlocked": {},
+      "secureConnectionRequired": {}
+    },
+    "general": {
+      "enableNotifications": {},
+      "requireInteraction": {}
+    },
+    "permissionStatus": {}
+  },
+  "projectDialog": {
+    "buttons": {
+      "add": "添加{{type}}"
+    },
+    "color": {
+      "label": "颜色"
+    },
+    "group": "组",
+    "name": {
+      "label": "{{type}}名称",
+      "placeholder": "输入{{type}}名称"
+    },
+    "project": "项目",
+    "title": "添加新{{type}}",
+    "type": {
+      "label": "类型"
+    }
+  },
+  "quickAdd": {
+    "buttons": {
+      "comments": "评论",
+      "date": "日期",
+      "label": "标签",
+      "priority": "优先级",
+      "project": "项目",
+      "section": "分区",
+      "subtasks": "子任务"
+    },
+    "description": {
+      "placeholder": "描述"
+    },
+    "smartParsing": {
+      "help": "智能解析是一个实验性功能，可以自动检测并提取输入中的任务详情。它可以识别优先级（P1-P4）、截止日期（明天、下周等）、项目名称（#项目）、标签（@标签）和重复模式（每日、每周）。",
+      "label": "智能解析"
+    },
+    "title": "快速添加任务"
+  },
+  "settings": {
+    "language": "语言",
+    "languageDescription": "选择应用程序的显示语言"
+  }
+}

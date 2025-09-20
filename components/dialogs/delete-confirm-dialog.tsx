@@ -11,6 +11,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { useTranslation } from "@/lib/i18n/client"
+import { useLanguage } from "@/components/providers/language-provider"
 
 export type DeleteEntityType =
   | "task"
@@ -20,44 +22,6 @@ export type DeleteEntityType =
   | "history"
   | "bulk"
   | "group"
-
-type DeleteMessageConfig = {
-  task: {
-    title: string
-    description: (name: string) => string
-    confirmText: string
-  }
-  project: {
-    title: string
-    description: (name: string) => string
-    confirmText: string
-  }
-  label: {
-    title: string
-    description: (name: string) => string
-    confirmText: string
-  }
-  section: {
-    title: string
-    description: (name: string) => string
-    confirmText: string
-  }
-  history: {
-    title: string
-    description: () => string
-    confirmText: string
-  }
-  bulk: {
-    title: string
-    description: (count: number) => string
-    confirmText: string
-  }
-  group: {
-    title: string
-    description: (name: string) => string
-    confirmText: string
-  }
-}
 
 export interface DeleteConfirmDialogProps {
   open: boolean
@@ -71,50 +35,7 @@ export interface DeleteConfirmDialogProps {
   variant?: "destructive" | "default"
 }
 
-const DELETE_MESSAGES: DeleteMessageConfig = {
-  task: {
-    title: "Delete Task",
-    description: (name: string) =>
-      `Are you sure you want to delete "${name}"? This action cannot be undone.`,
-    confirmText: "Delete",
-  },
-  project: {
-    title: "Delete Project",
-    description: (name: string) =>
-      `Are you sure you want to delete "${name}"? This action cannot be undone and will remove all tasks in this project.`,
-    confirmText: "Delete Project",
-  },
-  label: {
-    title: "Delete Label",
-    description: (name: string) =>
-      `Are you sure you want to delete "${name}"? This action cannot be undone and will remove this label from all tasks.`,
-    confirmText: "Delete Label",
-  },
-  section: {
-    title: "Delete Section",
-    description: (name: string) =>
-      `Are you sure you want to delete "${name}"? This action cannot be undone and all tasks in this section will be moved to the default section.`,
-    confirmText: "Delete Section",
-  },
-  history: {
-    title: "Clear All History",
-    description: () =>
-      "This will permanently clear all undo/redo history for tasks, projects, and labels. This action cannot be undone.",
-    confirmText: "Clear History",
-  },
-  bulk: {
-    title: "Delete Tasks",
-    description: (count: number) =>
-      `Are you sure you want to delete ${count} task${count === 1 ? "" : "s"}? This action cannot be undone.`,
-    confirmText: "Delete Tasks",
-  },
-  group: {
-    title: "Delete Group",
-    description: (name: string) =>
-      `Are you sure you want to delete "${name}"? This action cannot be undone and will remove the group and all its subgroups. Projects and tasks within the group will not be deleted.`,
-    confirmText: "Delete Group",
-  },
-}
+// Translation function will be used inline in the component
 
 export function DeleteConfirmDialog({
   open,
@@ -127,29 +48,112 @@ export function DeleteConfirmDialog({
   confirmButtonText,
   variant = "destructive",
 }: DeleteConfirmDialogProps) {
-  const messageConfig = DELETE_MESSAGES[entityType]
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "dialogs")
 
-  const title = messageConfig.title
-
-  let description: string
-  if (customMessage) {
-    description = customMessage
-  } else if (entityType === "bulk") {
-    description = DELETE_MESSAGES.bulk.description(entityCount || 0)
-  } else if (entityType === "history") {
-    description = DELETE_MESSAGES.history.description()
-  } else if (entityType === "task") {
-    description = DELETE_MESSAGES.task.description(entityName || "")
-  } else if (entityType === "project") {
-    description = DELETE_MESSAGES.project.description(entityName || "")
-  } else if (entityType === "label") {
-    description = DELETE_MESSAGES.label.description(entityName || "")
-  } else if (entityType === "section") {
-    description = DELETE_MESSAGES.section.description(entityName || "")
-  } else {
-    description = "Are you sure you want to delete this item?"
+  // Get translated title based on entity type
+  const getTitle = () => {
+    switch (entityType) {
+      case "task":
+        return t("delete.task.title", "Delete Task")
+      case "project":
+        return t("delete.project.title", "Delete Project")
+      case "label":
+        return t("delete.label.title", "Delete Label")
+      case "section":
+        return t("delete.section.title", "Delete Section")
+      case "history":
+        return t("delete.history.title", "Clear All History")
+      case "bulk":
+        return t("delete.bulk.title", "Delete Tasks")
+      case "group":
+        return t("delete.group.title", "Delete Group")
+      default:
+        return t("delete.default.title", "Delete Item")
+    }
   }
-  const buttonText = confirmButtonText || messageConfig.confirmText
+
+  // Get translated description based on entity type
+  const getDescription = () => {
+    if (customMessage) return customMessage
+
+    switch (entityType) {
+      case "task":
+        return t(
+          "delete.task.description",
+          'Are you sure you want to delete "{{- name}}"? This action cannot be undone.',
+          { name: entityName || "" },
+        )
+      case "project":
+        return t(
+          "delete.project.description",
+          'Are you sure you want to delete "{{- name}}"? This action cannot be undone and will remove all tasks in this project.',
+          { name: entityName || "" },
+        )
+      case "label":
+        return t(
+          "delete.label.description",
+          'Are you sure you want to delete "{{- name}}"? This action cannot be undone and will remove this label from all tasks.',
+          { name: entityName || "" },
+        )
+      case "section":
+        return t(
+          "delete.section.description",
+          'Are you sure you want to delete "{{- name}}"? This action cannot be undone and all tasks in this section will be moved to the default section.',
+          { name: entityName || "" },
+        )
+      case "history":
+        return t(
+          "delete.history.description",
+          "This will permanently clear all undo/redo history for tasks, projects, and labels. This action cannot be undone.",
+        )
+      case "bulk":
+        return t(
+          "delete.bulk.description",
+          "Are you sure you want to delete {{count}} task{{s}}? This action cannot be undone.",
+          {
+            count: entityCount || 0,
+            s: (entityCount || 0) === 1 ? "" : "s",
+          },
+        )
+      case "group":
+        return t(
+          "delete.group.description",
+          'Are you sure you want to delete "{{- name}}"? This action cannot be undone and will remove the group and all its subgroups. Projects and tasks within the group will not be deleted.',
+          { name: entityName || "" },
+        )
+      default:
+        return t("delete.default.description", "Are you sure you want to delete this item?")
+    }
+  }
+
+  // Get translated confirm button text
+  const getConfirmText = () => {
+    if (confirmButtonText) return confirmButtonText
+
+    switch (entityType) {
+      case "task":
+        return t("delete.task.confirm", "Delete")
+      case "project":
+        return t("delete.project.confirm", "Delete Project")
+      case "label":
+        return t("delete.label.confirm", "Delete Label")
+      case "section":
+        return t("delete.section.confirm", "Delete Section")
+      case "history":
+        return t("delete.history.confirm", "Clear History")
+      case "bulk":
+        return t("delete.bulk.confirm", "Delete Tasks")
+      case "group":
+        return t("delete.group.confirm", "Delete Group")
+      default:
+        return t("delete.default.confirm", "Delete")
+    }
+  }
+
+  const title = getTitle()
+  const description = getDescription()
+  const buttonText = getConfirmText()
 
   const handleConfirm = () => {
     onConfirm()
@@ -164,7 +168,7 @@ export function DeleteConfirmDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t("common.cancel", "Cancel")}</AlertDialogCancel>
           <AlertDialogAction asChild>
             <Button
               variant={variant === "destructive" ? "outline" : "default"}

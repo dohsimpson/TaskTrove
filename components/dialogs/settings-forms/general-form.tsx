@@ -17,7 +17,8 @@ import { settingsAtom, updateSettingsAtom } from "@/lib/atoms"
 import type { StandardViewId } from "@/lib/types"
 import { START_VIEW_METADATA } from "@/lib/constants/defaults"
 import { Inbox, Calendar, Clock, CheckSquare, ListCheck, Home, Languages } from "lucide-react"
-import { useTranslation } from "@/hooks/use-translation"
+import { useTranslation } from "@/lib/i18n/client"
+import { useLanguage } from "@/components/providers/language-provider"
 import { languages, type Language } from "@/lib/i18n/settings"
 
 // Language display names
@@ -60,7 +61,8 @@ const lastViewedOption = allStartViewOptions.find((option) => option.value === "
 export function GeneralForm() {
   const settings = useAtomValue(settingsAtom)
   const updateSettings = useSetAtom(updateSettingsAtom)
-  const { language, setLanguage, t } = useTranslation()
+  const { language, setLanguage } = useLanguage()
+  const { t } = useTranslation(language, "settings")
 
   const currentStartView = settings.general.startView
   const currentSoundEnabled = settings.general.soundEnabled
@@ -99,12 +101,17 @@ export function GeneralForm() {
   return (
     <div className="space-y-6">
       {/* Default Landing Page */}
-      <SettingsCard title="Default Page">
+      <SettingsCard title={t("general.defaultPage.title", "Default Page")}>
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <Label htmlFor="start-view">When you open TaskTrove, show</Label>
+            <Label htmlFor="start-view">
+              {t("general.defaultPage.label", "When you open TaskTrove, show")}
+            </Label>
             <p className="text-sm text-muted-foreground">
-              Choose which page you want to see when you first open TaskTrove
+              {t(
+                "general.defaultPage.description",
+                "Choose which page you want to see when you first open TaskTrove",
+              )}
             </p>
           </div>
           <Select value={currentStartView} onValueChange={handleStartViewChange}>
@@ -150,11 +157,13 @@ export function GeneralForm() {
       </SettingsCard>
 
       {/* Language Settings */}
-      <SettingsCard title={t("settings.language")}>
+      <SettingsCard title={t("general.language.title", "Language")}>
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <Label htmlFor="language-select">{t("settings.language")}</Label>
-            <p className="text-sm text-muted-foreground">{t("settings.languageDescription")}</p>
+            <Label htmlFor="language-select">{t("general.language.label", "Language")}</Label>
+            <p className="text-sm text-muted-foreground">
+              {t("general.language.description", "Select the display language for the application")}
+            </p>
           </div>
           <Select value={language} onValueChange={handleLanguageChange}>
             <SelectTrigger id="language-select" className="w-auto min-w-[180px]">
@@ -180,12 +189,17 @@ export function GeneralForm() {
       </SettingsCard>
 
       {/* Sound Settings */}
-      <SettingsCard title="Audio">
+      <SettingsCard title={t("general.audio.title", "Audio")}>
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <Label htmlFor="sound-enabled">Sound Effects</Label>
+            <Label htmlFor="sound-enabled">
+              {t("general.audio.soundEffects.label", "Sound Effects")}
+            </Label>
             <p className="text-sm text-muted-foreground">
-              Play sounds for task completions, notifications, and other interactions
+              {t(
+                "general.audio.soundEffects.description",
+                "Play sounds for task completions, notifications, and other interactions",
+              )}
             </p>
           </div>
           <Switch
@@ -197,12 +211,17 @@ export function GeneralForm() {
       </SettingsCard>
 
       {/* Linkify Settings */}
-      <SettingsCard title="Links">
+      <SettingsCard title={t("general.links.title", "Links")}>
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <Label htmlFor="linkify-enabled">Auto-convert URLs to Links</Label>
+            <Label htmlFor="linkify-enabled">
+              {t("general.links.autoConvert.label", "Auto-convert URLs to Links")}
+            </Label>
             <p className="text-sm text-muted-foreground">
-              Automatically convert URLs in task titles to clickable links
+              {t(
+                "general.links.autoConvert.description",
+                "Automatically convert URLs in task titles to clickable links",
+              )}
             </p>
           </div>
           <Switch

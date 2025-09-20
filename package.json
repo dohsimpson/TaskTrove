@@ -19,7 +19,13 @@
     "docker:build": "docker build -t tasktrove .",
     "changeset": "changeset",
     "changeset:version": "changeset version",
-    "prepare": "husky"
+    "prepare": "husky",
+    "i18n:extract:dialogs": "i18next-parser --config i18next-parser-dialogs.config.js",
+    "i18n:extract:dialogs:watch": "i18next-parser --config i18next-parser-dialogs.config.js --watch",
+    "i18n:extract:settings": "i18next-parser --config i18next-parser-settings.config.js",
+    "i18n:extract:settings:watch": "i18next-parser --config i18next-parser-settings.config.js --watch",
+    "i18n:extract:layout": "i18next-parser --config i18next-parser-layout.config.js",
+    "i18n:extract:layout:watch": "i18next-parser --config i18next-parser-layout.config.js --watch"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.4",
@@ -119,6 +125,7 @@
     "eslint-config-next": "^15.3.5",
     "happy-dom": "^18.0.1",
     "husky": "^9.1.7",
+    "i18next-parser": "^9.3.0",
     "jotai-devtools": "^0.12.0",
     "jsdom": "^26.1.0",
     "lint-staged": "^16.1.5",

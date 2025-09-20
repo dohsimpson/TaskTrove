@@ -15,6 +15,8 @@ import type { NotificationSettings } from "@/lib/types"
 import { SettingsCard } from "@/components/ui/custom/settings-card"
 import { isSecureContext } from "@/lib/utils/service-worker-notifications"
 import { log } from "@/lib/utils/logger"
+import { useTranslation } from "@/lib/i18n/client"
+import { useLanguage } from "@/components/providers/language-provider"
 
 export function NotificationsForm() {
   const notificationSettings = useAtomValue(notificationAtoms.settings)
@@ -25,6 +27,9 @@ export function NotificationsForm() {
 
   const [isRequestingPermission, setIsRequestingPermission] = useState(false)
   const [hasTriedRetry, setHasTriedRetry] = useState(false)
+
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "settings")
 
   // Check if we're in a secure context (HTTPS or localhost)
   const isInSecureContext = isSecureContext()
@@ -67,12 +72,19 @@ export function NotificationsForm() {
   return (
     <div className="space-y-6">
       {/* Global Enable/Disable */}
-      <SettingsCard title="General Settings" experimental>
+      <SettingsCard title={t("notifications.general.title", "General Settings")} experimental>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label htmlFor="notifications-enabled">Enable Notifications</Label>
-              <p className="text-xs text-muted-foreground">Turn all notifications on or off</p>
+              <Label htmlFor="notifications-enabled">
+                {t("notifications.general.enableNotifications.label", "Enable Notifications")}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t(
+                  "notifications.general.enableNotifications.description",
+                  "Turn all notifications on or off",
+                )}
+              </p>
             </div>
             <Switch
               id="notifications-enabled"
@@ -83,9 +95,14 @@ export function NotificationsForm() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label htmlFor="require-interaction">Require User Interaction</Label>
+              <Label htmlFor="require-interaction">
+                {t("notifications.general.requireInteraction.label", "Require User Interaction")}
+              </Label>
               <p className="text-xs text-muted-foreground">
-                Notifications stay visible until you interact with them
+                {t(
+                  "notifications.general.requireInteraction.description",
+                  "Notifications stay visible until you interact with them",
+                )}
               </p>
             </div>
             <Switch
@@ -100,29 +117,37 @@ export function NotificationsForm() {
       </SettingsCard>
 
       {/* Permission Status */}
-      <SettingsCard title="Permission Status">
+      <SettingsCard title={t("notifications.permissionStatus.title", "Permission Status")}>
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-sm font-medium">Browser Notifications</p>
+            <p className="text-sm font-medium">
+              {t("notifications.permissionStatus.browserNotifications", "Browser Notifications")}
+            </p>
           </div>
           <div className="flex items-center gap-3">
             {!isInSecureContext && (
               <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
                 <AlertTriangle className="size-4" />
-                <span className="text-sm font-medium">Notification requires HTTPS</span>
+                <span className="text-sm font-medium">
+                  {t("notifications.permissionStatus.requiresHttps", "Notification requires HTTPS")}
+                </span>
               </div>
             )}
             {isInSecureContext && notificationPermission === "granted" && (
               <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
                 <Check className="size-4" />
-                <span className="text-sm font-medium">Enabled</span>
+                <span className="text-sm font-medium">
+                  {t("notifications.permissionStatus.enabled", "Enabled")}
+                </span>
               </div>
             )}
             {isInSecureContext && notificationPermission === "denied" && (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
                   <X className="size-4" />
-                  <span className="text-sm font-medium">Blocked</span>
+                  <span className="text-sm font-medium">
+                    {t("notifications.permissionStatus.blocked", "Blocked")}
+                  </span>
                 </div>
                 <Button
                   size="sm"
@@ -132,19 +157,25 @@ export function NotificationsForm() {
                   className="h-7 px-3 text-xs"
                   title={
                     hasTriedRetry
-                      ? "Browser may require manual settings change"
-                      : "Try requesting permission again"
+                      ? t(
+                          "notifications.permissionStatus.browserSettingsTooltip",
+                          "Browser may require manual settings change",
+                        )
+                      : t(
+                          "notifications.permissionStatus.retryTooltip",
+                          "Try requesting permission again",
+                        )
                   }
                 >
                   {isRequestingPermission ? (
                     <>
                       <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                      Requesting
+                      {t("notifications.permissionStatus.requesting", "Requesting")}
                     </>
                   ) : hasTriedRetry ? (
-                    "Try Again"
+                    t("notifications.permissionStatus.tryAgain", "Try Again")
                   ) : (
-                    "Retry"
+                    t("notifications.permissionStatus.retry", "Retry")
                   )}
                 </Button>
               </div>
@@ -153,7 +184,9 @@ export function NotificationsForm() {
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Bell className="size-4" />
-                  <span className="text-sm font-medium">Not enabled</span>
+                  <span className="text-sm font-medium">
+                    {t("notifications.permissionStatus.notEnabled", "Not enabled")}
+                  </span>
                 </div>
                 <Button
                   size="sm"
@@ -164,10 +197,10 @@ export function NotificationsForm() {
                   {isRequestingPermission ? (
                     <>
                       <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                      Requesting
+                      {t("notifications.permissionStatus.requesting", "Requesting")}
                     </>
                   ) : (
-                    "Enable"
+                    t("notifications.permissionStatus.enable", "Enable")
                   )}
                 </Button>
               </div>
@@ -178,10 +211,17 @@ export function NotificationsForm() {
         {!isInSecureContext && (
           <Alert>
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Secure Connection Required</AlertTitle>
+            <AlertTitle>
+              {t(
+                "notifications.alerts.secureConnectionRequired.title",
+                "Secure Connection Required",
+              )}
+            </AlertTitle>
             <AlertDescription>
-              Notifications require a secure connection (HTTPS) or localhost. Please access this
-              site via HTTPS or run it on localhost to enable notification features.
+              {t(
+                "notifications.alerts.secureConnectionRequired.description",
+                "Notifications require a secure connection (HTTPS) or localhost. Please access this site via HTTPS or run it on localhost to enable notification features.",
+              )}
             </AlertDescription>
           </Alert>
         )}
@@ -189,20 +229,19 @@ export function NotificationsForm() {
         {isInSecureContext && notificationPermission === "denied" && (
           <Alert>
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Notifications Blocked</AlertTitle>
+            <AlertTitle>
+              {t("notifications.alerts.notificationsBlocked.title", "Notifications Blocked")}
+            </AlertTitle>
             <AlertDescription>
-              {hasTriedRetry ? (
-                <>
-                  The browser didn't show a permission dialog. To enable notifications, click the 🔒
-                  icon in your address bar or go to browser settings → Privacy & Security → Site
-                  Settings → Notifications, then refresh the page.
-                </>
-              ) : (
-                <>
-                  Try the "Retry" button first. If that doesn't work, you'll need to enable
-                  notifications manually in your browser settings.
-                </>
-              )}
+              {hasTriedRetry
+                ? t(
+                    "notifications.alerts.notificationsBlocked.manualInstructions",
+                    "The browser didn't show a permission dialog. To enable notifications, click the 🔒 icon in your address bar or go to browser settings → Privacy & Security → Site Settings → Notifications, then refresh the page.",
+                  )
+                : t(
+                    "notifications.alerts.notificationsBlocked.retryInstructions",
+                    "Try the \"Retry\" button first. If that doesn't work, you'll need to enable notifications manually in your browser settings.",
+                  )}
             </AlertDescription>
           </Alert>
         )}
@@ -211,7 +250,7 @@ export function NotificationsForm() {
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={handleTestNotification}>
               <Bell className="size-4 mr-1" />
-              Test Notification
+              {t("notifications.permissionStatus.testNotification", "Test Notification")}
             </Button>
           </div>
         )}

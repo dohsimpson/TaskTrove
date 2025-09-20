@@ -46,6 +46,21 @@ export function LinkifiedEditableDiv({
   }
 
   if (isEditing) {
+    // Filter out EditableDiv-specific props that shouldn't be spread
+    const editableProps = Object.fromEntries(
+      Object.entries(props).filter(
+        ([key]) =>
+          ![
+            "multiline",
+            "allowEmpty",
+            "onEditingChange",
+            "cursorPosition",
+            "onCancel",
+            "autoFocus",
+          ].includes(key),
+      ),
+    )
+
     return (
       <EditableDiv
         as={Component}
@@ -59,7 +74,7 @@ export function LinkifiedEditableDiv({
         autoFocus={true}
         onEditingChange={handleEditingChange}
         cursorPosition={cursorPosition}
-        {...props}
+        {...editableProps}
       />
     )
   }

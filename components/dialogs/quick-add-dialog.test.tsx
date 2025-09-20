@@ -1,7 +1,7 @@
 import React from "react"
 import { flushSync } from "react-dom"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor, act } from "@/test-utils"
 import { mockNextThemes } from "@/test-utils"
 import { QuickAddDialog } from "./quick-add-dialog"
 import type { Project, LabelId, TaskPriority } from "@/lib/types"

@@ -23,6 +23,8 @@ import { ColorPicker } from "@/components/ui/custom/color-picker"
 import { COLOR_OPTIONS } from "@/lib/constants/defaults"
 import { useAtomValue, useSetAtom } from "jotai"
 import type { Atom, WritableAtom } from "jotai"
+import { useTranslation } from "@/lib/i18n/client"
+import { useLanguage } from "@/components/providers/language-provider"
 
 interface DialogContext {
   mode?: "create" | "edit"
@@ -61,6 +63,10 @@ export function BaseDialog<T, R = void>({
   parentPickerOptions = [],
   parentPickerLabel = "Parent",
 }: BaseDialogProps<T, R>) {
+  // Translation hooks
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "dialogs")
+
   const open = useAtomValue(showAtom)
   const context = useAtomValue(contextAtom)
   const closeDialog = useSetAtom(closeAtom)
@@ -102,20 +108,24 @@ export function BaseDialog<T, R = void>({
     closeDialog()
   }
 
-  const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+  const capitalizedType = t(`baseDialog.${type}`, type.charAt(0).toUpperCase() + type.slice(1))
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New {capitalizedType}</DialogTitle>
+          <DialogTitle>
+            {t("baseDialog.title", "Add New {{type}}", { type: capitalizedType })}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor={`${type}-name`}>{capitalizedType} Name</Label>
+            <Label htmlFor={`${type}-name`}>
+              {t("baseDialog.name.label", "{{type}} Name", { type: capitalizedType })}
+            </Label>
             <Input
               id={`${type}-name`}
-              placeholder={`Enter ${type} name`}
+              placeholder={t("baseDialog.name.placeholder", "Enter {{type}} name", { type: type })}
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoFocus
@@ -124,10 +134,14 @@ export function BaseDialog<T, R = void>({
 
           {showDescription && (
             <div className="space-y-2">
-              <Label htmlFor={`${type}-description`}>Description (optional)</Label>
+              <Label htmlFor={`${type}-description`}>
+                {t("baseDialog.description.label", "Description (optional)")}
+              </Label>
               <Textarea
                 id={`${type}-description`}
-                placeholder={`Enter ${type} description`}
+                placeholder={t("baseDialog.description.placeholder", "Enter {{type}} description", {
+                  type: type,
+                })}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="min-h-[80px]"
@@ -140,10 +154,16 @@ export function BaseDialog<T, R = void>({
               <Label htmlFor={`${type}-parent`}>{parentPickerLabel}</Label>
               <Select value={selectedParentId} onValueChange={setSelectedParentId}>
                 <SelectTrigger id={`${type}-parent`}>
-                  <SelectValue placeholder={`Select ${parentPickerLabel.toLowerCase()}`} />
+                  <SelectValue
+                    placeholder={t("baseDialog.parent.placeholder", "Select {{type}}", {
+                      type: parentPickerLabel.toLowerCase(),
+                    })}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None (Root Level)</SelectItem>
+                  <SelectItem value="">
+                    {t("baseDialog.parent.none", "None (Root Level)")}
+                  </SelectItem>
                   {parentPickerOptions.map((option) => (
                     <SelectItem key={option.id} value={option.id}>
                       <div className="flex items-center gap-2">
@@ -165,15 +185,15 @@ export function BaseDialog<T, R = void>({
           <ColorPicker
             selectedColor={selectedColor}
             onColorSelect={setSelectedColor}
-            label="Color"
+            label={t("baseDialog.color.label", "Color")}
           />
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleCancel}>
-              Cancel
+              {t("common.cancel", "Cancel")}
             </Button>
             <Button type="submit" disabled={!isValid}>
-              Add {capitalizedType}
+              {t("baseDialog.buttons.add", "Add {{type}}", { type: capitalizedType })}
             </Button>
           </DialogFooter>
         </form>

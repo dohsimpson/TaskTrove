@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
+import { useTranslation } from "@/lib/i18n/client"
+import { useLanguage } from "@/components/providers/language-provider"
 import {
   projectAtoms,
   addCommentAtom,
@@ -31,6 +33,9 @@ interface MainContentProps {
 }
 
 export function MainContent({}: MainContentProps) {
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "layout")
+
   // Get data from atoms
   const currentView = useAtomValue(currentViewAtom)
   const currentViewState = useAtomValue(currentViewStateAtom)
@@ -81,27 +86,36 @@ export function MainContent({}: MainContentProps) {
       case "voice":
         return (
           <TaskEmptyState
-            title="Voice Commands"
-            description="Voice commands temporarily disabled during migration"
-            action={{ label: "Go Back", onClick: () => {} }}
+            title={t("empty.voice.title", "Voice Commands")}
+            description={t(
+              "empty.voice.description",
+              "Voice commands temporarily disabled during migration",
+            )}
+            action={{ label: t("empty.voice.action", "Go Back"), onClick: () => {} }}
           />
         )
 
       case "notifications":
         return (
           <TaskEmptyState
-            title="Notifications"
-            description="Notifications temporarily disabled during migration"
-            action={{ label: "Go Back", onClick: () => {} }}
+            title={t("empty.notifications.title", "Notifications")}
+            description={t(
+              "empty.notifications.description",
+              "Notifications temporarily disabled during migration",
+            )}
+            action={{ label: t("empty.notifications.action", "Go Back"), onClick: () => {} }}
           />
         )
 
       case "performance":
         return (
           <TaskEmptyState
-            title="Performance Monitor"
-            description="Performance monitoring temporarily disabled during migration"
-            action={{ label: "Go Back", onClick: () => {} }}
+            title={t("empty.performance.title", "Performance Monitor")}
+            description={t(
+              "empty.performance.description",
+              "Performance monitoring temporarily disabled during migration",
+            )}
+            action={{ label: t("empty.performance.action", "Go Back"), onClick: () => {} }}
           />
         )
 

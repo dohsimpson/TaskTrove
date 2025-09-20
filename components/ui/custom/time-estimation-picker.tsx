@@ -7,7 +7,7 @@ import { useTranslation } from "@/lib/i18n/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { ContentPopover } from "@/components/ui/content-popover"
 import { HelpPopover } from "@/components/ui/help-popover"
 import { Badge } from "@/components/ui/badge"
 import { tasksAtom, updateTaskAtom } from "@/lib/atoms"
@@ -104,6 +104,8 @@ export function TimeEstimationPicker({
     setMinuteInput(m.toString().padStart(2, "0"))
     setHourError("")
     setMinuteError("")
+    // Apply the preset immediately
+    onChange(seconds)
   }
 
   const validateAndParseHour = (input: string) => {
@@ -211,9 +213,12 @@ export function TimeEstimationPicker({
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen} defaultOpen={open}>
-      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent className="w-auto overflow-hidden p-0" align="start" asChild>
+    <ContentPopover
+      open={open}
+      onOpenChange={setOpen}
+      className="w-auto overflow-hidden p-0"
+      align="start"
+      content={
         <div className="p-4 space-y-4">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
@@ -311,7 +316,9 @@ export function TimeEstimationPicker({
             </Button>
           </div>
         </div>
-      </PopoverContent>
-    </Popover>
+      }
+    >
+      {trigger}
+    </ContentPopover>
   )
 }

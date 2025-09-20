@@ -68,21 +68,35 @@ interface MockTaskItemProps {
 // Mock Jotai
 vi.mock("jotai", () => ({
   useSetAtom: vi.fn(() => mockUpdateTask),
-  useAtomValue: vi.fn(() => []), // Return empty array for atoms that return lists
+  useAtomValue: vi.fn((atom) => {
+    // Return settings object for settingsAtom, empty array for others
+    if (atom === "mockSettingsAtom") {
+      return {
+        general: {
+          startView: "all" as const,
+          soundEnabled: true,
+          linkifyEnabled: true,
+          popoverHoverOpen: false,
+        },
+      }
+    }
+    return [] // Return empty array for atoms that return lists
+  }),
   atom: vi.fn((value) => ({ init: value, toString: () => "mockAtom" })),
   Provider: ({ children }: MockProviderProps) => children,
 }))
 
 // Mock atoms
 vi.mock("@/lib/atoms", () => ({
-  updateTaskAtom: vi.fn(),
-  toggleTaskAtom: vi.fn(),
-  deleteTaskAtom: vi.fn(),
-  addCommentAtom: vi.fn(),
-  toggleTaskPanelAtom: vi.fn(),
-  toggleTaskSelectionAtom: vi.fn(),
-  sortedProjectsAtom: vi.fn(),
-  tasksAtom: vi.fn(),
+  updateTaskAtom: "mockUpdateTaskAtom",
+  toggleTaskAtom: "mockToggleTaskAtom",
+  deleteTaskAtom: "mockDeleteTaskAtom",
+  addCommentAtom: "mockAddCommentAtom",
+  toggleTaskPanelAtom: "mockToggleTaskPanelAtom",
+  toggleTaskSelectionAtom: "mockToggleTaskSelectionAtom",
+  sortedProjectsAtom: "mockSortedProjectsAtom",
+  tasksAtom: "mockTasksAtom",
+  settingsAtom: "mockSettingsAtom", // Required by ContentPopover
 }))
 
 vi.mock("@/lib/atoms/core/labels", () => ({

@@ -5,6 +5,7 @@ import { useAtomValue } from "jotai"
 import { useDebounce } from "@uidotdev/usehooks"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { settingsAtom } from "@/lib/atoms"
+import { cn } from "@/lib/utils"
 
 interface ContentPopoverProps {
   children: React.ReactNode
@@ -18,6 +19,14 @@ interface ContentPopoverProps {
   triggerMode?: "click" | "hover"
   debounceDelay?: number
   onOpenAutoFocus?: (event: Event) => void
+  // Collision detection and viewport constraints
+  avoidCollisions?: boolean
+  collisionPadding?: number | { top?: number; right?: number; bottom?: number; left?: number }
+  collisionBoundary?: Element | null | Array<Element | null>
+  sideOffset?: number
+  alignOffset?: number
+  sticky?: "partial" | "always"
+  hideWhenDetached?: boolean
 }
 
 export function ContentPopover({
@@ -32,9 +41,24 @@ export function ContentPopover({
   triggerMode,
   debounceDelay = 200,
   onOpenAutoFocus = (event) => event.preventDefault(),
+  // Collision detection defaults
+  avoidCollisions = true,
+  collisionPadding = 8,
+  collisionBoundary,
+  sideOffset = 4,
+  alignOffset = 0,
+  sticky = "partial",
+  hideWhenDetached = false,
 }: ContentPopoverProps) {
   const [internalHoverState, setInternalHoverState] = useState(false)
   const settings = useAtomValue(settingsAtom)
+
+  // Enhanced className with viewport constraints
+  const enhancedClassName = cn(
+    // Viewport constraints using Radix CSS custom properties
+    "max-h-[var(--radix-popover-content-available-height)] max-w-[var(--radix-popover-content-available-width)] overflow-auto",
+    className,
+  )
 
   // Determine effective trigger mode: use prop if provided, otherwise use setting
   const effectiveTriggerMode =
@@ -76,9 +100,16 @@ export function ContentPopover({
           {children}
         </PopoverTrigger>
         <PopoverContent
-          className={className}
+          className={enhancedClassName}
           align={align}
           side={side}
+          sideOffset={sideOffset}
+          alignOffset={alignOffset}
+          avoidCollisions={avoidCollisions}
+          collisionPadding={collisionPadding}
+          collisionBoundary={collisionBoundary}
+          sticky={sticky}
+          hideWhenDetached={hideWhenDetached}
           onOpenAutoFocus={onOpenAutoFocus}
         >
           {content}
@@ -116,9 +147,16 @@ export function ContentPopover({
         </div>
       </PopoverTrigger>
       <PopoverContent
-        className={className}
+        className={enhancedClassName}
         align={align}
         side={side}
+        sideOffset={sideOffset}
+        alignOffset={alignOffset}
+        avoidCollisions={avoidCollisions}
+        collisionPadding={collisionPadding}
+        collisionBoundary={collisionBoundary}
+        sticky={sticky}
+        hideWhenDetached={hideWhenDetached}
         onMouseEnter={handleContentMouseEnter}
         onMouseLeave={handleContentMouseLeave}
         onOpenAutoFocus={onOpenAutoFocus}

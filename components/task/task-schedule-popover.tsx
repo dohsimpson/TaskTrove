@@ -34,7 +34,7 @@ export function TaskSchedulePopover({
       open={open}
       onOpenChange={handleOpenChange}
       content={<TaskScheduleContent taskId={taskId} onClose={handleClose} />}
-      className="w-72 p-0 max-h-[50vh] overflow-y-auto"
+      className="w-72 p-0 overflow-y-auto"
       triggerClassName={className}
       align="start"
     >

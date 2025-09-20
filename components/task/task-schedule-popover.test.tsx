@@ -90,4 +90,17 @@ describe("TaskSchedulePopover", () => {
 
     // TaskScheduleContent now handles scheduling through atoms directly
   })
+
+  it("should wrap children with data-action='schedule' attribute", () => {
+    const { container } = render(
+      <TaskSchedulePopover taskId={mockTask.id}>
+        <div>Test Content</div>
+      </TaskSchedulePopover>,
+    )
+
+    const wrapper = container.querySelector('[data-action="schedule"]')
+    expect(wrapper).toBeInTheDocument()
+    expect(wrapper?.tagName).toBe("SPAN")
+    expect(wrapper?.textContent).toBe("Test Content")
+  })
 })

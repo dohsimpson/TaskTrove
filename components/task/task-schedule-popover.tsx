@@ -38,7 +38,7 @@ export function TaskSchedulePopover({
       triggerClassName={className}
       align="start"
     >
-      {children}
+      <span data-action="schedule">{children}</span>
     </ContentPopover>
   )
 }

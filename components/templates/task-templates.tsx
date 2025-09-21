@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import {
   Dialog,
   DialogContent,
@@ -68,6 +70,8 @@ export function TaskTemplates({
   onToggleFavorite,
   projects,
 }: TaskTemplatesProps) {
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<TaskTemplate | null>(null)
   const [selectedProject, setSelectedProject] = useState("")
@@ -275,7 +279,7 @@ export function TaskTemplates({
                   <label className="text-sm font-medium">Tasks</label>
                   <Button onClick={addTaskToTemplate} size="sm" variant="outline">
                     <Plus className="h-4 w-4 mr-1" />
-                    Add Task
+                    {t("actions.addTask", "Add Task")}
                   </Button>
                 </div>
                 {newTemplate.tasks.map((task, index) => (

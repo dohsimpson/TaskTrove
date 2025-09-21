@@ -3,6 +3,8 @@
 import { useSetAtom } from "jotai"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import { TaskFilterControls } from "./task-filter-controls"
 import { TaskFilterBadges } from "./task-filter-badges"
 import { TaskSearchInput } from "./task-search-input"
@@ -17,6 +19,8 @@ interface ProjectViewToolbarProps {
  * Used across different view types (kanban, project sections, etc.) for consistent UI.
  */
 export function ProjectViewToolbar({ className }: ProjectViewToolbarProps) {
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
   const openQuickAddAction = useSetAtom(openQuickAddAtom)
 
   return (
@@ -31,7 +35,7 @@ export function ProjectViewToolbar({ className }: ProjectViewToolbarProps) {
           className="shadow-sm shrink-0 ml-auto"
         >
           <Plus className="h-4 w-4 mr-1.5" />
-          Add Task
+          {t("actions.addTask", "Add Task")}
         </Button>
       </div>
       <TaskFilterBadges />

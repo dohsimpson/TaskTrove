@@ -2,6 +2,8 @@
 
 import React, { useState } from "react"
 import { useAtomValue, useSetAtom, atom } from "jotai"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import {
   activeFiltersAtom,
   hasActiveFiltersAtom,
@@ -109,6 +111,8 @@ interface TaskFilterControlsProps {
 }
 
 export function TaskFilterControls({ className }: TaskFilterControlsProps) {
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
   const [isOpen, setIsOpen] = useState(false)
   const [showCustomRange, setShowCustomRange] = useState(false)
   const [customStart, setCustomStart] = useState<Date | undefined>()
@@ -227,7 +231,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className={`relative ${className}`}>
           <Filter className="h-4 w-4" />
-          <span className="hidden sm:inline ml-1.5">Filter</span>
+          <span className="hidden sm:inline ml-1.5">{t("filters.filter", "Filter")}</span>
           {hasActiveFilters && (
             <Badge
               variant="secondary"
@@ -246,7 +250,9 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
       >
         <div className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="font-semibold text-base text-foreground">Filter Tasks</h4>
+            <h4 className="font-semibold text-base text-foreground">
+              {t("filters.filterTasks", "Filter Tasks")}
+            </h4>
             {hasActiveFilters && (
               <Button
                 variant="ghost"
@@ -257,7 +263,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                 }}
                 className="h-auto px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-md"
               >
-                Clear all
+                {t("filters.clearAll", "Clear all")}
               </Button>
             )}
           </div>
@@ -267,7 +273,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
               {/* Due Date Filter */}
               <div>
                 <Label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">
-                  Due Date
+                  {t("filters.dueDate", "Due Date")}
                 </Label>
 
                 {!showCustomRange ? (
@@ -295,7 +301,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                             onClick={() => handlePresetSelect(preset)}
                             className="h-auto py-2 flex items-center justify-between text-xs"
                           >
-                            <span>{getPresetLabel(preset)}</span>
+                            <span>{getPresetLabel(preset, t)}</span>
                             <Badge
                               variant="secondary"
                               className="ml-1 text-xs h-4 min-w-[16px] px-1"
@@ -315,7 +321,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                       className="w-full justify-center text-xs"
                     >
                       <CalendarIcon className="h-3 w-3 mr-1.5" />
-                      Custom Range
+                      {t("filters.customRange", "Custom Range")}
                     </Button>
                   </div>
                 ) : (
@@ -324,7 +330,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                     <div className="space-y-2">
                       <div>
                         <Label className="text-xs font-medium text-muted-foreground">
-                          FROM DATE
+                          {t("filters.fromDate", "FROM DATE")}
                         </Label>
                         <Popover>
                           <PopoverTrigger asChild>
@@ -336,7 +342,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                               <CalendarIcon className="mr-2 h-3 w-3" />
                               {customStart
                                 ? format(customStart, "MMM dd, yyyy")
-                                : "Select start date"}
+                                : t("filters.selectStartDate", "Select start date")}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0" align="start">
@@ -351,7 +357,9 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                       </div>
 
                       <div>
-                        <Label className="text-xs font-medium text-muted-foreground">TO DATE</Label>
+                        <Label className="text-xs font-medium text-muted-foreground">
+                          {t("filters.toDate", "TO DATE")}
+                        </Label>
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button
@@ -360,7 +368,9 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                               size="sm"
                             >
                               <CalendarIcon className="mr-2 h-3 w-3" />
-                              {customEnd ? format(customEnd, "MMM dd, yyyy") : "Select end date"}
+                              {customEnd
+                                ? format(customEnd, "MMM dd, yyyy")
+                                : t("filters.selectEndDate", "Select end date")}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0" align="start">
@@ -389,7 +399,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                         }}
                         className="text-xs h-8"
                       >
-                        Next 7 days
+                        {t("filters.next7Days", "Next 7 days")}
                       </Button>
                       <Button
                         variant="outline"
@@ -403,7 +413,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                         }}
                         className="text-xs h-8"
                       >
-                        Next 30 days
+                        {t("filters.next30Days", "Next 30 days")}
                       </Button>
                     </div>
 
@@ -415,7 +425,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                         className="flex-1 text-xs"
                         disabled={!customStart && !customEnd}
                       >
-                        Apply
+                        {t("filters.apply", "Apply")}
                       </Button>
                       <Button
                         onClick={handleCustomRangeCancel}
@@ -423,7 +433,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                         size="sm"
                         className="flex-1 text-xs"
                       >
-                        Cancel
+                        {t("filters.cancel", "Cancel")}
                       </Button>
                     </div>
                   </div>
@@ -435,7 +445,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
               {/* Priority Filter */}
               <div>
                 <Label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">
-                  Priority
+                  {t("filters.priority", "Priority")}
                 </Label>
                 <div className="space-y-1">
                   {priorities.map((priority) => (
@@ -464,13 +474,17 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
               {/* Completion Status Filter */}
               <div>
                 <Label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">
-                  Status
+                  {t("filters.status", "Status")}
                 </Label>
                 <div className="space-y-1">
                   {[
-                    { value: "all", label: "All tasks", icon: Circle },
-                    { value: "active", label: "Active only", icon: Clock },
-                    { value: "completed", label: "Completed only", icon: Circle },
+                    { value: "all", label: t("filters.allTasks", "All tasks"), icon: Circle },
+                    { value: "active", label: t("filters.activeOnly", "Active only"), icon: Clock },
+                    {
+                      value: "completed",
+                      label: t("filters.completedOnly", "Completed only"),
+                      icon: Circle,
+                    },
                   ].map((status) => {
                     const isSelected = getCompletionValue() === status.value
                     const IconComponent = status.icon
@@ -498,7 +512,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                 <>
                   <div>
                     <Label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">
-                      Projects
+                      {t("filters.projects", "Projects")}
                     </Label>
                     <div className="space-y-1 max-h-40 overflow-y-auto">
                       {allProjects.map((project: Project) => {
@@ -527,7 +541,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
               {allLabels.length > 0 && (
                 <div>
                   <Label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">
-                    Labels
+                    {t("filters.labels", "Labels")}
                   </Label>
                   <div className="space-y-1 max-h-40 overflow-y-auto">
                     {/* No labels option */}
@@ -539,7 +553,9 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                       onClick={handleNoLabelsFilter}
                     >
                       <div className="w-3 h-3 rounded-full border border-muted-foreground/30" />
-                      <span className="text-sm font-medium flex-1 italic">No labels</span>
+                      <span className="text-sm font-medium flex-1 italic">
+                        {t("filters.noLabels", "No labels")}
+                      </span>
                     </div>
 
                     {allLabels.map((label: LabelType) => {

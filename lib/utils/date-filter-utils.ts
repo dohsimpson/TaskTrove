@@ -112,20 +112,43 @@ export function matchesDueDateFilter(
 /**
  * Get human-readable label for preset
  */
-export function getPresetLabel(preset: DueDatePreset): string {
+export function getPresetLabel(
+  preset: DueDatePreset,
+  t?: (key: string, fallback: string) => string,
+): string {
+  if (!t) {
+    // Fallback to English if no translation function provided
+    switch (preset) {
+      case "overdue":
+        return "Overdue"
+      case "today":
+        return "Today"
+      case "tomorrow":
+        return "Tomorrow"
+      case "thisWeek":
+        return "This Week"
+      case "nextWeek":
+        return "Next Week"
+      case "noDueDate":
+        return "No Due Date"
+      default:
+        return preset
+    }
+  }
+
   switch (preset) {
     case "overdue":
-      return "Overdue"
+      return t("filters.presets.overdue", "Overdue")
     case "today":
-      return "Today"
+      return t("filters.presets.today", "Today")
     case "tomorrow":
-      return "Tomorrow"
+      return t("filters.presets.tomorrow", "Tomorrow")
     case "thisWeek":
-      return "This Week"
+      return t("filters.presets.thisWeek", "This Week")
     case "nextWeek":
-      return "Next Week"
+      return t("filters.presets.nextWeek", "Next Week")
     case "noDueDate":
-      return "No Due Date"
+      return t("filters.presets.noDueDate", "No Due Date")
     default:
       return preset
   }
@@ -134,20 +157,25 @@ export function getPresetLabel(preset: DueDatePreset): string {
 /**
  * Get human-readable label for custom date range
  */
-export function getCustomRangeLabel(range: { start?: Date; end?: Date }): string {
+export function getCustomRangeLabel(
+  range: { start?: Date; end?: Date },
+  t?: (key: string, fallback: string) => string,
+): string {
   const { start, end } = range
 
   if (start && end) {
     return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`
   }
   if (start) {
-    return `From ${start.toLocaleDateString()}`
+    const fromLabel = t ? t("filters.dateRange.from", "From") : "From"
+    return `${fromLabel} ${start.toLocaleDateString()}`
   }
   if (end) {
-    return `Until ${end.toLocaleDateString()}`
+    const untilLabel = t ? t("filters.dateRange.until", "Until") : "Until"
+    return `${untilLabel} ${end.toLocaleDateString()}`
   }
 
-  return "Custom Range"
+  return t ? t("filters.dateRange.label", "Custom Range") : "Custom Range"
 }
 
 /**

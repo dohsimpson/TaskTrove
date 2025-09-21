@@ -757,7 +757,7 @@ export function QuickAddDialog() {
               disabled={!parsed?.title && !input.trim()}
               className="text-xs sm:text-sm"
             >
-              Add task
+              {t("quickAdd.addTask", "Add task")}
             </Button>
           </div>
         </div>

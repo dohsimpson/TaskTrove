@@ -9,6 +9,8 @@ import { Database, X, Bell, Settings, Menu } from "lucide-react"
 // Future icons (not used yet):
 // import { Link, Palette, Target, Code } from "lucide-react"
 import { showSettingsDialogAtom, closeSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import { DataForm } from "./settings-forms/data-form"
 import { NotificationsForm } from "./settings-forms/notifications-form"
 import { GeneralForm } from "./settings-forms/general-form"
@@ -25,56 +27,59 @@ interface SettingsCategory {
   description: string
 }
 
-const settingsCategories: SettingsCategory[] = [
-  {
-    id: "general",
-    title: "General",
-    icon: Settings,
-    description: "Default page, basic preferences",
-  },
-  {
-    id: "notifications",
-    title: "Notifications",
-    icon: Bell,
-    description: "Notification settings",
-  },
-  {
-    id: "data",
-    title: "Data & Storage",
-    icon: Database,
-    description: "Import/export, backups",
-  },
-  // Future settings categories (not implemented yet):
-  // {
-  //   id: "appearance",
-  //   title: "Appearance",
-  //   icon: Palette,
-  //   description: "Themes, colors, and visual preferences",
-  // },
-  // {
-  //   id: "behavior",
-  //   title: "Behavior",
-  //   icon: Settings,
-  //   description: "App behavior and default preferences",
-  // },
-  // {
-  //   id: "productivity",
-  //   title: "Productivity",
-  //   icon: Target,
-  //   description: "Pomodoro, goals, and analytics settings",
-  // },
-  // {
-  //   id: "api",
-  //   title: "API & Developers",
-  //   icon: Code,
-  //   description: "API keys, webhooks, and developer tools",
-  // },
-]
-
 function SettingsContent() {
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "dialogs")
   const closeDialog = useSetAtom(closeSettingsDialogAtom)
-  const [activeCategory, setActiveCategory] = useState(settingsCategories[0]?.id || "general")
+  const [activeCategory, setActiveCategory] = useState("general")
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
+
+  // Settings categories with translations
+  const settingsCategories: SettingsCategory[] = [
+    {
+      id: "general",
+      title: t("settings.categories.general.title", "General"),
+      icon: Settings,
+      description: t("settings.categories.general.description", "Default page, basic preferences"),
+    },
+    {
+      id: "notifications",
+      title: t("settings.categories.notifications.title", "Notifications"),
+      icon: Bell,
+      description: t("settings.categories.notifications.description", "Notification settings"),
+    },
+    {
+      id: "data",
+      title: t("settings.categories.data.title", "Data & Storage"),
+      icon: Database,
+      description: t("settings.categories.data.description", "Import/export, backups"),
+    },
+    // Future settings categories (not implemented yet):
+    // {
+    //   id: "appearance",
+    //   title: "Appearance",
+    //   icon: Palette,
+    //   description: "Themes, colors, and visual preferences",
+    // },
+    // {
+    //   id: "behavior",
+    //   title: "Behavior",
+    //   icon: Settings,
+    //   description: "App behavior and default preferences",
+    // },
+    // {
+    //   id: "productivity",
+    //   title: "Productivity",
+    //   icon: Target,
+    //   description: "Pomodoro, goals, and analytics settings",
+    // },
+    // {
+    //   id: "api",
+    //   title: "API & Developers",
+    //   icon: Code,
+    //   description: "API keys, webhooks, and developer tools",
+    // },
+  ]
 
   // Get active category info
   const activeCategoryInfo = settingsCategories.find((cat) => cat.id === activeCategory)
@@ -104,7 +109,7 @@ function SettingsContent() {
       {/* Desktop Sidebar - hidden on mobile */}
       <aside className="hidden md:flex w-64 border-r flex-col">
         <div className="p-4">
-          <h2 className="text-lg font-semibold">Settings</h2>
+          <h2 className="text-lg font-semibold">{t("settings.title", "Settings")}</h2>
         </div>
         <Separator />
         <div className="p-4">
@@ -139,7 +144,7 @@ function SettingsContent() {
           <aside className="absolute left-0 top-0 bottom-0 w-64 bg-background border-r z-50 flex flex-col md:hidden">
             {/* Mobile Close Button */}
             <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-semibold">Settings</h2>
+              <h2 className="text-lg font-semibold">{t("settings.title", "Settings")}</h2>
               <Button
                 variant="ghost"
                 size="sm"
@@ -147,7 +152,9 @@ function SettingsContent() {
                 className="h-8 w-8 p-0"
               >
                 <X className="h-4 w-4" />
-                <span className="sr-only">Close menu</span>
+                <span className="sr-only">
+                  {t("settings.accessibility.closeMenu", "Close menu")}
+                </span>
               </Button>
             </div>
             {/* Settings Categories */}
@@ -188,7 +195,9 @@ function SettingsContent() {
             className="h-8 w-8 p-0 mr-2 md:hidden"
           >
             <Menu className="h-4 w-4" />
-            <span className="sr-only">Open settings menu</span>
+            <span className="sr-only">
+              {t("settings.accessibility.openMenu", "Open settings menu")}
+            </span>
           </Button>
 
           <div className="flex items-center gap-2 flex-1">
@@ -198,7 +207,9 @@ function SettingsContent() {
           </div>
           <Button variant="ghost" size="sm" onClick={() => closeDialog()} className="h-8 w-8 p-0">
             <X className="h-4 w-4" />
-            <span className="sr-only">Close settings</span>
+            <span className="sr-only">
+              {t("settings.accessibility.closeSettings", "Close settings")}
+            </span>
           </Button>
         </header>
 
@@ -210,14 +221,16 @@ function SettingsContent() {
 }
 
 export function SettingsDialog() {
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "dialogs")
   const open = useAtomValue(showSettingsDialogAtom)
   const closeDialog = useSetAtom(closeSettingsDialogAtom)
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogTitle className="sr-only">Settings</DialogTitle>
+      <DialogTitle className="sr-only">{t("settings.title", "Settings")}</DialogTitle>
       <DialogDescription className="sr-only">
-        Configure TaskTrove application settings and preferences
+        {t("settings.description", "Configure TaskTrove application settings and preferences")}
       </DialogDescription>
       <DialogContent
         className="!max-w-[95vw] h-[90vh] w-[95vw] p-0 sm:!max-w-[90vw] sm:h-[85vh] sm:w-[90vw] overflow-hidden"

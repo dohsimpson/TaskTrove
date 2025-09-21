@@ -149,5 +149,93 @@
     "hour": "小时",
     "minute": "分钟",
     "title": "时间估算"
+  },
+  "actions": {
+    "addTask": "添加任务",
+    "addDate": "添加日期",
+    "addPriority": "添加优先级",
+    "addSubtask": "添加子任务",
+    "addComment": "添加评论",
+    "addLabel": "添加标签",
+    "addLabels": "添加标签",
+    "addProject": "添加项目"
+  },
+  "filters": {
+    "filter": "筛选",
+    "filterTasks": "筛选任务",
+    "clearAll": "清除所有",
+    "dueDate": "截止日期",
+    "customRange": "自定义范围",
+    "fromDate": "开始日期",
+    "selectStartDate": "选择开始日期",
+    "toDate": "结束日期",
+    "selectEndDate": "选择结束日期",
+    "next7Days": "未来7天",
+    "next30Days": "未来30天",
+    "apply": "应用",
+    "cancel": "取消",
+    "priority": "优先级",
+    "status": "状态",
+    "allTasks": "所有任务",
+    "activeOnly": "仅活跃任务",
+    "completedOnly": "仅已完成任务",
+    "projects": "项目",
+    "labels": "标签",
+    "noLabels": "无标签",
+    "presets": {
+      "overdue": "已逾期",
+      "today": "今天",
+      "tomorrow": "明天",
+      "thisWeek": "本周",
+      "nextWeek": "下周",
+      "noDueDate": "无截止日期"
+    },
+    "dateRange": {
+      "from": "从",
+      "until": "到",
+      "label": "自定义范围"
+    }
+  },
+  "emptyStates": {
+    "inbox": {
+      "title": "您的收件箱是空的",
+      "description": "这是您所有新任务的默认收集点。当您创建任务而不指定项目时，它会出现在这里。"
+    },
+    "today": {
+      "title": "今天没有安排任务",
+      "description": "今天截止的任务将出现在这里。为您的任务设置截止日期，以保持日常目标的进度。"
+    },
+    "upcoming": {
+      "title": "没有即将到来的任务",
+      "description": "未来截止的任务显示在这里，帮助您提前计划并为即将到来的事情做准备。"
+    },
+    "completed": {
+      "title": "尚未完成任务",
+      "description": "您已完成的任务将出现在这里。完成一些任务来查看您的进度并庆祝您的成就！"
+    },
+    "all": {
+      "title": "未找到任务",
+      "description": "此视图显示您在所有项目中的所有任务。创建您的第一个任务开始使用 TaskTrove。"
+    },
+    "analytics": {
+      "title": "分析仪表板",
+      "description": "跟踪您的生产力和任务完成模式。"
+    },
+    "search": {
+      "title": "搜索结果",
+      "description": "按标题、描述或标签查找任务。"
+    },
+    "project": {
+      "title": "{{projectName}} 中没有任务",
+      "description": "此项目是空的。添加任务来组织您的工作并跟踪特定目标的进度。"
+    },
+    "label": {
+      "title": "没有带 {{labelName}} 标签的任务",
+      "description": "标记有此标签的任务将出现在这里。使用标签对相关任务进行分类并快速查找。"
+    },
+    "fallback": {
+      "title": "未找到任务",
+      "description": "创建您的第一个任务开始使用。"
+    }
   }
 }

@@ -9,6 +9,8 @@ import {
   Archive,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import type { ViewId } from "@/lib/types"
 
 interface ViewEmptyStateProps {
@@ -28,53 +30,78 @@ interface ViewConfig {
   description: string
 }
 
-const VIEW_CONFIGS: Record<string, ViewConfig> = {
-  inbox: {
-    icon: Inbox,
-    title: "Your Inbox is empty",
-    description:
-      "This is your default collection point for all new tasks. When you create a task without specifying a project, it lands here.",
-  },
-  today: {
-    icon: Calendar,
-    title: "Nothing scheduled for today",
-    description:
-      "Tasks with today's due date will appear here. Set due dates on your tasks to stay on track with your daily goals.",
-  },
-  upcoming: {
-    icon: Clock,
-    title: "No upcoming tasks",
-    description:
-      "Tasks with future due dates show up here, helping you plan ahead and prepare for what's coming next.",
-  },
-  completed: {
-    icon: CheckSquare,
-    title: "No completed tasks yet",
-    description:
-      "Tasks you've finished will appear here. Complete some tasks to see your progress and celebrate your wins!",
-  },
-  all: {
-    icon: ListCheck,
-    title: "No tasks found",
-    description:
-      "This view shows all your tasks across all projects. Create your first task to get started with TaskTrove.",
-  },
-  analytics: {
-    icon: Archive,
-    title: "Analytics Dashboard",
-    description: "Track your productivity and task completion patterns.",
-  },
-  search: {
-    icon: Archive,
-    title: "Search Results",
-    description: "Find tasks by title, description, or labels.",
-  },
+function getViewConfigs(t: (key: string, fallback: string) => string): Record<string, ViewConfig> {
+  return {
+    inbox: {
+      icon: Inbox,
+      title: t("emptyStates.inbox.title", "Your Inbox is empty"),
+      description: t(
+        "emptyStates.inbox.description",
+        "This is your default collection point for all new tasks. When you create a task without specifying a project, it lands here.",
+      ),
+    },
+    today: {
+      icon: Calendar,
+      title: t("emptyStates.today.title", "Nothing scheduled for today"),
+      description: t(
+        "emptyStates.today.description",
+        "Tasks with today's due date will appear here. Set due dates on your tasks to stay on track with your daily goals.",
+      ),
+    },
+    upcoming: {
+      icon: Clock,
+      title: t("emptyStates.upcoming.title", "No upcoming tasks"),
+      description: t(
+        "emptyStates.upcoming.description",
+        "Tasks with future due dates show up here, helping you plan ahead and prepare for what's coming next.",
+      ),
+    },
+    completed: {
+      icon: CheckSquare,
+      title: t("emptyStates.completed.title", "No completed tasks yet"),
+      description: t(
+        "emptyStates.completed.description",
+        "Tasks you've finished will appear here. Complete some tasks to see your progress and celebrate your wins!",
+      ),
+    },
+    all: {
+      icon: ListCheck,
+      title: t("emptyStates.all.title", "No tasks found"),
+      description: t(
+        "emptyStates.all.description",
+        "This view shows all your tasks across all projects. Create your first task to get started with TaskTrove.",
+      ),
+    },
+    analytics: {
+      icon: Archive,
+      title: t("emptyStates.analytics.title", "Analytics Dashboard"),
+      description: t(
+        "emptyStates.analytics.description",
+        "Track your productivity and task completion patterns.",
+      ),
+    },
+    search: {
+      icon: Archive,
+      title: t("emptyStates.search.title", "Search Results"),
+      description: t(
+        "emptyStates.search.description",
+        "Find tasks by title, description, or labels.",
+      ),
+    },
+  }
 }
 
-function getViewConfig(viewId: ViewId, projectName?: string, labelName?: string): ViewConfig {
+function getViewConfig(
+  t: (key: string, fallback: string) => string,
+  viewId: ViewId,
+  projectName?: string,
+  labelName?: string,
+): ViewConfig {
+  const viewConfigs = getViewConfigs(t)
+
   // Handle standard views
-  if (typeof viewId === "string" && viewId in VIEW_CONFIGS) {
-    const config = VIEW_CONFIGS[viewId]
+  if (typeof viewId === "string" && viewId in viewConfigs) {
+    const config = viewConfigs[viewId]
     if (!config) {
       throw new Error(`Missing configuration for view: ${viewId}`)
     }
@@ -85,9 +112,14 @@ function getViewConfig(viewId: ViewId, projectName?: string, labelName?: string)
   if (projectName) {
     return {
       icon: FolderOpen,
-      title: `No tasks in ${projectName}`,
-      description:
+      title: t("emptyStates.project.title", "No tasks in {{projectName}}").replace(
+        "{{projectName}}",
+        projectName,
+      ),
+      description: t(
+        "emptyStates.project.description",
         "This project is empty. Add tasks to organize your work and track progress on specific goals.",
+      ),
     }
   }
 
@@ -95,17 +127,22 @@ function getViewConfig(viewId: ViewId, projectName?: string, labelName?: string)
   if (labelName) {
     return {
       icon: Tag,
-      title: `No tasks with ${labelName} label`,
-      description:
+      title: t("emptyStates.label.title", "No tasks with {{labelName}} label").replace(
+        "{{labelName}}",
+        labelName,
+      ),
+      description: t(
+        "emptyStates.label.description",
         "Tasks tagged with this label will appear here. Use labels to categorize and quickly find related tasks.",
+      ),
     }
   }
 
   // Fallback for unknown views
   return {
     icon: Archive,
-    title: "No tasks found",
-    description: "Create your first task to get started.",
+    title: t("emptyStates.fallback.title", "No tasks found"),
+    description: t("emptyStates.fallback.description", "Create your first task to get started."),
   }
 }
 
@@ -116,7 +153,10 @@ export function ViewEmptyState({
   action,
   className = "",
 }: ViewEmptyStateProps) {
-  const config = getViewConfig(viewId, projectName, labelName)
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
+
+  const config = getViewConfig(t, viewId, projectName, labelName)
   const Icon = config.icon
 
   return (

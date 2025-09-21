@@ -149,5 +149,93 @@
     "hour": "heure",
     "minute": "minute",
     "title": "Estimation de temps"
+  },
+  "actions": {
+    "addTask": "Ajouter une Tâche",
+    "addDate": "Ajouter une date",
+    "addPriority": "Ajouter une priorité",
+    "addSubtask": "Ajouter une sous-tâche",
+    "addComment": "Ajouter un commentaire",
+    "addLabel": "Ajouter une étiquette",
+    "addLabels": "Ajouter des étiquettes",
+    "addProject": "Ajouter un projet"
+  },
+  "filters": {
+    "filter": "Filtrer",
+    "filterTasks": "Filtrer les Tâches",
+    "clearAll": "Tout effacer",
+    "dueDate": "Date d'échéance",
+    "customRange": "Plage personnalisée",
+    "fromDate": "DATE DÉBUT",
+    "selectStartDate": "Sélectionner la date de début",
+    "toDate": "DATE FIN",
+    "selectEndDate": "Sélectionner la date de fin",
+    "next7Days": "7 prochains jours",
+    "next30Days": "30 prochains jours",
+    "apply": "Appliquer",
+    "cancel": "Annuler",
+    "priority": "Priorité",
+    "status": "Statut",
+    "allTasks": "Toutes les tâches",
+    "activeOnly": "Actives seulement",
+    "completedOnly": "Terminées seulement",
+    "projects": "Projets",
+    "labels": "Étiquettes",
+    "noLabels": "Sans étiquettes",
+    "presets": {
+      "overdue": "En retard",
+      "today": "Aujourd'hui",
+      "tomorrow": "Demain",
+      "thisWeek": "Cette semaine",
+      "nextWeek": "Semaine prochaine",
+      "noDueDate": "Aucune échéance"
+    },
+    "dateRange": {
+      "from": "De",
+      "until": "Jusqu'à",
+      "label": "Plage personnalisée"
+    }
+  },
+  "emptyStates": {
+    "inbox": {
+      "title": "Votre boîte de réception est vide",
+      "description": "C'est votre point de collecte par défaut pour toutes les nouvelles tâches. Lorsque vous créez une tâche sans spécifier de projet, elle atterrit ici."
+    },
+    "today": {
+      "title": "Rien de prévu pour aujourd'hui",
+      "description": "Les tâches avec la date d'échéance d'aujourd'hui apparaîtront ici. Définissez des dates d'échéance sur vos tâches pour rester sur la bonne voie avec vos objectifs quotidiens."
+    },
+    "upcoming": {
+      "title": "Aucune tâche à venir",
+      "description": "Les tâches avec des dates d'échéance futures apparaissent ici, vous aidant à planifier à l'avance et à vous préparer pour ce qui arrive."
+    },
+    "completed": {
+      "title": "Aucune tâche terminée pour le moment",
+      "description": "Les tâches que vous avez terminées apparaîtront ici. Terminez quelques tâches pour voir vos progrès et célébrer vos réussites !"
+    },
+    "all": {
+      "title": "Aucune tâche trouvée",
+      "description": "Cette vue affiche toutes vos tâches dans tous les projets. Créez votre première tâche pour commencer avec TaskTrove."
+    },
+    "analytics": {
+      "title": "Tableau de Bord Analytique",
+      "description": "Suivez votre productivité et vos modèles d'achèvement des tâches."
+    },
+    "search": {
+      "title": "Résultats de Recherche",
+      "description": "Trouvez des tâches par titre, description ou étiquettes."
+    },
+    "project": {
+      "title": "Aucune tâche dans {{projectName}}",
+      "description": "Ce projet est vide. Ajoutez des tâches pour organiser votre travail et suivre les progrès sur des objectifs spécifiques."
+    },
+    "label": {
+      "title": "Aucune tâche avec l'étiquette {{labelName}}",
+      "description": "Les tâches étiquetées avec cette étiquette apparaîtront ici. Utilisez les étiquettes pour catégoriser et trouver rapidement les tâches liées."
+    },
+    "fallback": {
+      "title": "Aucune tâche trouvée",
+      "description": "Créez votre première tâche pour commencer."
+    }
   }
 }

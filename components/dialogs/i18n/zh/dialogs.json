@@ -228,6 +228,7 @@
     }
   },
   "quickAdd": {
+    "addTask": "添加任务",
     "buttons": {
       "comments": "评论",
       "date": "日期",
@@ -247,6 +248,27 @@
     "title": "快速添加任务"
   },
   "settings": {
+    "title": "设置",
+    "description": "配置 TaskTrove 应用程序设置和首选项",
+    "categories": {
+      "general": {
+        "title": "常规",
+        "description": "默认页面，基本首选项"
+      },
+      "notifications": {
+        "title": "通知",
+        "description": "通知设置"
+      },
+      "data": {
+        "title": "数据和存储",
+        "description": "导入/导出，备份"
+      }
+    },
+    "accessibility": {
+      "closeMenu": "关闭菜单",
+      "openMenu": "打开设置菜单",
+      "closeSettings": "关闭设置"
+    },
     "language": "语言",
     "languageDescription": "选择应用程序的显示语言"
   }

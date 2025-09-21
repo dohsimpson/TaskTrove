@@ -228,6 +228,7 @@
     }
   },
   "quickAdd": {
+    "addTask": "Ajouter tâche",
     "buttons": {
       "comments": "Commentaires",
       "date": "Date",
@@ -247,6 +248,27 @@
     "title": "Ajout rapide de tâche"
   },
   "settings": {
+    "title": "Paramètres",
+    "description": "Configurer les paramètres et préférences de l'application TaskTrove",
+    "categories": {
+      "general": {
+        "title": "Général",
+        "description": "Page par défaut, préférences de base"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Paramètres de notification"
+      },
+      "data": {
+        "title": "Données et Stockage",
+        "description": "Import/export, sauvegardes"
+      }
+    },
+    "accessibility": {
+      "closeMenu": "Fermer le menu",
+      "openMenu": "Ouvrir le menu des paramètres",
+      "closeSettings": "Fermer les paramètres"
+    },
     "language": "Langue",
     "languageDescription": "Sélectionner la langue d'affichage de l'application"
   }

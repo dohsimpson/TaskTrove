@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
 import {
@@ -104,6 +106,10 @@ export function ProjectSectionsView({
   droppableId,
   supportsSections = true,
 }: ProjectSectionsViewProps) {
+  // Translation hooks
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
+
   // Get data from atoms
   const tasks = useAtomValue(filteredTasksAtom)
   const currentViewState = useAtomValue(currentViewStateAtom)
@@ -859,7 +865,10 @@ export function ProjectSectionsView({
                           viewId={routeContext.viewId}
                           projectName={project?.name}
                           labelName={label?.name}
-                          action={{ label: "Add Task", onClick: () => openQuickAddAction() }}
+                          action={{
+                            label: t("actions.addTask", "Add Task"),
+                            onClick: () => openQuickAddAction(),
+                          }}
                         />
                       )}
                     </div>

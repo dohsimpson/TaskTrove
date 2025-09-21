@@ -13,6 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 import {
   format,
   startOfMonth,
@@ -53,6 +55,8 @@ interface CalendarViewProps {
 }
 
 export function CalendarView({ tasks, onDateClick, droppableId, project }: CalendarViewProps) {
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [alwaysShow6Rows] = useState(true) // TODO: Extract to view settings when needed
@@ -425,7 +429,7 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
                 <h2 className="text-lg font-semibold">{format(selectedDate, "EEEE, MMMM d")}</h2>
                 <Button size="sm" onClick={handleAddTask}>
                   <Plus className="h-4 w-4 mr-1" />
-                  Add task
+                  {t("actions.addTask", "Add task")}
                 </Button>
               </div>
               <DropTargetWrapper

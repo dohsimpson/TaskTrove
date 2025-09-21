@@ -149,5 +149,93 @@
     "hour": "uur",
     "minute": "minuut",
     "title": "Tijdschatting"
+  },
+  "actions": {
+    "addTask": "Taak Toevoegen",
+    "addDate": "Datum toevoegen",
+    "addPriority": "Prioriteit toevoegen",
+    "addSubtask": "Subtaak toevoegen",
+    "addComment": "Reactie toevoegen",
+    "addLabel": "Label toevoegen",
+    "addLabels": "Labels toevoegen",
+    "addProject": "Project toevoegen"
+  },
+  "filters": {
+    "filter": "Filteren",
+    "filterTasks": "Taken Filteren",
+    "clearAll": "Alles wissen",
+    "dueDate": "Vervaldatum",
+    "customRange": "Aangepast bereik",
+    "fromDate": "STARTDATUM",
+    "selectStartDate": "Startdatum selecteren",
+    "toDate": "EINDDATUM",
+    "selectEndDate": "Einddatum selecteren",
+    "next7Days": "Komende 7 dagen",
+    "next30Days": "Komende 30 dagen",
+    "apply": "Toepassen",
+    "cancel": "Annuleren",
+    "priority": "Prioriteit",
+    "status": "Status",
+    "allTasks": "Alle taken",
+    "activeOnly": "Alleen actieve",
+    "completedOnly": "Alleen voltooid",
+    "projects": "Projecten",
+    "labels": "Labels",
+    "noLabels": "Geen labels",
+    "presets": {
+      "overdue": "Achterstallig",
+      "today": "Vandaag",
+      "tomorrow": "Morgen",
+      "thisWeek": "Deze week",
+      "nextWeek": "Volgende week",
+      "noDueDate": "Geen vervaldatum"
+    },
+    "dateRange": {
+      "from": "Van",
+      "until": "Tot",
+      "label": "Aangepast bereik"
+    }
+  },
+  "emptyStates": {
+    "inbox": {
+      "title": "Je inbox is leeg",
+      "description": "Dit is je standaard verzamelpunt voor alle nieuwe taken. Wanneer je een taak aanmaakt zonder een project te specificeren, komt deze hier terecht."
+    },
+    "today": {
+      "title": "Niets gepland voor vandaag",
+      "description": "Taken met vandaag als vervaldatum verschijnen hier. Stel vervaldatums in voor je taken om op schema te blijven met je dagelijkse doelen."
+    },
+    "upcoming": {
+      "title": "Geen aankomende taken",
+      "description": "Taken met toekomstige vervaldatums verschijnen hier, om je te helpen vooruit te plannen en voor te bereiden op wat eraan komt."
+    },
+    "completed": {
+      "title": "Nog geen voltooide taken",
+      "description": "Taken die je hebt afgerond verschijnen hier. Voltooi enkele taken om je voortgang te zien en je successen te vieren!"
+    },
+    "all": {
+      "title": "Geen taken gevonden",
+      "description": "Deze weergave toont al je taken in alle projecten. Maak je eerste taak aan om te beginnen met TaskTrove."
+    },
+    "analytics": {
+      "title": "Analytics Dashboard",
+      "description": "Volg je productiviteit en taakvoltooing patronen."
+    },
+    "search": {
+      "title": "Zoekresultaten",
+      "description": "Vind taken op titel, beschrijving of labels."
+    },
+    "project": {
+      "title": "Geen taken in {{projectName}}",
+      "description": "Dit project is leeg. Voeg taken toe om je werk te organiseren en voortgang bij specifieke doelen bij te houden."
+    },
+    "label": {
+      "title": "Geen taken met het label {{labelName}}",
+      "description": "Taken getagd met dit label verschijnen hier. Gebruik labels om gerelateerde taken te categoriseren en snel te vinden."
+    },
+    "fallback": {
+      "title": "Geen taken gevonden",
+      "description": "Maak je eerste taak aan om te beginnen."
+    }
   }
 }

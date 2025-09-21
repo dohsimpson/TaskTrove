@@ -970,7 +970,9 @@ export function TaskItem({
               >
                 <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
                   <Tag className="h-3 w-3" />
-                  <span className="text-xs hidden group-hover:inline">Add labels</span>
+                  <span className="text-xs hidden group-hover:inline">
+                    {t("actions.addLabels", "Add labels")}
+                  </span>
                 </span>
               </LabelManagementPopover>
             )}
@@ -1279,7 +1281,9 @@ export function TaskItem({
                     )}
                   >
                     <Calendar className="h-3 w-3" />
-                    <span className="text-xs hidden group-hover:inline">Add date</span>
+                    <span className="text-xs hidden group-hover:inline">
+                      {t("actions.addDate", "Add date")}
+                    </span>
                   </span>
                 </TaskSchedulePopover>,
               )
@@ -1311,7 +1315,9 @@ export function TaskItem({
                     )}
                   >
                     <Flag className="h-3 w-3" />
-                    <span className="text-xs hidden group-hover:inline">Add priority</span>
+                    <span className="text-xs hidden group-hover:inline">
+                      {t("actions.addPriority", "Add priority")}
+                    </span>
                   </span>
                 </PriorityPopover>,
               )
@@ -1339,7 +1345,9 @@ export function TaskItem({
                     )}
                   >
                     <CheckSquare className="h-3 w-3" />
-                    <span className="text-xs hidden group-hover:inline">Add subtask</span>
+                    <span className="text-xs hidden group-hover:inline">
+                      {t("actions.addSubtask", "Add subtask")}
+                    </span>
                   </span>
                 )}
               </SubtaskPopover>,
@@ -1383,7 +1391,9 @@ export function TaskItem({
                     )}
                   >
                     <MessageSquare className="h-3 w-3" />
-                    <span className="text-xs hidden group-hover:inline">Add comment</span>
+                    <span className="text-xs hidden group-hover:inline">
+                      {t("actions.addComment", "Add comment")}
+                    </span>
                   </span>
                 </CommentManagementPopover>,
               )
@@ -1428,7 +1438,9 @@ export function TaskItem({
                 >
                   <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
                     <Tag className="h-3 w-3" />
-                    <span className="text-xs hidden group-hover:inline">Add label</span>
+                    <span className="text-xs hidden group-hover:inline">
+                      {t("actions.addLabel", "Add label")}
+                    </span>
                   </span>
                 </LabelManagementPopover>,
               )
@@ -1465,7 +1477,7 @@ export function TaskItem({
                     >
                       <Folder className="h-3 w-3" />
                       <span className="text-xs truncate hidden group-hover:inline">
-                        Add project
+                        {t("actions.addProject", "Add project")}
                       </span>
                     </span>
                   </ProjectPopover>,

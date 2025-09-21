@@ -228,6 +228,7 @@
     }
   },
   "quickAdd": {
+    "addTask": "Taak toevoegen",
     "buttons": {
       "comments": "Opmerkingen",
       "date": "Datum",
@@ -247,6 +248,27 @@
     "title": "Taak snel toevoegen"
   },
   "settings": {
+    "title": "Instellingen",
+    "description": "TaskTrove applicatie-instellingen en voorkeuren configureren",
+    "categories": {
+      "general": {
+        "title": "Algemeen",
+        "description": "Standaardpagina, basisvoorkeuren"
+      },
+      "notifications": {
+        "title": "Meldingen",
+        "description": "Meldingsinstellingen"
+      },
+      "data": {
+        "title": "Gegevens & Opslag",
+        "description": "Importeren/exporteren, back-ups"
+      }
+    },
+    "accessibility": {
+      "closeMenu": "Menu sluiten",
+      "openMenu": "Instellingenmenu openen",
+      "closeSettings": "Instellingen sluiten"
+    },
     "language": "Taal",
     "languageDescription": "Selecteer de weergavetaal van de applicatie"
   }

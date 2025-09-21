@@ -228,6 +228,7 @@
     }
   },
   "quickAdd": {
+    "addTask": "Aufgabe hinzufügen",
     "buttons": {
       "comments": "Kommentare",
       "date": "Datum",
@@ -247,6 +248,27 @@
     "title": "Aufgabe schnell hinzufügen"
   },
   "settings": {
+    "title": "Einstellungen",
+    "description": "TaskTrove-Anwendungseinstellungen und -präferenzen konfigurieren",
+    "categories": {
+      "general": {
+        "title": "Allgemein",
+        "description": "Standardseite, grundlegende Einstellungen"
+      },
+      "notifications": {
+        "title": "Benachrichtigungen",
+        "description": "Benachrichtigungseinstellungen"
+      },
+      "data": {
+        "title": "Daten & Speicher",
+        "description": "Import/Export, Backups"
+      }
+    },
+    "accessibility": {
+      "closeMenu": "Menü schließen",
+      "openMenu": "Einstellungsmenü öffnen",
+      "closeSettings": "Einstellungen schließen"
+    },
     "language": "Sprache",
     "languageDescription": "Anzeigesprache der Anwendung auswählen"
   }

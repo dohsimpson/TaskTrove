@@ -149,5 +149,93 @@
     "hour": "Stunde",
     "minute": "Minute",
     "title": "Zeitschätzung"
+  },
+  "actions": {
+    "addTask": "Aufgabe Hinzufügen",
+    "addDate": "Datum hinzufügen",
+    "addPriority": "Priorität hinzufügen",
+    "addSubtask": "Unteraufgabe hinzufügen",
+    "addComment": "Kommentar hinzufügen",
+    "addLabel": "Label hinzufügen",
+    "addLabels": "Labels hinzufügen",
+    "addProject": "Projekt hinzufügen"
+  },
+  "filters": {
+    "filter": "Filtern",
+    "filterTasks": "Aufgaben Filtern",
+    "clearAll": "Alle löschen",
+    "dueDate": "Fälligkeitsdatum",
+    "customRange": "Benutzerdefinierter Bereich",
+    "fromDate": "STARTDATUM",
+    "selectStartDate": "Startdatum auswählen",
+    "toDate": "ENDDATUM",
+    "selectEndDate": "Enddatum auswählen",
+    "next7Days": "Nächste 7 Tage",
+    "next30Days": "Nächste 30 Tage",
+    "apply": "Anwenden",
+    "cancel": "Abbrechen",
+    "priority": "Priorität",
+    "status": "Status",
+    "allTasks": "Alle Aufgaben",
+    "activeOnly": "Nur aktive",
+    "completedOnly": "Nur abgeschlossen",
+    "projects": "Projekte",
+    "labels": "Etiketten",
+    "noLabels": "Keine Etiketten",
+    "presets": {
+      "overdue": "Überfällig",
+      "today": "Heute",
+      "tomorrow": "Morgen",
+      "thisWeek": "Diese Woche",
+      "nextWeek": "Nächste Woche",
+      "noDueDate": "Kein Fälligkeitsdatum"
+    },
+    "dateRange": {
+      "from": "Von",
+      "until": "Bis",
+      "label": "Benutzerdefinierter Bereich"
+    }
+  },
+  "emptyStates": {
+    "inbox": {
+      "title": "Ihr Posteingang ist leer",
+      "description": "Dies ist Ihr Standard-Sammelpunkt für alle neuen Aufgaben. Wenn Sie eine Aufgabe erstellen, ohne ein Projekt anzugeben, landet sie hier."
+    },
+    "today": {
+      "title": "Nichts für heute geplant",
+      "description": "Aufgaben mit heutigem Fälligkeitsdatum erscheinen hier. Setzen Sie Fälligkeitsdaten für Ihre Aufgaben, um mit Ihren täglichen Zielen auf Kurs zu bleiben."
+    },
+    "upcoming": {
+      "title": "Keine anstehenden Aufgaben",
+      "description": "Aufgaben mit zukünftigen Fälligkeitsdaten erscheinen hier und helfen Ihnen, vorausschauend zu planen und sich auf das Kommende vorzubereiten."
+    },
+    "completed": {
+      "title": "Noch keine abgeschlossenen Aufgaben",
+      "description": "Aufgaben, die Sie abgeschlossen haben, erscheinen hier. Schließen Sie einige Aufgaben ab, um Ihren Fortschritt zu sehen und Ihre Erfolge zu feiern!"
+    },
+    "all": {
+      "title": "Keine Aufgaben gefunden",
+      "description": "Diese Ansicht zeigt alle Ihre Aufgaben in allen Projekten. Erstellen Sie Ihre erste Aufgabe, um mit TaskTrove zu beginnen."
+    },
+    "analytics": {
+      "title": "Analytics Dashboard",
+      "description": "Verfolgen Sie Ihre Produktivität und Aufgabenabschlussmuster."
+    },
+    "search": {
+      "title": "Suchergebnisse",
+      "description": "Finden Sie Aufgaben nach Titel, Beschreibung oder Etiketten."
+    },
+    "project": {
+      "title": "Keine Aufgaben in {{projectName}}",
+      "description": "Dieses Projekt ist leer. Fügen Sie Aufgaben hinzu, um Ihre Arbeit zu organisieren und den Fortschritt bei bestimmten Zielen zu verfolgen."
+    },
+    "label": {
+      "title": "Keine Aufgaben mit dem Etikett {{labelName}}",
+      "description": "Aufgaben mit diesem Etikett erscheinen hier. Verwenden Sie Etiketten, um verwandte Aufgaben zu kategorisieren und schnell zu finden."
+    },
+    "fallback": {
+      "title": "Keine Aufgaben gefunden",
+      "description": "Erstellen Sie Ihre erste Aufgabe, um zu beginnen."
+    }
   }
 }

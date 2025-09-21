@@ -882,7 +882,8 @@ export function TaskScheduleContent({
           <div className="mb-3">
             <div className="flex gap-2">
               <Input
-                placeholder={t("schedule.placeholder", "e.g., tomorrow 3PM, next monday, daily")}
+                // NOTE: Only translate "e.g.," - examples must remain in English since NLP parsing only supports English
+                placeholder={`${t("schedule.examplePrefix", "e.g.,")} tomorrow 3PM, next monday, daily`}
                 value={nlInput}
                 onChange={(e) => setNlInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleParseInput()}

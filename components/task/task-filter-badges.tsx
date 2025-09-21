@@ -7,6 +7,8 @@ import { projectAtoms } from "@/lib/atoms"
 import { labelsAtom } from "@/lib/atoms/core/labels"
 import { type Project, type Label, type ProjectId } from "@/lib/types"
 import { getPresetLabel, getCustomRangeLabel } from "@/lib/utils/date-filter-utils"
+import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation } from "@/lib/i18n/client"
 
 import { Badge } from "@/components/ui/badge"
 import { X, Flag, Calendar, CheckCircle, Clock, Folder, Tag } from "lucide-react"
@@ -43,6 +45,9 @@ function FilterBadge({ icon, label, onRemove }: FilterBadgeProps) {
 }
 
 export function TaskFilterBadges({ className }: TaskFilterBadgesProps) {
+  const { language } = useLanguage()
+  const { t } = useTranslation(language, "task")
+
   const activeFilters = useAtomValue(activeFiltersAtom)
   const hasActiveFilters = useAtomValue(hasActiveFiltersAtom)
   const updateFilters = useSetAtom(updateFiltersAtom)
@@ -129,7 +134,11 @@ export function TaskFilterBadges({ className }: TaskFilterBadgesProps) {
               <Clock className="w-3 h-3 text-blue-600" />
             )
           }
-          label={activeFilters.completed ? "Completed" : "Active"}
+          label={
+            activeFilters.completed
+              ? t("filters.completedOnly", "Completed")
+              : t("filters.activeOnly", "Active")
+          }
           onRemove={removeCompletionFilter}
         />
       )}
@@ -149,7 +158,7 @@ export function TaskFilterBadges({ className }: TaskFilterBadgesProps) {
         <FilterBadge
           key="no-labels"
           icon={<Tag className="w-3 h-3 text-muted-foreground" />}
-          label="No labels"
+          label={t("filters.noLabels", "No labels")}
           onRemove={removeNoLabelsFilter}
         />
       ) : Array.isArray(activeFilters.labels) ? (
@@ -169,10 +178,10 @@ export function TaskFilterBadges({ className }: TaskFilterBadgesProps) {
           icon={<Calendar className="w-3 h-3 text-orange-600" />}
           label={
             activeFilters.dueDateFilter.preset
-              ? getPresetLabel(activeFilters.dueDateFilter.preset)
+              ? getPresetLabel(activeFilters.dueDateFilter.preset, t)
               : activeFilters.dueDateFilter.customRange
-                ? getCustomRangeLabel(activeFilters.dueDateFilter.customRange)
-                : "Due Date"
+                ? getCustomRangeLabel(activeFilters.dueDateFilter.customRange, t)
+                : t("filters.dueDate", "Due Date")
           }
           onRemove={removeDueDateFilter}
         />

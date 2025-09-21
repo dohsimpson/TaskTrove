@@ -20,6 +20,9 @@ interface TimeEstimationPickerProps {
   trigger: React.ReactNode
   open?: boolean
   setOpen?: (open: boolean) => void
+  triggerMode?: "click" | "hover"
+  asChild?: boolean
+  disableOutsideInteraction?: boolean
 }
 
 export function TimeEstimationPicker({
@@ -29,6 +32,9 @@ export function TimeEstimationPicker({
   trigger,
   open,
   setOpen,
+  triggerMode = "click",
+  asChild = false,
+  disableOutsideInteraction = false,
 }: TimeEstimationPickerProps) {
   // Translation setup
   const { language } = useLanguage()
@@ -218,6 +224,9 @@ export function TimeEstimationPicker({
       onOpenChange={setOpen}
       className="w-auto overflow-hidden p-0"
       align="start"
+      triggerMode={triggerMode}
+      asChild={asChild}
+      disableOutsideInteraction={disableOutsideInteraction}
       content={
         <div className="p-4 space-y-4">
           <div className="space-y-2">

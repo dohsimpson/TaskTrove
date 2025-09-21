@@ -1126,9 +1126,11 @@ export function TaskItem({
         <TimeEstimationPicker
           value={currentEstimation}
           onChange={handleSubtaskEstimationUpdate}
-          trigger={<div></div>}
+          trigger={<button type="button" className="sr-only" aria-hidden="true" />}
           open={showEstimationPicker}
           setOpen={setShowEstimationPicker}
+          triggerMode="click"
+          disableOutsideInteraction={actionsMenuOpen}
         />
       </div>
     )

@@ -19,6 +19,8 @@ interface ContentPopoverProps {
   triggerMode?: "click" | "hover"
   debounceDelay?: number
   onOpenAutoFocus?: (event: Event) => void
+  disableOutsideInteraction?: boolean
+  asChild?: boolean
   // Collision detection and viewport constraints
   avoidCollisions?: boolean
   collisionPadding?: number | { top?: number; right?: number; bottom?: number; left?: number }
@@ -41,6 +43,8 @@ export function ContentPopover({
   triggerMode,
   debounceDelay = 200,
   onOpenAutoFocus = (event) => event.preventDefault(),
+  disableOutsideInteraction = false,
+  asChild = false,
   // Collision detection defaults
   avoidCollisions = true,
   collisionPadding = 8,
@@ -51,6 +55,7 @@ export function ContentPopover({
   hideWhenDetached = false,
 }: ContentPopoverProps) {
   const [internalHoverState, setInternalHoverState] = useState(false)
+  const [hasFocusedElement, setHasFocusedElement] = useState(false)
   const settings = useAtomValue(settingsAtom)
 
   // Enhanced className with viewport constraints
@@ -82,6 +87,13 @@ export function ContentPopover({
         ? debouncedHoverState
         : internalHoverState
 
+  // Reset focus state when popover closes
+  useEffect(() => {
+    if (!isOpen) {
+      setHasFocusedElement(false)
+    }
+  }, [isOpen])
+
   const handleOpenChange = (newOpen: boolean) => {
     if (open !== undefined && effectiveTriggerMode === "click") {
       onOpenChange?.(newOpen)
@@ -111,6 +123,8 @@ export function ContentPopover({
           sticky={sticky}
           hideWhenDetached={hideWhenDetached}
           onOpenAutoFocus={onOpenAutoFocus}
+          onInteractOutside={disableOutsideInteraction ? (e) => e.preventDefault() : undefined}
+          asChild={asChild}
         >
           {content}
         </PopoverContent>
@@ -132,7 +146,22 @@ export function ContentPopover({
   }
 
   const handleContentMouseLeave = () => {
-    setInternalHoverState(false)
+    // Don't close if an element inside the popover has focus (e.g., open select dropdown)
+    if (!hasFocusedElement) {
+      setInternalHoverState(false)
+    }
+  }
+
+  const handleContentFocusIn = () => {
+    setHasFocusedElement(true)
+  }
+
+  const handleContentFocusOut = (e: React.FocusEvent) => {
+    // Only mark as unfocused if focus is moving outside the popover content
+    const relatedTarget = e.relatedTarget
+    if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+      setHasFocusedElement(false)
+    }
   }
 
   return (
@@ -159,7 +188,11 @@ export function ContentPopover({
         hideWhenDetached={hideWhenDetached}
         onMouseEnter={handleContentMouseEnter}
         onMouseLeave={handleContentMouseLeave}
+        onFocusCapture={handleContentFocusIn}
+        onBlurCapture={handleContentFocusOut}
         onOpenAutoFocus={onOpenAutoFocus}
+        onInteractOutside={disableOutsideInteraction ? (e) => e.preventDefault() : undefined}
+        asChild={asChild}
       >
         {content}
       </PopoverContent>

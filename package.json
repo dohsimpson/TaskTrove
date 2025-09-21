@@ -95,7 +95,7 @@
     "react": "^19",
     "react-day-picker": "9.8.0",
     "react-dom": "^19",
-    "react-hook-form": "^7.54.1",
+    "react-hook-form": "^7.63.0",
     "react-i18next": "^15.7.3",
     "react-resizable-panels": "^2.1.7",
     "recharts": "2.15.4",

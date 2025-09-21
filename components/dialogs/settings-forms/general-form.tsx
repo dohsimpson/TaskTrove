@@ -246,7 +246,7 @@ export function GeneralForm() {
       </SettingsCard>
 
       {/* Popover Settings */}
-      <SettingsCard title={t("general.popovers.title", "Popovers")}>
+      <SettingsCard title={t("general.popovers.title", "Popovers")} experimental>
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <Label htmlFor="popover-hover-open">

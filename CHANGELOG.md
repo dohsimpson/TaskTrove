@@ -1,5 +1,30 @@
 # tasktrove
 
+## 0.6.0
+
+### Features
+
+🎉 Feature - Add i18n support with 6 supported languages. 🌐
+🎉 Feature - Add showOverdue toggle to view options.
+🎉 Feature - Add project group navigation and viewing functionality. (#38)
+🎉 Feature - Added linkify settings and allow links in task titles.
+🎉 Feature - Added hover popover settings.
+🎉 Feature - Add sound enable/disable setting. (#41)
+
+### Minor Changes
+
+🎉 Feature - Add max-width constraints to task view for wide screens. (#40)
+🎉 Feature - Add context menu to task side panel.
+🎉 Feature - Improve TimeEstimationPicker with ContentPopover and immediate preset application.
+
+### Patch Changes
+
+🐛 Bug - Prevent audio settings reset when toggling linkify.
+🐛 Bug - Resolve hover popover instability with debounced state management.
+🐛 Bug - Resolve TaskDueDate component preventing schedule popover from opening.
+🐛 Bug - Resolve popover viewport overflow with collision detection.
+🐛 Bug - Prevent auto-focus on popover content when opening.
+
 ## 0.5.0
 
 ### Features

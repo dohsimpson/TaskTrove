@@ -16,7 +16,7 @@ import { safeSetTimeout } from "@/lib/utils"
 import { log } from "@/lib/utils/logger"
 import { handleAtomError, playSoundAtom } from "../utils"
 import { showServiceWorkerNotification } from "@/lib/utils/service-worker-notifications"
-import { DEFAULT_UUID } from "@/lib/constants/defaults"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 import { DEFAULT_NOTIFICATION_SETTINGS } from "@/lib/types/defaults"
 
 // ====================

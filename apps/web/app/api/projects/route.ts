@@ -22,7 +22,7 @@ import {
   DEFAULT_SECTION_COLOR,
   DEFAULT_PROJECT_COLORS,
   DEFAULT_UUID,
-} from "@/lib/constants/defaults"
+} from "@tasktrove/constants"
 import { createSafeProjectNameSlug } from "@/lib/utils/routing"
 import {
   withApiLogging,

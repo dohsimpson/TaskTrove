@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
-import { COLOR_OPTIONS } from "@/lib/constants/defaults"
+import { COLOR_OPTIONS } from "@tasktrove/constants"
 import { cn } from "@/lib/utils"
 
 interface ColorPickerFloatingProps {

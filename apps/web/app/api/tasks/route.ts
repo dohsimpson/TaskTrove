@@ -37,7 +37,7 @@ import {
   DEFAULT_TASK_STATUS,
   DEFAULT_UUID,
   DEFAULT_RECURRING_MODE,
-} from "@/lib/constants/defaults"
+} from "@tasktrove/constants"
 import { processRecurringTaskCompletion } from "@/lib/utils/recurring-task-processor"
 
 /**

@@ -14,7 +14,7 @@ import {
   DEFAULT_SHOW_SIDE_PANEL,
   DEFAULT_COMPACT_VIEW,
   DEFAULT_ACTIVE_FILTERS,
-} from "../constants/defaults"
+} from "@tasktrove/constants"
 
 /**
  * Default ROOT project group for empty data files

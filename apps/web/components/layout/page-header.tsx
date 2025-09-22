@@ -6,7 +6,7 @@ import { dynamicPageInfoAtom, currentRouteContextAtom } from "@/lib/atoms/ui/nav
 import { tasksAtom } from "@/lib/atoms"
 import { openQuickAddAtom, openProjectDialogAtom } from "@/lib/atoms/ui/navigation"
 import { openSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
-import { STANDARD_VIEW_METADATA } from "@/lib/constants/defaults"
+import { STANDARD_VIEW_METADATA } from "@tasktrove/constants"
 
 import { Button } from "@/components/ui/button"
 import { useSidebar } from "@/components/ui/sidebar"

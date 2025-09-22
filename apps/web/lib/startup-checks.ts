@@ -1,6 +1,6 @@
 import { promises as fs } from "fs"
 import { join } from "path"
-import { DEFAULT_DATA_FILE_PATH, DEFAULT_DATA_DIR } from "@/lib/constants/defaults"
+import { DEFAULT_DATA_FILE_PATH, DEFAULT_DATA_DIR } from "@tasktrove/constants"
 import { getMigrationInfo } from "@/lib/utils/data-migration"
 import type { Json } from "@/lib/types"
 

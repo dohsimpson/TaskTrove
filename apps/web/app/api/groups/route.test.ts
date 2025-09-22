@@ -9,7 +9,7 @@ import { NextRequest } from "next/server"
 import { GET, POST, PATCH, DELETE } from "./route"
 import { createGroupId, createProjectId, type DataFile } from "@/lib/types"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
-import { DEFAULT_UUID } from "@/lib/constants/defaults"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types/defaults"
 
 // Mock safe file operations

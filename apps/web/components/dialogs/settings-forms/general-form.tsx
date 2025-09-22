@@ -15,7 +15,7 @@ import {
 import { SettingsCard } from "@/components/ui/custom/settings-card"
 import { settingsAtom, updateSettingsAtom } from "@/lib/atoms"
 import type { StandardViewId } from "@/lib/types"
-import { START_VIEW_METADATA } from "@/lib/constants/defaults"
+import { START_VIEW_METADATA } from "@tasktrove/constants"
 import { Inbox, Calendar, Clock, CheckSquare, ListCheck, Home, Languages } from "lucide-react"
 import { useTranslation } from "@/lib/i18n/client"
 import { useLanguage } from "@/components/providers/language-provider"

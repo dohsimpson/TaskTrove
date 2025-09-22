@@ -21,7 +21,7 @@ import { SiTodoist, SiTrello, SiAsana, SiTicktick } from "@icons-pack/react-simp
 import { toast } from "sonner"
 import { dataSettingsAtom, updateDataSettingsAtom } from "@/lib/atoms/ui/user-settings-atom"
 import { queryClientAtom } from "@/lib/atoms/core/base"
-import { DEFAULT_BACKUP_TIME, SUPPORTED_IMPORT_SOURCES } from "@/lib/constants/defaults"
+import { DEFAULT_BACKUP_TIME, SUPPORTED_IMPORT_SOURCES } from "@tasktrove/constants"
 import { useTranslation } from "@/lib/i18n/client"
 import { useLanguage } from "@/components/providers/language-provider"
 

@@ -92,7 +92,7 @@ import {
   DEFAULT_AUTO_BACKUP_ENABLED,
   DEFAULT_BACKUP_TIME,
   DEFAULT_MAX_BACKUPS,
-} from "../../constants/defaults"
+} from "@tasktrove/constants"
 import {
   ROOT_PROJECT_GROUP_ID,
   ROOT_LABEL_GROUP_ID,

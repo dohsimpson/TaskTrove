@@ -2,7 +2,7 @@ import archiver from "archiver"
 import { createWriteStream } from "fs"
 import { mkdir, readdir, unlink, stat } from "fs/promises"
 import path from "path"
-import { DEFAULT_DATA_DIR, DEFAULT_BACKUP_DIR, DEFAULT_MAX_BACKUPS } from "@/lib/constants/defaults"
+import { DEFAULT_DATA_DIR, DEFAULT_BACKUP_DIR, DEFAULT_MAX_BACKUPS } from "@tasktrove/constants"
 import { safeReadDataFile } from "@/lib/utils/safe-file-operations"
 
 const BACKUP_DIR = DEFAULT_BACKUP_DIR

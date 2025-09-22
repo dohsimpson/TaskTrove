@@ -28,6 +28,7 @@
     "i18n:extract:task:watch": "i18next-parser --config i18next-parser-task.config.js --watch"
   },
   "dependencies": {
+    "@tasktrove/constants": "workspace:*",
     "@atlaskit/pragmatic-drag-and-drop": "catalog:",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "catalog:",
     "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "catalog:",

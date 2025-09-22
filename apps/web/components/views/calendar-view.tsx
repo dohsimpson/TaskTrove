@@ -41,7 +41,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
 import type { Task, Project } from "@/lib/types"
 import { TaskIdSchema } from "@/lib/types"
-import { DEFAULT_UUID } from "@/lib/constants/defaults"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 import { log } from "@/lib/utils/logger"
 
 // Constants

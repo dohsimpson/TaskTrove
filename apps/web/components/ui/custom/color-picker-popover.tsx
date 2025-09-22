@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { COLOR_OPTIONS } from "@/lib/constants/defaults"
+import { COLOR_OPTIONS } from "@tasktrove/constants"
 
 interface ColorPickerPopoverProps {
   /** The currently selected color */

@@ -21,7 +21,7 @@ import { SelectionToolbar } from "@/components/task/selection-toolbar"
 import { ProjectViewToolbar } from "@/components/task/project-view-toolbar"
 import { EditableSectionHeader } from "@/components/task/editable-section-header"
 import { TaskShadow } from "@/components/ui/custom/task-shadow"
-import { DEFAULT_SECTION_COLOR, DEFAULT_UUID } from "@/lib/constants/defaults"
+import { DEFAULT_SECTION_COLOR, DEFAULT_UUID } from "@tasktrove/constants"
 import {
   extractClosestEdge,
   attachClosestEdge,

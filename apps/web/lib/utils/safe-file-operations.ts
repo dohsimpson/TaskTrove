@@ -3,7 +3,7 @@ import { z } from "zod"
 import { Mutex } from "async-mutex"
 import { log } from "./logger"
 import { DataFile, DataFileSchema, DataFileSerializationSchema } from "@/lib/types"
-import { DEFAULT_DATA_FILE_PATH } from "@/lib/constants/defaults"
+import { DEFAULT_DATA_FILE_PATH } from "@tasktrove/constants"
 
 // Create a mutex instance to synchronize all file read/write operations
 const fileOperationsMutex = new Mutex()

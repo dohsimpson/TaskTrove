@@ -452,6 +452,9 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.90.1(react@19.1.1)
+      '@tasktrove/constants':
+        specifier: workspace:*
+        version: link:../../packages/constants
       '@uidotdev/usehooks':
         specifier: 'catalog:'
         version: 2.4.1(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -645,6 +648,24 @@ importers:
       tw-animate-css:
         specifier: 'catalog:'
         version: 1.3.8
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.2
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.4(@types/node@22.18.6)(happy-dom@18.0.1)(jiti@2.6.0)(jsdom@26.1.0)(lightningcss@1.30.1)(yaml@2.8.1)
+
+  packages/constants:
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      eslint:
+        specifier: 'catalog:'
+        version: 9.36.0(jiti@2.6.0)
       typescript:
         specifier: 'catalog:'
         version: 5.9.2
@@ -4226,6 +4247,7 @@ packages:
     resolution: {integrity: sha512-Quz3MvAwHxVYNXsOByL7xI5EB2WYOeFswqaHIA3qOK3isRWTxiplBEocmmru6XmxDB2L7jDNYtYA4FyimoAFEw==}
     engines: {node: '>=8.17.0'}
     hasBin: true
+    bundledDependencies: []
 
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}

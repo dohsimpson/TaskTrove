@@ -7,7 +7,7 @@ import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { SectionContextMenu } from "./section-context-menu"
 import { editingSectionIdAtom } from "@/lib/atoms/ui/navigation"
 import { createSectionId } from "@/lib/types"
-import { DEFAULT_UUID } from "@/lib/constants/defaults"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 import { cn } from "@/lib/utils"
 
 interface EditableSectionHeaderProps {

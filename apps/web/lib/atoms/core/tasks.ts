@@ -36,7 +36,7 @@ import {
   DEFAULT_TASK_ATTACHMENTS,
   DEFAULT_TASK_STATUS,
   DEFAULT_RECURRING_MODE,
-} from "../../constants/defaults"
+} from "@tasktrove/constants"
 import { handleAtomError, playSoundAtom } from "../utils"
 import {
   currentViewAtom,

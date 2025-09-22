@@ -26,7 +26,7 @@ import {
   DEFAULT_UUID,
   DEFAULT_SECTION_NAME,
   DEFAULT_SECTION_COLOR,
-} from "../../constants/defaults"
+} from "@tasktrove/constants"
 import { INBOX_PROJECT_ID, createSectionId, ProjectIdSchema } from "../../types/index"
 import { activeTasksAtom } from "./tasks"
 import {

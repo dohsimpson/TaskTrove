@@ -13,7 +13,7 @@ import {
 import type { Json } from "@/lib/types"
 import { createVersionString, createProjectId, createLabelId, DataFileSchema } from "@/lib/types"
 import { DEFAULT_EMPTY_DATA_FILE, DEFAULT_USER_SETTINGS } from "@/lib/types/defaults"
-import { DEFAULT_UUID } from "@/lib/constants/defaults"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,

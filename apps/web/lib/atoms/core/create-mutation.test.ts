@@ -16,7 +16,7 @@ import {
   DEFAULT_TASK_SUBTASKS,
   DEFAULT_TASK_COMMENTS,
   DEFAULT_TASK_ATTACHMENTS,
-} from "@/lib/constants/defaults"
+} from "@tasktrove/constants"
 import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types/defaults"
 
 // Mock external dependencies

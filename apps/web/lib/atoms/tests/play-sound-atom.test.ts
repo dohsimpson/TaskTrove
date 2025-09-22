@@ -13,7 +13,7 @@ import {
   DEFAULT_AUTO_BACKUP_ENABLED,
   DEFAULT_BACKUP_TIME,
   DEFAULT_MAX_BACKUPS,
-} from "../../constants/defaults"
+} from "@tasktrove/constants"
 import { playSound, type SoundType } from "../../utils/audio"
 
 // Mock the logger to avoid console noise in tests

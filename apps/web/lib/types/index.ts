@@ -928,7 +928,7 @@ export type DataFileSerialization = z.infer<typeof DataFileSerializationSchema>
 // VIEW IDENTIFIER TYPES
 // =============================================================================
 
-import { STANDARD_VIEW_IDS } from "@/lib/constants/defaults"
+import { STANDARD_VIEW_IDS } from "@tasktrove/constants"
 
 /**
  * Standard view identifiers used in the application

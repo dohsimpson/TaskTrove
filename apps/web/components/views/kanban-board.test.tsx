@@ -4,7 +4,7 @@ import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { Provider } from "jotai"
 import { KanbanBoard } from "./kanban-board"
-import { DEFAULT_SECTION_COLORS, DEFAULT_UUID } from "@/lib/constants/defaults"
+import { DEFAULT_SECTION_COLORS, DEFAULT_UUID } from "@tasktrove/constants"
 import type { Task, TaskPriority } from "@/lib/types"
 import { createTaskId, createCommentId, createLabelId, createSectionId } from "@/lib/types"
 import {

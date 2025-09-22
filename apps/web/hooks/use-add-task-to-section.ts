@@ -6,7 +6,7 @@ import {
 } from "@/lib/atoms/ui/dialogs"
 import { ProjectIdSchema, createSectionId, SectionIdSchema } from "@/lib/types"
 import type { ProjectId, SectionId } from "@/lib/types"
-import { DEFAULT_UUID } from "@/lib/constants/defaults"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 
 /**
  * Hook that provides a function to add a task to a specific section.

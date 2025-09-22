@@ -1,6 +1,6 @@
 import type { DataFile, VersionString, Json } from "@/lib/types"
 import { createVersionString, DataFileSchema } from "@/lib/types"
-import { DEFAULT_UUID } from "@/lib/constants/defaults"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 import { DEFAULT_USER_SETTINGS } from "@/lib/types/defaults"
 import packageJson from "@/package.json"
 

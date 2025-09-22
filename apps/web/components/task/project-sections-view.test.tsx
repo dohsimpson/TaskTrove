@@ -13,7 +13,7 @@ import {
   TEST_SECTION_ID_2,
   TEST_SECTION_ID_3,
 } from "@/lib/utils/test-constants"
-import { DEFAULT_SECTION_COLORS } from "@/lib/constants/defaults"
+import { DEFAULT_SECTION_COLORS } from "@tasktrove/constants"
 
 // Create hoisted mocks and data
 const mockJotai = vi.hoisted(() => ({

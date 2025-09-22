@@ -59,7 +59,7 @@ import {
 } from "@/components/ui/custom/animated-collapsible"
 import { log } from "@/lib/utils/logger"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { DEFAULT_UUID } from "@/lib/constants/defaults"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 
 // Constants
 const SIDE_PANEL_WIDTH = 320 // 320px = w-80 in Tailwind

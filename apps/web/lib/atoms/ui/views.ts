@@ -9,7 +9,7 @@ import {
   ViewStateSchema,
 } from "@/lib/types"
 import { DEFAULT_VIEW_STATE } from "@/lib/types/defaults"
-import { DEFAULT_ACTIVE_FILTERS, STANDARD_VIEW_IDS } from "../../constants/defaults"
+import { DEFAULT_ACTIVE_FILTERS, STANDARD_VIEW_IDS } from "@tasktrove/constants"
 import { createAtomWithStorage } from "@/lib/atoms/utils"
 import { log } from "../../utils/logger"
 import { showTaskPanelAtom, selectedTaskIdAtom } from "./dialogs"

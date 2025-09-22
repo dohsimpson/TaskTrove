@@ -8,7 +8,7 @@ import { atom } from "jotai"
 import { createStore } from "jotai"
 import type { Task, Project, ProjectSection } from "@/lib/types"
 import { INBOX_PROJECT_ID, createTaskId, createProjectId, createSectionId } from "@/lib/types"
-import { DEFAULT_UUID } from "@/lib/constants/defaults"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,

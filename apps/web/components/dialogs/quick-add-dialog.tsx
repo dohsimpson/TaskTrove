@@ -54,7 +54,7 @@ import {
   isValidPriority,
   createLabelId,
 } from "@/lib/types"
-import { PLACEHOLDER_TASK_INPUT } from "@/lib/constants/defaults"
+import { PLACEHOLDER_TASK_INPUT } from "@tasktrove/constants"
 import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
 import { log } from "@/lib/utils/logger"
 import { convertTimeToHHMMSS } from "@/lib/utils/enhanced-natural-language-parser"

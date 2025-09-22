@@ -27,14 +27,14 @@ import {
   createProjectId,
   createGroupId,
 } from "@/lib/types"
-import { DEFAULT_GROUP_COLOR, DEFAULT_ROUTE } from "@/lib/constants/defaults"
+import { DEFAULT_GROUP_COLOR, DEFAULT_ROUTE } from "@tasktrove/constants"
 import { projectsAtom } from "../core/projects"
 import { labelsAtom } from "../core/labels"
 import { allGroupsAtom } from "../core/groups"
 import { resolveProject, resolveLabel, resolveProjectGroup } from "@/lib/utils/routing"
 import { findGroupById } from "@/lib/utils/group-utils"
 import { log } from "@/lib/utils/logger"
-import { STANDARD_VIEW_IDS, STANDARD_VIEW_METADATA } from "@/lib/constants/defaults"
+import { STANDARD_VIEW_IDS, STANDARD_VIEW_METADATA } from "@tasktrove/constants"
 
 // Internal validation functions for navigation parsing
 function isValidProjectId(id: string): id is ProjectId {

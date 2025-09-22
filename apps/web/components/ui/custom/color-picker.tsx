@@ -1,6 +1,6 @@
 "use client"
 
-import { COLOR_OPTIONS } from "@/lib/constants/defaults"
+import { COLOR_OPTIONS } from "@tasktrove/constants"
 
 interface ColorPickerProps {
   /** The currently selected color */

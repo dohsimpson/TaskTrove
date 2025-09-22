@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ColorPicker } from "@/components/ui/custom/color-picker"
-import { COLOR_OPTIONS } from "@/lib/constants/defaults"
+import { COLOR_OPTIONS } from "@tasktrove/constants"
 import { useAtomValue, useSetAtom } from "jotai"
 import type { Atom, WritableAtom } from "jotai"
 import { useTranslation } from "@/lib/i18n/client"

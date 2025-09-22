@@ -16,7 +16,7 @@ import {
   DEFAULT_AUTO_BACKUP_ENABLED,
   DEFAULT_BACKUP_TIME,
   DEFAULT_MAX_BACKUPS,
-} from "../../constants/defaults"
+} from "@tasktrove/constants"
 
 /**
  * Core settings management atoms for TaskTrove's Jotai migration

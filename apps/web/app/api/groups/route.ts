@@ -30,7 +30,7 @@ import {
   type EnhancedRequest,
 } from "@/lib/middleware/api-logger"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
-import { DEFAULT_LABEL_COLORS } from "@/lib/constants/defaults"
+import { DEFAULT_LABEL_COLORS } from "@tasktrove/constants"
 import { isGroup } from "@/lib/types"
 
 /**

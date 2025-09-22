@@ -1,6 +1,6 @@
 import cron from "node-cron"
 import { runBackup } from "./backup"
-import { DEFAULT_BACKUP_TIME } from "@/lib/constants/defaults"
+import { DEFAULT_BACKUP_TIME } from "@tasktrove/constants"
 import { safeReadDataFile } from "@/lib/utils/safe-file-operations"
 
 let isSchedulerInitialized = false

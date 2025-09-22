@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { DEFAULT_TASK_PRIORITY } from "@/lib/constants/defaults"
+import { DEFAULT_TASK_PRIORITY } from "@tasktrove/constants"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"

@@ -1,19 +1,26 @@
 {
-  "name": "@tasktrove/constants",
+  "name": "@tasktrove/types",
   "version": "0.0.0",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./defaults": "./src/defaults.ts"
   },
   "scripts": {
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "dependencies": {},
+  "dependencies": {
+    "zod": "catalog:",
+    "date-fns": "latest",
+    "uuid": "catalog:",
+    "@tasktrove/constants": "workspace:*"
+  },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@types/uuid": "catalog:",
     "eslint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

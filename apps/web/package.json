@@ -1,6 +1,6 @@
 {
   "name": "web",
-  "version": "0.0.0",
+  "version": "0.6.0",
   "private": true,
   "scripts": {
     "build": "next build",
@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@tasktrove/constants": "workspace:*",
+    "@tasktrove/types": "workspace:*",
     "@atlaskit/pragmatic-drag-and-drop": "catalog:",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "catalog:",
     "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "catalog:",

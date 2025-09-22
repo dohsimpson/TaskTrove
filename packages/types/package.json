@@ -1,6 +1,7 @@
 {
   "name": "@tasktrove/types",
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
@@ -8,6 +9,7 @@
   },
   "scripts": {
     "lint": "eslint .",
+    "typecheck": "tsgo --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -20,6 +22,7 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@typescript/native-preview": "catalog:",
     "@types/uuid": "catalog:",
     "eslint": "catalog:",
     "typescript": "catalog:",

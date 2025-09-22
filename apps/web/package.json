@@ -30,6 +30,7 @@
   "dependencies": {
     "@tasktrove/constants": "workspace:*",
     "@tasktrove/types": "workspace:*",
+    "@tasktrove/utils": "workspace:*",
     "@atlaskit/pragmatic-drag-and-drop": "catalog:",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "catalog:",
     "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "catalog:",

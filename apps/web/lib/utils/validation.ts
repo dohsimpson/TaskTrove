@@ -7,7 +7,10 @@
 
 import { z } from "zod"
 import { NextResponse } from "next/server"
-import { ErrorResponse, Task, UpdateTaskRequest, CreateTaskRequest } from "@/lib/types"
+import { ErrorResponse } from "@/lib/types"
+
+// Re-export pure validation utilities from @tasktrove/utils package
+export { isTaskInInbox, formatZodErrors, normalizeTaskUpdate } from "@tasktrove/utils/validation"
 
 /**
  * Validation result type
@@ -29,6 +32,8 @@ export async function validateRequestBody<T>(
     const result = schema.safeParse(body)
 
     if (!result.success) {
+      // Use the pure formatZodErrors function from @tasktrove/utils
+      const { formatZodErrors } = await import("@tasktrove/utils/validation")
       const errorResponse: ErrorResponse = {
         error: "Validation failed",
         message: formatZodErrors(result.error),
@@ -65,6 +70,8 @@ export function validateData<T>(data: unknown, schema: z.ZodSchema<T>): Validati
   const result = schema.safeParse(data)
 
   if (!result.success) {
+    // Use the pure formatZodErrors function from @tasktrove/utils
+    const { formatZodErrors } = require("@tasktrove/utils/validation")
     const errorResponse: ErrorResponse = {
       error: "Validation failed",
       message: formatZodErrors(result.error),
@@ -80,18 +87,6 @@ export function validateData<T>(data: unknown, schema: z.ZodSchema<T>): Validati
     success: true,
     data: result.data,
   }
-}
-
-/**
- * Formats Zod validation errors into a readable string
- */
-function formatZodErrors(error: z.ZodError): string {
-  return error.issues
-    .map((err: z.ZodIssue) => {
-      const path = err.path.length > 0 ? `${err.path.join(".")}: ` : ""
-      return `${path}${err.message}`
-    })
-    .join("; ")
 }
 
 /**
@@ -134,20 +129,4 @@ export function createSuccessResponse<T>(
       Expires: "0",
     },
   })
-}
-
-/**
- * Normalizes null values to undefined for API consistency
- * This function converts null values for specific task fields to undefined
- * to match the backend API behavior and ensure optimistic updates align with server responses
- */
-export function normalizeTaskUpdate<T extends Task | CreateTaskRequest | UpdateTaskRequest>(
-  task: T,
-): T {
-  return {
-    ...task,
-    dueDate: task.dueDate === null ? undefined : task.dueDate,
-    dueTime: task.dueTime === null ? undefined : task.dueTime,
-    recurring: task.recurring === null ? undefined : task.recurring,
-  }
 }

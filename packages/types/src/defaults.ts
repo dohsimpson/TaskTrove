@@ -1,4 +1,10 @@
-import type { DataFile, ProjectGroup, LabelGroup, ViewState } from "./index";
+import type {
+  DataFile,
+  ProjectGroup,
+  LabelGroup,
+  ViewState,
+  GroupId,
+} from "./index";
 import { createGroupId } from "./index";
 import {
   DEFAULT_UUID,
@@ -23,8 +29,8 @@ import {
  * Root group ID constants - these are the foundational group IDs that should be used
  * consistently across the entire application for the root project and label groups.
  */
-export const ROOT_PROJECT_GROUP_ID = createGroupId(DEFAULT_UUID);
-export const ROOT_LABEL_GROUP_ID = createGroupId(DEFAULT_UUID);
+export const ROOT_PROJECT_GROUP_ID: GroupId = createGroupId(DEFAULT_UUID);
+export const ROOT_LABEL_GROUP_ID: GroupId = createGroupId(DEFAULT_UUID);
 
 export const DEFAULT_PROJECT_GROUP: ProjectGroup = {
   type: "project",

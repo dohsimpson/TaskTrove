@@ -1,0 +1,48 @@
+{
+  "name": "@tasktrove/utils",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#*": "./src/*"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./color": "./src/color.ts",
+    "./styling": "./src/styling.ts",
+    "./time": "./src/time.ts",
+    "./validation": "./src/validation.ts",
+    "./routing": "./src/routing.ts",
+    "./group-utils": "./src/group-utils.ts",
+    "./parser": "./src/parser.ts",
+    "./time-estimation": "./src/time-estimation.ts",
+    "./origin-validation": "./src/origin-validation.ts",
+    "./shared-patterns": "./src/shared-patterns.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsgo --noEmit",
+    "test": "vitest run --reporter=dot --no-coverage",
+    "test:watch": "vitest --watch"
+  },
+  "dependencies": {
+    "@tasktrove/types": "workspace:*",
+    "clsx": "catalog:",
+    "date-fns": "latest",
+    "slugify": "catalog:",
+    "tailwind-merge": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@testing-library/jest-dom": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "happy-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

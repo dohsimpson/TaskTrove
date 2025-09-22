@@ -13,7 +13,11 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
 
 # Rebuild the source code only when needed
 FROM base AS builder
+
 WORKDIR /app
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
@@ -21,24 +25,21 @@ COPY . .
 RUN --mount=type=cache,target=/app/.next/cache \
     corepack enable pnpm && pnpm run build
 
-# Production image - use target platform
-FROM node:22-alpine AS runner
-WORKDIR /app
-
-# Add ghcr.io label for repo association
+# use distroless image for security and image size
+FROM gcr.io/distroless/nodejs22-debian12 AS runner
 LABEL org.opencontainers.image.source=https://github.com/dohsimpson/TaskTrove
 
-ENV NODE_ENV=production
-COPY --from=builder /app/public ./public
+USER 1000:1000
+WORKDIR /app
 
-RUN mkdir .next && chown 1000:1000 .next
-RUN mkdir -p data && chown 1000:1000 data
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
 
 COPY --from=builder --chown=1000:1000 /app/.next/standalone ./
 COPY --from=builder --chown=1000:1000 /app/.next/static ./.next/static
 
-USER 1000:1000
 EXPOSE 3000
-ENV PORT=3000
 
-CMD ["sh", "-c", "HOSTNAME=0.0.0.0 node server.js"]
+CMD ["server.js"]

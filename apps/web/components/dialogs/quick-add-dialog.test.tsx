@@ -261,6 +261,23 @@ const mockProjects: Project[] = [
     taskOrder: [],
   },
 ]
+
+const mockProjectGroups = {
+  projectGroups: {
+    type: "project" as const,
+    id: "root",
+    name: "All Projects",
+    slug: "all-projects",
+    items: [TEST_PROJECT_ID_1, TEST_PROJECT_ID_2],
+  },
+  labelGroups: {
+    type: "label" as const,
+    id: "root-labels",
+    name: "All Labels",
+    slug: "all-labels",
+    items: [],
+  },
+}
 const mockRouteContext = {
   pathname: "/today",
   viewId: "today",
@@ -463,6 +480,7 @@ describe("QuickAddDialog", () => {
       }
       const settingsResult = handleSettingsAtomInMock(atom)
       if (settingsResult) return settingsResult
+      if (atomStr.includes("allGroups") || atomStr.includes("AllGroups")) return mockProjectGroups
       if (atomStr.includes("label") || atomStr.includes("Label")) return mockLabels
       if (atomStr.includes("project") || atomStr.includes("Project")) return mockProjects
       if (atomStr.includes("route") || atomStr.includes("context")) return mockRouteContext

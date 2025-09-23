@@ -448,9 +448,9 @@ export function QuickAddDialog() {
     })
   }
 
-  const handleManualProjectSelect = (projectId: ProjectId) => {
+  const handleManualProjectSelect = (projectId: ProjectId, sectionId?: SectionId) => {
     projectSetByParsingRef.current = false
-    updateNewTask({ updateRequest: { projectId } })
+    updateNewTask({ updateRequest: { projectId, sectionId } })
   }
 
   const handleManualPrioritySelect = (priority: TaskPriority) => {

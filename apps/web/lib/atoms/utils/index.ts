@@ -147,3 +147,7 @@ export const playSoundAtom = atom(
   },
 )
 playSoundAtom.debugLabel = "playSoundAtom"
+
+// Export the web app's log function to override atoms package log
+// This ensures tests that mock the web app's log function work correctly
+export { log }

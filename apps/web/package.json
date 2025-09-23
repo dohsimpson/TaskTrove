@@ -28,6 +28,7 @@
     "i18n:extract:task:watch": "i18next-parser --config i18next-parser-task.config.js --watch"
   },
   "dependencies": {
+    "@tasktrove/atoms": "workspace:*",
     "@tasktrove/constants": "workspace:*",
     "@tasktrove/types": "workspace:*",
     "@tasktrove/utils": "workspace:*",

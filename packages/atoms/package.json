@@ -1,0 +1,57 @@
+{
+  "name": "@tasktrove/atoms",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tasks": "./src/core/tasks.ts",
+    "./projects": "./src/core/projects.ts",
+    "./labels": "./src/core/labels.ts",
+    "./base": "./src/core/base.ts",
+    "./settings": "./src/core/settings.ts",
+    "./notifications": "./src/core/notifications.ts",
+    "./history": "./src/core/history.ts",
+    "./groups": "./src/core/groups.ts",
+    "./views": "./src/ui/views.ts",
+    "./user-settings": "./src/ui/user-settings-atom.ts",
+    "./focus-timer": "./src/ui/focus-timer.ts",
+    "./dialogs": "./src/ui/dialogs.ts",
+    "./keyboard-context": "./src/ui/keyboard-context.ts",
+    "./pomodoro": "./src/ui/pomodoro.ts",
+    "./selection": "./src/ui/selection.ts",
+    "./navigation": "./src/ui/navigation.ts",
+    "./analytics": "./src/features/analytics.ts",
+    "./utils": "./src/utils/atom-helpers.ts",
+    "./utils/test-helpers": "./src/utils/test-helpers.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsgo --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "jotai": "catalog:",
+    "jotai-history": "catalog:",
+    "jotai-tanstack-query": "catalog:",
+    "@tanstack/react-query": "catalog:",
+    "@tasktrove/types": "workspace:*",
+    "@tasktrove/constants": "workspace:*",
+    "@tasktrove/utils": "workspace:*",
+    "uuid": "catalog:",
+    "zod": "catalog:",
+    "react": "catalog:",
+    "date-fns": "latest"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@typescript/native-preview": "catalog:",
+    "@types/uuid": "catalog:",
+    "@types/react": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

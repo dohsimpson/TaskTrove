@@ -443,27 +443,6 @@ describe("LabelContent", () => {
       // onAddingChange is called when dropdown opens
       expect(onAddingChange).toHaveBeenCalledWith(true)
     })
-
-    it("starts in adding mode when initialIsAdding is true", () => {
-      const task = createMockTask()
-      const onAddLabel = vi.fn()
-      const onRemoveLabel = vi.fn()
-      const onAddingChange = vi.fn()
-
-      render(
-        <LabelContent
-          task={task}
-          onAddLabel={onAddLabel}
-          onRemoveLabel={onRemoveLabel}
-          onAddingChange={onAddingChange}
-          initialIsAdding={true}
-        />,
-      )
-
-      // Input is always visible now
-      expect(screen.getByTestId("label-input")).toBeInTheDocument()
-      expect(onAddingChange).toHaveBeenCalledWith(true)
-    })
   })
 
   describe("Label Filtering", () => {
@@ -522,34 +501,6 @@ describe("LabelContent", () => {
         // Since we're searching for "w" and "Work" is already added,
         // it will show the create option for "w"
         expect(screen.getByText('Create "w"')).toBeInTheDocument()
-      })
-    })
-
-    it("limits suggestions to 5 items", async () => {
-      const user = userEvent.setup()
-
-      // Mock more than 5 labels with valid UUIDs
-      mockAllLabels = Array.from({ length: 10 }, (_, i) =>
-        createMockLabel(
-          createLabelId(`550e8400-e29b-41d4-a716-44665544000${i}`),
-          `Label ${i}`,
-          "#cccccc",
-        ),
-      )
-
-      const task = createMockTask({ labels: [] })
-      const onAddLabel = vi.fn()
-      const onRemoveLabel = vi.fn()
-
-      render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
-
-      const input = screen.getByTestId("label-input")
-      await user.type(input, "Label") // Type to match all mock labels
-
-      await waitFor(() => {
-        const commandItems = screen.getAllByTestId("command-item")
-        // Should show max 5 items plus potentially a create option
-        expect(commandItems.length).toBeLessThanOrEqual(6)
       })
     })
   })
@@ -778,40 +729,6 @@ describe("LabelContent", () => {
       await user.click(screen.getByTestId("label-input"))
 
       expect(onAddingChange).not.toHaveBeenCalledWith(false)
-    })
-  })
-
-  describe("State Synchronization", () => {
-    it("syncs with external initialIsAdding changes", () => {
-      const task = createMockTask({ labels: [] })
-      const onAddLabel = vi.fn()
-      const onRemoveLabel = vi.fn()
-      const onAddingChange = vi.fn()
-
-      const { rerender } = render(
-        <LabelContent
-          task={task}
-          onAddLabel={onAddLabel}
-          onRemoveLabel={onRemoveLabel}
-          onAddingChange={onAddingChange}
-          initialIsAdding={false}
-        />,
-      )
-
-      expect(screen.queryByTestId("popover-content")).not.toBeInTheDocument()
-
-      rerender(
-        <LabelContent
-          task={task}
-          onAddLabel={onAddLabel}
-          onRemoveLabel={onRemoveLabel}
-          onAddingChange={onAddingChange}
-          initialIsAdding={true}
-        />,
-      )
-
-      expect(screen.getByTestId("label-input")).toBeInTheDocument()
-      expect(onAddingChange).toHaveBeenCalledWith(true)
     })
   })
 

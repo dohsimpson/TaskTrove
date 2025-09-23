@@ -22,7 +22,7 @@ interface LabelContentProps {
   mode?: "inline" | "popover"
   className?: string
   onAddingChange?: (isAdding: boolean) => void
-  initialIsAdding?: boolean
+  focusInput?: boolean
 }
 
 export function LabelContent({
@@ -33,12 +33,13 @@ export function LabelContent({
   mode = "inline",
   className,
   onAddingChange,
-  initialIsAdding = false,
+  focusInput,
 }: LabelContentProps) {
   // Translation setup
   const { language } = useLanguage()
   const { t } = useTranslation(language, "task")
 
+  const [inputFocus, setInputFocus] = useState(focusInput)
   const [newLabel, setNewLabel] = useState("")
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const commandRef = useRef<HTMLDivElement>(null)
@@ -50,28 +51,18 @@ export function LabelContent({
   const taskLabelIds = React.useMemo(() => task?.labels || [], [task?.labels])
   const taskLabels = task ? getLabelsFromIds(task.labels) : []
 
-  // Sync internal state with external initialIsAdding prop
-  useEffect(() => {
-    if (initialIsAdding) {
-      onAddingChange?.(true)
-    }
-  }, [initialIsAdding, onAddingChange])
-
-  const getFilteredLabels = useCallback(() => {
+  const filteredLabels = React.useMemo(() => {
     const searchTerm = newLabel.toLowerCase().trim()
 
     // First filter out already added labels (now comparing by ID)
     const availableLabels = allLabels.filter((label) => !taskLabelIds.includes(label.id))
 
-    if (!searchTerm) return availableLabels.slice(0, 5) // Show first 5 available if no search
+    if (!searchTerm) return availableLabels
 
-    return availableLabels
-      .filter((label) => label.name.toLowerCase().includes(searchTerm))
-      .slice(0, 5) // Limit to 5 suggestions
+    return availableLabels.filter((label) => label.name.toLowerCase().includes(searchTerm))
   }, [newLabel, allLabels, taskLabelIds])
 
   const getAllOptions = () => {
-    const filteredLabels = getFilteredLabels()
     const options: Array<Label | { id: string; name: string; isCreate: true }> = [...filteredLabels]
 
     // Add create option if it should be shown
@@ -104,13 +95,12 @@ export function LabelContent({
 
   // Reset selected index when search term changes and set to first option if available
   useEffect(() => {
-    const filteredLabels = getFilteredLabels()
     const hasCreateOption =
       newLabel.trim() &&
       !filteredLabels.some((label) => label.name.toLowerCase() === newLabel.trim().toLowerCase())
     const totalOptions = filteredLabels.length + (hasCreateOption ? 1 : 0)
     setSelectedIndex(totalOptions > 0 ? 0 : -1)
-  }, [newLabel, allLabels, taskLabelIds, getFilteredLabels])
+  }, [newLabel, allLabels, taskLabelIds, filteredLabels])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     const allOptions = getAllOptions()
@@ -173,7 +163,7 @@ export function LabelContent({
 
       {/* Add Label Interface - Similar to comment input */}
       <div className="flex gap-2">
-        <Popover open={!!newLabel.trim()}>
+        <Popover open={inputFocus}>
           <PopoverTrigger asChild>
             <div className="flex-1">
               <Input
@@ -183,6 +173,9 @@ export function LabelContent({
                 onKeyDown={handleKeyDown}
                 className="text-sm h-9"
                 data-testid="label-input"
+                onBlur={() => setInputFocus(false)}
+                onFocus={() => setInputFocus(true)}
+                autoFocus={inputFocus}
               />
             </div>
           </PopoverTrigger>
@@ -196,10 +189,13 @@ export function LabelContent({
               <Command>
                 <CommandList className="max-h-48">
                   <CommandGroup>
-                    {getFilteredLabels().map((label, index) => (
+                    {filteredLabels.map((label, index) => (
                       <CommandItem
                         key={label.id}
-                        onSelect={() => handleAddLabel(label.name)}
+                        onMouseDown={(e) => {
+                          e.preventDefault()
+                          handleAddLabel(label.name)
+                        }}
                         className={cn(
                           "flex items-center gap-2 cursor-pointer",
                           selectedIndex === index && "bg-accent",
@@ -212,21 +208,20 @@ export function LabelContent({
                         <span>{label.name}</span>
                       </CommandItem>
                     ))}
-                    {newLabel.trim() &&
-                      !getFilteredLabels().some(
-                        (label) => label.name.toLowerCase() === newLabel.trim().toLowerCase(),
-                      ) && (
-                        <CommandItem
-                          onSelect={() => handleAddLabel()}
-                          className={cn(
-                            "flex items-center gap-2 cursor-pointer",
-                            selectedIndex === getFilteredLabels().length && "bg-accent",
-                          )}
-                        >
-                          <Plus className="h-3 w-3 mr-2" />
-                          {t("labels.createLabel", 'Create "{{name}}"', { name: newLabel.trim() })}
-                        </CommandItem>
+                    <CommandItem
+                      disabled={!newLabel.trim()}
+                      onMouseDown={(e) => {
+                        e.preventDefault()
+                        handleAddLabel()
+                      }}
+                      className={cn(
+                        "flex items-center gap-2 cursor-pointer",
+                        selectedIndex === filteredLabels.length && "bg-accent",
                       )}
+                    >
+                      <Plus className="h-3 w-3 mr-2" />
+                      {t("labels.createLabel", 'Create "{{name}}"', { name: newLabel.trim() })}
+                    </CommandItem>
                   </CommandGroup>
                 </CommandList>
               </Command>

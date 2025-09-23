@@ -61,7 +61,7 @@ interface MockLabelContentProps {
   onRemoveLabel: (labelId: LabelId) => void
   mode?: "inline" | "popover"
   onAddingChange?: (isAdding: boolean) => void
-  initialIsAdding?: boolean
+  focusInput?: boolean
 }
 
 vi.mock("./label-content", () => ({
@@ -72,14 +72,14 @@ vi.mock("./label-content", () => ({
     onRemoveLabel,
     mode,
     onAddingChange,
-    initialIsAdding,
+    focusInput,
   }: MockLabelContentProps) => (
     <div data-testid="label-content">
       <div data-testid="label-content-taskId">{taskId || "undefined"}</div>
       <div data-testid="label-content-task">{task?.id || "undefined"}</div>
       <div data-testid="label-content-mode">{mode}</div>
       <div data-testid="label-content-labels-count">{task?.labels?.length ?? 0}</div>
-      <div data-testid="label-content-initial-adding">{String(initialIsAdding)}</div>
+      <div data-testid="label-content-focus-input">{String(focusInput)}</div>
       <button onClick={() => onAddLabel("test label")}>Mock Add Label</button>
       <button onClick={() => onRemoveLabel(TEST_LABEL_ID_1)}>Mock Remove Label</button>
       <button onClick={() => onAddingChange?.(true)}>Mock Start Adding</button>
@@ -344,7 +344,7 @@ describe("LabelManagementPopover", () => {
 
       await user.click(screen.getByText("Open Labels"))
 
-      expect(screen.getByTestId("label-content-initial-adding")).toHaveTextContent("true")
+      expect(screen.getByTestId("label-content-focus-input")).toHaveTextContent("true")
       expect(screen.getByTestId("label-content-labels-count")).toHaveTextContent("0")
     })
 
@@ -368,7 +368,7 @@ describe("LabelManagementPopover", () => {
 
       await user.click(screen.getByText("Open Labels"))
 
-      expect(screen.getByTestId("label-content-initial-adding")).toHaveTextContent("false")
+      expect(screen.getByTestId("label-content-focus-input")).toHaveTextContent("true")
       expect(screen.getByTestId("label-content-labels-count")).toHaveTextContent("2")
     })
 
@@ -385,7 +385,7 @@ describe("LabelManagementPopover", () => {
 
       await user.click(screen.getByText("Open Labels"))
 
-      expect(screen.getByTestId("label-content-initial-adding")).toHaveTextContent("false")
+      expect(screen.getByTestId("label-content-focus-input")).toHaveTextContent("true")
       expect(screen.getByTestId("label-content-task")).toHaveTextContent("undefined")
     })
   })
@@ -415,7 +415,7 @@ describe("LabelManagementPopover", () => {
       await user.click(screen.getByText("Open Labels"))
 
       // Since the task has no labels, it should auto-start again
-      expect(screen.getByTestId("label-content-initial-adding")).toHaveTextContent("true")
+      expect(screen.getByTestId("label-content-focus-input")).toHaveTextContent("true")
     })
 
     it("closes popover when canceling add with no existing labels", async () => {
@@ -521,7 +521,7 @@ describe("LabelManagementPopover", () => {
       await user.click(screen.getByText("Open Labels"))
 
       // Should start with adding state true because no labels
-      expect(screen.getByTestId("label-content-initial-adding")).toHaveTextContent("true")
+      expect(screen.getByTestId("label-content-focus-input")).toHaveTextContent("true")
 
       // Stop adding should close the popover
       await user.click(screen.getByText("Mock Stop Adding"))
@@ -564,7 +564,7 @@ describe("LabelManagementPopover", () => {
 
       expect(screen.getByTestId("label-content-task")).toHaveTextContent("undefined")
       expect(screen.getByTestId("label-content-taskId")).toHaveTextContent("undefined")
-      expect(screen.getByTestId("label-content-initial-adding")).toHaveTextContent("false")
+      expect(screen.getByTestId("label-content-focus-input")).toHaveTextContent("true")
     })
 
     it("handles task with undefined labels gracefully", async () => {

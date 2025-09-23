@@ -38,5 +38,6 @@ coverage/
 plans/
 
 dev-data/
-data/
+/data/
+apps/web/data/
 backups/

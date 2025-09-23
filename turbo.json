@@ -1,6 +1,9 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "tasks": {
+    "transit": {
+      "dependsOn": ["^transit"]
+    },
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
@@ -11,13 +14,13 @@
       "persistent": true
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": ["transit"]
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"]
+      "dependsOn": ["transit"]
     },
     "test": {
-      "dependsOn": ["^test"]
+      "dependsOn": ["transit"]
     },
     "test:changed": {
       "cache": false
@@ -30,7 +33,7 @@
       "outputs": ["coverage/**"]
     },
     "check": {
-      "dependsOn": ["typecheck", "lint", "test"]
+      "dependsOn": ["transit"]
     }
   }
 }

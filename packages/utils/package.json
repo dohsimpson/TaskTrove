@@ -22,6 +22,7 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsgo --noEmit",
+    "check": "tsgo --noEmit && pnpm lint && pnpm test",
     "test": "vitest run --reporter=dot --no-coverage",
     "test:watch": "vitest --watch"
   },

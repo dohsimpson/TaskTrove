@@ -10,6 +10,7 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsgo --noEmit",
+    "check": "tsgo --noEmit && pnpm lint && pnpm test",
     "test": "vitest run",
     "test:watch": "vitest"
   },

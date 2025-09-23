@@ -91,32 +91,3 @@ export async function showServiceWorkerNotification(
   // Return expected result structure
   return { success: true };
 }
-
-// Routing utility placeholders - NEXTJS DEPENDENT
-export function resolveProject(projectId: string, projects: any[]): any | null {
-  // Platform-dependent implementation placeholder
-  return projects.find((p) => p.id === projectId) || null;
-}
-
-export function resolveLabel(labelId: string, labels: any[]): any | null {
-  // Platform-dependent implementation placeholder
-  return labels.find((l) => l.id === labelId) || null;
-}
-
-export function resolveProjectGroup(groupId: string, groups: any): any | null {
-  // Platform-dependent implementation placeholder - groups could be object or array
-  if (Array.isArray(groups)) {
-    return groups.find((g: any) => g.id === groupId) || null;
-  }
-  // Handle groups as object structure
-  return groups.find?.((g: any) => g.id === groupId) || null;
-}
-
-export function findGroupById(groups: any, groupId: string): any | null {
-  // Platform-dependent implementation placeholder - groups could be object or array
-  if (Array.isArray(groups)) {
-    return groups.find((g: any) => g.id === groupId) || null;
-  }
-  // Handle groups as object structure with items
-  return groups?.items?.find?.((g: any) => g.id === groupId) || null;
-}

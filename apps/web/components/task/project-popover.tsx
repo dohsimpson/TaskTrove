@@ -8,8 +8,6 @@ import type { Task, ProjectId } from "@/lib/types"
 interface ProjectPopoverProps {
   // Mode 1: Task-based (for TaskItem)
   task?: Task
-  // Mode 2: Callback-based (for QuickAdd)
-  selectedProjectId?: ProjectId
   onUpdate?: (projectId: ProjectId) => void
   // Common props
   children: React.ReactNode
@@ -21,7 +19,6 @@ interface ProjectPopoverProps {
 
 export function ProjectPopover({
   task,
-  selectedProjectId,
   onUpdate,
   children,
   className,
@@ -40,9 +37,7 @@ export function ProjectPopover({
     <ContentPopover
       open={open}
       onOpenChange={handleOpenChange}
-      content={
-        <ProjectContent task={task} selectedProjectId={selectedProjectId} onUpdate={onUpdate} />
-      }
+      content={<ProjectContent task={task} onUpdate={onUpdate} />}
       className={contentClassName}
       align={align}
     >

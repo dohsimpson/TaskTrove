@@ -51,6 +51,7 @@ import {
   type SectionId,
   type TaskPriority,
   ProjectIdSchema,
+  LabelIdSchema,
   isValidPriority,
   createLabelId,
 } from "@/lib/types"
@@ -83,7 +84,7 @@ export function QuickAddDialog() {
   const { language } = useLanguage()
   const { t } = useTranslation(language, "dialogs")
 
-  // Route context for current project
+  // Route context for current project and label
   const routeContext = useAtomValue(currentRouteContextAtom)
   const currentProject: ProjectId = (() => {
     if (routeContext.routeType === "project") {
@@ -94,6 +95,17 @@ export function QuickAddDialog() {
       }
     }
     return INBOX_PROJECT_ID
+  })()
+
+  const currentLabel: LabelId | null = (() => {
+    if (routeContext.routeType === "label") {
+      try {
+        return LabelIdSchema.parse(routeContext.viewId)
+      } catch {
+        return null
+      }
+    }
+    return null
   })()
 
   // UI-only state (stays local)
@@ -283,6 +295,17 @@ export function QuickAddDialog() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- newTask.labels intentionally excluded to prevent infinite re-renders
   }, [parsed?.labels, labels, updateNewTask])
 
+  // Auto-initialize values based on route context when dialog opens
+  useEffect(() => {
+    if (open) {
+      if (currentLabel) {
+        updateNewTask({ updateRequest: { labels: [...(newTask.labels || []), currentLabel] } })
+      } else if (currentProject) {
+        updateNewTask({ updateRequest: { projectId: currentProject } })
+      }
+    }
+  }, [currentLabel, currentProject, open])
+
   // Prepare autocomplete items
   const autocompleteItems = useMemo(
     () => ({
@@ -334,8 +357,8 @@ export function QuickAddDialog() {
         title: finalTitle,
         // Set defaults for required/expected fields if not set
         priority: newTask.priority ?? 4,
-        labels: newTask.labels ?? [],
-        projectId: newTask.projectId ?? currentProject,
+        labels: newTask.labels,
+        projectId: newTask.projectId,
       }
 
       await addTask(taskData)
@@ -562,7 +585,6 @@ export function QuickAddDialog() {
 
               {/* Project */}
               <ProjectPopover
-                selectedProjectId={newTask.projectId ?? currentProject}
                 onUpdate={(projectId) => handleManualProjectSelect(projectId)}
                 align="start"
                 contentClassName="w-64 p-0"
@@ -573,7 +595,7 @@ export function QuickAddDialog() {
                   className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
                 >
                   {(() => {
-                    const selectedProjectId = newTask.projectId ?? currentProject
+                    const selectedProjectId = newTask.projectId
                     const project = projects.find((p) => p.id === selectedProjectId)
                     return (
                       <>
@@ -664,9 +686,9 @@ export function QuickAddDialog() {
               </CommentManagementPopover>
 
               {/* Section - Only show if a project is selected */}
-              {(newTask.projectId ?? currentProject) !== INBOX_PROJECT_ID && (
+              {newTask.projectId !== INBOX_PROJECT_ID && (
                 <TaskSectionPopover
-                  projectId={newTask.projectId ?? currentProject}
+                  projectId={newTask.projectId}
                   onUpdate={handleManualSectionSelect}
                   align="start"
                   contentClassName="w-48 p-1"
@@ -677,8 +699,7 @@ export function QuickAddDialog() {
                     className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
                   >
                     {(() => {
-                      const selectedProjectId = newTask.projectId ?? currentProject
-                      const project = projects.find((p) => p.id === selectedProjectId)
+                      const project = projects.find((p) => p.id === newTask.projectId)
                       const section = project?.sections.find((s) => s.id === newTask.sectionId)
 
                       return (

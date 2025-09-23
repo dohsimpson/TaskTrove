@@ -51,8 +51,8 @@ import {
   resolveLabel,
   resolveProjectGroup,
   findGroupById,
-  log,
-} from "../utils/atom-helpers";
+} from "@tasktrove/utils";
+import { log } from "../utils/atom-helpers";
 import {
   STANDARD_VIEW_IDS,
   STANDARD_VIEW_METADATA,

@@ -13,18 +13,11 @@ import { INBOX_PROJECT_ID } from "@/lib/types"
 interface ProjectContentProps {
   // Mode 1: Task-based (for TaskItem)
   task?: Task
-  // Mode 2: Callback-based (for QuickAdd)
-  selectedProjectId?: ProjectId
   onUpdate?: (projectId: ProjectId) => void
   className?: string
 }
 
-export function ProjectContent({
-  task,
-  selectedProjectId,
-  onUpdate,
-  className,
-}: ProjectContentProps) {
+export function ProjectContent({ task, onUpdate, className }: ProjectContentProps) {
   // Translation setup
   const { language } = useLanguage()
   const { t } = useTranslation(language, "task")
@@ -33,7 +26,7 @@ export function ProjectContent({
   const updateTask = useSetAtom(updateTaskAtom)
 
   // Determine current project based on mode
-  const currentProjectId = task?.projectId || selectedProjectId
+  const currentProjectId = task?.projectId
   const currentProject = allProjects.find((p) => p.id === currentProjectId)
 
   // Check if currently in inbox (either no projectId or INBOX_PROJECT_ID)

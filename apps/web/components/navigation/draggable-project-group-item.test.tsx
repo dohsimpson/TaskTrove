@@ -1,9 +1,10 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen } from "@/test-utils"
+import { render, screen, fireEvent } from "@/test-utils"
 import { DraggableProjectGroupItem } from "./draggable-project-group-item"
 import type { ProjectGroup, Project } from "@/lib/types"
 import { createProjectId, createGroupId } from "@/lib/types"
+import { mockNextNavigation, mockNavigation } from "@/test-utils/mock-router"
 
 // Mock components that might cause issues
 vi.mock("./sidebar-drop-indicator", () => ({
@@ -29,6 +30,40 @@ vi.mock("@/hooks/use-context-menu-visibility", () => ({
     handleMenuOpenChange: vi.fn(),
   }),
 }))
+
+// Mock Next.js router using centralized utilities
+mockNextNavigation()
+
+// Mock Jotai hooks with test data (following sidebar-nav.test.tsx pattern)
+vi.mock("jotai", async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...Object(actual),
+    useAtomValue: vi.fn((atom: { debugLabel?: string; toString?: () => string }) => {
+      const atomStr = atom.toString?.() || ""
+
+      // Ensure isEditing is false
+      if (atomStr.includes("editingGroupId")) {
+        return null
+      }
+      // Mock project task counts
+      if (atomStr.includes("projectTaskCounts")) {
+        return { "22222222-2222-4222-8222-222222222222": 5 }
+      }
+      // Mock group expansion map
+      if (atomStr.includes("groupExpansion")) {
+        return {}
+      }
+      // Mock pathname
+      if (atomStr.includes("pathname")) {
+        return "/"
+      }
+      // Default return for other atoms
+      return []
+    }),
+    useSetAtom: vi.fn(() => vi.fn()),
+  }
+})
 
 // Mock the drag and drop modules
 const mockExtractInstruction = vi.fn()
@@ -62,10 +97,16 @@ vi.mock("@/components/ui/sidebar", () => ({
   SidebarMenuButton: ({
     children,
     className,
+    onClick,
   }: {
     children: React.ReactNode
     className?: string
-  }) => <button className={className}>{children}</button>,
+    onClick?: (e: React.MouseEvent) => void
+  }) => (
+    <button className={className} onClick={onClick}>
+      {children}
+    </button>
+  ),
   SidebarMenuBadge: ({
     children,
     className,
@@ -132,12 +173,90 @@ describe("DraggableProjectGroupItem", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockNavigation.reset()
   })
 
   it("renders group with correct name", () => {
     render(<DraggableProjectGroupItem group={mockGroup} projects={mockProjects} index={0} />)
 
     expect(screen.getByText("Test Group")).toBeInTheDocument()
+  })
+
+  describe("Chevron click functionality", () => {
+    it("clicking on chevron element toggles expansion state", () => {
+      render(<DraggableProjectGroupItem group={mockGroup} projects={mockProjects} index={0} />)
+
+      // Find the chevron element (should be the svg element inside the span with data-chevron)
+      const chevronSpan = screen.getByTestId("sidebar-menu-item").querySelector("[data-chevron]")
+      expect(chevronSpan).toBeInTheDocument()
+
+      // Create a mock svg element to simulate the actual chevron
+      const mockSvgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+      mockSvgElement.classList.add("lucide", "lucide-chevron-down", "h-3", "w-3")
+      chevronSpan?.appendChild(mockSvgElement)
+
+      // Create a click event that targets the SVG element
+      const clickEvent = new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+      })
+      Object.defineProperty(clickEvent, "target", { value: mockSvgElement, writable: false })
+
+      // Dispatch the click event on the sidebar menu button
+      const menuButton = screen.getByTestId("sidebar-menu-item").querySelector("button")
+      expect(menuButton).toBeInTheDocument()
+      menuButton?.dispatchEvent(clickEvent)
+
+      // Should not navigate when clicking chevron
+      expect(mockNavigation.getRouter().push).not.toHaveBeenCalled()
+    })
+
+    it("clicking outside chevron navigates to group page", () => {
+      render(<DraggableProjectGroupItem group={mockGroup} projects={mockProjects} index={0} />)
+
+      // Find the menu button
+      const menuButton = screen.getByTestId("sidebar-menu-item").querySelector("button")
+      expect(menuButton).toBeInTheDocument()
+
+      // Verify router was cleared
+      expect(mockNavigation.getRouter().push).not.toHaveBeenCalled()
+
+      // Click on the button (but not on the chevron area)
+      fireEvent.click(menuButton!)
+
+      // Should navigate to group page when not clicking chevron
+      expect(mockNavigation.getRouter().push).toHaveBeenCalledWith("/projectgroups/test-group")
+    })
+
+    it("SVG elements are properly detected as Element instances", () => {
+      // Test that SVG elements pass the Element instanceof check
+      const svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+      const htmlElement = document.createElement("div")
+
+      // Both should be instances of Element
+      expect(svgElement instanceof Element).toBe(true)
+      expect(htmlElement instanceof Element).toBe(true)
+
+      // But SVG should not be HTMLElement
+      expect(svgElement instanceof HTMLElement).toBe(false)
+      expect(htmlElement instanceof HTMLElement).toBe(true)
+    })
+
+    it("chevron detection works with closest() method on SVG elements", () => {
+      // Create a structure similar to the actual component
+      const container = document.createElement("div")
+      const chevronSpan = document.createElement("span")
+      chevronSpan.setAttribute("data-chevron", "")
+      const svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+
+      chevronSpan.appendChild(svgElement)
+      container.appendChild(chevronSpan)
+
+      // Test that closest() works on SVG elements
+      const closestChevron = svgElement.closest("[data-chevron]")
+      expect(closestChevron).toBe(chevronSpan)
+      expect(closestChevron).not.toBeNull()
+    })
   })
 
   describe("Instruction-based zone detection", () => {

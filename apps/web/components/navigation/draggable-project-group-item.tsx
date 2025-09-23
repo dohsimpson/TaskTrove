@@ -120,8 +120,7 @@ export function DraggableProjectGroupItem({
   const handleGroupClick = (e: React.MouseEvent) => {
     // Check if click was on the chevron specifically
     const target = e.target
-    const isChevronClick =
-      target instanceof HTMLElement && target.closest("[data-chevron]") !== null
+    const isChevronClick = target instanceof Element && target.closest("[data-chevron]") !== null
 
     if (isChevronClick) {
       // Toggle expansion if chevron was clicked

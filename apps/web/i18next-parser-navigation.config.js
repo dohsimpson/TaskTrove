@@ -12,7 +12,7 @@ export default {
   output: "components/navigation/i18n/$LOCALE/navigation.json",
 
   // Only generate non-English files (English uses inline defaults)
-  locales: ["zh", "fr", "de", "es", "nl", "ko", "ja"],
+  locales: ["zh", "fr", "de", "es", "nl", "ko", "ja", "it"],
 
   // Use navigation as the namespace for all navigation components
   defaultNamespace: "navigation",

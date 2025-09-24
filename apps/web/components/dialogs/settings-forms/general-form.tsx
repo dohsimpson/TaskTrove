@@ -31,6 +31,7 @@ const languageNames: Record<Language, string> = {
   nl: "Nederlands (Dutch)",
   ko: "한국어 (Korean)",
   ja: "日本語 (Japanese)",
+  it: "Italiano (Italian)",
 }
 
 // Icon mapping for UI components

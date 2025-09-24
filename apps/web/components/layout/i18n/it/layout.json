@@ -1,0 +1,154 @@
+{
+  "crash": {
+    "notAvailable": {
+      "description": "Il test di crash è disponibile solo nell'ambiente di sviluppo.",
+      "title": "Test di crash non disponibile"
+    }
+  },
+  "debug": {
+    "available": {
+      "description": "Strumenti di debug e test solo per ambiente di sviluppo. Questa pagina non è disponibile in produzione.",
+      "simplified": "Gli strumenti di debug sono stati semplificati in questa versione.",
+      "title": "Strumenti di debug TaskTrove"
+    },
+    "notAvailable": {
+      "description": "Gli strumenti di debug sono disponibili solo nell'ambiente di sviluppo per motivi di sicurezza e prestazioni.",
+      "title": "Strumenti di debug non disponibili"
+    }
+  },
+  "empty": {
+    "notifications": {
+      "action": "Indietro",
+      "description": "Le notifiche sono temporaneamente disabilitate durante la migrazione",
+      "title": "Notifiche"
+    },
+    "performance": {
+      "action": "Indietro",
+      "description": "Il monitoraggio delle prestazioni è temporaneamente disabilitato durante la migrazione",
+      "title": "Monitoraggio prestazioni"
+    },
+    "voice": {
+      "action": "Indietro",
+      "description": "I comandi vocali sono temporaneamente disabilitati durante la migrazione",
+      "title": "Comandi vocali"
+    }
+  },
+  "footer": {
+    "completedToday": "Completate oggi",
+    "completedTodayLabel": "Completate oggi",
+    "dueToday": "Scadono oggi",
+    "dueTodayLabel": "Scadono oggi",
+    "no": "Nessuna {{title}}",
+    "task": "attività",
+    "tasks": "attività"
+  },
+  "header": {
+    "clickToCycleThemes": "Fai clic per cambiare tema.",
+    "collapseSidebar": "Comprimi barra laterale",
+    "currentTheme": "Tema attuale: {{theme}}. Fai clic per cambiare tema.",
+    "openSidebar": "Apri barra laterale"
+  },
+  "viewOptions": {
+    "displayOptions": {
+      "compact": {
+        "description": "Usa un layout più compatto per mostrare più attività sullo schermo",
+        "label": "Vista compatta:",
+        "title": "Vista compatta"
+      },
+      "completed": {
+        "description": "Mostra o nascondi le attività completate",
+        "label": "Attività completate:",
+        "title": "Attività completate"
+      },
+      "help": {
+        "description": "Controlla cosa è visibile nella vista attività:",
+        "tip": "Suggerimento: Queste impostazioni sono salvate per vista e persistono tra le sessioni"
+      },
+      "label": "Opzioni di visualizzazione",
+      "overdue": {
+        "description": "Mostra o nascondi le attività che hanno superato la loro scadenza",
+        "label": "Attività scadute:",
+        "title": "Attività scadute"
+      },
+      "sidePanel": {
+        "description": "Alterna pannello laterale per vedere dettagli aggiuntivi delle attività",
+        "label": "Pannello laterale:",
+        "title": "Pannello laterale"
+      }
+    },
+    "help": {
+      "advancedFilters": {
+        "description": "Usa potenti opzioni di filtraggio per query complesse",
+        "label": "Filtri avanzati:"
+      },
+      "description": "Personalizza come vedi e organizzi le tue attività:",
+      "displayOptions": {
+        "description": "Alterna attività completate, pannello laterale e vista compatta",
+        "label": "Opzioni di visualizzazione:"
+      },
+      "sortFilter": {
+        "description": "Organizza attività per priorità, scadenza o altri criteri",
+        "label": "Ordina e filtra:"
+      },
+      "tip": {
+        "description": "Le tue preferenze di vista sono salvate per percorso e persistono tra le sessioni.",
+        "label": "Suggerimento:"
+      },
+      "viewMode": {
+        "description": "Cambia tra layout lista, kanban e calendario",
+        "label": "Modalità di vista:"
+      }
+    },
+    "sort": {
+      "direction": {
+        "changeToAsc": "Cambia in crescente",
+        "changeToDesc": "Cambia in decrescente"
+      },
+      "help": {
+        "createdDate": {
+          "description": "Ordina per tempo di creazione dell'attività",
+          "label": "Data di creazione:"
+        },
+        "default": {
+          "description": "Mostra attività in ordine naturale, attività completate in basso",
+          "label": "Predefinito (non ordinato):"
+        },
+        "description": "Scegli come organizzare le tue attività:",
+        "dueDate": {
+          "description": "Ordina tutte le attività per scadenza, mescolando completate e non completate",
+          "label": "Scadenza:"
+        },
+        "priority": {
+          "description": "Ordina per priorità (1=più alta, 4=più bassa)",
+          "label": "Priorità:"
+        },
+        "status": {
+          "description": "Raggruppa per stato di completamento, poi per colonna kanban",
+          "label": "Stato:"
+        },
+        "tip": "Suggerimento: Usa i pulsanti freccia per alternare tra crescente e decrescente",
+        "title": {
+          "description": "Ordina per nome attività alfabeticamente",
+          "label": "Titolo:"
+        }
+      },
+      "label": "Ordina",
+      "options": {
+        "createdAt": "Data di creazione",
+        "default": "Predefinito (non ordinato)",
+        "dueDate": "Scadenza",
+        "priority": "Priorità",
+        "status": "Stato",
+        "title": "Titolo"
+      },
+      "placeholder": "Seleziona opzione di ordinamento",
+      "sortBy": "Ordina per",
+      "title": "Opzioni di ordinamento"
+    },
+    "title": "Opzioni di vista",
+    "viewMode": {
+      "kanbanTooltip": "Solo per progetti",
+      "label": "Modalità di vista"
+    }
+  }
+}

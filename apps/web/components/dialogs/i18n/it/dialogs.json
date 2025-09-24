@@ -1,0 +1,274 @@
+{
+  "about": {
+    "by": "Creato da:",
+    "description": "Informazioni sulla versione e sviluppatore dell'applicazione TaskTrove",
+    "madeWith": "Realizzato con",
+    "sponsorMe": "Sostienimi",
+    "starOnGitHub": "Metti una stella su GitHub",
+    "title": "Informazioni su TaskTrove"
+  },
+  "baseDialog": {
+    "buttons": {
+      "add": "Aggiungi {{type}}"
+    },
+    "color": {
+      "label": "Colore"
+    },
+    "description": {
+      "label": "Descrizione (opzionale)",
+      "placeholder": "Inserisci la descrizione di {{type}}"
+    },
+    "name": {
+      "label": "Nome {{type}}",
+      "placeholder": "Inserisci il nome {{type}}"
+    },
+    "parent": {
+      "none": "Nessuno (livello radice)",
+      "placeholder": "Seleziona {{type}}"
+    },
+    "title": "Aggiungi nuovo {{type}}"
+  },
+  "common": {
+    "cancel": "Annulla"
+  },
+  "data": {
+    "autoBackup": {
+      "backupTime": {
+        "description": "Scegli l'orario per i backup automatici",
+        "label": "Orario backup"
+      },
+      "description": "Crea automaticamente file di backup delle tue attività e progetti.",
+      "dockerNotice": {
+        "description": "In un ambiente Docker, i file di backup vengono memorizzati in /app/data/backups all'interno del container. Assicurati di montare un volume per rendere persistenti i backup.",
+        "guide": "Vedi guida Docker",
+        "title": "Ambiente Docker"
+      },
+      "enable": {
+        "description": "Esegui il backup dei tuoi dati automaticamente in modo periodico",
+        "label": "Abilita backup automatici"
+      },
+      "manualBackup": {
+        "button": "Backup manuale ora"
+      },
+      "maxBackups": {
+        "noLimit": "Nessun limite"
+      },
+      "title": "Backup automatico"
+    },
+    "taskImport": {
+      "description": "Importa attività da altre applicazioni di gestione attività.",
+      "step1": {
+        "description": "Fai clic su un servizio di gestione attività qui sotto per aprire la procedura guidata di importazione. Segui le istruzioni per esportare e convertire i tuoi dati nel formato TaskTrove.",
+        "title": "Passo 1: Esporta i tuoi dati"
+      },
+      "step2": {
+        "description": "Dopo aver utilizzato la procedura guidata di importazione sopra, scaricherai un file JSON. Carica quel file qui per importare le tue attività, progetti ed etichette in TaskTrove.",
+        "important": {
+          "description": "Carica solo il file JSON scaricato dalla procedura guidata di importazione. Le esportazioni regolari da altre app non funzioneranno.",
+          "title": "Importante:"
+        },
+        "title": "Passo 2: Carica file convertito"
+      },
+      "title": "Importa attività",
+      "upload": {
+        "button": "Carica file JSON",
+        "error": {
+          "title": "Errore di caricamento"
+        },
+        "success": {
+          "alreadyExisted": "{{items}} esistevano già",
+          "imported": "{{items}} importati",
+          "labels_one": "{{count}} etichetta",
+          "labels_many": "{{count}} etichette",
+          "labels_other": "{{count}} etichette",
+          "noNewItems": "Nessun nuovo elemento",
+          "projects_one": "{{count}} progetto",
+          "projects_many": "{{count}} progetti",
+          "projects_other": "{{count}} progetti",
+          "tasks_one": "{{count}} attività",
+          "tasks_many": "{{count}} attività",
+          "tasks_other": "{{count}} attività",
+          "title": "Importazione riuscita!"
+        },
+        "uploading": "Caricamento in corso..."
+      }
+    }
+  },
+  "delete": {
+    "bulk": {
+      "confirm": "Elimina attività",
+      "description_one": "Sei sicuro di voler eliminare {{count}} elemento?",
+      "description_many": "Sei sicuro di voler eliminare {{count}} elementi?",
+      "description_other": "Sei sicuro di voler eliminare {{count}} elementi?",
+      "title": "Elimina attività"
+    },
+    "default": {
+      "confirm": "Elimina",
+      "description": "Sei sicuro di voler eliminare questo elemento?",
+      "title": "Elimina elemento"
+    },
+    "group": {
+      "confirm": "Elimina gruppo",
+      "description": "Sei sicuro di voler eliminare \"{{- name}}\"? Questa azione non può essere annullata e rimuoverà il gruppo e tutti i suoi sottogruppi. I progetti e le attività nel gruppo non verranno eliminati.",
+      "title": "Elimina gruppo"
+    },
+    "history": {
+      "confirm": "Cancella cronologia",
+      "description": "Questo eliminerà permanentemente tutta la cronologia annulla/ripeti per attività, progetti ed etichette. Questa azione non può essere annullata.",
+      "title": "Cancella tutta la cronologia"
+    },
+    "label": {
+      "confirm": "Elimina etichetta",
+      "description": "Sei sicuro di voler eliminare \"{{- name}}\"? Questa azione non può essere annullata e rimuoverà questa etichetta da tutte le attività.",
+      "title": "Elimina etichetta"
+    },
+    "project": {
+      "confirm": "Elimina progetto",
+      "description": "Sei sicuro di voler eliminare \"{{- name}}\"? Questa azione non può essere annullata e eliminerà tutte le attività in questo progetto.",
+      "title": "Elimina progetto"
+    },
+    "section": {
+      "confirm": "Elimina sezione",
+      "description": "Sei sicuro di voler eliminare \"{{- name}}\"? Questa azione non può essere annullata e tutte le attività in questa sezione verranno spostate nella sezione predefinita.",
+      "title": "Elimina sezione"
+    },
+    "task": {
+      "confirm": "Elimina",
+      "description": "Sei sicuro di voler eliminare \"{{- name}}\"? Questa azione non può essere annullata.",
+      "title": "Elimina attività"
+    }
+  },
+  "general": {
+    "audio": {
+      "soundEffects": {
+        "description": "Riproduci suoni per completamento attività, notifiche e altre interazioni",
+        "label": "Effetti sonori"
+      },
+      "title": "Audio"
+    },
+    "defaultPage": {
+      "description": "Scegli la pagina da mostrare quando apri TaskTrove per la prima volta",
+      "label": "Mostra all'apertura di TaskTrove",
+      "title": "Pagina predefinita"
+    },
+    "language": {
+      "description": "Seleziona la lingua di visualizzazione dell'applicazione",
+      "label": "Lingua",
+      "title": "Lingua"
+    },
+    "links": {
+      "autoConvert": {
+        "description": "Converte automaticamente gli URL nei titoli delle attività in link cliccabili",
+        "label": "Converti automaticamente URL in link"
+      },
+      "title": "Link"
+    },
+    "popovers": {
+      "hoverOpen": {
+        "description": "Consenti ai popover di aprirsi al passaggio del mouse, oltre al clic",
+        "label": "Apertura al passaggio del mouse"
+      },
+      "title": "Popover"
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "notificationsBlocked": {
+        "manualInstructions": "Il browser non ha mostrato la finestra di dialogo dei permessi. Per abilitare le notifiche, fai clic sull'icona 🔒 nella barra degli indirizzi o vai alle impostazioni del browser → Privacy e sicurezza → Impostazioni del sito → Notifiche, quindi aggiorna la pagina.",
+        "retryInstructions": "Prova prima il pulsante \"Riprova\". Se non funziona, devi abilitare manualmente le notifiche nelle impostazioni del browser.",
+        "title": "Notifiche bloccate"
+      },
+      "secureConnectionRequired": {
+        "description": "Le notifiche richiedono una connessione sicura (HTTPS) o localhost. Accedi a questo sito tramite HTTPS o eseguilo su localhost per abilitare le notifiche.",
+        "title": "Connessione sicura richiesta"
+      }
+    },
+    "general": {
+      "enableNotifications": {
+        "description": "Attiva o disattiva tutte le notifiche",
+        "label": "Abilita notifiche"
+      },
+      "requireInteraction": {
+        "description": "Le notifiche rimangono visibili finché non interagisci con esse",
+        "label": "Richiede interazione"
+      },
+      "title": "Generale"
+    },
+    "permissionStatus": {
+      "blocked": "Bloccato",
+      "browserNotifications": "Notifiche del browser",
+      "browserSettingsTooltip": "Il browser potrebbe richiedere modifiche manuali alle impostazioni",
+      "enable": "Abilita",
+      "enabled": "Abilitato",
+      "notEnabled": "Non abilitato",
+      "requesting": "Richiedendo",
+      "requiresHttps": "Le notifiche richiedono HTTPS",
+      "retry": "Riprova",
+      "retryTooltip": "Prova a richiedere nuovamente il permesso",
+      "testNotification": "Prova notifica",
+      "title": "Stato permessi",
+      "tryAgain": "Riprova"
+    }
+  },
+  "projectDialog": {
+    "buttons": {
+      "add": "Aggiungi {{type}}"
+    },
+    "color": {
+      "label": "Colore"
+    },
+    "group": "Gruppo",
+    "name": {
+      "label": "Nome {{type}}",
+      "placeholder": "Inserisci il nome {{type}}"
+    },
+    "project": "Progetto",
+    "title": "Aggiungi nuovo {{type}}",
+    "type": {
+      "label": "Tipo"
+    }
+  },
+  "quickAdd": {
+    "addTask": "Aggiungi attività",
+    "buttons": {
+      "comments": "Commenti",
+      "date": "Data",
+      "label": "Etichetta",
+      "priority": "Priorità",
+      "project": "Progetto",
+      "section": "Sezione",
+      "subtasks": "Sottoattività"
+    },
+    "description": {
+      "placeholder": "Descrizione"
+    },
+    "smartParsing": {
+      "help": "L'analisi intelligente è una funzione sperimentale che può rilevare ed estrarre automaticamente i dettagli delle attività dal tuo input. Può riconoscere priorità (P1-P4), date di scadenza (domani, prossima settimana, ecc.), nomi di progetti (#progetto), etichette (@etichetta) e pattern di ricorrenza (giornaliero, settimanale).",
+      "label": "Analisi intelligente"
+    },
+    "title": "Aggiungi attività rapidamente"
+  },
+  "settings": {
+    "accessibility": {
+      "closeMenu": "Chiudi menu",
+      "closeSettings": "Chiudi impostazioni",
+      "openMenu": "Apri menu impostazioni"
+    },
+    "categories": {
+      "data": {
+        "description": "Importa/esporta, backup",
+        "title": "Dati e Archiviazione"
+      },
+      "general": {
+        "description": "Pagina predefinita, preferenze di base",
+        "title": "Generale"
+      },
+      "notifications": {
+        "description": "Impostazioni notifiche",
+        "title": "Notifiche"
+      }
+    },
+    "description": "Configura impostazioni e preferenze dell'applicazione TaskTrove",
+    "title": "Impostazioni"
+  }
+}

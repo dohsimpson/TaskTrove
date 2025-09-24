@@ -1,0 +1,213 @@
+{
+  "actions": {
+    "addComment": "Aggiungi commento",
+    "addDate": "Aggiungi data",
+    "addLabel": "Aggiungi etichetta",
+    "addLabels": "Aggiungi etichette",
+    "addPriority": "Aggiungi priorità",
+    "addProject": "Aggiungi progetto",
+    "addSubtask": "Aggiungi sottoattività",
+    "addTask": "Aggiungi Attività"
+  },
+  "comments": {
+    "addAnotherComment": "Aggiungi un altro commento...",
+    "addComment": "Aggiungi commento",
+    "addComments": "Aggiungi commenti...",
+    "commentCount_one": "{{count}} commento",
+    "commentCount_many": "{{count}} commenti",
+    "commentCount_other": "{{count}} commenti",
+    "title_one": "Commento",
+    "title_many": "Commenti",
+    "title_other": "Commenti"
+  },
+  "emptyStates": {
+    "all": {
+      "description": "Questa vista mostra tutte le tue attività in tutti i progetti. Crea la tua prima attività per iniziare con TaskTrove.",
+      "title": "Nessuna attività trovata"
+    },
+    "analytics": {
+      "description": "Traccia la tua produttività e i modelli di completamento delle attività.",
+      "title": "Dashboard Analisi"
+    },
+    "completed": {
+      "description": "Le attività che hai completato appariranno qui. Completa alcune attività per vedere i tuoi progressi e celebrare i tuoi risultati!",
+      "title": "Nessuna attività completata ancora"
+    },
+    "fallback": {
+      "description": "Crea la tua prima attività per iniziare.",
+      "title": "Nessuna attività trovata"
+    },
+    "inbox": {
+      "description": "Questo è il tuo punto di raccolta predefinito per tutte le nuove attività. Quando crei un'attività senza specificare un progetto, finisce qui.",
+      "title": "La tua posta in arrivo è vuota"
+    },
+    "label": {
+      "description": "Le attività etichettate con questa etichetta appariranno qui. Usa le etichette per categorizzare e trovare rapidamente attività correlate.",
+      "title": "Nessuna attività con l'etichetta {{labelName}}"
+    },
+    "project": {
+      "description": "Questo progetto è vuoto. Aggiungi attività per organizzare il tuo lavoro e monitorare i progressi su obiettivi specifici.",
+      "title": "Nessuna attività in {{projectName}}"
+    },
+    "search": {
+      "description": "Trova attività per titolo, descrizione o etichette.",
+      "title": "Risultati di Ricerca"
+    },
+    "today": {
+      "description": "Le attività con scadenza oggi appariranno qui. Imposta le scadenze sulle tue attività per rimanere in pista con i tuoi obiettivi giornalieri.",
+      "title": "Niente programmato per oggi"
+    },
+    "upcoming": {
+      "description": "Le attività con scadenze future appaiono qui, aiutandoti a pianificare in anticipo e prepararti per quello che verrà.",
+      "title": "Nessuna attività in arrivo"
+    }
+  },
+  "filters": {
+    "activeOnly": "Solo attive",
+    "allTasks": "Tutte le attività",
+    "apply": "Applica",
+    "cancel": "Annulla",
+    "clearAll": "Cancella tutto",
+    "completedOnly": "Solo completate",
+    "customRange": "Intervallo personalizzato",
+    "dueDate": "Scadenza",
+    "filter": "Filtra",
+    "filterTasks": "Filtra Attività",
+    "fromDate": "DATA INIZIO",
+    "labels": "Etichette",
+    "next30Days": "Prossimi 30 giorni",
+    "next7Days": "Prossimi 7 giorni",
+    "noLabels": "Senza etichette",
+    "priority": "Priorità",
+    "projects": "Progetti",
+    "selectEndDate": "Seleziona data di fine",
+    "selectStartDate": "Seleziona data di inizio",
+    "status": "Stato",
+    "toDate": "DATA FINE"
+  },
+  "focusTimer": {
+    "noActiveTimer": "Nessun timer di concentrazione attivo",
+    "pause": "Pausa",
+    "paused": "In pausa",
+    "ready": "Pronto",
+    "resume": "Riprendi",
+    "running": "In esecuzione",
+    "start": "Avvia timer di concentrazione",
+    "startTimer": "Avvia timer",
+    "stop": "Ferma",
+    "stopped": "Fermato",
+    "task": "Attività:",
+    "title": "Timer di concentrazione"
+  },
+  "labels": {
+    "createLabel": "Crea \"{{name}}\"",
+    "searchPlaceholder": "Cerca o crea etichetta..."
+  },
+  "placeholders": {
+    "addDescription": "Aggiungi descrizione...",
+    "taskTitle": "Inserisci il titolo dell'attività..."
+  },
+  "priority": {
+    "noPriority": "Nessuna priorità"
+  },
+  "project": {
+    "noProject": "Nessun progetto (Posta in arrivo)"
+  },
+  "recurring": {
+    "adaptive": "Adattivo",
+    "apply": "Applica",
+    "calculateNextFrom": "Calcola prossima scadenza da",
+    "createCustomPattern": "Crea modello di ricorrenza personalizzato",
+    "current": "Attuale:",
+    "daily": "Giornaliera",
+    "day": "giorno",
+    "days": "giorni",
+    "dueDate": "Scadenza",
+    "every": "Ogni",
+    "interval": "Intervallo",
+    "lastDay": "Ultimo giorno",
+    "month": "mese",
+    "monthly": "Mensile",
+    "months": "mesi",
+    "of": "di",
+    "on": "il",
+    "selectDateInYear": "Seleziona data nell'anno",
+    "selectDaysOfMonth": "Seleziona giorni del mese",
+    "selectDaysOfWeek": "Seleziona giorni della settimana",
+    "selectedDates": "Date selezionate:",
+    "setDailyInterval": "Imposta intervallo giornaliero",
+    "the": "il/la",
+    "week": "settimana",
+    "weekdays": "Giorni feriali",
+    "weekends": "Fine settimana",
+    "weekly": "Settimanale",
+    "weeks": "settimane",
+    "year": "anno",
+    "yearly": "Annuale",
+    "years": "anni"
+  },
+  "schedule": {
+    "clear": "Cancella",
+    "clearTime": "Cancella orario",
+    "due": "Scade:",
+    "examplePrefix": "Esempio:",
+    "hideCalendar": "Nascondi calendario e orario",
+    "nextWeek": "Prossima settimana",
+    "recurring": "Ricorrente",
+    "set": "Imposta",
+    "showCalendar": "Mostra calendario e orario",
+    "skip": "Salta",
+    "title": "Programmazione",
+    "today": "Oggi",
+    "tomorrow": "Domani"
+  },
+  "sidePanel": {
+    "attachments": {
+      "count_one": "{{count}} allegato",
+      "count_many": "{{count}} allegati",
+      "count_other": "{{count}} allegati",
+      "title": "Allegati"
+    },
+    "autoSave": {
+      "saving": "Salvataggio in corso..."
+    },
+    "category": {
+      "priority": "Priorità",
+      "project": "Progetto",
+      "title": "Categoria"
+    },
+    "comments": {
+      "title": "Commenti"
+    },
+    "description": {
+      "placeholder": "Aggiungi descrizione...",
+      "title": "Descrizione"
+    },
+    "dueDate": {
+      "placeholder": "Aggiungi scadenza",
+      "title": "Scadenza",
+      "today": "Oggi",
+      "tomorrow": "Domani"
+    },
+    "labels": {
+      "title": "Etichette"
+    },
+    "shortcuts": {
+      "close": "Chiudi",
+      "toggle": "Alterna"
+    },
+    "subtasks": {
+      "title": "Sottoattività"
+    },
+    "taskTitle": {
+      "placeholder": "Titolo dell'attività..."
+    },
+    "title": "Dettagli attività: {{- title}}"
+  },
+  "subtasks": {
+    "addAnotherSubtask": "Aggiungi un'altra sottoattività...",
+    "addSubtask": "Aggiungi sottoattività",
+    "addSubtasks": "Aggiungi sottoattività...",
+    "title": "Sottoattività"
+  }
+}

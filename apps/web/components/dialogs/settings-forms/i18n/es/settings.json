@@ -1,143 +1,137 @@
 {
   "data": {
-    "title": "Datos y almacenamiento",
     "autoBackup": {
-      "title": "Respaldo automático",
-      "description": "Crear automáticamente archivos de respaldo de tareas y proyectos.",
       "backupTime": {
-        "label": "Hora de respaldo",
-        "description": "Elegir hora para respaldos automáticos"
+        "description": "Elegir hora para respaldos automáticos",
+        "label": "Hora de respaldo"
       },
+      "description": "Crear automáticamente archivos de respaldo de tareas y proyectos.",
       "dockerNotice": {
-        "title": "Entorno Docker",
-        "description": "En un entorno Docker, los archivos de respaldo se almacenan en /app/data/backups dentro del contenedor. Asegúrate de montar un volumen para persistir los respaldos."
+        "description": "En un entorno Docker, los archivos de respaldo se almacenan en /app/data/backups dentro del contenedor. Asegúrate de montar un volumen para persistir los respaldos.",
+        "guide": "Ver guía de Docker",
+        "title": "Entorno Docker"
       },
       "enable": {
-        "label": "Habilitar respaldos automáticos",
-        "description": "Respaldar tus datos automáticamente de forma periódica"
+        "description": "Respaldar tus datos automáticamente de forma periódica",
+        "label": "Habilitar respaldos automáticos"
       },
       "manualBackup": {
         "button": "Respaldo manual ahora"
       },
       "maxBackups": {
-        "label": "Número máximo de respaldos",
-        "description": "Número de archivos de respaldo a conservar"
-      }
+        "noLimit": "Sin límite"
+      },
+      "title": "Respaldo automático"
     },
     "taskImport": {
-      "title": "Importación de tareas",
       "description": "Importar tareas desde otras aplicaciones de gestión de tareas.",
       "step1": {
-        "title": "Paso 1: Exportar tus datos",
         "description": "Haz clic en un servicio de gestión de tareas a continuación para abrir el asistente de importación. Sigue las instrucciones para exportar y convertir tus datos al formato TaskTrove.",
-        "todoist": "Exportar datos desde Todoist:",
-        "todoistInstructions": "Configuración → Integraciones → Exportar como CSV",
-        "notion": "Exportar datos desde Notion:",
-        "notionInstructions": "Seleccionar base de datos → ... → Exportar → CSV",
-        "trello": "Exportar datos desde Trello:",
-        "trelloInstructions": "Menú del tablero → Más → Imprimir y exportar → Exportar como JSON"
+        "title": "Paso 1: Exportar tus datos"
       },
       "step2": {
-        "title": "Paso 2: Subir archivo convertido",
         "description": "Después de usar el asistente de importación anterior, descargarás un archivo JSON. Sube ese archivo aquí para importar tus tareas, proyectos y etiquetas a TaskTrove.",
-        "supportedFormats": "Formatos compatibles: CSV (Todoist, Notion), JSON (Trello)",
         "important": {
-          "title": "Importante:",
-          "description": "Solo sube el archivo JSON descargado desde el asistente de importación. Las exportaciones regulares de otras aplicaciones no funcionarán."
-        }
+          "description": "Solo sube el archivo JSON descargado desde el asistente de importación. Las exportaciones regulares de otras aplicaciones no funcionarán.",
+          "title": "Importante:"
+        },
+        "title": "Paso 2: Subir archivo convertido"
       },
+      "title": "Importación de tareas",
       "upload": {
         "button": "Subir archivo JSON",
-        "dragDrop": "Arrastra y suelta el archivo aquí, o haz clic para seleccionar",
-        "supportedFormats": "Admite archivos CSV y JSON",
-        "uploading": "Subiendo...",
-        "processing": "Procesando...",
         "error": {
-          "uploadFailed": "Error al subir: {{- message}}",
-          "processingFailed": "Error al procesar: {{- message}}"
+          "title": "Error de carga"
         },
         "success": {
-          "title": "¡Importación exitosa!",
-          "tasks": "{{count}} tareas",
-          "projects": "{{count}} proyectos",
-          "labels": "{{count}} etiquetas",
-          "imported": "{{items}} importados",
           "alreadyExisted": "{{items}} ya existían",
-          "noNewItems": "No hay elementos nuevos"
-        }
+          "imported": "{{items}} importados",
+          "labels_one": "{{count}} etiqueta",
+          "labels_many": "{{count}} etiquetas",
+          "labels_other": "{{count}} etiquetas",
+          "noNewItems": "No hay elementos nuevos",
+          "projects_one": "{{count}} proyecto",
+          "projects_many": "{{count}} proyectos",
+          "projects_other": "{{count}} proyectos",
+          "tasks_one": "{{count}} tarea",
+          "tasks_many": "{{count}} tareas",
+          "tasks_other": "{{count}} tareas",
+          "title": "¡Importación exitosa!"
+        },
+        "uploading": "Subiendo..."
       }
     }
   },
   "general": {
     "audio": {
-      "title": "Audio",
       "soundEffects": {
-        "label": "Efectos de sonido",
-        "description": "Reproducir sonidos para completar tareas, notificaciones y otras interacciones"
-      }
+        "description": "Reproducir sonidos para completar tareas, notificaciones y otras interacciones",
+        "label": "Efectos de sonido"
+      },
+      "title": "Audio"
     },
     "defaultPage": {
-      "title": "Página predeterminada",
+      "description": "Elegir la página a mostrar al abrir TaskTrove por primera vez",
       "label": "Mostrar al abrir TaskTrove",
-      "description": "Elegir la página a mostrar al abrir TaskTrove por primera vez"
+      "title": "Página predeterminada"
     },
     "language": {
-      "title": "Idioma",
+      "description": "Seleccionar el idioma de visualización de la aplicación",
       "label": "Idioma",
-      "description": "Seleccionar el idioma de visualización de la aplicación"
+      "title": "Idioma"
     },
     "links": {
-      "title": "Enlaces",
       "autoConvert": {
-        "label": "Convertir automáticamente URLs a enlaces",
-        "description": "Convertir automáticamente URLs en títulos de tareas a enlaces clicables"
-      }
+        "description": "Convertir automáticamente URLs en títulos de tareas a enlaces clicables",
+        "label": "Convertir automáticamente URLs a enlaces"
+      },
+      "title": "Enlaces"
     },
     "popovers": {
-      "title": "Popovers",
       "hoverOpen": {
-        "label": "Apertura al pasar el mouse",
-        "description": "Permitir que los popovers se abran al pasar el mouse, además del clic"
-      }
+        "description": "Permitir que los popovers se abran al pasar el mouse, además del clic",
+        "label": "Apertura al pasar el mouse"
+      },
+      "title": "Popovers"
     }
   },
   "notifications": {
     "alerts": {
       "notificationsBlocked": {
-        "title": "Notificaciones bloqueadas",
+        "manualInstructions": "El navegador no mostró el diálogo de permisos. Para habilitar las notificaciones, haz clic en el ícono 🔒 en la barra de direcciones o ve a configuración del navegador → Privacidad y seguridad → Configuración del sitio → Notificaciones, luego actualiza la página.",
         "retryInstructions": "Por favor, primero intenta el botón \"Reintentar\". Si eso no funciona, debes habilitar las notificaciones manualmente en la configuración de tu navegador.",
-        "manualInstructions": "El navegador no mostró el diálogo de permisos. Para habilitar las notificaciones, haz clic en el ícono 🔒 en la barra de direcciones o ve a configuración del navegador → Privacidad y seguridad → Configuración del sitio → Notificaciones, luego actualiza la página."
+        "title": "Notificaciones bloqueadas"
       },
       "secureConnectionRequired": {
-        "title": "Conexión segura requerida",
-        "description": "Las notificaciones requieren una conexión segura (HTTPS) o localhost. Por favor, accede a este sitio a través de HTTPS o ejecútalo en localhost para habilitar las notificaciones."
+        "description": "Las notificaciones requieren una conexión segura (HTTPS) o localhost. Por favor, accede a este sitio a través de HTTPS o ejecútalo en localhost para habilitar las notificaciones.",
+        "title": "Conexión segura requerida"
       }
     },
     "general": {
-      "title": "Configuración general",
       "enableNotifications": {
-        "label": "Habilitar notificaciones",
-        "description": "Activar o desactivar todas las notificaciones"
+        "description": "Activar o desactivar todas las notificaciones",
+        "label": "Habilitar notificaciones"
       },
       "requireInteraction": {
-        "label": "Requiere interacción",
-        "description": "Las notificaciones permanecen visibles hasta que interactúes con ellas"
-      }
+        "description": "Las notificaciones permanecen visibles hasta que interactúes con ellas",
+        "label": "Requiere interacción"
+      },
+      "title": "Configuración general"
     },
     "permissionStatus": {
-      "title": "Estado de permisos",
-      "browserNotifications": "Notificaciones del navegador",
-      "requiresHttps": "Las notificaciones requieren HTTPS",
-      "enabled": "Habilitado",
       "blocked": "Bloqueado",
+      "browserNotifications": "Notificaciones del navegador",
+      "browserSettingsTooltip": "El navegador puede requerir cambios manuales en la configuración",
+      "enable": "Habilitar",
+      "enabled": "Habilitado",
       "notEnabled": "No habilitado",
       "requesting": "Solicitando",
-      "enable": "Habilitar",
+      "requiresHttps": "Las notificaciones requieren HTTPS",
       "retry": "Reintentar",
-      "tryAgain": "Intentar de nuevo",
       "retryTooltip": "Intentar solicitar permiso nuevamente",
-      "browserSettingsTooltip": "El navegador puede requerir cambios manuales en la configuración",
-      "testNotification": "Probar notificación"
+      "testNotification": "Probar notificación",
+      "title": "Estado de permisos",
+      "tryAgain": "Intentar de nuevo"
     }
   }
 }

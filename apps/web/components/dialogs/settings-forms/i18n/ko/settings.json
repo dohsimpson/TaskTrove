@@ -1,0 +1,137 @@
+{
+  "data": {
+    "autoBackup": {
+      "backupTime": {
+        "description": "자동 백업 시간을 선택하세요",
+        "label": "백업 시간"
+      },
+      "description": "작업과 프로젝트의 백업 파일을 자동으로 생성합니다.",
+      "dockerNotice": {
+        "description": "Docker 환경에서는 백업 파일이 컨테이너 내 /app/data/backups에 저장됩니다. 백업을 지속하려면 볼륨을 마운트해야 합니다.",
+        "guide": "Docker 가이드 보기",
+        "title": "Docker 환경"
+      },
+      "enable": {
+        "description": "주기적으로 데이터를 자동 백업합니다",
+        "label": "자동 백업 사용"
+      },
+      "manualBackup": {
+        "button": "지금 수동 백업"
+      },
+      "maxBackups": {
+        "noLimit": "제한 없음"
+      },
+      "title": "자동 백업"
+    },
+    "taskImport": {
+      "description": "다른 작업 관리 애플리케이션에서 작업을 가져옵니다.",
+      "step1": {
+        "description": "아래 작업 관리 서비스를 클릭하여 가져오기 마법사를 열어보세요. 데이터를 내보내고 TaskTrove 형식으로 변환하는 지침을 따르세요.",
+        "title": "1단계: 데이터 내보내기"
+      },
+      "step2": {
+        "description": "방금 생성한 JSON 파일을 업로드하세요. 이 파일에는 작업, 프로젝트, 라벨이 포함되어야 합니다.",
+        "important": {
+          "description": "가져오기를 시작하기 전에 데이터를 백업하는 것이 좋습니다.",
+          "title": "중요!"
+        },
+        "title": "2단계: 파일 업로드"
+      },
+      "title": "작업 가져오기",
+      "upload": {
+        "button": "JSON 파일 업로드",
+        "error": {
+          "title": "파일 업로드 오류"
+        },
+        "success": {
+          "alreadyExisted": "{{items}}개가 이미 존재했습니다",
+          "imported": "{{items}}개를 가져왔습니다",
+          "labels_many": "라벨 {{count}}개",
+          "labels_one": "라벨 {{count}}개",
+          "labels_other": "라벨 {{count}}개",
+          "noNewItems": "새 항목이 없습니다",
+          "projects_many": "프로젝트 {{count}}개",
+          "projects_one": "프로젝트 {{count}}개",
+          "projects_other": "프로젝트 {{count}}개",
+          "tasks_many": "작업 {{count}}개",
+          "tasks_one": "작업 {{count}}개",
+          "tasks_other": "작업 {{count}}개",
+          "title": "가져오기 성공!"
+        },
+        "uploading": "업로드 중..."
+      }
+    }
+  },
+  "general": {
+    "audio": {
+      "soundEffects": {
+        "description": "작업 완료, 알림 및 기타 상호작용에 대한 소리 재생",
+        "label": "사운드 효과"
+      },
+      "title": "오디오"
+    },
+    "defaultPage": {
+      "description": "TaskTrove를 처음 열 때 표시할 페이지를 선택하세요",
+      "label": "TaskTrove를 열 때 표시",
+      "title": "기본 페이지"
+    },
+    "language": {
+      "description": "애플리케이션의 표시 언어를 선택하세요",
+      "label": "언어",
+      "title": "언어"
+    },
+    "links": {
+      "autoConvert": {
+        "description": "작업 제목의 URL을 클릭 가능한 링크로 자동 변환",
+        "label": "URL을 링크로 자동 변환"
+      },
+      "title": "링크"
+    },
+    "popovers": {
+      "hoverOpen": {
+        "description": "클릭과 더불어 마우스 오버 시에도 팝오버가 열리도록 허용",
+        "label": "마우스 오버로 열기"
+      },
+      "title": "팝오버"
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "notificationsBlocked": {
+        "manualInstructions": "브라우저에서 권한 대화상자가 표시되지 않았습니다. 알림을 활성화하려면 주소 표시줄의 🔒 아이콘을 클릭하거나 브라우저 설정 → 개인정보 보호 및 보안 → 사이트 설정 → 알림으로 이동한 후 페이지를 새로고침하세요.",
+        "retryInstructions": "먼저 \"다시 시도\" 버튼을 시도해 보세요. 작동하지 않으면 브라우저 설정에서 수동으로 알림을 활성화해야 합니다.",
+        "title": "알림이 차단됨"
+      },
+      "secureConnectionRequired": {
+        "description": "알림에는 보안 연결(HTTPS) 또는 localhost가 필요합니다. 알림을 활성화하려면 HTTPS를 통해 이 사이트에 액세스하거나 localhost에서 실행하세요.",
+        "title": "보안 연결 필요"
+      }
+    },
+    "general": {
+      "enableNotifications": {
+        "description": "모든 알림 켜기 또는 끄기",
+        "label": "알림 활성화"
+      },
+      "requireInteraction": {
+        "description": "상호작용할 때까지 알림이 표시된 상태로 유지됩니다",
+        "label": "상호작용 필요"
+      },
+      "title": "일반"
+    },
+    "permissionStatus": {
+      "blocked": "차단됨",
+      "browserNotifications": "브라우저 알림",
+      "browserSettingsTooltip": "브라우저에서 수동 설정 변경이 필요할 수 있습니다",
+      "enable": "활성화",
+      "enabled": "활성화됨",
+      "notEnabled": "비활성화됨",
+      "requesting": "요청 중",
+      "requiresHttps": "알림에는 HTTPS가 필요합니다",
+      "retry": "다시 시도",
+      "retryTooltip": "권한 요청 다시 시도",
+      "testNotification": "알림 테스트",
+      "title": "권한 상태",
+      "tryAgain": "다시 시도"
+    }
+  }
+}

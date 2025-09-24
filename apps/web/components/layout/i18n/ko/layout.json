@@ -1,0 +1,154 @@
+{
+  "crash": {
+    "notAvailable": {
+      "description": "크래시 테스트는 개발 환경에서만 사용할 수 있습니다.",
+      "title": "크래시 테스트 사용 불가"
+    }
+  },
+  "debug": {
+    "available": {
+      "description": "개발 환경 전용 디버그 및 테스트 도구입니다. 이 페이지는 프로덕션에서 사용할 수 없습니다.",
+      "simplified": "디버그 도구가 이 버전에서 단순화되었습니다.",
+      "title": "TaskTrove 디버그 도구"
+    },
+    "notAvailable": {
+      "description": "디버그 도구는 보안 및 성능상의 이유로 개발 환경에서만 사용할 수 있습니다.",
+      "title": "디버그 도구 사용 불가"
+    }
+  },
+  "empty": {
+    "notifications": {
+      "action": "돌아가기",
+      "description": "마이그레이션 기간 중 알림이 일시적으로 비활성화되었습니다",
+      "title": "알림"
+    },
+    "performance": {
+      "action": "돌아가기",
+      "description": "마이그레이션 기간 중 성능 모니터링이 일시적으로 비활성화되었습니다",
+      "title": "성능 모니터링"
+    },
+    "voice": {
+      "action": "돌아가기",
+      "description": "마이그레이션 기간 중 음성 명령이 일시적으로 비활성화되었습니다",
+      "title": "음성 명령"
+    }
+  },
+  "footer": {
+    "completedToday": "오늘 완료",
+    "completedTodayLabel": "오늘 완료",
+    "dueToday": "오늘 마감",
+    "dueTodayLabel": "오늘 마감",
+    "no": "{{title}} 없음",
+    "task": "개 작업",
+    "tasks": "개 작업"
+  },
+  "header": {
+    "clickToCycleThemes": "클릭하여 테마를 전환하세요.",
+    "collapseSidebar": "사이드바 접기",
+    "currentTheme": "현재 테마: {{theme}}. 테마를 전환하려면 클릭하세요.",
+    "openSidebar": "사이드바 열기"
+  },
+  "viewOptions": {
+    "displayOptions": {
+      "compact": {
+        "description": "더 많은 작업을 화면에 표시하기 위해 더 작은 레이아웃 사용",
+        "label": "간단한 보기:",
+        "title": "간단한 보기"
+      },
+      "completed": {
+        "description": "완료된 작업 표시 또는 숨기기",
+        "label": "완료된 작업:",
+        "title": "완료된 작업"
+      },
+      "help": {
+        "description": "작업 보기에서 표시되는 내용을 제어합니다:",
+        "tip": "팁: 이 설정은 보기별로 저장되며 세션 간에 유지됩니다"
+      },
+      "label": "표시 옵션",
+      "overdue": {
+        "description": "마감일을 초과한 작업 표시 또는 숨기기",
+        "label": "연체된 작업:",
+        "title": "연체된 작업"
+      },
+      "sidePanel": {
+        "description": "추가 작업 세부사항을 보기 위해 사이드 패널 토글",
+        "label": "사이드 패널:",
+        "title": "사이드 패널"
+      }
+    },
+    "help": {
+      "advancedFilters": {
+        "description": "복잡한 쿼리를 위한 강력한 필터 옵션 사용",
+        "label": "고급 필터:"
+      },
+      "description": "작업을 보고 정리하는 방법을 사용자 정의합니다:",
+      "displayOptions": {
+        "description": "완료된 작업, 사이드 패널, 간단한 보기 토글",
+        "label": "표시 옵션:"
+      },
+      "sortFilter": {
+        "description": "우선순위, 마감일 또는 기타 기준으로 작업 정리",
+        "label": "정렬 및 필터링:"
+      },
+      "tip": {
+        "description": "표시 설정은 경로별로 저장되며 세션 간에 유지됩니다.",
+        "label": "팁:"
+      },
+      "viewMode": {
+        "description": "목록, 칸반, 캘린더 보기 간 전환",
+        "label": "보기 모드:"
+      }
+    },
+    "sort": {
+      "direction": {
+        "changeToAsc": "오름차순으로 변경",
+        "changeToDesc": "내림차순으로 변경"
+      },
+      "help": {
+        "createdDate": {
+          "description": "작업 생성 시간 기준으로 정렬",
+          "label": "생성일:"
+        },
+        "default": {
+          "description": "작업을 자연 순서로 표시, 완료된 작업은 하단에",
+          "label": "기본값 (정렬 안함):"
+        },
+        "description": "작업을 어떻게 정리할지 선택하세요:",
+        "dueDate": {
+          "description": "모든 작업을 마감일 기준으로 정렬, 완료/미완료 혼합",
+          "label": "마감일:"
+        },
+        "priority": {
+          "description": "우선순위 기준으로 정렬 (1=최고, 4=최저)",
+          "label": "우선순위:"
+        },
+        "status": {
+          "description": "완료 상태별로 그룹화 후 칸반 열별로 정렬",
+          "label": "상태:"
+        },
+        "tip": "팁: 화살표 버튼을 사용하여 오름차순과 내림차순 간 전환",
+        "title": {
+          "description": "작업 이름 기준으로 알파벳 순으로 정렬",
+          "label": "제목:"
+        }
+      },
+      "label": "정렬",
+      "options": {
+        "createdAt": "생성일",
+        "default": "기본값 (정렬 안함)",
+        "dueDate": "마감일",
+        "priority": "우선순위",
+        "status": "상태",
+        "title": "제목"
+      },
+      "placeholder": "정렬 옵션 선택",
+      "sortBy": "정렬 기준",
+      "title": "정렬 옵션"
+    },
+    "title": "보기 옵션",
+    "viewMode": {
+      "kanbanTooltip": "프로젝트 전용",
+      "label": "보기 모드"
+    }
+  }
+}

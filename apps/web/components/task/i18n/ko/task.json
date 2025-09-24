@@ -1,0 +1,213 @@
+{
+  "actions": {
+    "addComment": "댓글 추가",
+    "addDate": "날짜 추가",
+    "addLabel": "라벨 추가",
+    "addLabels": "라벨 추가",
+    "addPriority": "우선순위 추가",
+    "addProject": "프로젝트 추가",
+    "addSubtask": "하위 작업 추가",
+    "addTask": "작업 추가"
+  },
+  "comments": {
+    "addAnotherComment": "다른 댓글 추가...",
+    "addComment": "댓글 추가",
+    "addComments": "댓글 추가...",
+    "commentCount_many": "댓글 {{count}}개",
+    "commentCount_one": "댓글 {{count}}개",
+    "commentCount_other": "댓글 {{count}}개",
+    "title_many": "댓글",
+    "title_one": "댓글",
+    "title_other": "댓글"
+  },
+  "emptyStates": {
+    "all": {
+      "description": "이 보기는 모든 프로젝트의 작업을 보여줍니다. TaskTrove를 시작하려면 첫 번째 작업을 만들어 보세요.",
+      "title": "작업이 없습니다"
+    },
+    "analytics": {
+      "description": "생산성과 작업 완료 패턴을 추적하세요.",
+      "title": "분석 대시보드"
+    },
+    "completed": {
+      "description": "완료한 작업이 여기에 나타납니다. 작업을 완료하여 진행 상황을 확인하고 성취를 축하하세요!",
+      "title": "아직 완료된 작업이 없습니다"
+    },
+    "fallback": {
+      "description": "시작하려면 첫 번째 작업을 만드세요.",
+      "title": "작업을 찾을 수 없습니다"
+    },
+    "inbox": {
+      "description": "이것은 모든 새 작업의 기본 수집 지점입니다. 프로젝트를 지정하지 않고 작업을 만들면 여기에 나타납니다.",
+      "title": "받은편지함이 비어있습니다"
+    },
+    "label": {
+      "description": "이 라벨이 붙은 작업이 여기에 나타납니다. 라벨을 사용하여 관련 작업을 분류하고 빠르게 찾아보세요.",
+      "title": "{{labelName}} 라벨이 붙은 작업이 없습니다"
+    },
+    "project": {
+      "description": "이 프로젝트는 비어있습니다. 작업을 추가하여 작업을 정리하고 특정 목표에 대한 진행 상황을 추적하세요.",
+      "title": "{{projectName}}에 작업이 없습니다"
+    },
+    "search": {
+      "description": "검색 결과가 없습니다. 다른 검색어를 시도해보세요.",
+      "title": "'{{query}}'에 대한 검색 결과가 없습니다"
+    },
+    "today": {
+      "description": "오늘 마감일인 작업이 여기에 나타납니다. 작업에 마감일을 설정하여 일일 목표에 따라 계속 진행하세요.",
+      "title": "오늘 계획된 일이 없습니다"
+    },
+    "upcoming": {
+      "description": "미래 마감일이 있는 작업이 여기에 나타나며, 미리 계획하고 예정된 일에 대비하는 데 도움이 됩니다.",
+      "title": "예정된 작업이 없습니다"
+    }
+  },
+  "filters": {
+    "activeOnly": "활성 작업만",
+    "allTasks": "모든 작업",
+    "apply": "적용",
+    "cancel": "취소",
+    "clearAll": "모두 지우기",
+    "completedOnly": "완료된 작업만",
+    "customRange": "사용자 지정 범위",
+    "dueDate": "마감일",
+    "filter": "필터",
+    "filterTasks": "작업 필터링",
+    "fromDate": "시작일",
+    "labels": "라벨",
+    "next30Days": "다음 30일",
+    "next7Days": "다음 7일",
+    "noLabels": "라벨 없음",
+    "priority": "우선순위",
+    "projects": "프로젝트",
+    "selectEndDate": "종료일 선택",
+    "selectStartDate": "시작일 선택",
+    "status": "상태",
+    "toDate": "종료일"
+  },
+  "focusTimer": {
+    "noActiveTimer": "활성된 집중 타이머 없음",
+    "pause": "일시정지",
+    "paused": "일시정지됨",
+    "ready": "준비됨",
+    "resume": "계속",
+    "running": "실행 중",
+    "start": "집중 타이머 시작",
+    "startTimer": "타이머 시작",
+    "stop": "중지",
+    "stopped": "중지됨",
+    "task": "작업:",
+    "title": "집중 타이머"
+  },
+  "labels": {
+    "createLabel": "\"{{name}}\" 만들기",
+    "searchPlaceholder": "라벨 검색 또는 만들기..."
+  },
+  "placeholders": {
+    "addDescription": "설명 추가...",
+    "taskTitle": "작업 제목 입력..."
+  },
+  "priority": {
+    "noPriority": "우선순위 없음"
+  },
+  "project": {
+    "noProject": "프로젝트 없음 (받은편지함)"
+  },
+  "recurring": {
+    "adaptive": "적응형",
+    "apply": "적용",
+    "calculateNextFrom": "다음 마감일 계산 기준",
+    "createCustomPattern": "사용자 지정 반복 패턴 만들기",
+    "current": "현재:",
+    "daily": "매일",
+    "day": "일",
+    "days": "일",
+    "dueDate": "마감일",
+    "every": "매",
+    "interval": "간격",
+    "lastDay": "마지막 날",
+    "month": "월",
+    "monthly": "매월",
+    "months": "개월",
+    "of": "의",
+    "on": "에",
+    "selectDateInYear": "연내 날짜 선택",
+    "selectDaysOfMonth": "월의 날짜 선택",
+    "selectDaysOfWeek": "요일 선택",
+    "selectedDates": "선택된 날짜:",
+    "setDailyInterval": "일일 간격 설정",
+    "the": "그",
+    "week": "주",
+    "weekdays": "평일",
+    "weekends": "주말",
+    "weekly": "매주",
+    "weeks": "주",
+    "year": "년",
+    "yearly": "매년",
+    "years": "년"
+  },
+  "schedule": {
+    "clear": "지우기",
+    "clearTime": "시간 지우기",
+    "due": "마감:",
+    "examplePrefix": "예시:",
+    "hideCalendar": "캘린더 및 시간 숨기기",
+    "nextWeek": "다음 주",
+    "recurring": "반복",
+    "set": "설정",
+    "showCalendar": "캘린더 및 시간 보이기",
+    "skip": "건너뛰기",
+    "title": "일정 배치",
+    "today": "오늘",
+    "tomorrow": "내일"
+  },
+  "sidePanel": {
+    "attachments": {
+      "count_many": "첨부파일 {{count}}개",
+      "count_one": "첨부파일 {{count}}개",
+      "count_other": "첨부파일 {{count}}개",
+      "title": "첨부파일"
+    },
+    "autoSave": {
+      "saving": "저장 중..."
+    },
+    "category": {
+      "priority": "우선순위",
+      "project": "프로젝트",
+      "title": "범주"
+    },
+    "comments": {
+      "title": "댓글"
+    },
+    "description": {
+      "placeholder": "설명 추가...",
+      "title": "설명"
+    },
+    "dueDate": {
+      "placeholder": "마감일 추가",
+      "title": "마감일",
+      "today": "오늘",
+      "tomorrow": "내일"
+    },
+    "labels": {
+      "title": "라벨"
+    },
+    "shortcuts": {
+      "close": "닫기",
+      "toggle": "토글"
+    },
+    "subtasks": {
+      "title": "하위 작업"
+    },
+    "taskTitle": {
+      "placeholder": "작업 제목..."
+    },
+    "title": "작업 세부사항: {{- title}}"
+  },
+  "subtasks": {
+    "addAnotherSubtask": "다른 하위 작업 추가...",
+    "addSubtask": "하위 작업 추가",
+    "addSubtasks": "하위 작업 추가...",
+    "title": "하위 작업"
+  }
+}

@@ -1,195 +1,154 @@
 {
   "crash": {
     "notAvailable": {
-      "title": "Prueba de fallo no disponible",
-      "description": "La prueba de fallo solo está disponible en el entorno de desarrollo."
+      "description": "La prueba de fallo solo está disponible en el entorno de desarrollo.",
+      "title": "Prueba de fallo no disponible"
     }
   },
   "debug": {
     "available": {
-      "title": "Herramientas de depuración TaskTrove",
       "description": "Herramientas de depuración y prueba solo para entorno de desarrollo. Esta página no está disponible en producción.",
-      "simplified": "Las herramientas de depuración han sido simplificadas en esta versión."
+      "simplified": "Las herramientas de depuración han sido simplificadas en esta versión.",
+      "title": "Herramientas de depuración TaskTrove"
     },
     "notAvailable": {
-      "title": "Herramientas de depuración no disponibles",
-      "description": "Las herramientas de depuración solo están disponibles en el entorno de desarrollo por razones de seguridad y rendimiento."
+      "description": "Las herramientas de depuración solo están disponibles en el entorno de desarrollo por razones de seguridad y rendimiento.",
+      "title": "Herramientas de depuración no disponibles"
     }
   },
   "empty": {
     "notifications": {
-      "title": "Notificaciones",
+      "action": "Volver",
       "description": "Las notificaciones están temporalmente deshabilitadas durante la migración",
-      "action": "Volver"
+      "title": "Notificaciones"
     },
     "performance": {
-      "title": "Monitoreo de rendimiento",
+      "action": "Volver",
       "description": "El monitoreo de rendimiento está temporalmente deshabilitado durante la migración",
-      "action": "Volver"
+      "title": "Monitoreo de rendimiento"
     },
     "voice": {
-      "title": "Comandos de voz",
+      "action": "Volver",
       "description": "Los comandos de voz están temporalmente deshabilitados durante la migración",
-      "action": "Volver"
+      "title": "Comandos de voz"
     }
   },
   "footer": {
-    "task": "tarea",
-    "tasks": "tareas",
-    "no": "Sin {{title}}",
     "completedToday": "Completadas hoy",
     "completedTodayLabel": "Completadas hoy",
     "dueToday": "Vencen hoy",
-    "dueTodayLabel": "Vencen hoy"
+    "dueTodayLabel": "Vencen hoy",
+    "no": "Sin {{title}}",
+    "task": "tarea",
+    "tasks": "tareas"
   },
   "header": {
+    "clickToCycleThemes": "Haz clic para cambiar de tema.",
     "collapseSidebar": "Contraer barra lateral",
-    "openSidebar": "Abrir barra lateral",
     "currentTheme": "Tema actual: {{theme}}. Haz clic para cambiar de tema.",
-    "clickToCycleThemes": "Haz clic para cambiar de tema."
+    "openSidebar": "Abrir barra lateral"
   },
   "viewOptions": {
-    "title": "Opciones de vista",
-    "help": {
-      "description": "Personaliza cómo ves y organizas tus tareas:",
-      "viewMode": {
-        "label": "Modo de vista:",
-        "description": "Cambiar entre diseños de lista, kanban y calendario"
-      },
-      "displayOptions": {
-        "label": "Opciones de visualización:",
-        "description": "Alternar tareas completadas, panel lateral y vista compacta"
-      },
-      "sortFilter": {
-        "label": "Ordenar y filtrar:",
-        "description": "Organizar tareas por prioridad, fecha de vencimiento u otros criterios"
-      },
-      "advancedFilters": {
-        "label": "Filtros avanzados:",
-        "description": "Usar opciones de filtrado potentes para consultas complejas"
-      },
-      "tip": {
-        "label": "Consejo:",
-        "description": "Tus preferencias de vista se guardan por ruta y persisten entre sesiones."
-      }
-    },
-    "viewMode": {
-      "label": "Modo de vista",
-      "list": "Lista",
-      "kanban": "Kanban",
-      "calendar": "Calendario",
-      "kanbanTooltip": "Solo para proyectos"
-    },
     "displayOptions": {
-      "label": "Opciones de visualización",
+      "compact": {
+        "description": "Usar un diseño más compacto para mostrar más tareas en pantalla",
+        "label": "Vista compacta:",
+        "title": "Vista compacta"
+      },
+      "completed": {
+        "description": "Mostrar u ocultar tareas completadas",
+        "label": "Tareas completadas:",
+        "title": "Tareas completadas"
+      },
       "help": {
         "description": "Controla qué es visible en la vista de tareas:",
         "tip": "Consejo: Estas configuraciones se guardan por vista y persisten entre sesiones"
       },
-      "completed": {
-        "title": "Tareas completadas",
-        "label": "Tareas completadas:",
-        "description": "Mostrar u ocultar tareas completadas"
-      },
+      "label": "Opciones de visualización",
       "overdue": {
-        "title": "Tareas vencidas",
+        "description": "Mostrar u ocultar tareas que han pasado su fecha de vencimiento",
         "label": "Tareas vencidas:",
-        "description": "Mostrar u ocultar tareas que han pasado su fecha de vencimiento"
+        "title": "Tareas vencidas"
       },
       "sidePanel": {
-        "title": "Panel lateral",
+        "description": "Alternar panel lateral para ver detalles adicionales de tareas",
         "label": "Panel lateral:",
-        "description": "Alternar panel lateral para ver detalles adicionales de tareas"
+        "title": "Panel lateral"
+      }
+    },
+    "help": {
+      "advancedFilters": {
+        "description": "Usar opciones de filtrado potentes para consultas complejas",
+        "label": "Filtros avanzados:"
       },
-      "compact": {
-        "title": "Vista compacta",
-        "label": "Vista compacta:",
-        "description": "Usar un diseño más compacto para mostrar más tareas en pantalla"
+      "description": "Personaliza cómo ves y organizas tus tareas:",
+      "displayOptions": {
+        "description": "Alternar tareas completadas, panel lateral y vista compacta",
+        "label": "Opciones de visualización:"
+      },
+      "sortFilter": {
+        "description": "Organizar tareas por prioridad, fecha de vencimiento u otros criterios",
+        "label": "Ordenar y filtrar:"
+      },
+      "tip": {
+        "description": "Tus preferencias de vista se guardan por ruta y persisten entre sesiones.",
+        "label": "Consejo:"
+      },
+      "viewMode": {
+        "description": "Cambiar entre diseños de lista, kanban y calendario",
+        "label": "Modo de vista:"
       }
     },
     "sort": {
-      "label": "Ordenar",
-      "title": "Opciones de ordenamiento",
-      "sortBy": "Ordenar por",
-      "placeholder": "Seleccionar opción de ordenamiento",
+      "direction": {
+        "changeToAsc": "Cambiar a ascendente",
+        "changeToDesc": "Cambiar a descendente"
+      },
       "help": {
-        "description": "Elige cómo organizar tus tareas:",
-        "default": {
-          "label": "Por defecto (sin ordenar):",
-          "description": "Mostrar tareas en orden natural, tareas completadas abajo"
+        "createdDate": {
+          "description": "Ordenar por tiempo de creación de la tarea",
+          "label": "Fecha de creación:"
         },
+        "default": {
+          "description": "Mostrar tareas en orden natural, tareas completadas abajo",
+          "label": "Por defecto (sin ordenar):"
+        },
+        "description": "Elige cómo organizar tus tareas:",
         "dueDate": {
-          "label": "Fecha de vencimiento:",
-          "description": "Ordenar todas las tareas por fecha de vencimiento, mezclando completadas y no completadas"
+          "description": "Ordenar todas las tareas por fecha de vencimiento, mezclando completadas y no completadas",
+          "label": "Fecha de vencimiento:"
         },
         "priority": {
-          "label": "Prioridad:",
-          "description": "Ordenar por prioridad (1=más alta, 4=más baja)"
-        },
-        "title": {
-          "label": "Título:",
-          "description": "Ordenar por nombre de tarea alfabéticamente"
-        },
-        "createdDate": {
-          "label": "Fecha de creación:",
-          "description": "Ordenar por tiempo de creación de la tarea"
+          "description": "Ordenar por prioridad (1=más alta, 4=más baja)",
+          "label": "Prioridad:"
         },
         "status": {
-          "label": "Estado:",
-          "description": "Agrupar por estado de finalización, luego por columna kanban"
+          "description": "Agrupar por estado de finalización, luego por columna kanban",
+          "label": "Estado:"
         },
-        "tip": "Consejo: Usa los botones de flecha para alternar entre ascendente y descendente"
+        "tip": "Consejo: Usa los botones de flecha para alternar entre ascendente y descendente",
+        "title": {
+          "description": "Ordenar por nombre de tarea alfabéticamente",
+          "label": "Título:"
+        }
       },
+      "label": "Ordenar",
       "options": {
+        "createdAt": "Fecha de creación",
         "default": "Por defecto (sin ordenar)",
         "dueDate": "Fecha de vencimiento",
         "priority": "Prioridad",
-        "title": "Título",
-        "createdAt": "Fecha de creación",
-        "status": "Estado"
+        "status": "Estado",
+        "title": "Título"
       },
-      "direction": {
-        "changeToDesc": "Cambiar a descendente",
-        "changeToAsc": "Cambiar a ascendente"
-      }
-    }
-  },
-  "standardViews": {
-    "all": {
-      "title": "Todas las tareas",
-      "description": "Ver todas las tareas en un lugar"
+      "placeholder": "Seleccionar opción de ordenamiento",
+      "sortBy": "Ordenar por",
+      "title": "Opciones de ordenamiento"
     },
-    "inbox": {
-      "title": "Bandeja de entrada",
-      "description": "Comenzar con tareas no organizadas"
-    },
-    "today": {
-      "title": "Hoy",
-      "description": "Enfocarse en las tareas de hoy"
-    },
-    "upcoming": {
-      "title": "Próximas",
-      "description": "Ver tareas próximas"
-    },
-    "completed": {
-      "title": "Completadas",
-      "description": "Ver tareas completadas"
-    },
-    "calendar": {
-      "title": "Calendario",
-      "description": "Ver tareas en formato de calendario"
-    },
-    "projects": {
-      "title": "Proyectos",
-      "description": "Gestionar y organizar proyectos"
-    },
-    "labels": {
-      "title": "Etiquetas",
-      "description": "Organizar tareas con etiquetas"
-    },
-    "not-found": {
-      "title": "No encontrado",
-      "description": "El recurso solicitado no se pudo encontrar"
+    "title": "Opciones de vista",
+    "viewMode": {
+      "kanbanTooltip": "Solo para proyectos",
+      "label": "Modo de vista"
     }
   }
 }

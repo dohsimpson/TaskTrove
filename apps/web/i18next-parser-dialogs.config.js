@@ -12,7 +12,7 @@ export default {
   output: "components/dialogs/i18n/$LOCALE/dialogs.json",
 
   // Only generate non-English files (English uses inline defaults)
-  locales: ["zh", "fr", "de", "es", "nl"],
+  locales: ["zh", "fr", "de", "es", "nl", "ko"],
 
   // Use dialogs as the namespace for all dialog components
   defaultNamespace: "dialogs",
@@ -29,12 +29,15 @@ export default {
     if (locale === "en") {
       return value || key
     }
-    // For other languages, return undefined so keys are omitted (allowing fallback to defaults)
-    return undefined
+    // For other languages, return empty string for new keys (preserves existing translations)
+    return ""
   },
 
-  // Preserve existing translations when re-running
-  keepRemoved: true,
+  // Don't create backup files when updating translations
+  createOldCatalogs: false,
+
+  // Clean up removed keys but preserve existing translations
+  keepRemoved: false,
 
   // Sort keys alphabetically for consistency
   sort: true,

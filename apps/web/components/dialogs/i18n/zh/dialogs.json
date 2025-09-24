@@ -18,7 +18,6 @@
       "label": "描述（可选）",
       "placeholder": "输入{{type}}描述"
     },
-    "label": "标签",
     "name": {
       "label": "{{type}}名称",
       "placeholder": "输入{{type}}名称"
@@ -27,9 +26,6 @@
       "none": "无（根级别）",
       "placeholder": "选择{{type}}"
     },
-    "project": "项目",
-    "projectGroup": "组",
-    "section": "分区",
     "title": "添加新{{type}}"
   },
   "common": {
@@ -38,71 +34,72 @@
   "data": {
     "autoBackup": {
       "backupTime": {
-        "label": "备份时间",
-        "description": "选择自动备份的时间"
+        "description": "选择自动备份的时间",
+        "label": "备份时间"
       },
+      "description": "",
       "dockerNotice": {
-        "title": "Docker 环境",
-        "description": "在 Docker 环境中，备份文件保存在容器内的 /app/data/backups 目录。确保挂载卷以持久化备份。"
+        "description": "在 Docker 环境中，备份文件保存在容器内的 /app/data/backups 目录。确保挂载卷以持久化备份。",
+        "guide": "",
+        "title": "Docker 环境"
       },
       "enable": {
-        "label": "启用自动备份",
-        "description": "定期自动备份您的数据"
+        "description": "定期自动备份您的数据",
+        "label": "启用自动备份"
       },
       "manualBackup": {
         "button": "立即手动备份"
       },
       "maxBackups": {
-        "label": "最大备份数量",
-        "description": "保留的备份文件数量"
-      }
+        "noLimit": ""
+      },
+      "title": ""
     },
     "taskImport": {
+      "description": "",
       "step1": {
-        "title": "步骤 1：导出您的数据",
         "description": "点击下方的任务管理服务打开导入助手。按照说明导出并转换您的数据为 TaskTrove 格式。",
-        "todoist": "从 Todoist 导出数据：",
-        "todoistInstructions": "设置 → 集成 → 以 CSV 格式导出",
-        "notion": "从 Notion 导出数据：",
-        "notionInstructions": "选择数据库 → ... → 导出 → CSV",
-        "trello": "从 Trello 导出数据：",
-        "trelloInstructions": "看板菜单 → 更多 → 打印和导出 → 导出为 JSON"
+        "title": "步骤 1：导出您的数据"
       },
       "step2": {
-        "title": "步骤 2：上传转换后的文件",
         "description": "使用上述导入助手后，您将下载一个 JSON 文件。在此上传该文件以导入您的任务、项目和标签到 TaskTrove。",
-        "supportedFormats": "支持的格式：CSV（Todoist、Notion）、JSON（Trello）",
         "important": {
-          "title": "重要提示：",
-          "description": "仅上传从导入助手下载的 JSON 文件。其他应用的常规导出文件无法使用。"
-        }
+          "description": "仅上传从导入助手下载的 JSON 文件。其他应用的常规导出文件无法使用。",
+          "title": "重要提示："
+        },
+        "title": "步骤 2：上传转换后的文件"
       },
+      "title": "",
       "upload": {
         "button": "上传 JSON 文件",
-        "dragDrop": "拖放文件到这里，或点击选择",
-        "supportedFormats": "支持 CSV 和 JSON 文件",
-        "uploading": "上传中...",
-        "processing": "处理中...",
         "error": {
-          "uploadFailed": "上传失败：{{- message}}",
-          "processingFailed": "处理失败：{{- message}}"
+          "title": "上传错误"
         },
         "success": {
-          "title": "导入成功！",
-          "tasks": "{{count}} 个任务",
-          "projects": "{{count}} 个项目",
-          "labels": "{{count}} 个标签",
-          "imported": "已导入 {{items}}",
           "alreadyExisted": "{{items}} 已存在",
-          "noNewItems": "没有新项目"
-        }
+          "imported": "已导入 {{items}}",
+          "labels_one": "{{count}} 个标签",
+          "labels_many": "{{count}} 个标签",
+          "labels_other": "{{count}} 个标签",
+          "noNewItems": "没有新项目",
+          "projects_one": "{{count}} 个项目",
+          "projects_many": "{{count}} 个项目",
+          "projects_other": "{{count}} 个项目",
+          "tasks_one": "{{count}} 个任务",
+          "tasks_many": "{{count}} 个任务",
+          "tasks_other": "{{count}} 个任务",
+          "title": "导入成功！"
+        },
+        "uploading": "上传中..."
       }
     }
   },
   "delete": {
     "bulk": {
       "confirm": "删除任务",
-      "description": "您确定要删除 {{count}} 个任务吗？此操作无法撤销。",
+      "description_one": "您确定要删除 {{count}} 个项目吗？",
+      "description_many": "您确定要删除 {{count}} 个项目吗？",
+      "description_other": "您确定要删除 {{count}} 个项目吗？",
       "title": "删除任务"
     },
     "default": {
@@ -144,69 +141,73 @@
   "general": {
     "audio": {
       "soundEffects": {
-        "label": "音效",
-        "description": "为任务完成、通知和其他交互播放声音"
-      }
+        "description": "为任务完成、通知和其他交互播放声音",
+        "label": "音效"
+      },
+      "title": ""
     },
     "defaultPage": {
-      "title": "默认页面",
+      "description": "选择首次打开 TaskTrove 时要看到的页面",
       "label": "打开 TaskTrove 时显示",
-      "description": "选择首次打开 TaskTrove 时要看到的页面"
+      "title": "默认页面"
     },
     "language": {
-      "title": "语言",
+      "description": "选择应用程序的显示语言",
       "label": "语言",
-      "description": "选择应用程序的显示语言"
+      "title": "语言"
     },
     "links": {
       "autoConvert": {
-        "label": "自动转换网址为链接",
-        "description": "自动将任务标题中的网址转换为可点击的链接"
-      }
+        "description": "自动将任务标题中的网址转换为可点击的链接",
+        "label": "自动转换网址为链接"
+      },
+      "title": ""
     },
     "popovers": {
       "hoverOpen": {
-        "label": "悬停打开",
-        "description": "允许弹出窗口在悬停时打开，除了点击之外"
-      }
+        "description": "允许弹出窗口在悬停时打开，除了点击之外",
+        "label": "悬停打开"
+      },
+      "title": ""
     }
   },
   "notifications": {
     "alerts": {
       "notificationsBlocked": {
-        "title": "通知已被阻止",
+        "manualInstructions": "浏览器没有显示权限对话框。要启用通知，请点击地址栏中的 🔒 图标或转到浏览器设置 → 隐私和安全 → 网站设置 → 通知，然后刷新页面。",
         "retryInstructions": "请先尝试\"重试\"按钮。如果不起作用，您需要在浏览器设置中手动启用通知。",
-        "manualInstructions": "浏览器没有显示权限对话框。要启用通知，请点击地址栏中的 🔒 图标或转到浏览器设置 → 隐私和安全 → 网站设置 → 通知，然后刷新页面。"
+        "title": "通知已被阻止"
       },
       "secureConnectionRequired": {
-        "title": "需要安全连接",
-        "description": "通知需要安全连接（HTTPS）或 localhost。请通过 HTTPS 访问此网站或在 localhost 上运行以启用通知功能。"
+        "description": "通知需要安全连接（HTTPS）或 localhost。请通过 HTTPS 访问此网站或在 localhost 上运行以启用通知功能。",
+        "title": "需要安全连接"
       }
     },
     "general": {
       "enableNotifications": {
-        "label": "启用通知",
-        "description": "开启或关闭所有通知"
+        "description": "开启或关闭所有通知",
+        "label": "启用通知"
       },
       "requireInteraction": {
-        "label": "需要用户交互",
-        "description": "通知保持可见直到您与它们交互"
-      }
+        "description": "通知保持可见直到您与它们交互",
+        "label": "需要用户交互"
+      },
+      "title": ""
     },
     "permissionStatus": {
-      "title": "权限状态",
-      "browserNotifications": "浏览器通知",
-      "requiresHttps": "通知需要 HTTPS",
-      "enabled": "已启用",
       "blocked": "已阻止",
+      "browserNotifications": "浏览器通知",
+      "browserSettingsTooltip": "浏览器可能需要手动更改设置",
+      "enable": "启用",
+      "enabled": "已启用",
       "notEnabled": "未启用",
       "requesting": "请求中",
-      "enable": "启用",
+      "requiresHttps": "通知需要 HTTPS",
       "retry": "重试",
-      "tryAgain": "再试一次",
       "retryTooltip": "再次尝试请求权限",
-      "browserSettingsTooltip": "浏览器可能需要手动更改设置",
-      "testNotification": "测试通知"
+      "testNotification": "测试通知",
+      "title": "权限状态",
+      "tryAgain": "再试一次"
     }
   },
   "projectDialog": {
@@ -248,28 +249,26 @@
     "title": "快速添加任务"
   },
   "settings": {
-    "title": "设置",
-    "description": "配置 TaskTrove 应用程序设置和首选项",
-    "categories": {
-      "general": {
-        "title": "常规",
-        "description": "默认页面，基本首选项"
-      },
-      "notifications": {
-        "title": "通知",
-        "description": "通知设置"
-      },
-      "data": {
-        "title": "数据和存储",
-        "description": "导入/导出，备份"
-      }
-    },
     "accessibility": {
       "closeMenu": "关闭菜单",
-      "openMenu": "打开设置菜单",
-      "closeSettings": "关闭设置"
+      "closeSettings": "关闭设置",
+      "openMenu": "打开设置菜单"
     },
-    "language": "语言",
-    "languageDescription": "选择应用程序的显示语言"
+    "categories": {
+      "data": {
+        "description": "导入/导出，备份",
+        "title": "数据和存储"
+      },
+      "general": {
+        "description": "默认页面，基本首选项",
+        "title": "常规"
+      },
+      "notifications": {
+        "description": "通知设置",
+        "title": "通知"
+      }
+    },
+    "description": "配置 TaskTrove 应用程序设置和首选项",
+    "title": "设置"
   }
 }

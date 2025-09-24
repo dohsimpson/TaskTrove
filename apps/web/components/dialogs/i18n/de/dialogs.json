@@ -18,7 +18,6 @@
       "label": "Beschreibung (optional)",
       "placeholder": "{{type}}-Beschreibung eingeben"
     },
-    "label": "Etikett",
     "name": {
       "label": "{{type}}-Name",
       "placeholder": "{{type}}-Name eingeben"
@@ -27,9 +26,6 @@
       "none": "Keine (Wurzelebene)",
       "placeholder": "{{type}} auswählen"
     },
-    "project": "Projekt",
-    "projectGroup": "Gruppe",
-    "section": "Bereich",
     "title": "Neue {{type}} hinzufügen"
   },
   "common": {
@@ -38,71 +34,72 @@
   "data": {
     "autoBackup": {
       "backupTime": {
-        "label": "Backup-Zeit",
-        "description": "Zeit für automatische Backups wählen"
+        "description": "Zeit für automatische Backups wählen",
+        "label": "Backup-Zeit"
       },
+      "description": "Erstellt automatisch Backup-Dateien Ihrer Aufgaben und Projekte.",
       "dockerNotice": {
-        "title": "Docker-Umgebung",
-        "description": "In einer Docker-Umgebung werden Backup-Dateien in /app/data/backups innerhalb des Containers gespeichert. Stellen Sie sicher, dass Sie ein Volume mounten, um Backups zu persistieren."
+        "description": "In einer Docker-Umgebung werden Backup-Dateien in /app/data/backups innerhalb des Containers gespeichert. Stellen Sie sicher, dass Sie ein Volume mounten, um Backups zu persistieren.",
+        "guide": "Docker-Anleitung ansehen",
+        "title": "Docker-Umgebung"
       },
       "enable": {
-        "label": "Automatische Backups aktivieren",
-        "description": "Ihre Daten regelmäßig automatisch sichern"
+        "description": "Ihre Daten regelmäßig automatisch sichern",
+        "label": "Automatische Backups aktivieren"
       },
       "manualBackup": {
         "button": "Jetzt manuell sichern"
       },
       "maxBackups": {
-        "label": "Maximale Anzahl von Backups",
-        "description": "Anzahl der zu behaltenden Backup-Dateien"
-      }
+        "noLimit": "Keine Begrenzung"
+      },
+      "title": "Automatisches Backup"
     },
     "taskImport": {
+      "description": "Aufgaben aus anderen Aufgabenverwaltungsanwendungen importieren.",
       "step1": {
-        "title": "Schritt 1: Ihre Daten exportieren",
         "description": "Klicken Sie auf einen Aufgabenverwaltungsdienst unten, um den Import-Assistenten zu öffnen. Folgen Sie den Anweisungen, um Ihre Daten zu exportieren und in das TaskTrove-Format zu konvertieren.",
-        "todoist": "Daten aus Todoist exportieren:",
-        "todoistInstructions": "Einstellungen → Integrationen → Als CSV exportieren",
-        "notion": "Daten aus Notion exportieren:",
-        "notionInstructions": "Datenbank auswählen → ... → Exportieren → CSV",
-        "trello": "Daten aus Trello exportieren:",
-        "trelloInstructions": "Board-Menü → Mehr → Drucken und exportieren → Als JSON exportieren"
+        "title": "Schritt 1: Ihre Daten exportieren"
       },
       "step2": {
-        "title": "Schritt 2: Konvertierte Datei hochladen",
         "description": "Nach der Verwendung des obigen Import-Assistenten laden Sie eine JSON-Datei herunter. Laden Sie diese Datei hier hoch, um Ihre Aufgaben, Projekte und Etiketten in TaskTrove zu importieren.",
-        "supportedFormats": "Unterstützte Formate: CSV (Todoist, Notion), JSON (Trello)",
         "important": {
-          "title": "Wichtig:",
-          "description": "Laden Sie nur die JSON-Datei hoch, die vom Import-Assistenten heruntergeladen wurde. Reguläre Exporte aus anderen Apps funktionieren nicht."
-        }
+          "description": "Laden Sie nur die JSON-Datei hoch, die vom Import-Assistenten heruntergeladen wurde. Reguläre Exporte aus anderen Apps funktionieren nicht.",
+          "title": "Wichtig:"
+        },
+        "title": "Schritt 2: Konvertierte Datei hochladen"
       },
+      "title": "Aufgaben importieren",
       "upload": {
         "button": "JSON-Datei hochladen",
-        "dragDrop": "Datei hier ablegen oder klicken zum Auswählen",
-        "supportedFormats": "Unterstützt CSV- und JSON-Dateien",
-        "uploading": "Hochladen...",
-        "processing": "Verarbeitung...",
         "error": {
-          "uploadFailed": "Upload fehlgeschlagen: {{- message}}",
-          "processingFailed": "Verarbeitung fehlgeschlagen: {{- message}}"
+          "title": "Upload-Fehler"
         },
         "success": {
-          "title": "Import erfolgreich!",
-          "tasks": "{{count}} Aufgaben",
-          "projects": "{{count}} Projekte",
-          "labels": "{{count}} Etiketten",
-          "imported": "{{items}} importiert",
           "alreadyExisted": "{{items}} existierten bereits",
-          "noNewItems": "Keine neuen Elemente"
-        }
+          "imported": "{{items}} importiert",
+          "labels_one": "{{count}} Etikett",
+          "labels_many": "{{count}} Etiketten",
+          "labels_other": "{{count}} Etiketten",
+          "noNewItems": "Keine neuen Elemente",
+          "projects_one": "{{count}} Projekt",
+          "projects_many": "{{count}} Projekte",
+          "projects_other": "{{count}} Projekte",
+          "tasks_one": "{{count}} Aufgabe",
+          "tasks_many": "{{count}} Aufgaben",
+          "tasks_other": "{{count}} Aufgaben",
+          "title": "Import erfolgreich!"
+        },
+        "uploading": "Hochladen..."
       }
     }
   },
   "delete": {
     "bulk": {
       "confirm": "Aufgaben löschen",
-      "description": "Sind Sie sicher, dass Sie {{count}} Aufgaben löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "description_one": "Sind Sie sicher, dass Sie {{count}} Element löschen möchten?",
+      "description_many": "Sind Sie sicher, dass Sie {{count}} Elemente löschen möchten?",
+      "description_other": "Sind Sie sicher, dass Sie {{count}} Elemente löschen möchten?",
       "title": "Aufgaben löschen"
     },
     "default": {
@@ -144,69 +141,73 @@
   "general": {
     "audio": {
       "soundEffects": {
-        "label": "Soundeffekte",
-        "description": "Töne für Aufgabenabschluss, Benachrichtigungen und andere Interaktionen abspielen"
-      }
+        "description": "Töne für Aufgabenabschluss, Benachrichtigungen und andere Interaktionen abspielen",
+        "label": "Soundeffekte"
+      },
+      "title": "Audio"
     },
     "defaultPage": {
-      "title": "Standardseite",
+      "description": "Wählen Sie die Seite, die beim ersten Öffnen von TaskTrove angezeigt werden soll",
       "label": "Beim Öffnen von TaskTrove anzeigen",
-      "description": "Wählen Sie die Seite, die beim ersten Öffnen von TaskTrove angezeigt werden soll"
+      "title": "Standardseite"
     },
     "language": {
-      "title": "Sprache",
+      "description": "Anzeigesprache der Anwendung auswählen",
       "label": "Sprache",
-      "description": "Anzeigesprache der Anwendung auswählen"
+      "title": "Sprache"
     },
     "links": {
       "autoConvert": {
-        "label": "URLs automatisch zu Links konvertieren",
-        "description": "URLs in Aufgabentiteln automatisch zu anklickbaren Links konvertieren"
-      }
+        "description": "URLs in Aufgabentiteln automatisch zu anklickbaren Links konvertieren",
+        "label": "URLs automatisch zu Links konvertieren"
+      },
+      "title": "Links"
     },
     "popovers": {
       "hoverOpen": {
-        "label": "Hover-Öffnung",
-        "description": "Popovers beim Hovern öffnen lassen, zusätzlich zum Klicken"
-      }
+        "description": "Popovers beim Hovern öffnen lassen, zusätzlich zum Klicken",
+        "label": "Hover-Öffnung"
+      },
+      "title": "Popovers"
     }
   },
   "notifications": {
     "alerts": {
       "notificationsBlocked": {
-        "title": "Benachrichtigungen blockiert",
+        "manualInstructions": "Der Browser hat keinen Berechtigungsdialog angezeigt. Um Benachrichtigungen zu aktivieren, klicken Sie auf das 🔒-Symbol in der Adressleiste oder gehen Sie zu Browsereinstellungen → Datenschutz und Sicherheit → Website-Einstellungen → Benachrichtigungen und aktualisieren Sie dann die Seite.",
         "retryInstructions": "Bitte versuchen Sie zuerst die Schaltfläche \"Wiederholen\". Wenn das nicht funktioniert, müssen Sie Benachrichtigungen manuell in Ihren Browsereinstellungen aktivieren.",
-        "manualInstructions": "Der Browser hat keinen Berechtigungsdialog angezeigt. Um Benachrichtigungen zu aktivieren, klicken Sie auf das 🔒-Symbol in der Adressleiste oder gehen Sie zu Browsereinstellungen → Datenschutz und Sicherheit → Website-Einstellungen → Benachrichtigungen und aktualisieren Sie dann die Seite."
+        "title": "Benachrichtigungen blockiert"
       },
       "secureConnectionRequired": {
-        "title": "Sichere Verbindung erforderlich",
-        "description": "Benachrichtigungen erfordern eine sichere Verbindung (HTTPS) oder localhost. Bitte greifen Sie über HTTPS auf diese Website zu oder führen Sie sie auf localhost aus, um Benachrichtigungen zu aktivieren."
+        "description": "Benachrichtigungen erfordern eine sichere Verbindung (HTTPS) oder localhost. Bitte greifen Sie über HTTPS auf diese Website zu oder führen Sie sie auf localhost aus, um Benachrichtigungen zu aktivieren.",
+        "title": "Sichere Verbindung erforderlich"
       }
     },
     "general": {
       "enableNotifications": {
-        "label": "Benachrichtigungen aktivieren",
-        "description": "Alle Benachrichtigungen ein- oder ausschalten"
+        "description": "Alle Benachrichtigungen ein- oder ausschalten",
+        "label": "Benachrichtigungen aktivieren"
       },
       "requireInteraction": {
-        "label": "Interaktion erforderlich",
-        "description": "Benachrichtigungen bleiben sichtbar, bis Sie mit ihnen interagieren"
-      }
+        "description": "Benachrichtigungen bleiben sichtbar, bis Sie mit ihnen interagieren",
+        "label": "Interaktion erforderlich"
+      },
+      "title": "Allgemein"
     },
     "permissionStatus": {
-      "title": "Berechtigungsstatus",
-      "browserNotifications": "Browser-Benachrichtigungen",
-      "requiresHttps": "Benachrichtigungen erfordern HTTPS",
-      "enabled": "Aktiviert",
       "blocked": "Blockiert",
+      "browserNotifications": "Browser-Benachrichtigungen",
+      "browserSettingsTooltip": "Browser erfordert möglicherweise manuelle Einstellungsänderungen",
+      "enable": "Aktivieren",
+      "enabled": "Aktiviert",
       "notEnabled": "Nicht aktiviert",
       "requesting": "Anfragend",
-      "enable": "Aktivieren",
+      "requiresHttps": "Benachrichtigungen erfordern HTTPS",
       "retry": "Wiederholen",
-      "tryAgain": "Erneut versuchen",
       "retryTooltip": "Berechtigung erneut anfordern",
-      "browserSettingsTooltip": "Browser erfordert möglicherweise manuelle Einstellungsänderungen",
-      "testNotification": "Benachrichtigung testen"
+      "testNotification": "Benachrichtigung testen",
+      "title": "Berechtigungsstatus",
+      "tryAgain": "Erneut versuchen"
     }
   },
   "projectDialog": {
@@ -248,28 +249,26 @@
     "title": "Aufgabe schnell hinzufügen"
   },
   "settings": {
-    "title": "Einstellungen",
-    "description": "TaskTrove-Anwendungseinstellungen und -präferenzen konfigurieren",
-    "categories": {
-      "general": {
-        "title": "Allgemein",
-        "description": "Standardseite, grundlegende Einstellungen"
-      },
-      "notifications": {
-        "title": "Benachrichtigungen",
-        "description": "Benachrichtigungseinstellungen"
-      },
-      "data": {
-        "title": "Daten & Speicher",
-        "description": "Import/Export, Backups"
-      }
-    },
     "accessibility": {
       "closeMenu": "Menü schließen",
-      "openMenu": "Einstellungsmenü öffnen",
-      "closeSettings": "Einstellungen schließen"
+      "closeSettings": "Einstellungen schließen",
+      "openMenu": "Einstellungsmenü öffnen"
     },
-    "language": "Sprache",
-    "languageDescription": "Anzeigesprache der Anwendung auswählen"
+    "categories": {
+      "data": {
+        "description": "Import/Export, Backups",
+        "title": "Daten & Speicher"
+      },
+      "general": {
+        "description": "Standardseite, grundlegende Einstellungen",
+        "title": "Allgemein"
+      },
+      "notifications": {
+        "description": "Benachrichtigungseinstellungen",
+        "title": "Benachrichtigungen"
+      }
+    },
+    "description": "TaskTrove-Anwendungseinstellungen und -präferenzen konfigurieren",
+    "title": "Einstellungen"
   }
 }

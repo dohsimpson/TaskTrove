@@ -1,143 +1,137 @@
 {
   "data": {
-    "title": "Gegevens en opslag",
     "autoBackup": {
-      "title": "Automatische back-up",
-      "description": "Automatisch back-upbestanden aanmaken van taken en projecten.",
       "backupTime": {
-        "label": "Back-up tijd",
-        "description": "Tijd kiezen voor automatische back-ups"
+        "description": "Tijd kiezen voor automatische back-ups",
+        "label": "Back-up tijd"
       },
+      "description": "Automatisch back-upbestanden aanmaken van taken en projecten.",
       "dockerNotice": {
-        "title": "Docker-omgeving",
-        "description": "In een Docker-omgeving worden back-upbestanden opgeslagen in /app/data/backups binnen de container. Zorg ervoor dat je een volume hebt gekoppeld om back-ups te behouden."
+        "description": "In een Docker-omgeving worden back-upbestanden opgeslagen in /app/data/backups binnen de container. Zorg ervoor dat je een volume hebt gekoppeld om back-ups te behouden.",
+        "guide": "",
+        "title": "Docker-omgeving"
       },
       "enable": {
-        "label": "Automatische back-ups inschakelen",
-        "description": "Je gegevens automatisch periodiek back-uppen"
+        "description": "Je gegevens automatisch periodiek back-uppen",
+        "label": "Automatische back-ups inschakelen"
       },
       "manualBackup": {
         "button": "Nu handmatige back-up maken"
       },
       "maxBackups": {
-        "label": "Maximum aantal back-ups",
-        "description": "Aantal back-upbestanden om te behouden"
-      }
+        "noLimit": ""
+      },
+      "title": "Automatische back-up"
     },
     "taskImport": {
-      "title": "Taak import",
       "description": "Taken importeren vanuit andere taakbeheer applicaties.",
       "step1": {
-        "title": "Stap 1: Je gegevens exporteren",
         "description": "Klik op een taakbeheerservice hieronder om de import wizard te openen. Volg de instructies om je gegevens te exporteren en om te zetten naar TaskTrove-formaat.",
-        "todoist": "Gegevens exporteren vanuit Todoist:",
-        "todoistInstructions": "Instellingen → Integraties → Exporteren als CSV",
-        "notion": "Gegevens exporteren vanuit Notion:",
-        "notionInstructions": "Database selecteren → ... → Exporteren → CSV",
-        "trello": "Gegevens exporteren vanuit Trello:",
-        "trelloInstructions": "Bordmenu → Meer → Afdrukken en exporteren → Exporteren als JSON"
+        "title": "Stap 1: Je gegevens exporteren"
       },
       "step2": {
-        "title": "Stap 2: Geconverteerd bestand uploaden",
         "description": "Na het gebruik van de bovenstaande import wizard download je een JSON-bestand. Upload dat bestand hier om je taken, projecten en labels te importeren in TaskTrove.",
-        "supportedFormats": "Ondersteunde formaten: CSV (Todoist, Notion), JSON (Trello)",
         "important": {
-          "title": "Belangrijk:",
-          "description": "Upload alleen het JSON-bestand dat is gedownload vanuit de import wizard. Reguliere exports van andere apps werken niet."
-        }
+          "description": "Upload alleen het JSON-bestand dat is gedownload vanuit de import wizard. Reguliere exports van andere apps werken niet.",
+          "title": "Belangrijk:"
+        },
+        "title": "Stap 2: Geconverteerd bestand uploaden"
       },
+      "title": "Taak import",
       "upload": {
         "button": "JSON-bestand uploaden",
-        "dragDrop": "Sleep het bestand hierheen of klik om te selecteren",
-        "supportedFormats": "Ondersteunt CSV- en JSON-bestanden",
-        "uploading": "Uploaden...",
-        "processing": "Verwerken...",
         "error": {
-          "uploadFailed": "Uploadfout: {{- message}}",
-          "processingFailed": "Verwerkingsfout: {{- message}}"
+          "title": "Upload fout"
         },
         "success": {
-          "title": "Import succesvol!",
-          "tasks": "{{count}} taken",
-          "projects": "{{count}} projecten",
-          "labels": "{{count}} labels",
-          "imported": "{{items}} geïmporteerd",
           "alreadyExisted": "{{items}} bestonden al",
-          "noNewItems": "Geen nieuwe items"
-        }
+          "imported": "{{items}} geïmporteerd",
+          "labels_one": "{{count}} label",
+          "labels_many": "{{count}} labels",
+          "labels_other": "{{count}} labels",
+          "noNewItems": "Geen nieuwe items",
+          "projects_one": "{{count}} project",
+          "projects_many": "{{count}} projecten",
+          "projects_other": "{{count}} projecten",
+          "tasks_one": "{{count}} taak",
+          "tasks_many": "{{count}} taken",
+          "tasks_other": "{{count}} taken",
+          "title": "Import succesvol!"
+        },
+        "uploading": "Uploaden..."
       }
     }
   },
   "general": {
     "audio": {
-      "title": "Audio",
       "soundEffects": {
-        "label": "Geluidseffecten",
-        "description": "Geluiden afspelen voor voltooide taken, notificaties en andere interacties"
-      }
+        "description": "Geluiden afspelen voor voltooide taken, notificaties en andere interacties",
+        "label": "Geluidseffecten"
+      },
+      "title": "Audio"
     },
     "defaultPage": {
-      "title": "Standaardpagina",
+      "description": "Kies de pagina om te tonen bij het voor het eerst openen van TaskTrove",
       "label": "Tonen bij openen van TaskTrove",
-      "description": "Kies de pagina om te tonen bij het voor het eerst openen van TaskTrove"
+      "title": "Standaardpagina"
     },
     "language": {
-      "title": "Taal",
+      "description": "Selecteer de weergavetaal van de applicatie",
       "label": "Taal",
-      "description": "Selecteer de weergavetaal van de applicatie"
+      "title": "Taal"
     },
     "links": {
-      "title": "Links",
       "autoConvert": {
-        "label": "Zet automatisch URL's om naar links",
-        "description": "Zet automatisch URL's in taaktitels om naar klikbare links"
-      }
+        "description": "Zet automatisch URL's in taaktitels om naar klikbare links",
+        "label": "Zet automatisch URL's om naar links"
+      },
+      "title": "Links"
     },
     "popovers": {
-      "title": "Popovers",
       "hoverOpen": {
-        "label": "Openen bij hover",
-        "description": "Sta toe dat popovers openen bij hover, naast klikken"
-      }
+        "description": "Sta toe dat popovers openen bij hover, naast klikken",
+        "label": "Openen bij hover"
+      },
+      "title": "Popovers"
     }
   },
   "notifications": {
     "alerts": {
       "notificationsBlocked": {
-        "title": "Notificaties geblokkeerd",
+        "manualInstructions": "De browser toonde geen toestemmingsdialoog. Om notificaties in te schakelen, klik op het 🔒 pictogram in de adresbalk of ga naar browserinstellingen → Privacy en beveiliging → Site-instellingen → Notificaties, en ververs vervolgens de pagina.",
         "retryInstructions": "Probeer eerst de \"Opnieuw\" knop. Als dat niet werkt, moet je notificaties handmatig inschakelen in je browserinstellingen.",
-        "manualInstructions": "De browser toonde geen toestemmingsdialoog. Om notificaties in te schakelen, klik op het 🔒 pictogram in de adresbalk of ga naar browserinstellingen → Privacy en beveiliging → Site-instellingen → Notificaties, en ververs vervolgens de pagina."
+        "title": "Notificaties geblokkeerd"
       },
       "secureConnectionRequired": {
-        "title": "Beveiligde verbinding vereist",
-        "description": "Notificaties vereisen een beveiligde verbinding (HTTPS) of localhost. Ga naar deze site via HTTPS of voer het uit op localhost om notificaties in te schakelen."
+        "description": "Notificaties vereisen een beveiligde verbinding (HTTPS) of localhost. Ga naar deze site via HTTPS of voer het uit op localhost om notificaties in te schakelen.",
+        "title": "Beveiligde verbinding vereist"
       }
     },
     "general": {
-      "title": "Algemene instellingen",
       "enableNotifications": {
-        "label": "Notificaties inschakelen",
-        "description": "Alle notificaties aan- of uitzetten"
+        "description": "Alle notificaties aan- of uitzetten",
+        "label": "Notificaties inschakelen"
       },
       "requireInteraction": {
-        "label": "Interactie vereist",
-        "description": "Notificaties blijven zichtbaar totdat je ermee interacteert"
-      }
+        "description": "Notificaties blijven zichtbaar totdat je ermee interacteert",
+        "label": "Interactie vereist"
+      },
+      "title": "Algemene instellingen"
     },
     "permissionStatus": {
-      "title": "Toestemmingsstatus",
-      "browserNotifications": "Browsernotificaties",
-      "requiresHttps": "Notificaties vereisen HTTPS",
-      "enabled": "Ingeschakeld",
       "blocked": "Geblokkeerd",
+      "browserNotifications": "Browsernotificaties",
+      "browserSettingsTooltip": "Browser kan handmatige wijzigingen in instellingen vereisen",
+      "enable": "Inschakelen",
+      "enabled": "Ingeschakeld",
       "notEnabled": "Niet ingeschakeld",
       "requesting": "Aanvragen",
-      "enable": "Inschakelen",
+      "requiresHttps": "Notificaties vereisen HTTPS",
       "retry": "Opnieuw",
-      "tryAgain": "Opnieuw proberen",
       "retryTooltip": "Probeer opnieuw toestemming aan te vragen",
-      "browserSettingsTooltip": "Browser kan handmatige wijzigingen in instellingen vereisen",
-      "testNotification": "Notificatie testen"
+      "testNotification": "Notificatie testen",
+      "title": "Toestemmingsstatus",
+      "tryAgain": "Opnieuw proberen"
     }
   }
 }

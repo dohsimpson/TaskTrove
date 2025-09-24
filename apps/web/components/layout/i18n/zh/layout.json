@@ -1,195 +1,154 @@
 {
   "crash": {
     "notAvailable": {
-      "title": "崩溃测试不可用",
-      "description": "崩溃测试仅在开发环境中可用。"
+      "description": "崩溃测试仅在开发环境中可用。",
+      "title": "崩溃测试不可用"
     }
   },
   "debug": {
     "available": {
-      "title": "TaskTrove 调试工具",
       "description": "仅开发环境的调试和测试工具。此页面在生产环境中不可用。",
-      "simplified": "此版本中的调试工具已简化。"
+      "simplified": "此版本中的调试工具已简化。",
+      "title": "TaskTrove 调试工具"
     },
     "notAvailable": {
-      "title": "调试工具不可用",
-      "description": "出于安全和性能原因，调试工具仅在开发环境中可用。"
+      "description": "出于安全和性能原因，调试工具仅在开发环境中可用。",
+      "title": "调试工具不可用"
     }
   },
   "empty": {
     "notifications": {
-      "title": "通知",
+      "action": "返回",
       "description": "通知功能在迁移期间暂时禁用",
-      "action": "返回"
+      "title": "通知"
     },
     "performance": {
-      "title": "性能监控",
+      "action": "返回",
       "description": "性能监控在迁移期间暂时禁用",
-      "action": "返回"
+      "title": "性能监控"
     },
     "voice": {
-      "title": "语音命令",
+      "action": "返回",
       "description": "语音命令在迁移期间暂时禁用",
-      "action": "返回"
+      "title": "语音命令"
     }
   },
   "footer": {
-    "task": "项任务",
-    "tasks": "项任务",
-    "no": "没有{{title}}",
     "completedToday": "今日已完成",
     "completedTodayLabel": "今日已完成",
     "dueToday": "今日到期",
-    "dueTodayLabel": "今日到期"
+    "dueTodayLabel": "今日到期",
+    "no": "没有{{title}}",
+    "task": "项任务",
+    "tasks": "项任务"
   },
   "header": {
+    "clickToCycleThemes": "点击切换主题。",
     "collapseSidebar": "收起侧边栏",
-    "openSidebar": "打开侧边栏",
     "currentTheme": "当前主题：{{theme}}。点击切换主题。",
-    "clickToCycleThemes": "点击切换主题。"
+    "openSidebar": "打开侧边栏"
   },
   "viewOptions": {
-    "title": "视图选项",
-    "help": {
-      "description": "自定义您查看和组织任务的方式：",
-      "viewMode": {
-        "label": "视图模式：",
-        "description": "在列表、看板和日历布局之间切换"
-      },
-      "displayOptions": {
-        "label": "显示选项：",
-        "description": "切换已完成任务、侧边面板和紧凑视图"
-      },
-      "sortFilter": {
-        "label": "排序和筛选：",
-        "description": "按优先级、截止日期或其他条件组织任务"
-      },
-      "advancedFilters": {
-        "label": "高级筛选：",
-        "description": "使用强大的筛选选项进行复杂查询"
-      },
-      "tip": {
-        "label": "提示：",
-        "description": "您的视图偏好设置会按路由保存，并在会话之间保持。"
-      }
-    },
-    "viewMode": {
-      "label": "视图模式",
-      "list": "列表",
-      "kanban": "看板",
-      "calendar": "日历",
-      "kanbanTooltip": "仅适用于项目"
-    },
     "displayOptions": {
-      "label": "显示选项",
+      "compact": {
+        "description": "使用更紧凑的布局以在屏幕上显示更多任务",
+        "label": "紧凑视图：",
+        "title": "紧凑视图"
+      },
+      "completed": {
+        "description": "显示或隐藏已完成的任务",
+        "label": "已完成任务：",
+        "title": "已完成任务"
+      },
       "help": {
         "description": "控制任务视图中的可见内容：",
         "tip": "提示：这些设置会按视图保存，并在会话之间保持"
       },
-      "completed": {
-        "title": "已完成任务",
-        "label": "已完成任务：",
-        "description": "显示或隐藏已完成的任务"
-      },
+      "label": "显示选项",
       "overdue": {
-        "title": "逾期任务",
+        "description": "显示或隐藏已超过截止日期的任务",
         "label": "逾期任务：",
-        "description": "显示或隐藏已超过截止日期的任务"
+        "title": "逾期任务"
       },
       "sidePanel": {
-        "title": "侧边面板",
+        "description": "切换侧边面板以查看额外的任务详情",
         "label": "侧边面板：",
-        "description": "切换侧边面板以查看额外的任务详情"
+        "title": "侧边面板"
+      }
+    },
+    "help": {
+      "advancedFilters": {
+        "description": "使用强大的筛选选项进行复杂查询",
+        "label": "高级筛选："
       },
-      "compact": {
-        "title": "紧凑视图",
-        "label": "紧凑视图：",
-        "description": "使用更紧凑的布局以在屏幕上显示更多任务"
+      "description": "自定义您查看和组织任务的方式：",
+      "displayOptions": {
+        "description": "切换已完成任务、侧边面板和紧凑视图",
+        "label": "显示选项："
+      },
+      "sortFilter": {
+        "description": "按优先级、截止日期或其他条件组织任务",
+        "label": "排序和筛选："
+      },
+      "tip": {
+        "description": "您的视图偏好设置会按路由保存，并在会话之间保持。",
+        "label": "提示："
+      },
+      "viewMode": {
+        "description": "在列表、看板和日历布局之间切换",
+        "label": "视图模式："
       }
     },
     "sort": {
-      "label": "排序",
-      "title": "排序选项",
-      "sortBy": "排序方式",
-      "placeholder": "选择排序选项",
+      "direction": {
+        "changeToAsc": "更改为升序",
+        "changeToDesc": "更改为降序"
+      },
       "help": {
-        "description": "选择如何组织您的任务：",
-        "default": {
-          "label": "默认（未排序）：",
-          "description": "以自然顺序显示任务，已完成任务在底部"
+        "createdDate": {
+          "description": "按任务创建时间排序",
+          "label": "创建日期："
         },
+        "default": {
+          "description": "以自然顺序显示任务，已完成任务在底部",
+          "label": "默认（未排序）："
+        },
+        "description": "选择如何组织您的任务：",
         "dueDate": {
-          "label": "截止日期：",
-          "description": "按截止日期对所有任务进行排序，混合已完成和未完成任务"
+          "description": "按截止日期对所有任务进行排序，混合已完成和未完成任务",
+          "label": "截止日期："
         },
         "priority": {
-          "label": "优先级：",
-          "description": "按优先级排序（1=最高，4=最低）"
-        },
-        "title": {
-          "label": "标题：",
-          "description": "按任务名称字母顺序排序"
-        },
-        "createdDate": {
-          "label": "创建日期：",
-          "description": "按任务创建时间排序"
+          "description": "按优先级排序（1=最高，4=最低）",
+          "label": "优先级："
         },
         "status": {
-          "label": "状态：",
-          "description": "按完成状态分组，然后按看板列"
+          "description": "按完成状态分组，然后按看板列",
+          "label": "状态："
         },
-        "tip": "提示：使用箭头按钮在升序和降序之间切换"
+        "tip": "提示：使用箭头按钮在升序和降序之间切换",
+        "title": {
+          "description": "按任务名称字母顺序排序",
+          "label": "标题："
+        }
       },
+      "label": "排序",
       "options": {
+        "createdAt": "创建日期",
         "default": "默认（未排序）",
         "dueDate": "截止日期",
         "priority": "优先级",
-        "title": "标题",
-        "createdAt": "创建日期",
-        "status": "状态"
+        "status": "状态",
+        "title": "标题"
       },
-      "direction": {
-        "changeToDesc": "更改为降序",
-        "changeToAsc": "更改为升序"
-      }
-    }
-  },
-  "standardViews": {
-    "all": {
-      "title": "所有任务",
-      "description": "在一个地方查看所有任务"
+      "placeholder": "选择排序选项",
+      "sortBy": "排序方式",
+      "title": "排序选项"
     },
-    "inbox": {
-      "title": "收件箱",
-      "description": "从未整理的任务开始"
-    },
-    "today": {
-      "title": "今天",
-      "description": "专注于今天的任务"
-    },
-    "upcoming": {
-      "title": "即将到来",
-      "description": "查看即将到来的任务"
-    },
-    "completed": {
-      "title": "已完成",
-      "description": "查看已完成的任务"
-    },
-    "calendar": {
-      "title": "日历",
-      "description": "以日历格式查看任务"
-    },
-    "projects": {
-      "title": "项目",
-      "description": "管理和组织项目"
-    },
-    "labels": {
-      "title": "标签",
-      "description": "使用标签组织任务"
-    },
-    "not-found": {
-      "title": "未找到",
-      "description": "请求的资源无法找到"
+    "title": "视图选项",
+    "viewMode": {
+      "kanbanTooltip": "仅适用于项目",
+      "label": "视图模式"
     }
   }
 }

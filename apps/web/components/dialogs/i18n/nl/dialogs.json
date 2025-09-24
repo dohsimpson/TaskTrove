@@ -18,7 +18,6 @@
       "label": "Beschrijving (optioneel)",
       "placeholder": "Voer beschrijving van {{type}} in"
     },
-    "label": "Label",
     "name": {
       "label": "Naam van {{type}}",
       "placeholder": "Voer naam van {{type}} in"
@@ -27,9 +26,6 @@
       "none": "Geen (rootniveau)",
       "placeholder": "{{type}} selecteren"
     },
-    "project": "Project",
-    "projectGroup": "Groep",
-    "section": "Sectie",
     "title": "Nieuwe {{type}} toevoegen"
   },
   "common": {
@@ -41,8 +37,10 @@
         "description": "Tijd kiezen voor automatische back-ups",
         "label": "Back-up tijd"
       },
+      "description": "",
       "dockerNotice": {
         "description": "In een Docker-omgeving worden back-upbestanden opgeslagen in /app/data/backups binnen de container. Zorg ervoor dat je een volume hebt gekoppeld om back-ups te behouden.",
+        "guide": "",
         "title": "Docker-omgeving"
       },
       "enable": {
@@ -53,20 +51,15 @@
         "button": "Nu handmatige back-up maken"
       },
       "maxBackups": {
-        "description": "Aantal back-upbestanden om te behouden",
-        "label": "Maximum aantal back-ups"
-      }
+        "noLimit": ""
+      },
+      "title": ""
     },
     "taskImport": {
+      "description": "",
       "step1": {
         "description": "Klik op een taakbeheerservice hieronder om de import wizard te openen. Volg de instructies om je gegevens te exporteren en om te zetten naar TaskTrove-formaat.",
-        "notion": "Gegevens exporteren vanuit Notion:",
-        "notionInstructions": "Database selecteren → ... → Exporteren → CSV",
-        "title": "Stap 1: Je gegevens exporteren",
-        "todoist": "Gegevens exporteren vanuit Todoist:",
-        "todoistInstructions": "Instellingen → Integraties → Exporteren als CSV",
-        "trello": "Gegevens exporteren vanuit Trello:",
-        "trelloInstructions": "Bordmenu → Meer → Afdrukken en exporteren → Exporteren als JSON"
+        "title": "Stap 1: Je gegevens exporteren"
       },
       "step2": {
         "description": "Na het gebruik van de bovenstaande import wizard download je een JSON-bestand. Upload dat bestand hier om je taken, projecten en labels te importeren in TaskTrove.",
@@ -74,27 +67,29 @@
           "description": "Upload alleen het JSON-bestand dat is gedownload vanuit de import wizard. Reguliere exports van andere apps werken niet.",
           "title": "Belangrijk:"
         },
-        "supportedFormats": "Ondersteunde formaten: CSV (Todoist, Notion), JSON (Trello)",
         "title": "Stap 2: Geconverteerd bestand uploaden"
       },
+      "title": "",
       "upload": {
         "button": "JSON-bestand uploaden",
-        "dragDrop": "Sleep het bestand hierheen of klik om te selecteren",
         "error": {
-          "processingFailed": "Verwerkingsfout: {{- message}}",
-          "uploadFailed": "Uploadfout: {{- message}}"
+          "title": "Upload fout"
         },
-        "processing": "Verwerken...",
         "success": {
           "alreadyExisted": "{{items}} bestonden al",
           "imported": "{{items}} geïmporteerd",
-          "labels": "{{count}} labels",
+          "labels_one": "{{count}} label",
+          "labels_many": "{{count}} labels",
+          "labels_other": "{{count}} labels",
           "noNewItems": "Geen nieuwe items",
-          "projects": "{{count}} projecten",
-          "tasks": "{{count}} taken",
+          "projects_one": "{{count}} project",
+          "projects_many": "{{count}} projecten",
+          "projects_other": "{{count}} projecten",
+          "tasks_one": "{{count}} taak",
+          "tasks_many": "{{count}} taken",
+          "tasks_other": "{{count}} taken",
           "title": "Import succesvol!"
         },
-        "supportedFormats": "Ondersteunt CSV- en JSON-bestanden",
         "uploading": "Uploaden..."
       }
     }
@@ -102,7 +97,9 @@
   "delete": {
     "bulk": {
       "confirm": "Taken verwijderen",
-      "description": "Weet je zeker dat je {{count}} taken wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "description_one": "Weet je zeker dat je {{count}} item wilt verwijderen?",
+      "description_many": "Weet je zeker dat je {{count}} items wilt verwijderen?",
+      "description_other": "Weet je zeker dat je {{count}} items wilt verwijderen?",
       "title": "Taken verwijderen"
     },
     "default": {
@@ -146,7 +143,8 @@
       "soundEffects": {
         "description": "Geluiden afspelen voor voltooide taken, notificaties en andere interacties",
         "label": "Geluidseffecten"
-      }
+      },
+      "title": ""
     },
     "defaultPage": {
       "description": "Kies de pagina om te tonen bij het voor het eerst openen van TaskTrove",
@@ -162,13 +160,15 @@
       "autoConvert": {
         "description": "Zet automatisch URL's in taaktitels om naar klikbare links",
         "label": "Zet automatisch URL's om naar links"
-      }
+      },
+      "title": ""
     },
     "popovers": {
       "hoverOpen": {
         "description": "Sta toe dat popovers openen bij hover, naast klikken",
         "label": "Openen bij hover"
-      }
+      },
+      "title": ""
     }
   },
   "notifications": {
@@ -191,7 +191,8 @@
       "requireInteraction": {
         "description": "Notificaties blijven zichtbaar totdat je ermee interacteert",
         "label": "Interactie vereist"
-      }
+      },
+      "title": ""
     },
     "permissionStatus": {
       "blocked": "Geblokkeerd",
@@ -248,28 +249,26 @@
     "title": "Taak snel toevoegen"
   },
   "settings": {
-    "title": "Instellingen",
-    "description": "TaskTrove applicatie-instellingen en voorkeuren configureren",
-    "categories": {
-      "general": {
-        "title": "Algemeen",
-        "description": "Standaardpagina, basisvoorkeuren"
-      },
-      "notifications": {
-        "title": "Meldingen",
-        "description": "Meldingsinstellingen"
-      },
-      "data": {
-        "title": "Gegevens & Opslag",
-        "description": "Importeren/exporteren, back-ups"
-      }
-    },
     "accessibility": {
       "closeMenu": "Menu sluiten",
-      "openMenu": "Instellingenmenu openen",
-      "closeSettings": "Instellingen sluiten"
+      "closeSettings": "Instellingen sluiten",
+      "openMenu": "Instellingenmenu openen"
     },
-    "language": "Taal",
-    "languageDescription": "Selecteer de weergavetaal van de applicatie"
+    "categories": {
+      "data": {
+        "description": "Importeren/exporteren, back-ups",
+        "title": "Gegevens & Opslag"
+      },
+      "general": {
+        "description": "Standaardpagina, basisvoorkeuren",
+        "title": "Algemeen"
+      },
+      "notifications": {
+        "description": "Meldingsinstellingen",
+        "title": "Meldingen"
+      }
+    },
+    "description": "TaskTrove applicatie-instellingen en voorkeuren configureren",
+    "title": "Instellingen"
   }
 }

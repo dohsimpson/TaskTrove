@@ -1,11 +1,89 @@
 {
+  "actions": {
+    "addComment": "Añadir comentario",
+    "addDate": "Añadir fecha",
+    "addLabel": "Añadir etiqueta",
+    "addLabels": "Añadir etiquetas",
+    "addPriority": "Añadir prioridad",
+    "addProject": "Añadir proyecto",
+    "addSubtask": "Añadir subtarea",
+    "addTask": "Añadir Tarea"
+  },
   "comments": {
     "addAnotherComment": "Agregar otro comentario...",
     "addComment": "Agregar comentario",
     "addComments": "Agregar comentarios...",
-    "commentCount": "{{count}} comentarios",
-    "commentCountSingular": "{{count}} comentario",
-    "title": "Comentarios ({{count}})"
+    "commentCount_one": "{{count}} comentario",
+    "commentCount_many": "{{count}} comentarios",
+    "commentCount_other": "{{count}} comentarios",
+    "title_one": "Comentario",
+    "title_many": "Comentarios",
+    "title_other": "Comentarios"
+  },
+  "emptyStates": {
+    "all": {
+      "description": "Esta vista muestra todas tus tareas en todos los proyectos. Crea tu primera tarea para comenzar con TaskTrove.",
+      "title": "No se encontraron tareas"
+    },
+    "analytics": {
+      "description": "Rastrea tu productividad y patrones de finalización de tareas.",
+      "title": "Panel de Análisis"
+    },
+    "completed": {
+      "description": "Las tareas que hayas terminado aparecerán aquí. ¡Completa algunas tareas para ver tu progreso y celebrar tus logros!",
+      "title": "Aún no hay tareas completadas"
+    },
+    "fallback": {
+      "description": "Crea tu primera tarea para comenzar.",
+      "title": "No se encontraron tareas"
+    },
+    "inbox": {
+      "description": "Este es tu punto de recolección predeterminado para todas las tareas nuevas. Cuando creas una tarea sin especificar un proyecto, aparece aquí.",
+      "title": "Tu bandeja de entrada está vacía"
+    },
+    "label": {
+      "description": "Las tareas etiquetadas con esta etiqueta aparecerán aquí. Usa etiquetas para categorizar y encontrar rápidamente tareas relacionadas.",
+      "title": "No hay tareas con la etiqueta {{labelName}}"
+    },
+    "project": {
+      "description": "Este proyecto está vacío. Agrega tareas para organizar tu trabajo y hacer seguimiento del progreso en objetivos específicos.",
+      "title": "No hay tareas en {{projectName}}"
+    },
+    "search": {
+      "description": "Encuentra tareas por título, descripción o etiquetas.",
+      "title": "Resultados de Búsqueda"
+    },
+    "today": {
+      "description": "Las tareas con fecha de vencimiento de hoy aparecerán aquí. Establece fechas de vencimiento en tus tareas para mantenerte al día con tus objetivos diarios.",
+      "title": "Nada programado para hoy"
+    },
+    "upcoming": {
+      "description": "Las tareas con fechas de vencimiento futuras aparecen aquí, ayudándote a planificar con anticipación y prepararte para lo que viene.",
+      "title": "No hay tareas próximas"
+    }
+  },
+  "filters": {
+    "activeOnly": "Solo activas",
+    "allTasks": "Todas las tareas",
+    "apply": "Aplicar",
+    "cancel": "Cancelar",
+    "clearAll": "Limpiar todo",
+    "completedOnly": "Solo completadas",
+    "customRange": "Rango personalizado",
+    "dueDate": "Fecha límite",
+    "filter": "Filtrar",
+    "filterTasks": "Filtrar Tareas",
+    "fromDate": "FECHA INICIO",
+    "labels": "Etiquetas",
+    "next30Days": "Próximos 30 días",
+    "next7Days": "Próximos 7 días",
+    "noLabels": "Sin etiquetas",
+    "priority": "Prioridad",
+    "projects": "Proyectos",
+    "selectEndDate": "Seleccionar fecha de fin",
+    "selectStartDate": "Seleccionar fecha de inicio",
+    "status": "Estado",
+    "toDate": "FECHA FIN"
   },
   "focusTimer": {
     "noActiveTimer": "No hay temporizador de concentración activo",
@@ -30,10 +108,7 @@
     "taskTitle": "Ingresar título de la tarea..."
   },
   "priority": {
-    "noPriority": "Sin prioridad",
-    "priority1": "Prioridad 1",
-    "priority2": "Prioridad 2",
-    "priority3": "Prioridad 3"
+    "noPriority": "Sin prioridad"
   },
   "project": {
     "noProject": "Sin proyecto (Bandeja de entrada)"
@@ -75,9 +150,9 @@
     "clear": "Limpiar",
     "clearTime": "Limpiar hora",
     "due": "Vence:",
+    "examplePrefix": "Ejemplo:",
     "hideCalendar": "Ocultar calendario y hora",
     "nextWeek": "Próxima semana",
-    "placeholder": "Ej: mañana 3pm, próximo lunes, todos los días",
     "recurring": "Recurrente",
     "set": "Establecer",
     "showCalendar": "Mostrar calendario y hora",
@@ -88,7 +163,9 @@
   },
   "sidePanel": {
     "attachments": {
-      "count": "{{count}} archivos adjuntos",
+      "count_one": "{{count}} archivo adjunto",
+      "count_many": "{{count}} archivos adjuntos",
+      "count_other": "{{count}} archivos adjuntos",
       "title": "Archivos adjuntos"
     },
     "autoSave": {
@@ -132,110 +209,5 @@
     "addSubtask": "Agregar subtarea",
     "addSubtasks": "Agregar subtareas...",
     "title": "Subtareas"
-  },
-  "timeEstimation": {
-    "calculatedFromSubtasks": "Calculado desde subtareas",
-    "clear": "Limpiar",
-    "customDuration": "Duración personalizada",
-    "done": "Hecho",
-    "errors": {
-      "hourNumber": "Debe ser un número (0-99)",
-      "hourRange": "Las horas deben estar entre 0 y 99",
-      "minuteNumber": "Debe ser un número (0-59)",
-      "minuteRange": "Los minutos deben estar entre 0 y 59"
-    },
-    "helpText": "Estima cuánto tiempo tomará completar esta tarea. Esto ayuda a planificar y rastrear tu productividad.",
-    "helpTextSubtasks": "Esta estimación se calcula desde la suma de las estimaciones de subtareas. Establecer una estimación directa aquí anulará el valor calculado.",
-    "hour": "hora",
-    "minute": "minuto",
-    "title": "Estimación de tiempo"
-  },
-  "actions": {
-    "addTask": "Añadir Tarea",
-    "addDate": "Añadir fecha",
-    "addPriority": "Añadir prioridad",
-    "addSubtask": "Añadir subtarea",
-    "addComment": "Añadir comentario",
-    "addLabel": "Añadir etiqueta",
-    "addLabels": "Añadir etiquetas",
-    "addProject": "Añadir proyecto"
-  },
-  "filters": {
-    "filter": "Filtrar",
-    "filterTasks": "Filtrar Tareas",
-    "clearAll": "Limpiar todo",
-    "dueDate": "Fecha límite",
-    "customRange": "Rango personalizado",
-    "fromDate": "FECHA INICIO",
-    "selectStartDate": "Seleccionar fecha de inicio",
-    "toDate": "FECHA FIN",
-    "selectEndDate": "Seleccionar fecha de fin",
-    "next7Days": "Próximos 7 días",
-    "next30Days": "Próximos 30 días",
-    "apply": "Aplicar",
-    "cancel": "Cancelar",
-    "priority": "Prioridad",
-    "status": "Estado",
-    "allTasks": "Todas las tareas",
-    "activeOnly": "Solo activas",
-    "completedOnly": "Solo completadas",
-    "projects": "Proyectos",
-    "labels": "Etiquetas",
-    "noLabels": "Sin etiquetas",
-    "presets": {
-      "overdue": "Atrasado",
-      "today": "Hoy",
-      "tomorrow": "Mañana",
-      "thisWeek": "Esta semana",
-      "nextWeek": "Próxima semana",
-      "noDueDate": "Sin fecha límite"
-    },
-    "dateRange": {
-      "from": "Desde",
-      "until": "Hasta",
-      "label": "Rango personalizado"
-    }
-  },
-  "emptyStates": {
-    "inbox": {
-      "title": "Tu bandeja de entrada está vacía",
-      "description": "Este es tu punto de recolección predeterminado para todas las tareas nuevas. Cuando creas una tarea sin especificar un proyecto, aparece aquí."
-    },
-    "today": {
-      "title": "Nada programado para hoy",
-      "description": "Las tareas con fecha de vencimiento de hoy aparecerán aquí. Establece fechas de vencimiento en tus tareas para mantenerte al día con tus objetivos diarios."
-    },
-    "upcoming": {
-      "title": "No hay tareas próximas",
-      "description": "Las tareas con fechas de vencimiento futuras aparecen aquí, ayudándote a planificar con anticipación y prepararte para lo que viene."
-    },
-    "completed": {
-      "title": "Aún no hay tareas completadas",
-      "description": "Las tareas que hayas terminado aparecerán aquí. ¡Completa algunas tareas para ver tu progreso y celebrar tus logros!"
-    },
-    "all": {
-      "title": "No se encontraron tareas",
-      "description": "Esta vista muestra todas tus tareas en todos los proyectos. Crea tu primera tarea para comenzar con TaskTrove."
-    },
-    "analytics": {
-      "title": "Panel de Análisis",
-      "description": "Rastrea tu productividad y patrones de finalización de tareas."
-    },
-    "search": {
-      "title": "Resultados de Búsqueda",
-      "description": "Encuentra tareas por título, descripción o etiquetas."
-    },
-    "project": {
-      "title": "No hay tareas en {{projectName}}",
-      "description": "Este proyecto está vacío. Agrega tareas para organizar tu trabajo y hacer seguimiento del progreso en objetivos específicos."
-    },
-    "label": {
-      "title": "No hay tareas con la etiqueta {{labelName}}",
-      "description": "Las tareas etiquetadas con esta etiqueta aparecerán aquí. Usa etiquetas para categorizar y encontrar rápidamente tareas relacionadas."
-    },
-    "fallback": {
-      "title": "No se encontraron tareas",
-      "description": "Crea tu primera tarea para comenzar."
-    }
   }
 }

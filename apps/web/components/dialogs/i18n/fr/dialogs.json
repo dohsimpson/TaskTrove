@@ -18,7 +18,6 @@
       "label": "Description (optionnelle)",
       "placeholder": "Saisir la description {{type}}"
     },
-    "label": "Étiquette",
     "name": {
       "label": "Nom {{type}}",
       "placeholder": "Saisir le nom {{type}}"
@@ -27,9 +26,6 @@
       "none": "Aucun (niveau racine)",
       "placeholder": "Sélectionner {{type}}"
     },
-    "project": "Projet",
-    "projectGroup": "Groupe",
-    "section": "Section",
     "title": "Ajouter nouveau {{type}}"
   },
   "common": {
@@ -38,71 +34,72 @@
   "data": {
     "autoBackup": {
       "backupTime": {
-        "label": "Heure de sauvegarde",
-        "description": "Choisir l'heure pour les sauvegardes automatiques"
+        "description": "Choisir l'heure pour les sauvegardes automatiques",
+        "label": "Heure de sauvegarde"
       },
+      "description": "Crée automatiquement des fichiers de sauvegarde de vos tâches et projets.",
       "dockerNotice": {
-        "title": "Environnement Docker",
-        "description": "Dans un environnement Docker, les fichiers de sauvegarde sont stockés dans /app/data/backups à l'intérieur du conteneur. Assurez-vous de monter un volume pour persister les sauvegardes."
+        "description": "Dans un environnement Docker, les fichiers de sauvegarde sont stockés dans /app/data/backups à l'intérieur du conteneur. Assurez-vous de monter un volume pour persister les sauvegardes.",
+        "guide": "Voir le guide Docker",
+        "title": "Environnement Docker"
       },
       "enable": {
-        "label": "Activer les sauvegardes automatiques",
-        "description": "Sauvegarder automatiquement vos données périodiquement"
+        "description": "Sauvegarder automatiquement vos données périodiquement",
+        "label": "Activer les sauvegardes automatiques"
       },
       "manualBackup": {
         "button": "Sauvegarde manuelle maintenant"
       },
       "maxBackups": {
-        "label": "Nombre maximum de sauvegardes",
-        "description": "Nombre de fichiers de sauvegarde à conserver"
-      }
+        "noLimit": "Aucune limite"
+      },
+      "title": "Sauvegarde automatique"
     },
     "taskImport": {
+      "description": "Importer des tâches depuis d'autres applications de gestion des tâches.",
       "step1": {
-        "title": "Étape 1 : Exporter vos données",
         "description": "Cliquez sur un service de gestion de tâches ci-dessous pour ouvrir l'assistant d'importation. Suivez les instructions pour exporter et convertir vos données au format TaskTrove.",
-        "todoist": "Exporter les données depuis Todoist :",
-        "todoistInstructions": "Paramètres → Intégrations → Exporter au format CSV",
-        "notion": "Exporter les données depuis Notion :",
-        "notionInstructions": "Sélectionner la base de données → ... → Exporter → CSV",
-        "trello": "Exporter les données depuis Trello :",
-        "trelloInstructions": "Menu du tableau → Plus → Imprimer et exporter → Exporter comme JSON"
+        "title": "Étape 1 : Exporter vos données"
       },
       "step2": {
-        "title": "Étape 2 : Télécharger le fichier converti",
         "description": "Après avoir utilisé l'assistant d'importation ci-dessus, vous téléchargerez un fichier JSON. Téléchargez ce fichier ici pour importer vos tâches, projets et étiquettes dans TaskTrove.",
-        "supportedFormats": "Formats supportés : CSV (Todoist, Notion), JSON (Trello)",
         "important": {
-          "title": "Important :",
-          "description": "Téléchargez uniquement le fichier JSON téléchargé depuis l'assistant d'importation. Les exports réguliers d'autres applications ne fonctionneront pas."
-        }
+          "description": "Téléchargez uniquement le fichier JSON téléchargé depuis l'assistant d'importation. Les exports réguliers d'autres applications ne fonctionneront pas.",
+          "title": "Important :"
+        },
+        "title": "Étape 2 : Télécharger le fichier converti"
       },
+      "title": "Importer les tâches",
       "upload": {
         "button": "Télécharger fichier JSON",
-        "dragDrop": "Glissez-déposez le fichier ici, ou cliquez pour sélectionner",
-        "supportedFormats": "Supporte les fichiers CSV et JSON",
-        "uploading": "Téléchargement...",
-        "processing": "Traitement...",
         "error": {
-          "uploadFailed": "Échec du téléchargement : {{- message}}",
-          "processingFailed": "Échec du traitement : {{- message}}"
+          "title": "Erreur de téléchargement"
         },
         "success": {
-          "title": "Importation réussie !",
-          "tasks": "{{count}} tâches",
-          "projects": "{{count}} projets",
-          "labels": "{{count}} étiquettes",
-          "imported": "Importé {{items}}",
           "alreadyExisted": "{{items}} existaient déjà",
-          "noNewItems": "Aucun nouvel élément"
-        }
+          "imported": "Importé {{items}}",
+          "labels_one": "{{count}} étiquette",
+          "labels_many": "{{count}} étiquettes",
+          "labels_other": "{{count}} étiquettes",
+          "noNewItems": "Aucun nouvel élément",
+          "projects_one": "{{count}} projet",
+          "projects_many": "{{count}} projets",
+          "projects_other": "{{count}} projets",
+          "tasks_one": "{{count}} tâche",
+          "tasks_many": "{{count}} tâches",
+          "tasks_other": "{{count}} tâches",
+          "title": "Importation réussie !"
+        },
+        "uploading": "Téléchargement..."
       }
     }
   },
   "delete": {
     "bulk": {
       "confirm": "Supprimer les tâches",
-      "description": "Êtes-vous sûr de vouloir supprimer {{count}} tâches ? Cette action ne peut pas être annulée.",
+      "description_one": "Êtes-vous sûr de vouloir supprimer {{count}} élément ?",
+      "description_many": "Êtes-vous sûr de vouloir supprimer {{count}} éléments ?",
+      "description_other": "Êtes-vous sûr de vouloir supprimer {{count}} éléments ?",
       "title": "Supprimer les tâches"
     },
     "default": {
@@ -144,69 +141,73 @@
   "general": {
     "audio": {
       "soundEffects": {
-        "label": "Effets sonores",
-        "description": "Jouer des sons pour l'achèvement de tâches, les notifications et autres interactions"
-      }
+        "description": "Jouer des sons pour l'achèvement de tâches, les notifications et autres interactions",
+        "label": "Effets sonores"
+      },
+      "title": "Audio"
     },
     "defaultPage": {
-      "title": "Page par défaut",
+      "description": "Choisir la page à voir lors de la première ouverture de TaskTrove",
       "label": "Afficher lors de l'ouverture de TaskTrove",
-      "description": "Choisir la page à voir lors de la première ouverture de TaskTrove"
+      "title": "Page par défaut"
     },
     "language": {
-      "title": "Langue",
+      "description": "Sélectionner la langue d'affichage de l'application",
       "label": "Langue",
-      "description": "Sélectionner la langue d'affichage de l'application"
+      "title": "Langue"
     },
     "links": {
       "autoConvert": {
-        "label": "Convertir automatiquement les URLs en liens",
-        "description": "Convertir automatiquement les URLs dans les titres de tâches en liens cliquables"
-      }
+        "description": "Convertir automatiquement les URLs dans les titres de tâches en liens cliquables",
+        "label": "Convertir automatiquement les URLs en liens"
+      },
+      "title": "Liens"
     },
     "popovers": {
       "hoverOpen": {
-        "label": "Ouverture au survol",
-        "description": "Permettre aux popover de s'ouvrir au survol, en plus du clic"
-      }
+        "description": "Permettre aux popover de s'ouvrir au survol, en plus du clic",
+        "label": "Ouverture au survol"
+      },
+      "title": "Fenêtres contextuelles"
     }
   },
   "notifications": {
     "alerts": {
       "notificationsBlocked": {
-        "title": "Notifications bloquées",
+        "manualInstructions": "Le navigateur n'a pas affiché la boîte de dialogue de permission. Pour activer les notifications, cliquez sur l'icône 🔒 dans la barre d'adresse ou allez dans les paramètres du navigateur → Confidentialité et sécurité → Paramètres du site → Notifications, puis actualisez la page.",
         "retryInstructions": "Veuillez d'abord essayer le bouton \"Réessayer\". Si cela ne fonctionne pas, vous devez activer manuellement les notifications dans les paramètres de votre navigateur.",
-        "manualInstructions": "Le navigateur n'a pas affiché la boîte de dialogue de permission. Pour activer les notifications, cliquez sur l'icône 🔒 dans la barre d'adresse ou allez dans les paramètres du navigateur → Confidentialité et sécurité → Paramètres du site → Notifications, puis actualisez la page."
+        "title": "Notifications bloquées"
       },
       "secureConnectionRequired": {
-        "title": "Connexion sécurisée requise",
-        "description": "Les notifications nécessitent une connexion sécurisée (HTTPS) ou localhost. Veuillez accéder à ce site via HTTPS ou exécuter sur localhost pour activer les notifications."
+        "description": "Les notifications nécessitent une connexion sécurisée (HTTPS) ou localhost. Veuillez accéder à ce site via HTTPS ou exécuter sur localhost pour activer les notifications.",
+        "title": "Connexion sécurisée requise"
       }
     },
     "general": {
       "enableNotifications": {
-        "label": "Activer les notifications",
-        "description": "Activer ou désactiver toutes les notifications"
+        "description": "Activer ou désactiver toutes les notifications",
+        "label": "Activer les notifications"
       },
       "requireInteraction": {
-        "label": "Nécessite une interaction",
-        "description": "Les notifications restent visibles jusqu'à ce que vous interagissiez avec elles"
-      }
+        "description": "Les notifications restent visibles jusqu'à ce que vous interagissiez avec elles",
+        "label": "Nécessite une interaction"
+      },
+      "title": "Général"
     },
     "permissionStatus": {
-      "title": "État des permissions",
-      "browserNotifications": "Notifications du navigateur",
-      "requiresHttps": "Les notifications nécessitent HTTPS",
-      "enabled": "Activé",
       "blocked": "Bloqué",
+      "browserNotifications": "Notifications du navigateur",
+      "browserSettingsTooltip": "Le navigateur peut nécessiter des modifications manuelles des paramètres",
+      "enable": "Activer",
+      "enabled": "Activé",
       "notEnabled": "Non activé",
       "requesting": "En cours de demande",
-      "enable": "Activer",
+      "requiresHttps": "Les notifications nécessitent HTTPS",
       "retry": "Réessayer",
-      "tryAgain": "Essayer à nouveau",
       "retryTooltip": "Essayer à nouveau de demander la permission",
-      "browserSettingsTooltip": "Le navigateur peut nécessiter des modifications manuelles des paramètres",
-      "testNotification": "Tester la notification"
+      "testNotification": "Tester la notification",
+      "title": "État des permissions",
+      "tryAgain": "Essayer à nouveau"
     }
   },
   "projectDialog": {
@@ -248,28 +249,26 @@
     "title": "Ajout rapide de tâche"
   },
   "settings": {
-    "title": "Paramètres",
-    "description": "Configurer les paramètres et préférences de l'application TaskTrove",
-    "categories": {
-      "general": {
-        "title": "Général",
-        "description": "Page par défaut, préférences de base"
-      },
-      "notifications": {
-        "title": "Notifications",
-        "description": "Paramètres de notification"
-      },
-      "data": {
-        "title": "Données et Stockage",
-        "description": "Import/export, sauvegardes"
-      }
-    },
     "accessibility": {
       "closeMenu": "Fermer le menu",
-      "openMenu": "Ouvrir le menu des paramètres",
-      "closeSettings": "Fermer les paramètres"
+      "closeSettings": "Fermer les paramètres",
+      "openMenu": "Ouvrir le menu des paramètres"
     },
-    "language": "Langue",
-    "languageDescription": "Sélectionner la langue d'affichage de l'application"
+    "categories": {
+      "data": {
+        "description": "Import/export, sauvegardes",
+        "title": "Données et Stockage"
+      },
+      "general": {
+        "description": "Page par défaut, préférences de base",
+        "title": "Général"
+      },
+      "notifications": {
+        "description": "Paramètres de notification",
+        "title": "Notifications"
+      }
+    },
+    "description": "Configurer les paramètres et préférences de l'application TaskTrove",
+    "title": "Paramètres"
   }
 }

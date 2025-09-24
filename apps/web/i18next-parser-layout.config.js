@@ -5,7 +5,7 @@ export default {
     "!components/layout/**/*.spec.{ts,tsx}",
   ],
   output: "components/layout/i18n/$LOCALE/$NAMESPACE.json",
-  locales: ["zh", "fr", "de", "es", "nl"], // Only generate non-English files (English uses inline defaults)
+  locales: ["zh", "fr", "de", "es", "nl", "ko"], // Only generate non-English files (English uses inline defaults)
   defaultNamespace: "layout",
   lexers: {
     ts: ["JsxLexer"],
@@ -13,9 +13,11 @@ export default {
   },
   defaultValue: function (locale, namespace, key, value) {
     // English files not generated - inline defaults used instead
-    // For non-English: return undefined to omit keys (allows fallback to inline defaults)
-    return undefined
+    // For non-English: return empty string for new keys (preserves existing translations)
+    return ""
   },
+  // Don't create backup files when updating translations
+  createOldCatalogs: false,
   keepRemoved: false,
   sort: true,
   jsonIndent: 2,

@@ -1,0 +1,34 @@
+{
+  "footer": {
+    "newVersion": "新しいバージョン: {{version}}",
+    "updateTo": "{{version}}にアップデート"
+  },
+  "mainNav": {
+    "allTasks": "全タスク",
+    "calendar": "カレンダー",
+    "completed": "完了",
+    "inbox": "受信箱",
+    "today": "今日",
+    "upcoming": "予定"
+  },
+  "moreNav": {
+    "settings": "設定",
+    "shortcuts": "ショートカット"
+  },
+  "quickActions": {
+    "add": "追加",
+    "search": "検索"
+  },
+  "sections": {
+    "labels": "ラベル",
+    "more": "その他",
+    "projects": "プロジェクト"
+  },
+  "userMenu": {
+    "about": "について",
+    "community": "コミュニティ",
+    "github": "GitHub",
+    "reportBug": "バグ報告",
+    "upgradeToPro": "プロにアップグレード"
+  }
+}

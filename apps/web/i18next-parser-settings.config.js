@@ -5,7 +5,7 @@ export default {
     "!components/dialogs/settings-forms/**/*.spec.{ts,tsx}",
   ],
   output: "components/dialogs/settings-forms/i18n/$LOCALE/$NAMESPACE.json",
-  locales: ["zh", "fr", "de", "es", "nl", "ko"], // Only generate non-English files (English uses inline defaults)
+  locales: ["zh", "fr", "de", "es", "nl", "ko", "ja"], // Only generate non-English files (English uses inline defaults)
   defaultNamespace: "settings",
   lexers: {
     ts: ["JsxLexer"],

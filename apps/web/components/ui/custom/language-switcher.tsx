@@ -19,6 +19,7 @@ const languageNames: Record<Language, string> = {
   es: "Español",
   nl: "Nederlands",
   ko: "한국어",
+  ja: "日本語",
 }
 
 interface LanguageSwitcherProps {

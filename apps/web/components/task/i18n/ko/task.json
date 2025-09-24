@@ -13,11 +13,11 @@
     "addAnotherComment": "다른 댓글 추가...",
     "addComment": "댓글 추가",
     "addComments": "댓글 추가...",
-    "commentCount_many": "댓글 {{count}}개",
     "commentCount_one": "댓글 {{count}}개",
+    "commentCount_many": "댓글 {{count}}개",
     "commentCount_other": "댓글 {{count}}개",
-    "title_many": "댓글",
     "title_one": "댓글",
+    "title_many": "댓글",
     "title_other": "댓글"
   },
   "emptyStates": {
@@ -163,8 +163,8 @@
   },
   "sidePanel": {
     "attachments": {
-      "count_many": "첨부파일 {{count}}개",
       "count_one": "첨부파일 {{count}}개",
+      "count_many": "첨부파일 {{count}}개",
       "count_other": "첨부파일 {{count}}개",
       "title": "첨부파일"
     },

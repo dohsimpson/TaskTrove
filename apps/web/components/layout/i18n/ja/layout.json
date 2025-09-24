@@ -1,0 +1,154 @@
+{
+  "crash": {
+    "notAvailable": {
+      "description": "クラッシュテストは開発環境でのみ利用可能です。",
+      "title": "クラッシュテストが利用できません"
+    }
+  },
+  "debug": {
+    "available": {
+      "description": "開発環境専用のデバッグとテストツール。このページは本番環境では利用できません。",
+      "simplified": "デバッグツールはこのバージョンで簡略化されました。",
+      "title": "TaskTroveデバッグツール"
+    },
+    "notAvailable": {
+      "description": "デバッグツールはセキュリティとパフォーマンスの理由で開発環境でのみ利用可能です。",
+      "title": "デバッグツールが利用できません"
+    }
+  },
+  "empty": {
+    "notifications": {
+      "action": "戻る",
+      "description": "通知機能は移行中のため一時的に無効化されています",
+      "title": "通知"
+    },
+    "performance": {
+      "action": "戻る",
+      "description": "パフォーマンス監視は移行中のため一時的に無効化されています",
+      "title": "パフォーマンス監視"
+    },
+    "voice": {
+      "action": "戻る",
+      "description": "音声コマンドは移行中のため一時的に無効化されています",
+      "title": "音声コマンド"
+    }
+  },
+  "footer": {
+    "completedToday": "今日完了",
+    "completedTodayLabel": "今日完了したタスク",
+    "dueToday": "今日期限",
+    "dueTodayLabel": "今日期限のタスク",
+    "no": "{{title}}なし",
+    "task": "タスク",
+    "tasks": "タスク"
+  },
+  "header": {
+    "clickToCycleThemes": "クリックしてテーマを切り替え",
+    "collapseSidebar": "サイドバーを折りたたむ",
+    "currentTheme": "現在のテーマ: {{theme}}。クリックしてテーマを変更。",
+    "openSidebar": "サイドバーを開く"
+  },
+  "viewOptions": {
+    "displayOptions": {
+      "compact": {
+        "description": "コンパクトレイアウトでより多くのタスクを画面に表示します",
+        "label": "コンパクトビュー:",
+        "title": "コンパクトビュー"
+      },
+      "completed": {
+        "description": "完了したタスクを表示または非表示にします",
+        "label": "完了タスク:",
+        "title": "完了タスク"
+      },
+      "help": {
+        "description": "タスクビューで表示する内容をコントロールします:",
+        "tip": "ヒント: これらの設定はビューごとに保存され、セッション間で永続化されます"
+      },
+      "label": "表示オプション",
+      "overdue": {
+        "description": "期限を過ぎたタスクを表示または非表示にします",
+        "label": "期限切れタスク:",
+        "title": "期限切れタスク"
+      },
+      "sidePanel": {
+        "description": "サイドパネルを切り替えてタスクの詳細を表示します",
+        "label": "サイドパネル:",
+        "title": "サイドパネル"
+      }
+    },
+    "help": {
+      "advancedFilters": {
+        "description": "強力なフィルターオプションで複雑なクエリに対応します",
+        "label": "高度なフィルター:"
+      },
+      "description": "タスクの表示と組織をカスタマイズします:",
+      "displayOptions": {
+        "description": "完了タスク、サイドパネル、コンパクトビューを切り替えます",
+        "label": "表示オプション:"
+      },
+      "sortFilter": {
+        "description": "優先度、期限、その他の条件でタスクを組織します",
+        "label": "ソートとフィルター:"
+      },
+      "tip": {
+        "description": "ビューの設定はパスごとに保存され、セッション間で永続化されます。",
+        "label": "ヒント:"
+      },
+      "viewMode": {
+        "description": "リスト、カンバン、カレンダーレイアウトを切り替えます",
+        "label": "ビューモード:"
+      }
+    },
+    "sort": {
+      "direction": {
+        "changeToAsc": "昇順に変更",
+        "changeToDesc": "降順に変更"
+      },
+      "help": {
+        "createdDate": {
+          "description": "タスクの作成時刻でソートします",
+          "label": "作成日:"
+        },
+        "default": {
+          "description": "タスクを自然な順序で表示し、完了タスクを下に表示します",
+          "label": "デフォルト (ソートなし):"
+        },
+        "description": "タスクの組織方法を選択してください:",
+        "dueDate": {
+          "description": "すべてのタスクを期限でソートし、完了と未完了を混合して表示します",
+          "label": "期限:"
+        },
+        "priority": {
+          "description": "優先度でソートします (1=最高、 4=最低)",
+          "label": "優先度:"
+        },
+        "status": {
+          "description": "完了ステータスでグループ化し、次にカンバンコラムでグループ化します",
+          "label": "ステータス:"
+        },
+        "tip": "ヒント: 矢印ボタンで昇順と降順を切り替えられます",
+        "title": {
+          "description": "タスク名でアルファベット順にソートします",
+          "label": "タイトル:"
+        }
+      },
+      "label": "ソート",
+      "options": {
+        "createdAt": "作成日",
+        "default": "デフォルト",
+        "dueDate": "期限日",
+        "priority": "優先度",
+        "status": "ステータス",
+        "title": "タイトル"
+      },
+      "placeholder": "ソート順を選択",
+      "sortBy": "並び替え",
+      "title": "ソート"
+    },
+    "title": "表示オプション",
+    "viewMode": {
+      "kanbanTooltip": "プロジェクトのみ",
+      "label": "表示モード"
+    }
+  }
+}

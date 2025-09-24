@@ -1,0 +1,213 @@
+{
+  "actions": {
+    "addComment": "コメントを追加",
+    "addDate": "日付を追加",
+    "addLabel": "ラベルを追加",
+    "addLabels": "ラベルを追加",
+    "addPriority": "優先度を追加",
+    "addProject": "プロジェクトを追加",
+    "addSubtask": "サブタスクを追加",
+    "addTask": "タスクを追加"
+  },
+  "comments": {
+    "addAnotherComment": "別のコメントを追加...",
+    "addComment": "コメントを追加",
+    "addComments": "コメントを追加...",
+    "commentCount_one": "{{count}} コメント",
+    "commentCount_many": "{{count}} コメント",
+    "commentCount_other": "{{count}} コメント",
+    "title_one": "コメント",
+    "title_many": "コメント",
+    "title_other": "コメント"
+  },
+  "emptyStates": {
+    "all": {
+      "description": "この画面は全プロジェクトのタスクを表示します。TaskTroveを始めるために、最初のタスクを作成しましょう。",
+      "title": "タスクが見つかりません"
+    },
+    "analytics": {
+      "description": "生産性とタスクの完了パターンを追跡できます。",
+      "title": "分析ダッシュボード"
+    },
+    "completed": {
+      "description": "完了したタスクがここに表示されます。いくつかのタスクを完了して、進捗を確認し、達成を祝いましょう！",
+      "title": "まだ完了したタスクはありません"
+    },
+    "fallback": {
+      "description": "最初のタスクを作成して始めましょう。",
+      "title": "タスクが見つかりません"
+    },
+    "inbox": {
+      "description": "これは新しいタスクのデフォルトの収集場所です。プロジェクトを指定せずにタスクを作成すると、ここに表示されます。",
+      "title": "受信箱は空です"
+    },
+    "label": {
+      "description": "このラベルが付いたタスクがここに表示されます。ラベルを使って関連タスクを分類し、素早く見つけましょう。",
+      "title": "{{labelName}} ラベルのタスクがありません"
+    },
+    "project": {
+      "description": "このプロジェクトは空です。タスクを追加して作業を整理し、特定の目標の進捗を追跡しましょう。",
+      "title": "{{projectName}} にタスクがありません"
+    },
+    "search": {
+      "description": "タイトル、説明、ラベルでタスクを検索できます。",
+      "title": "検索結果"
+    },
+    "today": {
+      "description": "今日が期限のタスクがここに表示されます。タスクに期限を設定して、日々の目標に遅れないようにしましょう。",
+      "title": "今日の予定はありません"
+    },
+    "upcoming": {
+      "description": "将来の期限が設定されたタスクがここに表示され、事前の計画と予定の準備に役立ちます。",
+      "title": "予定されたタスクはありません"
+    }
+  },
+  "filters": {
+    "activeOnly": "アクティブのみ",
+    "allTasks": "すべてのタスク",
+    "apply": "適用",
+    "cancel": "キャンセル",
+    "clearAll": "すべてクリア",
+    "completedOnly": "完了のみ",
+    "customRange": "カスタム範囲",
+    "dueDate": "期限",
+    "filter": "フィルター",
+    "filterTasks": "タスクをフィルター",
+    "fromDate": "開始日",
+    "labels": "ラベル",
+    "next30Days": "今後30日",
+    "next7Days": "今後7日",
+    "noLabels": "ラベルなし",
+    "priority": "優先度",
+    "projects": "プロジェクト",
+    "selectEndDate": "終了日を選択",
+    "selectStartDate": "開始日を選択",
+    "status": "ステータス",
+    "toDate": "終了日"
+  },
+  "focusTimer": {
+    "noActiveTimer": "アクティブな集中タイマーはありません",
+    "pause": "一時停止",
+    "paused": "一時停止中",
+    "ready": "準備完了",
+    "resume": "再開",
+    "running": "実行中",
+    "start": "集中タイマーを開始",
+    "startTimer": "タイマーを開始",
+    "stop": "停止",
+    "stopped": "停止中",
+    "task": "タスク:",
+    "title": "集中タイマー"
+  },
+  "labels": {
+    "createLabel": "\"{{name}}\"を作成",
+    "searchPlaceholder": "ラベルを検索または作成..."
+  },
+  "placeholders": {
+    "addDescription": "説明を追加...",
+    "taskTitle": "タスクのタイトルを入力..."
+  },
+  "priority": {
+    "noPriority": "優先度なし"
+  },
+  "project": {
+    "noProject": "プロジェクトなし (受信箱)"
+  },
+  "recurring": {
+    "adaptive": "適応的",
+    "apply": "適用",
+    "calculateNextFrom": "次の期限を計算するタイミング",
+    "createCustomPattern": "カスタム繰り返しパターンを作成",
+    "current": "現在:",
+    "daily": "毎日",
+    "day": "日",
+    "days": "日",
+    "dueDate": "期限",
+    "every": "毎",
+    "interval": "間隔",
+    "lastDay": "最終日",
+    "month": "月",
+    "monthly": "毎月",
+    "months": "ヶ月",
+    "of": "の",
+    "on": "に",
+    "selectDateInYear": "年の日付を選択",
+    "selectDaysOfMonth": "月の日を選択",
+    "selectDaysOfWeek": "週の曜日を選択",
+    "selectedDates": "選択された日付:",
+    "setDailyInterval": "毎日の間隔を設定",
+    "the": "この",
+    "week": "週",
+    "weekdays": "平日",
+    "weekends": "週末",
+    "weekly": "毎週",
+    "weeks": "週間",
+    "year": "年",
+    "yearly": "毎年",
+    "years": "年"
+  },
+  "schedule": {
+    "clear": "クリア",
+    "clearTime": "時刻をクリア",
+    "due": "期限:",
+    "examplePrefix": "例:",
+    "hideCalendar": "カレンダーと時刻を非表示",
+    "nextWeek": "来週",
+    "recurring": "繰り返し",
+    "set": "設定",
+    "showCalendar": "カレンダーと時刻を表示",
+    "skip": "スキップ",
+    "title": "スケジュール",
+    "today": "今日",
+    "tomorrow": "明日"
+  },
+  "sidePanel": {
+    "attachments": {
+      "count_one": "{{count}} 添付ファイル",
+      "count_many": "{{count}} 添付ファイル",
+      "count_other": "{{count}} 添付ファイル",
+      "title": "添付ファイル"
+    },
+    "autoSave": {
+      "saving": "保存中..."
+    },
+    "category": {
+      "priority": "優先度",
+      "project": "プロジェクト",
+      "title": "カテゴリ"
+    },
+    "comments": {
+      "title": "コメント"
+    },
+    "description": {
+      "placeholder": "説明を追加...",
+      "title": "説明"
+    },
+    "dueDate": {
+      "placeholder": "期限を追加",
+      "title": "期限",
+      "today": "今日",
+      "tomorrow": "明日"
+    },
+    "labels": {
+      "title": "ラベル"
+    },
+    "shortcuts": {
+      "close": "閉じる",
+      "toggle": "切り替え"
+    },
+    "subtasks": {
+      "title": "サブタスク"
+    },
+    "taskTitle": {
+      "placeholder": "タスクのタイトル..."
+    },
+    "title": "タスクの詳細: {{- title}}"
+  },
+  "subtasks": {
+    "addAnotherSubtask": "別のサブタスクを追加...",
+    "addSubtask": "サブタスクを追加",
+    "addSubtasks": "サブタスクを追加...",
+    "title": "サブタスク"
+  }
+}

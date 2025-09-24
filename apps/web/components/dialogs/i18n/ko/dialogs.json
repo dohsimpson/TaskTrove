@@ -78,15 +78,15 @@
         "success": {
           "alreadyExisted": "{{items}}개가 이미 존재했습니다",
           "imported": "{{items}}개를 가져왔습니다",
-          "labels_many": "라벨 {{count}}개",
           "labels_one": "라벨 {{count}}개",
+          "labels_many": "라벨 {{count}}개",
           "labels_other": "라벨 {{count}}개",
           "noNewItems": "새 항목이 없습니다",
-          "projects_many": "프로젝트 {{count}}개",
           "projects_one": "프로젝트 {{count}}개",
+          "projects_many": "프로젝트 {{count}}개",
           "projects_other": "프로젝트 {{count}}개",
-          "tasks_many": "작업 {{count}}개",
           "tasks_one": "작업 {{count}}개",
+          "tasks_many": "작업 {{count}}개",
           "tasks_other": "작업 {{count}}개",
           "title": "가져오기 성공!"
         },
@@ -97,8 +97,8 @@
   "delete": {
     "bulk": {
       "confirm": "삭제",
-      "description_many": "{{count}}개의 항목을 삭제하시겠습니까?",
       "description_one": "{{count}}개의 항목을 삭제하시겠습니까?",
+      "description_many": "{{count}}개의 항목을 삭제하시겠습니까?",
       "description_other": "{{count}}개의 항목을 삭제하시겠습니까?",
       "title": "선택된 항목 삭제"
     },

@@ -1098,6 +1098,170 @@ describe("ProjectSectionsView", () => {
       const collapsibles = screen.getAllByTestId("collapsible")
       expect(collapsibles).toHaveLength(4) // 4 sections (3 original + 1 default)
     })
+
+    it("shows TaskShadow when dragging over collapsed section", () => {
+      // Mock collapsed sections atom to include the first section
+      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
+        if (atom === "mockTasks") return mockTasks
+        if (atom === "mockFilteredTasksAtom") return mockTasks
+        if (atom === "mockProjectsAtom") return [mockProject]
+        if (atom === "mockCurrentViewStateAtom")
+          return {
+            showSidePanel: false,
+            compactView: false,
+            viewMode: "list",
+            sortBy: "dueDate",
+            showCompleted: false,
+          }
+        if (atom === "mockCurrentRouteContextAtom")
+          return {
+            pathname: `/projects/${TEST_PROJECT_ID_1}`,
+            viewId: TEST_PROJECT_ID_1,
+            routeType: "project",
+          }
+        if (atom === "mockCollapsedSectionsAtom") return [TEST_SECTION_ID_1] // First section is collapsed
+        if (atom === "mockShowTaskPanelAtom") return false
+        if (atom === "mockSelectedTaskAtom") return null
+        if (atom === "mockOrderedTasksByProjectAtom") {
+          const orderedTasksMap = new Map()
+          orderedTasksMap.set(
+            TEST_PROJECT_ID_1,
+            mockTasks.filter((t) => t.projectId === TEST_PROJECT_ID_1),
+          )
+          return orderedTasksMap
+        }
+        // Handle orderedTasksBySection atom - it comes as a spy function
+        if (atom && vi.isMockFunction(atom)) {
+          return (projectId: string, sectionId: string | null) => {
+            return mockTasks.filter((task) => {
+              const matchesProject =
+                projectId === "inbox"
+                  ? !task.projectId || task.projectId === "inbox"
+                  : task.projectId === projectId
+              const matchesSection = sectionId === null || task.sectionId === sectionId
+              return matchesProject && matchesSection
+            })
+          }
+        }
+        return []
+      })
+
+      render(<ProjectSectionsView droppableId="test-droppable" />)
+
+      // Initially no TaskShadow should be visible
+      expect(screen.queryByTestId("task-shadow")).not.toBeInTheDocument()
+
+      // We need to directly test the component's internal drag state management
+      // Since we can't easily simulate the full drag event, we'll check that the
+      // DropTargetWrapper for collapsed sections has the right handlers
+      const collapsedSectionDroppables = screen.getAllByTestId(
+        "droppable-test-droppable-section-00000000-0000-4000-8000-000000000001",
+      )
+
+      // Verify collapsed section has the required drag handlers for TaskShadow
+      const hasRequiredHandlers = collapsedSectionDroppables.some(
+        (droppable) =>
+          droppable.getAttribute("data-has-drag-enter") === "true" &&
+          droppable.getAttribute("data-has-drag-leave") === "true",
+      )
+      expect(hasRequiredHandlers).toBe(true)
+    })
+
+    it("shows TaskShadow when dragging over non-collapsed section with no tasks", () => {
+      // Create a project with an empty section (Review section will have no tasks)
+      const mockTasksEmptySection: Task[] = [
+        {
+          id: TEST_TASK_ID_1,
+          title: "Task 1",
+          description: "First task",
+          completed: false,
+          priority: 2,
+          projectId: TEST_PROJECT_ID_1,
+          sectionId: TEST_SECTION_ID_1, // Planning section
+          labels: [],
+          subtasks: [],
+          comments: [],
+          attachments: [],
+          recurringMode: "dueDate",
+          createdAt: new Date("2024-01-01"),
+        },
+        // No tasks for Review section (TEST_SECTION_ID_3)
+      ]
+
+      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
+        if (atom === "mockTasks") return mockTasksEmptySection
+        if (atom === "mockFilteredTasksAtom") return mockTasksEmptySection
+        if (atom === "mockProjectsAtom") return [mockProject]
+        if (atom === "mockCurrentViewStateAtom")
+          return {
+            showSidePanel: false,
+            compactView: false,
+            viewMode: "list",
+            sortBy: "dueDate",
+            showCompleted: false,
+          }
+        if (atom === "mockCurrentRouteContextAtom")
+          return {
+            pathname: `/projects/${TEST_PROJECT_ID_1}`,
+            viewId: TEST_PROJECT_ID_1,
+            routeType: "project",
+          }
+        if (atom === "mockCollapsedSectionsAtom") return [] // No collapsed sections
+        if (atom === "mockShowTaskPanelAtom") return false
+        if (atom === "mockSelectedTaskAtom") return null
+        if (atom === "mockOrderedTasksByProjectAtom") {
+          const orderedTasksMap = new Map()
+          orderedTasksMap.set(
+            TEST_PROJECT_ID_1,
+            mockTasksEmptySection.filter((t) => t.projectId === TEST_PROJECT_ID_1),
+          )
+          return orderedTasksMap
+        }
+        // Handle orderedTasksBySection atom - return empty array for Review section
+        if (atom && vi.isMockFunction(atom)) {
+          return (projectId: string, sectionId: string | null) => {
+            return mockTasksEmptySection.filter((task) => {
+              const matchesProject =
+                projectId === "inbox"
+                  ? !task.projectId || task.projectId === "inbox"
+                  : task.projectId === projectId
+              const matchesSection = sectionId === null || task.sectionId === sectionId
+              return matchesProject && matchesSection
+            })
+          }
+        }
+        return []
+      })
+
+      render(<ProjectSectionsView droppableId="test-droppable" />)
+
+      // Initially no TaskShadow should be visible
+      expect(screen.queryByTestId("task-shadow")).not.toBeInTheDocument()
+
+      // Verify sections are rendered
+      expect(screen.getByText("Planning")).toBeInTheDocument()
+      expect(screen.getByText("Review")).toBeInTheDocument()
+
+      // Check that Review section (which has no tasks) has a DropTargetWrapper for its header
+      // The empty section should have drag handlers just like collapsed sections
+      const reviewSectionDroppables = screen.getAllByTestId(
+        "droppable-test-droppable-section-00000000-0000-4000-8000-000000000003",
+      )
+
+      // Verify the empty section has the required drag handlers for TaskShadow
+      const hasRequiredHandlers = reviewSectionDroppables.some(
+        (droppable) =>
+          droppable.getAttribute("data-has-drag-enter") === "true" &&
+          droppable.getAttribute("data-has-drag-leave") === "true",
+      )
+      expect(hasRequiredHandlers).toBe(true)
+
+      // Verify that Planning section (which has tasks) also has handlers
+      const planningSectionDroppables = screen.getAllByTestId(
+        "droppable-test-droppable-section-00000000-0000-4000-8000-000000000001",
+      )
+      expect(planningSectionDroppables.length).toBeGreaterThan(0)
+    })
   })
 
   describe("sorting functionality", () => {

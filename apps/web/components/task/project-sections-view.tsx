@@ -580,8 +580,8 @@ export function ProjectSectionsView({
           open={!isCollapsed}
           onOpenChange={() => handleToggleSectionCollapse(sectionId)}
         >
-          {/* When collapsed, wrap the header in a drop target */}
-          {isCollapsed ? (
+          {/* When collapsed or when not collapsed but has no tasks, wrap the header in a drop target */}
+          {isCollapsed || sectionTasks.length === 0 ? (
             <DropTargetWrapper
               dropTargetId={sectionDroppableId}
               onDrop={handleSectionDrop}
@@ -594,7 +594,7 @@ export function ProjectSectionsView({
               onDragLeave={handleSectionDragLeave}
             >
               {sectionHeader}
-              {/* Show shadow when dragging over collapsed section */}
+              {/* Show shadow when dragging over section */}
               {(() => {
                 const dragState = sectionDragStates.get(section.id)
                 return dragState && dragState.isDraggingOver && dragState.draggedTaskRect ? (
@@ -763,18 +763,17 @@ export function ProjectSectionsView({
                     </DropTargetWrapper>
                   ))}
 
-                  {/* Render shadow at bottom of section if dragging over section but not over any task */}
+                  {/* Render shadow at bottom of section if dragging over section but not over any task (only if section has tasks) */}
                   {(() => {
                     const dragState = sectionDragStates.get(section.id)
                     return dragState &&
                       dragState.isDraggingOver &&
                       !dragState.targetTaskId &&
-                      dragState.draggedTaskRect ? (
+                      dragState.draggedTaskRect &&
+                      sectionTasks.length > 0 ? (
                       <TaskShadow height={dragState.draggedTaskRect.height} className="mb-2" />
                     ) : null
                   })()}
-
-                  {/* {sectionTasks.length === 0 && <TaskEmptyState title="No tasks in this section" />} */}
                 </div>
               </DropTargetWrapper>
             </div>

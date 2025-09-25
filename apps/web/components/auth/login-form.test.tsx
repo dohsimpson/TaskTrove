@@ -29,36 +29,46 @@ describe("LoginForm", () => {
     it("renders card layout with form elements", () => {
       render(<LoginForm onCancel={mockOnCancel} />)
 
-      expect(screen.getByLabelText("Password")).toBeInTheDocument()
+      expect(screen.getByPlaceholderText("Password")).toBeInTheDocument()
       expect(screen.getByRole("button", { name: "Sign In" })).toBeInTheDocument()
-      expect(screen.getByRole("button", { name: "Show password" })).toBeInTheDocument()
+      // Toggle button only appears when there's text
+      expect(screen.queryByRole("button", { name: "Show password" })).not.toBeInTheDocument()
     })
 
     it("has proper password input attributes", () => {
       render(<LoginForm onCancel={mockOnCancel} />)
 
-      const passwordInput = screen.getByLabelText("Password")
+      const passwordInput = screen.getByPlaceholderText("Password")
       expect(passwordInput).toHaveAttribute("type", "password")
-      expect(passwordInput).toHaveAttribute("placeholder", "Enter your password")
+      expect(passwordInput).toHaveAttribute("placeholder", "Password")
     })
 
-    it("renders password visibility toggle button", () => {
+    it("shows password visibility toggle button when there is text", async () => {
       render(<LoginForm onCancel={mockOnCancel} />)
+
+      const passwordInput = screen.getByPlaceholderText("Password")
+      await user.type(passwordInput, "test")
 
       const toggleButton = screen.getByRole("button", { name: "Show password" })
       expect(toggleButton).toBeInTheDocument()
     })
 
-    it("shows Eye icon when password is hidden", () => {
+    it("shows Eye icon when password is hidden and text is present", async () => {
       render(<LoginForm onCancel={mockOnCancel} />)
 
-      // Eye icon should be present when password is hidden (initial state)
+      const passwordInput = screen.getByPlaceholderText("Password")
+      await user.type(passwordInput, "test")
+
+      // Eye icon should be present when password is hidden
       const eyeIcon = document.querySelector(".lucide-eye")
       expect(eyeIcon).toBeInTheDocument()
     })
 
     it("shows EyeOff icon when password is visible", async () => {
       render(<LoginForm onCancel={mockOnCancel} />)
+
+      const passwordInput = screen.getByPlaceholderText("Password")
+      await user.type(passwordInput, "test")
 
       const toggleButton = screen.getByRole("button", { name: "Show password" })
       await user.click(toggleButton)
@@ -89,7 +99,7 @@ describe("LoginForm", () => {
       expect(screen.getByText("Password is required")).toBeInTheDocument()
 
       // Then provide valid input
-      const passwordInput = screen.getByLabelText("Password")
+      const passwordInput = screen.getByPlaceholderText("Password")
       await user.type(passwordInput, "password123")
       await user.click(submitButton)
 
@@ -101,7 +111,9 @@ describe("LoginForm", () => {
     it("toggles password visibility when button is clicked", async () => {
       render(<LoginForm onCancel={mockOnCancel} />)
 
-      const passwordInput = screen.getByLabelText("Password")
+      const passwordInput = screen.getByPlaceholderText("Password")
+      await user.type(passwordInput, "test")
+
       const toggleButton = screen.getByRole("button", { name: "Show password" })
 
       // Initially password should be hidden
@@ -121,6 +133,9 @@ describe("LoginForm", () => {
     it("changes toggle button aria-label correctly", async () => {
       render(<LoginForm onCancel={mockOnCancel} />)
 
+      const passwordInput = screen.getByPlaceholderText("Password")
+      await user.type(passwordInput, "test")
+
       const toggleButton = screen.getByRole("button", { name: "Show password" })
 
       // Click to show password
@@ -135,6 +150,9 @@ describe("LoginForm", () => {
     it("does not submit form when password toggle is clicked", async () => {
       render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
 
+      const passwordInput = screen.getByPlaceholderText("Password")
+      await user.type(passwordInput, "test")
+
       const toggleButton = screen.getByRole("button", { name: "Show password" })
       await user.click(toggleButton)
 
@@ -146,7 +164,7 @@ describe("LoginForm", () => {
     it("updates password field when typed", async () => {
       render(<LoginForm onCancel={mockOnCancel} />)
 
-      const passwordInput = screen.getByLabelText("Password")
+      const passwordInput = screen.getByPlaceholderText("Password")
       await user.type(passwordInput, "mypassword")
 
       expect(passwordInput).toHaveValue("mypassword")
@@ -155,7 +173,7 @@ describe("LoginForm", () => {
     it("shows loading state during submission", async () => {
       render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
 
-      const passwordInput = screen.getByLabelText("Password")
+      const passwordInput = screen.getByPlaceholderText("Password")
       const submitButton = screen.getByRole("button", { name: "Sign In" })
 
       await user.type(passwordInput, "password123")
@@ -168,7 +186,7 @@ describe("LoginForm", () => {
     it("disables form fields during loading", async () => {
       render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
 
-      const passwordInput = screen.getByLabelText("Password")
+      const passwordInput = screen.getByPlaceholderText("Password")
       const submitButton = screen.getByRole("button", { name: "Sign In" })
 
       await user.type(passwordInput, "password123")
@@ -180,11 +198,11 @@ describe("LoginForm", () => {
     it("disables toggle button during loading", async () => {
       render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
 
-      const passwordInput = screen.getByLabelText("Password")
+      const passwordInput = screen.getByPlaceholderText("Password")
       const submitButton = screen.getByRole("button", { name: "Sign In" })
-      const toggleButton = screen.getByRole("button", { name: "Show password" })
 
       await user.type(passwordInput, "password123")
+      const toggleButton = screen.getByRole("button", { name: "Show password" })
       await user.click(submitButton)
 
       // Toggle button should not be disabled during loading
@@ -198,7 +216,7 @@ describe("LoginForm", () => {
 
       render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
 
-      const passwordInput = screen.getByLabelText("Password")
+      const passwordInput = screen.getByPlaceholderText("Password")
       const submitButton = screen.getByRole("button", { name: "Sign In" })
 
       await user.type(passwordInput, "password123")
@@ -232,7 +250,7 @@ describe("LoginForm", () => {
     it("handles form submission with Enter key", async () => {
       render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
 
-      const passwordInput = screen.getByLabelText("Password")
+      const passwordInput = screen.getByPlaceholderText("Password")
 
       await user.type(passwordInput, "password123")
       await user.keyboard("{Enter}")
@@ -250,7 +268,7 @@ describe("LoginForm", () => {
       const submitButton = screen.getByRole("button", { name: "Sign In" })
       await user.click(submitButton)
 
-      const passwordInput = screen.getByLabelText("Password")
+      const passwordInput = screen.getByPlaceholderText("Password")
       expect(passwordInput).toHaveClass("border-red-500")
     })
 
@@ -261,7 +279,7 @@ describe("LoginForm", () => {
       const submitButton = screen.getByRole("button", { name: "Sign In" })
       await user.click(submitButton)
 
-      const passwordInput = screen.getByLabelText("Password")
+      const passwordInput = screen.getByPlaceholderText("Password")
       expect(passwordInput).toHaveClass("border-red-500")
 
       // Then fix the error
@@ -283,12 +301,15 @@ describe("LoginForm", () => {
     it("has proper label associations", () => {
       render(<LoginForm onCancel={mockOnCancel} />)
 
-      const passwordInput = screen.getByLabelText("Password")
+      const passwordInput = screen.getByPlaceholderText("Password")
       expect(passwordInput).toHaveAttribute("id", "password")
     })
 
-    it("has proper button types", () => {
+    it("has proper button types", async () => {
       render(<LoginForm onCancel={mockOnCancel} />)
+
+      const passwordInput = screen.getByPlaceholderText("Password")
+      await user.type(passwordInput, "test")
 
       const submitButton = screen.getByRole("button", { name: "Sign In" })
       const toggleButton = screen.getByRole("button", { name: "Show password" })
@@ -297,8 +318,11 @@ describe("LoginForm", () => {
       expect(toggleButton).toHaveAttribute("type", "button")
     })
 
-    it("has proper aria-labels for password toggle", () => {
+    it("has proper aria-labels for password toggle", async () => {
       render(<LoginForm onCancel={mockOnCancel} />)
+
+      const passwordInput = screen.getByPlaceholderText("Password")
+      await user.type(passwordInput, "test")
 
       const toggleButton = screen.getByRole("button", { name: "Show password" })
       expect(toggleButton).toHaveAttribute("aria-label", "Show password")
@@ -306,6 +330,9 @@ describe("LoginForm", () => {
 
     it("updates aria-label when password visibility changes", async () => {
       render(<LoginForm onCancel={mockOnCancel} />)
+
+      const passwordInput = screen.getByPlaceholderText("Password")
+      await user.type(passwordInput, "test")
 
       const toggleButton = screen.getByRole("button", { name: "Show password" })
 
@@ -340,8 +367,11 @@ describe("LoginForm", () => {
       expect(form).toHaveClass("space-y-4")
     })
 
-    it("positions toggle button correctly", () => {
+    it("positions toggle button correctly", async () => {
       render(<LoginForm onCancel={mockOnCancel} />)
+
+      const passwordInput = screen.getByPlaceholderText("Password")
+      await user.type(passwordInput, "test")
 
       const toggleButton = screen.getByRole("button", { name: "Show password" })
       expect(toggleButton.parentElement).toHaveClass("relative")

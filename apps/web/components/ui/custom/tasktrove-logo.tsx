@@ -31,7 +31,7 @@ export function TaskTroveLogo({ className, size = "md" }: TaskTroveLogoProps) {
   )
 
   return (
-    <h1 className={cn(sizeClasses[size], className)}>
+    <h1 className={`${cn(sizeClasses[size], className)} cursor-default`}>
       <FlickerText className={cn(fontStyle, underlineStyle)}>TaskTrove</FlickerText>
     </h1>
   )

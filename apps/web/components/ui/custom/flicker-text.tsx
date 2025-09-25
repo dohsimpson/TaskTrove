@@ -15,49 +15,49 @@ export function FlickerText({ children, className, flickerDuration = "0.8s" }: F
 
   const flickerKeyframes = `
     @keyframes tasktrove-flicker-unique {
-      0% { 
-        opacity: 0.7; 
-        filter: brightness(0.7) drop-shadow(0 0 2px hsl(var(--primary) / 0.3)); 
+      0% {
+        opacity: 0.7;
+        filter: brightness(0.7) drop-shadow(0px 0px 2px color-mix(in srgb, var(--primary) 30%, transparent));
       }
-      10% { 
-        opacity: 0.8; 
-        filter: brightness(0.8) drop-shadow(0 0 4px hsl(var(--primary) / 0.4)); 
+      10% {
+        opacity: 0.8;
+        filter: brightness(0.8) drop-shadow(0px 0px 4px color-mix(in srgb, var(--primary) 40%, transparent));
       }
-      20% { 
-        opacity: 1; 
-        filter: brightness(1.2) drop-shadow(0 0 12px hsl(var(--primary) / 1)); 
+      20% {
+        opacity: 1;
+        filter: brightness(1.2) drop-shadow(0px 0px 12px color-mix(in srgb, var(--primary) 100%, transparent));
       }
-      30% { 
-        opacity: 0.7; 
-        filter: brightness(0.7) drop-shadow(0 0 2px hsl(var(--primary) / 0.3)); 
+      30% {
+        opacity: 0.7;
+        filter: brightness(0.7) drop-shadow(0px 0px 2px color-mix(in srgb, var(--primary) 30%, transparent));
       }
-      40% { 
-        opacity: 1; 
-        filter: brightness(1) drop-shadow(0 0 8px hsl(var(--primary) / 0.8)); 
+      40% {
+        opacity: 1;
+        filter: brightness(1) drop-shadow(0px 0px 8px color-mix(in srgb, var(--primary) 80%, transparent));
       }
-      50% { 
-        opacity: 0.9; 
-        filter: brightness(0.9) drop-shadow(0 0 6px hsl(var(--primary) / 0.6)); 
+      50% {
+        opacity: 0.9;
+        filter: brightness(0.9) drop-shadow(0px 0px 6px color-mix(in srgb, var(--primary) 60%, transparent));
       }
-      60% { 
-        opacity: 1; 
-        filter: brightness(1.1) drop-shadow(0 0 10px hsl(var(--primary) / 0.9)); 
+      60% {
+        opacity: 1;
+        filter: brightness(1.1) drop-shadow(0px 0px 10px color-mix(in srgb, var(--primary) 90%, transparent));
       }
-      70% { 
-        opacity: 0.85; 
-        filter: brightness(0.85) drop-shadow(0 0 5px hsl(var(--primary) / 0.5)); 
+      70% {
+        opacity: 0.85;
+        filter: brightness(0.85) drop-shadow(0px 0px 5px color-mix(in srgb, var(--primary) 50%, transparent));
       }
-      80% { 
-        opacity: 1; 
-        filter: brightness(1) drop-shadow(0 0 8px hsl(var(--primary) / 0.8)); 
+      80% {
+        opacity: 1;
+        filter: brightness(1) drop-shadow(0px 0px 8px color-mix(in srgb, var(--primary) 80%, transparent));
       }
-      90% { 
-        opacity: 1; 
-        filter: brightness(1.1) drop-shadow(0 0 10px hsl(var(--primary) / 0.9)); 
+      90% {
+        opacity: 1;
+        filter: brightness(1.1) drop-shadow(0px 0px 10px color-mix(in srgb, var(--primary) 90%, transparent));
       }
-      100% { 
-        opacity: 1; 
-        filter: brightness(1.1) drop-shadow(0 0 10px hsl(var(--primary) / 0.9)); 
+      100% {
+        opacity: 1;
+        filter: brightness(1.1) drop-shadow(0px 0px 10px color-mix(in srgb, var(--primary) 90%, transparent));
       }
     }
   `
@@ -67,8 +67,8 @@ export function FlickerText({ children, className, flickerDuration = "0.8s" }: F
 
   const baseStyles = cn(
     className,
-    // Persistent glow when hovered (in dark mode or when light mode flicker is enabled)
-    shouldShowGlow && "opacity-100 brightness-110 drop-shadow-[0_0_10px_hsl(var(--primary)/0.9)]",
+    // Add transition for smooth hover effects
+    "transition-all duration-200",
   )
 
   const handleMouseEnter = () => setIsHovered(true)
@@ -77,6 +77,8 @@ export function FlickerText({ children, className, flickerDuration = "0.8s" }: F
   const inlineStyles = shouldShowGlow
     ? {
         animation: `tasktrove-flicker-unique ${flickerDuration} ease-in-out 1`,
+        filter:
+          "brightness(1.1) drop-shadow(0px 0px 10px color-mix(in srgb, var(--primary) 90%, transparent))",
       }
     : {}
 

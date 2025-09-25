@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import acceptLanguage from "accept-language"
+import { auth } from "@/auth"
 import { languages, fallbackLng, cookieName } from "./lib/i18n/settings"
 
 acceptLanguage.languages([...languages])
@@ -20,7 +21,7 @@ export const config = {
   ],
 }
 
-export function middleware(req: NextRequest) {
+export default auth(function middleware(req) {
   let lng: string | undefined | null
 
   // Check if language is already in cookie
@@ -36,6 +37,22 @@ export function middleware(req: NextRequest) {
   // Fallback to default language
   if (!lng) {
     lng = fallbackLng
+  }
+
+  // Check authentication for protected routes
+  const isAuthPage = req.nextUrl.pathname.startsWith("/signin")
+  const isPublicAsset = req.nextUrl.pathname.match(/\.(ico|png|jpg|jpeg|gif|svg|css|js)$/)
+
+  if (!req.auth && !isAuthPage && !isPublicAsset) {
+    // Redirect to signin page if not authenticated
+    const signInUrl = new URL("/signin", req.url)
+    return NextResponse.redirect(signInUrl)
+  }
+
+  if (req.auth && isAuthPage) {
+    // Redirect to home if already authenticated and trying to access auth pages
+    const homeUrl = new URL("/", req.url)
+    return NextResponse.redirect(homeUrl)
   }
 
   // Create response
@@ -55,4 +72,4 @@ export function middleware(req: NextRequest) {
   response.headers.set("x-lng", lng)
 
   return response
-}
+})

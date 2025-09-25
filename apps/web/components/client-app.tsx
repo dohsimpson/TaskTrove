@@ -1,5 +1,6 @@
 "use client"
 
+import { SessionProvider } from "next-auth/react"
 import { JotaiProvider } from "@/providers/index"
 import { MainLayoutWrapper } from "@/components/layout/main-layout-wrapper"
 import { HydrateWrapper } from "@/providers/hydrate-wrapper"
@@ -18,12 +19,14 @@ interface ClientAppProps {
  */
 export function ClientApp({ children, initialLanguage }: ClientAppProps) {
   return (
-    <LanguageProvider initialLanguage={initialLanguage}>
-      <JotaiProvider>
-        <HydrateWrapper>
-          <MainLayoutWrapper>{children}</MainLayoutWrapper>
-        </HydrateWrapper>
-      </JotaiProvider>
-    </LanguageProvider>
+    <SessionProvider>
+      <LanguageProvider initialLanguage={initialLanguage}>
+        <JotaiProvider>
+          <HydrateWrapper>
+            <MainLayoutWrapper>{children}</MainLayoutWrapper>
+          </HydrateWrapper>
+        </JotaiProvider>
+      </LanguageProvider>
+    </SessionProvider>
   )
 }

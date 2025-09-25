@@ -3,7 +3,6 @@ import "./globals.css"
 import { ThemeProvider } from "next-themes"
 import { Toaster } from "@/components/ui/custom/toaster"
 import { getLanguage } from "@/lib/i18n/server"
-import { DynamicClientApp } from "@/components/dynamic-client-app"
 
 export const metadata: Metadata = {
   title: "TaskTrove",
@@ -25,7 +24,7 @@ export default async function RootLayout({
       <head />
       <body>
         <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem>
-          <DynamicClientApp initialLanguage={language}>{children}</DynamicClientApp>
+          {children}
           <Toaster />
         </ThemeProvider>
       </body>

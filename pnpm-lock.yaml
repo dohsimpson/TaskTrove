@@ -527,6 +527,9 @@ importers:
       next:
         specifier: 'catalog:'
         version: 15.2.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      next-auth:
+        specifier: 5.0.0-beta.29
+        version: 5.0.0-beta.29(next@15.2.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       next-logger:
         specifier: 'catalog:'
         version: 5.0.1(next@15.2.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(pino@9.11.0)
@@ -929,6 +932,20 @@ packages:
     resolution: {integrity: sha512-fCrHdNAhPSNZiEQDANT+YdrasUCJ6lgHDaqQLN8oBc1Zfc00K4g7rFNy170l+mjZWtuY4t2LEf0KIwVxsssIOQ==}
     peerDependencies:
       react: ^18.2.0
+
+  '@auth/core@0.40.0':
+    resolution: {integrity: sha512-n53uJE0RH5SqZ7N1xZoMKekbHfQgjd0sAEyUbE+IYJnmuQkbvuZnXItCU7d+i7Fj8VGOgqvNO7Mw4YfBTlZeQw==}
+    peerDependencies:
+      '@simplewebauthn/browser': ^9.0.1
+      '@simplewebauthn/server': ^9.0.2
+      nodemailer: ^6.8.0
+    peerDependenciesMeta:
+      '@simplewebauthn/browser':
+        optional: true
+      '@simplewebauthn/server':
+        optional: true
+      nodemailer:
+        optional: true
 
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
@@ -1570,6 +1587,9 @@ packages:
   '@nolyfill/is-core-module@1.0.39':
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
+
+  '@panva/hkdf@1.2.1':
+    resolution: {integrity: sha512-6oclG6Y3PiDFcoyk8srjLfVKyMfVCKJ27JwNPViuXziFpmdz+MZnZN/aKY0JGXgYuO/VghU0jcOAZgWXZ1Dmrw==}
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -4226,6 +4246,9 @@ packages:
     resolution: {integrity: sha512-VXe6RjJkBPj0ohtqaO8vSWP3ZhAKo66fKrFNCll4BTcwljPLz03pCbaNKfzGP5MbrCYcbJ7v0nOYYwUzTEIdXQ==}
     hasBin: true
 
+  jose@6.1.0:
+    resolution: {integrity: sha512-TTQJyoEoKcC1lscpVDCSsVgYzUDg/0Bt3WE//WiTPK6uOCQC2KZS4MpugbMWt/zyjkopgZoXhZuCi00gLudfUA==}
+
   jotai-devtools@0.13.0:
     resolution: {integrity: sha512-YI5cXCZA806H+7IEqU3Mw8LG2MeEdoI5eKKLmGFJLCFBI0J/M5u9v714xwWuCw7SM5CjAjRtd801zFOU3kyUTg==}
     engines: {node: '>=14.0.0'}
@@ -4319,7 +4342,6 @@ packages:
     resolution: {integrity: sha512-Quz3MvAwHxVYNXsOByL7xI5EB2WYOeFswqaHIA3qOK3isRWTxiplBEocmmru6XmxDB2L7jDNYtYA4FyimoAFEw==}
     engines: {node: '>=8.17.0'}
     hasBin: true
-    bundledDependencies: []
 
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
@@ -4593,6 +4615,22 @@ packages:
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
+  next-auth@5.0.0-beta.29:
+    resolution: {integrity: sha512-Ukpnuk3NMc/LiOl32njZPySk7pABEzbjhMUFd5/n10I0ZNC7NCuVv8IY2JgbDek2t/PUOifQEoUiOOTLy4os5A==}
+    peerDependencies:
+      '@simplewebauthn/browser': ^9.0.1
+      '@simplewebauthn/server': ^9.0.2
+      next: ^14.0.0-0 || ^15.0.0-0
+      nodemailer: ^6.6.5
+      react: ^18.2.0 || ^19.0.0-0
+    peerDependenciesMeta:
+      '@simplewebauthn/browser':
+        optional: true
+      '@simplewebauthn/server':
+        optional: true
+      nodemailer:
+        optional: true
+
   next-logger@5.0.1:
     resolution: {integrity: sha512-zWTPtS0YwTB+4iSK4VxUVtCYt+zg8+Sx2Tjbtgmpd4SXsFnWdmCbXAeFZFKtEH8yNlucLCUaj0xqposMQ9rKRg==}
     peerDependencies:
@@ -4658,6 +4696,9 @@ packages:
 
   nwsapi@2.2.22:
     resolution: {integrity: sha512-ujSMe1OWVn55euT1ihwCI1ZcAaAU3nxUiDwfDQldc51ZXaB9m2AyOn6/jh1BLe2t/G8xd6uKG1UBF2aZJeg2SQ==}
+
+  oauth4webapi@3.8.1:
+    resolution: {integrity: sha512-olkZDELNycOWQf9LrsELFq8n05LwJgV8UkrS0cburk6FOwf8GvLam+YB+Uj5Qvryee+vwWOfQVeI5Vm0MVg7SA==}
 
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
@@ -4842,6 +4883,14 @@ packages:
   postcss@8.5.6:
     resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
     engines: {node: ^10 || ^12 || >=14}
+
+  preact-render-to-string@6.5.11:
+    resolution: {integrity: sha512-ubnauqoGczeGISiOh6RjX0/cdaF8v/oDXIjO85XALCQjwQP+SB4RDXXtvZ6yTYSjG+PC1QRP2AhPgCEsM2EvUw==}
+    peerDependencies:
+      preact: '>=10'
+
+  preact@10.24.3:
+    resolution: {integrity: sha512-Z2dPnBnMUfyQfSQ+GBdsGa16hz35YmLmtTLhM169uW944hYL6xzTYkJjC07j+Wosz733pMWx0fgON3JNw1jJQA==}
 
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
@@ -6022,6 +6071,14 @@ snapshots:
       - '@types/react'
       - supports-color
 
+  '@auth/core@0.40.0':
+    dependencies:
+      '@panva/hkdf': 1.2.1
+      jose: 6.1.0
+      oauth4webapi: 3.8.1
+      preact: 10.24.3
+      preact-render-to-string: 6.5.11(preact@10.24.3)
+
   '@babel/code-frame@7.27.1':
     dependencies:
       '@babel/helper-validator-identifier': 7.27.1
@@ -6656,6 +6713,8 @@ snapshots:
       fastq: 1.19.1
 
   '@nolyfill/is-core-module@1.0.39': {}
+
+  '@panva/hkdf@1.2.1': {}
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -9511,6 +9570,8 @@ snapshots:
 
   jiti@2.6.0: {}
 
+  jose@6.1.0: {}
+
   jotai-devtools@0.13.0(@types/react@19.1.13)(jotai@2.14.0(@babel/template@7.27.2)(@types/react@19.1.13)(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(redux@5.0.1):
     dependencies:
       '@mantine/code-highlight': 7.17.8(@mantine/core@7.17.8(@mantine/hooks@7.17.8(react@19.1.1))(@types/react@19.1.13)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@mantine/hooks@7.17.8(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -9841,6 +9902,12 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
+  next-auth@5.0.0-beta.29(next@15.2.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1):
+    dependencies:
+      '@auth/core': 0.40.0
+      next: 15.2.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      react: 19.1.1
+
   next-logger@5.0.1(next@15.2.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(pino@9.11.0):
     dependencies:
       lilconfig: 3.1.3
@@ -9895,6 +9962,8 @@ snapshots:
       boolbase: 1.0.0
 
   nwsapi@2.2.22: {}
+
+  oauth4webapi@3.8.1: {}
 
   object-assign@4.1.1: {}
 
@@ -10094,6 +10163,12 @@ snapshots:
       nanoid: 3.3.11
       picocolors: 1.1.1
       source-map-js: 1.2.1
+
+  preact-render-to-string@6.5.11(preact@10.24.3):
+    dependencies:
+      preact: 10.24.3
+
+  preact@10.24.3: {}
 
   prelude-ls@1.2.1: {}
 

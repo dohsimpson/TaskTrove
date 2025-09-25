@@ -40,6 +40,8 @@ export function LoginForm({ onSuccess, onCancel: _onCancel }: LoginFormProps) {
 
       if (result?.error) {
         setError("Invalid password. Please try again.")
+        setIsLoading(false)
+        setPassword("")
       } else {
         toast.success("Login successful")
         onSuccess?.()
@@ -47,7 +49,6 @@ export function LoginForm({ onSuccess, onCancel: _onCancel }: LoginFormProps) {
     } catch (error) {
       setError("Login failed. Please check your credentials.")
       console.error("Login error:", error)
-    } finally {
       setIsLoading(false)
       setPassword("")
     }

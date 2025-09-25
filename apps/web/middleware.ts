@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import acceptLanguage from "accept-language"
 import { auth } from "@/auth"
 import { languages, fallbackLng, cookieName } from "./lib/i18n/settings"
+import { NextAuthRequest } from "next-auth"
 
 acceptLanguage.languages([...languages])
 
@@ -21,7 +22,9 @@ export const config = {
   ],
 }
 
-export default auth(function middleware(req) {
+const isAuthEnabled = Boolean(process.env.AUTH_SECRET)
+
+function handleI18n(req: NextRequest) {
   let lng: string | undefined | null
 
   // Check if language is already in cookie
@@ -39,25 +42,10 @@ export default auth(function middleware(req) {
     lng = fallbackLng
   }
 
-  // Check authentication for protected routes
-  const isAuthPage = req.nextUrl.pathname.startsWith("/signin")
-  const isPublicAsset = req.nextUrl.pathname.match(/\.(ico|png|jpg|jpeg|gif|svg|css|js)$/)
+  return lng
+}
 
-  if (!req.auth && !isAuthPage && !isPublicAsset) {
-    // Redirect to signin page if not authenticated
-    const signInUrl = new URL("/signin", req.url)
-    return NextResponse.redirect(signInUrl)
-  }
-
-  if (req.auth && isAuthPage) {
-    // Redirect to home if already authenticated and trying to access auth pages
-    const homeUrl = new URL("/", req.url)
-    return NextResponse.redirect(homeUrl)
-  }
-
-  // Create response
-  const response = NextResponse.next()
-
+function setI18nResponse(response: NextResponse, lng: string, req: NextRequest) {
   // Set language cookie if it doesn't exist or is different
   if (!req.cookies.has(cookieName) || req.cookies.get(cookieName)?.value !== lng) {
     response.cookies.set(cookieName, lng, {
@@ -70,6 +58,27 @@ export default auth(function middleware(req) {
 
   // Add language to headers for use in app
   response.headers.set("x-lng", lng)
-
   return response
-})
+}
+
+function middleware(req: NextRequest) {
+  const lng = handleI18n(req)
+
+  // Auth checks only when enabled
+  if (isAuthEnabled) {
+    const authReq = req as NextAuthRequest
+    const isAuthPage = req.nextUrl.pathname.startsWith("/signin")
+    const isPublicAsset = req.nextUrl.pathname.match(/\.(ico|png|jpg|jpeg|gif|svg|css|js)$/)
+
+    if (!authReq.auth && !isAuthPage && !isPublicAsset) {
+      return NextResponse.redirect(new URL("/signin", req.url))
+    }
+    if (authReq.auth && isAuthPage) {
+      return NextResponse.redirect(new URL("/", req.url))
+    }
+  }
+
+  return setI18nResponse(NextResponse.next(), lng, req)
+}
+
+export default isAuthEnabled ? auth(middleware) : middleware

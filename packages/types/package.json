@@ -4,8 +4,14 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./defaults": "./src/defaults.ts"
+    ".": {
+      "pro": "./src/index.pro.ts",
+      "default": "./src/index.ts"
+    },
+    "./defaults": {
+      "pro": "./src/defaults.pro.ts",
+      "default": "./src/defaults.ts"
+    }
   },
   "scripts": {
     "lint": "eslint .",

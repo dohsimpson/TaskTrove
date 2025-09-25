@@ -41,3 +41,6 @@ dev-data/
 /data/
 apps/web/data/
 backups/
+
+*.pro/
+*.pro.*

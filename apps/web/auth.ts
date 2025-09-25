@@ -63,5 +63,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session
     },
   },
+  // when AUTH_SECRET is not set, disable auth
   secret: process.env.AUTH_SECRET || "auth-disabled",
 })

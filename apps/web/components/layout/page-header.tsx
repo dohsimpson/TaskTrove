@@ -36,6 +36,7 @@ import { getHelpContent } from "@/lib/help-content"
 import { useTheme } from "next-themes"
 import { useLanguage } from "@/components/providers/language-provider"
 import { useTranslation } from "@/lib/i18n/client"
+import { OnlineStatus } from "@/components/layout/online-status"
 // import { ToolbarUndoRedo } from "@/components/history/undo-redo-buttons"
 
 interface PageHeaderProps {
@@ -240,6 +241,9 @@ export function PageHeader({
               {action.label}
             </Button>
           ))}
+
+          {/* Online Status Indicator */}
+          <OnlineStatus />
 
           {/* View Options Popover - Uses atoms directly */}
           <ViewOptionsPopover onAdvancedSearch={onAdvancedSearch} />

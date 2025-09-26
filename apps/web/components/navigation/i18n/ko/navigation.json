@@ -11,17 +11,13 @@
     "today": "오늘",
     "upcoming": "예정됨"
   },
-  "moreNav": {
-    "settings": "설정",
-    "shortcuts": "단축키"
-  },
   "quickActions": {
     "add": "추가",
     "search": "검색"
   },
   "sections": {
     "labels": "라벨",
-    "more": "더보기",
+
     "projects": "프로젝트"
   },
   "userMenu": {
@@ -29,6 +25,8 @@
     "community": "커뮤니티",
     "github": "Github",
     "reportBug": "버그 신고",
+    "settings": "설정",
+    "shortcuts": "단축키",
     "upgradeToPro": "Pro로 업그레이드"
   }
 }

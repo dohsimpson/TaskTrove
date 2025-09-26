@@ -11,17 +11,13 @@
     "today": "今天",
     "upcoming": "即将到来"
   },
-  "moreNav": {
-    "settings": "设置",
-    "shortcuts": "快捷键"
-  },
   "quickActions": {
     "add": "添加",
     "search": "搜索"
   },
   "sections": {
     "labels": "标签",
-    "more": "更多",
+
     "projects": "项目"
   },
   "userMenu": {
@@ -29,6 +25,8 @@
     "community": "社区",
     "github": "Github",
     "reportBug": "报告错误",
+    "settings": "设置",
+    "shortcuts": "快捷键",
     "upgradeToPro": "升级到专业版"
   }
 }

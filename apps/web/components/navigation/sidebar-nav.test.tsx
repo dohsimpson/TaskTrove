@@ -249,9 +249,7 @@ describe("SidebarNav", () => {
     expect(screen.getByText("Projects")).toBeInTheDocument()
     expect(screen.getByText("Labels")).toBeInTheDocument()
 
-    // Check for "More" section items
-    // expect(screen.getByText('Analytics')).toBeInTheDocument() // Skipped - Analytics is commented out
-    expect(screen.getByText("Settings")).toBeInTheDocument()
+    // Note: "More" section and Settings have been moved to profile menu
   })
 
   it("renders successfully without errors", () => {

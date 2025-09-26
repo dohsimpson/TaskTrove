@@ -1,10 +1,11 @@
 "use client"
 
 import React, { useState } from "react"
-import { User, Info, Bug, ChevronsUpDown, LogOut } from "lucide-react"
+import { User, Info, Bug, ChevronsUpDown, LogOut, Settings, Keyboard } from "lucide-react"
 import { SiGithub, SiDiscord } from "@icons-pack/react-simple-icons"
 import { signOut } from "next-auth/react"
 import { toast } from "sonner"
+import { useSetAtom } from "jotai"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -25,6 +26,15 @@ import {
 import { AboutModal } from "@/components/dialogs/about-modal"
 import { useLanguage } from "@/components/providers/language-provider"
 import { useTranslation } from "@/lib/i18n/client"
+import { openSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
+import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
+
+interface ContextMenuItem {
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  onClick?: () => void
+  comingSoon?: boolean
+}
 
 interface UserData {
   name: string
@@ -43,13 +53,19 @@ export function NavUser({ user }: NavUserProps) {
 
   const { isMobile } = useSidebar()
   const [aboutModalOpen, setAboutModalOpen] = useState(false)
+  const openSettingsDialog = useSetAtom(openSettingsDialogAtom)
 
   const handleSignOut = () => {
     signOut()
     toast.success("Signing out...")
   }
 
-  const contextMenuItems = [
+  const contextMenuItems: ContextMenuItem[] = [
+    {
+      icon: Bug,
+      label: t("userMenu.reportBug", "Report Bug"),
+      onClick: () => window.open("https://github.com/dohsimpson/TaskTrove/discussions", "_blank"),
+    },
     {
       icon: SiGithub,
       label: t("userMenu.github", "Github"),
@@ -61,9 +77,9 @@ export function NavUser({ user }: NavUserProps) {
       onClick: () => window.open("https://discord.gg/d8TCEtv8", "_blank"),
     },
     {
-      icon: Bug,
-      label: t("userMenu.reportBug", "Report Bug"),
-      onClick: () => window.open("https://github.com/dohsimpson/TaskTrove/discussions", "_blank"),
+      icon: Keyboard,
+      label: t("userMenu.shortcuts", "Shortcuts"),
+      comingSoon: true,
     },
     {
       icon: Info,
@@ -109,16 +125,25 @@ export function NavUser({ user }: NavUserProps) {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-1 items-center justify-between">
-                    <div className="grid text-left text-sm leading-tight cursor-default">
+                    <div className="grid text-left text-sm leading-tight cursor-button">
                       <span className="truncate font-semibold">{user.name}</span>
                     </div>
-                    <button
-                      onClick={handleSignOut}
-                      className="opacity-60 hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent p-2"
-                      title={t("userMenu.signOut", "Sign out")}
-                    >
-                      <LogOut className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={openSettingsDialog}
+                        className="opacity-60 hover:opacity-100 transition-opacity rounded hover:bg-accent p-2"
+                        title={t("userMenu.settings", "Settings")}
+                      >
+                        <Settings className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={handleSignOut}
+                        className="opacity-60 hover:opacity-100 transition-opacity rounded hover:bg-accent p-2"
+                        title={t("userMenu.signOut", "Sign out")}
+                      >
+                        <LogOut className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </DropdownMenuLabel>
@@ -126,7 +151,7 @@ export function NavUser({ user }: NavUserProps) {
               <DropdownMenuGroup>
                 <DropdownMenuItem
                   onClick={() => window.open("https://tasktrove.io/#pricing", "_blank")}
-                  className="px-1"
+                  className="px-1 cursor-pointer"
                 >
                   {/* material design icon "Stars": https://github.com/google/material-design-icons */}
                   <svg
@@ -145,9 +170,26 @@ export function NavUser({ user }: NavUserProps) {
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 {contextMenuItems.map((item, index) => (
-                  <DropdownMenuItem key={index} onClick={item.onClick}>
-                    <item.icon className="mr-2 h-4 w-4" />
-                    {item.label}
+                  <DropdownMenuItem
+                    key={index}
+                    onClick={item.comingSoon ? undefined : item.onClick}
+                    className="cursor-pointer"
+                  >
+                    {item.comingSoon ? (
+                      <ComingSoonWrapper
+                        disabled={true}
+                        featureName={item.label}
+                        className="flex items-center w-full"
+                      >
+                        <item.icon className="mr-4 h-4 w-4" />
+                        {item.label}
+                      </ComingSoonWrapper>
+                    ) : (
+                      <>
+                        <item.icon className="mr-2 h-4 w-4" />
+                        {item.label}
+                      </>
+                    )}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuGroup>

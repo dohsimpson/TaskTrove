@@ -11,17 +11,13 @@
     "today": "Oggi",
     "upcoming": "Prossime"
   },
-  "moreNav": {
-    "settings": "Impostazioni",
-    "shortcuts": "Scorciatoie"
-  },
   "quickActions": {
     "add": "Aggiungi",
     "search": "Cerca"
   },
   "sections": {
     "labels": "Etichette",
-    "more": "Altro",
+
     "projects": "Progetti"
   },
   "userMenu": {
@@ -29,6 +25,8 @@
     "community": "Comunità",
     "github": "Github",
     "reportBug": "Segnala bug",
+    "settings": "Impostazioni",
+    "shortcuts": "Scorciatoie",
     "upgradeToPro": "Passa a Pro"
   }
 }

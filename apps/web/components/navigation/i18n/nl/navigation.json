@@ -11,17 +11,13 @@
     "today": "Vandaag",
     "upcoming": "Binnenkort"
   },
-  "moreNav": {
-    "settings": "Instellingen",
-    "shortcuts": "Snelkoppelingen"
-  },
   "quickActions": {
     "add": "Toevoegen",
     "search": "Zoeken"
   },
   "sections": {
     "labels": "Labels",
-    "more": "Meer",
+
     "projects": "Projecten"
   },
   "userMenu": {
@@ -29,6 +25,8 @@
     "community": "Gemeenschap",
     "github": "Github",
     "reportBug": "Bug melden",
+    "settings": "Instellingen",
+    "shortcuts": "Snelkoppelingen",
     "upgradeToPro": "Upgrade naar Pro"
   }
 }

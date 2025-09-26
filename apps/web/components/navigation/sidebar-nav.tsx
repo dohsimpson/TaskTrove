@@ -27,14 +27,11 @@ import {
   CheckSquare,
   ListCheck,
   Tag,
-  Settings,
-  Keyboard,
   Plus,
   ChevronDown,
 } from "lucide-react"
 import { SearchIcon, type SearchIconHandle } from "@/components/ui/search"
 import { PlusIcon, type PlusIconHandle } from "@/components/ui/plus"
-import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
 import { ProjectContextMenu } from "./project-context-menu"
 import { LabelContextMenu } from "./label-context-menu"
 import { DraggableProjectGroupItem } from "./draggable-project-group-item"
@@ -70,7 +67,6 @@ import {
   editingLabelIdAtom,
   stopEditingLabelAtom,
 } from "@/lib/atoms/ui/navigation"
-import { openSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
 import { ROOT_PROJECT_GROUP_ID } from "@/lib/types"
 import { useLanguage } from "@/components/providers/language-provider"
 import { useTranslation } from "@/lib/i18n/client"
@@ -102,7 +98,6 @@ export function SidebarNav() {
   const openQuickAdd = useSetAtom(openQuickAddAtom)
   const openProjectDialog = useSetAtom(openProjectDialogAtom)
   const openLabelDialog = useSetAtom(openLabelDialogAtom)
-  const openSettingsDialog = useSetAtom(openSettingsDialogAtom)
 
   // Root drop target handlers for ungrouped projects
   const handleRootDrop = async ({
@@ -244,23 +239,6 @@ export function SidebarNav() {
       icon: <CheckSquare className="h-4 w-4" />,
       count: taskCountsData.completed,
       href: "/completed",
-    },
-  ]
-
-  const moreNavItems = [
-    {
-      id: "settings",
-      label: t("moreNav.settings", "Settings"),
-      icon: <Settings className="h-4 w-4" />,
-      onClick: openSettingsDialog,
-    },
-    {
-      id: "shortcuts",
-      label: t("moreNav.shortcuts", "Shortcuts"),
-      icon: <Keyboard className="h-4 w-4" />,
-      href: "/shortcuts",
-      comingSoon: true,
-      featureName: t("moreNav.shortcuts", "Keyboard Shortcuts"),
     },
   ]
 
@@ -406,58 +384,6 @@ export function SidebarNav() {
               <SidebarMenu>
                 {labels.map((label) => (
                   <LabelMenuItem key={label.id} label={label} />
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </CollapsibleContent>
-        </SidebarGroup>
-      </Collapsible>
-
-      <Separator />
-
-      {/* More Section */}
-      <Collapsible defaultOpen className="group/collapsible">
-        <SidebarGroup>
-          <SidebarGroupLabel>
-            <CollapsibleTrigger className="flex items-center text-xs font-semibold text-muted-foreground uppercase tracking-wide hover:text-foreground">
-              <ChevronDown className="h-3 w-3 mr-2 transition-transform group-data-[state=closed]/collapsible:-rotate-90" />
-              {t("sections.more", "More")}
-            </CollapsibleTrigger>
-          </SidebarGroupLabel>
-          <CollapsibleContent>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {moreNavItems.map((item) => (
-                  <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton
-                      asChild={!item.onClick}
-                      disabled={item.comingSoon}
-                      onClick={item.onClick}
-                      className="cursor-pointer"
-                    >
-                      {item.comingSoon ? (
-                        <ComingSoonWrapper
-                          disabled={true}
-                          featureName={item.featureName || item.label}
-                        >
-                          <div className="flex items-center gap-2 w-full">
-                            {item.icon}
-                            <span>{item.label}</span>
-                          </div>
-                        </ComingSoonWrapper>
-                      ) : item.onClick ? (
-                        <div className="flex items-center gap-2 w-full">
-                          {item.icon}
-                          <span>{item.label}</span>
-                        </div>
-                      ) : (
-                        <Link href={item.href}>
-                          {item.icon}
-                          <span>{item.label}</span>
-                        </Link>
-                      )}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
                 ))}
               </SidebarMenu>
             </SidebarGroupContent>

@@ -11,17 +11,13 @@
     "today": "今日",
     "upcoming": "予定"
   },
-  "moreNav": {
-    "settings": "設定",
-    "shortcuts": "ショートカット"
-  },
   "quickActions": {
     "add": "追加",
     "search": "検索"
   },
   "sections": {
     "labels": "ラベル",
-    "more": "その他",
+
     "projects": "プロジェクト"
   },
   "userMenu": {
@@ -29,6 +25,8 @@
     "community": "コミュニティ",
     "github": "GitHub",
     "reportBug": "バグ報告",
+    "settings": "設定",
+    "shortcuts": "ショートカット",
     "upgradeToPro": "プロにアップグレード"
   }
 }

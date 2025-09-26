@@ -71,7 +71,7 @@ import {
   stopEditingLabelAtom,
 } from "@/lib/atoms/ui/navigation"
 import { openSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
-import { ROOT_PROJECT_GROUP_ID } from "@/lib/types/defaults"
+import { ROOT_PROJECT_GROUP_ID } from "@/lib/types"
 import { useLanguage } from "@/components/providers/language-provider"
 import { useTranslation } from "@/lib/i18n/client"
 

@@ -1,7 +1,7 @@
 import type { DataFile, VersionString, Json } from "@/lib/types"
 import { createVersionString, DataFileSchema } from "@/lib/types"
 import { DEFAULT_UUID } from "@tasktrove/constants"
-import { DEFAULT_USER_SETTINGS } from "@/lib/types/defaults"
+import { DEFAULT_USER_SETTINGS, DEFAULT_USER } from "@/lib/types"
 import packageJson from "@/package.json"
 
 /**
@@ -331,6 +331,32 @@ export function v060Migration(dataFile: Json): Json {
   return JSON.parse(JSON.stringify(result))
 }
 
+export function v070Migration(dataFile: Json): Json {
+  console.log("Migrating data file from v0.6.0 to v0.7.0...")
+  console.log("Adding user field to data file structure")
+
+  // Safely handle Json object type
+  if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
+    throw new Error("Migration input must be a JSON object")
+  }
+
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(dataFile)) {
+    result[key] = value
+  }
+
+  // Add default user structure if not present
+  if (!("user" in result)) {
+    console.log("✓ Adding default user structure")
+    result.user = DEFAULT_USER
+  }
+
+  console.log("✓ User field migration completed")
+
+  // Return as Json by serializing/deserializing
+  return JSON.parse(JSON.stringify(result))
+}
+
 /**
  * Migration functions for each version upgrade
  * Only define functions for versions that actually require data structure changes
@@ -354,6 +380,10 @@ const migrationFunctions: MigrationStep[] = [
   {
     version: createVersionString("v0.6.0"),
     migrate: v060Migration,
+  },
+  {
+    version: createVersionString("v0.7.0"),
+    migrate: v070Migration,
   },
 ]
 

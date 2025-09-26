@@ -4,7 +4,7 @@ import { render, screen } from "@/test-utils"
 import { SidebarNav } from "./sidebar-nav"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { mockNextNavigation } from "@/test-utils/mock-router"
-import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
+import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types"
 
 // Mock Next.js router using centralized utilities
 mockNextNavigation()

@@ -18,7 +18,8 @@ import {
   DEFAULT_PROJECT_GROUP,
   DEFAULT_LABEL_GROUP,
   DEFAULT_USER_SETTINGS,
-} from "@/lib/types/defaults"
+  DEFAULT_USER,
+} from "@/lib/types"
 
 // Mock fs/promises
 vi.mock("fs/promises", () => ({
@@ -345,6 +346,7 @@ describe("safe-file-operations", () => {
       projectGroups: DEFAULT_PROJECT_GROUP,
       labelGroups: DEFAULT_LABEL_GROUP,
       settings: DEFAULT_USER_SETTINGS,
+      user: DEFAULT_USER,
     }
 
     it("should successfully read a valid data file", async () => {
@@ -395,6 +397,7 @@ describe("safe-file-operations", () => {
       projectGroups: DEFAULT_PROJECT_GROUP,
       labelGroups: DEFAULT_LABEL_GROUP,
       settings: DEFAULT_USER_SETTINGS,
+      user: DEFAULT_USER,
     }
 
     it("should successfully write a valid data file", async () => {

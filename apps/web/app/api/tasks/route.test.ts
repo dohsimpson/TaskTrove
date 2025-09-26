@@ -14,7 +14,7 @@ import {
   createLabelId,
   createSectionId,
 } from "@/lib/types"
-import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types/defaults"
+import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { createMockEnhancedRequest } from "@/lib/utils/test-helpers"
 

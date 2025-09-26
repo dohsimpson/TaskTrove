@@ -32,7 +32,7 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item"
 import type { Input as DragInputType } from "@atlaskit/pragmatic-drag-and-drop/types"
 import type { ProjectGroup, ProjectId, Project } from "@/lib/types"
-import { ROOT_PROJECT_GROUP_ID } from "@/lib/types/defaults"
+import { ROOT_PROJECT_GROUP_ID } from "@/lib/types"
 
 interface DraggableProjectGroupItemProps {
   group: ProjectGroup

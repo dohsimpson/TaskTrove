@@ -5,7 +5,7 @@ import type { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge
 import type { ProjectId, GroupId } from "@/lib/types"
 
 import { createGroupId } from "@/lib/types"
-import { ROOT_PROJECT_GROUP_ID } from "@/lib/types/defaults"
+import { ROOT_PROJECT_GROUP_ID } from "@/lib/types"
 
 export interface SidebarDragState {
   isDraggingOver: boolean

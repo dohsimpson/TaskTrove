@@ -5,7 +5,7 @@ import { render } from "@/test-utils/render-with-providers"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
 import { dataQueryAtom } from "@/lib/atoms/core/base"
 import { createGroupId } from "@/lib/types"
-import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types/defaults"
+import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types"
 
 // Mock component interfaces
 interface MockButtonProps {

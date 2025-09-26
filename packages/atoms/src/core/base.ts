@@ -98,6 +98,7 @@ import {
   ROOT_LABEL_GROUP_ID,
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_GENERAL_SETTINGS,
+  DEFAULT_USER,
 } from "@tasktrove/types/defaults";
 
 import {
@@ -192,6 +193,7 @@ const EMPTY_CACHE_DATA: DataFile = {
     notifications: DEFAULT_NOTIFICATION_SETTINGS,
     general: DEFAULT_GENERAL_SETTINGS,
   },
+  user: DEFAULT_USER,
 };
 
 /**
@@ -492,6 +494,7 @@ export const dataQueryAtom = atomWithQuery(() => ({
           notifications: DEFAULT_NOTIFICATION_SETTINGS,
           general: DEFAULT_GENERAL_SETTINGS,
         },
+        user: DEFAULT_USER,
       };
     }
 

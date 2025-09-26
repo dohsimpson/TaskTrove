@@ -43,7 +43,7 @@ vi.mock("uuid", () => ({
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { processRecurringTaskCompletion } from "@/lib/utils/recurring-task-processor"
 import { logBusinessEvent } from "@/lib/middleware/api-logger"
-import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types/defaults"
+import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types"
 
 const mockReadDataFile = vi.mocked(safeReadDataFile)
 const mockWriteDataFile = vi.mocked(safeWriteDataFile)

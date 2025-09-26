@@ -33,7 +33,7 @@ import type { Input as DragInputType } from "@atlaskit/pragmatic-drag-and-drop/t
 import type { Project, GroupId } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { ROOT_PROJECT_GROUP_ID } from "@/lib/types/defaults"
+import { ROOT_PROJECT_GROUP_ID } from "@/lib/types"
 
 interface DraggableProjectItemProps {
   project: Project

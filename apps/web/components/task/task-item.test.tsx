@@ -18,7 +18,7 @@ import {
   TEST_SUBTASK_ID_1,
   TEST_SUBTASK_ID_2,
 } from "@/lib/utils/test-constants"
-import { DEFAULT_USER_SETTINGS } from "@/lib/types/defaults"
+import { DEFAULT_USER_SETTINGS } from "@/lib/types"
 
 // Mock focus timer functions (simplified since we mock the component)
 const mockIsTaskTimerActive = vi.fn(() => false)

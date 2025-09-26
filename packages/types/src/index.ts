@@ -504,6 +504,21 @@ export const TaskCommentSerializationSchema = z.object({
 });
 
 /**
+ * Schema for a user account
+ */
+export const UserSchema = z.object({
+  /** Username for the user */
+  username: z.string(),
+  /** Optional password for authentication */
+  password: z.string().optional(),
+  /** File path to user's avatar image */
+  avatar: z.string().optional(),
+});
+
+// Serialization schema for User (colocated with UserSchema for high correlation)
+export const UserSerializationSchema = UserSchema;
+
+/**
  * Schema for view state configuration
  */
 export const ViewStateSchema = z.object({
@@ -1154,6 +1169,7 @@ export const DataFileSchema = z.object({
   projectGroups: ProjectGroupSchema,
   labelGroups: LabelGroupSchema,
   settings: UserSettingsSchema,
+  user: UserSchema,
   version: VersionStringSchema.optional(), // TODO: make this required after v0.9.0
 });
 
@@ -1162,6 +1178,7 @@ export const DataFileSerializationSchema = z.object({
   tasks: z.array(TaskSerializationSchema),
   projects: z.array(ProjectSerializationSchema),
   labels: z.array(LabelSerializationSchema),
+  user: UserSerializationSchema,
 });
 
 // =============================================================================
@@ -1171,6 +1188,7 @@ export const DataFileSerializationSchema = z.object({
 export type ProjectSection = z.infer<typeof ProjectSectionSchema>;
 export type Subtask = z.infer<typeof SubtaskSchema>;
 export type TaskComment = z.infer<typeof TaskCommentSchema>;
+export type User = z.infer<typeof UserSchema>;
 export type ViewState = z.infer<typeof ViewStateSchema>;
 export type Task = z.infer<typeof TaskSchema>;
 export type Project = z.infer<typeof ProjectSchema>;
@@ -1182,6 +1200,7 @@ export type TaskSerialization = z.infer<typeof TaskSerializationSchema>;
 export type TaskArraySerialization = z.infer<
   typeof TaskArraySerializationSchema
 >;
+export type UserSerialization = z.infer<typeof UserSerializationSchema>;
 export type ProjectSerialization = z.infer<typeof ProjectSerializationSchema>;
 export type LabelSerialization = z.infer<typeof LabelSerializationSchema>;
 export type GroupSerialization = z.infer<typeof GroupSerializationSchema>;
@@ -1985,6 +2004,21 @@ export const LabelUpdateArraySerializationSchema = z.array(
 );
 
 /**
+ * Schema for updating user via API
+ */
+export const UpdateUserRequestSchema = UserSchema.partial().extend({
+  password: UserSchema.shape.password.nullable(),
+  avatar: UserSchema.shape.avatar.nullable(),
+});
+
+// Serialization schemas for UpdateUser (colocated with request schema)
+export const UserUpdateSerializationSchema =
+  UserSerializationSchema.partial().extend({
+    password: UserSerializationSchema.shape.password.nullable(),
+    avatar: UserSerializationSchema.shape.avatar.nullable(),
+  });
+
+/**
  * Schema for delete requests
  */
 export const DeleteTaskRequestSchema = TaskSchema.pick({ id: true });
@@ -2110,6 +2144,7 @@ export type UpdateProjectRequest = z.infer<typeof UpdateProjectRequestSchema>;
 export type ProjectUpdateUnion = z.infer<typeof ProjectUpdateUnionSchema>;
 export type UpdateLabelRequest = z.infer<typeof UpdateLabelRequestSchema>;
 export type LabelUpdateUnion = z.infer<typeof LabelUpdateUnionSchema>;
+export type UpdateUserRequest = z.infer<typeof UpdateUserRequestSchema>;
 export type DeleteTaskRequest = z.infer<typeof DeleteTaskRequestSchema>;
 export type DeleteProjectRequest = z.infer<typeof DeleteProjectRequestSchema>;
 export type DeleteLabelRequest = z.infer<typeof DeleteLabelRequestSchema>;

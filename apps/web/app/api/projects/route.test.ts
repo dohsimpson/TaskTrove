@@ -15,7 +15,7 @@ import {
   TEST_TASK_ID_3,
 } from "@/lib/utils/test-constants"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
-import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types/defaults"
+import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types"
 
 // Mock the safe file operations directly
 vi.mock("@/lib/utils/safe-file-operations")

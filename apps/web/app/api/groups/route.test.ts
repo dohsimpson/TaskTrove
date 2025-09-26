@@ -10,7 +10,7 @@ import { GET, POST, PATCH, DELETE } from "./route"
 import { createGroupId, createProjectId, type DataFile } from "@/lib/types"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { DEFAULT_UUID } from "@tasktrove/constants"
-import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types/defaults"
+import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types"
 
 // Mock safe file operations
 vi.mock("@/lib/utils/safe-file-operations", () => ({

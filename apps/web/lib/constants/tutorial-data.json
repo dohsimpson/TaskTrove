@@ -290,5 +290,8 @@
       "popoverHoverOpen": false
     }
   },
-  "version": "v0.6.0"
+  "user": {
+    "username": ""
+  },
+  "version": "v0.7.0"
 }

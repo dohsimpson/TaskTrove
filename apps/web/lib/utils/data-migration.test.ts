@@ -9,11 +9,13 @@ import {
   v040Migration,
   v050Migration,
   v060Migration,
+  v070Migration,
 } from "./data-migration"
 import type { Json } from "@/lib/types"
 import { createVersionString, createProjectId, createLabelId, DataFileSchema } from "@/lib/types"
-import { DEFAULT_EMPTY_DATA_FILE, DEFAULT_USER_SETTINGS } from "@/lib/types/defaults"
+import { DEFAULT_EMPTY_DATA_FILE, DEFAULT_USER_SETTINGS, DEFAULT_USER } from "@/lib/types"
 import { DEFAULT_UUID } from "@tasktrove/constants"
+import packageJson from "@/package.json"
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
@@ -746,6 +748,179 @@ describe("Data Migration Utility", () => {
     })
   })
 
+  describe("v0.7.0 Migration Function", () => {
+    it("should add default user structure when missing", () => {
+      const v060DataWithoutUser = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: {
+          data: {
+            autoBackup: {
+              enabled: false,
+              backupTime: "20:00",
+              maxBackups: 10,
+            },
+          },
+          notifications: {
+            enabled: true,
+            requireInteraction: true,
+          },
+          general: {
+            startView: "all",
+            soundEnabled: true,
+            linkifyEnabled: true,
+            popoverHoverOpen: false,
+          },
+        },
+        version: "v0.6.0",
+        // No user field - should be added
+      })
+
+      const result = v070Migration(v060DataWithoutUser)
+
+      expect(result).toHaveProperty("user")
+      const user = (result as any).user
+      expect(user).toEqual(DEFAULT_USER)
+
+      // Should preserve all existing data
+      expect(result).toHaveProperty("tasks")
+      expect(result).toHaveProperty("projects")
+      expect(result).toHaveProperty("labels")
+      expect(result).toHaveProperty("projectGroups")
+      expect(result).toHaveProperty("labelGroups")
+      expect(result).toHaveProperty("settings")
+    })
+
+    it("should handle comprehensive v0.6.0 to v0.7.0 transformation", () => {
+      const projectId1 = createProjectId("550e8400-e29b-41d4-a716-446655440001")
+      const labelId1 = createLabelId("550e8400-e29b-41d4-a716-446655440003")
+
+      const complexV060Data = createJsonData({
+        tasks: [
+          {
+            id: "550e8400-e29b-41d4-a716-446655440000",
+            title: "Sample task with v0.6.0 structure",
+            completed: false,
+            priority: 1,
+            labels: [labelId1],
+            subtasks: [],
+            comments: [],
+            attachments: [],
+            createdAt: new Date().toISOString(),
+            recurringMode: "dueDate", // v0.3.0 field
+          },
+        ],
+        projects: [
+          {
+            id: projectId1,
+            name: "Sample Project",
+            slug: "sample-project",
+            color: "#ff0000",
+            shared: false,
+            sections: [],
+          },
+        ],
+        labels: [
+          {
+            id: labelId1,
+            name: "Important",
+            slug: "important",
+            color: "#ff0000",
+          },
+        ],
+        projectGroups: {
+          type: "project",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Projects",
+          slug: "all-projects",
+          items: [projectId1],
+        },
+        labelGroups: {
+          type: "label",
+          id: "00000000-0000-0000-0000-000000000000",
+          name: "All Labels",
+          slug: "all-labels",
+          items: [labelId1],
+        },
+        settings: {
+          data: {
+            autoBackup: {
+              enabled: true,
+              backupTime: "09:00",
+              maxBackups: 7,
+            },
+          },
+          notifications: {
+            enabled: true,
+            requireInteraction: true,
+          },
+          general: {
+            startView: "lastViewed",
+            soundEnabled: false,
+            linkifyEnabled: true,
+            popoverHoverOpen: false,
+          },
+        },
+        version: "v0.6.0",
+      })
+
+      const result = v070Migration(complexV060Data)
+
+      // Should add user while preserving all existing data
+      expect(result).toHaveProperty("user")
+      expect((result as any).user).toEqual(DEFAULT_USER)
+
+      // Should preserve all v0.6.0 data structure
+      expect(result).toHaveProperty("tasks")
+      expect(result).toHaveProperty("projects")
+      expect(result).toHaveProperty("labels")
+      expect(result).toHaveProperty("projectGroups")
+      expect(result).toHaveProperty("labelGroups")
+      expect(result).toHaveProperty("settings")
+
+      // Should preserve task data including recurringMode from v0.3.0+
+      const tasks = (result as any).tasks
+      expect(tasks).toHaveLength(1)
+      expect(tasks[0]).toEqual(
+        expect.objectContaining({
+          id: "550e8400-e29b-41d4-a716-446655440000",
+          title: "Sample task with v0.6.0 structure",
+          recurringMode: "dueDate",
+        }),
+      )
+
+      // Should preserve groups structure from v0.3.0+
+      const projectGroups = (result as any).projectGroups
+      expect(projectGroups.items).toEqual([projectId1])
+      const labelGroups = (result as any).labelGroups
+      expect(labelGroups.items).toEqual([labelId1])
+
+      // Should preserve settings structure from v0.4.0+ with v0.5.0+ general and v0.6.0+ fields
+      const settings = (result as any).settings
+      expect(settings.general).toEqual({
+        startView: "lastViewed",
+        soundEnabled: false,
+        linkifyEnabled: true,
+        popoverHoverOpen: false,
+      })
+    })
+  })
+
   describe("Version Comparison", () => {
     it("should handle various version formats correctly", () => {
       const testCases = [
@@ -1136,6 +1311,7 @@ describe("Data Migration Utility", () => {
           items: [],
         },
         settings: DEFAULT_USER_SETTINGS,
+        user: DEFAULT_USER,
         version: "v7.7.7", // High version to ensure no migration needed
       })
 
@@ -1361,6 +1537,22 @@ describe("Data Migration Utility", () => {
       const latestMigrationVersion = getLatestAvailableMigration()
       expect(latestMigrationVersion).not.toBeNull()
       expect(migratedData.version).toBe(latestMigrationVersion)
+
+      // CRITICAL: Verify package.json version vs migration system synchronization
+      // If package.json version >= latest migration version, then DataFileSchema must parse migrated data
+      const packageVersion = createVersionString(`v${packageJson.version}`)
+      if (latestMigrationVersion !== null && packageVersion >= latestMigrationVersion) {
+        // This ensures the current schema can handle the latest migration output
+        // If this fails, it means the migration system and schema are out of sync
+        expect(() => DataFileSchema.parse(migratedData)).not.toThrow()
+        console.log(
+          `✓ Schema synchronization verified: package v${packageJson.version} >= migration ${latestMigrationVersion}`,
+        )
+      } else {
+        console.log(
+          `ℹ Package v${packageJson.version} < migration ${latestMigrationVersion || "unknown"} - schema sync check skipped`,
+        )
+      }
 
       // Verify v0.3.0 migration changes
       expect(migratedData).toHaveProperty("projectGroups")

@@ -4,6 +4,7 @@ import type {
   LabelGroup,
   ViewState,
   GroupId,
+  User,
 } from "./index";
 import { createGroupId } from "./index";
 import {
@@ -98,6 +99,13 @@ export const DEFAULT_USER_SETTINGS = {
 };
 
 /**
+ * Default user for initial setup
+ */
+export const DEFAULT_USER: User = {
+  username: "admin",
+};
+
+/**
  * Default empty data structure for initializing a new TaskTrove data file
  */
 export const DEFAULT_EMPTY_DATA_FILE: DataFile = {
@@ -107,4 +115,5 @@ export const DEFAULT_EMPTY_DATA_FILE: DataFile = {
   projectGroups: DEFAULT_PROJECT_GROUP,
   labelGroups: DEFAULT_LABEL_GROUP,
   settings: DEFAULT_USER_SETTINGS,
+  user: DEFAULT_USER,
 };

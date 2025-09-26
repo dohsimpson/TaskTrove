@@ -46,6 +46,7 @@ import {
   DEFAULT_LABEL_GROUP,
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_GENERAL_SETTINGS,
+  DEFAULT_USER,
 } from "@tasktrove/types/defaults";
 
 // Mock fetch for API calls
@@ -106,6 +107,7 @@ const mockGroupsData: DataFileSerialization = {
     notifications: DEFAULT_NOTIFICATION_SETTINGS,
     general: DEFAULT_GENERAL_SETTINGS,
   },
+  user: DEFAULT_USER,
 };
 
 describe("Groups Atoms", () => {

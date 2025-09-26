@@ -6,13 +6,15 @@ export default {
     // Exclude test files
     "!components/dialogs/**/*.test.{ts,tsx}",
     "!components/dialogs/**/*.spec.{ts,tsx}",
+    // Exclude settings forms
+    "!components/dialogs/settings-forms/**/*.{ts,tsx}",
   ],
 
   // Colocated translation files
   output: "components/dialogs/i18n/$LOCALE/dialogs.json",
 
   // Only generate non-English files (English uses inline defaults)
-  locales: ["zh", "fr", "de", "es", "nl", "ko", "ja", "it"],
+  locales: ["zh", "fr", "de", "es", "nl", "ko", "ja", "it", "pt"],
 
   // Use dialogs as the namespace for all dialog components
   defaultNamespace: "dialogs",

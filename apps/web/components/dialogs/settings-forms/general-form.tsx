@@ -32,6 +32,7 @@ const languageNames: Record<Language, string> = {
   ko: "한국어 (Korean)",
   ja: "日本語 (Japanese)",
   it: "Italiano (Italian)",
+  pt: "Português (Portuguese)",
 }
 
 // Icon mapping for UI components

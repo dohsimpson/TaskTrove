@@ -21,6 +21,7 @@ const languageNames: Record<Language, string> = {
   ko: "한국어",
   ja: "日本語",
   it: "Italiano",
+  pt: "Português",
 }
 
 interface LanguageSwitcherProps {

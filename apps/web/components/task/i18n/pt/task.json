@@ -1,0 +1,225 @@
+{
+  "actions": {
+    "addComment": "Adicionar comentário",
+    "addDate": "Adicionar data",
+    "addLabel": "Adicionar etiqueta",
+    "addLabels": "Adicionar etiquetas",
+    "addPriority": "Adicionar prioridade",
+    "addProject": "Adicionar projeto",
+    "addSubtask": "Adicionar subtarefa",
+    "addTask": "Adicionar Tarefa"
+  },
+  "comments": {
+    "addAnotherComment": "Adicionar outro comentário...",
+    "addComment": "Adicionar comentário",
+    "addComments": "Adicionar comentários...",
+    "commentCount_one": "{{count}} comentário",
+    "commentCount_many": "{{count}} comentários",
+    "commentCount_other": "{{count}} comentários",
+    "title_one": "Comentário",
+    "title_many": "Comentários",
+    "title_other": "Comentários"
+  },
+  "emptyStates": {
+    "all": {
+      "description": "Esta visualização mostra todas as suas tarefas em todos os projetos. Crie sua primeira tarefa para começar com o TaskTrove.",
+      "title": "Nenhuma tarefa encontrada"
+    },
+    "analytics": {
+      "description": "Acompanhe sua produtividade e padrões de conclusão de tarefas.",
+      "title": "Painel de Análise"
+    },
+    "completed": {
+      "description": "As tarefas que você terminar aparecerão aqui. Complete algumas tarefas para ver seu progresso e celebrar suas conquistas!",
+      "title": "Ainda não há tarefas concluídas"
+    },
+    "fallback": {
+      "description": "Crie sua primeira tarefa para começar.",
+      "title": "Nenhuma tarefa encontrada"
+    },
+    "inbox": {
+      "description": "Este é seu ponto de coleta padrão para todas as novas tarefas. Quando você cria uma tarefa sem especificar um projeto, ela aparece aqui.",
+      "title": "Sua caixa de entrada está vazia"
+    },
+    "label": {
+      "description": "As tarefas marcadas com esta etiqueta aparecerão aqui. Use etiquetas para categorizar e encontrar rapidamente tarefas relacionadas.",
+      "title": "Não há tarefas com a etiqueta {{labelName}}"
+    },
+    "project": {
+      "description": "Este projeto está vazio. Adicione tarefas para organizar seu trabalho e acompanhar o progresso em objetivos específicos.",
+      "title": "Não há tarefas em {{projectName}}"
+    },
+    "search": {
+      "description": "Encontre tarefas por título, descrição ou etiquetas.",
+      "title": "Resultados da Busca"
+    },
+    "today": {
+      "description": "As tarefas com data de vencimento de hoje aparecerão aqui. Defina datas de vencimento em suas tarefas para se manter em dia com seus objetivos diários.",
+      "title": "Nada programado para hoje"
+    },
+    "upcoming": {
+      "description": "As tarefas com datas de vencimento futuras aparecem aqui, ajudando você a planejar com antecedência e se preparar para o que está por vir.",
+      "title": "Não há tarefas próximas"
+    }
+  },
+  "filters": {
+    "activeOnly": "Apenas ativas",
+    "allTasks": "Todas as tarefas",
+    "apply": "Aplicar",
+    "cancel": "Cancelar",
+    "clearAll": "Limpar tudo",
+    "completedOnly": "Apenas concluídas",
+    "customRange": "Intervalo personalizado",
+    "dueDate": "Data limite",
+    "filter": "Filtrar",
+    "filterTasks": "Filtrar Tarefas",
+    "fromDate": "DATA INÍCIO",
+    "labels": "Etiquetas",
+    "next30Days": "Próximos 30 dias",
+    "next7Days": "Próximos 7 dias",
+    "noLabels": "Sem etiquetas",
+    "noPriority": "Sem prioridade",
+    "presets": {
+      "noDueDate": "Sem data de vencimento",
+      "nextWeek": "Próxima semana",
+      "overdue": "Vencidas",
+      "thisWeek": "Esta semana",
+      "today": "Hoje",
+      "tomorrow": "Amanhã"
+    },
+    "priority": "Prioridade",
+    "priority1": "Prioridade 1",
+    "priority2": "Prioridade 2",
+    "priority3": "Prioridade 3",
+    "projects": "Projetos",
+    "selectEndDate": "Selecionar data de fim",
+    "selectStartDate": "Selecionar data de início",
+    "status": "Status",
+    "toDate": "DATA FIM"
+  },
+  "focusTimer": {
+    "noActiveTimer": "Nenhum temporizador de foco ativo",
+    "pause": "Pausar",
+    "paused": "Pausado",
+    "ready": "Pronto",
+    "resume": "Retomar",
+    "running": "Executando",
+    "start": "Iniciar temporizador de foco",
+    "startTimer": "Iniciar temporizador",
+    "stop": "Parar",
+    "stopped": "Parado",
+    "task": "Tarefa:",
+    "title": "Temporizador de foco"
+  },
+  "labels": {
+    "createLabel": "Criar \"{{name}}\"",
+    "searchPlaceholder": "Buscar ou criar etiqueta..."
+  },
+  "placeholders": {
+    "addDescription": "Adicionar descrição...",
+    "taskTitle": "Digite o título da tarefa..."
+  },
+  "priority": {
+    "noPriority": "Sem prioridade"
+  },
+  "project": {
+    "noProject": "Sem projeto (Caixa de entrada)"
+  },
+  "recurring": {
+    "adaptive": "Adaptativo",
+    "apply": "Aplicar",
+    "calculateNextFrom": "Calcular próxima data de vencimento a partir de",
+    "createCustomPattern": "Criar padrão de recorrência personalizado",
+    "current": "Atual:",
+    "daily": "Diário",
+    "day": "dia",
+    "days": "dias",
+    "dueDate": "Data de vencimento",
+    "every": "A cada",
+    "interval": "Intervalo",
+    "lastDay": "Último dia",
+    "month": "mês",
+    "monthly": "Mensal",
+    "months": "meses",
+    "of": "de",
+    "on": "em",
+    "selectDateInYear": "Selecionar data no ano",
+    "selectDaysOfMonth": "Selecionar dias do mês",
+    "selectDaysOfWeek": "Selecionar dias da semana",
+    "selectedDates": "Datas selecionadas:",
+    "setDailyInterval": "Definir intervalo diário",
+    "the": "o/a",
+    "week": "semana",
+    "weekdays": "Dias úteis",
+    "weekends": "Fins de semana",
+    "weekly": "Semanal",
+    "weeks": "semanas",
+    "year": "ano",
+    "yearly": "Anual",
+    "years": "anos"
+  },
+  "schedule": {
+    "clear": "Limpar",
+    "clearTime": "Limpar horário",
+    "due": "Vence:",
+    "examplePrefix": "Exemplo:",
+    "hideCalendar": "Ocultar calendário e horário",
+    "nextWeek": "Próxima semana",
+    "recurring": "Recorrente",
+    "set": "Definir",
+    "showCalendar": "Mostrar calendário e horário",
+    "skip": "Pular",
+    "title": "Agendamento",
+    "today": "Hoje",
+    "tomorrow": "Amanhã"
+  },
+  "sidePanel": {
+    "attachments": {
+      "count_one": "{{count}} anexo",
+      "count_many": "{{count}} anexos",
+      "count_other": "{{count}} anexos",
+      "title": "Anexos"
+    },
+    "autoSave": {
+      "saving": "Salvando..."
+    },
+    "category": {
+      "priority": "Prioridade",
+      "project": "Projeto",
+      "title": "Categoria"
+    },
+    "comments": {
+      "title": "Comentários"
+    },
+    "description": {
+      "placeholder": "Adicionar descrição...",
+      "title": "Descrição"
+    },
+    "dueDate": {
+      "placeholder": "Adicionar data de vencimento",
+      "title": "Data de vencimento",
+      "today": "Hoje",
+      "tomorrow": "Amanhã"
+    },
+    "labels": {
+      "title": "Etiquetas"
+    },
+    "shortcuts": {
+      "close": "Fechar",
+      "toggle": "Alternar"
+    },
+    "subtasks": {
+      "title": "Subtarefas"
+    },
+    "taskTitle": {
+      "placeholder": "Título da tarefa..."
+    },
+    "title": "Detalhes da tarefa: {{- title}}"
+  },
+  "subtasks": {
+    "addAnotherSubtask": "Adicionar outra subtarefa...",
+    "addSubtask": "Adicionar subtarefa",
+    "addSubtasks": "Adicionar subtarefas...",
+    "title": "Subtarefas"
+  }
+}

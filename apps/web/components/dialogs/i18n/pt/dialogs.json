@@ -1,0 +1,139 @@
+{
+  "about": {
+    "by": "Criado por:",
+    "description": "Informações sobre versão e desenvolvedor da aplicação TaskTrove",
+    "madeWith": "Feito com",
+    "sponsorMe": "Me patrocine",
+    "starOnGitHub": "Dar estrela no GitHub",
+    "title": "Sobre o TaskTrove"
+  },
+  "baseDialog": {
+    "buttons": {
+      "add": "Adicionar {{type}}"
+    },
+    "color": {
+      "label": "Cor"
+    },
+    "description": {
+      "label": "Descrição (opcional)",
+      "placeholder": "Digite a descrição do {{type}}"
+    },
+    "name": {
+      "label": "Nome do {{type}}",
+      "placeholder": "Digite o nome do {{type}}"
+    },
+    "parent": {
+      "none": "Nenhum (nível raiz)",
+      "placeholder": "Selecionar {{type}}"
+    },
+    "title": "Adicionar novo {{type}}"
+  },
+  "common": {
+    "cancel": "Cancelar"
+  },
+  "delete": {
+    "bulk": {
+      "confirm": "Excluir tarefas",
+      "description_one": "Tem certeza de que deseja excluir {{count}} item?",
+      "description_many": "Tem certeza de que deseja excluir {{count}} itens?",
+      "description_other": "Tem certeza de que deseja excluir {{count}} itens?",
+      "title": "Excluir tarefas"
+    },
+    "default": {
+      "confirm": "Excluir",
+      "description": "Tem certeza de que deseja excluir este item?",
+      "title": "Excluir item"
+    },
+    "group": {
+      "confirm": "Excluir grupo",
+      "description": "Tem certeza de que deseja excluir \"{{- name}}\"? Esta ação não pode ser desfeita e excluirá o grupo e todos os seus subgrupos. Os projetos e tarefas do grupo não serão excluídos.",
+      "title": "Excluir grupo"
+    },
+    "history": {
+      "confirm": "Limpar histórico",
+      "description": "Isso excluirá permanentemente todo o histórico de desfazer/refazer para tarefas, projetos e etiquetas. Esta ação não pode ser desfeita.",
+      "title": "Limpar todo o histórico"
+    },
+    "label": {
+      "confirm": "Excluir etiqueta",
+      "description": "Tem certeza de que deseja excluir \"{{- name}}\"? Esta ação não pode ser desfeita e removerá esta etiqueta de todas as tarefas.",
+      "title": "Excluir etiqueta"
+    },
+    "project": {
+      "confirm": "Excluir projeto",
+      "description": "Tem certeza de que deseja excluir \"{{- name}}\"? Esta ação não pode ser desfeita e excluirá todas as tarefas deste projeto.",
+      "title": "Excluir projeto"
+    },
+    "section": {
+      "confirm": "Excluir seção",
+      "description": "Tem certeza de que deseja excluir \"{{- name}}\"? Esta ação não pode ser desfeita e todas as tarefas nesta seção serão movidas para a seção padrão.",
+      "title": "Excluir seção"
+    },
+    "task": {
+      "confirm": "Excluir",
+      "description": "Tem certeza de que deseja excluir \"{{- name}}\"? Esta ação não pode ser desfeita.",
+      "title": "Excluir tarefa"
+    }
+  },
+  "projectDialog": {
+    "buttons": {
+      "add": "Adicionar {{type}}"
+    },
+    "color": {
+      "label": "Cor"
+    },
+    "group": "Grupo",
+    "name": {
+      "label": "Nome do {{type}}",
+      "placeholder": "Digite o nome do {{type}}"
+    },
+    "project": "Projeto",
+    "title": "Adicionar novo {{type}}",
+    "type": {
+      "label": "Tipo"
+    }
+  },
+  "quickAdd": {
+    "addTask": "Adicionar tarefa",
+    "buttons": {
+      "comments": "Comentários",
+      "date": "Data",
+      "label": "Etiqueta",
+      "priority": "Prioridade",
+      "project": "Projeto",
+      "section": "Seção",
+      "subtasks": "Subtarefas"
+    },
+    "description": {
+      "placeholder": "Descrição"
+    },
+    "smartParsing": {
+      "help": "A análise inteligente é uma funcionalidade experimental que pode detectar e extrair automaticamente detalhes de tarefas da sua entrada. Pode reconhecer prioridades (P1-P4), datas de vencimento (amanhã, próxima semana, etc.), nomes de projetos (#projeto), etiquetas (@etiqueta) e padrões de repetição (diário, semanal).",
+      "label": "Análise inteligente"
+    },
+    "title": "Adicionar tarefa rapidamente"
+  },
+  "settings": {
+    "accessibility": {
+      "closeMenu": "Fechar menu",
+      "closeSettings": "Fechar configurações",
+      "openMenu": "Abrir menu de configurações"
+    },
+    "categories": {
+      "data": {
+        "description": "Importar/exportar, backups",
+        "title": "Dados e Armazenamento"
+      },
+      "general": {
+        "description": "Página padrão, preferências básicas",
+        "title": "Geral"
+      },
+      "notifications": {
+        "description": "Configurações de notificações",
+        "title": "Notificações"
+      }
+    },
+    "description": "Configurar ajustes e preferências da aplicação TaskTrove",
+    "title": "Configurações"
+  }
+}

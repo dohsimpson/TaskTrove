@@ -12,7 +12,7 @@ export default {
   output: "components/task/i18n/$LOCALE/task.json",
 
   // Only generate non-English files (English uses inline defaults)
-  locales: ["zh", "fr", "de", "es", "nl", "ko", "ja", "it"],
+  locales: ["zh", "fr", "de", "es", "nl", "ko", "ja", "it", "pt"],
 
   // Use task as the namespace for all task components
   defaultNamespace: "task",

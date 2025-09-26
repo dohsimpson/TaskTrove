@@ -1,0 +1,191 @@
+{
+  "crash": {
+    "notAvailable": {
+      "description": "O teste de falha está disponível apenas no ambiente de desenvolvimento.",
+      "title": "Teste de falha não disponível"
+    }
+  },
+  "debug": {
+    "available": {
+      "description": "Ferramentas de depuração e teste apenas para ambiente de desenvolvimento. Esta página não está disponível em produção.",
+      "simplified": "As ferramentas de depuração foram simplificadas nesta versão.",
+      "title": "Ferramentas de depuração TaskTrove"
+    },
+    "notAvailable": {
+      "description": "As ferramentas de depuração estão disponíveis apenas no ambiente de desenvolvimento por motivos de segurança e desempenho.",
+      "title": "Ferramentas de depuração não disponíveis"
+    }
+  },
+  "empty": {
+    "notifications": {
+      "action": "Voltar",
+      "description": "As notificações estão temporariamente desabilitadas durante a migração",
+      "title": "Notificações"
+    },
+    "performance": {
+      "action": "Voltar",
+      "description": "O monitoramento de desempenho está temporariamente desabilitado durante a migração",
+      "title": "Monitoramento de desempenho"
+    },
+    "voice": {
+      "action": "Voltar",
+      "description": "Os comandos de voz estão temporariamente desabilitados durante a migração",
+      "title": "Comandos de voz"
+    }
+  },
+  "footer": {
+    "completedToday": "Concluídas hoje",
+    "completedTodayLabel": "Concluídas hoje",
+    "dueToday": "Vencem hoje",
+    "dueTodayLabel": "Vencem hoje",
+    "no": "Sem {{title}}",
+    "task": "tarefa",
+    "tasks": "tarefas"
+  },
+  "header": {
+    "clickToCycleThemes": "Clique para alternar temas.",
+    "collapseSidebar": "Recolher barra lateral",
+    "currentTheme": "Tema atual: {{theme}}. Clique para alternar temas.",
+    "openSidebar": "Abrir barra lateral"
+  },
+  "viewOptions": {
+    "displayOptions": {
+      "compact": {
+        "description": "Usar um layout mais compacto para mostrar mais tarefas na tela",
+        "label": "Vista compacta:",
+        "title": "Vista compacta"
+      },
+      "completed": {
+        "description": "Mostrar ou ocultar tarefas concluídas",
+        "label": "Tarefas concluídas:",
+        "title": "Tarefas concluídas"
+      },
+      "help": {
+        "description": "Controla o que é visível na vista de tarefas:",
+        "tip": "Dica: Essas configurações são salvas por vista e persistem entre sessões"
+      },
+      "label": "Opções de exibição",
+      "overdue": {
+        "description": "Mostrar ou ocultar tarefas que passaram da data de vencimento",
+        "label": "Tarefas vencidas:",
+        "title": "Tarefas vencidas"
+      },
+      "sidePanel": {
+        "description": "Alternar painel lateral para ver detalhes adicionais das tarefas",
+        "label": "Painel lateral:",
+        "title": "Painel lateral"
+      }
+    },
+    "help": {
+      "advancedFilters": {
+        "description": "Usar opções de filtragem avançadas para consultas complexas",
+        "label": "Filtros avançados:"
+      },
+      "description": "Personalize como você vê e organiza suas tarefas:",
+      "displayOptions": {
+        "description": "Alternar tarefas concluídas, painel lateral e vista compacta",
+        "label": "Opções de exibição:"
+      },
+      "sortFilter": {
+        "description": "Organizar tarefas por prioridade, data de vencimento ou outros critérios",
+        "label": "Ordenar e filtrar:"
+      },
+      "tip": {
+        "description": "Suas preferências de vista são salvas por rota e persistem entre sessões.",
+        "label": "Dica:"
+      },
+      "viewMode": {
+        "description": "Alternar entre layouts de lista, kanban e calendário",
+        "label": "Modo de vista:"
+      }
+    },
+    "sort": {
+      "direction": {
+        "changeToAsc": "Alterar para ascendente",
+        "changeToDesc": "Alterar para descendente"
+      },
+      "help": {
+        "createdDate": {
+          "description": "Ordenar por tempo de criação da tarefa",
+          "label": "Data de criação:"
+        },
+        "default": {
+          "description": "Mostrar tarefas em ordem natural, tarefas concluídas embaixo",
+          "label": "Padrão (sem ordenação):"
+        },
+        "description": "Escolha como organizar suas tarefas:",
+        "dueDate": {
+          "description": "Ordenar todas as tarefas por data de vencimento, misturando concluídas e não concluídas",
+          "label": "Data de vencimento:"
+        },
+        "priority": {
+          "description": "Ordenar por prioridade (1=mais alta, 4=mais baixa)",
+          "label": "Prioridade:"
+        },
+        "status": {
+          "description": "Agrupar por status de conclusão, depois por coluna kanban",
+          "label": "Status:"
+        },
+        "tip": "Dica: Use os botões de seta para alternar entre ascendente e descendente",
+        "title": {
+          "description": "Ordenar por nome da tarefa alfabeticamente",
+          "label": "Título:"
+        }
+      },
+      "label": "Ordenar",
+      "options": {
+        "createdAt": "Data de criação",
+        "default": "Padrão (sem ordenação)",
+        "dueDate": "Data de vencimento",
+        "priority": "Prioridade",
+        "status": "Status",
+        "title": "Título"
+      },
+      "placeholder": "Selecionar opção de ordenação",
+      "sortBy": "Ordenar por",
+      "title": "Opções de ordenação"
+    },
+    "title": "Opções de vista",
+    "viewMode": {
+      "calendar": "Calendário",
+      "kanban": "Kanban",
+      "kanbanTooltip": "Apenas para projetos",
+      "label": "Modo de vista",
+      "list": "Lista"
+    }
+  },
+  "standardViews": {
+    "all": {
+      "description": "Ver todas as suas tarefas em um lugar",
+      "title": "Todas as tarefas"
+    },
+    "calendar": {
+      "description": "Ver tarefas em formato de calendário",
+      "title": "Calendário"
+    },
+    "completed": {
+      "description": "Revisar tarefas concluídas",
+      "title": "Concluídas"
+    },
+    "inbox": {
+      "description": "Começar com tarefas não organizadas",
+      "title": "Caixa de entrada"
+    },
+    "labels": {
+      "description": "Organizar tarefas com etiquetas",
+      "title": "Etiquetas"
+    },
+    "projects": {
+      "description": "Gerenciar e organizar projetos",
+      "title": "Projetos"
+    },
+    "today": {
+      "description": "Focar nas tarefas de hoje",
+      "title": "Hoje"
+    },
+    "upcoming": {
+      "description": "Ver o que vem a seguir",
+      "title": "Próximas"
+    }
+  }
+}

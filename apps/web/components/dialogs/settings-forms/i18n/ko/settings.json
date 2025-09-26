@@ -19,6 +19,8 @@
         "button": "지금 수동 백업"
       },
       "maxBackups": {
+        "description": "이전 백업은 자동으로 삭제됩니다",
+        "label": "보관할 최대 백업 수",
         "noLimit": "제한 없음"
       },
       "title": "자동 백업"
@@ -74,6 +76,44 @@
       "description": "TaskTrove를 처음 열 때 표시할 페이지를 선택하세요",
       "label": "TaskTrove를 열 때 표시",
       "title": "기본 페이지"
+    },
+    "startView": {
+      "all": {
+        "description": "모든 작업을 한 곳에서 보기",
+        "label": "모든 작업"
+      },
+      "calendar": {
+        "description": "작업을 달력 형식으로 보기",
+        "label": "달력"
+      },
+      "completed": {
+        "description": "완료된 작업 검토",
+        "label": "완료됨"
+      },
+      "inbox": {
+        "description": "정리되지 않은 작업부터 시작",
+        "label": "받은편지함"
+      },
+      "labels": {
+        "description": "레이블로 작업 정리",
+        "label": "레이블"
+      },
+      "lastViewed": {
+        "description": "마지막 활성 페이지로 돌아가기",
+        "label": "마지막 본 항목"
+      },
+      "projects": {
+        "description": "프로젝트 관리 및 정리",
+        "label": "프로젝트"
+      },
+      "today": {
+        "description": "오늘의 작업에 집중",
+        "label": "오늘"
+      },
+      "upcoming": {
+        "description": "다음에 올 일들 보기",
+        "label": "예정된 작업"
+      }
     },
     "language": {
       "description": "애플리케이션의 표시 언어를 선택하세요",

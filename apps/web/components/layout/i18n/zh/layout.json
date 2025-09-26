@@ -147,8 +147,45 @@
     },
     "title": "视图选项",
     "viewMode": {
+      "calendar": "日历",
+      "kanban": "看板",
       "kanbanTooltip": "仅适用于项目",
-      "label": "视图模式"
+      "label": "视图模式",
+      "list": "列表"
+    }
+  },
+  "standardViews": {
+    "all": {
+      "description": "在一个地方查看您的所有任务",
+      "title": "所有任务"
+    },
+    "calendar": {
+      "description": "以日历格式查看任务",
+      "title": "日历"
+    },
+    "completed": {
+      "description": "查看已完成的任务",
+      "title": "已完成"
+    },
+    "inbox": {
+      "description": "从未整理的任务开始",
+      "title": "收件箱"
+    },
+    "labels": {
+      "description": "使用标签整理任务",
+      "title": "标签"
+    },
+    "projects": {
+      "description": "管理和组织项目",
+      "title": "项目"
+    },
+    "today": {
+      "description": "专注于今天的任务",
+      "title": "今天"
+    },
+    "upcoming": {
+      "description": "查看即将到来的任务",
+      "title": "即将到来"
     }
   }
 }

@@ -147,8 +147,45 @@
     },
     "title": "보기 옵션",
     "viewMode": {
+      "calendar": "캘린더",
+      "kanban": "칸반",
       "kanbanTooltip": "프로젝트 전용",
-      "label": "보기 모드"
+      "label": "보기 모드",
+      "list": "목록"
+    }
+  },
+  "standardViews": {
+    "all": {
+      "description": "모든 작업을 한 곳에서 보기",
+      "title": "모든 작업"
+    },
+    "calendar": {
+      "description": "작업을 달력 형식으로 보기",
+      "title": "달력"
+    },
+    "completed": {
+      "description": "완료된 작업 검토",
+      "title": "완료됨"
+    },
+    "inbox": {
+      "description": "정리되지 않은 작업부터 시작",
+      "title": "받은편지함"
+    },
+    "labels": {
+      "description": "레이블로 작업 정리",
+      "title": "레이블"
+    },
+    "projects": {
+      "description": "프로젝트 관리 및 정리",
+      "title": "프로젝트"
+    },
+    "today": {
+      "description": "오늘의 작업에 집중",
+      "title": "오늘"
+    },
+    "upcoming": {
+      "description": "다음에 올 일들 보기",
+      "title": "예정된 작업"
     }
   }
 }

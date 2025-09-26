@@ -44,32 +44,32 @@ const ICON_MAP = {
   lastViewed: Home,
 } as const
 
-// Generate start view options from centralized metadata
-const allStartViewOptions: Array<{
-  value: StandardViewId | "lastViewed"
-  label: string
-  description: string
-  icon: React.ComponentType<{ className?: string }>
-}> = Object.entries(START_VIEW_METADATA)
-  .filter(([key]) => key in ICON_MAP) // Only include views in the icon map
-  .map(([key, metadata]) => ({
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    value: key as StandardViewId | "lastViewed",
-    label: metadata.title,
-    description: metadata.description,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    icon: ICON_MAP[key as keyof typeof ICON_MAP],
-  }))
-
-// Separate standard views from lastViewed
-const standardViewOptions = allStartViewOptions.filter((option) => option.value !== "lastViewed")
-const lastViewedOption = allStartViewOptions.find((option) => option.value === "lastViewed")
-
 export function GeneralForm() {
   const settings = useAtomValue(settingsAtom)
   const updateSettings = useSetAtom(updateSettingsAtom)
   const { language, setLanguage } = useLanguage()
   const { t } = useTranslation(language, "settings")
+
+  // Generate start view options with translations
+  const allStartViewOptions: Array<{
+    value: StandardViewId | "lastViewed"
+    label: string
+    description: string
+    icon: React.ComponentType<{ className?: string }>
+  }> = Object.entries(START_VIEW_METADATA)
+    .filter(([key]) => key in ICON_MAP) // Only include views in the icon map
+    .map(([key, metadata]) => ({
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      value: key as StandardViewId | "lastViewed",
+      label: t(`general.startView.${key}.label`, metadata.title),
+      description: t(`general.startView.${key}.description`, metadata.description),
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      icon: ICON_MAP[key as keyof typeof ICON_MAP],
+    }))
+
+  // Separate standard views from lastViewed
+  const standardViewOptions = allStartViewOptions.filter((option) => option.value !== "lastViewed")
+  const lastViewedOption = allStartViewOptions.find((option) => option.value === "lastViewed")
 
   const currentStartView = settings.general.startView
   const currentSoundEnabled = settings.general.soundEnabled

@@ -19,6 +19,8 @@
         "button": "Sauvegarde manuelle maintenant"
       },
       "maxBackups": {
+        "description": "Les anciennes sauvegardes seront automatiquement supprimées",
+        "label": "Nombre maximum de sauvegardes à conserver",
         "noLimit": "Aucune limite"
       },
       "title": "Sauvegarde automatique"
@@ -74,6 +76,44 @@
       "description": "Choisir la page à voir lors de la première ouverture de TaskTrove",
       "label": "Afficher lors de l'ouverture de TaskTrove",
       "title": "Page par défaut"
+    },
+    "startView": {
+      "all": {
+        "description": "Voir toutes vos tâches en un seul endroit",
+        "label": "Toutes les tâches"
+      },
+      "calendar": {
+        "description": "Voir les tâches au format calendrier",
+        "label": "Calendrier"
+      },
+      "completed": {
+        "description": "Examiner les tâches terminées",
+        "label": "Terminées"
+      },
+      "inbox": {
+        "description": "Commencer avec les tâches non organisées",
+        "label": "Boîte de réception"
+      },
+      "labels": {
+        "description": "Organiser les tâches avec des étiquettes",
+        "label": "Étiquettes"
+      },
+      "lastViewed": {
+        "description": "Retourner à votre dernière page active",
+        "label": "Dernière vue"
+      },
+      "projects": {
+        "description": "Gérer et organiser les projets",
+        "label": "Projets"
+      },
+      "today": {
+        "description": "Se concentrer sur les tâches d'aujourd'hui",
+        "label": "Aujourd'hui"
+      },
+      "upcoming": {
+        "description": "Voir ce qui arrive ensuite",
+        "label": "À venir"
+      }
     },
     "language": {
       "description": "Sélectionner la langue d'affichage de l'application",

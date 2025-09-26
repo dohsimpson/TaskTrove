@@ -147,8 +147,45 @@
     },
     "title": "Opzioni di vista",
     "viewMode": {
+      "calendar": "Calendario",
+      "kanban": "Kanban",
       "kanbanTooltip": "Solo per progetti",
-      "label": "Modalità di vista"
+      "label": "Modalità di vista",
+      "list": "Lista"
+    }
+  },
+  "standardViews": {
+    "all": {
+      "description": "Visualizza tutte le tue attività in un posto",
+      "title": "Tutte le attività"
+    },
+    "calendar": {
+      "description": "Visualizza le attività in formato calendario",
+      "title": "Calendario"
+    },
+    "completed": {
+      "description": "Rivedi le attività completate",
+      "title": "Completate"
+    },
+    "inbox": {
+      "description": "Inizia con attività non organizzate",
+      "title": "Posta in arrivo"
+    },
+    "labels": {
+      "description": "Organizza le attività con etichette",
+      "title": "Etichette"
+    },
+    "projects": {
+      "description": "Gestisci e organizza progetti",
+      "title": "Progetti"
+    },
+    "today": {
+      "description": "Concentrati sulle attività di oggi",
+      "title": "Oggi"
+    },
+    "upcoming": {
+      "description": "Vedi cosa c'è in arrivo",
+      "title": "Prossime"
     }
   }
 }

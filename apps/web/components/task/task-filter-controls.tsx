@@ -215,10 +215,26 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
   }
 
   const priorities = [
-    { value: 1 as const, label: getPriorityLabel(1), color: getPriorityTextColor(1) },
-    { value: 2 as const, label: getPriorityLabel(2), color: getPriorityTextColor(2) },
-    { value: 3 as const, label: getPriorityLabel(3), color: getPriorityTextColor(3) },
-    { value: 4 as const, label: getPriorityLabel(4), color: getPriorityTextColor(4) },
+    {
+      value: 1 as const,
+      label: t("filters.priority1", "Priority 1"),
+      color: getPriorityTextColor(1),
+    },
+    {
+      value: 2 as const,
+      label: t("filters.priority2", "Priority 2"),
+      color: getPriorityTextColor(2),
+    },
+    {
+      value: 3 as const,
+      label: t("filters.priority3", "Priority 3"),
+      color: getPriorityTextColor(3),
+    },
+    {
+      value: 4 as const,
+      label: t("filters.noPriority", "No priority"),
+      color: getPriorityTextColor(4),
+    },
   ]
 
   const getCompletionValue = () => {

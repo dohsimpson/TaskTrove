@@ -19,6 +19,8 @@
         "button": "今すぐ手動バックアップ"
       },
       "maxBackups": {
+        "description": "古いバックアップは自動的に削除されます",
+        "label": "保持する最大バックアップ数",
         "noLimit": "制限なし"
       },
       "title": "自動バックアップ"
@@ -74,6 +76,44 @@
       "description": "TaskTroveを初めて開いたときに表示するページを選択",
       "label": "TaskTroveを開いたときに表示",
       "title": "デフォルトページ"
+    },
+    "startView": {
+      "all": {
+        "description": "すべてのタスクを一か所で表示",
+        "label": "すべてのタスク"
+      },
+      "calendar": {
+        "description": "タスクをカレンダー形式で表示",
+        "label": "カレンダー"
+      },
+      "completed": {
+        "description": "完了したタスクを確認",
+        "label": "完了"
+      },
+      "inbox": {
+        "description": "整理されていないタスクから開始",
+        "label": "受信ボックス"
+      },
+      "labels": {
+        "description": "ラベルでタスクを整理",
+        "label": "ラベル"
+      },
+      "lastViewed": {
+        "description": "最後にアクティブだったページに戻る",
+        "label": "最後に表示"
+      },
+      "projects": {
+        "description": "プロジェクトを管理・整理",
+        "label": "プロジェクト"
+      },
+      "today": {
+        "description": "今日のタスクに集中",
+        "label": "今日"
+      },
+      "upcoming": {
+        "description": "次に予定されていることを確認",
+        "label": "予定"
+      }
     },
     "language": {
       "description": "アプリケーションの表示言語を選択",

@@ -13,6 +13,11 @@ vi.mock("sonner", () => ({
   },
 }))
 
+// Mock next-auth/react
+vi.mock("next-auth/react", () => ({
+  signIn: vi.fn(),
+}))
+
 // Mock console.error to suppress error logs in tests
 vi.spyOn(console, "error").mockImplementation(() => {})
 
@@ -21,8 +26,11 @@ describe("LoginForm", () => {
   const mockOnCancel = vi.fn()
   const user = userEvent.setup()
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
+    // Reset signIn mock to default behavior (return error)
+    const { signIn } = await import("next-auth/react")
+    vi.mocked(signIn).mockResolvedValue({ error: "default-error" } as any)
   })
 
   describe("Rendering", () => {
@@ -171,6 +179,15 @@ describe("LoginForm", () => {
     })
 
     it("shows loading state during submission", async () => {
+      const { signIn } = await import("next-auth/react")
+
+      // Mock slow sign in that resolves after loading is checked
+      let resolveSignIn: any
+      const signInPromise = new Promise((resolve) => {
+        resolveSignIn = resolve
+      })
+      vi.mocked(signIn).mockReturnValue(signInPromise as any)
+
       render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
 
       const passwordInput = screen.getByPlaceholderText("Password")
@@ -181,9 +198,21 @@ describe("LoginForm", () => {
 
       expect(screen.getByText("Signing in...")).toBeInTheDocument()
       expect(submitButton).toBeDisabled()
+
+      // Resolve the promise to clean up
+      resolveSignIn({ ok: true, error: null })
     })
 
     it("disables form fields during loading", async () => {
+      const { signIn } = await import("next-auth/react")
+
+      // Mock slow sign in that resolves after loading is checked
+      let resolveSignIn: any
+      const signInPromise = new Promise((resolve) => {
+        resolveSignIn = resolve
+      })
+      vi.mocked(signIn).mockReturnValue(signInPromise as any)
+
       render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
 
       const passwordInput = screen.getByPlaceholderText("Password")
@@ -193,6 +222,9 @@ describe("LoginForm", () => {
       await user.click(submitButton)
 
       expect(passwordInput).toBeDisabled()
+
+      // Resolve the promise to clean up
+      resolveSignIn({ ok: true, error: null })
     })
 
     it("disables toggle button during loading", async () => {
@@ -213,6 +245,10 @@ describe("LoginForm", () => {
   describe("Form Submission", () => {
     it("calls onSuccess when login is successful", async () => {
       const { toast } = await import("sonner")
+      const { signIn } = await import("next-auth/react")
+
+      // Mock successful sign in
+      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null } as any)
 
       render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
 
@@ -248,6 +284,11 @@ describe("LoginForm", () => {
     })
 
     it("handles form submission with Enter key", async () => {
+      const { signIn } = await import("next-auth/react")
+
+      // Mock successful sign in
+      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null } as any)
+
       render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
 
       const passwordInput = screen.getByPlaceholderText("Password")
@@ -273,6 +314,8 @@ describe("LoginForm", () => {
     })
 
     it("removes error styling when field becomes valid", async () => {
+      const { signIn } = await import("next-auth/react")
+
       render(<LoginForm onCancel={mockOnCancel} />)
 
       // First trigger error
@@ -282,11 +325,16 @@ describe("LoginForm", () => {
       const passwordInput = screen.getByPlaceholderText("Password")
       expect(passwordInput).toHaveClass("border-red-500")
 
+      // Mock successful sign in for second attempt
+      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null } as any)
+
       // Then fix the error
       await user.type(passwordInput, "password123")
       await user.click(submitButton)
 
-      expect(passwordInput).not.toHaveClass("border-red-500")
+      await waitFor(() => {
+        expect(passwordInput).not.toHaveClass("border-red-500")
+      })
     })
   })
 

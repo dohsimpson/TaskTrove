@@ -19,6 +19,8 @@
         "button": "Jetzt manuell sichern"
       },
       "maxBackups": {
+        "description": "Ältere Backups werden automatisch gelöscht",
+        "label": "Maximale Anzahl zu behaltender Backups",
         "noLimit": "Keine Begrenzung"
       },
       "title": "Automatisches Backup"
@@ -74,6 +76,44 @@
       "description": "Wählen Sie die Seite, die beim ersten Öffnen von TaskTrove angezeigt werden soll",
       "label": "Beim Öffnen von TaskTrove anzeigen",
       "title": "Standardseite"
+    },
+    "startView": {
+      "all": {
+        "description": "Alle Ihre Aufgaben an einem Ort anzeigen",
+        "label": "Alle Aufgaben"
+      },
+      "calendar": {
+        "description": "Aufgaben im Kalenderformat anzeigen",
+        "label": "Kalender"
+      },
+      "completed": {
+        "description": "Abgeschlossene Aufgaben überprüfen",
+        "label": "Abgeschlossen"
+      },
+      "inbox": {
+        "description": "Mit unorganisierten Aufgaben beginnen",
+        "label": "Posteingang"
+      },
+      "labels": {
+        "description": "Aufgaben mit Etiketten organisieren",
+        "label": "Etiketten"
+      },
+      "lastViewed": {
+        "description": "Zurück zu Ihrer letzten aktiven Seite",
+        "label": "Zuletzt angezeigt"
+      },
+      "projects": {
+        "description": "Projekte verwalten und organisieren",
+        "label": "Projekte"
+      },
+      "today": {
+        "description": "Fokus auf heutige Aufgaben",
+        "label": "Heute"
+      },
+      "upcoming": {
+        "description": "Sehen, was als nächstes kommt",
+        "label": "Anstehend"
+      }
     },
     "language": {
       "description": "Anzeigesprache der Anwendung auswählen",

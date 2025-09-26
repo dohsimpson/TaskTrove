@@ -521,9 +521,14 @@ export function DataForm() {
 
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <Label htmlFor="max-backups">Maximum Backups to Keep</Label>
+            <Label htmlFor="max-backups">
+              {t("data.autoBackup.maxBackups.label", "Maximum Backups to Keep")}
+            </Label>
             <p className="text-sm text-muted-foreground">
-              Older backups will be automatically deleted
+              {t(
+                "data.autoBackup.maxBackups.description",
+                "Older backups will be automatically deleted",
+              )}
             </p>
           </div>
           <Select

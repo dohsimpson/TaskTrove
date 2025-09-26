@@ -147,8 +147,45 @@
     },
     "title": "Opciones de vista",
     "viewMode": {
+      "calendar": "Calendario",
+      "kanban": "Kanban",
       "kanbanTooltip": "Solo para proyectos",
-      "label": "Modo de vista"
+      "label": "Modo de vista",
+      "list": "Lista"
+    }
+  },
+  "standardViews": {
+    "all": {
+      "description": "Ver todas tus tareas en un lugar",
+      "title": "Todas las tareas"
+    },
+    "calendar": {
+      "description": "Ver tareas en formato de calendario",
+      "title": "Calendario"
+    },
+    "completed": {
+      "description": "Revisar tareas completadas",
+      "title": "Completadas"
+    },
+    "inbox": {
+      "description": "Comenzar con tareas sin organizar",
+      "title": "Bandeja de entrada"
+    },
+    "labels": {
+      "description": "Organizar tareas con etiquetas",
+      "title": "Etiquetas"
+    },
+    "projects": {
+      "description": "Gestionar y organizar proyectos",
+      "title": "Proyectos"
+    },
+    "today": {
+      "description": "Enfocarse en las tareas de hoy",
+      "title": "Hoy"
+    },
+    "upcoming": {
+      "description": "Ver qué viene después",
+      "title": "Próximas"
     }
   }
 }

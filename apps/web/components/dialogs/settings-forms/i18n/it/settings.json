@@ -19,6 +19,8 @@
         "button": "Backup manuale ora"
       },
       "maxBackups": {
+        "description": "I backup più vecchi verranno eliminati automaticamente",
+        "label": "Numero massimo di backup da conservare",
         "noLimit": "Nessun limite"
       },
       "title": "Backup automatico"
@@ -74,6 +76,44 @@
       "description": "Scegli la pagina da mostrare quando apri TaskTrove per la prima volta",
       "label": "Mostra all'apertura di TaskTrove",
       "title": "Pagina predefinita"
+    },
+    "startView": {
+      "all": {
+        "description": "Visualizza tutte le tue attività in un posto",
+        "label": "Tutte le attività"
+      },
+      "calendar": {
+        "description": "Visualizza le attività in formato calendario",
+        "label": "Calendario"
+      },
+      "completed": {
+        "description": "Rivedi le attività completate",
+        "label": "Completate"
+      },
+      "inbox": {
+        "description": "Inizia con attività non organizzate",
+        "label": "Posta in arrivo"
+      },
+      "labels": {
+        "description": "Organizza le attività con etichette",
+        "label": "Etichette"
+      },
+      "lastViewed": {
+        "description": "Torna alla tua ultima pagina attiva",
+        "label": "Ultima visualizzazione"
+      },
+      "projects": {
+        "description": "Gestisci e organizza progetti",
+        "label": "Progetti"
+      },
+      "today": {
+        "description": "Concentrati sulle attività di oggi",
+        "label": "Oggi"
+      },
+      "upcoming": {
+        "description": "Vedi cosa c'è in arrivo",
+        "label": "Prossime"
+      }
     },
     "language": {
       "description": "Seleziona la lingua di visualizzazione dell'applicazione",

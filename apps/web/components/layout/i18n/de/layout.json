@@ -147,8 +147,45 @@
     },
     "title": "Anzeigeoptionen",
     "viewMode": {
+      "calendar": "Kalender",
+      "kanban": "Kanban",
       "kanbanTooltip": "Nur für Projekte",
-      "label": "Anzeigemodus"
+      "label": "Anzeigemodus",
+      "list": "Liste"
+    }
+  },
+  "standardViews": {
+    "all": {
+      "description": "Alle Ihre Aufgaben an einem Ort anzeigen",
+      "title": "Alle Aufgaben"
+    },
+    "calendar": {
+      "description": "Aufgaben im Kalenderformat anzeigen",
+      "title": "Kalender"
+    },
+    "completed": {
+      "description": "Abgeschlossene Aufgaben überprüfen",
+      "title": "Abgeschlossen"
+    },
+    "inbox": {
+      "description": "Mit unorganisierten Aufgaben beginnen",
+      "title": "Posteingang"
+    },
+    "labels": {
+      "description": "Aufgaben mit Etiketten organisieren",
+      "title": "Etiketten"
+    },
+    "projects": {
+      "description": "Projekte verwalten und organisieren",
+      "title": "Projekte"
+    },
+    "today": {
+      "description": "Fokus auf heutige Aufgaben",
+      "title": "Heute"
+    },
+    "upcoming": {
+      "description": "Sehen, was als nächstes kommt",
+      "title": "Anstehend"
     }
   }
 }

@@ -147,8 +147,45 @@
     },
     "title": "Weergave-opties",
     "viewMode": {
+      "calendar": "Kalender",
+      "kanban": "Kanban",
       "kanbanTooltip": "Alleen beschikbaar voor projecten",
-      "label": "Weergavemodus"
+      "label": "Weergavemodus",
+      "list": "Lijst"
+    }
+  },
+  "standardViews": {
+    "all": {
+      "description": "Bekijk al je taken op één plek",
+      "title": "Alle taken"
+    },
+    "calendar": {
+      "description": "Bekijk taken in kalenderformaat",
+      "title": "Kalender"
+    },
+    "completed": {
+      "description": "Bekijk voltooide taken",
+      "title": "Voltooid"
+    },
+    "inbox": {
+      "description": "Begin met ongeorganiseerde taken",
+      "title": "Inbox"
+    },
+    "labels": {
+      "description": "Organiseer taken met labels",
+      "title": "Labels"
+    },
+    "projects": {
+      "description": "Beheer en organiseer projecten",
+      "title": "Projecten"
+    },
+    "today": {
+      "description": "Focus op vandaag's taken",
+      "title": "Vandaag"
+    },
+    "upcoming": {
+      "description": "Zie wat er op komst is",
+      "title": "Aankomend"
     }
   }
 }

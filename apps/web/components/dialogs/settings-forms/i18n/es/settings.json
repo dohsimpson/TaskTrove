@@ -19,6 +19,8 @@
         "button": "Respaldo manual ahora"
       },
       "maxBackups": {
+        "description": "Las copias de seguridad más antiguas se eliminarán automáticamente",
+        "label": "Máximo de copias de seguridad a conservar",
         "noLimit": "Sin límite"
       },
       "title": "Respaldo automático"
@@ -74,6 +76,44 @@
       "description": "Elegir la página a mostrar al abrir TaskTrove por primera vez",
       "label": "Mostrar al abrir TaskTrove",
       "title": "Página predeterminada"
+    },
+    "startView": {
+      "all": {
+        "description": "Ver todas tus tareas en un lugar",
+        "label": "Todas las tareas"
+      },
+      "calendar": {
+        "description": "Ver tareas en formato de calendario",
+        "label": "Calendario"
+      },
+      "completed": {
+        "description": "Revisar tareas completadas",
+        "label": "Completadas"
+      },
+      "inbox": {
+        "description": "Comenzar con tareas sin organizar",
+        "label": "Bandeja de entrada"
+      },
+      "labels": {
+        "description": "Organizar tareas con etiquetas",
+        "label": "Etiquetas"
+      },
+      "lastViewed": {
+        "description": "Volver a tu última página activa",
+        "label": "Última vista"
+      },
+      "projects": {
+        "description": "Gestionar y organizar proyectos",
+        "label": "Proyectos"
+      },
+      "today": {
+        "description": "Enfocarse en las tareas de hoy",
+        "label": "Hoy"
+      },
+      "upcoming": {
+        "description": "Ver qué viene después",
+        "label": "Próximas"
+      }
     },
     "language": {
       "description": "Seleccionar el idioma de visualización de la aplicación",

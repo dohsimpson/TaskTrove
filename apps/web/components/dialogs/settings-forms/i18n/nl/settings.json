@@ -19,6 +19,8 @@
         "button": "Nu handmatige back-up maken"
       },
       "maxBackups": {
+        "description": "Oudere back-ups worden automatisch verwijderd",
+        "label": "Maximum aantal back-ups om te behouden",
         "noLimit": ""
       },
       "title": "Automatische back-up"
@@ -74,6 +76,44 @@
       "description": "Kies de pagina om te tonen bij het voor het eerst openen van TaskTrove",
       "label": "Tonen bij openen van TaskTrove",
       "title": "Standaardpagina"
+    },
+    "startView": {
+      "all": {
+        "description": "Bekijk al je taken op één plek",
+        "label": "Alle taken"
+      },
+      "calendar": {
+        "description": "Bekijk taken in kalenderformaat",
+        "label": "Kalender"
+      },
+      "completed": {
+        "description": "Bekijk voltooide taken",
+        "label": "Voltooid"
+      },
+      "inbox": {
+        "description": "Begin met ongeorganiseerde taken",
+        "label": "Inbox"
+      },
+      "labels": {
+        "description": "Organiseer taken met labels",
+        "label": "Labels"
+      },
+      "lastViewed": {
+        "description": "Keer terug naar je laatst actieve pagina",
+        "label": "Laatst bekeken"
+      },
+      "projects": {
+        "description": "Beheer en organiseer projecten",
+        "label": "Projecten"
+      },
+      "today": {
+        "description": "Focus op vandaag's taken",
+        "label": "Vandaag"
+      },
+      "upcoming": {
+        "description": "Zie wat er op komst is",
+        "label": "Aankomend"
+      }
     },
     "language": {
       "description": "Selecteer de weergavetaal van de applicatie",

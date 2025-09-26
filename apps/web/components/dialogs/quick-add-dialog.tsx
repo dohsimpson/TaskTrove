@@ -19,6 +19,7 @@ import {
   CheckSquare,
   MessageSquare,
   Square,
+  Clock,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
@@ -64,9 +65,10 @@ import { v4 as uuidv4 } from "uuid"
 import { useDebouncedParse } from "@/hooks/use-debounced-parse"
 import { useTranslation } from "@/lib/i18n/client"
 import { useLanguage } from "@/components/providers/language-provider"
+import { generateEstimationSuggestions } from "@/lib/utils/shared-patterns"
 
 // Enhanced autocomplete interface
-type AutocompleteType = "project" | "label" | "date"
+type AutocompleteType = "project" | "label" | "date" | "estimation"
 
 interface AutocompleteItem {
   id: string
@@ -120,6 +122,7 @@ export function QuickAddDialog() {
   const dueTimeSetByParsingRef = useRef(false)
   const recurringSetByParsingRef = useRef(false)
   const labelsSetByParsingRef = useRef(false)
+  const estimationSetByParsingRef = useRef(false)
 
   const newTask: CreateTaskRequest = useAtomValue(quickAddTaskAtom)
   const updateNewTask = useSetAtom(updateQuickAddTaskAtom)
@@ -164,6 +167,10 @@ export function QuickAddDialog() {
       if (labelsSetByParsingRef.current) {
         labelsSetByParsingRef.current = false
         updateNewTask({ updateRequest: { labels: [] } })
+      }
+      if (estimationSetByParsingRef.current) {
+        estimationSetByParsingRef.current = false
+        updateNewTask({ updateRequest: { estimation: undefined } })
       }
     }
   }, [nlpEnabled, updateNewTask])
@@ -295,6 +302,17 @@ export function QuickAddDialog() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- newTask.labels intentionally excluded to prevent infinite re-renders
   }, [parsed?.labels, labels, updateNewTask])
 
+  useEffect(() => {
+    if (parsed?.estimation) {
+      estimationSetByParsingRef.current = true
+      updateNewTask({ updateRequest: { estimation: parsed.estimation } })
+    } else if (!parsed?.estimation && estimationSetByParsingRef.current) {
+      // Only clear if the estimation was previously set by parsing
+      estimationSetByParsingRef.current = false
+      updateNewTask({ updateRequest: { estimation: undefined } })
+    }
+  }, [parsed?.estimation, updateNewTask])
+
   // Auto-initialize values based on route context when dialog opens
   useEffect(() => {
     if (open) {
@@ -341,6 +359,14 @@ export function QuickAddDialog() {
         //   value: time.value
         // }))
       ],
+      estimations: generateEstimationSuggestions().map(
+        (estimation): AutocompleteItem => ({
+          id: estimation.value,
+          label: estimation.display,
+          icon: <Clock className="w-3 h-3" />,
+          type: "estimation",
+        }),
+      ),
     }),
     [projects, labels],
   )
@@ -473,6 +499,7 @@ export function QuickAddDialog() {
     dueTimeSetByParsingRef.current = false
     recurringSetByParsingRef.current = false
     labelsSetByParsingRef.current = false
+    estimationSetByParsingRef.current = false
     closeDialog()
   }
 

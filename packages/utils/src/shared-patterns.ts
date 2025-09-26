@@ -22,6 +22,7 @@ export interface AutocompleteSuggestion {
     | "time"
     | "duration"
     | "recurring"
+    | "estimation"
     | "create";
   value: string;
   display: string;
@@ -37,6 +38,7 @@ export interface HighlightingPattern {
     | "priority"
     | "recurring"
     | "duration"
+    | "estimation"
     | "text";
   regex: RegExp;
 }
@@ -49,7 +51,8 @@ export interface AutocompleteDetectionPattern {
     | "priority"
     | "time"
     | "duration"
-    | "recurring";
+    | "recurring"
+    | "estimation";
   patterns: RegExp[];
   extractQuery: (match: RegExpMatchArray) => string;
 }
@@ -269,6 +272,78 @@ export function generateDurationSuggestions(): AutocompleteSuggestion[] {
 }
 
 /**
+ * Generate estimation suggestions based on common presets
+ */
+export function generateEstimationSuggestions(): AutocompleteSuggestion[] {
+  const suggestions: AutocompleteSuggestion[] = [];
+
+  // Common estimation presets matching the time estimation picker
+  const estimationOptions = [
+    { value: "5m", display: "5m", description: "Estimated time: 5 minutes" },
+    { value: "15m", display: "15m", description: "Estimated time: 15 minutes" },
+    { value: "30m", display: "30m", description: "Estimated time: 30 minutes" },
+    { value: "1h", display: "1h", description: "Estimated time: 1 hour" },
+    { value: "2h", display: "2h", description: "Estimated time: 2 hours" },
+    { value: "4h", display: "4h", description: "Estimated time: 4 hours" },
+  ];
+
+  estimationOptions.forEach((option) => {
+    suggestions.push({
+      type: "estimation",
+      value: option.value,
+      display: option.display,
+      description: option.description,
+    });
+  });
+
+  return suggestions;
+}
+
+/**
+ * Shared estimation regex pattern used for parsing and highlighting
+ */
+export const ESTIMATION_REGEX_PATTERN = `~(?:\\d+(?:h|hours?|hour))?(?:\\d+(?:m|mins?|minutes?|min))?`;
+
+/**
+ * Parse estimation string (e.g., ~30min, ~1h30m, ~2h) into seconds
+ */
+export function parseEstimationToSeconds(
+  estimationString: string,
+): number | null {
+  if (!estimationString || !estimationString.startsWith("~")) {
+    return null;
+  }
+
+  const timeStr = estimationString.slice(1); // Remove the ~ prefix
+
+  // Single flexible pattern that handles any mix of hour/minute formats:
+  // - Hours: h, hour, hours
+  // - Minutes: m, min, mins, minute, minutes
+  // - Combinations: 1h30m, 2hours45mins, 1hour30minutes, 1h30mins, etc.
+  const combinedPattern =
+    /^(?:(\d+)(h|hours?|hour))?(?:(\d+)(m|mins?|minutes?|min))?$/;
+  const match = timeStr.match(combinedPattern);
+
+  if (!match) {
+    return null;
+  }
+
+  const hoursStr = match[1];
+  const minutesStr = match[3];
+
+  // Must have at least hours or minutes
+  if (!hoursStr && !minutesStr) {
+    return null;
+  }
+
+  const hours = hoursStr ? parseInt(hoursStr, 10) : 0;
+  const minutes = minutesStr ? parseInt(minutesStr, 10) : 0;
+  const totalSeconds = hours * 3600 + minutes * 60;
+
+  return totalSeconds > 0 ? totalSeconds : null;
+}
+
+/**
  * Generate comprehensive highlighting patterns using parser's safe boundaries
  */
 interface DynamicPatternsConfig {
@@ -366,6 +441,13 @@ export function generateHighlightingPatterns(
     "gi",
   );
   patterns.push({ type: "duration", regex: durationRegex });
+
+  // Estimation patterns - match ~ followed by time estimates like ~30min, ~1h30m, ~1hour40mins, ~2hours
+  const estimationRegex = new RegExp(
+    `${WORD_BOUNDARY_START}(${ESTIMATION_REGEX_PATTERN})${WORD_BOUNDARY_END}`,
+    "gi",
+  );
+  patterns.push({ type: "estimation", regex: estimationRegex });
 
   // Recurring patterns - comprehensive patterns including dynamic ones
   const recurringCaptures = [

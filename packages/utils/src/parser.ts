@@ -9,6 +9,10 @@ import {
   startOfDay,
 } from "date-fns";
 import { CommonRRules, buildRRule, RRuleFrequency } from "@tasktrove/types";
+import {
+  parseEstimationToSeconds,
+  ESTIMATION_REGEX_PATTERN,
+} from "./shared-patterns";
 
 export interface ParsedTask {
   title: string;
@@ -19,6 +23,7 @@ export interface ParsedTask {
   time?: string;
   duration?: string;
   recurring?: string;
+  estimation?: number; // Time estimation in seconds
   originalText: string;
 }
 
@@ -1479,6 +1484,36 @@ export function parseEnhancedNaturalLanguage(
 
   // Remove all date matches from text (regardless of whether recurring pattern is present)
   for (const match of allDateMatches) {
+    cleanText = cleanText.replace(match[0], " ").trim();
+  }
+
+  // Extract estimation (~30min, ~1h30m, ~1hour40mins, ~2hours, etc.) - only if not disabled, take the last occurrence
+  const estimationRegex = new RegExp(
+    `${WORD_BOUNDARY_START}(${ESTIMATION_REGEX_PATTERN})${WORD_BOUNDARY_END}`,
+    "gi",
+  );
+  const estimationMatches = [...cleanText.matchAll(estimationRegex)];
+  const enabledEstimationMatches = estimationMatches.filter((match) => {
+    const checkValue = match[1];
+    if (!checkValue) return false;
+    return !disabledSections.has(checkValue.toLowerCase());
+  });
+
+  if (enabledEstimationMatches.length > 0) {
+    // Take the last match
+    const lastMatch =
+      enabledEstimationMatches[enabledEstimationMatches.length - 1];
+    if (lastMatch && lastMatch[1]) {
+      // Parse estimation string into seconds
+      const estimationSeconds = parseEstimationToSeconds(lastMatch[1]);
+      if (estimationSeconds !== null) {
+        parsed.estimation = estimationSeconds;
+      }
+    }
+  }
+
+  // Remove all estimation matches from text
+  for (const match of estimationMatches) {
     cleanText = cleanText.replace(match[0], " ").trim();
   }
 

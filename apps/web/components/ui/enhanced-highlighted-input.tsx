@@ -9,7 +9,16 @@ import { labelsAtom } from "@/lib/atoms/core/labels"
 import { visibleProjectsAtom } from "@/lib/atoms/core/projects"
 
 interface ParsedToken {
-  type: "project" | "label" | "time" | "date" | "priority" | "recurring" | "duration" | "text"
+  type:
+    | "project"
+    | "label"
+    | "time"
+    | "date"
+    | "priority"
+    | "recurring"
+    | "duration"
+    | "estimation"
+    | "text"
   value: string
   start: number
   end: number
@@ -19,13 +28,13 @@ interface AutocompleteItem {
   id: string
   label: string // Display text (name)
   icon: React.ReactNode
-  type: "project" | "label" | "date"
+  type: "project" | "label" | "date" | "estimation"
   value?: string
 }
 
 interface AutocompleteState {
   show: boolean
-  type: "project" | "label" | "date" | null
+  type: "project" | "label" | "date" | "estimation" | null
   query: string
   items: AutocompleteItem[]
   selectedIndex: number
@@ -46,6 +55,7 @@ interface EnhancedHighlightedInputProps {
     projects: AutocompleteItem[]
     labels: AutocompleteItem[]
     dates: AutocompleteItem[]
+    estimations: AutocompleteItem[]
   }
 }
 
@@ -91,6 +101,7 @@ const TOKEN_STYLES = {
   time: "bg-purple-500/20 text-purple-300 font-medium",
   recurring: "bg-blue-500/20 text-blue-300 font-medium",
   duration: "bg-orange-500/20 text-orange-300 font-medium",
+  estimation: "bg-cyan-500/20 text-cyan-300 font-medium",
   text: "",
 }
 
@@ -102,6 +113,7 @@ const DISABLED_TOKEN_STYLES = {
   time: "bg-gray-200 text-gray-600 line-through font-medium",
   recurring: "bg-gray-200 text-gray-600 line-through font-medium",
   duration: "bg-gray-200 text-gray-600 line-through font-medium",
+  estimation: "bg-gray-200 text-gray-600 line-through font-medium",
   text: "",
 }
 
@@ -120,7 +132,7 @@ export function EnhancedHighlightedInput({
   disabledSections = new Set(),
   onToggleSection,
   onAutocompleteSelect,
-  autocompleteItems = { projects: [], labels: [], dates: [] },
+  autocompleteItems = { projects: [], labels: [], dates: [], estimations: [] },
 }: EnhancedHighlightedInputProps) {
   const inputRef = useRef<HTMLDivElement>(null)
   const autocompleteRef = useRef<HTMLDivElement>(null)
@@ -269,6 +281,26 @@ export function EnhancedHighlightedInput({
         }
       }
 
+      // Estimation autocomplete (~)
+      if (lastChar === "~" || (lastWord.startsWith("~") && lastWord.length > 1)) {
+        const query = lastWord.slice(1)
+        const filteredEstimations = autocompleteItems.estimations.filter((e) =>
+          e.label.toLowerCase().includes(query.toLowerCase()),
+        )
+
+        if (filteredEstimations.length > 0) {
+          return {
+            show: true,
+            type: "estimation",
+            query,
+            items: filteredEstimations.slice(0, 8),
+            selectedIndex: 0,
+            position: { x: 0, y: 0 },
+            startPos: textBeforeCursor.lastIndexOf("~"),
+          }
+        }
+      }
+
       // Date autocomplete
       const dateKeywords = ["today", "tomorrow", "next", "every", "daily", "weekly", "monthly"]
       if (
@@ -332,7 +364,13 @@ export function EnhancedHighlightedInput({
       if (!inputRef.current) return
 
       const prefix =
-        autocomplete.type === "project" ? "#" : autocomplete.type === "label" ? "@" : ""
+        autocomplete.type === "project"
+          ? "#"
+          : autocomplete.type === "label"
+            ? "@"
+            : autocomplete.type === "estimation"
+              ? "~"
+              : ""
 
       // Use the actual label/name for insertion
       const insertText = item.label
@@ -510,8 +548,9 @@ export function EnhancedHighlightedInput({
 
       {/* Screen reader help text */}
       <div id="enhanced-quick-add-help" className="sr-only">
-        Type your task. Use # for projects, @ for labels, or type times like "5PM" or "today". Use
-        arrow keys to navigate autocomplete suggestions when they appear.
+        Type your task. Use # for projects, @ for labels, ~ for time estimates like "~30min",
+        "~2hours", or "~1hour30mins", or type times like "5PM" or "today". Use arrow keys to
+        navigate autocomplete suggestions when they appear.
       </div>
 
       {/* Highlighted overlay */}

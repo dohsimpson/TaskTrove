@@ -82,6 +82,20 @@ describe("EnhancedHighlightedInput", () => {
         type: "date" as const,
       },
     ],
+    estimations: [
+      {
+        id: "30min",
+        label: "30min",
+        icon: <div data-testid="estimation-icon" />,
+        type: "estimation" as const,
+      },
+      {
+        id: "1h",
+        label: "1h",
+        icon: <div data-testid="estimation-icon" />,
+        type: "estimation" as const,
+      },
+    ],
   }
 
   beforeEach(() => {

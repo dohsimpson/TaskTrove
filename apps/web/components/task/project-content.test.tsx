@@ -130,6 +130,13 @@ vi.mock("jotai", () => ({
     if (atom === "mockAllGroupsAtom") {
       return mockProjectGroups
     }
+    if (atom === "mockProjectIdsAtom") {
+      return new Set([
+        "550e8400-e29b-41d4-a716-446655440001",
+        "550e8400-e29b-41d4-a716-446655440002",
+        "550e8400-e29b-41d4-a716-446655440003",
+      ])
+    }
     return []
   }),
   atom: vi.fn((value) => ({ init: value, toString: () => "mockAtom" })),
@@ -140,6 +147,10 @@ vi.mock("jotai", () => ({
 vi.mock("@/lib/atoms", () => ({
   projectsAtom: "mockProjectsAtom",
   updateTaskAtom: "mockUpdateTaskAtom",
+}))
+
+vi.mock("@/lib/atoms/core/projects", () => ({
+  projectIdsAtom: "mockProjectIdsAtom",
 }))
 
 vi.mock("@/lib/atoms/core/groups", () => ({

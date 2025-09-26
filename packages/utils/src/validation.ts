@@ -8,14 +8,23 @@ import type {
 import { INBOX_PROJECT_ID } from "@tasktrove/types";
 
 /**
- * Check if a task is in the inbox (either no projectId or explicitly set to INBOX_PROJECT_ID)
+ * Check if a task should be displayed in the inbox (includes orphaned tasks)
  * @param projectId - The project ID to check (can be null/undefined)
- * @returns true if the task is considered to be in the inbox
+ * @param projectIds - Set of all valid project IDs
+ * @returns true if the task should be displayed in inbox
  */
-export function isTaskInInbox(
+export function shouldTaskBeInInbox(
   projectId: ProjectId | null | undefined,
+  projectIds: Set<ProjectId>,
 ): boolean {
-  return !projectId || projectId === INBOX_PROJECT_ID;
+  // Task should be in inbox if:
+  // 1. Explicitly in inbox (null projectId or INBOX_PROJECT_ID)
+  // 2. Has projectId but that project doesn't exist (orphaned task)
+  return (
+    !projectId ||
+    projectId === INBOX_PROJECT_ID ||
+    (projectId && !projectIds.has(projectId))
+  );
 }
 
 /**

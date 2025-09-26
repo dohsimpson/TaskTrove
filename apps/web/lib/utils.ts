@@ -5,7 +5,7 @@
 export {
   cn,
   getContrastColor,
-  isTaskInInbox,
+  shouldTaskBeInInbox,
   safeSetTimeout,
   MAX_SAFE_TIMEOUT_DELAY,
 } from "@tasktrove/utils"

@@ -245,6 +245,20 @@ export const allProjectsAtom = atom((get) => {
     return [];
   }
 });
+/**
+ * Set of all valid project IDs
+ * Used for efficient lookup when checking for orphaned tasks
+ */
+export const projectIdsAtom = atom((get) => {
+  try {
+    const projects = get(projectsAtom);
+    return new Set(projects.map((p: Project) => p.id));
+  } catch (error) {
+    handleAtomError(error, "projectIdsAtom");
+    return new Set<ProjectId>();
+  }
+});
+projectIdsAtom.debugLabel = "projectIdsAtom";
 allProjectsAtom.debugLabel = "allProjectsAtom";
 
 /**
@@ -719,6 +733,7 @@ export const projectAtoms = {
     allProjects: allProjectsAtom,
     inboxProject: inboxProjectAtom,
     projectById: projectByIdAtom,
+    projectIds: projectIdsAtom,
     projectTaskCounts: projectTaskCountsAtom,
     currentProject: currentProjectAtom,
   },

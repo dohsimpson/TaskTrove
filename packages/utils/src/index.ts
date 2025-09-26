@@ -37,7 +37,7 @@ export { getContrastColor } from "./color";
 export { safeSetTimeout, MAX_SAFE_TIMEOUT_DELAY } from "./time";
 export { formatTime, getEffectiveEstimation } from "./time-estimation";
 export {
-  isTaskInInbox,
+  shouldTaskBeInInbox,
   formatZodErrors,
   normalizeTaskUpdate,
 } from "./validation";

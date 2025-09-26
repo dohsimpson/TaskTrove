@@ -3,8 +3,9 @@
 import React, { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Folder, Inbox, ChevronRight, ChevronDown, FolderOpen, Folders } from "lucide-react"
-import { cn, isTaskInInbox } from "@/lib/utils"
+import { cn, shouldTaskBeInInbox } from "@/lib/utils"
 import { projectsAtom, updateTaskAtom } from "@/lib/atoms"
+import { projectIdsAtom } from "@/lib/atoms/core/projects"
 import { allGroupsAtom } from "@/lib/atoms/core/groups"
 import { useLanguage } from "@/components/providers/language-provider"
 import { useTranslation } from "@/lib/i18n/client"
@@ -53,8 +54,9 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
   const currentProject = allProjects.find((p) => p.id === currentProjectId)
   const currentSectionId = task?.sectionId
 
-  // Check if currently in inbox (either no projectId or INBOX_PROJECT_ID)
-  const isInboxSelected = isTaskInInbox(currentProjectId)
+  // Check if currently in inbox (includes orphaned tasks)
+  const projectIds = useAtomValue(projectIdsAtom)
+  const isInboxSelected = shouldTaskBeInInbox(currentProjectId, projectIds)
 
   const handleProjectSelect = (projectId: ProjectId, sectionId?: SectionId) => {
     if (onUpdate) {

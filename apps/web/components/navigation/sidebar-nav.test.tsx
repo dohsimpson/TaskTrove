@@ -98,6 +98,10 @@ vi.mock("jotai", async (importOriginal) => {
       if (atomStr.includes("editingLabel") || atom.debugLabel === "editingLabelIdAtom") {
         return null
       }
+      // Handle projectIdsAtom
+      if (atom.debugLabel === "projectIdsAtom") {
+        return new Set(["1", "2"])
+      }
       // Default case - return empty object for unknown atoms that might be task counts
       return {}
     }),
@@ -137,6 +141,7 @@ vi.mock("@/lib/atoms", () => ({
 vi.mock("@/lib/atoms/core/projects", () => ({
   visibleProjectsAtom: { debugLabel: "visibleProjectsAtom" },
   projectTaskCountsAtom: { debugLabel: "projectTaskCountsAtom" },
+  projectIdsAtom: { debugLabel: "projectIdsAtom" },
 }))
 
 // Mock DialogsAtom needed by the component

@@ -10,7 +10,11 @@ import { NextResponse } from "next/server"
 import { ErrorResponse } from "@/lib/types"
 
 // Re-export pure validation utilities from @tasktrove/utils package
-export { isTaskInInbox, formatZodErrors, normalizeTaskUpdate } from "@tasktrove/utils/validation"
+export {
+  shouldTaskBeInInbox,
+  formatZodErrors,
+  normalizeTaskUpdate,
+} from "@tasktrove/utils/validation"
 
 /**
  * Validation result type

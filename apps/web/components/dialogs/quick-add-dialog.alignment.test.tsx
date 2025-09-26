@@ -209,6 +209,7 @@ vi.mock("jotai", async (importOriginal) => {
       if (atom.toString().includes("sortedLabelsAtom")) return mockLabels
       if (atom.toString().includes("visibleProjectsAtom")) return mockProjects
       if (atom.toString().includes("currentRouteContextAtom")) return mockRouteContext
+      if (atom.toString().includes("projectIdsAtom")) return new Set(["1", "2"])
       const settingsResult = handleSettingsAtomInMock(atom)
       if (settingsResult) return settingsResult
       return []
@@ -240,6 +241,7 @@ vi.mock("@/lib/atoms/core/labels", () => ({
 vi.mock("@/lib/atoms/core/projects", () => ({
   projectsAtom: "mockProjectsAtom",
   visibleProjectsAtom: "mockVisibleProjectsAtom",
+  projectIdsAtom: "mockProjectIdsAtom",
   projectAtoms: {
     projects: "mockProjectsAtom",
     currentProjectId: "mockCurrentProjectIdAtom",
@@ -259,6 +261,7 @@ vi.mock("@/lib/atoms/core/projects", () => ({
       sortedProjects: "mockSortedProjectsAtom",
       projectCounts: "mockProjectCountsAtom",
       currentProject: "mockCurrentProjectAtom",
+      projectIds: "mockProjectIdsAtom",
     },
   },
 }))

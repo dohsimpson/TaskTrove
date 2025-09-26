@@ -16,7 +16,6 @@ import {
   ProjectSection,
   GroupId,
   INBOX_PROJECT_ID,
-  ensureTaskProjectId,
   createTaskId,
   createProjectId,
   createSectionId,
@@ -25,7 +24,7 @@ import {
   CreateTaskRequest,
 } from "@tasktrove/types";
 import { matchesDueDateFilter } from "../utils/atom-helpers";
-import { isTaskInInbox } from "@tasktrove/utils";
+import { shouldTaskBeInInbox } from "@tasktrove/utils";
 import {
   DEFAULT_TASK_PRIORITY,
   DEFAULT_TASK_TITLE,
@@ -211,6 +210,7 @@ import {
   projectsAtom,
 } from "./base";
 import { allGroupsAtom } from "./groups";
+import { projectIdsAtom } from "./projects";
 import { recordOperationAtom } from "./history";
 import { log } from "../utils/atom-helpers";
 
@@ -546,15 +546,16 @@ projectGroupTasksAtom.debugLabel = "projectGroupTasksAtom";
 
 /**
  * Inbox tasks - tasks with no project or assigned to the special inbox project
- * Uses isTaskInInbox utility for filtering
+ * Includes orphaned tasks (tasks with projectIds that reference non-existent projects)
  */
 export const inboxTasksAtom = atom((get) => {
   try {
     const activeTasks = get(activeTasksAtom);
-    return activeTasks.filter((task: Task) => {
-      const taskWithProject = ensureTaskProjectId(task);
-      return isTaskInInbox(taskWithProject.projectId);
-    });
+    const projectIds = get(projectIdsAtom);
+
+    return activeTasks.filter((task: Task) =>
+      shouldTaskBeInInbox(task.projectId, projectIds),
+    );
   } catch (error) {
     handleAtomError(error, "inboxTasksAtom");
     return [];

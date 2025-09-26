@@ -348,18 +348,6 @@ export const SEARCH_PROJECT_ID = createProjectId(
 );
 
 /**
- * Helper function to ensure a task has a projectId, defaulting to inbox if not specified
- */
-export function ensureTaskProjectId(
-  task: Task,
-): Task & { projectId: ProjectId } {
-  return {
-    ...task,
-    projectId: task.projectId || INBOX_PROJECT_ID,
-  };
-}
-
-/**
  * Date schema utility for parsing yyyy-MM-dd format dates
  */
 export const dateSchema = z.string().transform((str, ctx) => {

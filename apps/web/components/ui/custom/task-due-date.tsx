@@ -54,7 +54,7 @@ export function TaskDueDate({
       {scheduleIcons.secondaryIcon === "repeat" && (
         <Repeat className="h-3 w-3" data-testid="repeat-icon" />
       )}
-      {dueDate ? formatDueDate({ dueDate, dueTime }) : ""}
+      {dueDate || dueTime ? formatDueDate({ dueDate, dueTime }) : ""}
     </span>
   )
 }

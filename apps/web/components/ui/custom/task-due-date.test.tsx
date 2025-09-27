@@ -31,4 +31,22 @@ describe("TaskDueDate", () => {
     const alertTriangleIcon = container.querySelector('[data-testid="alert-triangle-icon"]')
     expect(alertTriangleIcon).not.toBeInTheDocument()
   })
+
+  it("should render time when only dueTime and recurring are set (daily with time)", () => {
+    const dueTime = new Date("2024-01-01T09:00:00") // 9:00 AM
+    const { container } = render(
+      <TaskDueDate dueTime={dueTime} recurring="daily" completed={false} />,
+    )
+
+    // Should render the component (not null)
+    const span = container.querySelector("span")
+    expect(span).toBeInTheDocument()
+
+    // Should display the time - "9AM" in the badge format
+    expect(container.textContent).toContain("9AM")
+
+    // Should show repeat icon for recurring
+    const repeatIcon = container.querySelector('[data-testid="repeat-icon"]')
+    expect(repeatIcon).toBeInTheDocument()
+  })
 })

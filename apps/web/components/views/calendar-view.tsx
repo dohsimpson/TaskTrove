@@ -37,7 +37,13 @@ import {
   selectedTaskAtom,
   updateQuickAddTaskAtom,
 } from "@/lib/atoms/ui/dialogs"
-import { currentViewStateAtom, taskActions } from "@/lib/atoms"
+import {
+  currentViewStateAtom,
+  taskActions,
+  sidePanelWidthAtom,
+  updateGlobalViewOptionsAtom,
+} from "@/lib/atoms"
+import { SIDE_PANEL_WIDTH_MIN, SIDE_PANEL_WIDTH_MAX } from "@tasktrove/constants"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
 import type { Task, Project } from "@/lib/types"
@@ -61,8 +67,9 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [alwaysShow6Rows] = useState(true) // TODO: Extract to view settings when needed
 
-  // Panel width state (remembers during session)
-  const [sidePanelWidth, setSidePanelWidth] = useState(25) // Default 25%
+  // Panel width state (global, persisted in localStorage)
+  const sidePanelWidth = useAtomValue(sidePanelWidthAtom)
+  const updateGlobalViewOptions = useSetAtom(updateGlobalViewOptionsAtom)
   const [bottomPanelHeight, setBottomPanelHeight] = useState(30) // Default 30%
 
   // Task update action
@@ -91,12 +98,15 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
   }, [selectedDate, project, addTaskToSection, updateQuickAddTask])
 
   // Panel resize handlers
-  const handleSidePanelResize = useCallback((sizes: number[]) => {
-    if (sizes.length >= 2 && sizes[1] !== undefined) {
-      const panelWidth = sizes[1] // Second panel is the side panel
-      setSidePanelWidth(panelWidth)
-    }
-  }, [])
+  const handleSidePanelResize = useCallback(
+    (sizes: number[]) => {
+      if (sizes.length >= 2 && sizes[1] !== undefined) {
+        const panelWidth = sizes[1] // Second panel is the side panel
+        updateGlobalViewOptions({ sidePanelWidth: panelWidth })
+      }
+    },
+    [updateGlobalViewOptions],
+  )
 
   const handleBottomPanelResize = useCallback((sizes: number[]) => {
     if (sizes.length >= 2 && sizes[1] !== undefined) {
@@ -548,7 +558,11 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
           className="flex-1 min-h-0"
           onLayout={handleSidePanelResize}
         >
-          <ResizablePanel defaultSize={100 - sidePanelWidth} minSize={50} maxSize={80}>
+          <ResizablePanel
+            defaultSize={100 - sidePanelWidth}
+            minSize={SIDE_PANEL_WIDTH_MIN}
+            maxSize={SIDE_PANEL_WIDTH_MAX}
+          >
             {/* Calendar and Bottom Panel with Vertical Resizable Layout */}
             <ResizablePanelGroup
               direction="vertical"
@@ -565,7 +579,11 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
             </ResizablePanelGroup>
           </ResizablePanel>
           <ResizableHandle withHandle={false} />
-          <ResizablePanel defaultSize={sidePanelWidth} minSize={20} maxSize={50}>
+          <ResizablePanel
+            defaultSize={sidePanelWidth}
+            minSize={SIDE_PANEL_WIDTH_MIN}
+            maxSize={SIDE_PANEL_WIDTH_MAX}
+          >
             <div className="h-full">
               <TaskSidePanel isOpen={isPanelOpen} onClose={closeTaskPanel} variant="resizable" />
             </div>

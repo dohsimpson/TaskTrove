@@ -3,9 +3,11 @@ import type {
   ProjectGroup,
   LabelGroup,
   ViewState,
+  GlobalViewOptions,
   GroupId,
   User,
 } from "./index";
+import { SIDE_PANEL_WIDTH_DEFAULT } from "@tasktrove/constants";
 import { createGroupId } from "./index";
 import {
   DEFAULT_UUID,
@@ -81,6 +83,13 @@ export const DEFAULT_VIEW_STATE: ViewState = {
   compactView: DEFAULT_COMPACT_VIEW,
   collapsedSections: [],
   activeFilters: DEFAULT_ACTIVE_FILTERS,
+};
+
+/**
+ * Default global view options
+ */
+export const DEFAULT_GLOBAL_VIEW_OPTIONS: GlobalViewOptions = {
+  sidePanelWidth: SIDE_PANEL_WIDTH_DEFAULT,
 };
 
 /**

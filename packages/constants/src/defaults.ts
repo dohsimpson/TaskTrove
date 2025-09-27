@@ -89,6 +89,11 @@ export const DEFAULT_ACTIVE_FILTERS = {
   labels: [],
 };
 
+/** Side panel width constraints (percentages) */
+export const SIDE_PANEL_WIDTH_MIN = 20;
+export const SIDE_PANEL_WIDTH_MAX = 80;
+export const SIDE_PANEL_WIDTH_DEFAULT = 25;
+
 // =============================================================================
 // AUDIO/SOUND DEFAULTS
 // =============================================================================

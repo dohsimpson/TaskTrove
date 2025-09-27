@@ -7,8 +7,12 @@ import {
   Task,
   ViewId,
   ViewStateSchema,
+  GlobalViewOptions,
 } from "@tasktrove/types";
-import { DEFAULT_VIEW_STATE } from "@tasktrove/types/defaults";
+import {
+  DEFAULT_VIEW_STATE,
+  DEFAULT_GLOBAL_VIEW_OPTIONS,
+} from "@tasktrove/types/defaults";
 import {
   DEFAULT_ACTIVE_FILTERS,
   STANDARD_VIEW_IDS,
@@ -216,6 +220,16 @@ export const viewStatesAtom = createAtomWithStorage<ViewStates>(
 viewStatesAtom.debugLabel = "viewStatesAtom";
 
 /**
+ * Global view options stored in localStorage
+ * UI preferences that apply across all views
+ */
+export const globalViewOptionsAtom = createAtomWithStorage<GlobalViewOptions>(
+  "global-view-options",
+  DEFAULT_GLOBAL_VIEW_OPTIONS,
+);
+globalViewOptionsAtom.debugLabel = "globalViewOptionsAtom";
+
+/**
  * Currently active view/route (today, inbox, ProjectId, etc.)
  * Tracks which view the user is currently viewing
  */
@@ -408,6 +422,19 @@ export const updateFiltersAtom = atom(
 );
 updateFiltersAtom.debugLabel = "updateFiltersAtom";
 
+/**
+ * Update global view options
+ * Usage: set(updateGlobalViewOptionsAtom, { sidePanelWidth: 30 })
+ */
+export const updateGlobalViewOptionsAtom = atom(
+  null,
+  (get, set, updates: Partial<GlobalViewOptions>) => {
+    const current = get(globalViewOptionsAtom);
+    set(globalViewOptionsAtom, { ...current, ...updates });
+  },
+);
+updateGlobalViewOptionsAtom.debugLabel = "updateGlobalViewOptionsAtom";
+
 // =============================================================================
 // DERIVED READ ATOMS
 // =============================================================================
@@ -580,6 +607,15 @@ export const activeFilterCountAtom = atom<number>((get) => {
 });
 activeFilterCountAtom.debugLabel = "activeFilterCountAtom";
 
+/**
+ * Side panel width as percentage (20-80%, default 25%)
+ * Used for ResizablePanel components across views
+ */
+export const sidePanelWidthAtom = atom<number>((get) => {
+  return get(globalViewOptionsAtom).sidePanelWidth;
+});
+sidePanelWidthAtom.debugLabel = "sidePanelWidthAtom";
+
 // =============================================================================
 // UTILITY ATOMS
 // =============================================================================
@@ -676,10 +712,12 @@ export const viewAtoms = {
   viewStates: viewStatesAtom,
   currentView: currentViewAtom,
   currentViewState: currentViewStateAtom,
+  globalViewOptions: globalViewOptionsAtom,
 
   // Actions
   updateViewState: updateViewStateAtom,
   setViewOptions: setViewOptionsAtom,
+  updateGlobalViewOptions: updateGlobalViewOptionsAtom,
   // Deprecated - use setViewOptions instead
   setViewMode: setViewModeAtom,
   setSorting: setSortingAtom,
@@ -705,6 +743,7 @@ export const viewAtoms = {
   showOverdue: showOverdueAtom,
   compactView: compactViewAtom,
   collapsedSections: collapsedSectionsAtom,
+  sidePanelWidth: sidePanelWidthAtom,
   // Filter state
   activeFilters: activeFiltersAtom,
   hasActiveFilters: hasActiveFiltersAtom,

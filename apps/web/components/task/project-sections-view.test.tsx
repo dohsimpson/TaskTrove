@@ -214,6 +214,8 @@ vi.mock("@/lib/atoms", () => ({
   collapsedSectionsAtom: "mockCollapsedSectionsAtom",
   toggleSectionCollapseAtom: "mockToggleSectionCollapseAtom",
   labelsAtom: "mockLabelsAtom",
+  sidePanelWidthAtom: "mockSidePanelWidthAtom",
+  updateGlobalViewOptionsAtom: "mockUpdateGlobalViewOptionsAtom",
 }))
 
 vi.mock("@/lib/atoms/ui/navigation", () => ({
@@ -623,6 +625,7 @@ describe("ProjectSectionsView", () => {
       if (atom === "mockCloseTaskPanelAtom") return vi.fn()
       if (atom === "mockReorderTaskInViewAtom") return vi.fn()
       if (atom === "mockMoveTaskBetweenSectionsAtom") return vi.fn()
+      if (atom === "mockUpdateGlobalViewOptionsAtom") return vi.fn()
       return vi.fn()
     })
     mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
@@ -646,6 +649,7 @@ describe("ProjectSectionsView", () => {
       if (atom === "mockCollapsedSectionsAtom") return []
       if (atom === "mockShowTaskPanelAtom") return false
       if (atom === "mockSelectedTaskAtom") return null
+      if (atom === "mockSidePanelWidthAtom") return 25
       if (atom === "mockOrderedTasksByProjectAtom") {
         // Return a Map that mimics the orderedTasksByProjectAtom structure
         const orderedTasksMap = new Map()
@@ -734,6 +738,7 @@ describe("ProjectSectionsView", () => {
         }
       if (atom === "mockCollapsedSectionsAtom") return []
       if (atom === "mockSelectedTaskAtom") return mockTasks[0] // Task is selected
+      if (atom === "mockSidePanelWidthAtom") return 25
       if (atom === "mockOrderedTasksByProjectAtom") {
         const orderedTasksMap = new Map()
         orderedTasksMap.set(
@@ -805,6 +810,7 @@ describe("ProjectSectionsView", () => {
         }
       if (atom === "mockCollapsedSectionsAtom") return []
       if (atom === "mockSelectedTaskAtom") return mockTasks[0]
+      if (atom === "mockSidePanelWidthAtom") return 25
       if (atom === "mockOrderedTasksByProjectAtom") {
         const orderedTasksMap = new Map()
         orderedTasksMap.set(

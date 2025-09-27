@@ -597,6 +597,18 @@ export const ViewStatesSchema = z.record(z.string(), ViewStateSchema);
 export type ViewStates = z.infer<typeof ViewStatesSchema>;
 
 /**
+ * Global view options schema - UI preferences that apply across all views
+ */
+export const GlobalViewOptionsSchema = z.object({
+  sidePanelWidth: z.number().min(20).max(80),
+});
+
+/**
+ * Inferred type for global view options
+ */
+export type GlobalViewOptions = z.infer<typeof GlobalViewOptionsSchema>;
+
+/**
  * RRULE utility types and functions
  */
 export const RRuleFrequency = {

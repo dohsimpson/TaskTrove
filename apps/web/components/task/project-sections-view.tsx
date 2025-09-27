@@ -33,7 +33,10 @@ import {
   collapsedSectionsAtom,
   toggleSectionCollapseAtom,
   labelsAtom,
+  sidePanelWidthAtom,
+  updateGlobalViewOptionsAtom,
 } from "@/lib/atoms"
+import { SIDE_PANEL_WIDTH_MIN, SIDE_PANEL_WIDTH_MAX } from "@tasktrove/constants"
 import {
   currentRouteContextAtom,
   editingSectionIdAtom,
@@ -144,14 +147,15 @@ export function ProjectSectionsView({
   const [newSectionColor, setNewSectionColor] = useState("#3b82f6")
   const [editingSectionColor, setEditingSectionColor] = useState("")
 
-  // Panel width state (remembers during session)
-  const [sidePanelWidth, setSidePanelWidth] = useState(25) // Default 25%
+  // Panel width state (global, persisted in localStorage)
+  const sidePanelWidth = useAtomValue(sidePanelWidthAtom)
+  const updateGlobalViewOptions = useSetAtom(updateGlobalViewOptionsAtom)
 
   // Update panel width when resized
   const handlePanelResize = (sizes: number[]) => {
     if (sizes.length >= 2 && sizes[1] !== undefined) {
       const panelWidth = sizes[1] // Second panel is the side panel
-      setSidePanelWidth(panelWidth)
+      updateGlobalViewOptions({ sidePanelWidth: panelWidth })
     }
   }
 
@@ -1051,7 +1055,11 @@ export function ProjectSectionsView({
           onLayout={handlePanelResize}
         >
           {/* Main Content Panel */}
-          <ResizablePanel defaultSize={100 - sidePanelWidth} minSize={50} maxSize={80}>
+          <ResizablePanel
+            defaultSize={100 - sidePanelWidth}
+            minSize={SIDE_PANEL_WIDTH_MIN}
+            maxSize={SIDE_PANEL_WIDTH_MAX}
+          >
             <div className="h-full overflow-auto">{renderContent()}</div>
           </ResizablePanel>
 
@@ -1059,7 +1067,11 @@ export function ProjectSectionsView({
           <ResizableHandle withHandle={false} />
 
           {/* Side Panel */}
-          <ResizablePanel defaultSize={sidePanelWidth} minSize={20} maxSize={50}>
+          <ResizablePanel
+            defaultSize={sidePanelWidth}
+            minSize={SIDE_PANEL_WIDTH_MIN}
+            maxSize={SIDE_PANEL_WIDTH_MAX}
+          >
             <div className="h-full">
               <TaskSidePanel isOpen={isPanelOpen} onClose={handleClosePanel} variant="resizable" />
             </div>

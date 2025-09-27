@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
 import { useLanguage } from "@/components/providers/language-provider"
 import { useTranslation } from "@/lib/i18n/client"
@@ -44,8 +45,7 @@ import { TaskIdSchema } from "@/lib/types"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 import { log } from "@/lib/utils/logger"
 
-// Constants
-const SIDE_PANEL_WIDTH = 320 // 320px = w-80 in Tailwind
+// No longer needed - using ResizablePanel components for layout
 
 interface CalendarViewProps {
   tasks: Task[]
@@ -60,6 +60,10 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [alwaysShow6Rows] = useState(true) // TODO: Extract to view settings when needed
+
+  // Panel width state (remembers during session)
+  const [sidePanelWidth, setSidePanelWidth] = useState(25) // Default 25%
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(30) // Default 30%
 
   // Task update action
   const updateTask = useSetAtom(taskActions.updateTask)
@@ -85,6 +89,21 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
       },
     })
   }, [selectedDate, project, addTaskToSection, updateQuickAddTask])
+
+  // Panel resize handlers
+  const handleSidePanelResize = useCallback((sizes: number[]) => {
+    if (sizes.length >= 2 && sizes[1] !== undefined) {
+      const panelWidth = sizes[1] // Second panel is the side panel
+      setSidePanelWidth(panelWidth)
+    }
+  }, [])
+
+  const handleBottomPanelResize = useCallback((sizes: number[]) => {
+    if (sizes.length >= 2 && sizes[1] !== undefined) {
+      const panelHeight = sizes[1] // Second panel is the bottom panel
+      setBottomPanelHeight(panelHeight)
+    }
+  }, [])
 
   // Handle task drops on calendar days
   const handleCalendarDrop = useCallback(
@@ -244,290 +263,330 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
     setCurrentDate(new Date(year, currentDate.getMonth(), 1))
   }
 
-  return (
-    <div className="flex flex-col h-full min-h-0 relative bg-background">
-      {/* Selection Toolbar */}
-      <SelectionToolbar />
+  // Render main calendar content
+  const renderCalendarContent = () => (
+    <div className="h-full flex flex-col px-2">
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Calendar Header */}
+        <div className="flex items-center justify-between px-3 pt-4">
+          {/* Current Month/Year with Dropdowns */}
+          <div className="flex items-center gap-2">
+            <Select value={currentDate.getMonth().toString()} onValueChange={handleMonthChange}>
+              <SelectTrigger className="w-auto h-auto border border-input bg-background px-3 py-2 text-lg lg:text-xl font-semibold hover:bg-accent/50 focus:ring-2 focus:ring-ring rounded-md">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map((month) => (
+                  <SelectItem key={month.value} value={month.value}>
+                    {month.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-      {/* Main Calendar Container */}
-      <div
-        className="flex-1 flex flex-col min-h-0 transition-all duration-300 px-2"
-        style={{
-          marginRight: shouldApplyMargin ? `${SIDE_PANEL_WIDTH}px` : "0px",
-        }}
-      >
-        <div className="flex-1 flex flex-col min-h-0">
-          {/* Calendar Header */}
-          <div className="flex items-center justify-between px-3 pt-4">
-            {/* Current Month/Year with Dropdowns */}
-            <div className="flex items-center gap-2">
-              <Select value={currentDate.getMonth().toString()} onValueChange={handleMonthChange}>
-                <SelectTrigger className="w-auto h-auto border border-input bg-background px-3 py-2 text-lg lg:text-xl font-semibold hover:bg-accent/50 focus:ring-2 focus:ring-ring rounded-md">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {months.map((month) => (
-                    <SelectItem key={month.value} value={month.value}>
-                      {month.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={currentDate.getFullYear().toString()} onValueChange={handleYearChange}>
-                <SelectTrigger className="w-auto h-auto border border-input bg-background px-3 py-2 text-lg lg:text-xl font-semibold hover:bg-accent/50 focus:ring-2 focus:ring-ring rounded-md">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year.value} value={year.value}>
-                      {year.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Navigation Controls */}
-            <div className="flex items-center gap-1 lg:gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 lg:w-10"
-                onClick={() =>
-                  setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))
-                }
-              >
-                <ChevronLeft className="h-3 w-3 lg:h-4 lg:w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs lg:text-sm"
-                onClick={() => setCurrentDate(new Date())}
-              >
-                Today
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 lg:w-10"
-                onClick={() =>
-                  setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))
-                }
-              >
-                <ChevronRight className="h-3 w-3 lg:h-4 lg:w-4" />
-              </Button>
-            </div>
+            <Select value={currentDate.getFullYear().toString()} onValueChange={handleYearChange}>
+              <SelectTrigger className="w-auto h-auto border border-input bg-background px-3 py-2 text-lg lg:text-xl font-semibold hover:bg-accent/50 focus:ring-2 focus:ring-ring rounded-md">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((year) => (
+                  <SelectItem key={year.value} value={year.value}>
+                    {year.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Calendar Grid */}
-          <div className="flex-1 flex flex-col px-3 py-2 min-h-0">
-            {/* Day Headers */}
-            <div className="grid grid-cols-7 gap-0.5 lg:gap-1 mb-2 flex-shrink-0">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                <div
-                  key={day}
-                  className="p-1 lg:p-2 text-center text-xs lg:text-sm font-medium text-muted-foreground"
+          {/* Navigation Controls */}
+          <div className="flex items-center gap-1 lg:gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 lg:w-10"
+              onClick={() =>
+                setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))
+              }
+            >
+              <ChevronLeft className="h-3 w-3 lg:h-4 lg:w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs lg:text-sm"
+              onClick={() => setCurrentDate(new Date())}
+            >
+              Today
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 lg:w-10"
+              onClick={() =>
+                setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))
+              }
+            >
+              <ChevronRight className="h-3 w-3 lg:h-4 lg:w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Calendar Grid */}
+        <div className="flex-1 flex flex-col px-3 py-2 min-h-0 overflow-auto">
+          {/* Day Headers */}
+          <div className="grid grid-cols-7 gap-0.5 lg:gap-1 mb-2 flex-shrink-0">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+              <div
+                key={day}
+                className="p-1 lg:p-2 text-center text-xs lg:text-sm font-medium text-muted-foreground"
+              >
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Calendar Days */}
+          <div className="grid grid-cols-7 gap-0.5 lg:gap-1 flex-1 min-h-0">
+            {calendarDays.map((day) => {
+              const dayTasks = getTasksForDate(day)
+              const isSelected = selectedDate ? isSameDay(day, selectedDate) : false
+              const isTodayDate = isToday(day)
+              const isCurrentMonth = isSameMonth(day, currentDate)
+              const dayId = format(day, "yyyy-MM-dd")
+
+              return (
+                <DropTargetWrapper
+                  key={day.toISOString()}
+                  dropTargetId={`calendar-day-${dayId}`}
+                  dropClassName="ring-2 ring-primary/50 bg-primary/10"
+                  onDrop={({ source, location }) => {
+                    handleCalendarDrop({ source, location })
+                  }}
+                  canDrop={({ source }) => source.data.type === "draggable-item"}
+                  getData={() => ({
+                    type: "calendar-day",
+                    date: dayId,
+                  })}
                 >
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            {/* Calendar Days */}
-            <div className="grid grid-cols-7 gap-0.5 lg:gap-1 flex-1 min-h-0">
-              {calendarDays.map((day) => {
-                const dayTasks = getTasksForDate(day)
-                const isSelected = selectedDate ? isSameDay(day, selectedDate) : false
-                const isTodayDate = isToday(day)
-                const isCurrentMonth = isSameMonth(day, currentDate)
-                const dayId = format(day, "yyyy-MM-dd")
-
-                return (
-                  <DropTargetWrapper
-                    key={day.toISOString()}
-                    dropTargetId={`calendar-day-${dayId}`}
-                    dropClassName="ring-2 ring-primary/50 bg-primary/10"
-                    onDrop={({ source, location }) => {
-                      handleCalendarDrop({ source, location })
+                  <div
+                    className={`min-h-16 lg:min-h-24 h-full p-0.5 lg:p-1 border border-border cursor-pointer hover:bg-muted/50 transition-colors ${
+                      isSelected ? "ring-2 ring-foreground" : ""
+                    } ${isTodayDate ? "bg-muted" : ""} ${!isCurrentMonth ? "opacity-40" : ""}`}
+                    onClick={() => {
+                      setSelectedDate(day)
+                      onDateClick(day)
                     }}
-                    canDrop={({ source }) => source.data.type === "draggable-item"}
-                    getData={() => ({
-                      type: "calendar-day",
-                      date: dayId,
-                    })}
                   >
                     <div
-                      className={`min-h-16 lg:min-h-24 h-full p-0.5 lg:p-1 border border-border cursor-pointer hover:bg-muted/50 transition-colors ${
-                        isSelected ? "ring-2 ring-foreground" : ""
-                      } ${isTodayDate ? "bg-muted" : ""} ${!isCurrentMonth ? "opacity-40" : ""}`}
-                      onClick={() => {
-                        setSelectedDate(day)
-                        onDateClick(day)
-                      }}
+                      className={`text-xs lg:text-sm font-medium mb-0.5 lg:mb-1 ${
+                        isTodayDate
+                          ? "text-primary"
+                          : isCurrentMonth
+                            ? "text-foreground"
+                            : "text-muted-foreground"
+                      }`}
                     >
-                      <div
-                        className={`text-xs lg:text-sm font-medium mb-0.5 lg:mb-1 ${
-                          isTodayDate
-                            ? "text-primary"
-                            : isCurrentMonth
-                              ? "text-foreground"
-                              : "text-muted-foreground"
-                        }`}
-                      >
-                        {format(day, "d")}
-                      </div>
-                      <div className="space-y-0.5 lg:space-y-1 overflow-hidden">
-                        {isCurrentMonth &&
-                          dayTasks.slice(0, 3).map((task, index) => (
-                            <DraggableWrapper
-                              key={task.id}
-                              dragId={task.id}
-                              index={index}
-                              getData={() => ({
-                                type: "draggable-item",
-                                dragId: task.id,
-                                taskId: task.id,
-                                fromCalendarDay: dayId,
-                              })}
-                            >
-                              <TaskItem
-                                taskId={task.id}
-                                variant="calendar"
-                                showProjectBadge={false}
-                              />
-                            </DraggableWrapper>
-                          ))}
-                        {isCurrentMonth && dayTasks.length > 3 && (
-                          <div className="text-xs text-muted-foreground text-center">
-                            +{dayTasks.length - 3}
-                          </div>
-                        )}
-                      </div>
+                      {format(day, "d")}
                     </div>
-                  </DropTargetWrapper>
-                )
-              })}
-            </div>
+                    <div className="space-y-0.5 lg:space-y-1 overflow-hidden">
+                      {isCurrentMonth &&
+                        dayTasks.slice(0, 3).map((task, index) => (
+                          <DraggableWrapper
+                            key={task.id}
+                            dragId={task.id}
+                            index={index}
+                            getData={() => ({
+                              type: "draggable-item",
+                              dragId: task.id,
+                              taskId: task.id,
+                              fromCalendarDay: dayId,
+                            })}
+                          >
+                            <TaskItem
+                              taskId={task.id}
+                              variant="calendar"
+                              showProjectBadge={false}
+                            />
+                          </DraggableWrapper>
+                        ))}
+                      {isCurrentMonth && dayTasks.length > 3 && (
+                        <div className="text-xs text-muted-foreground text-center">
+                          +{dayTasks.length - 3}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </DropTargetWrapper>
+              )
+            })}
           </div>
         </div>
       </div>
+    </div>
+  )
 
-      {/* Bottom Navigation Panel */}
-      <div
-        className="flex-shrink-0 border-t border-border bg-card transition-all duration-300"
-        style={{
-          marginRight: shouldApplyMargin ? `${SIDE_PANEL_WIDTH}px` : "0px",
-        }}
-      >
-        {/* Selected Date Tasks */}
-        {selectedDate && (
-          <div className="border-b border-border">
-            <div className="p-3">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-semibold">{format(selectedDate, "EEEE, MMMM d")}</h2>
-                <Button size="sm" onClick={handleAddTask}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  {t("actions.addTask", "Add task")}
-                </Button>
-              </div>
-              <DropTargetWrapper
-                dropTargetId={droppableId}
-                dropClassName="ring-2 ring-primary/50 bg-primary/5"
-                onDrop={({ source }) => {
-                  if (source.data.type === "draggable-item") {
-                    // Transform to calendar-day drop for selected date
-                    const calendarDayDrop = {
-                      source,
-                      location: {
-                        current: {
-                          dropTargets: [
-                            {
-                              data: {
-                                type: "calendar-day",
-                                date: format(selectedDate, "yyyy-MM-dd"),
-                              },
+  // Render bottom panel content
+  const renderBottomPanel = () => (
+    <div className="h-full border-t border-border bg-card overflow-auto">
+      {/* Selected Date Tasks */}
+      {selectedDate && (
+        <div className="border-b border-border">
+          <div className="p-3">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold">{format(selectedDate, "EEEE, MMMM d")}</h2>
+              <Button size="sm" onClick={handleAddTask}>
+                <Plus className="h-4 w-4 mr-1" />
+                {t("actions.addTask", "Add task")}
+              </Button>
+            </div>
+            <DropTargetWrapper
+              dropTargetId={droppableId}
+              dropClassName="ring-2 ring-primary/50 bg-primary/5"
+              onDrop={({ source }) => {
+                if (source.data.type === "draggable-item") {
+                  // Transform to calendar-day drop for selected date
+                  const calendarDayDrop = {
+                    source,
+                    location: {
+                      current: {
+                        dropTargets: [
+                          {
+                            data: {
+                              type: "calendar-day",
+                              date: format(selectedDate, "yyyy-MM-dd"),
                             },
-                          ],
-                        },
+                          },
+                        ],
                       },
-                    }
-                    handleCalendarDrop(calendarDayDrop)
+                    },
                   }
-                }}
-                getData={() => ({
-                  type: "task-list",
-                  sidebarContext: "calendar-bottom",
-                })}
-                className="space-y-2 min-h-[120px]"
-              >
-                {/* Tasks scheduled for selected date */}
-                {getSelectedDateTasks().length > 0 ? (
-                  getSelectedDateTasks().map((task, index) => (
+                  handleCalendarDrop(calendarDayDrop)
+                }
+              }}
+              getData={() => ({
+                type: "task-list",
+                sidebarContext: "calendar-bottom",
+              })}
+              className="space-y-2 min-h-[120px]"
+            >
+              {/* Tasks scheduled for selected date */}
+              {getSelectedDateTasks().length > 0 ? (
+                getSelectedDateTasks().map((task, index) => (
+                  <DraggableWrapper
+                    key={task.id}
+                    dragId={task.id}
+                    index={index}
+                    getData={() => ({
+                      type: "draggable-item",
+                      dragId: task.id,
+                      taskId: task.id,
+                      fromBottom: true,
+                    })}
+                  >
+                    <TaskItem
+                      taskId={task.id}
+                      variant={compactView ? "compact" : "default"}
+                      showProjectBadge={false}
+                    />
+                  </DraggableWrapper>
+                ))
+              ) : (
+                <div className="flex items-center justify-center text-muted-foreground text-sm py-2">
+                  No tasks scheduled for this date
+                </div>
+              )}
+
+              {/* Separator and unscheduled tasks */}
+              {getUnscheduledTasks().length > 0 && (
+                <>
+                  <div className="flex items-center gap-2 py-2">
+                    <div className="flex-1 h-px bg-border" />
+                    <span className="text-xs text-muted-foreground font-medium px-2">
+                      Unscheduled
+                    </span>
+                    <div className="flex-1 h-px bg-border" />
+                  </div>
+                  {getUnscheduledTasks().map((task, index) => (
                     <DraggableWrapper
                       key={task.id}
                       dragId={task.id}
-                      index={index}
+                      index={getSelectedDateTasks().length + index}
                       getData={() => ({
                         type: "draggable-item",
                         dragId: task.id,
                         taskId: task.id,
-                        fromBottom: true,
+                        fromUnscheduled: true,
                       })}
                     >
                       <TaskItem
                         taskId={task.id}
                         variant={compactView ? "compact" : "default"}
-                        showProjectBadge={false}
+                        showProjectBadge={true}
                       />
                     </DraggableWrapper>
-                  ))
-                ) : (
-                  <div className="flex items-center justify-center text-muted-foreground text-sm py-2">
-                    No tasks scheduled for this date
-                  </div>
-                )}
-
-                {/* Separator and unscheduled tasks */}
-                {getUnscheduledTasks().length > 0 && (
-                  <>
-                    <div className="flex items-center gap-2 py-2">
-                      <div className="flex-1 h-px bg-border" />
-                      <span className="text-xs text-muted-foreground font-medium px-2">
-                        Unscheduled
-                      </span>
-                      <div className="flex-1 h-px bg-border" />
-                    </div>
-                    {getUnscheduledTasks().map((task, index) => (
-                      <DraggableWrapper
-                        key={task.id}
-                        dragId={task.id}
-                        index={getSelectedDateTasks().length + index}
-                        getData={() => ({
-                          type: "draggable-item",
-                          dragId: task.id,
-                          taskId: task.id,
-                          fromUnscheduled: true,
-                        })}
-                      >
-                        <TaskItem
-                          taskId={task.id}
-                          variant={compactView ? "compact" : "default"}
-                          showProjectBadge={true}
-                        />
-                      </DraggableWrapper>
-                    ))}
-                  </>
-                )}
-              </DropTargetWrapper>
-            </div>
+                  ))}
+                </>
+              )}
+            </DropTargetWrapper>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+    </div>
+  )
 
-      {/* Task Side Panel */}
-      <TaskSidePanel isOpen={isPanelOpen} onClose={closeTaskPanel} />
+  return (
+    <div className="flex flex-col h-full min-h-0 relative bg-background">
+      {/* Selection Toolbar */}
+      <SelectionToolbar />
+
+      {/* Main Content with Resizable Side Panel */}
+      {isPanelOpen && !isMobile ? (
+        <ResizablePanelGroup
+          direction="horizontal"
+          className="flex-1 h-full"
+          onLayout={handleSidePanelResize}
+        >
+          <ResizablePanel defaultSize={100 - sidePanelWidth} minSize={50} maxSize={80}>
+            {/* Calendar and Bottom Panel with Vertical Resizable Layout */}
+            <ResizablePanelGroup
+              direction="vertical"
+              className="h-full"
+              onLayout={handleBottomPanelResize}
+            >
+              <ResizablePanel defaultSize={100 - bottomPanelHeight} minSize={40} maxSize={80}>
+                {renderCalendarContent()}
+              </ResizablePanel>
+              <ResizableHandle withHandle={false} />
+              <ResizablePanel defaultSize={bottomPanelHeight} minSize={20} maxSize={60}>
+                {renderBottomPanel()}
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          </ResizablePanel>
+          <ResizableHandle withHandle={false} />
+          <ResizablePanel defaultSize={sidePanelWidth} minSize={20} maxSize={50}>
+            <TaskSidePanel isOpen={isPanelOpen} onClose={closeTaskPanel} variant="resizable" />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      ) : (
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Calendar and Bottom Panel with Vertical Resizable Layout */}
+          <ResizablePanelGroup
+            direction="vertical"
+            className="flex-1 h-full"
+            onLayout={handleBottomPanelResize}
+          >
+            <ResizablePanel defaultSize={100 - bottomPanelHeight} minSize={40} maxSize={80}>
+              {renderCalendarContent()}
+            </ResizablePanel>
+            <ResizableHandle withHandle={false} />
+            <ResizablePanel defaultSize={bottomPanelHeight} minSize={20} maxSize={60}>
+              {renderBottomPanel()}
+            </ResizablePanel>
+          </ResizablePanelGroup>
+          {/* Task Side Panel (overlay for mobile or when not resizable) */}
+          <TaskSidePanel isOpen={isPanelOpen} onClose={closeTaskPanel} />
+        </div>
+      )}
     </div>
   )
 }

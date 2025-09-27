@@ -6,6 +6,7 @@ import { useLanguage } from "@/components/providers/language-provider"
 import { useTranslation } from "@/lib/i18n/client"
 import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
 import {
   extractClosestEdge,
   attachClosestEdge,
@@ -61,8 +62,7 @@ import { log } from "@/lib/utils/logger"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 
-// Constants
-const SIDE_PANEL_WIDTH = 320 // 320px = w-80 in Tailwind
+// Constants - removed SIDE_PANEL_WIDTH since it's now handled by ResizablePanel
 
 interface ProjectSectionsViewProps {
   /** Unique identifier for drag-and-drop operations */
@@ -143,6 +143,17 @@ export function ProjectSectionsView({
   const [newSectionName, setNewSectionName] = useState("")
   const [newSectionColor, setNewSectionColor] = useState("#3b82f6")
   const [editingSectionColor, setEditingSectionColor] = useState("")
+
+  // Panel width state (remembers during session)
+  const [sidePanelWidth, setSidePanelWidth] = useState(25) // Default 25%
+
+  // Update panel width when resized
+  const handlePanelResize = (sizes: number[]) => {
+    if (sizes.length >= 2 && sizes[1] !== undefined) {
+      const panelWidth = sizes[1] // Second panel is the side panel
+      setSidePanelWidth(panelWidth)
+    }
+  }
 
   // Track drag state for shadow rendering per section
   const [sectionDragStates, setSectionDragStates] = useState<
@@ -423,9 +434,6 @@ export function ProjectSectionsView({
 
   // Side panel view state is the single source of truth for panel visibility
   const isPanelOpen = showSidePanel && Boolean(selectedTask)
-
-  // Calculate whether to apply margin (only on desktop where panel is positioned)
-  const shouldApplyMargin = isPanelOpen && !isMobile
 
   // handleTaskClick is now handled directly by TaskItem using atoms
 
@@ -783,261 +791,287 @@ export function ProjectSectionsView({
     )
   }
 
-  // When supportsSections is false, always render as a flat list
-  if (!supportsSections) {
-    return (
-      <div className="flex flex-1 relative">
-        {/* Flat Task List */}
-        <div
-          className="flex-1 transition-all duration-300"
-          style={{
-            marginRight: shouldApplyMargin ? `${SIDE_PANEL_WIDTH}px` : "0px",
-          }}
-        >
-          <div className="px-4 py-3">
-            {/* Filter Controls, Search Input and Add Task Button - Full Width */}
-            <ProjectViewToolbar className="mb-3" />
-
-            {/* Centered Task Content */}
-            <div className="flex justify-center">
-              <div className="w-full max-w-screen-2xl">
-                {/* Flat Task List without sections */}
-                <div className="space-y-0">
-                  <DropTargetWrapper
-                    dropTargetId={droppableId}
-                    onDrop={handleTaskDrop}
-                    getData={() => ({
-                      type: "task-list",
-                      projectId: project?.id,
-                    })}
-                  >
-                    <div>
-                      {tasks.map((task: Task, taskIndex: number) => (
-                        <DropTargetWrapper
-                          key={task.id}
-                          dropTargetId={`task-${task.id}`}
-                          onDrop={(data) => {
-                            handleTaskDrop(data)
-                            // Clean up drag state on drop
-                            setSectionDragStates(new Map())
-                          }}
-                          getData={(args?: { input?: DragInputType; element?: HTMLElement }) => {
-                            const baseData = {
-                              type: "task-drop-target",
-                              dropTargetId: `task-${task.id}`,
-                              taskId: task.id,
-                              sectionId: DEFAULT_UUID,
-                            }
-
-                            // Only use attachClosestEdge if we have proper input and element
-                            if (args && args.input && args.element) {
-                              return attachClosestEdge(baseData, {
-                                element: args.element,
-                                input: args.input,
-                                allowedEdges: ["top", "bottom"],
-                              })
-                            }
-
-                            return baseData
-                          }}
-                        >
-                          <DraggableWrapper
-                            dragId={task.id}
-                            index={taskIndex}
-                            getData={() => ({
-                              type: "task",
-                              taskId: task.id,
-                              projectId: task.projectId,
-                            })}
-                          >
-                            <TaskItem
-                              taskId={task.id}
-                              variant={compactView ? "compact" : "default"}
-                              className="cursor-pointer mb-2"
-                              showProjectBadge={true}
-                            />
-                          </DraggableWrapper>
-                        </DropTargetWrapper>
-                      ))}
-                      {tasks.length === 0 && (
-                        <ViewEmptyState
-                          viewId={routeContext.viewId}
-                          projectName={project?.name}
-                          labelName={label?.name}
-                          action={{
-                            label: t("actions.addTask", "Add Task"),
-                            onClick: () => openQuickAddAction(),
-                          }}
-                        />
-                      )}
-                    </div>
-                  </DropTargetWrapper>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Task Side Panel */}
-        <TaskSidePanel isOpen={isPanelOpen} onClose={handleClosePanel} />
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex flex-1 relative h-full">
-      {/* Sections List */}
-      <div
-        className="flex-1 transition-all duration-300"
-        style={{
-          marginRight: shouldApplyMargin ? `${SIDE_PANEL_WIDTH}px` : "0px",
-        }}
-      >
+  // Render content component for both sectioned and non-sectioned views
+  const renderContent = () => {
+    // When supportsSections is false, always render as a flat list
+    if (!supportsSections) {
+      return (
         <div className="px-4 py-3">
-          {/* Selection Toolbar - Full Width */}
-          <SelectionToolbar />
-
           {/* Filter Controls, Search Input and Add Task Button - Full Width */}
           <ProjectViewToolbar className="mb-3" />
 
           {/* Centered Task Content */}
           <div className="flex justify-center">
             <div className="w-full max-w-screen-2xl">
-              {sectionsToShow.map((section, index) => (
-                <div key={section.id}>
-                  {/* Show add section input if this is the position being added */}
-                  {isAddingSection && addingSectionPosition === index && (
-                    <div className="border border-border rounded-lg p-3 bg-card shadow-sm mb-4">
-                      <div className="space-y-3">
-                        <Input
-                          value={newSectionName}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                            setNewSectionName(e.target.value)
+              {/* Flat Task List without sections */}
+              <div className="space-y-0">
+                <DropTargetWrapper
+                  dropTargetId={droppableId}
+                  onDrop={handleTaskDrop}
+                  getData={() => ({
+                    type: "task-list",
+                    projectId: project?.id,
+                  })}
+                >
+                  <div>
+                    {tasks.map((task: Task, taskIndex: number) => (
+                      <DropTargetWrapper
+                        key={task.id}
+                        dropTargetId={`task-${task.id}`}
+                        onDrop={(data) => {
+                          handleTaskDrop(data)
+                          // Clean up drag state on drop
+                          setSectionDragStates(new Map())
+                        }}
+                        getData={(args?: { input?: DragInputType; element?: HTMLElement }) => {
+                          const baseData = {
+                            type: "task-drop-target",
+                            dropTargetId: `task-${task.id}`,
+                            taskId: task.id,
+                            sectionId: DEFAULT_UUID,
                           }
-                          placeholder="Section name..."
-                          onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                            if (e.key === "Enter") {
-                              handleAddSection()
-                            } else if (e.key === "Escape") {
-                              handleCancelAddSection()
-                            }
-                          }}
-                          className="text-sm"
-                          autoFocus
-                        />
-                        <ColorPicker
-                          selectedColor={newSectionColor}
-                          onColorSelect={setNewSectionColor}
-                          size="sm"
-                          label="Color"
-                          className="text-xs"
-                        />
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={handleAddSection}
-                            size="sm"
-                            variant="default"
-                            disabled={!newSectionName.trim()}
-                            className="px-3"
-                          >
-                            Add
-                          </Button>
-                          <Button
-                            onClick={handleCancelAddSection}
-                            variant="ghost"
-                            size="sm"
-                            className="px-2"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
 
-                  {renderSection(section)}
+                          // Only use attachClosestEdge if we have proper input and element
+                          if (args && args.input && args.element) {
+                            return attachClosestEdge(baseData, {
+                              element: args.element,
+                              input: args.input,
+                              allowedEdges: ["top", "bottom"],
+                            })
+                          }
 
-                  {/* Add section divider after each section */}
-                  {/* {supportsSections && ( */}
-                  {/*   <AddSectionDivider */}
-                  {/*     onAddSection={handleStartAddSection} */}
-                  {/*     position={index + 1} */}
-                  {/*     className="mt-2" */}
-                  {/*   /> */}
-                  {/* )} */}
-                </div>
-              ))}
-
-              {/* Show add section input if this is the position being added (at the end) */}
-              {isAddingSection && addingSectionPosition === sectionsToShow.length && (
-                <div className="border border-border rounded-lg p-3 bg-card shadow-sm">
-                  <div className="space-y-3">
-                    <Input
-                      value={newSectionName}
-                      onChange={(e) => setNewSectionName(e.target.value)}
-                      placeholder="Section name..."
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          handleAddSection()
-                        } else if (e.key === "Escape") {
-                          handleCancelAddSection()
-                        }
-                      }}
-                      className="text-sm"
-                      autoFocus
-                    />
-                    <ColorPicker
-                      selectedColor={newSectionColor}
-                      onColorSelect={setNewSectionColor}
-                      size="sm"
-                      label="Color"
-                      className="text-xs"
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={handleAddSection}
-                        size="sm"
-                        variant="default"
-                        disabled={!newSectionName.trim()}
-                        className="px-3"
+                          return baseData
+                        }}
                       >
-                        Add
-                      </Button>
-                      <Button
-                        onClick={handleCancelAddSection}
-                        variant="ghost"
-                        size="sm"
-                        className="px-2"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
+                        <DraggableWrapper
+                          dragId={task.id}
+                          index={taskIndex}
+                          getData={() => ({
+                            type: "task",
+                            taskId: task.id,
+                            projectId: task.projectId,
+                          })}
+                        >
+                          <TaskItem
+                            taskId={task.id}
+                            variant={compactView ? "compact" : "default"}
+                            className="cursor-pointer mb-2"
+                            showProjectBadge={true}
+                          />
+                        </DraggableWrapper>
+                      </DropTargetWrapper>
+                    ))}
+                    {tasks.length === 0 && (
+                      <ViewEmptyState
+                        viewId={routeContext.viewId}
+                        projectName={project?.name}
+                        labelName={label?.name}
+                        action={{
+                          label: t("actions.addTask", "Add Task"),
+                          onClick: () => openQuickAddAction(),
+                        }}
+                      />
+                    )}
                   </div>
-                </div>
-              )}
-
-              {sectionsToShow.length === 0 && !isAddingSection && (
-                <div>
-                  <AddSectionDivider
-                    onAddSection={handleStartAddSection}
-                    position={0}
-                    className="mt-2"
-                  />
-
-                  <div className="border border-border rounded-lg p-8 bg-card">
-                    <div className="text-center text-muted-foreground">
-                      <p className="text-lg font-medium mb-2">No sections in this project</p>
-                      <p className="text-sm">All tasks will appear in the main project view</p>
-                    </div>
-                  </div>
-                </div>
-              )}
+                </DropTargetWrapper>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )
+    }
 
-      {/* Task Side Panel */}
+    // Sectioned view
+    return (
+      <div className="px-4 py-3">
+        {/* Selection Toolbar - Full Width */}
+        <SelectionToolbar />
+
+        {/* Filter Controls, Search Input and Add Task Button - Full Width */}
+        <ProjectViewToolbar className="mb-3" />
+
+        {/* Centered Task Content */}
+        <div className="flex justify-center">
+          <div className="w-full max-w-screen-2xl">
+            {sectionsToShow.map((section, index) => (
+              <div key={section.id}>
+                {/* Show add section input if this is the position being added */}
+                {isAddingSection && addingSectionPosition === index && (
+                  <div className="border border-border rounded-lg p-3 bg-card shadow-sm mb-4">
+                    <div className="space-y-3">
+                      <Input
+                        value={newSectionName}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setNewSectionName(e.target.value)
+                        }
+                        placeholder="Section name..."
+                        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                          if (e.key === "Enter") {
+                            handleAddSection()
+                          } else if (e.key === "Escape") {
+                            handleCancelAddSection()
+                          }
+                        }}
+                        className="text-sm"
+                        autoFocus
+                      />
+                      <ColorPicker
+                        selectedColor={newSectionColor}
+                        onColorSelect={setNewSectionColor}
+                        size="sm"
+                        label="Color"
+                        className="text-xs"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={handleAddSection}
+                          size="sm"
+                          variant="default"
+                          disabled={!newSectionName.trim()}
+                          className="px-3"
+                        >
+                          Add
+                        </Button>
+                        <Button
+                          onClick={handleCancelAddSection}
+                          variant="ghost"
+                          size="sm"
+                          className="px-2"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {renderSection(section)}
+
+                {/* Add section divider after each section */}
+                {/* {supportsSections && ( */}
+                {/*   <AddSectionDivider */}
+                {/*     onAddSection={handleStartAddSection} */}
+                {/*     position={index + 1} */}
+                {/*     className="mt-2" */}
+                {/*   /> */}
+                {/* )} */}
+              </div>
+            ))}
+
+            {/* Show add section input if this is the position being added (at the end) */}
+            {isAddingSection && addingSectionPosition === sectionsToShow.length && (
+              <div className="border border-border rounded-lg p-3 bg-card shadow-sm">
+                <div className="space-y-3">
+                  <Input
+                    value={newSectionName}
+                    onChange={(e) => setNewSectionName(e.target.value)}
+                    placeholder="Section name..."
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleAddSection()
+                      } else if (e.key === "Escape") {
+                        handleCancelAddSection()
+                      }
+                    }}
+                    className="text-sm"
+                    autoFocus
+                  />
+                  <ColorPicker
+                    selectedColor={newSectionColor}
+                    onColorSelect={setNewSectionColor}
+                    size="sm"
+                    label="Color"
+                    className="text-xs"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleAddSection}
+                      size="sm"
+                      variant="default"
+                      disabled={!newSectionName.trim()}
+                      className="px-3"
+                    >
+                      Add
+                    </Button>
+                    <Button
+                      onClick={handleCancelAddSection}
+                      variant="ghost"
+                      size="sm"
+                      className="px-2"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {sectionsToShow.length === 0 && !isAddingSection && (
+              <div>
+                <AddSectionDivider
+                  onAddSection={handleStartAddSection}
+                  position={0}
+                  className="mt-2"
+                />
+
+                <div className="border border-border rounded-lg p-8 bg-card">
+                  <div className="text-center text-muted-foreground">
+                    <p className="text-lg font-medium mb-2">No sections in this project</p>
+                    <p className="text-sm">All tasks will appear in the main project view</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Mobile always uses the original layout with drawer
+  if (isMobile) {
+    return (
+      <div className="flex flex-1 relative">
+        {/* Main Content */}
+        <div className="flex-1">{renderContent()}</div>
+
+        {/* Task Side Panel (mobile drawer) */}
+        <TaskSidePanel isOpen={isPanelOpen} onClose={handleClosePanel} />
+      </div>
+    )
+  }
+
+  // Desktop: Use ResizablePanel layout when side panel is open, fallback to original when closed
+  if (isPanelOpen) {
+    return (
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="flex-1 h-full"
+        onLayout={handlePanelResize}
+      >
+        {/* Main Content Panel */}
+        <ResizablePanel defaultSize={100 - sidePanelWidth} minSize={50} maxSize={80}>
+          {renderContent()}
+        </ResizablePanel>
+
+        {/* Resizable Handle */}
+        <ResizableHandle withHandle={false} />
+
+        {/* Side Panel */}
+        <ResizablePanel defaultSize={sidePanelWidth} minSize={20} maxSize={50}>
+          <TaskSidePanel isOpen={isPanelOpen} onClose={handleClosePanel} variant="resizable" />
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    )
+  }
+
+  // Desktop: Original layout when panel is closed
+  return (
+    <div className="flex flex-1 relative h-full">
+      {/* Main Content */}
+      <div className="flex-1">{renderContent()}</div>
+
+      {/* Task Side Panel (will not render when closed) */}
       <TaskSidePanel isOpen={isPanelOpen} onClose={handleClosePanel} />
     </div>
   )

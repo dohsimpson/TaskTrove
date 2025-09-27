@@ -59,7 +59,7 @@ export function SubtaskContent({
   useEffect(() => {
     if (shouldScrollToBottom && subtasksContainerRef.current) {
       // Use longer timeout to ensure DOM is fully updated on slower devices
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         if (subtasksContainerRef.current) {
           // Smooth animated scroll to bottom
           subtasksContainerRef.current.scrollTo({
@@ -69,6 +69,8 @@ export function SubtaskContent({
         }
         setShouldScrollToBottom(false)
       }, 100)
+
+      return () => clearTimeout(timeoutId)
     }
   }, [task?.subtasks?.length, shouldScrollToBottom])
 

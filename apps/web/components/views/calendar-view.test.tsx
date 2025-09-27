@@ -878,14 +878,13 @@ describe("CalendarView", () => {
       // Bottom panel should be present with responsive classes
       // Find the bottom panel by looking for the container of the selected date section
       const selectedDateSection = screen.getByText("Wednesday, January 1")
-      const bottomPanel = selectedDateSection.closest('[style*="margin-right"]')
+      const bottomPanel = selectedDateSection.closest('[class*="border-t"]')
       expect(bottomPanel).toHaveClass(
-        "flex-shrink-0",
+        "h-full",
         "border-t",
         "border-border",
         "bg-card",
-        "transition-all",
-        "duration-300",
+        "overflow-auto",
       )
 
       // Selected date section container should have padding

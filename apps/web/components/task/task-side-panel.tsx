@@ -55,9 +55,10 @@ const SIDE_PANEL_WIDTH = 320 // 320px = w-80 in Tailwind
 interface TaskSidePanelProps {
   isOpen: boolean
   onClose: () => void
+  variant?: "overlay" | "resizable"
 }
 
-export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
+export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSidePanelProps) {
   const isMobile = useIsMobile()
   const [expandedAttachments, setExpandedAttachments] = useState(false)
   const [isAutoSaving, setIsAutoSaving] = useState(false)
@@ -438,12 +439,12 @@ export function TaskSidePanel({ isOpen, onClose }: TaskSidePanelProps) {
   return (
     <div
       className={cn(
-        "absolute top-0 right-0 bg-background/95 backdrop-blur-sm border-l border-border/50 flex flex-col transition-transform duration-300 ease-in-out z-30 shadow-lg h-full",
-        "translate-x-0",
+        "bg-background/95 backdrop-blur-sm border-l border-border/50 flex flex-col transition-transform duration-300 ease-in-out h-full",
+        variant === "overlay"
+          ? "absolute top-0 right-0 z-30 shadow-lg translate-x-0"
+          : "w-full shadow-none",
       )}
-      style={{
-        width: `${SIDE_PANEL_WIDTH}px`,
-      }}
+      style={variant === "overlay" ? { width: `${SIDE_PANEL_WIDTH}px` } : undefined}
     >
       {/* Fixed Header */}
       <div className="flex-shrink-0 border-b border-border/50 bg-background/95 backdrop-blur-sm">

@@ -36,7 +36,9 @@ export function ProjectContextMenu({
     startEditing(projectId)
   }
 
-  const handleDelete = () => {
+  const handleDelete = (deleteContainedResources?: boolean) => {
+    // For projects, deleteContainedResources would mean deleting tasks in the project
+    // This functionality is not implemented yet
     deleteProject(projectId)
   }
 

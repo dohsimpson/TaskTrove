@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import {
   Project,
-  ProjectId,
   DeleteProjectRequestSchema,
   CreateProjectRequestSchema,
   CreateProjectResponse,
@@ -281,7 +280,7 @@ async function deleteProject(
     return validation.error
   }
 
-  const { id: projectId } = validation.data
+  const { ids: projectIdsToDelete } = validation.data
 
   const fileData = await withFileOperationLogging(
     () => safeReadDataFile(),
@@ -293,9 +292,16 @@ async function deleteProject(
     return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
   }
 
-  // Filter out the project to be deleted
+  // Identify which requested IDs actually exist before filtering
+  const existingProjectIds = projectIdsToDelete.filter((id) =>
+    fileData.projects.some((project) => project.id === id),
+  )
+
+  // Filter out the projects to be deleted
   const originalProjectCount = fileData.projects.length
-  fileData.projects = fileData.projects.filter((project: Project) => project.id !== projectId)
+  fileData.projects = fileData.projects.filter(
+    (project: Project) => !projectIdsToDelete.includes(project.id),
+  )
   const deletedCount = originalProjectCount - fileData.projects.length
 
   // Write the updated data back to the file
@@ -313,17 +319,16 @@ async function deleteProject(
   logBusinessEvent(
     "project_deleted",
     {
-      projectId,
+      projectIds: projectIdsToDelete,
       deletedCount,
       remainingProjects: fileData.projects.length,
     },
     request.context,
   )
 
-  const projectIds: ProjectId[] = deletedCount > 0 ? [projectId] : []
   const response: DeleteProjectResponse = {
     success: true,
-    projectIds,
+    projectIds: existingProjectIds, // Return IDs that actually existed and were deleted
     message: `${deletedCount} project(s) deleted successfully`,
   }
 

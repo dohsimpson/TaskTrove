@@ -4,7 +4,7 @@ import { screen, fireEvent } from "@/test-utils"
 import { render } from "@/test-utils/render-with-providers"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
 import { dataQueryAtom } from "@/lib/atoms/core/base"
-import { createGroupId } from "@/lib/types"
+import { createGroupId, createProjectId } from "@/lib/types"
 import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types"
 
 // Mock component interfaces
@@ -41,7 +41,7 @@ interface MockDropdownTriggerProps {
 interface MockDeleteDialogProps {
   open?: boolean
   onOpenChange: (open: boolean) => void
-  onConfirm: () => void
+  onConfirm: (deleteContainedResources?: boolean) => void
   entityType?: string
   entityName?: string
 }
@@ -91,15 +91,30 @@ vi.mock("@/components/dialogs/delete-confirm-dialog", () => ({
     onConfirm,
     entityType,
     entityName,
-  }: MockDeleteDialogProps) => (
-    <div data-testid="delete-dialog" data-open={open}>
-      <span>
-        Delete {entityType}: {entityName}
-      </span>
-      <button onClick={onConfirm}>Confirm</button>
-      <button onClick={() => onOpenChange(false)}>Cancel</button>
-    </div>
-  ),
+  }: MockDeleteDialogProps) => {
+    const [deleteContainedResources, setDeleteContainedResources] = React.useState(false)
+
+    return (
+      <div data-testid="delete-dialog" data-open={open}>
+        <span>
+          Delete {entityType}: {entityName}
+        </span>
+        {(entityType === "group" || entityType === "project") && (
+          <label>
+            <input
+              type="checkbox"
+              data-testid="delete-contained-resources-checkbox"
+              checked={deleteContainedResources}
+              onChange={(e) => setDeleteContainedResources(e.target.checked)}
+            />
+            Delete contained resources
+          </label>
+        )}
+        <button onClick={() => onConfirm(deleteContainedResources)}>Confirm</button>
+        <button onClick={() => onOpenChange(false)}>Cancel</button>
+      </div>
+    )
+  },
 }))
 
 vi.mock("@/components/ui/custom/color-picker-floating", () => ({
@@ -121,6 +136,12 @@ vi.mock("lucide-react", () => ({
   FolderPlus: () => <span data-testid="folder-plus-icon" />,
   UserPlus: () => <span data-testid="user-plus-icon" />,
 }))
+
+// Create spy functions to track atom calls
+const mockDeleteProjectGroup = vi.fn()
+const mockDeleteProjects = vi.fn()
+const mockUpdateProjectGroup = vi.fn()
+const mockStartEditing = vi.fn()
 
 describe("ProjectGroupContextMenu", () => {
   const mockProjectGroup = {
@@ -304,6 +325,125 @@ describe("ProjectGroupContextMenu", () => {
 
       expect(addSubgroupItem).toBeInTheDocument()
       expect(manageProjectsItem).toBeInTheDocument()
+    } else {
+      expect(screen.queryByTestId("dropdown-item")).not.toBeInTheDocument()
+    }
+  })
+
+  it("deletes contained projects when delete contained resources is checked", async () => {
+    // Add a project to the mock group's items
+    const mockProjectGroupWithProjects = {
+      ...mockProjectGroup,
+      items: ["project-1", "project-2"], // Mock project IDs as strings
+    }
+
+    const atomValuesWithProjects: Array<[unknown, unknown]> = [
+      [
+        dataQueryAtom,
+        {
+          data: {
+            tasks: [],
+            projects: [],
+            labels: [],
+            projectGroups: { ...DEFAULT_PROJECT_GROUP, items: [mockProjectGroupWithProjects] },
+            labelGroups: DEFAULT_LABEL_GROUP,
+            ordering: { projects: [], labels: [] },
+          },
+        },
+      ],
+    ]
+
+    const { container } = render(<ProjectGroupContextMenu {...defaultProps} open={true} />, {
+      initialAtomValues: atomValuesWithProjects,
+    })
+
+    const allElements = container.querySelectorAll("*")
+    const hasContent = allElements.length > 1
+
+    if (hasContent) {
+      // Click delete group
+      const items = screen.getAllByTestId("dropdown-item")
+      const deleteItem = items.find((item) => item.textContent?.includes("Delete group"))
+      expect(deleteItem).toBeInTheDocument()
+
+      if (deleteItem) {
+        fireEvent.click(deleteItem)
+      }
+
+      // Dialog should be open
+      expect(screen.getByTestId("delete-dialog")).toHaveAttribute("data-open", "true")
+
+      // Check the "delete contained resources" checkbox
+      const checkbox = screen.getByTestId("delete-contained-resources-checkbox")
+      fireEvent.click(checkbox)
+
+      // Confirm deletion
+      const confirmButton = screen.getByText("Confirm")
+      fireEvent.click(confirmButton)
+
+      // Verify both deleteProjects and deleteProjectGroup were called
+      expect(mockDeleteProjects).toHaveBeenCalledWith([
+        createProjectId("project-1"),
+        createProjectId("project-2"),
+      ])
+      expect(mockDeleteProjectGroup).toHaveBeenCalledWith(defaultProps.groupId)
+    } else {
+      expect(screen.queryByTestId("dropdown-item")).not.toBeInTheDocument()
+    }
+  })
+
+  it("only deletes group when delete contained resources is not checked", () => {
+    // Add a project to the mock group's items
+    const mockProjectGroupWithProjects = {
+      ...mockProjectGroup,
+      items: ["project-1", "project-2"], // Mock project IDs as strings
+    }
+
+    const atomValuesWithProjects: Array<[unknown, unknown]> = [
+      [
+        dataQueryAtom,
+        {
+          data: {
+            tasks: [],
+            projects: [],
+            labels: [],
+            projectGroups: { ...DEFAULT_PROJECT_GROUP, items: [mockProjectGroupWithProjects] },
+            labelGroups: DEFAULT_LABEL_GROUP,
+            ordering: { projects: [], labels: [] },
+          },
+        },
+      ],
+    ]
+
+    const { container } = render(<ProjectGroupContextMenu {...defaultProps} open={true} />, {
+      initialAtomValues: atomValuesWithProjects,
+    })
+
+    const allElements = container.querySelectorAll("*")
+    const hasContent = allElements.length > 1
+
+    if (hasContent) {
+      // Click delete group
+      const items = screen.getAllByTestId("dropdown-item")
+      const deleteItem = items.find((item) => item.textContent?.includes("Delete group"))
+      expect(deleteItem).toBeInTheDocument()
+
+      if (deleteItem) {
+        fireEvent.click(deleteItem)
+      }
+
+      // Dialog should be open
+      expect(screen.getByTestId("delete-dialog")).toHaveAttribute("data-open", "true")
+
+      // Do NOT check the checkbox - leave it unchecked
+
+      // Confirm deletion
+      const confirmButton = screen.getByText("Confirm")
+      fireEvent.click(confirmButton)
+
+      // Verify only deleteProjectGroup was called, not deleteProjects
+      expect(mockDeleteProjects).not.toHaveBeenCalled()
+      expect(mockDeleteProjectGroup).toHaveBeenCalledWith(defaultProps.groupId)
     } else {
       expect(screen.queryByTestId("dropdown-item")).not.toBeInTheDocument()
     }

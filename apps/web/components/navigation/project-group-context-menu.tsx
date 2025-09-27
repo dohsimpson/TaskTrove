@@ -7,8 +7,9 @@ import {
   updateProjectGroupAtom,
   deleteProjectGroupAtom,
 } from "@/lib/atoms/core/groups"
+import { deleteProjectsAtom } from "@/lib/atoms/core/projects"
 import { startEditingGroupAtom } from "@/lib/atoms/ui/navigation"
-import type { GroupId } from "@/lib/types"
+import { createProjectId, type GroupId, type ProjectId } from "@/lib/types"
 
 interface ProjectGroupContextMenuProps {
   groupId: GroupId
@@ -27,18 +28,46 @@ export function ProjectGroupContextMenu({
   const projectGroups = useAtomValue(projectGroupsAtom)
   const updateProjectGroup = useSetAtom(updateProjectGroupAtom)
   const deleteProjectGroup = useSetAtom(deleteProjectGroupAtom)
+  const deleteProjects = useSetAtom(deleteProjectsAtom)
   const startEditing = useSetAtom(startEditingGroupAtom)
 
   // Find the project group
   const projectGroup = projectGroups.find((group) => group.id === groupId)
   if (!projectGroup) return null
 
+  // Helper function to collect all project IDs from a group (including nested subgroups)
+  const collectProjectIdsFromGroup = (group: typeof projectGroup): ProjectId[] => {
+    const projectIds: ProjectId[] = []
+
+    if (group.items) {
+      for (const item of group.items) {
+        if (typeof item === "string") {
+          // It's a project ID
+          projectIds.push(createProjectId(item))
+        } else {
+          // It's a nested group, not supported for now
+        }
+      }
+    }
+
+    return projectIds
+  }
+
   const handleEdit = () => {
     startEditing(groupId)
   }
 
-  const handleDelete = () => {
-    deleteProjectGroup(groupId)
+  const handleDelete = async (deleteContainedResources?: boolean) => {
+    if (deleteContainedResources) {
+      // First, collect and delete all projects in this group
+      const projectIds = collectProjectIdsFromGroup(projectGroup)
+      if (projectIds.length > 0) {
+        await deleteProjects(projectIds)
+      }
+    }
+
+    // Then delete the group itself
+    await deleteProjectGroup(groupId)
   }
 
   const handleColorChange = (color: string) => {

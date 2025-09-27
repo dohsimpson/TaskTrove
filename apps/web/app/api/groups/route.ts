@@ -10,6 +10,7 @@ import {
   DeleteGroupResponse,
   DataFileSerializationSchema,
   createGroupId,
+  createProjectId,
   DataFileSerialization,
   ErrorResponse,
   GroupUpdateUnionSchema,
@@ -568,6 +569,21 @@ async function deleteGroup(
 
   if (!fileData) {
     return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
+  }
+
+  // Find the group to be deleted to extract contained projects
+  const groupResult = findGroupInTrees(fileData.projectGroups, fileData.labelGroups, groupId)
+
+  if (groupResult && groupResult.group.type === "project") {
+    // Extract any contained projects (string items) from the group being deleted
+    const containedProjects = groupResult.group.items.filter(
+      (item) => typeof item === "string",
+    ) as string[]
+
+    // Move contained projects to the root project group
+    if (containedProjects.length > 0) {
+      fileData.projectGroups.items.push(...containedProjects.map((id) => createProjectId(id)))
+    }
   }
 
   // Try to remove from each ROOT group

@@ -194,7 +194,7 @@ export const deleteProjectAtom = atom(
 
       // Delete project using the DELETE endpoint
       const deleteProjectMutation = get(deleteProjectMutationAtom);
-      await deleteProjectMutation.mutateAsync({ id: projectId });
+      await deleteProjectMutation.mutateAsync({ ids: [projectId] });
 
       // Clear current project if it was deleted
       const currentProjectId = get(currentProjectIdAtom);
@@ -211,6 +211,39 @@ export const deleteProjectAtom = atom(
   },
 );
 deleteProjectAtom.debugLabel = "deleteProjectAtom";
+
+/**
+ * Atom for deleting multiple projects at once
+ * Used for bulk deletion operations like "delete contained resources" in groups
+ */
+export const deleteProjectsAtom = atom(
+  null,
+  async (get, set, projectIds: ProjectId[]) => {
+    try {
+      if (projectIds.length === 0) return;
+
+      // Delete projects using the DELETE endpoint
+      const deleteProjectMutation = get(deleteProjectMutationAtom);
+      await deleteProjectMutation.mutateAsync({ ids: projectIds });
+
+      // Clear current project if it was deleted
+      const currentProjectId = get(currentProjectIdAtom);
+      if (
+        currentProjectId &&
+        projectIds.some((id) => id === currentProjectId)
+      ) {
+        set(currentProjectIdAtom, null);
+      }
+
+      // Record the operation for undo/redo feedback
+      set(recordOperationAtom, `Deleted ${projectIds.length} project(s)`);
+    } catch (error) {
+      handleAtomError(error, "deleteProjects");
+      throw error;
+    }
+  },
+);
+deleteProjectsAtom.debugLabel = "deleteProjectsAtom";
 
 // =============================================================================
 // DERIVED READ ATOMS
@@ -719,6 +752,7 @@ export const projectAtoms = {
     addProject: addProjectAtom,
     updateProject: updateProjectAtom,
     deleteProject: deleteProjectAtom,
+    deleteProjects: deleteProjectsAtom,
     addSection: addProjectSectionAtom,
     removeSection: removeProjectSectionAtom,
     renameSection: renameProjectSectionAtom,

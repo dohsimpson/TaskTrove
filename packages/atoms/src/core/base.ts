@@ -817,17 +817,20 @@ export const deleteProjectMutationAtom = createMutation<
   serializationSchema: ProjectDeleteSerializationSchema,
   apiEndpoint: "/api/projects",
   logModule: "projects",
-  testResponseFactory: (projectId: DeleteProjectRequest) => {
+  testResponseFactory: (deleteRequest: DeleteProjectRequest) => {
     return {
       success: true,
-      projectIds: [projectId.id],
-      message: "Project deleted successfully (test mode)",
+      projectIds: deleteRequest.ids,
+      message: "Project(s) deleted successfully (test mode)",
     };
   },
-  optimisticUpdateFn: (projectId: DeleteProjectRequest, oldData: DataFile) => {
-    // Filter out the project to be deleted
+  optimisticUpdateFn: (
+    deleteRequest: DeleteProjectRequest,
+    oldData: DataFile,
+  ) => {
+    // Filter out the projects to be deleted
     const updatedProjects = oldData.projects.filter(
-      (project: Project) => project.id !== projectId.id,
+      (project: Project) => !deleteRequest.ids.includes(project.id),
     );
 
     return {

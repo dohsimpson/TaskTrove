@@ -352,4 +352,40 @@ describe("DELETE /api/groups", () => {
     expect(data.error).toBe("Validation failed")
     expect(data.message).toBeDefined()
   })
+
+  it("should move contained projects to root group when deleting a project group", async () => {
+    const deleteRequest = {
+      id: TEST_GROUP_ID_3,
+    }
+
+    const request = new NextRequest("http://localhost:3000/api/groups", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(deleteRequest),
+    })
+
+    const response = await DELETE(request)
+    const data = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(data.success).toBe(true)
+    expect(data.groupIds).toEqual([TEST_GROUP_ID_3])
+    expect(data.message).toBe("1 group(s) deleted successfully")
+    expect(mockSafeWriteDataFile).toHaveBeenCalled()
+
+    // Verify that contained projects were moved to the root group
+    const writeCall = mockSafeWriteDataFile.mock.calls[0]
+    if (!writeCall || !writeCall[0]) {
+      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
+    }
+    const savedData = writeCall[0].data as DataFile
+
+    // The deleted group should no longer exist in the projectGroups.items
+    const nestedGroups = savedData.projectGroups.items.filter((item) => typeof item !== "string")
+    expect(nestedGroups).toHaveLength(0)
+
+    // The project that was in the deleted group should now be in the root projectGroups.items
+    const projects = savedData.projectGroups.items.filter((item) => typeof item === "string")
+    expect(projects).toContain(TEST_PROJECT_ID_1)
+  })
 })

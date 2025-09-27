@@ -43,7 +43,7 @@ interface EntityContextMenuProps {
   isVisible: boolean
   showDeleteOption?: boolean
   onEdit: () => void
-  onDelete: () => void
+  onDelete: (deleteContainedResources?: boolean) => void
   onColorChange: (color: string) => void
   onDuplicate?: () => void
   onMoveUp?: () => void
@@ -169,9 +169,7 @@ export function EntityContextMenu({
   }
 
   const handleConfirmDelete = (deleteContainedResources?: boolean) => {
-    // For now, we don't use deleteContainedResources here
-    // but we need to match the new DeleteConfirmDialog signature
-    onDelete()
+    onDelete(deleteContainedResources)
     setShowDeleteConfirm(false)
   }
 

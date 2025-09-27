@@ -2048,11 +2048,13 @@ export const TaskDeleteArraySerializationSchema = z.array(
   TaskDeleteSerializationSchema,
 );
 
-export const DeleteProjectRequestSchema = ProjectSchema.pick({ id: true });
+export const DeleteProjectRequestSchema = z.object({
+  ids: z.array(ProjectIdSchema).min(1, "At least one project ID is required"),
+});
 
 // Serialization schemas for DeleteProject (colocated with request schema)
 export const ProjectDeleteSerializationSchema = z.object({
-  id: ProjectIdSchema,
+  ids: z.array(ProjectIdSchema),
 });
 export const ProjectDeleteArraySerializationSchema = z.array(
   ProjectDeleteSerializationSchema,

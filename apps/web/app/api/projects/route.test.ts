@@ -541,7 +541,7 @@ describe("DELETE /api/projects", () => {
   it("should delete a project successfully", async () => {
     const request = new NextRequest("http://localhost:3000/api/projects", {
       method: "DELETE",
-      body: JSON.stringify({ id: TEST_PROJECT_ID_1 }),
+      body: JSON.stringify({ ids: [TEST_PROJECT_ID_1] }),
       headers: {
         "Content-Type": "application/json",
       },
@@ -596,7 +596,7 @@ describe("DELETE /api/projects", () => {
 
     const request = new NextRequest("http://localhost:3000/api/projects", {
       method: "DELETE",
-      body: JSON.stringify({ id: TEST_PROJECT_ID_1 }),
+      body: JSON.stringify({ ids: [TEST_PROJECT_ID_1] }),
       headers: {
         "Content-Type": "application/json",
       },
@@ -613,7 +613,7 @@ describe("DELETE /api/projects", () => {
     const nonExistentProjectId = "87654321-4321-4321-8321-210987654999" // Valid UUID but not in test data
     const request = new NextRequest("http://localhost:3000/api/projects", {
       method: "DELETE",
-      body: JSON.stringify({ id: nonExistentProjectId }),
+      body: JSON.stringify({ ids: [nonExistentProjectId] }),
       headers: {
         "Content-Type": "application/json",
       },
@@ -634,5 +634,40 @@ describe("DELETE /api/projects", () => {
     }
     const writtenData = writeCall[0].data
     expect(writtenData.projects).toHaveLength(2)
+  })
+
+  it("should return only existing project IDs when mix of valid and invalid IDs provided", async () => {
+    const nonExistentProjectId = "87654321-4321-4321-8321-210987654999"
+    const anotherNonExistentId = "12345678-1234-4234-8234-123456789999"
+
+    const request = new NextRequest("http://localhost:3000/api/projects", {
+      method: "DELETE",
+      body: JSON.stringify({
+        ids: [nonExistentProjectId, TEST_PROJECT_ID_1, anotherNonExistentId, TEST_PROJECT_ID_2],
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    const response = await DELETE(request)
+    const responseData = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(responseData.success).toBe(true)
+    expect(responseData.projectIds).toHaveLength(2) // Only the 2 existing projects
+    expect(responseData.projectIds).toContain(TEST_PROJECT_ID_1)
+    expect(responseData.projectIds).toContain(TEST_PROJECT_ID_2)
+    expect(responseData.projectIds).not.toContain(nonExistentProjectId)
+    expect(responseData.projectIds).not.toContain(anotherNonExistentId)
+    expect(responseData.message).toBe("2 project(s) deleted successfully")
+
+    // Verify that both projects were actually deleted from the data
+    const writeCall = mockSafeWriteDataFile.mock.calls[0]
+    if (!writeCall || !writeCall[0]) {
+      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
+    }
+    const writtenData = writeCall[0].data
+    expect(writtenData.projects).toHaveLength(0) // Both existing projects should be deleted
   })
 })

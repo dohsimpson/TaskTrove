@@ -7,22 +7,41 @@ import { NextAuthRequest } from "next-auth"
 acceptLanguage.languages([...languages])
 
 export const config = {
+  runtime: "nodejs",
   // matcher: '/*' will match all paths including API routes
-  // We want to exclude API routes, _next static files, and other assets
+  // We want to exclude _next static files and other assets
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder files
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\..*|public).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\..*|public).*)",
   ],
 }
 
 const isAuthEnabled = Boolean(process.env.AUTH_SECRET)
+
+// const isAPIAuthEnabled = Boolean(process.env.API_SECRET_TOKEN)
+//
+// function checkBearerToken(req: NextRequest): boolean {
+//   const authHeader = req.headers.get("authorization")
+//   if (!authHeader?.startsWith("Bearer ")) {
+//     return false
+//   }
+//
+//   const token = authHeader.slice(7) // Remove "Bearer " prefix
+//   const validToken = process.env.API_SECRET_TOKEN
+//
+//   // If no valid token is configured, reject bearer auth
+//   if (!validToken) {
+//     return false
+//   }
+//
+//   return token === validToken
+// }
 
 function handleI18n(req: NextRequest) {
   let lng: string | undefined | null
@@ -63,22 +82,33 @@ function setI18nResponse(response: NextResponse, lng: string, req: NextRequest) 
 
 function middleware(req: NextRequest) {
   const lng = handleI18n(req)
+  const authReq = req as NextAuthRequest
 
-  // Auth checks only when enabled
-  if (isAuthEnabled) {
-    const authReq = req as NextAuthRequest
-    const isAuthPage = req.nextUrl.pathname.startsWith("/signin")
-    const isPublicAsset = req.nextUrl.pathname.match(/\.(ico|png|jpg|jpeg|gif|svg|css|js)$/)
+  // const isAPIRoute = req.nextUrl.pathname.startsWith("/api/")
+  const isSignInRoute = req.nextUrl.pathname.startsWith("/signin")
+  const isAuthRoute = req.nextUrl.pathname.startsWith("/api/auth")
+  // const isAsset = req.nextUrl.pathname.match(/\.(ico|png|jpg|jpeg|gif|svg|css|js)$/)
 
-    if (!authReq.auth && !isAuthPage && !isPublicAsset) {
-      return NextResponse.redirect(new URL("/signin", req.url))
-    }
-    if (authReq.auth && isAuthPage) {
-      return NextResponse.redirect(new URL("/", req.url))
-    }
+  if (isAuthRoute || isSignInRoute) {
+    return setI18nResponse(NextResponse.next(), lng, req)
   }
 
-  return setI18nResponse(NextResponse.next(), lng, req)
+  if (isAuthEnabled) {
+    if (authReq.auth) {
+      return setI18nResponse(NextResponse.next(), lng, req)
+    } else {
+      return setI18nResponse(NextResponse.redirect(new URL("/signin", req.url)), lng, req)
+      // if (isAPIAuthEnabled && isAPIRoute) {
+      //   if (checkBearerToken(req)) {
+      //     return NextResponse.next()
+      //   } else {
+      //     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      //   }
+      // } else {
+      //   return setI18nResponse(NextResponse.redirect(new URL("/signin", req.url)), lng, req)
+      // }
+    }
+  }
 }
 
 export default isAuthEnabled ? auth(middleware) : middleware

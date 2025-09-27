@@ -17,6 +17,9 @@ const nextConfig = {
   },
   transpilePackages: ["jotai-devtools"],
   output: "standalone",
+  experimental: {
+    nodeMiddleware: true, // Enable Node.js middleware
+  }
 }
 
 export default withBundleAnalyzer(nextConfig)

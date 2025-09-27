@@ -33,6 +33,7 @@ import { LabelDialog } from "@/components/dialogs/label-dialog"
 import { SectionDialog } from "@/components/dialogs/section-dialog"
 import { SearchDialog } from "@/components/search/search-dialog"
 import { SettingsDialog } from "@/components/dialogs/settings-dialog"
+import { UserProfileDialog } from "@/components/dialogs/user-profile-dialog"
 import { RouteContent } from "@/components/layout/route-content"
 import { useTheme } from "next-themes"
 import { toast } from "sonner"
@@ -598,6 +599,7 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
         <SectionDialog />
         <SearchDialog />
         <SettingsDialog />
+        <UserProfileDialog />
       </SidebarProvider>
     </div>
     // </GestureHandler>

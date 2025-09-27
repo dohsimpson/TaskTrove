@@ -61,6 +61,12 @@ import {
   UpdateSettingsRequestSchema,
   UserSettings,
   PartialUserSettings,
+  // User-related types
+  User,
+  UpdateUserRequest,
+  UpdateUserResponse,
+  UpdateUserResponseSchema,
+  UserUpdateSerializationSchema,
   // Group-related types
   ProjectGroup,
   GroupId,
@@ -1370,3 +1376,77 @@ export const settingsAtom = atom(
   },
 );
 settingsAtom.debugLabel = "settingsAtom";
+
+// =============================================================================
+// USER MANAGEMENT ATOMS
+// =============================================================================
+
+/**
+ * Current user data atom
+ * Read: Gets current user from data query
+ * Write: Updates user via API
+ */
+export const userAtom = atom(
+  (get) => {
+    const result = get(dataQueryAtom);
+    if ("data" in result && result.data) {
+      return result.data.user;
+    }
+    // Return default user if no data
+    return DEFAULT_USER;
+  },
+  async (get, set, updateUserRequest: UpdateUserRequest) => {
+    try {
+      // Get the mutation function
+      const mutation = get(updateUserMutationAtom);
+
+      // Execute the mutation - this will handle optimistic updates and API persistence
+      await mutation.mutateAsync(updateUserRequest);
+    } catch (error) {
+      log.error({ error, module: "user" }, "Failed to update user in userAtom");
+      throw error;
+    }
+  },
+);
+userAtom.debugLabel = "userAtom";
+
+/**
+ * User update mutation atom
+ */
+export const updateUserMutationAtom = createMutation<
+  UpdateUserResponse,
+  UpdateUserRequest
+>({
+  method: "PATCH",
+  operationName: "Updated user",
+  responseSchema: UpdateUserResponseSchema,
+  serializationSchema: UserUpdateSerializationSchema,
+  apiEndpoint: "/api/user",
+  logModule: "user",
+  testResponseFactory: (variables: UpdateUserRequest) => {
+    // For test mode, merge updates with default user
+    const testUser: User = {
+      username: variables.username ?? DEFAULT_USER.username,
+      password: variables.password ?? DEFAULT_USER.password,
+      avatar: variables.avatar ?? DEFAULT_USER.avatar,
+    };
+    return {
+      success: true,
+      user: testUser,
+      message: "User updated successfully (test mode)",
+    };
+  },
+  optimisticUpdateFn: (variables: UpdateUserRequest, oldData: DataFile) => {
+    // Merge partial user updates with current user data
+    const updatedUser: User = {
+      username: variables.username ?? oldData.user.username,
+      password: variables.password ?? oldData.user.password,
+      avatar: variables.avatar ?? oldData.user.avatar,
+    };
+
+    return {
+      ...oldData,
+      user: updatedUser,
+    };
+  },
+});

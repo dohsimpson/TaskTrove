@@ -130,6 +130,12 @@ export const projectGroupDialogContextAtom = atom<ProjectGroupDialogContext>({
 projectGroupDialogContextAtom.debugLabel = "projectGroupDialogContextAtom";
 
 /**
+ * User Profile Dialog - Controls the user profile edit dialog
+ */
+export const showUserProfileDialogAtom = atom<boolean>(false);
+showUserProfileDialogAtom.debugLabel = "showUserProfileDialogAtom";
+
+/**
  * Selected Task ID - Currently selected task ID for viewing/editing
  */
 export const selectedTaskIdAtom = atom<string | null>(null);
@@ -265,6 +271,7 @@ export const closeAllDialogsAtom = atom(null, (get, set) => {
   set(showSearchDialogAtom, false);
   set(showSettingsDialogAtom, false);
   set(showProjectGroupDialogAtom, false);
+  set(showUserProfileDialogAtom, false);
 
   // Clear all selections
   set(selectedTaskIdAtom, null);
@@ -289,7 +296,8 @@ export const isAnyDialogOpenAtom = atom<boolean>((get) => {
     get(showSectionDialogAtom) ||
     get(showSearchDialogAtom) ||
     get(showSettingsDialogAtom) ||
-    get(showProjectGroupDialogAtom)
+    get(showProjectGroupDialogAtom) ||
+    get(showUserProfileDialogAtom)
   );
 });
 isAnyDialogOpenAtom.debugLabel = "isAnyDialogOpenAtom";
@@ -346,6 +354,22 @@ export const closeSettingsDialogAtom = atom(null, (get, set) => {
   set(showSettingsDialogAtom, false);
 });
 closeSettingsDialogAtom.debugLabel = "closeSettingsDialogAtom";
+
+/**
+ * Opens the user profile dialog
+ */
+export const openUserProfileDialogAtom = atom(null, (get, set) => {
+  set(showUserProfileDialogAtom, true);
+});
+openUserProfileDialogAtom.debugLabel = "openUserProfileDialogAtom";
+
+/**
+ * Closes the user profile dialog
+ */
+export const closeUserProfileDialogAtom = atom(null, (get, set) => {
+  set(showUserProfileDialogAtom, false);
+});
+closeUserProfileDialogAtom.debugLabel = "closeUserProfileDialogAtom";
 
 // =============================================================================
 // QUICK ADD AUTOCOMPLETE STATE
@@ -486,6 +510,7 @@ export const baseDialogAtoms = {
   showProjectDialog: showProjectDialogAtom,
   showSearchDialog: showSearchDialogAtom,
   showSettingsDialog: showSettingsDialogAtom,
+  showUserProfileDialog: showUserProfileDialogAtom,
   selectedTaskId: selectedTaskIdAtom,
   selectedTask: selectedTaskAtom,
   selectedTasks: selectedTasksAtom,
@@ -506,6 +531,8 @@ export const dialogActionAtoms = {
   closePomodoro: closePomodoroAtom,
   openSettingsDialog: openSettingsDialogAtom,
   closeSettingsDialog: closeSettingsDialogAtom,
+  openUserProfileDialog: openUserProfileDialogAtom,
+  closeUserProfileDialog: closeUserProfileDialogAtom,
   toggleTaskSelection: toggleTaskSelectionAtom,
   clearSelectedTasks: clearSelectedTasksAtom,
   closeAllDialogs: closeAllDialogsAtom,

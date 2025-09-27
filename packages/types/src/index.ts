@@ -2145,6 +2145,7 @@ export type ProjectUpdateUnion = z.infer<typeof ProjectUpdateUnionSchema>;
 export type UpdateLabelRequest = z.infer<typeof UpdateLabelRequestSchema>;
 export type LabelUpdateUnion = z.infer<typeof LabelUpdateUnionSchema>;
 export type UpdateUserRequest = z.infer<typeof UpdateUserRequestSchema>;
+export type UpdateUserResponse = z.infer<typeof UpdateUserResponseSchema>;
 export type DeleteTaskRequest = z.infer<typeof DeleteTaskRequestSchema>;
 export type DeleteProjectRequest = z.infer<typeof DeleteProjectRequestSchema>;
 export type DeleteLabelRequest = z.infer<typeof DeleteLabelRequestSchema>;
@@ -2450,6 +2451,14 @@ export const UpdateSettingsRequestSchema = z.object({
 export const UpdateSettingsResponseSchema = ApiResponseSchema.extend({
   settings: UserSettingsSchema,
 });
+
+/**
+ * Schema for user update response
+ */
+export const UpdateUserResponseSchema = ApiResponseSchema.extend({
+  user: UserSchema,
+});
+
 // Generated types for settings
 export type UpdateSettingsRequest = z.infer<typeof UpdateSettingsRequestSchema>;
 export type UpdateSettingsResponse = z.infer<

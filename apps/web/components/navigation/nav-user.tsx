@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { User, Info, Bug, ChevronsUpDown, LogOut, Settings, Keyboard } from "lucide-react"
+import { User, Info, Bug, ChevronsUpDown, LogOut, Settings, Keyboard, UserPen } from "lucide-react"
 import { SiGithub, SiDiscord } from "@icons-pack/react-simple-icons"
 import { signOut } from "next-auth/react"
 import { toast } from "sonner"
@@ -26,7 +26,7 @@ import {
 import { AboutModal } from "@/components/dialogs/about-modal"
 import { useLanguage } from "@/components/providers/language-provider"
 import { useTranslation } from "@/lib/i18n/client"
-import { openSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
+import { openSettingsDialogAtom, openUserProfileDialogAtom } from "@/lib/atoms/ui/dialogs"
 import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
 import { LogoutConfirmDialog } from "@/components/dialogs/logout-confirm-dialog"
 
@@ -56,6 +56,7 @@ export function NavUser({ user }: NavUserProps) {
   const [aboutModalOpen, setAboutModalOpen] = useState(false)
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
   const openSettingsDialog = useSetAtom(openSettingsDialogAtom)
+  const openUserProfileDialog = useSetAtom(openUserProfileDialogAtom)
 
   const handleSignOut = () => {
     setLogoutDialogOpen(true)
@@ -135,6 +136,13 @@ export function NavUser({ user }: NavUserProps) {
                       <span className="truncate font-semibold">{user.name}</span>
                     </div>
                     <div className="flex items-center gap-1">
+                      <button
+                        onClick={openUserProfileDialog}
+                        className="opacity-60 hover:opacity-100 transition-opacity rounded hover:bg-accent p-2"
+                        title={t("userMenu.editProfile", "Edit Profile")}
+                      >
+                        <UserPen className="h-4 w-4" />
+                      </button>
                       <button
                         onClick={openSettingsDialog}
                         className="opacity-60 hover:opacity-100 transition-opacity rounded hover:bg-accent p-2"

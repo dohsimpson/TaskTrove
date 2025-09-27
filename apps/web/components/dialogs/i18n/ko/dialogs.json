@@ -75,6 +75,11 @@
       "title": "작업 삭제"
     }
   },
+  "logout": {
+    "confirm": "로그아웃",
+    "description": "정말 로그아웃하시겠습니까?",
+    "title": "로그아웃"
+  },
   "projectDialog": {
     "buttons": {
       "add": "{{type}} 추가"

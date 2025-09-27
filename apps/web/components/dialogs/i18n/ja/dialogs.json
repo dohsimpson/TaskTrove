@@ -75,6 +75,11 @@
       "title": "タスクを削除"
     }
   },
+  "logout": {
+    "confirm": "サインアウト",
+    "description": "本当にサインアウトしますか？",
+    "title": "サインアウト"
+  },
   "projectDialog": {
     "buttons": {
       "add": "{{type}}を追加"

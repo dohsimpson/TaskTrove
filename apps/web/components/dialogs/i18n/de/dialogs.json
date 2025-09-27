@@ -75,6 +75,11 @@
       "title": "Aufgabe löschen"
     }
   },
+  "logout": {
+    "confirm": "Abmelden",
+    "description": "Sind Sie sicher, dass Sie sich abmelden möchten?",
+    "title": "Abmelden"
+  },
   "projectDialog": {
     "buttons": {
       "add": "{{type}} hinzufügen"

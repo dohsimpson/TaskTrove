@@ -75,6 +75,11 @@
       "title": "删除任务"
     }
   },
+  "logout": {
+    "confirm": "退出登录",
+    "description": "您确定要退出登录吗？",
+    "title": "退出登录"
+  },
   "projectDialog": {
     "buttons": {
       "add": "添加{{type}}"

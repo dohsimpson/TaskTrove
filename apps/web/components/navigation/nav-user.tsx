@@ -28,6 +28,7 @@ import { useLanguage } from "@/components/providers/language-provider"
 import { useTranslation } from "@/lib/i18n/client"
 import { openSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
 import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
+import { LogoutConfirmDialog } from "@/components/dialogs/logout-confirm-dialog"
 
 interface ContextMenuItem {
   icon: React.ComponentType<{ className?: string }>
@@ -53,9 +54,14 @@ export function NavUser({ user }: NavUserProps) {
 
   const { isMobile } = useSidebar()
   const [aboutModalOpen, setAboutModalOpen] = useState(false)
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
   const openSettingsDialog = useSetAtom(openSettingsDialogAtom)
 
   const handleSignOut = () => {
+    setLogoutDialogOpen(true)
+  }
+
+  const handleConfirmLogout = () => {
     signOut()
     toast.success("Signing out...")
   }
@@ -199,6 +205,11 @@ export function NavUser({ user }: NavUserProps) {
       </SidebarMenu>
 
       <AboutModal open={aboutModalOpen} onOpenChange={setAboutModalOpen} />
+      <LogoutConfirmDialog
+        open={logoutDialogOpen}
+        onOpenChange={setLogoutDialogOpen}
+        onConfirm={handleConfirmLogout}
+      />
     </>
   )
 }

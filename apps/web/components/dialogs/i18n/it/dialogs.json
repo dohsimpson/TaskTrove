@@ -75,6 +75,11 @@
       "title": "Elimina attività"
     }
   },
+  "logout": {
+    "confirm": "Disconnetti",
+    "description": "Sei sicuro di voler disconnetterti?",
+    "title": "Disconnetti"
+  },
   "projectDialog": {
     "buttons": {
       "add": "Aggiungi {{type}}"

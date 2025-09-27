@@ -75,6 +75,11 @@
       "title": "Supprimer la tâche"
     }
   },
+  "logout": {
+    "confirm": "Se déconnecter",
+    "description": "Êtes-vous sûr de vouloir vous déconnecter ?",
+    "title": "Se déconnecter"
+  },
   "projectDialog": {
     "buttons": {
       "add": "Ajouter {{type}}"

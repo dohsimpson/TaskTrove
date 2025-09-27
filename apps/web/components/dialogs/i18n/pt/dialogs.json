@@ -75,6 +75,11 @@
       "title": "Excluir tarefa"
     }
   },
+  "logout": {
+    "confirm": "Sair",
+    "description": "Tem certeza de que deseja sair?",
+    "title": "Sair"
+  },
   "projectDialog": {
     "buttons": {
       "add": "Adicionar {{type}}"

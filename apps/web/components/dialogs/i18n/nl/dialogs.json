@@ -75,6 +75,11 @@
       "title": "Taak verwijderen"
     }
   },
+  "logout": {
+    "confirm": "Uitloggen",
+    "description": "Weet je zeker dat je wilt uitloggen?",
+    "title": "Uitloggen"
+  },
   "projectDialog": {
     "buttons": {
       "add": "{{type}} toevoegen"

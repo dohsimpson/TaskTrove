@@ -75,6 +75,11 @@
       "title": "Eliminar tarea"
     }
   },
+  "logout": {
+    "confirm": "Cerrar sesión",
+    "description": "¿Estás seguro de que quieres cerrar sesión?",
+    "title": "Cerrar sesión"
+  },
   "projectDialog": {
     "buttons": {
       "add": "Agregar {{type}}"

@@ -76,9 +76,10 @@
     }
   },
   "logout": {
+    "cancel": "キャンセル",
     "confirm": "サインアウト",
-    "description": "本当にサインアウトしますか？",
-    "title": "サインアウト"
+    "confirmMessage": "本当にサインアウトしますか？タスクにアクセスするには再度サインインする必要があります。",
+    "confirmTitle": "サインアウト"
   },
   "projectDialog": {
     "buttons": {
@@ -140,5 +141,31 @@
     },
     "description": "カスタマイズ、アクセシビリティ、他の設定",
     "title": "設定"
+  },
+  "userProfile": {
+    "changeAvatar": "アバターを変更",
+    "confirmPassword": {
+      "label": "パスワード確認",
+      "mismatch": "パスワードが一致しません",
+      "placeholder": "パスワードを再入力してください"
+    },
+    "errors": {
+      "fileSizeLimit": "アバターファイルのサイズは5MB未満である必要があります",
+      "invalidFileType": "有効な画像ファイルを選択してください",
+      "passwordMismatch": "パスワードが一致しません",
+      "updateFailed": "プロフィールの更新に失敗しました",
+      "usernameRequired": "ユーザー名が必要です"
+    },
+    "password": {
+      "label": "パスワード",
+      "placeholder": "現在のパスワードを保持する場合は空白のままにしてください"
+    },
+    "save": "変更を保存",
+    "saving": "保存中...",
+    "title": "プロフィールを編集",
+    "username": {
+      "label": "ユーザー名",
+      "placeholder": "ユーザー名を入力してください"
+    }
   }
 }

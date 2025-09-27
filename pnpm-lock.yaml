@@ -138,6 +138,9 @@ catalogs:
     '@types/archiver':
       specifier: ^6.0.3
       version: 6.0.3
+    '@types/bcryptjs':
+      specifier: ^2.4.6
+      version: 2.4.6
     '@types/node':
       specifier: ^22.15.3
       version: 22.18.6
@@ -174,6 +177,9 @@ catalogs:
     async-mutex:
       specifier: ^0.5.0
       version: 0.5.0
+    bcryptjs:
+      specifier: ^2.4.3
+      version: 2.4.3
     class-variance-authority:
       specifier: ^0.7.1
       version: 0.7.1
@@ -838,6 +844,9 @@ importers:
       '@tasktrove/types':
         specifier: workspace:*
         version: link:../types
+      bcryptjs:
+        specifier: 'catalog:'
+        version: 2.4.3
       clsx:
         specifier: 'catalog:'
         version: 2.1.1
@@ -863,6 +872,9 @@ importers:
       '@testing-library/jest-dom':
         specifier: 'catalog:'
         version: 6.8.0
+      '@types/bcryptjs':
+        specifier: 'catalog:'
+        version: 2.4.6
       '@types/node':
         specifier: 'catalog:'
         version: 22.18.6
@@ -2537,6 +2549,9 @@ packages:
   '@types/base16@1.0.5':
     resolution: {integrity: sha512-OzOWrTluG9cwqidEzC/Q6FAmIPcnZfm8BFRlIx0+UIUqnuAmi5OS88O0RpT3Yz6qdmqObvUhasrbNsCofE4W9A==}
 
+  '@types/bcryptjs@2.4.6':
+    resolution: {integrity: sha512-9xlo6R2qDs5uixm0bcIqCeMCE6HiQsIyel9KQySStiyqNl2tnj2mP3DX1Nf56MD6KMenNNlBBsy3LJ7gUEQPXQ==}
+
   '@types/chai@5.2.2':
     resolution: {integrity: sha512-8kB30R7Hwqf40JPiKhVzodJs2Qc1ZJ5zuT3uzw5Hq/dhNCl3G3l83jfpdI1e20BP348+fV7VIL/+FxaXkqBmWg==}
 
@@ -3049,6 +3064,9 @@ packages:
   bcp47@1.1.2:
     resolution: {integrity: sha512-JnkkL4GUpOvvanH9AZPX38CxhiLsXMBicBY2IAtqiVN8YulGDQybUydWA4W6yAMtw6iShtw+8HEF6cfrTHU+UQ==}
     engines: {node: '>=0.10'}
+
+  bcryptjs@2.4.3:
+    resolution: {integrity: sha512-V/Hy/X9Vt7f3BbPJEi8BdVFMByHi+jNXrYkW3huaybV/kQ0KJg0Y6PkEMbn+zeT+i+SiKZ/HMqJGIIt4LZDqNQ==}
 
   better-path-resolve@1.0.0:
     resolution: {integrity: sha512-pbnl5XzGBdrFU/wT4jqmJVPn2B6UHPBOhzMQkY/SPUPB6QtUXtmBHBIwCbXJol93mOpGMnQyP/+BB19q04xj7g==}
@@ -7651,6 +7669,8 @@ snapshots:
 
   '@types/base16@1.0.5': {}
 
+  '@types/bcryptjs@2.4.6': {}
+
   '@types/chai@5.2.2':
     dependencies:
       '@types/deep-eql': 4.0.2
@@ -8170,6 +8190,8 @@ snapshots:
   base64-js@1.5.1: {}
 
   bcp47@1.1.2: {}
+
+  bcryptjs@2.4.3: {}
 
   better-path-resolve@1.0.0:
     dependencies:

@@ -509,8 +509,8 @@ export const TaskCommentSerializationSchema = z.object({
 export const UserSchema = z.object({
   /** Username for the user */
   username: z.string(),
-  /** Optional password for authentication */
-  password: z.string().optional(),
+  /** Password for authentication */
+  password: z.string(),
   /** File path to user's avatar image */
   avatar: z.string().optional(),
 });
@@ -2007,14 +2007,19 @@ export const LabelUpdateArraySerializationSchema = z.array(
  * Schema for updating user via API
  */
 export const UpdateUserRequestSchema = UserSchema.partial().extend({
-  password: UserSchema.shape.password.nullable(),
   avatar: UserSchema.shape.avatar.nullable(),
+});
+
+/**
+ * Schema for initial setup request - setting password for first time
+ */
+export const InitialSetupRequestSchema = z.object({
+  password: z.string().min(1, "Password is required"),
 });
 
 // Serialization schemas for UpdateUser (colocated with request schema)
 export const UserUpdateSerializationSchema =
   UserSerializationSchema.partial().extend({
-    password: UserSerializationSchema.shape.password.nullable(),
     avatar: UserSerializationSchema.shape.avatar.nullable(),
   });
 
@@ -2122,6 +2127,13 @@ export const DeleteLabelResponseSchema = ApiResponseSchema.extend({
 });
 
 /**
+ * Initial setup response schema
+ */
+export const InitialSetupResponseSchema = ApiResponseSchema.extend({
+  user: UserSchema,
+});
+
+/**
  * Error response schema
  */
 export const ErrorResponseSchema = z.object({
@@ -2145,6 +2157,8 @@ export type ProjectUpdateUnion = z.infer<typeof ProjectUpdateUnionSchema>;
 export type UpdateLabelRequest = z.infer<typeof UpdateLabelRequestSchema>;
 export type LabelUpdateUnion = z.infer<typeof LabelUpdateUnionSchema>;
 export type UpdateUserRequest = z.infer<typeof UpdateUserRequestSchema>;
+export type InitialSetupRequest = z.infer<typeof InitialSetupRequestSchema>;
+export type InitialSetupResponse = z.infer<typeof InitialSetupResponseSchema>;
 export type UpdateUserResponse = z.infer<typeof UpdateUserResponseSchema>;
 export type DeleteTaskRequest = z.infer<typeof DeleteTaskRequestSchema>;
 export type DeleteProjectRequest = z.infer<typeof DeleteProjectRequestSchema>;

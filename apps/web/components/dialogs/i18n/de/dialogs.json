@@ -76,9 +76,10 @@
     }
   },
   "logout": {
+    "cancel": "Abbrechen",
     "confirm": "Abmelden",
-    "description": "Sind Sie sicher, dass Sie sich abmelden möchten?",
-    "title": "Abmelden"
+    "confirmMessage": "Sind Sie sicher, dass Sie sich abmelden möchten? Sie müssen sich erneut anmelden, um auf Ihre Aufgaben zuzugreifen.",
+    "confirmTitle": "Abmelden"
   },
   "projectDialog": {
     "buttons": {
@@ -140,5 +141,31 @@
     },
     "description": "TaskTrove-Anwendungseinstellungen und -präferenzen konfigurieren",
     "title": "Einstellungen"
+  },
+  "userProfile": {
+    "changeAvatar": "Avatar ändern",
+    "confirmPassword": {
+      "label": "Passwort bestätigen",
+      "mismatch": "Passwörter stimmen nicht überein",
+      "placeholder": "Passwort erneut eingeben"
+    },
+    "errors": {
+      "fileSizeLimit": "Avatar-Dateigröße muss unter 5MB liegen",
+      "invalidFileType": "Bitte wählen Sie eine gültige Bilddatei aus",
+      "passwordMismatch": "Passwörter stimmen nicht überein",
+      "updateFailed": "Profil-Update fehlgeschlagen",
+      "usernameRequired": "Benutzername ist erforderlich"
+    },
+    "password": {
+      "label": "Passwort",
+      "placeholder": "Leer lassen, um aktuelles Passwort beizubehalten"
+    },
+    "save": "Änderungen speichern",
+    "saving": "Speichern...",
+    "title": "Profil bearbeiten",
+    "username": {
+      "label": "Benutzername",
+      "placeholder": "Ihren Benutzernamen eingeben"
+    }
   }
 }

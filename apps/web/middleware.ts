@@ -85,11 +85,12 @@ function middleware(req: NextRequest) {
   const authReq = req as NextAuthRequest
 
   // const isAPIRoute = req.nextUrl.pathname.startsWith("/api/")
-  const isSignInRoute = req.nextUrl.pathname.startsWith("/signin")
   const isAuthRoute = req.nextUrl.pathname.startsWith("/api/auth")
+  const isSignInRoute = req.nextUrl.pathname.startsWith("/signin")
+  const isInitialSetupAPIRoute = req.nextUrl.pathname.startsWith("/api/initial-setup")
   // const isAsset = req.nextUrl.pathname.match(/\.(ico|png|jpg|jpeg|gif|svg|css|js)$/)
 
-  if (isAuthRoute || isSignInRoute) {
+  if (isAuthRoute || isSignInRoute || isInitialSetupAPIRoute) {
     return setI18nResponse(NextResponse.next(), lng, req)
   }
 

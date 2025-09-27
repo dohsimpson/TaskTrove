@@ -22,7 +22,7 @@ export interface LogoutConfirmDialogProps {
 
 export function LogoutConfirmDialog({ open, onOpenChange, onConfirm }: LogoutConfirmDialogProps) {
   const { language } = useLanguage()
-  const { t } = useTranslation(language, "navigation")
+  const { t } = useTranslation(language, "dialogs")
 
   const handleConfirm = () => {
     onConfirm()
@@ -44,9 +44,7 @@ export function LogoutConfirmDialog({ open, onOpenChange, onConfirm }: LogoutCon
         <AlertDialogFooter>
           <AlertDialogCancel>{t("logout.cancel", "Cancel")}</AlertDialogCancel>
           <AlertDialogAction asChild>
-            <Button onClick={handleConfirm} variant="outline">
-              {t("logout.confirm", "Sign Out")}
-            </Button>
+            <Button onClick={handleConfirm}>{t("logout.confirm", "Sign Out")}</Button>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

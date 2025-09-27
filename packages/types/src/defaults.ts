@@ -103,6 +103,7 @@ export const DEFAULT_USER_SETTINGS = {
  */
 export const DEFAULT_USER: User = {
   username: "admin",
+  password: "",
 };
 
 /**

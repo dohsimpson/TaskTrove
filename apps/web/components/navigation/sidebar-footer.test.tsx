@@ -6,10 +6,9 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 
 // Mock NavUser component since context menu functionality is now there
 vi.mock("./nav-user", () => ({
-  NavUser: ({ user }: { user: { name: string; email: string } }) => (
+  NavUser: () => (
     <div data-testid="nav-user">
-      <span>{user.name}</span>
-      <span>{user.email}</span>
+      <span>Test User</span>
     </div>
   ),
 }))
@@ -43,13 +42,11 @@ describe("AppSidebarFooter", () => {
     expect(() => render(<AppSidebarFooter />, { wrapper: TestWrapper })).not.toThrow()
   })
 
-  it("renders NavUser component with correct user data", () => {
+  it("renders NavUser component", () => {
     render(<AppSidebarFooter />, { wrapper: TestWrapper })
 
     const navUser = screen.getByTestId("nav-user")
     expect(navUser).toBeInTheDocument()
-    expect(screen.getByText("admin")).toBeInTheDocument()
-    expect(screen.getByText("admin@tasktrove.local")).toBeInTheDocument()
   })
 
   it("does not show update notification when no update available", () => {

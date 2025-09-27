@@ -22,6 +22,21 @@ vi.mock("@/lib/atoms/ui/dialogs", () => ({
   openUserProfileDialogAtom: vi.fn(),
 }))
 
+// Mock userAtom
+vi.mock("@/lib/atoms", () => ({
+  userAtom: vi.fn(),
+}))
+
+// Mock jotai hooks
+vi.mock("jotai", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("jotai")>()
+  return {
+    ...actual,
+    useAtomValue: vi.fn(),
+    useSetAtom: vi.fn(),
+  }
+})
+
 // Mock ComingSoonWrapper
 vi.mock("@/components/ui/coming-soon-wrapper", () => ({
   ComingSoonWrapper: ({ children }: { children: React.ReactNode }) => children,
@@ -110,19 +125,23 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 
 describe("NavUser", () => {
   const mockUser = {
-    name: "John Doe",
-    email: "john.doe@example.com",
+    username: "John Doe",
     avatar: "https://example.com/avatar.jpg",
   }
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
+
+    // Mock useAtomValue to return our mock user data
+    const { useAtomValue, useSetAtom } = vi.mocked(await import("jotai"))
+    useAtomValue.mockReturnValue(mockUser)
+    useSetAtom.mockReturnValue(vi.fn())
   })
 
   it("renders user information correctly", () => {
     render(
       <TestWrapper>
-        <NavUser user={mockUser} />
+        <NavUser />
       </TestWrapper>,
     )
 
@@ -135,7 +154,7 @@ describe("NavUser", () => {
   it("has clickable dropdown trigger", () => {
     render(
       <TestWrapper>
-        <NavUser user={mockUser} />
+        <NavUser />
       </TestWrapper>,
     )
 
@@ -153,7 +172,7 @@ describe("NavUser", () => {
   it("includes context menu items in component", () => {
     render(
       <TestWrapper>
-        <NavUser user={mockUser} />
+        <NavUser />
       </TestWrapper>,
     )
 
@@ -169,15 +188,16 @@ describe("NavUser", () => {
     }
   })
 
-  it("renders fallback avatar when no avatar provided", () => {
-    const userWithoutAvatar = {
-      name: "John Doe",
-      email: "john.doe@example.com",
-    }
+  it("renders fallback avatar when no avatar provided", async () => {
+    // Mock useAtomValue to return user without avatar
+    const { useAtomValue } = vi.mocked(await import("jotai"))
+    useAtomValue.mockReturnValue({
+      username: "John Doe",
+    })
 
     render(
       <TestWrapper>
-        <NavUser user={userWithoutAvatar} />
+        <NavUser />
       </TestWrapper>,
     )
 
@@ -185,29 +205,52 @@ describe("NavUser", () => {
     expect(document.querySelector(".lucide-user")).toBeInTheDocument()
   })
 
-  it("truncates long names", () => {
-    const userWithLongInfo = {
-      name: "Very Long Name That Should Be Truncated",
-    }
+  it("truncates long names", async () => {
+    // Mock useAtomValue to return user with long name
+    const { useAtomValue } = vi.mocked(await import("jotai"))
+    useAtomValue.mockReturnValue({
+      username: "Very Long Name That Should Be Truncated",
+    })
 
     render(
       <TestWrapper>
-        <NavUser user={userWithLongInfo} />
+        <NavUser />
       </TestWrapper>,
     )
 
-    const nameElements = screen.getAllByText(userWithLongInfo.name)
+    const nameElements = screen.getAllByText("Very Long Name That Should Be Truncated")
     expect(nameElements.length).toBeGreaterThan(0)
 
     const nameElement = nameElements[0]
     expect(nameElement).toHaveClass("truncate")
   })
 
+  describe("User Profile Functionality", () => {
+    it("renders clickable profile area with correct accessibility", () => {
+      render(
+        <TestWrapper>
+          <NavUser />
+        </TestWrapper>,
+      )
+
+      // Find the profile area (with title "Edit Profile")
+      const profileArea = screen.getByTitle("Edit Profile")
+      expect(profileArea).toBeInTheDocument()
+
+      // Verify it has the correct cursor style
+      expect(profileArea).toHaveClass("cursor-pointer")
+
+      // Verify it can be clicked without errors
+      fireEvent.click(profileArea)
+      expect(profileArea).toBeInTheDocument()
+    })
+  })
+
   describe("Logout Functionality", () => {
     it("opens logout confirmation dialog when logout button is clicked", () => {
       render(
         <TestWrapper>
-          <NavUser user={mockUser} />
+          <NavUser />
         </TestWrapper>,
       )
 
@@ -229,7 +272,7 @@ describe("NavUser", () => {
     it("calls signOut function when logout is confirmed", async () => {
       render(
         <TestWrapper>
-          <NavUser user={mockUser} />
+          <NavUser />
         </TestWrapper>,
       )
 
@@ -251,7 +294,7 @@ describe("NavUser", () => {
 
       render(
         <TestWrapper>
-          <NavUser user={mockUser} />
+          <NavUser />
         </TestWrapper>,
       )
 
@@ -270,7 +313,7 @@ describe("NavUser", () => {
     it("closes dialog when cancel is clicked", () => {
       render(
         <TestWrapper>
-          <NavUser user={mockUser} />
+          <NavUser />
         </TestWrapper>,
       )
 

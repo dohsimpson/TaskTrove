@@ -76,9 +76,10 @@
     }
   },
   "logout": {
+    "cancel": "취소",
     "confirm": "로그아웃",
-    "description": "정말 로그아웃하시겠습니까?",
-    "title": "로그아웃"
+    "confirmMessage": "정말 로그아웃하시겠습니까? 작업에 액세스하려면 다시 로그인해야 합니다.",
+    "confirmTitle": "로그아웃"
   },
   "projectDialog": {
     "buttons": {
@@ -140,5 +141,31 @@
     },
     "description": "TaskTrove 애플리케이션 설정 및 환경설정 구성",
     "title": "설정"
+  },
+  "userProfile": {
+    "changeAvatar": "아바타 변경",
+    "confirmPassword": {
+      "label": "비밀번호 확인",
+      "mismatch": "비밀번호가 일치하지 않습니다",
+      "placeholder": "비밀번호를 다시 입력하세요"
+    },
+    "errors": {
+      "fileSizeLimit": "아바타 파일 크기는 5MB 미만이어야 합니다",
+      "invalidFileType": "유효한 이미지 파일을 선택하세요",
+      "passwordMismatch": "비밀번호가 일치하지 않습니다",
+      "updateFailed": "프로필 업데이트에 실패했습니다",
+      "usernameRequired": "사용자명이 필요합니다"
+    },
+    "password": {
+      "label": "비밀번호",
+      "placeholder": "현재 비밀번호를 유지하려면 비워두세요"
+    },
+    "save": "변경사항 저장",
+    "saving": "저장 중...",
+    "title": "프로필 편집",
+    "username": {
+      "label": "사용자명",
+      "placeholder": "사용자명을 입력하세요"
+    }
   }
 }

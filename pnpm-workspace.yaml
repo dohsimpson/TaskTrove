@@ -37,6 +37,7 @@ catalog:
   "accept-language": "^3.0.20"
   "archiver": "^7.0.1"
   "async-mutex": "^0.5.0"
+  "bcryptjs": "^2.4.3"
   "cmdk": "^1.1.1"
   "embla-carousel-react": "^8.6.0"
   "input-otp": "^1.4.2"
@@ -113,6 +114,7 @@ catalog:
   "@types/react": "^19.1.13"
   "@types/react-dom": "^19.1.1"
   "@types/archiver": "^6.0.3"
+  "@types/bcryptjs": "^2.4.6"
   "@types/node-cron": "^3.0.11"
   "@types/uuid": "^10.0.0"
 

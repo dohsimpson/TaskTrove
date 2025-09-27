@@ -15,11 +15,6 @@ export function AppSidebarFooter() {
 
   const { hasUpdate, latestVersion, releaseUrl } = useUpdateChecker()
 
-  const userData = {
-    name: "admin",
-    email: "admin@tasktrove.local",
-  }
-
   return (
     <SidebarFooter className="bg-background border-t gap-0">
       {/* Updates Available */}
@@ -42,7 +37,7 @@ export function AppSidebarFooter() {
         </SidebarMenu>
       )}
       {/* NavUser Component with integrated context menu */}
-      <NavUser user={userData} />
+      <NavUser />
     </SidebarFooter>
   )
 }

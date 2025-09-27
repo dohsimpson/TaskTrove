@@ -8,6 +8,7 @@ import resourcesToBackend from "i18next-resources-to-backend"
  * 4. Colocated layout translations from components/layout/
  * 5. Colocated navigation translations from components/navigation/
  * 6. Colocated task translations from components/task/
+ * 7. Colocated auth translations from components/auth/
  */
 export function createCombinedResourceBackend() {
   return resourcesToBackend(async (language: string, namespace: string) => {
@@ -71,6 +72,15 @@ export function createCombinedResourceBackend() {
         return taskTranslations
       } catch (error) {
         console.warn(`Failed to load colocated task translation for ${language}:`, error)
+      }
+    }
+
+    if (namespace === "auth") {
+      try {
+        const authTranslations = await import(`@/components/auth/i18n/${language}/auth.json`)
+        return authTranslations
+      } catch (error) {
+        console.warn(`Failed to load colocated auth translation for ${language}:`, error)
       }
     }
 

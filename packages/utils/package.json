@@ -17,7 +17,8 @@
     "./parser": "./src/parser.ts",
     "./time-estimation": "./src/time-estimation.ts",
     "./origin-validation": "./src/origin-validation.ts",
-    "./shared-patterns": "./src/shared-patterns.ts"
+    "./shared-patterns": "./src/shared-patterns.ts",
+    "./encryption": "./src/encryption.ts"
   },
   "scripts": {
     "lint": "eslint .",
@@ -28,6 +29,7 @@
   },
   "dependencies": {
     "@tasktrove/types": "workspace:*",
+    "bcryptjs": "catalog:",
     "clsx": "catalog:",
     "date-fns": "latest",
     "slugify": "catalog:",
@@ -38,6 +40,7 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@testing-library/jest-dom": "catalog:",
+    "@types/bcryptjs": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:",
     "@vitest/coverage-v8": "catalog:",

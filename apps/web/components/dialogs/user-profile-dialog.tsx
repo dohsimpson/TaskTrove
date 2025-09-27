@@ -33,7 +33,6 @@ export function UserProfileDialog() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [avatar, setAvatar] = useState<string | undefined>(undefined)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [disablePassword, setDisablePassword] = useState(false)
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -45,7 +44,6 @@ export function UserProfileDialog() {
       setPassword("") // Always start with empty password for security
       setConfirmPassword("")
       setAvatar(currentUser.avatar)
-      setDisablePassword(!currentUser.password) // Set to true if user has no password
       setError("")
     }
   }, [open, currentUser])
@@ -80,7 +78,7 @@ export function UserProfileDialog() {
     }
 
     // Validate password confirmation if password is being set
-    if (!disablePassword && password.trim() && password !== confirmPassword) {
+    if (password && password !== confirmPassword) {
       setError(t("userProfile.errors.passwordMismatch", "Passwords do not match"))
       return
     }
@@ -94,13 +92,9 @@ export function UserProfileDialog() {
         username: username.trim(),
       }
 
-      // Handle password based on disable password toggle
-      if (disablePassword) {
-        // Send null to remove password protection
-        updateRequest.password = null
-      } else if (password.trim()) {
-        // Only include password if it was changed and not disabled
-        updateRequest.password = password.trim()
+      // Include password if it was changed
+      if (password) {
+        updateRequest.password = password
       }
 
       // Only include avatar if it was changed
@@ -132,7 +126,6 @@ export function UserProfileDialog() {
     setConfirmPassword("")
     setAvatar(currentUser.avatar)
     setAvatarFile(null)
-    setDisablePassword(!currentUser.password)
     setError("")
     closeDialog()
   }
@@ -144,8 +137,8 @@ export function UserProfileDialog() {
       return false
     }
 
-    // If password is being set (not disabled and has content), confirm password must match
-    if (!disablePassword && password.trim() && password !== confirmPassword) {
+    // If password is being set, confirm password must match
+    if (password && password !== confirmPassword) {
       return false
     }
 
@@ -206,59 +199,45 @@ export function UserProfileDialog() {
             />
           </div>
 
-          {/* Password Field - Only show when password is not disabled */}
-          {!disablePassword && (
-            <div className="space-y-4">
+          {/* Password Field */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="password">{t("userProfile.password.label", "Password")}</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t(
+                  "userProfile.password.placeholder",
+                  "Leave blank to keep current password",
+                )}
+              />
+            </div>
+
+            {/* Confirm Password Field - Only show when user is typing a password */}
+            {password && (
               <div className="space-y-2">
-                <Label htmlFor="password">{t("userProfile.password.label", "Password")}</Label>
+                <Label htmlFor="confirm-password">
+                  {t("userProfile.confirmPassword.label", "Confirm Password")}
+                </Label>
                 <Input
-                  id="password"
+                  id="confirm-password"
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder={t(
-                    "userProfile.password.placeholder",
-                    "Leave blank to keep current password",
+                    "userProfile.confirmPassword.placeholder",
+                    "Re-enter your password",
                   )}
                 />
+                {confirmPassword && password !== confirmPassword && (
+                  <p className="text-xs text-red-600">
+                    {t("userProfile.confirmPassword.mismatch", "Passwords do not match")}
+                  </p>
+                )}
               </div>
-
-              {/* Confirm Password Field - Only show when user is typing a password */}
-              {password.trim() && (
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-password">
-                    {t("userProfile.confirmPassword.label", "Confirm Password")}
-                  </Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder={t(
-                      "userProfile.confirmPassword.placeholder",
-                      "Re-enter your password",
-                    )}
-                  />
-                  {confirmPassword && password !== confirmPassword && (
-                    <p className="text-xs text-red-600">
-                      {t("userProfile.confirmPassword.mismatch", "Passwords do not match")}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Disable Password Toggle */}
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="disable-password"
-              checked={disablePassword}
-              onCheckedChange={setDisablePassword}
-            />
-            <Label htmlFor="disable-password" className="text-sm font-normal">
-              {t("userProfile.disablePassword.label", "Disable password protection")}
-            </Label>
+            )}
           </div>
 
           {/* Error Message */}

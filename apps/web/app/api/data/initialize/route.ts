@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
-import { promises as fs } from "fs"
-import { DEFAULT_DATA_FILE_PATH } from "@tasktrove/constants"
 import { checkDataFile } from "@/lib/startup-checks"
-import tutorialData from "@/lib/constants/tutorial-data.json"
 import { isValidOrigin } from "@/lib/utils/origin-validation"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
+import { writeInitialDataFile } from "@/lib/utils/data-initialization"
 
 async function initializeData(request: NextRequest) {
   // Validate origin first
@@ -39,7 +37,7 @@ async function initializeData(request: NextRequest) {
     }
 
     // Initialize with tutorial data
-    await fs.writeFile(DEFAULT_DATA_FILE_PATH, JSON.stringify(tutorialData, null, 2))
+    await writeInitialDataFile()
 
     return NextResponse.json({
       status: "success",

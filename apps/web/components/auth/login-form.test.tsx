@@ -35,7 +35,7 @@ describe("LoginForm", () => {
 
   describe("Rendering", () => {
     it("renders card layout with form elements", () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       expect(screen.getByPlaceholderText("Password")).toBeInTheDocument()
       expect(screen.getByRole("button", { name: "Sign In" })).toBeInTheDocument()
@@ -44,7 +44,7 @@ describe("LoginForm", () => {
     })
 
     it("has proper password input attributes", () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const passwordInput = screen.getByPlaceholderText("Password")
       expect(passwordInput).toHaveAttribute("type", "password")
@@ -52,7 +52,7 @@ describe("LoginForm", () => {
     })
 
     it("shows password visibility toggle button when there is text", async () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const passwordInput = screen.getByPlaceholderText("Password")
       await user.type(passwordInput, "test")
@@ -62,7 +62,7 @@ describe("LoginForm", () => {
     })
 
     it("shows Eye icon when password is hidden and text is present", async () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const passwordInput = screen.getByPlaceholderText("Password")
       await user.type(passwordInput, "test")
@@ -73,7 +73,7 @@ describe("LoginForm", () => {
     })
 
     it("shows EyeOff icon when password is visible", async () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const passwordInput = screen.getByPlaceholderText("Password")
       await user.type(passwordInput, "test")
@@ -89,7 +89,7 @@ describe("LoginForm", () => {
 
   describe("Form Validation", () => {
     it("shows error when password is empty", async () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const submitButton = screen.getByRole("button", { name: "Sign In" })
       await user.click(submitButton)
@@ -98,7 +98,7 @@ describe("LoginForm", () => {
     })
 
     it("clears error when valid password is provided", async () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       // First trigger error
       const submitButton = screen.getByRole("button", { name: "Sign In" })
@@ -117,7 +117,7 @@ describe("LoginForm", () => {
 
   describe("Password Visibility Toggle", () => {
     it("toggles password visibility when button is clicked", async () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const passwordInput = screen.getByPlaceholderText("Password")
       await user.type(passwordInput, "test")
@@ -139,7 +139,7 @@ describe("LoginForm", () => {
     })
 
     it("changes toggle button aria-label correctly", async () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const passwordInput = screen.getByPlaceholderText("Password")
       await user.type(passwordInput, "test")
@@ -156,7 +156,9 @@ describe("LoginForm", () => {
     })
 
     it("does not submit form when password toggle is clicked", async () => {
-      render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
+      render(
+        <LoginForm needsPasswordSetup={false} onSuccess={mockOnSuccess} onCancel={mockOnCancel} />,
+      )
 
       const passwordInput = screen.getByPlaceholderText("Password")
       await user.type(passwordInput, "test")
@@ -170,7 +172,7 @@ describe("LoginForm", () => {
 
   describe("Form Interactions", () => {
     it("updates password field when typed", async () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const passwordInput = screen.getByPlaceholderText("Password")
       await user.type(passwordInput, "mypassword")
@@ -188,7 +190,9 @@ describe("LoginForm", () => {
       })
       vi.mocked(signIn).mockReturnValue(signInPromise as any)
 
-      render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
+      render(
+        <LoginForm needsPasswordSetup={false} onSuccess={mockOnSuccess} onCancel={mockOnCancel} />,
+      )
 
       const passwordInput = screen.getByPlaceholderText("Password")
       const submitButton = screen.getByRole("button", { name: "Sign In" })
@@ -213,7 +217,9 @@ describe("LoginForm", () => {
       })
       vi.mocked(signIn).mockReturnValue(signInPromise as any)
 
-      render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
+      render(
+        <LoginForm needsPasswordSetup={false} onSuccess={mockOnSuccess} onCancel={mockOnCancel} />,
+      )
 
       const passwordInput = screen.getByPlaceholderText("Password")
       const submitButton = screen.getByRole("button", { name: "Sign In" })
@@ -228,7 +234,9 @@ describe("LoginForm", () => {
     })
 
     it("disables toggle button during loading", async () => {
-      render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
+      render(
+        <LoginForm needsPasswordSetup={false} onSuccess={mockOnSuccess} onCancel={mockOnCancel} />,
+      )
 
       const passwordInput = screen.getByPlaceholderText("Password")
       const submitButton = screen.getByRole("button", { name: "Sign In" })
@@ -250,7 +258,9 @@ describe("LoginForm", () => {
       // Mock successful sign in
       vi.mocked(signIn).mockResolvedValue({ ok: true, error: null } as any)
 
-      render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
+      render(
+        <LoginForm needsPasswordSetup={false} onSuccess={mockOnSuccess} onCancel={mockOnCancel} />,
+      )
 
       const passwordInput = screen.getByPlaceholderText("Password")
       const submitButton = screen.getByRole("button", { name: "Sign In" })
@@ -266,7 +276,9 @@ describe("LoginForm", () => {
     })
 
     it("does not submit form when validation fails", async () => {
-      render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
+      render(
+        <LoginForm needsPasswordSetup={false} onSuccess={mockOnSuccess} onCancel={mockOnCancel} />,
+      )
 
       const submitButton = screen.getByRole("button", { name: "Sign In" })
       await user.click(submitButton)
@@ -289,7 +301,9 @@ describe("LoginForm", () => {
       // Mock successful sign in
       vi.mocked(signIn).mockResolvedValue({ ok: true, error: null } as any)
 
-      render(<LoginForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />)
+      render(
+        <LoginForm needsPasswordSetup={false} onSuccess={mockOnSuccess} onCancel={mockOnCancel} />,
+      )
 
       const passwordInput = screen.getByPlaceholderText("Password")
 
@@ -304,7 +318,7 @@ describe("LoginForm", () => {
 
   describe("Error Handling", () => {
     it("applies error styling to password field when there's an error", async () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const submitButton = screen.getByRole("button", { name: "Sign In" })
       await user.click(submitButton)
@@ -316,7 +330,7 @@ describe("LoginForm", () => {
     it("removes error styling when field becomes valid", async () => {
       const { signIn } = await import("next-auth/react")
 
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       // First trigger error
       const submitButton = screen.getByRole("button", { name: "Sign In" })
@@ -340,21 +354,21 @@ describe("LoginForm", () => {
 
   describe("Accessibility", () => {
     it("has proper form structure", () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const form = document.querySelector("form")
       expect(form).toBeInTheDocument()
     })
 
     it("has proper label associations", () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const passwordInput = screen.getByPlaceholderText("Password")
       expect(passwordInput).toHaveAttribute("id", "password")
     })
 
     it("has proper button types", async () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const passwordInput = screen.getByPlaceholderText("Password")
       await user.type(passwordInput, "test")
@@ -367,7 +381,7 @@ describe("LoginForm", () => {
     })
 
     it("has proper aria-labels for password toggle", async () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const passwordInput = screen.getByPlaceholderText("Password")
       await user.type(passwordInput, "test")
@@ -377,7 +391,7 @@ describe("LoginForm", () => {
     })
 
     it("updates aria-label when password visibility changes", async () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const passwordInput = screen.getByPlaceholderText("Password")
       await user.type(passwordInput, "test")
@@ -400,7 +414,7 @@ describe("LoginForm", () => {
 
   describe("User Experience", () => {
     it("has proper card layout", () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       // Check for card structure
       const card =
@@ -409,14 +423,14 @@ describe("LoginForm", () => {
     })
 
     it("has proper spacing and padding in form", () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const form = document.querySelector("form")
       expect(form).toHaveClass("space-y-4")
     })
 
     it("positions toggle button correctly", async () => {
-      render(<LoginForm onCancel={mockOnCancel} />)
+      render(<LoginForm needsPasswordSetup={false} onCancel={mockOnCancel} />)
 
       const passwordInput = screen.getByPlaceholderText("Password")
       await user.type(passwordInput, "test")

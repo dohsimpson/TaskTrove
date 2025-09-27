@@ -1,12 +1,21 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { z } from "zod"
+import { verifyPassword } from "@tasktrove/utils"
+import { safeReadDataFile } from "@/lib/utils/safe-file-operations"
 
-// Single user credentials - in a real app, these would come from environment variables
-const SINGLE_USER = {
-  id: "1",
-  name: "TaskTrove User",
-  password: "password123", // In production, this should be hashed
+// Helper function to get current user from data file
+async function getCurrentUser() {
+  try {
+    const fileData = await safeReadDataFile()
+    if (!fileData) {
+      return null
+    }
+    return fileData.user
+  } catch (error) {
+    console.error("Failed to read user data:", error)
+    return null
+  }
 }
 
 const credentialsSchema = z.object({
@@ -28,11 +37,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         try {
           const { password } = credentialsSchema.parse(credentials)
 
-          // Simple password check for single user
-          if (password === SINGLE_USER.password) {
+          // Get current user from data file
+          const currentUser = await getCurrentUser()
+          if (!currentUser) {
+            return null
+          }
+
+          // Verify password using secure hash comparison
+          if (verifyPassword(password, currentUser.password)) {
             return {
-              id: SINGLE_USER.id,
-              name: SINGLE_USER.name,
+              // id: "1", // Static ID for single user app
+              name: currentUser.username,
             }
           }
 
@@ -44,7 +59,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   pages: {
-    signIn: "/auth/signin",
+    signIn: "/signin",
   },
   session: {
     strategy: "jwt",

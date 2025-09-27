@@ -1,9 +1,13 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { LoginForm } from "@/components/auth/login-form"
+import { DynamicLoginForm } from "@/components/auth/dynamic-login-form"
 
-export function LoginPage() {
+interface LoginPageProps {
+  needsPasswordSetup: boolean
+}
+
+export function LoginPage({ needsPasswordSetup }: LoginPageProps) {
   const router = useRouter()
 
   const handleLoginSuccess = () => {
@@ -17,7 +21,7 @@ export function LoginPage() {
 
       {/* Content */}
       <div className="relative z-10 flex w-full max-w-sm sm:max-w-md flex-col gap-6">
-        <LoginForm onSuccess={handleLoginSuccess} />
+        <DynamicLoginForm needsPasswordSetup={needsPasswordSetup} onSuccess={handleLoginSuccess} />
       </div>
     </div>
   )

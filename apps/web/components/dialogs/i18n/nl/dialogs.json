@@ -76,9 +76,10 @@
     }
   },
   "logout": {
+    "cancel": "Annuleren",
     "confirm": "Uitloggen",
-    "description": "Weet je zeker dat je wilt uitloggen?",
-    "title": "Uitloggen"
+    "confirmMessage": "Weet je zeker dat je wilt uitloggen? Je moet opnieuw inloggen om toegang te krijgen tot je taken.",
+    "confirmTitle": "Uitloggen"
   },
   "projectDialog": {
     "buttons": {
@@ -140,5 +141,31 @@
     },
     "description": "TaskTrove applicatie-instellingen en voorkeuren configureren",
     "title": "Instellingen"
+  },
+  "userProfile": {
+    "changeAvatar": "Avatar wijzigen",
+    "confirmPassword": {
+      "label": "Wachtwoord bevestigen",
+      "mismatch": "Wachtwoorden komen niet overeen",
+      "placeholder": "Voer je wachtwoord opnieuw in"
+    },
+    "errors": {
+      "fileSizeLimit": "Avatar bestandsgrootte moet onder 5MB zijn",
+      "invalidFileType": "Selecteer een geldig afbeeldingsbestand",
+      "passwordMismatch": "Wachtwoorden komen niet overeen",
+      "updateFailed": "Profiel bijwerken mislukt",
+      "usernameRequired": "Gebruikersnaam is verplicht"
+    },
+    "password": {
+      "label": "Wachtwoord",
+      "placeholder": "Laat leeg om huidig wachtwoord te behouden"
+    },
+    "save": "Wijzigingen opslaan",
+    "saving": "Opslaan...",
+    "title": "Profiel bewerken",
+    "username": {
+      "label": "Gebruikersnaam",
+      "placeholder": "Voer je gebruikersnaam in"
+    }
   }
 }

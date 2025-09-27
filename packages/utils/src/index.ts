@@ -31,6 +31,9 @@ export * from "./parser";
 // Shared patterns (used by parser for autocomplete/highlighting)
 export * from "./shared-patterns";
 
+// Encryption utilities
+export * from "./encryption";
+
 // Re-export commonly used utilities for convenience
 export { cn } from "./styling";
 export { getContrastColor } from "./color";
@@ -68,3 +71,4 @@ export {
   DATE_SUGGESTIONS,
   TIME_SUGGESTIONS,
 } from "./parser";
+export { saltAndHashPassword, verifyPassword } from "./encryption";

@@ -76,9 +76,10 @@
     }
   },
   "logout": {
+    "cancel": "Annuler",
     "confirm": "Se déconnecter",
-    "description": "Êtes-vous sûr de vouloir vous déconnecter ?",
-    "title": "Se déconnecter"
+    "confirmMessage": "Êtes-vous sûr de vouloir vous déconnecter ? Vous devrez vous reconnecter pour accéder à vos tâches.",
+    "confirmTitle": "Se déconnecter"
   },
   "projectDialog": {
     "buttons": {
@@ -140,5 +141,31 @@
     },
     "description": "Configurer les paramètres et préférences de l'application TaskTrove",
     "title": "Paramètres"
+  },
+  "userProfile": {
+    "changeAvatar": "Changer l'Avatar",
+    "confirmPassword": {
+      "label": "Confirmer le Mot de Passe",
+      "mismatch": "Les mots de passe ne correspondent pas",
+      "placeholder": "Saisissez à nouveau votre mot de passe"
+    },
+    "errors": {
+      "fileSizeLimit": "La taille du fichier avatar doit être inférieure à 5MB",
+      "invalidFileType": "Veuillez sélectionner un fichier image valide",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "updateFailed": "Échec de la mise à jour du profil",
+      "usernameRequired": "Le nom d'utilisateur est requis"
+    },
+    "password": {
+      "label": "Mot de Passe",
+      "placeholder": "Laissez vide pour conserver le mot de passe actuel"
+    },
+    "save": "Enregistrer les Modifications",
+    "saving": "Enregistrement...",
+    "title": "Modifier le Profil",
+    "username": {
+      "label": "Nom d'Utilisateur",
+      "placeholder": "Saisissez votre nom d'utilisateur"
+    }
   }
 }

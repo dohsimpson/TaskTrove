@@ -1,11 +1,11 @@
 "use client"
 
 import React, { useState } from "react"
-import { User, Info, Bug, ChevronsUpDown, LogOut, Settings, Keyboard, UserPen } from "lucide-react"
+import { User, Info, Bug, ChevronsUpDown, LogOut, Settings, Keyboard } from "lucide-react"
 import { SiGithub, SiDiscord } from "@icons-pack/react-simple-icons"
 import { signOut } from "next-auth/react"
 import { toast } from "sonner"
-import { useSetAtom } from "jotai"
+import { useAtomValue, useSetAtom } from "jotai"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -27,6 +27,7 @@ import { AboutModal } from "@/components/dialogs/about-modal"
 import { useLanguage } from "@/components/providers/language-provider"
 import { useTranslation } from "@/lib/i18n/client"
 import { openSettingsDialogAtom, openUserProfileDialogAtom } from "@/lib/atoms/ui/dialogs"
+import { userAtom } from "@/lib/atoms"
 import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
 import { LogoutConfirmDialog } from "@/components/dialogs/logout-confirm-dialog"
 
@@ -37,17 +38,11 @@ interface ContextMenuItem {
   comingSoon?: boolean
 }
 
-interface UserData {
-  name: string
-  email?: string
-  avatar?: string
-}
-
 interface NavUserProps {
-  user: UserData
+  // No longer need user prop - getting from userAtom
 }
 
-export function NavUser({ user }: NavUserProps) {
+export function NavUser() {
   // Translation setup
   const { language } = useLanguage()
   const { t } = useTranslation(language, "navigation")
@@ -57,6 +52,9 @@ export function NavUser({ user }: NavUserProps) {
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
   const openSettingsDialog = useSetAtom(openSettingsDialogAtom)
   const openUserProfileDialog = useSetAtom(openUserProfileDialogAtom)
+
+  // Get user data from atom
+  const user = useAtomValue(userAtom)
 
   const handleSignOut = () => {
     setLogoutDialogOpen(true)
@@ -106,13 +104,13 @@ export function NavUser({ user }: NavUserProps) {
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarImage src={user.avatar} alt={user.username} />
                   <AvatarFallback className="rounded-lg">
                     <User className="h-4 w-4" />
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user.name}</span>
+                  <span className="truncate font-semibold">{user.username}</span>
                 </div>
                 <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
               </SidebarMenuButton>
@@ -125,39 +123,36 @@ export function NavUser({ user }: NavUserProps) {
             >
               <DropdownMenuLabel className="p-0 font-normal">
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                  <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback className="rounded-lg">
-                      <User className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-1 items-center justify-between">
-                    <div className="grid text-left text-sm leading-tight cursor-button">
-                      <span className="truncate font-semibold">{user.name}</span>
+                  <div
+                    className="flex items-center gap-2 flex-1 cursor-pointer hover:bg-accent rounded p-1 transition-colors"
+                    onClick={openUserProfileDialog}
+                    title="Edit Profile"
+                  >
+                    <Avatar className="h-8 w-8 rounded-lg">
+                      <AvatarImage src={user.avatar} alt={user.username} />
+                      <AvatarFallback className="rounded-lg">
+                        <User className="h-4 w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="grid text-left text-sm leading-tight">
+                      <span className="truncate font-semibold">{user.username}</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={openUserProfileDialog}
-                        className="opacity-60 hover:opacity-100 transition-opacity rounded hover:bg-accent p-2"
-                        title={t("userMenu.editProfile", "Edit Profile")}
-                      >
-                        <UserPen className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={openSettingsDialog}
-                        className="opacity-60 hover:opacity-100 transition-opacity rounded hover:bg-accent p-2"
-                        title={t("userMenu.settings", "Settings")}
-                      >
-                        <Settings className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={handleSignOut}
-                        className="opacity-60 hover:opacity-100 transition-opacity rounded hover:bg-accent p-2"
-                        title={t("userMenu.signOut", "Sign out")}
-                      >
-                        <LogOut className="h-4 w-4" />
-                      </button>
-                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={openSettingsDialog}
+                      className="opacity-60 hover:opacity-100 transition-opacity rounded hover:bg-accent p-2"
+                      title={t("userMenu.settings", "Settings")}
+                    >
+                      <Settings className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={handleSignOut}
+                      className="opacity-60 hover:opacity-100 transition-opacity rounded hover:bg-accent p-2"
+                      title={t("userMenu.signOut", "Sign out")}
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               </DropdownMenuLabel>

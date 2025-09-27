@@ -10,6 +10,7 @@ import { DataFile, DataFileSchema, User } from "@/lib/types"
 import { DEFAULT_EMPTY_DATA_FILE, DEFAULT_USER } from "@/lib/types"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { createMockEnhancedRequest } from "@/lib/utils/test-helpers"
+import { verifyPassword } from "@tasktrove/utils"
 
 // Mock safe file operations
 vi.mock("@/lib/utils/safe-file-operations")
@@ -199,10 +200,9 @@ describe("PATCH /api/user", () => {
     expect(writtenData.user.avatar).toBe("/test/avatar.jpg")
   })
 
-  it("should handle null values as cleanup", async () => {
+  it("should handle null avatar as cleanup", async () => {
     const userUpdate = {
       username: "userwithnullfields",
-      password: null, // Should clear password
       avatar: null, // Should clear avatar
     }
 
@@ -218,12 +218,10 @@ describe("PATCH /api/user", () => {
     expect(response.ok).toBe(true)
     expect(data.success).toBe(true)
     expect(data.user.username).toBe("userwithnullfields")
-    expect(data.user.password).toBeUndefined() // Should be cleaned up
     expect(data.user.avatar).toBeUndefined() // Should be cleaned up
 
     const writtenData = getWrittenData()
     expect(writtenData.user.username).toBe("userwithnullfields")
-    expect(writtenData.user.password).toBeUndefined()
     expect(writtenData.user.avatar).toBeUndefined()
   })
 
@@ -332,31 +330,6 @@ describe("PATCH /api/user", () => {
     expect(writtenData.user.username).toBe("newusername")
   })
 
-  it("should disable password protection when null is provided", async () => {
-    const userUpdate = {
-      username: "userwithdisabledpassword",
-      password: null, // Explicitly disable password
-    }
-
-    const request = new Request("http://localhost:3000/api/user", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(userUpdate),
-    })
-
-    const response = await PATCH(createMockEnhancedRequest(request))
-    const data = await response.json()
-
-    expect(response.ok).toBe(true)
-    expect(data.success).toBe(true)
-    expect(data.user.username).toBe("userwithdisabledpassword")
-    expect(data.user.password).toBeUndefined() // Should be cleaned up (null -> undefined)
-
-    const writtenData = getWrittenData()
-    expect(writtenData.user.username).toBe("userwithdisabledpassword")
-    expect(writtenData.user.password).toBeUndefined() // Should be cleaned up in written data too
-  })
-
   it("should allow setting a new password", async () => {
     const userUpdate = {
       username: "userwithpassword",
@@ -375,10 +348,18 @@ describe("PATCH /api/user", () => {
     expect(response.ok).toBe(true)
     expect(data.success).toBe(true)
     expect(data.user.username).toBe("userwithpassword")
-    expect(data.user.password).toBe("newsecurepassword123")
+    // Password should now be hashed, not plaintext
+    expect(data.user.password).not.toBe("newsecurepassword123")
+    expect(typeof data.user.password).toBe("string")
+    expect(data.user.password).toMatch(/^\$2[aby]\$/) // Should be bcrypt format
+    expect(verifyPassword("newsecurepassword123", data.user.password)).toBe(true)
 
     const writtenData = getWrittenData()
     expect(writtenData.user.username).toBe("userwithpassword")
-    expect(writtenData.user.password).toBe("newsecurepassword123")
+    // Written data should also have hashed password
+    expect(writtenData.user.password).not.toBe("newsecurepassword123")
+    expect(typeof writtenData.user.password).toBe("string")
+    expect(writtenData.user.password).toMatch(/^\$2[aby]\$/) // Should be bcrypt format
+    expect(verifyPassword("newsecurepassword123", writtenData.user.password)).toBe(true)
   })
 })

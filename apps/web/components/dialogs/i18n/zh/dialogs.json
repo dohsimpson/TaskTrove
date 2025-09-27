@@ -76,9 +76,10 @@
     }
   },
   "logout": {
+    "cancel": "取消",
     "confirm": "退出登录",
-    "description": "您确定要退出登录吗？",
-    "title": "退出登录"
+    "confirmMessage": "您确定要退出登录吗？您需要重新登录才能访问您的任务。",
+    "confirmTitle": "退出登录"
   },
   "projectDialog": {
     "buttons": {
@@ -140,5 +141,31 @@
     },
     "description": "配置 TaskTrove 应用程序设置和首选项",
     "title": "设置"
+  },
+  "userProfile": {
+    "changeAvatar": "更改头像",
+    "confirmPassword": {
+      "label": "确认密码",
+      "mismatch": "密码不匹配",
+      "placeholder": "重新输入密码"
+    },
+    "errors": {
+      "fileSizeLimit": "头像文件大小必须小于5MB",
+      "invalidFileType": "请选择有效的图像文件",
+      "passwordMismatch": "密码不匹配",
+      "updateFailed": "更新个人资料失败",
+      "usernameRequired": "用户名是必填的"
+    },
+    "password": {
+      "label": "密码",
+      "placeholder": "留空以保持当前密码"
+    },
+    "save": "保存更改",
+    "saving": "保存中...",
+    "title": "编辑个人资料",
+    "username": {
+      "label": "用户名",
+      "placeholder": "输入您的用户名"
+    }
   }
 }

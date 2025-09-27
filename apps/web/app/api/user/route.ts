@@ -16,6 +16,7 @@ import {
   type EnhancedRequest,
 } from "@/lib/middleware/api-logger"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
+import { saltAndHashPassword } from "@tasktrove/utils"
 
 /**
  * GET /api/user
@@ -82,6 +83,15 @@ async function updateUser(
 
   const partialUser = validation.data
 
+  // Hash password if provided
+  if (partialUser.password && partialUser.password.length > 0) {
+    try {
+      partialUser.password = saltAndHashPassword(partialUser.password)
+    } catch (error) {
+      return createErrorResponse("Failed to hash password", "Password hashing failed", 500)
+    }
+  }
+
   // Read current data file
   const fileData = await withFileOperationLogging(
     () => safeReadDataFile(),
@@ -93,16 +103,17 @@ async function updateUser(
     return createErrorResponse("Failed to read data file", "File reading failed", 500)
   }
 
-  // Merge partial user data with current user data
+  // Merge partial user data with current user data, preserving required fields
   const updatedUser = {
     ...fileData.user,
     ...partialUser,
   }
 
-  // Clean null values - TypeScript needs explicit assignment to understand type narrowing
+  // Clean null values and ensure required fields are present
+  // For password: if not provided, preserve existing password (password is required)
   const cleanedUser: User = {
     ...updatedUser,
-    password: updatedUser.password === null ? undefined : updatedUser.password,
+    password: updatedUser.password || fileData.user.password,
     avatar: updatedUser.avatar === null ? undefined : updatedUser.avatar,
   }
 

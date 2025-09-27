@@ -44,9 +44,11 @@
       "description": "この要素を削除してもよろしいですか？",
       "title": "要素を削除"
     },
+    "deleteContainedResources": "含まれるリソースも削除",
     "group": {
       "confirm": "グループを削除",
-      "description": "\"{{- name}}\"を削除してもよろしいですか？この操作は元に戻せず、グループとすべてのサブグループが削除されます。グループ内のプロジェクトとタスクは削除されません。",
+      "description": "\"{{- name}}\"を削除してもよろしいですか？この操作は元に戻せません。",
+      "deleteContainedResources": "このグループ内のすべてのプロジェクトとタスクも削除",
       "title": "グループを削除"
     },
     "history": {
@@ -61,7 +63,8 @@
     },
     "project": {
       "confirm": "プロジェクトを削除",
-      "description": "\"{{- name}}\"を削除してもよろしいですか？この操作は元に戻せず、このプロジェクトのすべてのタスクが削除されます。",
+      "description": "\"{{- name}}\"を削除してもよろしいですか？この操作は元に戻せません。",
+      "deleteContainedResources": "このプロジェクトのすべてのタスクも削除",
       "title": "プロジェクトを削除"
     },
     "section": {

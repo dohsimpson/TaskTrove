@@ -44,9 +44,11 @@
       "description": "您确定要删除此项目吗？",
       "title": "删除项目"
     },
+    "deleteContainedResources": "同时删除包含的资源",
     "group": {
       "confirm": "删除组",
-      "description": "您确定要删除\"{{- name}}\"吗？此操作无法撤销，将删除该组及其所有子组。组内的项目和任务不会被删除。",
+      "description": "您确定要删除\"{{- name}}\"吗？此操作无法撤销。",
+      "deleteContainedResources": "同时删除此组中的所有项目和任务",
       "title": "删除组"
     },
     "history": {
@@ -61,7 +63,8 @@
     },
     "project": {
       "confirm": "删除项目",
-      "description": "您确定要删除\"{{- name}}\"吗？此操作无法撤销，将移除此项目中的所有任务。",
+      "description": "您确定要删除\"{{- name}}\"吗？此操作无法撤销。",
+      "deleteContainedResources": "同时删除此项目中的所有任务",
       "title": "删除项目"
     },
     "section": {

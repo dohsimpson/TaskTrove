@@ -44,9 +44,11 @@
       "description": "Sei sicuro di voler eliminare questo elemento?",
       "title": "Elimina elemento"
     },
+    "deleteContainedResources": "Elimina anche le risorse contenute",
     "group": {
       "confirm": "Elimina gruppo",
-      "description": "Sei sicuro di voler eliminare \"{{- name}}\"? Questa azione non può essere annullata e rimuoverà il gruppo e tutti i suoi sottogruppi. I progetti e le attività nel gruppo non verranno eliminati.",
+      "description": "Sei sicuro di voler eliminare \"{{- name}}\"? Questa azione non può essere annullata.",
+      "deleteContainedResources": "Elimina anche tutti i progetti e compiti in questo gruppo",
       "title": "Elimina gruppo"
     },
     "history": {
@@ -61,7 +63,8 @@
     },
     "project": {
       "confirm": "Elimina progetto",
-      "description": "Sei sicuro di voler eliminare \"{{- name}}\"? Questa azione non può essere annullata e eliminerà tutte le attività in questo progetto.",
+      "description": "Sei sicuro di voler eliminare \"{{- name}}\"? Questa azione non può essere annullata.",
+      "deleteContainedResources": "Elimina anche tutti i compiti in questo progetto",
       "title": "Elimina progetto"
     },
     "section": {

@@ -1,6 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +28,7 @@ export type DeleteEntityType =
 export interface DeleteConfirmDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onConfirm: () => void
+  onConfirm: (deleteContainedResources?: boolean) => void
   entityType: DeleteEntityType
   entityName?: string
   entityCount?: number
@@ -50,6 +52,10 @@ export function DeleteConfirmDialog({
 }: DeleteConfirmDialogProps) {
   const { language } = useLanguage()
   const { t } = useTranslation(language, "dialogs")
+  const [deleteContainedResources, setDeleteContainedResources] = useState(false)
+
+  // Show checkbox for groups and projects only
+  const shouldShowCheckbox = entityType === "group" || entityType === "project"
 
   // Get translated title based on entity type
   const getTitle = () => {
@@ -87,19 +93,19 @@ export function DeleteConfirmDialog({
       case "project":
         return t(
           "delete.project.description",
-          'Are you sure you want to delete "{{- name}}"? This action cannot be undone and will remove all tasks in this project.',
+          'Are you sure you want to delete "{{- name}}"? This action cannot be undone.',
           { name: entityName || "" },
         )
       case "label":
         return t(
           "delete.label.description",
-          'Are you sure you want to delete "{{- name}}"? This action cannot be undone and will remove this label from all tasks.',
+          'Are you sure you want to delete "{{- name}}"? This action cannot be undone.',
           { name: entityName || "" },
         )
       case "section":
         return t(
           "delete.section.description",
-          'Are you sure you want to delete "{{- name}}"? This action cannot be undone and all tasks in this section will be moved to the default section.',
+          'Are you sure you want to delete "{{- name}}"? This action cannot be undone.',
           { name: entityName || "" },
         )
       case "history":
@@ -119,7 +125,7 @@ export function DeleteConfirmDialog({
       case "group":
         return t(
           "delete.group.description",
-          'Are you sure you want to delete "{{- name}}"? This action cannot be undone and will remove the group and all its subgroups. Projects and tasks within the group will not be deleted.',
+          'Are you sure you want to delete "{{- name}}"? This action cannot be undone.',
           { name: entityName || "" },
         )
       default:
@@ -156,7 +162,7 @@ export function DeleteConfirmDialog({
   const buttonText = getConfirmText()
 
   const handleConfirm = () => {
-    onConfirm()
+    onConfirm(deleteContainedResources)
     onOpenChange(false)
   }
 
@@ -167,6 +173,33 @@ export function DeleteConfirmDialog({
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
+        {shouldShowCheckbox && (
+          <div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="delete-contained-resources"
+                checked={deleteContainedResources}
+                onCheckedChange={(checked) => setDeleteContainedResources(checked === true)}
+              />
+              <label
+                htmlFor="delete-contained-resources"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                {entityType === "project"
+                  ? t(
+                      "delete.project.deleteContainedResources",
+                      "Also delete all tasks in this project",
+                    )
+                  : entityType === "group"
+                    ? t(
+                        "delete.group.deleteContainedResources",
+                        "Also delete all projects and tasks in this group",
+                      )
+                    : t("delete.deleteContainedResources", "Also delete contained resources")}
+              </label>
+            </div>
+          </div>
+        )}
         <AlertDialogFooter>
           <AlertDialogCancel>{t("common.cancel", "Cancel")}</AlertDialogCancel>
           <AlertDialogAction asChild>

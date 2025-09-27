@@ -77,9 +77,9 @@ export function TaskActionsMenu({
     // setIsOpen(false)
   }
 
-  const handleConfirmDelete = (e?: React.MouseEvent) => {
-    e?.stopPropagation()
-    e?.preventDefault()
+  const handleConfirmDelete = (deleteContainedResources?: boolean) => {
+    // For task deletion, we don't currently use deleteContainedResources
+    // but we need to match the new DeleteConfirmDialog signature
     onDeleteClick()
     setShowDeleteConfirm(false)
   }

@@ -44,9 +44,11 @@
       "description": "Sind Sie sicher, dass Sie dieses Element löschen möchten?",
       "title": "Element löschen"
     },
+    "deleteContainedResources": "Auch enthaltene Ressourcen löschen",
     "group": {
       "confirm": "Gruppe löschen",
-      "description": "Sind Sie sicher, dass Sie \"{{- name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden und löscht die Gruppe und alle ihre Untergruppen. Projekte und Aufgaben in der Gruppe werden nicht gelöscht.",
+      "description": "Sind Sie sicher, dass Sie \"{{- name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleteContainedResources": "Auch alle Projekte und Aufgaben in dieser Gruppe löschen",
       "title": "Gruppe löschen"
     },
     "history": {
@@ -61,7 +63,8 @@
     },
     "project": {
       "confirm": "Projekt löschen",
-      "description": "Sind Sie sicher, dass Sie \"{{- name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden und löscht alle Aufgaben in diesem Projekt.",
+      "description": "Sind Sie sicher, dass Sie \"{{- name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleteContainedResources": "Auch alle Aufgaben in diesem Projekt löschen",
       "title": "Projekt löschen"
     },
     "section": {

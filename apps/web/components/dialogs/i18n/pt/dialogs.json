@@ -44,9 +44,11 @@
       "description": "Tem certeza de que deseja excluir este item?",
       "title": "Excluir item"
     },
+    "deleteContainedResources": "Também excluir recursos contidos",
     "group": {
       "confirm": "Excluir grupo",
-      "description": "Tem certeza de que deseja excluir \"{{- name}}\"? Esta ação não pode ser desfeita e excluirá o grupo e todos os seus subgrupos. Os projetos e tarefas do grupo não serão excluídos.",
+      "description": "Tem certeza de que deseja excluir \"{{- name}}\"? Esta ação não pode ser desfeita.",
+      "deleteContainedResources": "Também excluir todos os projetos e tarefas neste grupo",
       "title": "Excluir grupo"
     },
     "history": {
@@ -61,7 +63,8 @@
     },
     "project": {
       "confirm": "Excluir projeto",
-      "description": "Tem certeza de que deseja excluir \"{{- name}}\"? Esta ação não pode ser desfeita e excluirá todas as tarefas deste projeto.",
+      "description": "Tem certeza de que deseja excluir \"{{- name}}\"? Esta ação não pode ser desfeita.",
+      "deleteContainedResources": "Também excluir todas as tarefas neste projeto",
       "title": "Excluir projeto"
     },
     "section": {

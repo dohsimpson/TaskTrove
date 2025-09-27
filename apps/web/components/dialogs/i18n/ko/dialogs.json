@@ -44,9 +44,11 @@
       "description": "이 작업을 삭제하시겠습니까?",
       "title": "작업 삭제"
     },
+    "deleteContainedResources": "포함된 리소스도 삭제",
     "group": {
       "confirm": "삭제",
-      "description": "\"{{- name}}\"그룹을 삭제하시겠습니까?",
+      "description": "\"{{- name}}\"을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      "deleteContainedResources": "이 그룹의 모든 프로젝트와 작업도 삭제",
       "title": "그룹 삭제"
     },
     "history": {
@@ -61,7 +63,8 @@
     },
     "project": {
       "confirm": "삭제",
-      "description": "\"{{- name}}\" 프로젝트를 삭제하시겠습니까?",
+      "description": "\"{{- name}}\"을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      "deleteContainedResources": "이 프로젝트의 모든 작업도 삭제",
       "title": "프로젝트 삭제"
     },
     "section": {

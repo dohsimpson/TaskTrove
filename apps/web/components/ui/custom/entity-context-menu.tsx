@@ -168,7 +168,9 @@ export function EntityContextMenu({
     setIsOpen(false)
   }
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = (deleteContainedResources?: boolean) => {
+    // For now, we don't use deleteContainedResources here
+    // but we need to match the new DeleteConfirmDialog signature
     onDelete()
     setShowDeleteConfirm(false)
   }

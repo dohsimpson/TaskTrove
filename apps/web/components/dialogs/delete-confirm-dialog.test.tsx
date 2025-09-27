@@ -152,7 +152,7 @@ describe("DeleteConfirmDialog", () => {
 
       expect(screen.getByTestId("alert-dialog-title")).toHaveTextContent("Delete Project")
       expect(screen.getByTestId("alert-dialog-description")).toHaveTextContent(
-        'Are you sure you want to delete "Work Project"? This action cannot be undone and will remove all tasks in this project.',
+        'Are you sure you want to delete "Work Project"? This action cannot be undone.',
       )
       expect(screen.getByTestId("button")).toHaveTextContent("Delete Project")
     })
@@ -170,7 +170,7 @@ describe("DeleteConfirmDialog", () => {
 
       expect(screen.getByTestId("alert-dialog-title")).toHaveTextContent("Delete Label")
       expect(screen.getByTestId("alert-dialog-description")).toHaveTextContent(
-        'Are you sure you want to delete "Important"? This action cannot be undone and will remove this label from all tasks.',
+        'Are you sure you want to delete "Important"? This action cannot be undone.',
       )
       expect(screen.getByTestId("button")).toHaveTextContent("Delete Label")
     })

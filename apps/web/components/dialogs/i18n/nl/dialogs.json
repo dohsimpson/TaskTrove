@@ -44,9 +44,11 @@
       "description": "Weet je zeker dat je dit item wilt verwijderen?",
       "title": "Item verwijderen"
     },
+    "deleteContainedResources": "Ook ingesloten bronnen verwijderen",
     "group": {
       "confirm": "Groep verwijderen",
-      "description": "Weet je zeker dat je \"{{- name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt en verwijdert de groep en alle subgroepen. Projecten en taken in de groep worden niet verwijderd.",
+      "description": "Weet je zeker dat je \"{{- name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "deleteContainedResources": "Ook alle projecten en taken in deze groep verwijderen",
       "title": "Groep verwijderen"
     },
     "history": {
@@ -61,7 +63,8 @@
     },
     "project": {
       "confirm": "Project verwijderen",
-      "description": "Weet je zeker dat je \"{{- name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt en verwijdert alle taken in dit project.",
+      "description": "Weet je zeker dat je \"{{- name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "deleteContainedResources": "Ook alle taken in dit project verwijderen",
       "title": "Project verwijderen"
     },
     "section": {

@@ -1044,24 +1044,28 @@ export function ProjectSectionsView({
   // Desktop: Use ResizablePanel layout when side panel is open, fallback to original when closed
   if (isPanelOpen) {
     return (
-      <ResizablePanelGroup
-        direction="horizontal"
-        className="flex-1 h-full"
-        onLayout={handlePanelResize}
-      >
-        {/* Main Content Panel */}
-        <ResizablePanel defaultSize={100 - sidePanelWidth} minSize={50} maxSize={80}>
-          {renderContent()}
-        </ResizablePanel>
+      <div className="flex flex-col h-screen overflow-hidden">
+        <ResizablePanelGroup
+          direction="horizontal"
+          className="flex-1 min-h-0"
+          onLayout={handlePanelResize}
+        >
+          {/* Main Content Panel */}
+          <ResizablePanel defaultSize={100 - sidePanelWidth} minSize={50} maxSize={80}>
+            <div className="h-full overflow-auto">{renderContent()}</div>
+          </ResizablePanel>
 
-        {/* Resizable Handle */}
-        <ResizableHandle withHandle={false} />
+          {/* Resizable Handle */}
+          <ResizableHandle withHandle={false} />
 
-        {/* Side Panel */}
-        <ResizablePanel defaultSize={sidePanelWidth} minSize={20} maxSize={50}>
-          <TaskSidePanel isOpen={isPanelOpen} onClose={handleClosePanel} variant="resizable" />
-        </ResizablePanel>
-      </ResizablePanelGroup>
+          {/* Side Panel */}
+          <ResizablePanel defaultSize={sidePanelWidth} minSize={20} maxSize={50}>
+            <div className="h-full">
+              <TaskSidePanel isOpen={isPanelOpen} onClose={handleClosePanel} variant="resizable" />
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
     )
   }
 
@@ -1069,7 +1073,7 @@ export function ProjectSectionsView({
   return (
     <div className="flex flex-1 relative h-full">
       {/* Main Content */}
-      <div className="flex-1">{renderContent()}</div>
+      <div className="flex-1 overflow-auto">{renderContent()}</div>
 
       {/* Task Side Panel (will not render when closed) */}
       <TaskSidePanel isOpen={isPanelOpen} onClose={handleClosePanel} />

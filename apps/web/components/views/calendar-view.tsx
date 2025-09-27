@@ -332,7 +332,7 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
         </div>
 
         {/* Calendar Grid */}
-        <div className="flex-1 flex flex-col px-3 py-2 min-h-0 overflow-auto">
+        <div className="flex-1 flex flex-col px-3 py-2 min-h-0">
           {/* Day Headers */}
           <div className="grid grid-cols-7 gap-0.5 lg:gap-1 mb-2 flex-shrink-0">
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
@@ -535,15 +535,17 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
   )
 
   return (
-    <div className="flex flex-col h-full min-h-0 relative bg-background">
+    <div className="flex flex-col h-screen overflow-hidden bg-background">
       {/* Selection Toolbar */}
-      <SelectionToolbar />
+      <div className="flex-shrink-0">
+        <SelectionToolbar />
+      </div>
 
       {/* Main Content with Resizable Side Panel */}
       {isPanelOpen && !isMobile ? (
         <ResizablePanelGroup
           direction="horizontal"
-          className="flex-1 h-full"
+          className="flex-1 min-h-0"
           onLayout={handleSidePanelResize}
         >
           <ResizablePanel defaultSize={100 - sidePanelWidth} minSize={50} maxSize={80}>
@@ -554,33 +556,35 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
               onLayout={handleBottomPanelResize}
             >
               <ResizablePanel defaultSize={100 - bottomPanelHeight} minSize={40} maxSize={80}>
-                {renderCalendarContent()}
+                <div className="h-full overflow-auto">{renderCalendarContent()}</div>
               </ResizablePanel>
               <ResizableHandle withHandle={false} />
               <ResizablePanel defaultSize={bottomPanelHeight} minSize={20} maxSize={60}>
-                {renderBottomPanel()}
+                <div className="h-full overflow-auto">{renderBottomPanel()}</div>
               </ResizablePanel>
             </ResizablePanelGroup>
           </ResizablePanel>
           <ResizableHandle withHandle={false} />
           <ResizablePanel defaultSize={sidePanelWidth} minSize={20} maxSize={50}>
-            <TaskSidePanel isOpen={isPanelOpen} onClose={closeTaskPanel} variant="resizable" />
+            <div className="h-full">
+              <TaskSidePanel isOpen={isPanelOpen} onClose={closeTaskPanel} variant="resizable" />
+            </div>
           </ResizablePanel>
         </ResizablePanelGroup>
       ) : (
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 min-h-0">
           {/* Calendar and Bottom Panel with Vertical Resizable Layout */}
           <ResizablePanelGroup
             direction="vertical"
-            className="flex-1 h-full"
+            className="h-full"
             onLayout={handleBottomPanelResize}
           >
             <ResizablePanel defaultSize={100 - bottomPanelHeight} minSize={40} maxSize={80}>
-              {renderCalendarContent()}
+              <div className="h-full overflow-auto">{renderCalendarContent()}</div>
             </ResizablePanel>
             <ResizableHandle withHandle={false} />
             <ResizablePanel defaultSize={bottomPanelHeight} minSize={20} maxSize={60}>
-              {renderBottomPanel()}
+              <div className="h-full overflow-auto">{renderBottomPanel()}</div>
             </ResizablePanel>
           </ResizablePanelGroup>
           {/* Task Side Panel (overlay for mobile or when not resizable) */}

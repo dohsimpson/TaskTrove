@@ -828,9 +828,15 @@ describe("CalendarView", () => {
     it("applies responsive layout classes", () => {
       render(<CalendarView {...defaultProps} />)
 
-      // Check main container has responsive flex classes (new layout is flex-col only)
-      const mainContainer = document.querySelector(".flex.flex-col.h-full")
-      expect(mainContainer).toHaveClass("flex", "flex-col", "h-full", "min-h-0", "relative")
+      // Check main container has responsive flex classes (new layout uses h-screen)
+      const mainContainer = document.querySelector(".flex.flex-col.h-screen")
+      expect(mainContainer).toHaveClass(
+        "flex",
+        "flex-col",
+        "h-screen",
+        "overflow-hidden",
+        "bg-background",
+      )
     })
 
     it("has responsive padding on calendar section", () => {

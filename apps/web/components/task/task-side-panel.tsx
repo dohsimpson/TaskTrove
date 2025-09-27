@@ -439,10 +439,10 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
   return (
     <div
       className={cn(
-        "bg-background/95 backdrop-blur-sm border-l border-border/50 flex flex-col transition-transform duration-300 ease-in-out h-full",
+        "bg-background/95 backdrop-blur-sm border-l border-border/50 flex flex-col transition-transform duration-300 ease-in-out",
         variant === "overlay"
-          ? "absolute top-0 right-0 z-30 shadow-lg translate-x-0"
-          : "w-full shadow-none",
+          ? "absolute top-0 right-0 z-30 shadow-lg translate-x-0 h-full"
+          : "w-full shadow-none h-full",
       )}
       style={variant === "overlay" ? { width: `${SIDE_PANEL_WIDTH}px` } : undefined}
     >

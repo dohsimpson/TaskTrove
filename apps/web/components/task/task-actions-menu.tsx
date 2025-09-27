@@ -106,7 +106,7 @@ export function TaskActionsMenu({
   if (variant === "compact" || variant === "kanban" || variant === "subtask") {
     return (
       <>
-        <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"

@@ -157,22 +157,15 @@ describe("TaskActionsMenu", () => {
       expect(button).toHaveClass("hidden")
     })
 
-    it("supports controlled open state", () => {
-      const mockOnOpenChange = vi.fn()
+    it("renders dropdown trigger button", () => {
       const { container } = renderTaskActionsMenu({
         variant: "compact",
-        open: true,
-        onOpenChange: mockOnOpenChange,
       })
 
-      // When open=true, the dropdown menu is open and menu items are visible
-      // The trigger button exists in the DOM but may be aria-hidden when open
+      // The trigger button should exist in the DOM
       const trigger = container.querySelector("button")
       expect(trigger).toBeInTheDocument()
-
-      // Menu items should be visible when open
-      // expect(screen.getByText('Start timer')).toBeInTheDocument() // Commented out since pomodoro timer is disabled
-      expect(screen.getByText("Delete")).toBeInTheDocument()
+      expect(trigger).toHaveAttribute("data-action", "menu")
     })
 
     it("calls onEditClick when provided", () => {

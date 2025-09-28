@@ -110,6 +110,9 @@ function middleware(req: NextRequest) {
       // }
     }
   }
+
+  // When auth is disabled, still handle i18n
+  return setI18nResponse(NextResponse.next(), lng, req)
 }
 
 export default isAuthEnabled ? auth(middleware) : middleware

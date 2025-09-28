@@ -3,8 +3,15 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { screen, fireEvent } from "@/test-utils"
 import { render } from "@/test-utils/render-with-providers"
 import { ProjectContextMenu } from "./project-context-menu"
-import { projects } from "@/lib/atoms"
-import { TEST_PROJECT_ID_1, TEST_PROJECT_ID_2 } from "@/lib/utils/test-constants"
+import {
+  TEST_PROJECT_ID_1,
+  TEST_PROJECT_ID_2,
+  TEST_TASK_ID_1,
+  TEST_TASK_ID_2,
+} from "@/lib/utils/test-constants"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import { TaskUpdateSerializationSchema, TaskUpdateArraySerializationSchema } from "@/lib/types"
+import { projects, tasks } from "@/lib/atoms"
 
 // Mock component interfaces
 interface MockButtonProps {
@@ -40,7 +47,7 @@ interface MockDropdownTriggerProps {
 interface MockDeleteDialogProps {
   open?: boolean
   onOpenChange: (open: boolean) => void
-  onConfirm: () => void
+  onConfirm: (deleteContainedResources?: boolean) => void
   entityType?: string
   entityName?: string
 }
@@ -95,7 +102,12 @@ vi.mock("@/components/dialogs/delete-confirm-dialog", () => ({
       <span>
         Delete {entityType}: {entityName}
       </span>
-      <button onClick={onConfirm}>Confirm</button>
+      <button onClick={() => onConfirm(false)} data-testid="confirm-without-resources">
+        Confirm without deleting contained resources
+      </button>
+      <button onClick={() => onConfirm(true)} data-testid="confirm-with-resources">
+        Confirm and delete contained resources
+      </button>
       <button onClick={() => onOpenChange(false)}>Cancel</button>
     </div>
   ),
@@ -120,6 +132,60 @@ vi.mock("lucide-react", () => ({
   FolderPlus: () => <span data-testid="folder-plus-icon" />,
 }))
 
+// Mock EntityContextMenu to test the onDelete callback
+vi.mock("@/components/ui/custom/entity-context-menu", () => ({
+  EntityContextMenu: ({
+    onDelete,
+    entityName,
+  }: {
+    onDelete: (deleteContainedResources?: boolean) => void
+    entityName: string
+  }) => (
+    <div data-testid="entity-context-menu">
+      <span>Entity: {entityName}</span>
+      <button onClick={() => onDelete(false)} data-testid="delete-without-resources">
+        Delete without contained resources
+      </button>
+      <button onClick={() => onDelete(true)} data-testid="delete-with-resources">
+        Delete with contained resources
+      </button>
+    </div>
+  ),
+}))
+
+// Mock atoms
+const mockDeleteProject = vi.fn()
+const mockDeleteTasks = vi.fn()
+const mockUpdateTasks = vi.fn()
+
+vi.mock("@/lib/atoms", () => ({
+  projects: Symbol("projects"),
+  tasks: Symbol("tasks"),
+  projectActions: {
+    deleteProject: Symbol("deleteProject"),
+  },
+  deleteTaskAtom: Symbol("deleteTaskAtom"),
+  deleteTasksAtom: Symbol("deleteTasksAtom"),
+  updateTaskAtom: Symbol("updateTaskAtom"),
+  updateTasksAtom: Symbol("updateTasksAtom"),
+  updateProjectAtom: Symbol("updateProjectAtom"),
+}))
+
+vi.mock("@/lib/atoms/ui/navigation", () => ({
+  startEditingProjectAtom: Symbol("startEditingProjectAtom"),
+  openProjectDialogAtom: Symbol("openProjectDialogAtom"),
+}))
+
+vi.mock("jotai", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("jotai")>()
+  return {
+    ...actual,
+    useAtom: vi.fn(),
+    useAtomValue: vi.fn(),
+    useSetAtom: vi.fn(),
+  }
+})
+
 describe("ProjectContextMenu", () => {
   const mockProject = {
     id: TEST_PROJECT_ID_1,
@@ -127,101 +193,179 @@ describe("ProjectContextMenu", () => {
     color: "#ff0000",
   }
 
+  const mockTasks = [
+    {
+      id: TEST_TASK_ID_1,
+      title: "Task 1",
+      projectId: TEST_PROJECT_ID_1,
+    },
+    {
+      id: TEST_TASK_ID_2,
+      title: "Task 2",
+      projectId: TEST_PROJECT_ID_1,
+    },
+  ]
+
   const defaultProps = {
     projectId: TEST_PROJECT_ID_1,
     isVisible: true,
   }
 
-  const defaultAtomValues: Array<[unknown, unknown]> = [[projects, [mockProject]]]
-
   beforeEach(() => {
     vi.clearAllMocks()
+
+    // Setup jotai mocks
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(useAtom).mockReturnValue([[mockProject], vi.fn()] as any)
+    vi.mocked(useAtomValue).mockReturnValue(mockTasks)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(useSetAtom).mockImplementation((atom: any) => {
+      if (atom.toString().includes("deleteProject")) return mockDeleteProject
+      if (atom.toString().includes("deleteTask")) return mockDeleteTasks
+      if (atom.toString().includes("updateTask")) return mockUpdateTasks
+      return vi.fn()
+    })
   })
 
-  it("renders context menu trigger when visible", () => {
-    const { container } = render(<ProjectContextMenu {...defaultProps} />, {
-      initialAtomValues: defaultAtomValues,
-    })
+  it("renders entity context menu", () => {
+    render(<ProjectContextMenu {...defaultProps} />)
 
-    const allElements = container.querySelectorAll("*")
-    const hasContent = allElements.length > 1
-
-    if (hasContent) {
-      expect(screen.getByTestId("dropdown-trigger")).toBeInTheDocument()
-      expect(screen.getByTestId("more-horizontal-icon")).toBeInTheDocument()
-    } else {
-      expect(screen.queryByTestId("dropdown-trigger")).not.toBeInTheDocument()
-    }
-  })
-
-  it("hides context menu trigger when not visible", () => {
-    const { container } = render(<ProjectContextMenu {...defaultProps} isVisible={false} />, {
-      initialAtomValues: defaultAtomValues,
-    })
-
-    const allElements = container.querySelectorAll("*")
-    const hasContent = allElements.length > 1
-
-    if (hasContent) {
-      const trigger = screen.getByTestId("dropdown-trigger")
-      const button = trigger.querySelector("button")
-      expect(button).toHaveClass("hidden")
-    } else {
-      expect(screen.queryByTestId("dropdown-trigger")).not.toBeInTheDocument()
-    }
-  })
-
-  it("displays context menu items when menu is open", () => {
-    const { container } = render(<ProjectContextMenu {...defaultProps} open={true} />, {
-      initialAtomValues: defaultAtomValues,
-    })
-
-    const allElements = container.querySelectorAll("*")
-    const hasContent = allElements.length > 1
-
-    if (hasContent) {
-      expect(screen.getByTestId("dropdown-menu")).toHaveAttribute("data-open", "true")
-      expect(screen.getByTestId("dropdown-content")).toBeInTheDocument()
-      const items = screen.getAllByTestId("dropdown-item")
-      expect(items.length).toBeGreaterThanOrEqual(3)
-      expect(items[0]).toHaveTextContent("Edit project")
-      expect(items[1]).toHaveTextContent("Change color")
-      expect(items[items.length - 1]).toHaveTextContent("Delete project")
-    } else {
-      expect(screen.queryByTestId("dropdown-menu")).not.toBeInTheDocument()
-    }
+    expect(screen.getByTestId("entity-context-menu")).toBeInTheDocument()
+    expect(screen.getByText("Entity: Test Project")).toBeInTheDocument()
   })
 
   it("returns null when project is not found", () => {
-    render(<ProjectContextMenu projectId={TEST_PROJECT_ID_2} isVisible={true} />, {
-      initialAtomValues: [[projects, []]],
-    })
+    // Mock empty projects array
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(useAtom).mockReturnValue([[], vi.fn()] as any)
 
-    expect(screen.queryByTestId("dropdown-trigger")).not.toBeInTheDocument()
-    expect(screen.queryByTestId("dropdown-menu")).not.toBeInTheDocument()
+    render(<ProjectContextMenu projectId={TEST_PROJECT_ID_2} isVisible={true} />)
+
+    expect(screen.queryByTestId("entity-context-menu")).not.toBeInTheDocument()
   })
 
-  it("shows delete confirmation dialog when delete is clicked", () => {
-    const { container } = render(<ProjectContextMenu {...defaultProps} open={true} />, {
-      initialAtomValues: defaultAtomValues,
+  describe("handleDelete functionality", () => {
+    it("deletes tasks and project when deleteContainedResources is true", async () => {
+      render(<ProjectContextMenu {...defaultProps} />)
+
+      const deleteWithResourcesButton = screen.getByTestId("delete-with-resources")
+      fireEvent.click(deleteWithResourcesButton)
+
+      // Wait for async operations
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      // Verify that deleteTasks was called with the correct task IDs
+      expect(mockDeleteTasks).toHaveBeenCalledWith([TEST_TASK_ID_1, TEST_TASK_ID_2])
+
+      // Verify that updateTasks was NOT called (since we're deleting, not unassigning)
+      expect(mockUpdateTasks).not.toHaveBeenCalled()
+
+      // Verify that deleteProject was called with the project ID
+      expect(mockDeleteProject).toHaveBeenCalledWith(TEST_PROJECT_ID_1)
     })
 
-    const allElements = container.querySelectorAll("*")
-    const hasContent = allElements.length > 1
+    it("unassigns tasks and deletes project when deleteContainedResources is false", async () => {
+      render(<ProjectContextMenu {...defaultProps} />)
 
-    if (hasContent) {
-      const items = screen.getAllByTestId("dropdown-item")
-      const deleteItem = items.find((item) => item.textContent?.includes("Delete project"))
-      expect(deleteItem).toBeInTheDocument()
+      const deleteWithoutResourcesButton = screen.getByTestId("delete-without-resources")
+      fireEvent.click(deleteWithoutResourcesButton)
 
-      if (deleteItem) {
-        fireEvent.click(deleteItem)
+      // Wait for async operations
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      // Verify that updateTasks was called with correct updates to unassign tasks
+      expect(mockUpdateTasks).toHaveBeenCalledWith([
+        { id: TEST_TASK_ID_1, projectId: null },
+        { id: TEST_TASK_ID_2, projectId: null },
+      ])
+
+      // Verify that deleteTasks was NOT called (since we're unassigning, not deleting)
+      expect(mockDeleteTasks).not.toHaveBeenCalled()
+
+      // Verify that deleteProject was called with the project ID
+      expect(mockDeleteProject).toHaveBeenCalledWith(TEST_PROJECT_ID_1)
+    })
+
+    it("handles project with no tasks when deleteContainedResources is true", async () => {
+      // Mock empty tasks array
+      vi.mocked(useAtomValue).mockReturnValue([])
+
+      render(<ProjectContextMenu {...defaultProps} />)
+
+      const deleteWithResourcesButton = screen.getByTestId("delete-with-resources")
+      fireEvent.click(deleteWithResourcesButton)
+
+      // Wait for async operations
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      // Verify that neither deleteTasks nor updateTasks were called (no tasks to process)
+      expect(mockDeleteTasks).not.toHaveBeenCalled()
+      expect(mockUpdateTasks).not.toHaveBeenCalled()
+
+      // Verify that deleteProject was still called
+      expect(mockDeleteProject).toHaveBeenCalledWith(TEST_PROJECT_ID_1)
+    })
+
+    it("handles project with no tasks when deleteContainedResources is false", async () => {
+      // Mock empty tasks array
+      vi.mocked(useAtomValue).mockReturnValue([])
+
+      render(<ProjectContextMenu {...defaultProps} />)
+
+      const deleteWithoutResourcesButton = screen.getByTestId("delete-without-resources")
+      fireEvent.click(deleteWithoutResourcesButton)
+
+      // Wait for async operations
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      // Verify that neither deleteTasks nor updateTasks were called (no tasks to process)
+      expect(mockDeleteTasks).not.toHaveBeenCalled()
+      expect(mockUpdateTasks).not.toHaveBeenCalled()
+
+      // Verify that deleteProject was still called
+      expect(mockDeleteProject).toHaveBeenCalledWith(TEST_PROJECT_ID_1)
+    })
+  })
+
+  describe("Serialization Schema Tests", () => {
+    // Direct tests for the schemas to catch serialization issues like the one reported
+    it("validates TaskUpdateSerializationSchema accepts null projectId", () => {
+      // This test directly validates the fix for the reported error:
+      // "Failed to serialize updated tasks data: expected string, received null"
+      const updateWithNullProjectId = {
+        id: TEST_TASK_ID_1,
+        projectId: null, // This should be valid after our fix
       }
 
-      expect(screen.getByTestId("delete-dialog")).toHaveAttribute("data-open", "true")
-      expect(screen.getByText("Delete project: Test Project")).toBeInTheDocument()
-    } else {
-      expect(screen.queryByTestId("dropdown-item")).not.toBeInTheDocument()
-    }
+      const result = TaskUpdateSerializationSchema.safeParse(updateWithNullProjectId)
+      expect(result.success).toBe(true)
+
+      if (result.success) {
+        expect(result.data.projectId).toBe(null)
+      }
+    })
+
+    it("validates TaskUpdateArraySerializationSchema accepts array with null projectId", () => {
+      // Test the array serialization schema used by the mutation atom
+      // This is the exact path that was failing when deleting projects without contained resources
+      const updatesWithNullProjectId = [
+        {
+          id: TEST_TASK_ID_1,
+          projectId: null,
+        },
+        {
+          id: TEST_TASK_ID_2,
+          projectId: null,
+        },
+      ]
+
+      const result = TaskUpdateArraySerializationSchema.safeParse(updatesWithNullProjectId)
+      expect(result.success).toBe(true)
+
+      if (result.success && result.data) {
+        expect(result.data[0]?.projectId).toBe(null)
+        expect(result.data[1]?.projectId).toBe(null)
+      }
+    })
   })
 })

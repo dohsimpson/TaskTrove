@@ -1,7 +1,7 @@
 import { atom } from "jotai";
 import { selectedTasksAtom } from "./dialogs";
 import { filteredTasksAtom } from "../core/tasks";
-import { updateTaskAtom, deleteTaskAtom } from "../core/tasks";
+import { updateTasksAtom, deleteTasksAtom } from "../core/tasks";
 import {
   createProjectId,
   type TaskId,
@@ -206,33 +206,28 @@ export const bulkActionAtom = atom(
     switch (action) {
       case "complete":
         // Complete all selected tasks
-        selectedIds.forEach((taskId) => {
-          set(updateTaskAtom, {
-            updateRequest: { id: taskId, completed: true },
-          });
-        });
+        const updates = selectedIds.map((taskId) => ({
+          id: taskId,
+          completed: true,
+        }));
+        set(updateTasksAtom, updates);
         break;
 
       case "delete":
         // Delete all selected tasks
-        selectedIds.forEach((taskId) => {
-          set(deleteTaskAtom, taskId);
-        });
+        set(deleteTasksAtom, selectedIds);
         break;
 
       case "move":
         // Move all selected tasks to project
         if (payload?.projectId !== undefined) {
-          selectedIds.forEach((taskId) => {
-            set(updateTaskAtom, {
-              updateRequest: {
-                id: taskId,
-                projectId: payload.projectId
-                  ? createProjectId(payload.projectId)
-                  : undefined,
-              },
-            });
-          });
+          const updates = selectedIds.map((taskId) => ({
+            id: taskId,
+            projectId: payload.projectId
+              ? createProjectId(payload.projectId)
+              : undefined,
+          }));
+          set(updateTasksAtom, updates);
         }
         break;
 
@@ -243,25 +238,22 @@ export const bulkActionAtom = atom(
           payload.priority >= 1 &&
           payload.priority <= 4
         ) {
-          selectedIds.forEach((taskId) => {
-            set(updateTaskAtom, {
-              updateRequest: { id: taskId, priority: payload.priority },
-            });
-          });
+          const updates = selectedIds.map((taskId) => ({
+            id: taskId,
+            priority: payload.priority,
+          }));
+          set(updateTasksAtom, updates);
         }
         break;
 
       case "schedule":
         // Set due date for all selected tasks
         if (payload?.dueDate !== undefined) {
-          selectedIds.forEach((taskId) => {
-            set(updateTaskAtom, {
-              updateRequest: {
-                id: taskId,
-                dueDate: payload.dueDate ?? undefined,
-              },
-            });
-          });
+          const updates = selectedIds.map((taskId) => ({
+            id: taskId,
+            dueDate: payload.dueDate ?? undefined,
+          }));
+          set(updateTasksAtom, updates);
         }
         break;
     }

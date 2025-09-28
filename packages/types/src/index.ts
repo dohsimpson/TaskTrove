@@ -1968,6 +1968,7 @@ export const UpdateTaskRequestSchema = TaskSchema.partial()
     dueTime: TaskSchema.shape.dueTime.nullable(),
     recurring: TaskSchema.shape.recurring.nullable(),
     estimation: TaskSchema.shape.estimation.nullable(),
+    projectId: TaskSchema.shape.projectId.nullable(),
   });
 
 // Serialization schemas for UpdateTask (colocated with request schema)
@@ -1984,6 +1985,7 @@ export const TaskUpdateSerializationSchema = TaskSerializationSchema.partial()
     dueTime: TaskSerializationSchema.shape.dueTime.nullable(),
     recurring: TaskSerializationSchema.shape.recurring.nullable(),
     estimation: TaskSerializationSchema.shape.estimation.nullable(),
+    projectId: TaskSerializationSchema.shape.projectId.nullable(),
   });
 export const TaskUpdateArraySerializationSchema = z.array(
   TaskUpdateSerializationSchema,
@@ -2065,11 +2067,13 @@ export const UserUpdateSerializationSchema = UpdateUserRequestSchema;
 /**
  * Schema for delete requests
  */
-export const DeleteTaskRequestSchema = TaskSchema.pick({ id: true });
+export const DeleteTaskRequestSchema = z.object({
+  ids: z.array(TaskIdSchema).min(1, "At least one task ID is required"),
+});
 
 // Serialization schemas for DeleteTask (colocated with request schema)
-export const TaskDeleteSerializationSchema = TaskSerializationSchema.pick({
-  id: true,
+export const TaskDeleteSerializationSchema = z.object({
+  ids: z.array(TaskIdSchema),
 });
 export const TaskDeleteArraySerializationSchema = z.array(
   TaskDeleteSerializationSchema,

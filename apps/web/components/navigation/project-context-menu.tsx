@@ -1,10 +1,11 @@
 "use client"
 
-import { useAtom, useSetAtom } from "jotai"
+import { useAtom, useSetAtom, useAtomValue } from "jotai"
 import { EntityContextMenu } from "@/components/ui/custom/entity-context-menu"
-import { projects, projectActions, updateProjectAtom } from "@/lib/atoms"
+import { projects, projectActions, updateProjectAtom, tasks } from "@/lib/atoms"
 import { startEditingProjectAtom, openProjectDialogAtom } from "@/lib/atoms/ui/navigation"
-import type { Project, ProjectId } from "@/lib/types"
+import { deleteTasksAtom, updateTasksAtom } from "@/lib/atoms"
+import type { Project, ProjectId, TaskId } from "@/lib/types"
 
 interface ProjectContextMenuProps {
   projectId: ProjectId
@@ -23,7 +24,10 @@ export function ProjectContextMenu({
 }: ProjectContextMenuProps) {
   // Get project data and actions from atoms
   const [projectsData] = useAtom(projects)
+  const tasksData = useAtomValue(tasks)
   const deleteProject = useSetAtom(projectActions.deleteProject)
+  const deleteTasks = useSetAtom(deleteTasksAtom)
+  const updateTasks = useSetAtom(updateTasksAtom)
   const startEditing = useSetAtom(startEditingProjectAtom)
   const updateProject = useSetAtom(updateProjectAtom)
   const openProjectDialog = useSetAtom(openProjectDialogAtom)
@@ -32,13 +36,32 @@ export function ProjectContextMenu({
   const project = projectsData.find((p: Project) => p.id === projectId)
   if (!project) return null
 
+  // Helper function to collect all task IDs from a project
+  const collectTaskIdsFromProject = (project: Project): TaskId[] => {
+    return tasksData.filter((task) => task.projectId === project.id).map((task) => task.id)
+  }
+
   const handleEdit = () => {
     startEditing(projectId)
   }
 
-  const handleDelete = (deleteContainedResources?: boolean) => {
-    // For projects, deleteContainedResources would mean deleting tasks in the project
-    // This functionality is not implemented yet
+  const handleDelete = async (deleteContainedResources?: boolean) => {
+    const taskIds = collectTaskIdsFromProject(project)
+
+    if (deleteContainedResources) {
+      // Delete all tasks in this project first
+      if (taskIds.length > 0) {
+        await deleteTasks(taskIds)
+      }
+    } else {
+      // Remove projectId from all tasks (unassign them) by setting projectId to null
+      if (taskIds.length > 0) {
+        const updates = taskIds.map((id) => ({ id, projectId: null }))
+        await updateTasks(updates)
+      }
+    }
+
+    // Then delete the project itself
     deleteProject(projectId)
   }
 

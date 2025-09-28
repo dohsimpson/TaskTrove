@@ -233,12 +233,13 @@ async function updateTasks(
       }
     }
 
-    // Convert null values to undefined for date/time/recurring/estimation fields
+    // Convert null values to undefined for date/time/recurring/estimation/projectId fields
     const cleanedUpdate = { ...update, completedAt }
     if (cleanedUpdate.dueDate === null) cleanedUpdate.dueDate = undefined
     if (cleanedUpdate.dueTime === null) cleanedUpdate.dueTime = undefined
     if (cleanedUpdate.recurring === null) cleanedUpdate.recurring = undefined
     if (cleanedUpdate.estimation === null) cleanedUpdate.estimation = undefined
+    if (cleanedUpdate.projectId === null) cleanedUpdate.projectId = undefined
 
     updateMap.set(update.id, cleanedUpdate)
   }
@@ -258,6 +259,7 @@ async function updateTasks(
       dueTime: updatedTask.dueTime === null ? undefined : updatedTask.dueTime,
       recurring: updatedTask.recurring === null ? undefined : updatedTask.recurring,
       estimation: updatedTask.estimation === null ? undefined : updatedTask.estimation,
+      projectId: updatedTask.projectId === null ? undefined : updatedTask.projectId,
     }
 
     return cleanedTask
@@ -402,10 +404,10 @@ async function deleteTasks(
     return validation.error
   }
 
-  const deleteData = validation.data
+  const { ids: taskIdsToDelete } = validation.data
 
-  // deleteData is now an object with id property
-  const taskIds: TaskId[] = [createTaskId(deleteData.id)]
+  // Convert to TaskId array
+  const taskIds: TaskId[] = taskIdsToDelete.map((id) => createTaskId(id))
 
   const fileData = await withFileOperationLogging(
     () => safeReadDataFile(),

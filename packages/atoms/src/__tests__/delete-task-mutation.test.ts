@@ -174,7 +174,9 @@ describe("Delete Task Mutation Tests", () => {
         const deleteTaskMutation = store.get(deleteTaskMutationAtom);
 
         // Execute the mutation
-        const result = await deleteTaskMutation.mutateAsync({ id: mockTaskId });
+        const result = await deleteTaskMutation.mutateAsync({
+          ids: [mockTaskId],
+        });
 
         // Verify the API was called correctly
         expect(global.fetch).toHaveBeenCalledWith("/api/tasks", {
@@ -182,7 +184,7 @@ describe("Delete Task Mutation Tests", () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ id: mockTaskId }),
+          body: JSON.stringify({ ids: [mockTaskId] }),
         });
 
         // Verify the response
@@ -221,7 +223,7 @@ describe("Delete Task Mutation Tests", () => {
 
         // Execute the mutation and expect it to throw
         await expect(
-          deleteTaskMutation.mutateAsync({ id: mockTaskId }),
+          deleteTaskMutation.mutateAsync({ ids: [mockTaskId] }),
         ).rejects.toThrow("Failed API request: Failed to delete task");
 
         // Verify the API was called
@@ -230,7 +232,7 @@ describe("Delete Task Mutation Tests", () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ id: mockTaskId }),
+          body: JSON.stringify({ ids: [mockTaskId] }),
         });
       } finally {
         setMockedNodeEnv(originalEnv);
@@ -249,7 +251,9 @@ describe("Delete Task Mutation Tests", () => {
         const deleteTaskMutation = store.get(deleteTaskMutationAtom);
 
         // Execute the mutation
-        const result = await deleteTaskMutation.mutateAsync({ id: mockTaskId });
+        const result = await deleteTaskMutation.mutateAsync({
+          ids: [mockTaskId],
+        });
 
         // Verify test mode response
         expect(result.success).toBe(true);
@@ -279,7 +283,7 @@ describe("Delete Task Mutation Tests", () => {
 
         // Execute the mutation and expect it to throw
         await expect(
-          deleteTaskMutation.mutateAsync({ id: mockTaskId }),
+          deleteTaskMutation.mutateAsync({ ids: [mockTaskId] }),
         ).rejects.toThrow("Network error");
 
         // Verify the API was called
@@ -288,7 +292,7 @@ describe("Delete Task Mutation Tests", () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ id: mockTaskId }),
+          body: JSON.stringify({ ids: [mockTaskId] }),
         });
       } finally {
         setMockedNodeEnv(originalEnv);
@@ -403,7 +407,7 @@ describe("Delete Task Mutation Tests", () => {
 
         // Execute the mutation and catch the error
         try {
-          await deleteTaskMutation.mutateAsync({ id: mockTaskId });
+          await deleteTaskMutation.mutateAsync({ ids: [mockTaskId] });
         } catch {
           // Expected to throw
         }

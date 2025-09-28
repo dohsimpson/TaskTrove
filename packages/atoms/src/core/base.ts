@@ -592,6 +592,10 @@ export const updateTasksMutationAtom = createMutation<
           optimisticTask.estimation === null
             ? undefined
             : optimisticTask.estimation,
+        projectId:
+          optimisticTask.projectId === null
+            ? undefined
+            : optimisticTask.projectId,
       };
 
       return cleanedTask;
@@ -679,17 +683,22 @@ export const deleteTaskMutationAtom = createMutation<
   responseSchema: DeleteTaskResponseSchema,
   serializationSchema: TaskDeleteSerializationSchema,
   testResponseFactory: (deleteRequest: DeleteTaskRequest) => {
+    const count = deleteRequest.ids.length;
+    const message =
+      count === 1
+        ? "Task deleted successfully"
+        : `${count} tasks deleted successfully`;
     return createTestResponse(
       {
-        taskIds: [deleteRequest.id],
+        taskIds: deleteRequest.ids,
       },
-      "Task deleted successfully",
+      message,
     );
   },
   optimisticUpdateFn: (deleteRequest: DeleteTaskRequest, oldData: DataFile) => {
-    // Filter out the task to be deleted
+    // Filter out the tasks to be deleted
     const updatedTasks = oldData.tasks.filter(
-      (task: Task) => task.id !== deleteRequest.id,
+      (task: Task) => !deleteRequest.ids.includes(task.id),
     );
 
     return {

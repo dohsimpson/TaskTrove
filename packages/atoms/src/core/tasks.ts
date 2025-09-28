@@ -299,16 +299,34 @@ export const addTaskAtom = atom(
 addTaskAtom.debugLabel = "addTaskAtom";
 
 /**
- * Updates an existing task with new data
+ * Updates multiple tasks with new data (bulk operation)
  * Follows the same simple pattern as updateProjectAtom and updateLabelAtom
+ */
+export const updateTasksAtom = atom(
+  null,
+  async (get, set, updateRequests: UpdateTaskRequest[]) => {
+    try {
+      // Use server mutation which handles optimistic updates automatically
+      const updateTasksMutation = get(updateTasksMutationAtom);
+      await updateTasksMutation.mutateAsync(updateRequests);
+    } catch (error) {
+      handleAtomError(error, "updateTasksAtom");
+      throw error;
+    }
+  },
+);
+updateTasksAtom.debugLabel = "updateTasksAtom";
+
+/**
+ * Updates an existing task with new data (single task)
+ * Convenience wrapper around updateTasksAtom for single task updates
  */
 export const updateTaskAtom = atom(
   null,
   async (get, set, { updateRequest }: { updateRequest: UpdateTaskRequest }) => {
     try {
-      // Use server mutation which handles optimistic updates automatically
-      const updateTasksMutation = get(updateTasksMutationAtom);
-      await updateTasksMutation.mutateAsync([updateRequest]);
+      // Use the bulk updateTasksAtom internally
+      await set(updateTasksAtom, [updateRequest]);
     } catch (error) {
       handleAtomError(error, "updateTaskAtom");
       throw error;
@@ -318,34 +336,66 @@ export const updateTaskAtom = atom(
 updateTaskAtom.debugLabel = "updateTaskAtom";
 
 /**
- * Deletes a task permanently
+ * Deletes multiple tasks permanently (bulk operation)
  * Uses the delete task mutation to persist to API
  * Plays deletion sound effect
  * History tracking enabled and tracks operation for undo/redo
  */
+export const deleteTasksAtom = atom(
+  null,
+  async (get, set, taskIds: TaskId[]) => {
+    try {
+      const tasks = get(tasksAtom); // Get current tasks from base atom
+      const tasksToDelete = tasks.filter((task: Task) =>
+        taskIds.includes(task.id),
+      );
+
+      if (tasksToDelete.length === 0) return;
+
+      // Cancel any scheduled notifications for these tasks
+      for (const taskId of taskIds) {
+        set(notificationAtoms.actions.cancelTask, taskId);
+      }
+
+      // Get the delete task mutation
+      const deleteTaskMutation = get(deleteTaskMutationAtom);
+
+      // Execute the mutation - this will handle optimistic updates and API persistence
+      await deleteTaskMutation.mutateAsync({ ids: taskIds });
+
+      // Record the operation for undo/redo feedback
+      const taskTitles = tasksToDelete
+        .map((task) => `"${task.title}"`)
+        .join(", ");
+      const message =
+        tasksToDelete.length === 1
+          ? `Deleted task: ${taskTitles}`
+          : `Deleted ${tasksToDelete.length} tasks: ${taskTitles}`;
+      set(recordOperationAtom, message);
+
+      // Play deletion sound
+      set(playSoundAtom, { soundType: "whoosh" });
+
+      log.info(
+        { taskIds, count: tasksToDelete.length, module: "tasks" },
+        "Tasks deleted permanently",
+      );
+    } catch (error) {
+      handleAtomError(error, "deleteTasksAtom");
+      throw error; // Re-throw so the UI can handle the error
+    }
+  },
+);
+deleteTasksAtom.debugLabel = "deleteTasksAtom";
+
+/**
+ * Deletes a task permanently (single task)
+ * Convenience wrapper around deleteTasksAtom for single task deletion
+ */
 export const deleteTaskAtom = atom(null, async (get, set, taskId: TaskId) => {
   try {
-    const tasks = get(tasksAtom); // Get current tasks from base atom
-    const taskToDelete = tasks.find((task: Task) => task.id === taskId);
-
-    if (!taskToDelete) return;
-
-    // Cancel any scheduled notification for this task
-    set(notificationAtoms.actions.cancelTask, taskId);
-
-    // Get the delete task mutation
-    const deleteTaskMutation = get(deleteTaskMutationAtom);
-
-    // Execute the mutation - this will handle optimistic updates and API persistence
-    await deleteTaskMutation.mutateAsync({ id: taskId });
-
-    // Record the operation for undo/redo feedback
-    set(recordOperationAtom, `Deleted task: "${taskToDelete.title}"`);
-
-    // Play deletion sound
-    set(playSoundAtom, { soundType: "whoosh" });
-
-    log.info({ taskId, module: "tasks" }, "Task deleted permanently");
+    // Use the bulk deleteTasksAtom internally
+    await set(deleteTasksAtom, [taskId]);
   } catch (error) {
     handleAtomError(error, "deleteTaskAtom");
     throw error; // Re-throw so the UI can handle the error
@@ -1467,7 +1517,9 @@ export const taskAtoms = {
   actions: {
     addTask: addTaskAtom,
     updateTask: updateTaskAtom,
+    updateTasks: updateTasksAtom,
     deleteTask: deleteTaskAtom,
+    deleteTasks: deleteTasksAtom,
     toggleTask: toggleTaskAtom,
     addComment: addCommentAtom,
     bulkActions: bulkActionsAtom,

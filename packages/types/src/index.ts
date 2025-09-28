@@ -6,6 +6,10 @@
  */
 
 import { z } from "zod";
+import {
+  AVATAR_DATA_URL_REGEX,
+  DEFAULT_AVATAR_DIR,
+} from "@tasktrove/constants";
 import { parse, isValid, parseISO, format } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
 
@@ -512,7 +516,12 @@ export const UserSchema = z.object({
   /** Password for authentication */
   password: z.string(),
   /** File path to user's avatar image */
-  avatar: z.string().optional(),
+  avatar: z
+    .string()
+    .refine((path) => path.startsWith(`/${DEFAULT_AVATAR_DIR}/`), {
+      message: `Avatar path must start with /${DEFAULT_AVATAR_DIR}/`,
+    })
+    .optional(),
 });
 
 // Serialization schema for User (colocated with UserSchema for high correlation)
@@ -2019,7 +2028,13 @@ export const LabelUpdateArraySerializationSchema = z.array(
  * Schema for updating user via API
  */
 export const UpdateUserRequestSchema = UserSchema.partial().extend({
-  avatar: UserSchema.shape.avatar.nullable(),
+  avatar: z
+    .string()
+    .regex(AVATAR_DATA_URL_REGEX, {
+      message: "Avatar must be a valid base64 encoded image data URL",
+    })
+    .nullable()
+    .optional(),
 });
 
 /**

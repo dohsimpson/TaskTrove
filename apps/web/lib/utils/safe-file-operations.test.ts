@@ -6,6 +6,7 @@ import {
   safeWriteJsonFile,
   safeReadDataFile,
   safeWriteDataFile,
+  saveBase64ToAvatarFile,
 } from "./safe-file-operations"
 import { type DataFile } from "@/lib/types"
 import {
@@ -26,8 +27,16 @@ vi.mock("fs/promises", () => ({
   default: {
     readFile: vi.fn(),
     writeFile: vi.fn(),
+    mkdir: vi.fn(),
   },
 }))
+
+// Mock uuid
+vi.mock("uuid", () => ({
+  v4: vi.fn(),
+}))
+
+import { v4 as uuidv4 } from "uuid"
 
 // Mock logger to avoid noise in tests
 vi.mock("./logger", () => ({
@@ -482,6 +491,77 @@ describe("safe-file-operations", () => {
 
       // Should have made 5 read calls
       expect(mockFs.readFile).toHaveBeenCalledTimes(5)
+    })
+  })
+
+  describe("saveBase64ToAvatarFile", () => {
+    const mockUuidV4 = vi.mocked(uuidv4)
+
+    beforeEach(() => {
+      ;(mockUuidV4 as any).mockReturnValue("test-uuid-123")
+      mockFs.mkdir.mockResolvedValue(undefined)
+      mockFs.writeFile.mockResolvedValue(undefined)
+    })
+
+    it("should save a base64 PNG image successfully", async () => {
+      const base64Data =
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+      const mimeType = "image/png"
+
+      const result = await saveBase64ToAvatarFile(base64Data, mimeType)
+
+      expect(result).toBe("assets/avatar/test-uuid-123.png")
+      expect(mockFs.mkdir).toHaveBeenCalledWith(expect.stringContaining("data/assets/avatar"), {
+        recursive: true,
+      })
+      expect(mockFs.writeFile).toHaveBeenCalledWith(
+        expect.stringContaining("test-uuid-123.png"),
+        expect.any(Buffer),
+      )
+    })
+
+    it("should save a base64 JPEG image successfully", async () => {
+      const base64Data =
+        "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwA/VQAAAAAAA"
+      const mimeType = "image/jpeg"
+
+      const result = await saveBase64ToAvatarFile(base64Data, mimeType)
+
+      expect(result).toBe("assets/avatar/test-uuid-123.jpg")
+      expect(mockFs.writeFile).toHaveBeenCalledWith(
+        expect.stringContaining("test-uuid-123.jpg"),
+        expect.any(Buffer),
+      )
+    })
+
+    it("should return null for unsupported MIME type", async () => {
+      const base64Data = "someBase64Data"
+      const mimeType = "image/unsupported"
+
+      const result = await saveBase64ToAvatarFile(base64Data, mimeType)
+
+      expect(result).toBeNull()
+      expect(mockFs.writeFile).not.toHaveBeenCalled()
+    })
+
+    it("should return null when file write fails", async () => {
+      const base64Data = "someBase64Data"
+      const mimeType = "image/png"
+      mockFs.writeFile.mockRejectedValue(new Error("Write failed"))
+
+      const result = await saveBase64ToAvatarFile(base64Data, mimeType)
+
+      expect(result).toBeNull()
+    })
+
+    it("should return null when directory creation fails", async () => {
+      const base64Data = "someBase64Data"
+      const mimeType = "image/png"
+      mockFs.mkdir.mockRejectedValue(new Error("mkdir failed"))
+
+      const result = await saveBase64ToAvatarFile(base64Data, mimeType)
+
+      expect(result).toBeNull()
     })
   })
 })

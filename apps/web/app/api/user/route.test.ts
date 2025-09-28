@@ -8,7 +8,11 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { GET, PATCH } from "./route"
 import { DataFile, DataFileSchema, User } from "@/lib/types"
 import { DEFAULT_EMPTY_DATA_FILE, DEFAULT_USER } from "@/lib/types"
-import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
+import {
+  safeReadDataFile,
+  safeWriteDataFile,
+  saveBase64ToAvatarFile,
+} from "@/lib/utils/safe-file-operations"
 import { createMockEnhancedRequest } from "@/lib/utils/test-helpers"
 import { verifyPassword } from "@tasktrove/utils"
 
@@ -43,6 +47,7 @@ vi.mock("@/lib/utils/api-mutex", () => ({
 
 const mockSafeReadDataFile = vi.mocked(safeReadDataFile)
 const mockSafeWriteDataFile = vi.mocked(safeWriteDataFile)
+const mockSaveBase64ToAvatarFile = vi.mocked(saveBase64ToAvatarFile)
 
 // Helper function to safely get written data
 function getWrittenData(): DataFile {
@@ -58,8 +63,12 @@ function getWrittenData(): DataFile {
 const mockUser: User = {
   username: "testuser",
   password: "testpassword",
-  avatar: "/test/avatar.jpg",
+  avatar: "/assets/avatar/test-avatar.jpg",
 }
+
+// Valid base64 data URL for testing
+const validAvatarDataUrl =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
 
 const mockDataFile: DataFile = {
   ...DEFAULT_EMPTY_DATA_FILE,
@@ -135,6 +144,9 @@ describe("PATCH /api/user", () => {
 
     // Mock successful async file write
     mockSafeWriteDataFile.mockResolvedValue(true)
+
+    // Mock successful avatar file save
+    mockSaveBase64ToAvatarFile.mockResolvedValue("/assets/avatar/test-uuid.png")
   })
 
   afterEach(() => {
@@ -144,7 +156,7 @@ describe("PATCH /api/user", () => {
   it("should update user successfully", async () => {
     const userUpdate = {
       username: "updateduser",
-      avatar: "/new/avatar.jpg",
+      avatar: validAvatarDataUrl,
     }
 
     const request = new Request("http://localhost:3000/api/user", {
@@ -160,7 +172,7 @@ describe("PATCH /api/user", () => {
     expect(data.success).toBe(true)
     expect(data.message).toBe("User updated successfully")
     expect(data.user.username).toBe("updateduser")
-    expect(data.user.avatar).toBe("/new/avatar.jpg")
+    expect(data.user.avatar).toBe("/assets/avatar/test-uuid.png") // Should be the mocked saved path
     expect(data.user.password).toBe("testpassword") // Should preserve existing password
 
     // Verify that writeFile was called with updated user data
@@ -169,8 +181,14 @@ describe("PATCH /api/user", () => {
 
     // Verify the user was updated in the written data
     expect(writtenData.user.username).toBe("updateduser")
-    expect(writtenData.user.avatar).toBe("/new/avatar.jpg")
+    expect(writtenData.user.avatar).toBe("/assets/avatar/test-uuid.png") // Should be the mocked saved path
     expect(writtenData.user.password).toBe("testpassword")
+
+    // Verify avatar processing was called
+    expect(mockSaveBase64ToAvatarFile).toHaveBeenCalledWith(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+      "image/png",
+    )
   })
 
   it("should handle partial updates correctly", async () => {
@@ -192,12 +210,12 @@ describe("PATCH /api/user", () => {
     expect(data.success).toBe(true)
     expect(data.user.username).toBe("partialupdateuser")
     expect(data.user.password).toBe("testpassword") // Should preserve existing
-    expect(data.user.avatar).toBe("/test/avatar.jpg") // Should preserve existing
+    expect(data.user.avatar).toBe("/assets/avatar/test-avatar.jpg") // Should preserve existing
 
     const writtenData = getWrittenData()
     expect(writtenData.user.username).toBe("partialupdateuser")
     expect(writtenData.user.password).toBe("testpassword")
-    expect(writtenData.user.avatar).toBe("/test/avatar.jpg")
+    expect(writtenData.user.avatar).toBe("/assets/avatar/test-avatar.jpg")
   })
 
   it("should handle null avatar as cleanup", async () => {
@@ -302,6 +320,27 @@ describe("PATCH /api/user", () => {
     expect(response.status).toBe(400)
     expect(data.error).toBe("Validation failed")
     expect(data.message).toContain("username")
+  })
+
+  it("should reject invalid avatar data URLs", async () => {
+    const invalidUserUpdate = {
+      username: "testuser",
+      avatar: "/invalid/avatar.jpg", // Invalid format - should be base64 data URL
+    }
+
+    const request = new Request("http://localhost:3000/api/user", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(invalidUserUpdate),
+    })
+
+    const response = await PATCH(createMockEnhancedRequest(request))
+    const data = await response.json()
+
+    expect(response.ok).toBe(false)
+    expect(response.status).toBe(400)
+    expect(data.error).toBe("Validation failed")
+    expect(data.message).toContain("Avatar must be a valid base64 encoded image data URL")
   })
 
   it("should preserve other data when updating user", async () => {

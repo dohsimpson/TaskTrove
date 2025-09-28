@@ -841,6 +841,9 @@ importers:
 
   packages/utils:
     dependencies:
+      '@tasktrove/constants':
+        specifier: workspace:*
+        version: link:../constants
       '@tasktrove/types':
         specifier: workspace:*
         version: link:../types

@@ -368,6 +368,12 @@ export const DEFAULT_DATA_DIR = "data";
 /** Default backup directory path */
 export const DEFAULT_BACKUP_DIR = "backups";
 
+/** Default assets directory path (within data directory) */
+export const DEFAULT_ASSETS_DIR = "assets";
+
+/** Default avatar directory path (within assets directory) */
+export const DEFAULT_AVATAR_DIR = `${DEFAULT_ASSETS_DIR}/avatar`;
+
 // =============================================================================
 // BACKUP DEFAULTS
 // =============================================================================

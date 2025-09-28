@@ -7,7 +7,11 @@ import {
   ErrorResponse,
 } from "@/lib/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
-import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
+import {
+  safeReadDataFile,
+  safeWriteDataFile,
+  saveBase64ToAvatarFile,
+} from "@/lib/utils/safe-file-operations"
 import {
   withApiLogging,
   logBusinessEvent,
@@ -16,7 +20,7 @@ import {
   type EnhancedRequest,
 } from "@/lib/middleware/api-logger"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
-import { saltAndHashPassword } from "@tasktrove/utils"
+import { saltAndHashPassword, parseAvatarDataUrl } from "@tasktrove/utils"
 
 /**
  * GET /api/user
@@ -83,6 +87,37 @@ async function updateUser(
 
   const partialUser = validation.data
 
+  // Process avatar if provided (base64 data URL)
+  let avatarPath: string | undefined | null = undefined
+  if (partialUser.avatar !== undefined) {
+    if (partialUser.avatar === null) {
+      // User wants to remove avatar
+      avatarPath = null
+    } else {
+      try {
+        // Parse data URL to extract MIME type and base64 data using utility function
+        const parsed = parseAvatarDataUrl(partialUser.avatar)
+        if (!parsed) {
+          return createErrorResponse(
+            "Invalid avatar format",
+            "Avatar must be a valid data URL",
+            400,
+          )
+        }
+
+        const { mimeType, base64Data } = parsed
+
+        // Save base64 data to file
+        avatarPath = await saveBase64ToAvatarFile(base64Data, mimeType)
+        if (!avatarPath) {
+          return createErrorResponse("Failed to save avatar", "Avatar processing failed", 500)
+        }
+      } catch {
+        return createErrorResponse("Failed to process avatar", "Avatar processing failed", 500)
+      }
+    }
+  }
+
   // Hash password if provided
   if (partialUser.password && partialUser.password.length > 0) {
     try {
@@ -104,9 +139,19 @@ async function updateUser(
   }
 
   // Merge partial user data with current user data, preserving required fields
+  // Use processed avatar path if avatar was updated, otherwise keep existing avatar
   const updatedUser = {
     ...fileData.user,
-    ...partialUser,
+    ...Object.fromEntries(Object.entries(partialUser).filter(([key]) => key !== "avatar")),
+  }
+
+  // Handle avatar update separately
+  if (avatarPath !== undefined) {
+    if (avatarPath === null) {
+      updatedUser.avatar = undefined // Remove avatar
+    } else {
+      updatedUser.avatar = avatarPath // Set new avatar path
+    }
   }
 
   // Clean null values and ensure required fields are present
@@ -114,7 +159,6 @@ async function updateUser(
   const cleanedUser: User = {
     ...updatedUser,
     password: updatedUser.password || fileData.user.password,
-    avatar: updatedUser.avatar === null ? undefined : updatedUser.avatar,
   }
 
   // Update the data file with new user data

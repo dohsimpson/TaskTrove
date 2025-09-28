@@ -15,6 +15,7 @@ import { useTranslation } from "@/lib/i18n/client"
 import { showUserProfileDialogAtom, closeUserProfileDialogAtom } from "@/lib/atoms/ui/dialogs"
 import { userAtom } from "@/lib/atoms"
 import type { UpdateUserRequest } from "@tasktrove/types"
+import { encodeFileToBase64, isSupportedAvatarMimeType } from "@tasktrove/utils"
 
 export function UserProfileDialog() {
   const { language } = useLanguage()
@@ -49,24 +50,35 @@ export function UserProfileDialog() {
   }, [open, currentUser])
 
   const handleAvatarChange = async (file: File) => {
-    if (file.size > 5 * 1024 * 1024) {
-      // 5MB limit
-      setError(t("userProfile.errors.fileSizeLimit", "Avatar file size must be under 5MB"))
+    // Validate file type using utility function
+    if (!isSupportedAvatarMimeType(file.type)) {
+      setError(
+        t(
+          "userProfile.errors.invalidFileType",
+          "Please select a valid image file (PNG, JPEG, GIF, or WebP)",
+        ),
+      )
       return
     }
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
+    try {
+      // Encode to base64 with 5MB limit
+      const base64Data = await encodeFileToBase64(file, 5 * 1024 * 1024)
+
+      if (!base64Data) {
+        setError(t("userProfile.errors.fileSizeLimit", "Avatar file size must be under 5MB"))
+        return
+      }
+
+      setAvatarFile(file)
+
+      // Create data URL for preview
+      const dataUrl = `data:${file.type};base64,${base64Data}`
+      setAvatar(dataUrl)
+      setError("")
+    } catch {
       setError(t("userProfile.errors.invalidFileType", "Please select a valid image file"))
-      return
     }
-
-    setAvatarFile(file)
-
-    // Create preview URL
-    const previewUrl = URL.createObjectURL(file)
-    setAvatar(previewUrl)
-    setError("")
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -98,8 +110,8 @@ export function UserProfileDialog() {
       }
 
       // Only include avatar if it was changed
-      if (avatarFile) {
-        // For now, use the preview URL. In production, this would need to be uploaded to storage first
+      if (avatarFile && avatar) {
+        // Send the base64 data URL to the server
         updateRequest.avatar = avatar
       }
 

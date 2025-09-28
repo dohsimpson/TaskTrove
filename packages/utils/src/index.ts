@@ -8,6 +8,9 @@
 // Core styling utilities
 export * from "./styling";
 
+// File utilities
+export * from "./file";
+
 // Color utilities
 export * from "./color";
 
@@ -36,6 +39,15 @@ export * from "./encryption";
 
 // Re-export commonly used utilities for convenience
 export { cn } from "./styling";
+export {
+  encodeFileToBase64,
+  encodeFileToDataUrl,
+  AVATAR_DATA_URL_REGEX,
+  SUPPORTED_AVATAR_MIME_TYPES,
+  isValidAvatarDataUrl,
+  parseAvatarDataUrl,
+  isSupportedAvatarMimeType,
+} from "./file";
 export { getContrastColor } from "./color";
 export { safeSetTimeout, MAX_SAFE_TIMEOUT_DELAY } from "./time";
 export { formatTime, getEffectiveEstimation } from "./time-estimation";

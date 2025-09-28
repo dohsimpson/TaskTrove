@@ -1,9 +1,11 @@
 import fs from "fs/promises"
+import path from "path"
+import { v4 as uuidv4 } from "uuid"
 import { z } from "zod"
 import { Mutex } from "async-mutex"
 import { log } from "./logger"
 import { DataFile, DataFileSchema, DataFileSerializationSchema } from "@/lib/types"
-import { DEFAULT_DATA_FILE_PATH } from "@tasktrove/constants"
+import { DEFAULT_DATA_FILE_PATH, DEFAULT_DATA_DIR, DEFAULT_AVATAR_DIR } from "@tasktrove/constants"
 
 // Create a mutex instance to synchronize all file read/write operations
 const fileOperationsMutex = new Mutex()
@@ -209,4 +211,62 @@ export async function safeWriteJsonFile<T, S>({
       return false
     }
   })
+}
+
+/**
+ * Saves a base64 encoded image to the assets/avatar directory
+ *
+ * @param base64Data - Base64 encoded string (without data URL prefix)
+ * @param mimeType - MIME type of the image (e.g., "image/png")
+ * @returns The relative file path (e.g., "avatar/uuid.png") or null if failed
+ */
+export async function saveBase64ToAvatarFile(
+  base64Data: string,
+  mimeType: string,
+): Promise<string | null> {
+  try {
+    // Extract file extension from MIME type
+    const extensionMap: Record<string, string> = {
+      "image/png": "png",
+      "image/jpeg": "jpg",
+      "image/jpg": "jpg",
+      "image/gif": "gif",
+      "image/webp": "webp",
+    }
+
+    const extension = extensionMap[mimeType.toLowerCase()]
+    if (!extension) {
+      log.error(`Unsupported MIME type for avatar: ${mimeType}`)
+      return null
+    }
+
+    // Generate unique filename
+    const filename = `${uuidv4()}.${extension}`
+    const relativePath = `${DEFAULT_AVATAR_DIR}/${filename}`
+
+    // Create full path using data directory structure
+    const dataDir = path.join(process.cwd(), DEFAULT_DATA_DIR)
+    const avatarDir = path.join(dataDir, DEFAULT_AVATAR_DIR)
+    const fullPath = path.join(avatarDir, filename)
+
+    // Ensure avatar directory exists
+    await fs.mkdir(avatarDir, { recursive: true })
+
+    // Convert base64 to buffer and save
+    const buffer = Buffer.from(base64Data, "base64")
+
+    await fileOperationsMutex.runExclusive(async () => {
+      await fs.writeFile(fullPath, buffer)
+    })
+
+    log.debug(`Successfully saved avatar to: ${relativePath}`)
+    return relativePath
+  } catch (error) {
+    if (error instanceof Error) {
+      log.error(`Failed to save avatar file: ${error.message}`)
+    } else {
+      log.error("Unknown error occurred while saving avatar file")
+    }
+    return null
+  }
 }

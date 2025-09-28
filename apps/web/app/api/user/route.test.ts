@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { GET, PATCH } from "./route"
-import { DataFile, DataFileSchema, User } from "@/lib/types"
+import { DataFile, DataFileSchema, User, createAvatarFilePath } from "@/lib/types"
 import { DEFAULT_EMPTY_DATA_FILE, DEFAULT_USER } from "@/lib/types"
 import {
   safeReadDataFile,
@@ -63,7 +63,7 @@ function getWrittenData(): DataFile {
 const mockUser: User = {
   username: "testuser",
   password: "testpassword",
-  avatar: "/assets/avatar/test-avatar.jpg",
+  avatar: createAvatarFilePath("assets/avatar/test-avatar.jpg"),
 }
 
 // Valid base64 data URL for testing
@@ -146,7 +146,7 @@ describe("PATCH /api/user", () => {
     mockSafeWriteDataFile.mockResolvedValue(true)
 
     // Mock successful avatar file save
-    mockSaveBase64ToAvatarFile.mockResolvedValue("/assets/avatar/test-uuid.png")
+    mockSaveBase64ToAvatarFile.mockResolvedValue("assets/avatar/test-uuid.png")
   })
 
   afterEach(() => {
@@ -172,7 +172,7 @@ describe("PATCH /api/user", () => {
     expect(data.success).toBe(true)
     expect(data.message).toBe("User updated successfully")
     expect(data.user.username).toBe("updateduser")
-    expect(data.user.avatar).toBe("/assets/avatar/test-uuid.png") // Should be the mocked saved path
+    expect(data.user.avatar).toBe("assets/avatar/test-uuid.png") // Should be the mocked saved path
     expect(data.user.password).toBe("testpassword") // Should preserve existing password
 
     // Verify that writeFile was called with updated user data
@@ -181,7 +181,7 @@ describe("PATCH /api/user", () => {
 
     // Verify the user was updated in the written data
     expect(writtenData.user.username).toBe("updateduser")
-    expect(writtenData.user.avatar).toBe("/assets/avatar/test-uuid.png") // Should be the mocked saved path
+    expect(writtenData.user.avatar).toBe("assets/avatar/test-uuid.png") // Should be the mocked saved path
     expect(writtenData.user.password).toBe("testpassword")
 
     // Verify avatar processing was called
@@ -210,12 +210,12 @@ describe("PATCH /api/user", () => {
     expect(data.success).toBe(true)
     expect(data.user.username).toBe("partialupdateuser")
     expect(data.user.password).toBe("testpassword") // Should preserve existing
-    expect(data.user.avatar).toBe("/assets/avatar/test-avatar.jpg") // Should preserve existing
+    expect(data.user.avatar).toBe("assets/avatar/test-avatar.jpg") // Should preserve existing
 
     const writtenData = getWrittenData()
     expect(writtenData.user.username).toBe("partialupdateuser")
     expect(writtenData.user.password).toBe("testpassword")
-    expect(writtenData.user.avatar).toBe("/assets/avatar/test-avatar.jpg")
+    expect(writtenData.user.avatar).toBe("assets/avatar/test-avatar.jpg")
   })
 
   it("should handle null avatar as cleanup", async () => {

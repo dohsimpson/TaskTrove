@@ -15,7 +15,8 @@ import { useTranslation } from "@/lib/i18n/client"
 import { showUserProfileDialogAtom, closeUserProfileDialogAtom } from "@/lib/atoms/ui/dialogs"
 import { userAtom } from "@/lib/atoms"
 import type { UpdateUserRequest } from "@tasktrove/types"
-import { encodeFileToBase64, isSupportedAvatarMimeType } from "@tasktrove/utils"
+import { createAvatarBase64 } from "@tasktrove/types"
+import { encodeFileToBase64, isSupportedAvatarMimeType, getAvatarApiUrl } from "@tasktrove/utils"
 
 export function UserProfileDialog() {
   const { language } = useLanguage()
@@ -32,10 +33,13 @@ export function UserProfileDialog() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [avatar, setAvatar] = useState<string | undefined>(undefined)
+  const [uploadedAvatarDataUrl, setUploadedAvatarDataUrl] = useState<string | null>(null)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Get the avatar to display (prioritize uploaded avatar, fall back to current user avatar)
+  const displayAvatar = uploadedAvatarDataUrl || currentUser.avatar
 
   // Initialize form with current user data
   useEffect(() => {
@@ -44,7 +48,8 @@ export function UserProfileDialog() {
       setUsername(currentUser.username || "")
       setPassword("") // Always start with empty password for security
       setConfirmPassword("")
-      setAvatar(currentUser.avatar)
+      setUploadedAvatarDataUrl(null) // Reset any uploaded avatar
+      setAvatarFile(null) // Reset file selection
       setError("")
     }
   }, [open, currentUser])
@@ -72,9 +77,9 @@ export function UserProfileDialog() {
 
       setAvatarFile(file)
 
-      // Create data URL for preview
+      // Create data URL for preview and upload
       const dataUrl = `data:${file.type};base64,${base64Data}`
-      setAvatar(dataUrl)
+      setUploadedAvatarDataUrl(dataUrl)
       setError("")
     } catch {
       setError(t("userProfile.errors.invalidFileType", "Please select a valid image file"))
@@ -109,10 +114,10 @@ export function UserProfileDialog() {
         updateRequest.password = password
       }
 
-      // Only include avatar if it was changed
-      if (avatarFile && avatar) {
+      // Only include avatar if it was changed (user uploaded a new file)
+      if (avatarFile && uploadedAvatarDataUrl) {
         // Send the base64 data URL to the server
-        updateRequest.avatar = avatar
+        updateRequest.avatar = createAvatarBase64(uploadedAvatarDataUrl)
       }
 
       // Update user via atom
@@ -136,7 +141,7 @@ export function UserProfileDialog() {
     setUsername(currentUser.username || "")
     setPassword("")
     setConfirmPassword("")
-    setAvatar(currentUser.avatar)
+    setUploadedAvatarDataUrl(null) // Reset any uploaded avatar
     setAvatarFile(null)
     setError("")
     closeDialog()
@@ -168,7 +173,7 @@ export function UserProfileDialog() {
           {/* Avatar Section */}
           <div className="flex flex-col items-center gap-4">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={avatar} alt={username} />
+              <AvatarImage src={getAvatarApiUrl(displayAvatar)} alt={username} />
               <AvatarFallback>
                 <User className="h-10 w-10" />
               </AvatarFallback>

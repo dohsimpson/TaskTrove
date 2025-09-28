@@ -5,6 +5,7 @@ import {
   UpdateUserRequestSchema,
   UpdateUserResponse,
   ErrorResponse,
+  createAvatarFilePath,
 } from "@/lib/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import {
@@ -150,7 +151,7 @@ async function updateUser(
     if (avatarPath === null) {
       updatedUser.avatar = undefined // Remove avatar
     } else {
-      updatedUser.avatar = avatarPath // Set new avatar path
+      updatedUser.avatar = createAvatarFilePath(avatarPath) // Set new avatar path
     }
   }
 

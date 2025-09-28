@@ -120,3 +120,54 @@ export async function encodeFileToDataUrl(
     reader.readAsDataURL(file);
   });
 }
+
+/**
+ * Converts an avatar file path to the correct API URL
+ * @param avatarPath - The avatar file path (e.g., "data/assets/avatar/uuid.png" or "/data/assets/avatar/uuid.png")
+ * @returns The correct API URL (e.g., "/api/assets/avatar/uuid.png") or the original string if it's a data URL or already an API URL
+ */
+export function getAvatarApiUrl(
+  avatarPath: string | undefined | null,
+): string | undefined {
+  // Return undefined for null/undefined values
+  if (!avatarPath) {
+    return undefined;
+  }
+
+  // If it's already a data URL (base64), return as-is
+  if (isValidAvatarDataUrl(avatarPath)) {
+    return avatarPath;
+  }
+
+  // If it's already an API URL, return as-is
+  if (avatarPath.startsWith("/api/assets/")) {
+    return avatarPath;
+  }
+
+  // If it's an external URL (http/https), return as-is
+  if (avatarPath.startsWith("http://") || avatarPath.startsWith("https://")) {
+    return avatarPath;
+  }
+
+  // Convert file system path to API URL
+  // Handle both "data/assets/avatar/file.ext" and "/data/assets/avatar/file.ext"
+  let normalizedPath = avatarPath;
+
+  // Remove leading slash if present
+  if (normalizedPath.startsWith("/")) {
+    normalizedPath = normalizedPath.substring(1);
+  }
+
+  // Remove "data/" prefix if present
+  if (normalizedPath.startsWith("data/")) {
+    normalizedPath = normalizedPath.substring(5); // Remove "data/"
+  }
+
+  // Remove "assets/" prefix if present (it will be added back in the API path)
+  if (normalizedPath.startsWith("assets/")) {
+    normalizedPath = normalizedPath.substring(7); // Remove "assets/"
+  }
+
+  // Construct the API URL
+  return `/api/assets/${normalizedPath}`;
+}

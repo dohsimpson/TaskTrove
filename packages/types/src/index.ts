@@ -75,6 +75,26 @@ export const VersionStringSchema = z
   .regex(/^v\d+\.\d+\.\d+$/, "Version must follow format v0.0.0")
   .brand("VersionString");
 
+/**
+ * Avatar file path - string type for file system paths to avatar files
+ */
+export const AvatarFilePathSchema = z
+  .string()
+  .refine((path) => path.startsWith(`${DEFAULT_AVATAR_DIR}/`), {
+    message: `Avatar path must start with ${DEFAULT_AVATAR_DIR}/`,
+  })
+  .brand("AvatarFilePath");
+
+/**
+ * Avatar base64 data - string type for base64 encoded image data URLs
+ */
+export const AvatarBase64Schema = z
+  .string()
+  .regex(AVATAR_DATA_URL_REGEX, {
+    message: "Avatar must be a valid base64 encoded image data URL",
+  })
+  .brand("AvatarBase64");
+
 // Inferred types for IDs
 export type TaskId = z.infer<typeof TaskIdSchema>;
 export type ProjectId = z.infer<typeof ProjectIdSchema>;
@@ -87,6 +107,8 @@ export type VoiceCommandId = z.infer<typeof VoiceCommandIdSchema>;
 export type SectionId = z.infer<typeof SectionIdSchema>;
 export type GroupId = z.infer<typeof GroupIdSchema>;
 export type VersionString = z.infer<typeof VersionStringSchema>;
+export type AvatarFilePath = z.infer<typeof AvatarFilePathSchema>;
+export type AvatarBase64 = z.infer<typeof AvatarBase64Schema>;
 
 /** Task priority type (1=highest, 4=lowest) */
 export type TaskPriority = 1 | 2 | 3 | 4;
@@ -109,6 +131,10 @@ export const createSectionId = (id: string): SectionId =>
 export const createGroupId = (id: string): GroupId => GroupIdSchema.parse(id);
 export const createVersionString = (version: string): VersionString =>
   VersionStringSchema.parse(version);
+export const createAvatarFilePath = (path: string): AvatarFilePath =>
+  AvatarFilePathSchema.parse(path);
+export const createAvatarBase64 = (base64: string): AvatarBase64 =>
+  AvatarBase64Schema.parse(base64);
 
 /**
  * Validates RRULE (Recurrence Rule) strings according to RFC 5545
@@ -516,12 +542,7 @@ export const UserSchema = z.object({
   /** Password for authentication */
   password: z.string(),
   /** File path to user's avatar image */
-  avatar: z
-    .string()
-    .refine((path) => path.startsWith(`/${DEFAULT_AVATAR_DIR}/`), {
-      message: `Avatar path must start with /${DEFAULT_AVATAR_DIR}/`,
-    })
-    .optional(),
+  avatar: AvatarFilePathSchema.optional(),
 });
 
 // Serialization schema for User (colocated with UserSchema for high correlation)
@@ -2028,13 +2049,7 @@ export const LabelUpdateArraySerializationSchema = z.array(
  * Schema for updating user via API
  */
 export const UpdateUserRequestSchema = UserSchema.partial().extend({
-  avatar: z
-    .string()
-    .regex(AVATAR_DATA_URL_REGEX, {
-      message: "Avatar must be a valid base64 encoded image data URL",
-    })
-    .nullable()
-    .optional(),
+  avatar: AvatarBase64Schema.nullable().optional(),
 });
 
 /**
@@ -2045,10 +2060,7 @@ export const InitialSetupRequestSchema = z.object({
 });
 
 // Serialization schemas for UpdateUser (colocated with request schema)
-export const UserUpdateSerializationSchema =
-  UserSerializationSchema.partial().extend({
-    avatar: UserSerializationSchema.shape.avatar.nullable(),
-  });
+export const UserUpdateSerializationSchema = UpdateUserRequestSchema;
 
 /**
  * Schema for delete requests

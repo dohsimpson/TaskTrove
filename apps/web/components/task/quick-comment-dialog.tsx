@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { MessageSquare, Send } from "lucide-react"
 import type { TaskId } from "@/lib/types"
+import { getAvatarApiUrl } from "@tasktrove/utils"
 
 interface Task {
   id: TaskId
@@ -60,7 +61,7 @@ export function QuickCommentDialog({
         <div className="space-y-4">
           <div className="flex items-start gap-3">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={currentUser.avatar || "/placeholder.svg"} />
+              <AvatarImage src={getAvatarApiUrl(currentUser.avatar) || "/placeholder.svg"} />
               <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="flex-1 space-y-2">

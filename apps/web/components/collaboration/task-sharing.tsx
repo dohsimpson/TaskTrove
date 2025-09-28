@@ -25,6 +25,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Share2, Users, MessageSquare, Bell, Copy, Mail, X, Crown, Shield, Eye } from "lucide-react"
 import { toast } from "sonner"
 import type { TaskId } from "@/lib/types"
+import { getAvatarApiUrl } from "@tasktrove/utils"
 
 interface Collaborator {
   id: string
@@ -219,7 +220,7 @@ export function TaskSharing({
               >
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={collaborator.avatar || "/placeholder.svg"} />
+                    <AvatarImage src={getAvatarApiUrl(collaborator.avatar) || "/placeholder.svg"} />
                     <AvatarFallback>{collaborator.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
@@ -281,7 +282,9 @@ export function TaskSharing({
               <div key={comment.id} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <div className="flex items-start gap-3">
                   <Avatar className="h-6 w-6">
-                    <AvatarImage src={comment.authorAvatar || "/placeholder.svg"} />
+                    <AvatarImage
+                      src={getAvatarApiUrl(comment.authorAvatar) || "/placeholder.svg"}
+                    />
                     <AvatarFallback>{comment.authorName.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">

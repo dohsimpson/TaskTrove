@@ -30,6 +30,7 @@ import { openSettingsDialogAtom, openUserProfileDialogAtom } from "@/lib/atoms/u
 import { userAtom } from "@/lib/atoms"
 import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
 import { LogoutConfirmDialog } from "@/components/dialogs/logout-confirm-dialog"
+import { getAvatarApiUrl } from "@tasktrove/utils"
 
 interface ContextMenuItem {
   icon: React.ComponentType<{ className?: string }>
@@ -104,7 +105,7 @@ export function NavUser() {
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.username} />
+                  <AvatarImage src={getAvatarApiUrl(user.avatar)} alt={user.username} />
                   <AvatarFallback className="rounded-lg">
                     <User className="h-4 w-4" />
                   </AvatarFallback>
@@ -129,7 +130,7 @@ export function NavUser() {
                     title="Edit Profile"
                   >
                     <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src={user.avatar} alt={user.username} />
+                      <AvatarImage src={getAvatarApiUrl(user.avatar)} alt={user.username} />
                       <AvatarFallback className="rounded-lg">
                         <User className="h-4 w-4" />
                       </AvatarFallback>

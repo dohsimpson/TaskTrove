@@ -39,6 +39,7 @@ import {
   TrendingUp,
 } from "lucide-react"
 import { toast } from "sonner"
+import { getAvatarApiUrl } from "@tasktrove/utils"
 
 interface TeamMember {
   id: string
@@ -420,7 +421,7 @@ export function TeamManagement({
                     >
                       <div className="flex items-center gap-4">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={member.avatar || "/placeholder.svg"} />
+                          <AvatarImage src={getAvatarApiUrl(member.avatar) || "/placeholder.svg"} />
                           <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
@@ -506,7 +507,9 @@ export function TeamManagement({
                           <div className="flex items-center gap-3">
                             <div className="text-sm font-medium text-gray-500">#{index + 1}</div>
                             <Avatar className="h-8 w-8">
-                              <AvatarImage src={member.avatar || "/placeholder.svg"} />
+                              <AvatarImage
+                                src={getAvatarApiUrl(member.avatar) || "/placeholder.svg"}
+                              />
                               <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <span className="font-medium text-sm">{member.name}</span>

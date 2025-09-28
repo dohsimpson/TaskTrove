@@ -67,6 +67,7 @@ import {
   UpdateUserResponse,
   UpdateUserResponseSchema,
   UserUpdateSerializationSchema,
+  AvatarFilePath,
   // Group-related types
   ProjectGroup,
   GroupId,
@@ -1428,10 +1429,23 @@ export const updateUserMutationAtom = createMutation<
   logModule: "user",
   testResponseFactory: (variables: UpdateUserRequest) => {
     // For test mode, merge updates with default user
+    // Simulate avatar conversion: base64 -> file path (in real API, this would save the file)
+    let simulatedAvatarPath: AvatarFilePath | undefined = DEFAULT_USER.avatar;
+    if (variables.avatar !== undefined) {
+      if (variables.avatar === null) {
+        // User wants to remove avatar
+        simulatedAvatarPath = undefined;
+      } else {
+        // User uploaded new avatar (base64) - simulate saving as file
+        simulatedAvatarPath =
+          "assets/avatar/simulated-test-avatar.png" as AvatarFilePath;
+      }
+    }
+
     const testUser: User = {
       username: variables.username ?? DEFAULT_USER.username,
       password: variables.password ?? DEFAULT_USER.password,
-      avatar: variables.avatar ?? DEFAULT_USER.avatar,
+      avatar: simulatedAvatarPath,
     };
     return {
       success: true,
@@ -1444,7 +1458,7 @@ export const updateUserMutationAtom = createMutation<
     const updatedUser: User = {
       username: variables.username ?? oldData.user.username,
       password: variables.password ?? oldData.user.password,
-      avatar: variables.avatar ?? oldData.user.avatar,
+      avatar: oldData.user.avatar,
     };
 
     return {

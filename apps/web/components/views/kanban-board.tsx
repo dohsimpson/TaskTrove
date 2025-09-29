@@ -296,10 +296,10 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
   // Calculate responsive column classes based on number of columns
   const getColumnClasses = () => {
     const columnCount = columns.length
-    if (columnCount === 0) return "w-full my-1"
-    if (columnCount === 1) return "w-full my-1"
+    if (columnCount === 0) return "w-full h-full my-1"
+    if (columnCount === 1) return "w-full h-full my-1"
     // For 5+ columns, use flex with min-width
-    return "w-full my-1 sm:flex-1 sm:min-w-80"
+    return "w-full h-full my-1 sm:flex-1 sm:min-w-80"
   }
 
   return (
@@ -313,11 +313,11 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
       {/* Scrollable Kanban Columns */}
       <div className="flex-1 overflow-x-auto">
         <div
-          className={`px-4 py-3 flex flex-col sm:flex-row gap-2 ${columns.length <= 1 ? "" : "sm:min-w-max"}`}
+          className={`px-4 py-3 flex flex-col sm:flex-row gap-2 h-full ${columns.length <= 1 ? "" : "sm:min-w-max"}`}
         >
           {columns.map((column) => (
             <div key={column.id} className={getColumnClasses()}>
-              <div className="flex min-w-60 flex-col rounded-lg border bg-muted dark:bg-background py-1 px-2 flex-1 min-h-full">
+              <div className="flex min-w-60 flex-col rounded-lg border bg-muted dark:bg-background py-1 px-2 flex-1 h-full">
                 {/* Column Header */}
                 <EditableSectionHeader
                   sectionId={column.id}
@@ -409,7 +409,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                     }}
                     className="space-y-3 h-full min-h-[200px] py-1"
                   >
-                    <div className="space-y-2">
+                    <div className="space-y-2 flex flex-col h-full">
                       {column.tasks.map((task, index) => (
                         <DropTargetWrapper
                           key={task.id}
@@ -532,14 +532,20 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
                         </DropTargetWrapper>
                       ))}
 
-                      {/* Render shadow at bottom of column if dragging over column but not over any task */}
+                      {/* Spacer/drop zone that fills remaining space and shows shadow when dragging */}
                       {(() => {
                         const dragState = columnDragStates.get(column.id)
-                        return dragState?.isDraggingOver &&
+                        const isDraggingOverEmptySpace =
+                          dragState?.isDraggingOver &&
                           !dragState.targetTaskId &&
-                          dragState.draggedTaskRect ? (
-                          <TaskShadow height={dragState.draggedTaskRect.height} className="mb-3" />
-                        ) : null
+                          dragState.draggedTaskRect
+
+                        if (isDraggingOverEmptySpace) {
+                          return <TaskShadow fillRemaining className="mb-3" />
+                        } else {
+                          // Always show a spacer to fill remaining space for drop target
+                          return <div className="flex-1 min-h-4" />
+                        }
                       })()}
                     </div>
                   </DropTargetWrapper>

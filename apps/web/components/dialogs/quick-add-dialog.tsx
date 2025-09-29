@@ -136,8 +136,11 @@ export function QuickAddDialog() {
   const nlpEnabled = useAtomValue(nlpEnabledAtom)
   const setNlpEnabled = useSetAtom(nlpEnabledAtom)
 
+  // Create empty Set once to avoid re-creating on every render (which causes infinite loop)
+  const disabledSections = useMemo(() => new Set<string>(), [])
+
   // Use debounced parsing for better performance (disabled when NLP toggle is off)
-  const parsed = useDebouncedParse(input, new Set())
+  const parsed = useDebouncedParse(input, disabledSections)
 
   // Clear any values that were set by parsing when NLP is disabled
   useEffect(() => {

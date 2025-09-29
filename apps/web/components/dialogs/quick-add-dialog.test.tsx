@@ -2108,6 +2108,65 @@ describe("QuickAddDialog", () => {
   })
 
   describe("Regression Tests", () => {
+    it("should not create new objects in render that are used as hook dependencies", async () => {
+      // This test prevents infinite re-render loops caused by creating new objects
+      // in the render phase that are then used as dependencies in hooks like useEffect
+      const fs = await import("fs")
+      const path = await import("path")
+
+      const componentPath = path.join(process.cwd(), "components/dialogs/quick-add-dialog.tsx")
+      const sourceCode = fs.readFileSync(componentPath, "utf8")
+
+      // Check for problematic patterns where new objects are created in render
+      // and passed to hooks that have them as dependencies
+      const problematicPatterns: string[] = []
+
+      // Pattern 1: new Set() passed directly to a hook
+      if (sourceCode.match(/useDebouncedParse\([^)]*new Set\(\)/)) {
+        problematicPatterns.push(
+          "useDebouncedParse is called with 'new Set()' which creates a new object on every render, " +
+            "causing infinite re-renders. Use useMemo to create the Set once: const disabledSections = useMemo(() => new Set(), [])",
+        )
+      }
+
+      // Pattern 2: new Map() passed directly to a hook
+      if (sourceCode.match(/useDebouncedParse\([^)]*new Map\(\)/)) {
+        problematicPatterns.push(
+          "useDebouncedParse is called with 'new Map()' which creates a new object on every render. " +
+            "Use useMemo to create it once.",
+        )
+      }
+
+      // Pattern 3: {} or [] passed directly to hooks (common mistake)
+      // This is a simplified check - real code would need more sophisticated parsing
+      const hookCallsWithInlineObjects = sourceCode.match(
+        /useDebouncedParse\([^)]*\{[^}]*\}|useDebouncedParse\([^)]*\[[^\]]*\]/g,
+      )
+      if (hookCallsWithInlineObjects) {
+        // Filter out cases where it's a destructured object or JSX
+        const actualProblems = hookCallsWithInlineObjects.filter((match) => {
+          // Exclude JSX and object destructuring
+          return !match.includes("=>") && !match.includes("<")
+        })
+        if (actualProblems.length > 0) {
+          problematicPatterns.push(
+            "useDebouncedParse is called with inline object/array literal. " +
+              "Use useMemo or define outside component to prevent infinite re-renders.",
+          )
+        }
+      }
+
+      if (problematicPatterns.length > 0) {
+        throw new Error(
+          "Detected patterns that cause infinite re-renders:\n" +
+            problematicPatterns.join("\n\n") +
+            "\n\nThese create new object references on every render, triggering useEffect/useMemo dependencies.",
+        )
+      }
+
+      expect(problematicPatterns).toHaveLength(0)
+    })
+
     it("validates useEffect dependencies don't contain circular references", async () => {
       // Read the source code and check for circular dependencies in useEffect hooks
       const fs = await import("fs")

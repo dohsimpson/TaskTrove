@@ -1,11 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { saltAndHashPassword, verifyPassword } from "./encryption";
 
+// Use lower salt rounds for tests to avoid timeouts (4 is fast but still secure enough for testing)
+const TEST_SALT_ROUNDS = 4;
+
 describe("Encryption utilities", () => {
   describe("saltAndHashPassword", () => {
     it("should hash a password and return bcrypt format", () => {
       const password = "testpassword123";
-      const hashed = saltAndHashPassword(password);
+      const hashed = saltAndHashPassword(password, TEST_SALT_ROUNDS);
 
       // bcrypt hash format: $2a$rounds$salt+hash (60 characters total)
       expect(hashed).toMatch(/^\$2[abyxy]?\$\d{2}\$.{53}$/);
@@ -14,8 +17,8 @@ describe("Encryption utilities", () => {
 
     it("should generate different hashes for same password (salt is random)", () => {
       const password = "testpassword123";
-      const hash1 = saltAndHashPassword(password);
-      const hash2 = saltAndHashPassword(password);
+      const hash1 = saltAndHashPassword(password, TEST_SALT_ROUNDS);
+      const hash2 = saltAndHashPassword(password, TEST_SALT_ROUNDS);
 
       expect(hash1).not.toBe(hash2);
     });
@@ -36,14 +39,14 @@ describe("Encryption utilities", () => {
   describe("verifyPassword", () => {
     it("should verify correct password", () => {
       const password = "testpassword123";
-      const hashed = saltAndHashPassword(password);
+      const hashed = saltAndHashPassword(password, TEST_SALT_ROUNDS);
 
       expect(verifyPassword(password, hashed)).toBe(true);
     });
 
     it("should reject incorrect password", () => {
       const password = "testpassword123";
-      const hashed = saltAndHashPassword(password);
+      const hashed = saltAndHashPassword(password, TEST_SALT_ROUNDS);
 
       expect(verifyPassword("wrongpassword", hashed)).toBe(false);
     });
@@ -53,7 +56,7 @@ describe("Encryption utilities", () => {
     });
 
     it("should return false when password is undefined but hash exists", () => {
-      const hashed = saltAndHashPassword("somepassword");
+      const hashed = saltAndHashPassword("somepassword", TEST_SALT_ROUNDS);
       expect(verifyPassword(undefined, hashed)).toBe(false);
     });
 
@@ -63,7 +66,7 @@ describe("Encryption utilities", () => {
 
     it("should handle edge cases with special characters in password", () => {
       const password = "p@ssw0rd!@#$%^&*()_+";
-      const hashed = saltAndHashPassword(password);
+      const hashed = saltAndHashPassword(password, TEST_SALT_ROUNDS);
 
       expect(verifyPassword(password, hashed)).toBe(true);
       expect(verifyPassword("different", hashed)).toBe(false);
@@ -71,7 +74,7 @@ describe("Encryption utilities", () => {
 
     it("should handle unicode characters in password", () => {
       const password = "🔒🗝️密码测试";
-      const hashed = saltAndHashPassword(password);
+      const hashed = saltAndHashPassword(password, TEST_SALT_ROUNDS);
 
       expect(verifyPassword(password, hashed)).toBe(true);
       expect(verifyPassword("different", hashed)).toBe(false);

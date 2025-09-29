@@ -1,8 +1,3 @@
-import { defineConfig } from "vitest/config";
+import config from "@repo/vitest-config/jsdom";
 
-export default defineConfig({
-  test: {
-    globals: true,
-    environment: "jsdom",
-  },
-});
+export default config;

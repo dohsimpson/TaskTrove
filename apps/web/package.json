@@ -111,6 +111,7 @@
     "@next/bundle-analyzer": "catalog:",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
     "@testing-library/jest-dom": "catalog:",

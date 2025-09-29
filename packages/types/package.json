@@ -29,6 +29,7 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
     "@typescript/native-preview": "catalog:",
     "@types/uuid": "catalog:",
     "eslint": "catalog:",

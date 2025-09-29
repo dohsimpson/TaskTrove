@@ -4,7 +4,6 @@
 // import { Button } from "@/components/ui/button"
 // import { RotateCcw, Volume2, VolumeX, Rewind, FastForward } from "lucide-react"
 // import AnalogTimer from "@/components/ui/analog-timer"
-// import { playCompletionSound } from "@/lib/utils/audio"
 
 interface PomodoroTimerProps {
   taskId?: string

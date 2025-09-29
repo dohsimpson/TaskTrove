@@ -4,6 +4,7 @@
 
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
+import { playSound, type SoundType } from "@tasktrove/dom-utils/audio";
 
 // Storage key prefix for the app
 export const STORAGE_PREFIX = "tasktrove-";
@@ -61,11 +62,31 @@ export function handleAtomError(error: any, context?: string) {
   console.error(`Atom error${context ? ` in ${context}` : ""}:`, error);
 }
 
-// Simple sound atom placeholder
-export const playSoundAtom = atom(null, async (get, _set, params: any) => {
-  // This should be implemented properly based on platform
-  console.log("Sound requested:", params);
-});
+/**
+ * Atom for playing sounds with DOM environment support
+ * Automatically handles browser compatibility and Web Audio API
+ */
+export const playSoundAtom = atom(
+  null,
+  async (
+    get,
+    _set,
+    { soundType, volume = 1.0 }: { soundType: SoundType; volume?: number },
+  ) => {
+    try {
+      // Check if we're in a DOM environment
+      if (typeof window === "undefined") {
+        // Server-side rendering or non-DOM environment
+        return;
+      }
+
+      await playSound(soundType, volume);
+    } catch (error) {
+      console.warn(`Failed to play ${soundType} sound:`, error);
+    }
+  },
+);
+playSoundAtom.debugLabel = "playSoundAtom";
 
 // Simple toast placeholder - should be implemented based on platform
 export const toast = {

@@ -82,3 +82,7 @@ export {
 } from "./ui/selection";
 
 export * from "./features/analytics";
+
+// Export utils including audio functionality
+export { playSoundAtom } from "./utils/atom-helpers";
+export type { SoundType } from "@tasktrove/dom-utils/audio";

@@ -65,6 +65,7 @@
     "@tanstack/react-query": "catalog:",
     "@tasktrove/atoms": "workspace:*",
     "@tasktrove/constants": "workspace:*",
+    "@tasktrove/dom-utils": "workspace:*",
     "@tasktrove/types": "workspace:*",
     "@tasktrove/utils": "workspace:*",
     "@uidotdev/usehooks": "catalog:",

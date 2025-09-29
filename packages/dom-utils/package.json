@@ -1,0 +1,36 @@
+{
+  "name": "@tasktrove/dom-utils",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#*": "./src/*"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./audio": "./src/audio.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsgo --noEmit",
+    "check": "tsgo --noEmit && pnpm lint && pnpm test",
+    "test": "vitest run --reporter=dot --no-coverage",
+    "test:watch": "vitest --watch"
+  },
+  "dependencies": {
+    "@tasktrove/types": "workspace:*",
+    "@tasktrove/constants": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@testing-library/jest-dom": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "happy-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,8 +1,6 @@
 import { atom, Atom, WritableAtom } from "jotai"
 import { atomWithStorage } from "jotai/utils"
 import { log } from "@/lib/utils/logger"
-import { playSound, type SoundType } from "@/lib/utils/audio"
-import { settingsAtom } from "../core/base"
 
 // Storage key prefix for the app
 export const STORAGE_PREFIX = "tasktrove-"
@@ -126,27 +124,6 @@ export type AtomSetter<T> = (update: T | ((prev: T) => T)) => void
  * Type helper for atom getters
  */
 export type AtomGetter = <T>(atomValue: Atom<T>) => T
-
-/**
- * Atom for playing sounds with settings awareness
- * Automatically checks if sound is enabled before playing
- */
-export const playSoundAtom = atom(
-  null,
-  async (get, _set, { soundType, volume = 1.0 }: { soundType: SoundType; volume?: number }) => {
-    try {
-      const settings = get(settingsAtom)
-
-      // Check if sound is enabled in general settings
-      if (!("general" in settings) || !settings.general.soundEnabled) return
-
-      await playSound(soundType, volume)
-    } catch (error) {
-      log.warn({ soundType, error, module: "audio" }, `Failed to play ${soundType} sound`)
-    }
-  },
-)
-playSoundAtom.debugLabel = "playSoundAtom"
 
 // Export the web app's log function to override atoms package log
 // This ensures tests that mock the web app's log function work correctly

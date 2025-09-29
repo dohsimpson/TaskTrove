@@ -4,7 +4,7 @@ import React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Volume2 } from "lucide-react"
-import { playSound, type SoundType, SOUND_DESCRIPTIONS } from "@/lib/utils/audio"
+import { playSound, type SoundType, SOUND_DESCRIPTIONS } from "@tasktrove/dom-utils/audio"
 import { log } from "@/lib/utils/logger"
 
 interface SoundTestButtonProps {
@@ -16,7 +16,7 @@ interface SoundTestButtonProps {
 
 function SoundTestButton({ soundType, label, description, isRecommended }: SoundTestButtonProps) {
   const handlePlay = () => {
-    playSound(soundType).catch((error) => {
+    playSound(soundType).catch((error: unknown) => {
       log.warn({ soundType, error, module: "debug" }, `Failed to play ${soundType} sound`)
     })
   }

@@ -464,6 +464,9 @@ importers:
       '@tasktrove/constants':
         specifier: workspace:*
         version: link:../../packages/constants
+      '@tasktrove/dom-utils':
+        specifier: workspace:*
+        version: link:../../packages/dom-utils
       '@tasktrove/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -684,6 +687,9 @@ importers:
       '@tasktrove/constants':
         specifier: workspace:*
         version: link:../constants
+      '@tasktrove/dom-utils':
+        specifier: workspace:*
+        version: link:../dom-utils
       '@tasktrove/types':
         specifier: workspace:*
         version: link:../types
@@ -757,6 +763,46 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 9.36.0(jiti@2.6.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.2
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.4(@types/node@22.18.6)(happy-dom@18.0.1)(jiti@2.6.0)(jsdom@26.1.0)(lightningcss@1.30.1)(yaml@2.8.1)
+
+  packages/dom-utils:
+    dependencies:
+      '@tasktrove/constants':
+        specifier: workspace:*
+        version: link:../constants
+      '@tasktrove/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@testing-library/jest-dom':
+        specifier: 'catalog:'
+        version: 6.8.0
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.18.6
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20250723.1
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 3.2.4(vitest@3.2.4(@types/node@22.18.6)(happy-dom@18.0.1)(jiti@2.6.0)(jsdom@26.1.0)(lightningcss@1.30.1)(yaml@2.8.1))
+      eslint:
+        specifier: 'catalog:'
+        version: 9.36.0(jiti@2.6.0)
+      happy-dom:
+        specifier: 'catalog:'
+        version: 18.0.1
       typescript:
         specifier: 'catalog:'
         version: 5.9.2

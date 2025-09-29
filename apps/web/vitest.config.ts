@@ -7,6 +7,13 @@ export default defineConfig({
     setupFiles: ["./test-setup.ts"],
     globals: true,
     pool: "threads",
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/.{idea,git,cache,output,temp}/**",
+      "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*",
+      "**/.next/**", // Exclude Next.js build output (including standalone)
+    ],
     onConsoleLog(log: string, type: "stdout" | "stderr"): boolean | void {
       // Only filter out happy-dom internal teardown abort errors
       const isHappyDomAbort =

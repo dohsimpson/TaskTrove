@@ -17,16 +17,6 @@
 export * from "@tasktrove/atoms"
 
 // =============================================================================
-// WEB-SPECIFIC UTILITIES AND ATOMS
-// =============================================================================
-
-// Keep web-specific utilities (DOM/Audio APIs)
-export * from "./utils"
-
-// Web-specific atoms are now migrated to @tasktrove/atoms with platform dependency comments
-// They are automatically re-exported through the shared atoms import above
-
-// =============================================================================
 // COMPATIBILITY EXPORTS
 // =============================================================================
 

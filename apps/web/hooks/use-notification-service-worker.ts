@@ -6,7 +6,7 @@ import { notificationAtoms } from "@/lib/atoms/core/notifications"
 import { tasksAtom, updateTaskAtom } from "@/lib/atoms/core/tasks"
 import { log } from "@/lib/utils/logger"
 import type { TaskId, ScheduledNotification } from "@/lib/types"
-import { getServiceWorker, isSecureContext } from "@/lib/utils/service-worker-notifications"
+import { getServiceWorker, isSecureContext } from "@tasktrove/dom-utils/notifications"
 
 // ====================
 // CONSTANTS

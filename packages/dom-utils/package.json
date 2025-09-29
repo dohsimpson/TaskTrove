@@ -8,7 +8,9 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./audio": "./src/audio.ts"
+    "./audio": "./src/audio.ts",
+    "./toast": "./src/toast.ts",
+    "./notifications": "./src/notifications.ts"
   },
   "scripts": {
     "lint": "eslint .",
@@ -19,7 +21,8 @@
   },
   "dependencies": {
     "@tasktrove/types": "workspace:*",
-    "@tasktrove/constants": "workspace:*"
+    "@tasktrove/constants": "workspace:*",
+    "sonner": "catalog:"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

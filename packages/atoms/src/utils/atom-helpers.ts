@@ -5,6 +5,8 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { playSound, type SoundType } from "@tasktrove/dom-utils/audio";
+import { toast } from "@tasktrove/dom-utils/toast";
+import { showServiceWorkerNotification } from "@tasktrove/dom-utils/notifications";
 
 // Storage key prefix for the app
 export const STORAGE_PREFIX = "tasktrove-";
@@ -88,27 +90,8 @@ export const playSoundAtom = atom(
 );
 playSoundAtom.debugLabel = "playSoundAtom";
 
-// Simple toast placeholder - should be implemented based on platform
-export const toast = {
-  success: (message: string) => console.log("Toast success:", message),
-  error: (message: string) => console.error("Toast error:", message),
-  info: (message: string) => console.log("Toast info:", message),
-  warning: (message: string) => console.warn("Toast warning:", message),
-};
+// Re-export toast from dom-utils with DOM environment support
+export { toast };
 
-// Service worker notification placeholder - DOM API dependent
-export async function showServiceWorkerNotification(
-  title: string,
-  options: any,
-  context?: string,
-): Promise<{ success: boolean; error?: string }> {
-  // Platform-dependent implementation placeholder
-  console.log("Service worker notification requested:", {
-    title,
-    options,
-    context,
-  });
-
-  // Return expected result structure
-  return { success: true };
-}
+// Re-export service worker notification from dom-utils with DOM environment support
+export { showServiceWorkerNotification };

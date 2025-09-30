@@ -17,15 +17,9 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createStore } from "jotai";
 import { updateProjectsMutationAtom, projectsAtom } from "../core/base";
 import { deleteProjectAtom } from "../core/projects";
-import { moveTaskWithinSection } from "../core/tasks";
 import { DEFAULT_UUID } from "@tasktrove/constants";
 import type { Project } from "@tasktrove/types";
-import {
-  createTaskId,
-  createGroupId,
-  INBOX_PROJECT_ID,
-  createProjectId,
-} from "@tasktrove/types";
+import { createTaskId, createGroupId } from "@tasktrove/types";
 import {
   createMockTask,
   TEST_PROJECT_ID_1,
@@ -33,6 +27,7 @@ import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
 } from "../utils/test-helpers";
+import { moveTaskWithinSection } from "../data/tasks/ordering";
 
 // Mock fetch for testing
 global.fetch = vi.fn();
@@ -238,117 +233,144 @@ describe("Project Updates and Task Reordering", () => {
   // =============================================================================
 
   describe("Section-Aware Task Reordering", () => {
-    // TODO: Rewrite these tests for new section.items architecture
-    it.skip("should reorder tasks within section boundaries", () => {
+    it("should reorder tasks within section boundaries", () => {
       // Mock data with tasks in different sections
       const taskAId = createTaskId("12345678-1234-4234-8234-123456789001");
       const taskBId = createTaskId("12345678-1234-4234-8234-123456789002");
       const taskCId = createTaskId("12345678-1234-4234-8234-123456789003");
+      const section1Id = createGroupId("12345678-1234-4234-8234-123456789101");
+      const section2Id = createGroupId("12345678-1234-4234-8234-123456789102");
 
-      const mockTasks = [
-        createMockTask({
-          id: taskAId,
-          projectId: TEST_PROJECT_ID_1,
-          createdAt: new Date("2025-01-01"),
-        }),
-        createMockTask({
-          id: taskBId,
-          projectId: TEST_PROJECT_ID_1,
-          createdAt: new Date("2025-01-02"),
-        }),
-        createMockTask({
-          id: taskCId,
-          projectId: TEST_PROJECT_ID_1,
-          createdAt: new Date("2025-01-03"),
-        }),
-      ];
-
-      const mockProjects = [
+      const mockSections = [
         {
-          id: TEST_PROJECT_ID_1,
-          name: "Test Project",
-          slug: "test-project",
+          id: section1Id,
+          name: "Section 1",
+          slug: "section-1",
+          type: "section" as const,
           color: "#3b82f6",
-          shared: false,
-          sections: [],
+          items: [taskAId, taskBId], // A is at index 0, B is at index 1
+        },
+        {
+          id: section2Id,
+          name: "Section 2",
+          slug: "section-2",
+          type: "section" as const,
+          color: "#ef4444",
+          items: [taskCId],
         },
       ];
 
-      // TODO: Rewrite for new section.items architecture
       // Move task-b to position 0 within section-1 (should come before task-a)
-      // const result = moveTaskWithinSection(
-      //   createGroupId("12345678-1234-4234-8234-123456789101"),
-      //   taskBId,
-      //   0,
-      //   mockProjects[0].sections,
-      // );
+      const result = moveTaskWithinSection(
+        section1Id,
+        taskBId,
+        0,
+        mockSections,
+      );
 
-      // Task order is now managed through section.items, not project.taskOrder
-      expect(true).toBe(true); // Placeholder
+      // Verify section 1 has reordered items
+      const updatedSection1 = result.find((s) => s.id === section1Id);
+      expect(updatedSection1?.items).toEqual([taskBId, taskAId]);
+
+      // Verify section 2 is unchanged
+      const updatedSection2 = result.find((s) => s.id === section2Id);
+      expect(updatedSection2?.items).toEqual([taskCId]);
     });
 
-    it.skip("should handle default section edge cases correctly", () => {
-      // Tasks with mixed default section representations
-      const taskNoSectionId = createTaskId(
-        "12345678-1234-4234-8234-123456789011",
-      );
-      const taskDefaultUuidId = createTaskId(
-        "12345678-1234-4234-8234-123456789012",
-      );
-      const taskOtherSectionId = createTaskId(
-        "12345678-1234-4234-8234-123456789013",
+    it("should handle default section edge cases correctly", () => {
+      // Tasks in the default section (DEFAULT_UUID)
+      const taskAId = createTaskId("12345678-1234-4234-8234-123456789011");
+      const taskBId = createTaskId("12345678-1234-4234-8234-123456789012");
+      const taskCId = createTaskId("12345678-1234-4234-8234-123456789013");
+      const defaultSectionId = createGroupId(DEFAULT_UUID);
+      const otherSectionId = createGroupId(
+        "12345678-1234-4234-8234-123456789102",
       );
 
-      const mockTasks = [
-        createMockTask({
-          id: taskNoSectionId,
-          projectId: TEST_PROJECT_ID_1,
-          createdAt: new Date("2025-01-01"),
-        }),
-        createMockTask({
-          id: taskDefaultUuidId,
-          projectId: TEST_PROJECT_ID_1,
-          createdAt: new Date("2025-01-02"),
-        }),
-        createMockTask({
-          id: taskOtherSectionId,
-          projectId: TEST_PROJECT_ID_1,
-          createdAt: new Date("2025-01-03"),
-        }),
-      ];
-
-      const mockProjects = [
+      const mockSections = [
         {
-          id: TEST_PROJECT_ID_1,
-          name: "Test Project",
-          slug: "test-project",
-          color: "#3b82f6",
-          shared: false,
-          sections: [],
+          id: defaultSectionId,
+          name: "Tasks",
+          slug: "",
+          type: "section" as const,
+          color: "#808080",
+          items: [taskAId, taskBId], // Default section tasks
+        },
+        {
+          id: otherSectionId,
+          name: "Other Section",
+          slug: "other",
+          type: "section" as const,
+          color: "#ef4444",
+          items: [taskCId],
         },
       ];
 
-      // TODO: Rewrite for new section.items architecture
-      // Move task-default-uuid to position 0 within default section
-      // Both tasks with no sectionId and DEFAULT_UUID should be treated as same section
-      // const result = moveTaskWithinSection(
-      //   createGroupId(DEFAULT_UUID),
-      //   taskDefaultUuidId,
-      //   0,
-      //   mockProjects[0].sections,
-      // );
+      // Move task-b to position 0 within default section
+      const result = moveTaskWithinSection(
+        defaultSectionId,
+        taskBId,
+        0,
+        mockSections,
+      );
 
-      // Task order is now managed through section.items, not project.taskOrder
-      expect(true).toBe(true); // Placeholder
+      // Verify default section has reordered items
+      const updatedDefaultSection = result.find(
+        (s) => s.id === defaultSectionId,
+      );
+      expect(updatedDefaultSection?.items).toEqual([taskBId, taskAId]);
+
+      // Verify other section is unchanged
+      const updatedOtherSection = result.find((s) => s.id === otherSectionId);
+      expect(updatedOtherSection?.items).toEqual([taskCId]);
     });
 
-    it.skip("should maintain global task order structure when reordering within sections", () => {
-      // TODO: This test needs to be rewritten for new section.items architecture
-      //  Old: project.taskOrder maintained global order across sections
-      //  New: each section.items maintains order for that section only
-      //  Old API: moveTaskWithinSection(projectId, taskId, toIndex, sectionId, projects, tasks)
-      //  New API: moveTaskWithinSection(sectionId, taskId, toIndex, sections)
-      expect(true).toBe(true);
+    it("should maintain section-specific order when reordering tasks", () => {
+      // Test that each section maintains its own order independently
+      const taskAId = createTaskId("12345678-1234-4234-8234-123456789001");
+      const taskBId = createTaskId("12345678-1234-4234-8234-123456789002");
+      const taskCId = createTaskId("12345678-1234-4234-8234-123456789003");
+      const taskDId = createTaskId("12345678-1234-4234-8234-123456789004");
+      const section1Id = createGroupId("12345678-1234-4234-8234-123456789101");
+      const section2Id = createGroupId("12345678-1234-4234-8234-123456789102");
+
+      const mockSections = [
+        {
+          id: section1Id,
+          name: "Section 1",
+          slug: "section-1",
+          type: "section" as const,
+          color: "#3b82f6",
+          items: [taskAId, taskBId],
+        },
+        {
+          id: section2Id,
+          name: "Section 2",
+          slug: "section-2",
+          type: "section" as const,
+          color: "#ef4444",
+          items: [taskCId, taskDId],
+        },
+      ];
+
+      // Reorder tasks in section 1
+      const result = moveTaskWithinSection(
+        section1Id,
+        taskBId,
+        0,
+        mockSections,
+      );
+
+      // Verify section 1 is reordered
+      const updatedSection1 = result.find((s) => s.id === section1Id);
+      expect(updatedSection1?.items).toEqual([taskBId, taskAId]);
+
+      // Verify section 2 maintains its original order
+      const updatedSection2 = result.find((s) => s.id === section2Id);
+      expect(updatedSection2?.items).toEqual([taskCId, taskDId]);
+
+      // This demonstrates that sections maintain independent ordering
+      // (no global taskOrder to maintain)
     });
   });
 });

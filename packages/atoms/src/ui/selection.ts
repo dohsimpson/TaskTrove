@@ -1,6 +1,6 @@
 import { atom } from "jotai";
 import { selectedTasksAtom } from "./dialogs";
-import { filteredTasksAtom } from "../core/tasks";
+import { filteredTasksAtom } from "./filtered-tasks";
 import { updateTasksAtom, deleteTasksAtom } from "../core/tasks";
 import {
   createProjectId,

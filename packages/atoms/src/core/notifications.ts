@@ -10,7 +10,6 @@ import type {
   Task,
 } from "@tasktrove/types";
 import { createTaskId } from "@tasktrove/types";
-import { tasksAtom } from "./tasks";
 import { settingsAtom } from "./settings";
 import { safeSetTimeout } from "@tasktrove/utils";
 import {
@@ -442,25 +441,26 @@ export const showTaskDueNotificationAtom = atom(
 );
 
 /** Reschedule all notifications (useful when tasks change) */
-export const rescheduleAllNotificationsAtom = atom(null, (get, set) => {
-  try {
-    const tasks = get(tasksAtom);
+export const rescheduleAllNotificationsAtom = atom(
+  null,
+  (get, set, tasks: Task[]) => {
+    try {
+      // Clear all existing notifications
+      set(scheduledNotificationsAtom, new Map());
 
-    // Clear all existing notifications
-    set(scheduledNotificationsAtom, new Map());
-
-    // Reschedule for all tasks with due dates
-    for (const task of tasks) {
-      if (task.dueDate && task.dueTime && !task.completed) {
-        set(scheduleTaskNotificationAtom, { taskId: task.id, task });
+      // Reschedule for all tasks with due dates
+      for (const task of tasks) {
+        if (task.dueDate && task.dueTime && !task.completed) {
+          set(scheduleTaskNotificationAtom, { taskId: task.id, task });
+        }
       }
-    }
 
-    log.info({ module: "notifications" }, "Rescheduled all notifications");
-  } catch (error) {
-    handleAtomError(error, "rescheduleAllNotificationsAtom");
-  }
-});
+      log.info({ module: "notifications" }, "Rescheduled all notifications");
+    } catch (error) {
+      handleAtomError(error, "rescheduleAllNotificationsAtom");
+    }
+  },
+);
 
 /** Test notification (for settings) */
 export const testNotificationAtom = atom(null, (get, set) => {

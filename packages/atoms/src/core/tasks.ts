@@ -1,6 +1,5 @@
 import { atom } from "jotai";
-import { atomFamily } from "jotai/utils";
-import { isToday, isPast, isFuture } from "date-fns";
+import { isToday } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
 import {
   Task,
@@ -9,12 +8,8 @@ import {
   SectionId,
   ViewId,
   ProjectId,
-  LabelId,
-  LabelIdSchema,
-  GroupIdSchema,
   Project,
   ProjectSection,
-  GroupId,
   INBOX_PROJECT_ID,
   createTaskId,
   createProjectId,
@@ -23,8 +18,6 @@ import {
   UpdateTaskRequest,
   CreateTaskRequest,
 } from "@tasktrove/types";
-import { matchesDueDateFilter } from "../utils/atom-helpers";
-import { shouldTaskBeInInbox } from "@tasktrove/utils";
 import {
   DEFAULT_TASK_PRIORITY,
   DEFAULT_TASK_TITLE,
@@ -36,172 +29,23 @@ import {
   DEFAULT_TASK_STATUS,
   DEFAULT_RECURRING_MODE,
 } from "@tasktrove/constants";
-import { handleAtomError, playSoundAtom } from "../utils/atom-helpers";
 import {
-  currentViewAtom,
-  currentViewStateAtom,
-  viewStatesAtom,
-  getViewStateOrDefault,
-} from "../ui/views";
-import { currentRouteContextAtom } from "../ui/navigation";
+  handleAtomError,
+  playSoundAtom,
+  namedAtom,
+  withErrorHandling,
+} from "../utils/atom-helpers";
 import { notificationAtoms } from "./notifications";
-// Task ordering utilities - inline implementation after task-ordering-operations.ts removal
-const getOrderedTasksForProject = (
-  projectId: ProjectId,
-  tasks: Task[],
-  projects: Project[],
-): Task[] => {
-  const project = projects.find((p) => p.id === projectId);
-  if (!project?.taskOrder) {
-    return tasks.filter((task) => task.projectId === projectId);
-  }
+import {
+  getOrderedTasksForProject,
+  moveTaskWithinProject,
+  moveTaskWithinSection as moveTaskWithinSectionUtil,
+  addTaskToProjectOrder,
+  removeTaskFromProjectOrder,
+} from "../data/tasks/ordering";
 
-  const taskMap = new Map(tasks.map((task) => [task.id, task]));
-  const orderedTasks = project.taskOrder
-    .map((taskId) => taskMap.get(taskId))
-    .filter(
-      (task): task is Task =>
-        task !== undefined && task.projectId === projectId,
-    );
-
-  return orderedTasks;
-};
-
-const moveTaskWithinProject = (
-  projectId: ProjectId,
-  taskId: TaskId,
-  toIndex: number,
-  projects: Project[],
-): Project[] => {
-  return projects.map((project) => {
-    if (project.id !== projectId) return project;
-
-    const taskOrder = project.taskOrder || [];
-    const currentIndex = taskOrder.indexOf(taskId);
-    if (currentIndex === -1) return project;
-
-    const newTaskOrder = [...taskOrder];
-    newTaskOrder.splice(currentIndex, 1);
-    newTaskOrder.splice(toIndex, 0, taskId);
-
-    return { ...project, taskOrder: newTaskOrder };
-  });
-};
-/**
- * Section-aware task reordering that maintains section boundaries.
- * Reorders a task within its section while preserving the project's global task order structure.
- */
-export const moveTaskWithinSection = (
-  projectId: ProjectId,
-  taskId: TaskId,
-  toIndex: number,
-  sectionId: SectionId,
-  projects: Project[],
-  tasks: Task[],
-): Project[] => {
-  return projects.map((project) => {
-    if (project.id !== projectId) return project;
-
-    const taskOrder = project.taskOrder || [];
-
-    // Get all tasks in the target section, ordered by current project taskOrder
-    const sectionTasks = tasks
-      .filter((task) => {
-        // Handle DEFAULT_UUID section compatibility
-        const taskSection = task.sectionId || DEFAULT_UUID;
-        const targetSection = sectionId || DEFAULT_UUID;
-        return task.projectId === projectId && taskSection === targetSection;
-      })
-      .sort((a, b) => {
-        const aIndex = taskOrder.indexOf(a.id);
-        const bIndex = taskOrder.indexOf(b.id);
-
-        // If both are in taskOrder, maintain that order
-        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-
-        // If only one is in taskOrder, it comes first
-        if (aIndex !== -1) return -1;
-        if (bIndex !== -1) return 1;
-
-        // Neither in taskOrder, maintain creation order
-        return a.createdAt.getTime() - b.createdAt.getTime();
-      });
-
-    const sectionTaskIds = sectionTasks.map((task) => task.id);
-    const currentIndexInSection = sectionTaskIds.indexOf(taskId);
-
-    if (currentIndexInSection === -1) return project;
-
-    // Reorder within the section
-    const newSectionOrder = [...sectionTaskIds];
-    newSectionOrder.splice(currentIndexInSection, 1);
-    newSectionOrder.splice(toIndex, 0, taskId);
-
-    // Rebuild the project's taskOrder by replacing section tasks with new order
-    const newTaskOrder = [...taskOrder];
-
-    // Find positions of section tasks in global order
-    const sectionPositions = sectionTaskIds
-      .map((id) => newTaskOrder.indexOf(id))
-      .filter((pos) => pos !== -1);
-
-    if (sectionPositions.length > 0) {
-      // Remove all section tasks from their current positions
-      sectionTaskIds.forEach((id) => {
-        const index = newTaskOrder.indexOf(id);
-        if (index !== -1) newTaskOrder.splice(index, 1);
-      });
-
-      // Insert reordered section tasks at the earliest position
-      const insertPosition = Math.min(...sectionPositions);
-      newTaskOrder.splice(insertPosition, 0, ...newSectionOrder);
-    } else {
-      // Section tasks aren't in global order yet, add them at the end
-      newTaskOrder.push(...newSectionOrder);
-    }
-
-    return { ...project, taskOrder: newTaskOrder };
-  });
-};
-
-const addTaskToProjectOrder = (
-  taskId: TaskId,
-  projectId: ProjectId,
-  position: number | undefined,
-  projects: Project[],
-): Project[] => {
-  return projects.map((project) => {
-    if (project.id !== projectId) return project;
-
-    const taskOrder = project.taskOrder || [];
-    if (taskOrder.includes(taskId)) return project;
-
-    const newTaskOrder = [...taskOrder];
-    if (position === undefined) {
-      newTaskOrder.push(taskId);
-    } else {
-      newTaskOrder.splice(position, 0, taskId);
-    }
-
-    return { ...project, taskOrder: newTaskOrder };
-  });
-};
-
-const removeTaskFromProjectOrder = (
-  taskId: TaskId,
-  projectId: ProjectId,
-  projects: Project[],
-): Project[] => {
-  return projects.map((project) => {
-    if (project.id !== projectId) return project;
-
-    const taskOrder = project.taskOrder || [];
-    const filteredOrder = taskOrder.filter((id) => id !== taskId);
-
-    return { ...project, taskOrder: filteredOrder };
-  });
-};
-import { collectProjectIdsFromGroup } from "@tasktrove/utils/group-utils";
+// Re-export for backwards compatibility
+export { moveTaskWithinSection } from "../data/tasks/ordering";
 import {
   tasksAtom,
   createTaskMutationAtom,
@@ -209,8 +53,6 @@ import {
   deleteTaskMutationAtom,
   projectsAtom,
 } from "./base";
-import { allGroupsAtom } from "./groups";
-import { projectIdsAtom } from "./projects";
 import { recordOperationAtom } from "./history";
 import { log } from "../utils/atom-helpers";
 
@@ -238,9 +80,9 @@ import { log } from "../utils/atom-helpers";
  * Plays confirmation sound when task is added
  * History tracking enabled and tracks operation for undo/redo
  */
-export const addTaskAtom = atom(
-  null,
-  async (get, set, taskData: CreateTaskRequest) => {
+export const addTaskAtom = namedAtom(
+  "addTaskAtom",
+  atom(null, async (get, set, taskData: CreateTaskRequest) => {
     try {
       // Get the create task mutation
       const createTaskMutation = get(createTaskMutationAtom);
@@ -294,17 +136,16 @@ export const addTaskAtom = atom(
       handleAtomError(error, "addTaskAtom");
       throw error; // Re-throw so the UI can handle the error
     }
-  },
+  }),
 );
-addTaskAtom.debugLabel = "addTaskAtom";
 
 /**
  * Updates multiple tasks with new data (bulk operation)
  * Follows the same simple pattern as updateProjectAtom and updateLabelAtom
  */
-export const updateTasksAtom = atom(
-  null,
-  async (get, set, updateRequests: UpdateTaskRequest[]) => {
+export const updateTasksAtom = namedAtom(
+  "updateTasksAtom",
+  atom(null, async (get, set, updateRequests: UpdateTaskRequest[]) => {
     try {
       // Use server mutation which handles optimistic updates automatically
       const updateTasksMutation = get(updateTasksMutationAtom);
@@ -313,9 +154,8 @@ export const updateTasksAtom = atom(
       handleAtomError(error, "updateTasksAtom");
       throw error;
     }
-  },
+  }),
 );
-updateTasksAtom.debugLabel = "updateTasksAtom";
 
 /**
  * Updates an existing task with new data (single task)
@@ -537,318 +377,94 @@ bulkActionsAtom.debugLabel = "bulkActionsAtom";
 // DERIVED READ ATOMS
 // =============================================================================
 
-/**
- * Active (non-archived) tasks
- * Filters out archived tasks for normal display
- * History tracking enabled through tasksHistoryAtom for undo/redo support
- */
-export const activeTasksAtom = atom((get) => {
-  try {
-    const tasks = get(tasksAtom); // Get current tasks from base atom
-    return tasks.filter((task: Task) => task.status !== "archived");
-  } catch (error) {
-    handleAtomError(error, "activeTasksAtom");
-    return [];
-  }
-});
-activeTasksAtom.debugLabel = "activeTasksAtom";
-
-/**
- * Completed tasks
- * Filters active tasks to show only completed ones
- */
-export const completedTasksAtom = atom((get) => {
-  try {
-    const activeTasks = get(activeTasksAtom);
-    return activeTasks.filter((task: Task) => task.completed);
-  } catch (error) {
-    handleAtomError(error, "completedTasksAtom");
-    return [];
-  }
-});
-completedTasksAtom.debugLabel = "completedTasksAtom";
-
-/**
- * Project group tasks atom
- * Returns a function that takes a groupId and returns all tasks from projects in that group (and nested groups)
- * This supports the flat task view for project groups
- */
-export const projectGroupTasksAtom = atom((get) => {
-  return (groupId: GroupId) => {
-    try {
-      const groups = get(allGroupsAtom);
-      const activeTasks = get(activeTasksAtom);
-
-      // Get all project IDs from this group and its nested groups
-      const projectIds = collectProjectIdsFromGroup(groups, groupId);
-
-      // Return all tasks from these projects
-      return activeTasks.filter(
-        (task: Task) => task.projectId && projectIds.includes(task.projectId),
-      );
-    } catch (error) {
-      handleAtomError(error, "projectGroupTasksAtom");
-      return [];
-    }
-  };
-});
-projectGroupTasksAtom.debugLabel = "projectGroupTasksAtom";
-
-/**
- * Inbox tasks - tasks with no project or assigned to the special inbox project
- * Includes orphaned tasks (tasks with projectIds that reference non-existent projects)
- */
-export const inboxTasksAtom = atom((get) => {
-  try {
-    const activeTasks = get(activeTasksAtom);
-    const projectIds = get(projectIdsAtom);
-
-    return activeTasks.filter((task: Task) =>
-      shouldTaskBeInInbox(task.projectId, projectIds),
-    );
-  } catch (error) {
-    handleAtomError(error, "inboxTasksAtom");
-    return [];
-  }
-});
-inboxTasksAtom.debugLabel = "inboxTasksAtom";
+// Filtering atoms moved to ../data/tasks/filters.ts
+// Re-exported below for backward compatibility
+import {
+  activeTasksAtom,
+  inboxTasksAtom,
+  todayTasksAtom,
+  upcomingTasksAtom,
+  calendarTasksAtom,
+  overdueTasksAtom,
+  completedTasksAtom,
+  projectGroupTasksAtom,
+  baseFilteredTasksForViewAtom,
+} from "../data/tasks/filters";
 
 /**
  * Tasks due exactly today (strict date match)
  * Maintains the original "today only" logic for specific use cases
  */
-export const todayOnlyAtom = atom((get) => {
-  try {
-    const activeTasks = get(activeTasksAtom);
-    return activeTasks.filter((task: Task) => {
-      if (!task.dueDate) return false;
-      return isToday(task.dueDate);
-    });
-  } catch (error) {
-    handleAtomError(error, "todayOnlyAtom");
-    return [];
-  }
-});
-todayOnlyAtom.debugLabel = "todayOnlyAtom";
-
-/**
- * Tasks due today (including overdue tasks)
- */
-export const todayTasksAtom = atom((get) => {
-  try {
-    const activeTasks = get(activeTasksAtom);
-
-    return activeTasks.filter((task: Task) => {
-      if (!task.dueDate) return false;
-
-      // Always include tasks due exactly today
-      if (isToday(task.dueDate)) {
-        return true;
-      }
-
-      // Include overdue tasks (past but not today)
-      if (isPast(task.dueDate) && !isToday(task.dueDate)) {
-        return true;
-      }
-
-      return false;
-    });
-  } catch (error) {
-    handleAtomError(error, "todayTasksAtom");
-    return [];
-  }
-});
-todayTasksAtom.debugLabel = "todayTasksAtom";
-
-/**
- * Upcoming tasks (due after today)
- * Uses the same date comparison logic as main-content.tsx filtering
- */
-export const upcomingTasksAtom = atom((get) => {
-  try {
-    const activeTasks = get(activeTasksAtom);
-    return activeTasks.filter((task: Task) => {
-      if (!task.dueDate) return false;
-      // Upcoming = future tasks that are not today (i.e. tomorrow onwards)
-      return isFuture(task.dueDate) && !isToday(task.dueDate);
-    });
-  } catch (error) {
-    handleAtomError(error, "upcomingTasksAtom");
-    return [];
-  }
-});
-upcomingTasksAtom.debugLabel = "upcomingTasksAtom";
-
-/**
- * Overdue tasks
- * Filters active tasks with due dates before today (date-only comparison)
- */
-export const overdueTasksAtom = atom((get) => {
-  try {
-    const activeTasks = get(activeTasksAtom);
-    return activeTasks.filter((task: Task) => {
-      if (!task.dueDate) return false;
-      return isPast(task.dueDate) && !isToday(task.dueDate);
-    });
-  } catch (error) {
-    handleAtomError(error, "overdueTasksAtom");
-    return [];
-  }
-});
-overdueTasksAtom.debugLabel = "overdueTasksAtom";
-
-/**
- * Calendar tasks - tasks with due dates
- * Filters active tasks that have a due date for calendar view
- */
-export const calendarTasksAtom = atom((get) => {
-  try {
-    const activeTasks = get(activeTasksAtom);
-    return activeTasks.filter((task: Task) => task.dueDate);
-  } catch (error) {
-    handleAtomError(error, "calendarTasksAtom");
-    return [];
-  }
-});
-calendarTasksAtom.debugLabel = "calendarTasksAtom";
-
-/**
- * Base filtered tasks for view atom family - Layer 1: Common filtering logic shared by sidebar and main content
- * Creates individual atoms for each viewId with view-specific task filtering + per-view showCompleted/showOverdue settings
- * Used by both taskCountsAtom (for sidebar counts) and filteredTasksAtom (as base for main content)
- */
-export const baseFilteredTasksForViewAtom = atomFamily((viewId: ViewId) =>
-  atom((get) => {
-    try {
-      const viewStates = get(viewStatesAtom);
-      const routeContext = get(currentRouteContextAtom);
-
-      // Get view-specific settings
-      const viewState = getViewStateOrDefault(viewStates, viewId);
-      const showCompleted = viewState.showCompleted;
-      const showOverdue = viewState.showOverdue;
-
-      // Get base tasks for the specified view
-      let result: Task[];
-      switch (viewId) {
-        case "today":
-          result = get(todayTasksAtom);
-          break;
-        case "upcoming":
-          result = get(upcomingTasksAtom);
-          break;
-        case "inbox":
-          result = get(inboxTasksAtom);
-          break;
-        case "completed":
-          result = get(completedTasksAtom);
-          break;
-        case "all":
-          result = get(activeTasksAtom);
-          break;
-        default:
-          // Use route context to determine if this is a project or label view
-          const activeTasks = get(activeTasksAtom);
-
-          if (routeContext.routeType === "project") {
-            result = activeTasks.filter(
-              (task: Task) => task.projectId === routeContext.viewId,
-            );
-          } else if (routeContext.routeType === "label") {
-            try {
-              const labelId = LabelIdSchema.parse(viewId);
-              result = activeTasks.filter((task: Task) =>
-                task.labels.includes(labelId),
-              );
-            } catch {
-              result = [];
-            }
-          } else if (routeContext.routeType === "projectgroup") {
-            try {
-              const groupId = GroupIdSchema.parse(routeContext.viewId);
-              const getProjectGroupTasks = get(projectGroupTasksAtom);
-              result = getProjectGroupTasks(groupId);
-            } catch {
-              result = [];
-            }
-          } else {
-            result = activeTasks;
-          }
-          break;
-      }
-
-      // For completed view, always show all completed tasks
-      if (viewId === "completed") {
-        return result;
-      }
-
-      // Apply per-view showCompleted setting
-      if (!showCompleted) {
-        result = result.filter((task: Task) => !task.completed);
-      }
-
-      // Apply per-view showOverdue setting
-      if (!showOverdue) {
-        result = result.filter((task: Task) => {
-          if (!task.dueDate) return true;
-          return !(isPast(task.dueDate) && !isToday(task.dueDate));
+export const todayOnlyAtom = namedAtom(
+  "todayOnlyAtom",
+  atom((get) =>
+    withErrorHandling(
+      () => {
+        const activeTasks = get(activeTasksAtom);
+        return activeTasks.filter((task: Task) => {
+          if (!task.dueDate) return false;
+          return isToday(task.dueDate);
         });
-      }
-
-      return result;
-    } catch (error) {
-      handleAtomError(error, `baseFilteredTasksForViewAtom(${viewId})`);
-      return [];
-    }
-  }),
+      },
+      "todayOnlyAtom",
+      [],
+    ),
+  ),
 );
 
 /**
  * Task counts for different categories
  */
-export const taskCountsAtom = atom((get) => {
-  try {
-    const activeTasks = get(activeTasksAtom);
-    const completedTasks = get(completedTasksAtom);
-    const calendarTasks = get(calendarTasksAtom);
-    const viewStates = get(viewStatesAtom);
-
-    // Use the new base filtered tasks atomFamily for consistent counts
-    return {
-      total: activeTasks.length,
-      inbox: get(baseFilteredTasksForViewAtom("inbox")).length,
-      today: get(baseFilteredTasksForViewAtom("today")).length,
-      upcoming: get(baseFilteredTasksForViewAtom("upcoming")).length,
-      calendar: getViewStateOrDefault(viewStates, "calendar").showCompleted
-        ? calendarTasks.length
-        : calendarTasks.filter((task: Task) => !task.completed).length,
-      overdue: get(overdueTasksAtom).filter((task: Task) => {
-        const showCompleted = getViewStateOrDefault(
-          viewStates,
-          "today",
-        ).showCompleted;
-        return showCompleted || !task.completed;
-      }).length,
-      completed: completedTasks.length, // Always show all completed tasks in completed section
-      all: get(baseFilteredTasksForViewAtom("all")).length,
-      active: activeTasks.filter((task: Task) => !task.completed).length,
-    };
-  } catch (error) {
-    handleAtomError(error, "taskCountsAtom");
-    return {
-      total: 0,
-      inbox: 0,
-      today: 0,
-      upcoming: 0,
-      calendar: 0,
-      overdue: 0,
-      completed: 0,
-      all: 0,
-      active: 0,
-    };
-  }
-});
-taskCountsAtom.debugLabel = "taskCountsAtom";
+/**
+ * DEPRECATED: This atom has UI dependencies and should be moved to ui/task-counts.ts
+ * or refactored to use uiFilteredTasksForViewAtom from ui/filtered-tasks.ts
+ *
+ * For now, commented out to eliminate circular dependencies.
+ * Components should use baseFilteredTasksForViewAtom directly or create
+ * a new UI-layer atom that uses uiFilteredTasksForViewAtom.
+ */
+// export const taskCountsAtom = atom((get) => {
+//   try {
+//     const activeTasks = get(activeTasksAtom);
+//     const completedTasks = get(completedTasksAtom);
+//     const calendarTasks = get(calendarTasksAtom);
+//     const viewStates = get(viewStatesAtom);
+//
+//     return {
+//       total: activeTasks.length,
+//       inbox: get(baseFilteredTasksForViewAtom("inbox")).length,
+//       today: get(baseFilteredTasksForViewAtom("today")).length,
+//       upcoming: get(baseFilteredTasksForViewAtom("upcoming")).length,
+//       calendar: getViewStateOrDefault(viewStates, "calendar").showCompleted
+//         ? calendarTasks.length
+//         : calendarTasks.filter((task: Task) => !task.completed).length,
+//       overdue: get(overdueTasksAtom).filter((task: Task) => {
+//         const showCompleted = getViewStateOrDefault(
+//           viewStates,
+//           "today",
+//         ).showCompleted;
+//         return showCompleted || !task.completed;
+//       }).length,
+//       completed: completedTasks.length,
+//       all: get(baseFilteredTasksForViewAtom("all")).length,
+//       active: activeTasks.filter((task: Task) => !task.completed).length,
+//     };
+//   } catch (error) {
+//     handleAtomError(error, "taskCountsAtom");
+//     return {
+//       total: 0,
+//       inbox: 0,
+//       today: 0,
+//       upcoming: 0,
+//       calendar: 0,
+//       overdue: 0,
+//       completed: 0,
+//       all: 0,
+//       active: 0,
+//     };
+//   }
+// });
+// taskCountsAtom.debugLabel = "taskCountsAtom";
 
 // =============================================================================
 // UTILITY ATOMS
@@ -858,155 +474,39 @@ taskCountsAtom.debugLabel = "taskCountsAtom";
  * Gets completed tasks for today (for analytics)
  * Returns count of tasks completed today
  */
-export const completedTasksTodayAtom = atom((get) => {
-  try {
-    const tasks = get(activeTasksAtom);
-    return tasks.filter(
-      (task: Task) =>
-        task.completed && task.completedAt && isToday(task.completedAt),
-    );
-  } catch (error) {
-    handleAtomError(error, "completedTasksTodayAtom");
-    return 0;
-  }
-});
-completedTasksTodayAtom.debugLabel = "completedTasksTodayAtom";
+export const completedTasksTodayAtom = namedAtom(
+  "completedTasksTodayAtom",
+  atom((get) =>
+    withErrorHandling(
+      () => {
+        const tasks = get(activeTasksAtom);
+        return tasks.filter(
+          (task: Task) =>
+            task.completed && task.completedAt && isToday(task.completedAt),
+        );
+      },
+      "completedTasksTodayAtom",
+      [],
+    ),
+  ),
+);
 
 /**
  * Comprehensive filtered tasks atom - Layer 2: UI-specific filtering
  * Uses baseFilteredTasksForViewAtom as foundation, then applies UI-only filters
  * Only handles search, advanced filters, and sorting
  */
-export const filteredTasksAtom = atom((get) => {
-  try {
-    // Layer 1: Get base filtered tasks with common filtering logic
-    const currentView = get(currentViewAtom);
-    const viewState = get(currentViewStateAtom);
-    const searchQuery = viewState.searchQuery;
-
-    // Start with base filtered tasks (already has view filtering + per-view showCompleted/showOverdue)
-    let result = get(baseFilteredTasksForViewAtom(currentView));
-
-    // Layer 2: Apply UI-specific filters
-
-    // Apply search query filter (UI-only concern)
-    if (searchQuery) {
-      result = result.filter(
-        (task: Task) =>
-          task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          task.description?.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
-    }
-
-    // Apply advanced filters from viewState.activeFilters (UI-only concern)
-    const activeFilters = viewState.activeFilters;
-    if (activeFilters) {
-      // Filter by project IDs
-      if (activeFilters.projectIds?.length) {
-        result = result.filter(
-          (task: Task) =>
-            task.projectId &&
-            activeFilters.projectIds?.includes(task.projectId),
-        );
-      }
-
-      // Filter by labels
-      if (activeFilters.labels === null) {
-        // Show only tasks with NO labels
-        result = result.filter((task: Task) => task.labels.length === 0);
-      } else if (activeFilters.labels && activeFilters.labels.length > 0) {
-        // Show tasks with specific labels
-        const labelFilter = activeFilters.labels;
-        result = result.filter((task: Task) =>
-          task.labels.some((label: LabelId) => labelFilter.includes(label)),
-        );
-      }
-      // If activeFilters.labels is [], show all tasks (no filtering)
-
-      // Filter by priorities
-      if (activeFilters.priorities?.length) {
-        result = result.filter((task: Task) =>
-          activeFilters.priorities?.includes(task.priority),
-        );
-      }
-
-      // Filter by completion status
-      if (activeFilters.completed !== undefined) {
-        result = result.filter(
-          (task: Task) => task.completed === activeFilters.completed,
-        );
-      }
-
-      // Filter by due date (preset or custom range)
-      if (activeFilters.dueDateFilter) {
-        const { preset, customRange } = activeFilters.dueDateFilter;
-        result = result.filter((task: Task) => {
-          return matchesDueDateFilter(
-            task.dueDate || null,
-            task.completed,
-            preset || "",
-            customRange,
-          );
-        });
-      }
-
-      // Filter by assigned team members (currently not supported in Task schema)
-      // TODO: Add assignedTo field to Task schema when team features are implemented
-      // if (activeFilters.assignedTo?.length) {
-      //   result = result.filter((task) =>
-      //     task.assignedTo?.some((userId) => activeFilters.assignedTo!.includes(userId))
-      //   );
-      // }
-
-      // Filter by task status
-      if (activeFilters.status?.length) {
-        result = result.filter(
-          (task: Task) =>
-            task.status && activeFilters.status?.includes(task.status),
-        );
-      }
-    }
-
-    // Apply sorting based on viewState.sortBy (UI-only concern)
-    return result.sort((a: Task, b: Task) => {
-      const direction = viewState.sortDirection === "asc" ? 1 : -1;
-
-      switch (viewState.sortBy) {
-        case "default":
-          // Default sort: completed tasks at bottom, maintain existing order otherwise
-          if (a.completed !== b.completed) {
-            return (a.completed ? 1 : 0) - (b.completed ? 1 : 0);
-          }
-          // Within same completion status, maintain existing order (no additional sorting)
-          return 0;
-        case "priority":
-          return direction * (a.priority - b.priority);
-        case "dueDate":
-          // Regular due date sorting (mixed completed/incomplete)
-          if (!a.dueDate && !b.dueDate) return 0;
-          if (!a.dueDate) return direction;
-          if (!b.dueDate) return -direction;
-          return direction * (a.dueDate.getTime() - b.dueDate.getTime());
-        case "title":
-          return direction * a.title.localeCompare(b.title);
-        case "createdAt":
-          return direction * (a.createdAt.getTime() - b.createdAt.getTime());
-        case "status":
-          // Sort by completion status only
-          if (a.completed !== b.completed) {
-            return direction * ((a.completed ? 1 : 0) - (b.completed ? 1 : 0));
-          }
-          return 0;
-        default:
-          return 0;
-      }
-    });
-  } catch (error) {
-    handleAtomError(error, "filteredTasksAtom");
-    return [];
-  }
-});
-filteredTasksAtom.debugLabel = "filteredTasksAtom";
+/**
+ * MOVED to ui/filtered-tasks.ts
+ * This atom has UI dependencies and belongs in the UI layer
+ *
+ * The filteredTasksAtom applies UI-specific filters (showCompleted, showOverdue, search, activeFilters)
+ * on top of the base filtered tasks from baseFilteredTasksForViewAtom.
+ *
+ * Import from: @tasktrove/atoms/ui/filtered-tasks
+ */
+// export const filteredTasksAtom = atom(...)
+// filteredTasksAtom.debugLabel = "filteredTasksAtom";
 
 /**
  * Reorders tasks within projects using task order arrays
@@ -1195,7 +695,7 @@ export const reorderTaskInViewAtom = atom(
       // Use section-aware reordering that maintains section boundaries
       const taskSectionId = task.sectionId || createSectionId(DEFAULT_UUID);
 
-      const updatedProjects = moveTaskWithinSection(
+      const updatedProjects = moveTaskWithinSectionUtil(
         projectId,
         params.taskId,
         params.toIndex,
@@ -1350,37 +850,41 @@ removeTaskFromViewAtom.debugLabel = "removeTaskFromViewAtom";
  * Gets ordered tasks for a specific view using project taskOrder arrays
  * This replaces the old linked-list approach with array-based ordering
  */
-export const getTasksForViewAtom = atom((get) => {
-  return (viewId: ViewId) => {
-    try {
-      const tasks = get(tasksAtom);
-      const projects = get(projectsAtom);
+export const getTasksForViewAtom = namedAtom(
+  "getTasksForViewAtom",
+  atom((get) => {
+    return (viewId: ViewId) =>
+      withErrorHandling(
+        () => {
+          const tasks = get(tasksAtom);
+          const projects = get(projectsAtom);
 
-      // Determine project ID from view ID
-      let projectId: ProjectId;
+          // Determine project ID from view ID
+          let projectId: ProjectId;
 
-      if (viewId === "inbox") {
-        projectId = INBOX_PROJECT_ID;
-      } else {
-        // Find the project that matches the viewId
-        const matchingProject = projects.find((p: Project) => p.id === viewId);
-        if (matchingProject) {
-          // ViewId is confirmed to be a ProjectId by project lookup
-          projectId = matchingProject.id;
-        } else {
-          // ViewId is likely a StandardViewId or LabelId - default to inbox
-          projectId = INBOX_PROJECT_ID;
-        }
-      }
+          if (viewId === "inbox") {
+            projectId = INBOX_PROJECT_ID;
+          } else {
+            // Find the project that matches the viewId
+            const matchingProject = projects.find(
+              (p: Project) => p.id === viewId,
+            );
+            if (matchingProject) {
+              // ViewId is confirmed to be a ProjectId by project lookup
+              projectId = matchingProject.id;
+            } else {
+              // ViewId is likely a StandardViewId or LabelId - default to inbox
+              projectId = INBOX_PROJECT_ID;
+            }
+          }
 
-      return getOrderedTasksForProject(projectId, tasks, projects);
-    } catch (error) {
-      handleAtomError(error, "getTasksForViewAtom");
-      return [];
-    }
-  };
-});
-getTasksForViewAtom.debugLabel = "getTasksForViewAtom";
+          return getOrderedTasksForProject(projectId, tasks, projects);
+        },
+        "getTasksForViewAtom",
+        [],
+      );
+  }),
+);
 
 // =============================================================================
 // DERIVED ATOMS
@@ -1414,92 +918,63 @@ export const orderedTasksByProjectAtom = atom((get) => {
 orderedTasksByProjectAtom.debugLabel = "orderedTasksByProjectAtom";
 
 /**
- * Shared atom for getting ordered tasks by section with orphan handling
- * Returns a function that takes (projectId, sectionId) and returns ordered tasks
- * Handles orphaned tasks (tasks with invalid section IDs) by showing them in the default section
+ * Returns tasks for a specific section within a project
+ * Handles orphaned tasks (tasks with invalid section IDs) by including them in the default section
  */
-export const orderedTasksBySectionAtom = atom((get) => {
-  return (projectId: ProjectId | "inbox", sectionId: string | null) => {
-    try {
-      const tasks = get(filteredTasksAtom); // Use already filtered tasks
-      const currentViewState = get(currentViewStateAtom);
-      const allProjects = get(projectsAtom);
-      const orderedTasksByProject = get(orderedTasksByProjectAtom);
+export const orderedTasksBySectionAtom = namedAtom(
+  "orderedTasksBySectionAtom",
+  atom((get) => {
+    return (projectId: ProjectId | "inbox", sectionId: SectionId | null) =>
+      withErrorHandling(
+        () => {
+          const allTasks = get(tasksAtom);
+          const allProjects = get(projectsAtom);
 
-      // Find the specific project to get its sections
-      const project =
-        projectId === "inbox"
-          ? null
-          : allProjects.find((p: Project) => p.id === projectId);
+          // Filter tasks by project
+          const tasks =
+            projectId === "inbox"
+              ? allTasks.filter(
+                  (task: Task) =>
+                    !task.projectId || task.projectId === INBOX_PROJECT_ID,
+                )
+              : allTasks.filter((task: Task) => task.projectId === projectId);
 
-      // Get list of existing section IDs for orphan detection
-      const existingSectionIds = new Set([
-        DEFAULT_UUID,
-        ...(project?.sections.map((s: ProjectSection) => s.id) || []),
-      ]);
+          // Get project for section validation
+          const project =
+            projectId === "inbox"
+              ? null
+              : allProjects.find((p: Project) => p.id === projectId);
 
-      // Filter tasks for this section from the passed tasks (already sorted by filteredTasksAtom)
-      const sectionTasks = tasks.filter((task: Task) => {
-        // First filter by project
-        const taskProjectId = task.projectId || INBOX_PROJECT_ID;
-        const targetProjectId =
-          projectId === "inbox" ? INBOX_PROJECT_ID : projectId;
-        if (taskProjectId !== targetProjectId) return false;
+          // Get list of existing section IDs for orphan detection
+          const existingSectionIds = new Set([
+            createSectionId(DEFAULT_UUID),
+            ...(project?.sections.map((s: ProjectSection) => s.id) || []),
+          ]);
 
-        // Then filter by section - handle orphaned tasks
-        if (sectionId === null || sectionId === DEFAULT_UUID) {
-          // Include tasks that belong to default section OR tasks with orphaned section IDs
-          return (
-            task.sectionId === DEFAULT_UUID ||
-            !task.sectionId ||
-            !existingSectionIds.has(task.sectionId)
+          // Filter tasks and handle orphaned tasks
+          const sectionTasks = tasks.filter((task: Task) => {
+            if (sectionId === null || sectionId === DEFAULT_UUID) {
+              // Default section: include tasks with no section ID, default section ID,
+              // or orphaned section IDs (section IDs that don't exist in the project)
+              return (
+                task.sectionId === createSectionId(DEFAULT_UUID) ||
+                !task.sectionId ||
+                !existingSectionIds.has(task.sectionId)
+              );
+            }
+            return task.sectionId === sectionId;
+          });
+
+          // Sort by creation date for consistency
+          return sectionTasks.sort(
+            (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
           );
-        }
-        return task.sectionId === sectionId;
-      });
-
-      // If user has selected a specific sort (not "default"), respect it fully
-      if (currentViewState.sortBy !== "default") {
-        return sectionTasks; // tasks are already sorted by filteredTasksAtom
-      }
-
-      // For "default" sort, maintain the legacy behavior for better UX in project views:
-      // Use project ordering for incomplete tasks, keep completed tasks at bottom
-      const projectIdForOrdering = projectId === "inbox" ? "inbox" : projectId;
-      const orderedProjectTasks =
-        orderedTasksByProject.get(projectIdForOrdering) || [];
-      const projectTaskOrder = orderedProjectTasks.map((t) => t.id);
-
-      const sortedTasks = sectionTasks.sort((a: Task, b: Task) => {
-        // If completion status differs, completed tasks go to bottom (matches main-content.tsx)
-        if (a.completed && !b.completed) return 1;
-        if (!a.completed && b.completed) return -1;
-
-        // Both have same completion status, use project order for "default" sort
-        const aIndex = projectTaskOrder.indexOf(a.id);
-        const bIndex = projectTaskOrder.indexOf(b.id);
-
-        // If both tasks are in project order, maintain that order
-        if (aIndex !== -1 && bIndex !== -1) {
-          return aIndex - bIndex;
-        }
-
-        // If only one is in project order, it comes first
-        if (aIndex !== -1) return -1;
-        if (bIndex !== -1) return 1;
-
-        // Neither in project order, maintain original order (by creation date)
-        return a.createdAt.getTime() - b.createdAt.getTime();
-      });
-
-      return sortedTasks;
-    } catch (error) {
-      handleAtomError(error, "orderedTasksBySectionAtom");
-      return [];
-    }
-  };
-});
-orderedTasksBySectionAtom.debugLabel = "orderedTasksBySectionAtom";
+        },
+        "orderedTasksBySectionAtom",
+        [],
+      );
+  }),
+);
 
 // =============================================================================
 // EXPORT STRUCTURE
@@ -1542,10 +1017,10 @@ export const taskAtoms = {
     upcomingTasks: upcomingTasksAtom,
     overdueTasks: overdueTasksAtom,
     calendarTasks: calendarTasksAtom,
-    taskCounts: taskCountsAtom,
+    // Note: taskCountsAtom disabled (has UI dependencies, needs refactoring)
     completedTasksToday: completedTasksTodayAtom,
     baseFilteredTasksForView: baseFilteredTasksForViewAtom,
-    filteredTasks: filteredTasksAtom,
+    // Note: filteredTasksAtom moved to ui/filtered-tasks.ts (UI-dependent)
     getTasksForView: getTasksForViewAtom,
     orderedTasksByProject: orderedTasksByProjectAtom,
     orderedTasksBySection: orderedTasksBySectionAtom,
@@ -1553,3 +1028,16 @@ export const taskAtoms = {
 };
 
 export { tasksAtom } from "./base";
+
+// Re-export filtering atoms for backward compatibility
+export {
+  activeTasksAtom,
+  inboxTasksAtom,
+  todayTasksAtom,
+  upcomingTasksAtom,
+  calendarTasksAtom,
+  overdueTasksAtom,
+  completedTasksAtom,
+  projectGroupTasksAtom,
+  baseFilteredTasksForViewAtom,
+} from "../data/tasks/filters";

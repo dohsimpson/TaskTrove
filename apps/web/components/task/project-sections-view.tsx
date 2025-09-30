@@ -363,7 +363,7 @@ export function ProjectSectionsView({
       const viewId = projectId // ViewId can be a ProjectId
 
       // Get current task positions
-      const sectionTasks = getOrderedTasksForSection(projectId, targetSectionId)
+      const sectionTasks = getOrderedTasksForSection(projectId, createSectionId(targetSectionId))
       const sourceIndex = sectionTasks.findIndex((task: Task) => task.id === taskId)
 
       // Calculate target index from drop position
@@ -469,7 +469,10 @@ export function ProjectSectionsView({
   const renderSection = (section: { id: string; name: string; color: string }) => {
     const displayName = section.name
     const sectionId = section.id
-    const sectionTasks = getOrderedTasksForSection(project?.id || "inbox", section.id)
+    const sectionTasks = getOrderedTasksForSection(
+      project?.id || "inbox",
+      createSectionId(section.id),
+    )
     const sectionDroppableId = `${droppableId}-section-${sectionId}`
     const isCollapsed = collapsedSections.includes(sectionId)
     const isEditing = editingSectionId === section.id

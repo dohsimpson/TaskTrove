@@ -35,6 +35,10 @@ vi.mock("@tasktrove/atoms/utils", () => ({
     mockAtom.debugLabel = "";
     return mockAtom;
   }),
+  namedAtom: vi.fn((name, atom) => {
+    atom.debugLabel = name;
+    return atom;
+  }),
   handleAtomError: vi.fn(),
   playSoundAtom: vi.fn(),
   toast: {

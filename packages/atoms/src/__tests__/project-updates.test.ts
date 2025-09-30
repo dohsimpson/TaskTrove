@@ -15,53 +15,24 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createStore } from "jotai";
-import { v4 as uuidv4 } from "uuid";
 import { updateProjectsMutationAtom, projectsAtom } from "../core/base";
 import { deleteProjectAtom } from "../core/projects";
 import { moveTaskWithinSection } from "../core/tasks";
 import { DEFAULT_UUID } from "@tasktrove/constants";
-import type { Project, Task } from "@tasktrove/types";
+import type { Project } from "@tasktrove/types";
 import {
   createTaskId,
   createSectionId,
   INBOX_PROJECT_ID,
   createProjectId,
 } from "@tasktrove/types";
-
-// Test constants - defined locally since they're test-only
-const TEST_PROJECT_ID_1 = createProjectId(
-  "12345678-1234-4234-8234-123456789012",
-);
-const TEST_PROJECT_ID_2 = createProjectId(
-  "12345678-1234-4234-8234-123456789013",
-);
-const TEST_TASK_ID_1 = createTaskId("12345678-1234-4234-8234-123456789012");
-const TEST_TASK_ID_2 = createTaskId("12345678-1234-4234-8234-123456789013");
-
-/**
- * Creates a mock task with reasonable defaults
- */
-function createMockTask(overrides: Partial<Task> = {}): Task {
-  const defaultTask: Task = {
-    id: createTaskId(uuidv4()),
-    title: "Mock Task",
-    description: "This is a mock task for testing",
-    completed: false,
-    priority: 2,
-    sectionId: createSectionId("00000000-0000-0000-0000-000000000000"),
-    projectId: INBOX_PROJECT_ID,
-    labels: [],
-    subtasks: [],
-    comments: [],
-    attachments: [],
-    createdAt: new Date(),
-    status: "active",
-    order: 0,
-    recurringMode: "dueDate",
-  };
-
-  return { ...defaultTask, ...overrides };
-}
+import {
+  createMockTask,
+  TEST_PROJECT_ID_1,
+  TEST_PROJECT_ID_2,
+  TEST_TASK_ID_1,
+  TEST_TASK_ID_2,
+} from "../utils/test-helpers";
 
 // Mock fetch for testing
 global.fetch = vi.fn();

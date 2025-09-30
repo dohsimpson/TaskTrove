@@ -9,7 +9,7 @@ import type { Task } from "@tasktrove/types";
 import { TEST_PROJECT_ID_1 } from "../utils/test-helpers";
 
 // Import the REAL atoms - not mocking them
-import { projectTaskCountsAtom } from "../core/projects";
+import { projectTaskCountsAtom } from "../ui/task-counts";
 import { taskAtoms } from "../core/tasks";
 // import { projectAtoms } from '../core/projects';
 

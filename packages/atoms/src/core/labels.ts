@@ -1,20 +1,16 @@
 import { atom } from "jotai";
-import { handleAtomError } from "../utils/atom-helpers";
 import {
-  Label,
-  Task,
-  LabelId,
-  ViewStates,
-  CreateLabelRequest,
-} from "@tasktrove/types";
+  handleAtomError,
+  namedAtom,
+  withErrorHandling,
+} from "../utils/atom-helpers";
+import { Label, LabelId, CreateLabelRequest } from "@tasktrove/types";
 import {
   createLabelMutationAtom,
   labelsAtom,
   deleteLabelMutationAtom,
 } from "./base";
 import { recordOperationAtom } from "./history";
-import { activeTasksAtom } from "./tasks";
-import { viewStatesAtom, getViewStateOrDefault } from "../ui/views";
 
 /**
  * Core label atoms for TaskTrove
@@ -33,125 +29,85 @@ import { viewStatesAtom, getViewStateOrDefault } from "../ui/views";
 /**
  * Atom that provides a Map of label ID → Label object for efficient lookups
  */
-export const labelsMapAtom = atom<Map<string, Label>>((get) => {
-  try {
-    const labels = get(labelsAtom);
-    return new Map(labels.map((label: Label) => [label.id, label]));
-  } catch (error) {
-    handleAtomError(error, "labelsMapAtom");
-    return new Map();
-  }
-});
-labelsMapAtom.debugLabel = "labelsMapAtom";
+export const labelsMapAtom = namedAtom(
+  "labelsMapAtom",
+  atom<Map<string, Label>>((get) =>
+    withErrorHandling(
+      () => {
+        const labels = get(labelsAtom);
+        return new Map(labels.map((label: Label) => [label.id, label]));
+      },
+      "labelsMapAtom",
+      new Map(),
+    ),
+  ),
+);
 
 /**
  * Atom that returns a function to get label by ID
  */
-export const labelByIdAtom = atom((get) => {
-  const labelsMap = get(labelsMapAtom);
-  return (id: string): Label | undefined => {
-    try {
-      return labelsMap.get(id);
-    } catch (error) {
-      handleAtomError(error, "labelByIdAtom");
-      return undefined;
-    }
-  };
-});
-labelByIdAtom.debugLabel = "labelByIdAtom";
+export const labelByIdAtom = namedAtom(
+  "labelByIdAtom",
+  atom((get) => {
+    const labelsMap = get(labelsMapAtom);
+    return (id: string): Label | undefined =>
+      withErrorHandling(() => labelsMap.get(id), "labelByIdAtom", undefined);
+  }),
+);
 
 /**
  * Getter function for finding label by name
  * @param name - Label name to find
  * @returns Label or undefined if not found
  */
-export const labelByNameAtom = atom((get) => {
-  const labels = get(labelsAtom);
-  return (name: string): Label | undefined => {
-    try {
-      return labels.find((label: Label) => label.name === name);
-    } catch (error) {
-      handleAtomError(error, "labelByNameAtom");
-      return undefined;
-    }
-  };
-});
-labelByNameAtom.debugLabel = "labelByNameAtom";
+export const labelByNameAtom = namedAtom(
+  "labelByNameAtom",
+  atom((get) => {
+    const labels = get(labelsAtom);
+    return (name: string): Label | undefined =>
+      withErrorHandling(
+        () => labels.find((label: Label) => label.name === name),
+        "labelByNameAtom",
+        undefined,
+      );
+  }),
+);
 
 /**
  * Utility to get label names from an array of IDs
  */
-export const labelNamesFromIdsAtom = atom((get) => {
-  const labelsMap = get(labelsMapAtom);
-  return (labelIds: LabelId[]): string[] => {
-    try {
-      return labelIds
-        .map((id) => labelsMap.get(id)?.name || id)
-        .filter(Boolean);
-    } catch (error) {
-      handleAtomError(error, "labelNamesFromIdsAtom");
-      return [];
-    }
-  };
-});
-labelNamesFromIdsAtom.debugLabel = "labelNamesFromIdsAtom";
+export const labelNamesFromIdsAtom = namedAtom(
+  "labelNamesFromIdsAtom",
+  atom((get) => {
+    const labelsMap = get(labelsMapAtom);
+    return (labelIds: LabelId[]): string[] =>
+      withErrorHandling(
+        () =>
+          labelIds.map((id) => labelsMap.get(id)?.name || id).filter(Boolean),
+        "labelNamesFromIdsAtom",
+        [],
+      );
+  }),
+);
 
 /**
  * Utility to get label objects from an array of IDs
  */
-export const labelsFromIdsAtom = atom((get) => {
-  const labelsMap = get(labelsMapAtom);
-  return (labelIds: LabelId[]): Label[] => {
-    try {
-      return labelIds
-        .map((id) => labelsMap.get(id))
-        .filter((label): label is Label => label !== undefined);
-    } catch (error) {
-      handleAtomError(error, "labelsFromIdsAtom");
-      return [];
-    }
-  };
-});
-labelsFromIdsAtom.debugLabel = "labelsFromIdsAtom";
-
-/**
- * Task counts per label calculated from active tasks
- * Returns filtered counts that respect view-specific showCompleted settings
- * Unified interface with taskCountsAtom and projectTaskCountsAtom - returns simple numbers
- */
-export const labelTaskCountsAtom = atom<Record<LabelId, number>>((get) => {
-  try {
-    const labels = get(labelsAtom);
-    const activeTasks = get(activeTasksAtom);
-    const rawViewStates = get(viewStatesAtom);
-    const viewStates: ViewStates = rawViewStates;
-
-    // Filter tasks based on label view's showCompleted setting
-    const filterByViewCompleted = (tasks: Task[], labelId: LabelId) => {
-      const showCompleted = getViewStateOrDefault(
-        viewStates,
-        labelId,
-      ).showCompleted;
-      return showCompleted ? tasks : tasks.filter((task) => !task.completed);
-    };
-
-    const counts: Record<LabelId, number> = {};
-
-    for (const label of labels) {
-      const labelTasks = activeTasks.filter((task: Task) =>
-        task.labels.includes(label.id),
+export const labelsFromIdsAtom = namedAtom(
+  "labelsFromIdsAtom",
+  atom((get) => {
+    const labelsMap = get(labelsMapAtom);
+    return (labelIds: LabelId[]): Label[] =>
+      withErrorHandling(
+        () =>
+          labelIds
+            .map((id) => labelsMap.get(id))
+            .filter((label): label is Label => label !== undefined),
+        "labelsFromIdsAtom",
+        [],
       );
-      const filteredTasks = filterByViewCompleted(labelTasks, label.id);
-      counts[label.id] = filteredTasks.length;
-    }
-
-    return counts;
-  } catch (error) {
-    handleAtomError(error, "labelTaskCounts");
-    return {};
-  }
-});
-labelTaskCountsAtom.debugLabel = "labelTaskCountsAtom";
+  }),
+);
 
 // =============================================================================
 // WRITE-ONLY ACTION ATOMS
@@ -246,7 +202,7 @@ export const labelAtoms = {
   labelByName: labelByNameAtom,
   labelNamesFromIds: labelNamesFromIdsAtom,
   labelsFromIds: labelsFromIdsAtom,
-  labelTaskCounts: labelTaskCountsAtom,
+  // Note: labelTaskCountsAtom moved to ui/task-counts.ts (UI-dependent)
 
   // Write-only action atoms
   addLabel: addLabelAtom,

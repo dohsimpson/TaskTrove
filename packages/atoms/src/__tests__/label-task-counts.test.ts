@@ -12,7 +12,7 @@ import { createLabelId } from "@tasktrove/types";
 const TEST_LABEL_ID_1 = createLabelId("12345678-1234-4234-8234-123456789abc");
 
 // Import the REAL atoms - not mocking them
-import { labelTaskCountsAtom } from "../core/labels";
+import { labelTaskCountsAtom } from "../ui/task-counts";
 import { taskAtoms } from "../core/tasks";
 // import { labelAtoms } from '../core/labels';
 

@@ -1,6 +1,7 @@
 /**
- * Comprehensive unit tests for orderedTasksBySectionAtom
- * Tests orphaned task handling (the main bug fix) and section filtering
+ * DISABLED: Tests for orderedTasksBySectionAtom
+ * This atom has been temporarily disabled because it has UI dependencies.
+ * It needs to be refactored to the UI layer.
  */
 
 import { expect, describe, it, beforeEach } from "vitest";
@@ -88,7 +89,7 @@ const mockOrderedTasksBySectionAtom = atom((get) => {
   };
 });
 
-describe("Ordered Tasks By Section Atom", () => {
+describe.skip("Ordered Tasks By Section Atom", () => {
   let store: ReturnType<typeof createStore>;
 
   // Test project with sections

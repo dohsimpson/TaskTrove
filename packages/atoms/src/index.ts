@@ -18,6 +18,8 @@ export * from "./core/notifications";
 export * from "./core/history";
 export * from "./core/groups";
 export * from "./ui/views";
+export * from "./ui/task-counts";
+export * from "./ui/filtered-tasks";
 export * from "./ui/user-settings-atom";
 export * from "./ui/focus-timer";
 export * from "./ui/dialogs";
@@ -86,3 +88,21 @@ export * from "./features/analytics";
 // Export utils including audio functionality
 export { playSoundAtom } from "./utils/atom-helpers";
 export type { SoundType } from "@tasktrove/dom-utils/audio";
+
+// Filter utilities
+export {
+  filterTasksByCompleted,
+  filterTasksByOverdue,
+  filterTasks,
+  type FilterConfig,
+  viewStateToFilterConfig,
+} from "./utils/filters";
+
+// Count utilities
+export {
+  calculateProjectTaskCounts,
+  calculateLabelTaskCounts,
+  calculateViewCounts,
+  type CountConfig,
+  type ViewCounts,
+} from "./utils/counts";

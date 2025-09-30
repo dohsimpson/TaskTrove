@@ -2,7 +2,7 @@
  * Utility functions for atoms package
  */
 
-import { atom } from "jotai";
+import { atom, type Atom, type WritableAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { playSound, type SoundType } from "@tasktrove/dom-utils/audio";
 import { toast } from "@tasktrove/dom-utils/toast";
@@ -10,6 +10,59 @@ import { showServiceWorkerNotification } from "@tasktrove/dom-utils/notification
 
 // Storage key prefix for the app
 export const STORAGE_PREFIX = "tasktrove-";
+
+/**
+ * Creates a named atom with automatic debug label assignment
+ * Eliminates the need to manually set atom.debugLabel
+ *
+ * @param name - The debug label for the atom (should match variable name)
+ * @param atomValue - The atom to name
+ * @returns The atom with debug label assigned
+ *
+ * @example
+ * export const tasksAtom = namedAtom("tasksAtom", atom([]))
+ */
+export function namedAtom<AtomType extends Atom<unknown>>(
+  name: string,
+  atomValue: AtomType,
+): AtomType {
+  atomValue.debugLabel = name;
+  return atomValue;
+}
+
+/**
+ * Wraps atom getter logic with standardized error handling
+ * Eliminates repetitive try-catch blocks throughout the codebase
+ *
+ * @param fn - The atom getter function to wrap
+ * @param context - Name of the atom for error logging (should match atom name)
+ * @param fallback - Value to return if an error occurs
+ * @returns Result of fn() or fallback if error occurs
+ *
+ * @example
+ * export const myAtom = namedAtom("myAtom", atom((get) =>
+ *   withErrorHandling(
+ *     () => {
+ *       const data = get(someOtherAtom);
+ *       return data.filter(x => x.active);
+ *     },
+ *     "myAtom",
+ *     []
+ *   )
+ * ));
+ */
+export function withErrorHandling<T>(
+  fn: () => T,
+  context: string,
+  fallback: T,
+): T {
+  try {
+    return fn();
+  } catch (error) {
+    handleAtomError(error, context);
+    return fallback;
+  }
+}
 
 /**
  * Creates an atom with localStorage persistence
@@ -68,27 +121,29 @@ export function handleAtomError(error: any, context?: string) {
  * Atom for playing sounds with DOM environment support
  * Automatically handles browser compatibility and Web Audio API
  */
-export const playSoundAtom = atom(
-  null,
-  async (
-    get,
-    _set,
-    { soundType, volume = 1.0 }: { soundType: SoundType; volume?: number },
-  ) => {
-    try {
-      // Check if we're in a DOM environment
-      if (typeof window === "undefined") {
-        // Server-side rendering or non-DOM environment
-        return;
-      }
+export const playSoundAtom = namedAtom(
+  "playSoundAtom",
+  atom(
+    null,
+    async (
+      get,
+      _set,
+      { soundType, volume = 1.0 }: { soundType: SoundType; volume?: number },
+    ) => {
+      try {
+        // Check if we're in a DOM environment
+        if (typeof window === "undefined") {
+          // Server-side rendering or non-DOM environment
+          return;
+        }
 
-      await playSound(soundType, volume);
-    } catch (error) {
-      console.warn(`Failed to play ${soundType} sound:`, error);
-    }
-  },
+        await playSound(soundType, volume);
+      } catch (error) {
+        console.warn(`Failed to play ${soundType} sound:`, error);
+      }
+    },
+  ),
 );
-playSoundAtom.debugLabel = "playSoundAtom";
 
 // Re-export toast from dom-utils with DOM environment support
 export { toast };

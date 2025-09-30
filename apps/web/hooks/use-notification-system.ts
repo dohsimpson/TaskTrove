@@ -52,7 +52,7 @@ export function useNotificationSystem() {
     }
 
     // Reschedule all notifications when tasks change or system is enabled
-    rescheduleAll()
+    rescheduleAll(tasks)
 
     log.info(
       {

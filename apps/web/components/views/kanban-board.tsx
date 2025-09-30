@@ -146,14 +146,14 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
       }
 
       const viewId = projectId // ViewId is now directly the ProjectId
-      const sectionTasks = getOrderedTasksForSection(projectId, targetSectionId)
-      const sourceIndex = sectionTasks.findIndex((task) => task.id === taskId)
+      const sectionTasks = getOrderedTasksForSection(projectId, createSectionId(targetSectionId))
+      const sourceIndex = sectionTasks.findIndex((task: TaskType) => task.id === taskId)
       let targetIndex = sectionTasks.length
 
       const taskDropTarget = locationData.find((target) => target.data.type === "task-drop-target")
       if (taskDropTarget) {
         const targetTaskId = taskDropTarget.data.taskId
-        const indexOfTarget = sectionTasks.findIndex((task) => task.id === targetTaskId)
+        const indexOfTarget = sectionTasks.findIndex((task: TaskType) => task.id === targetTaskId)
 
         if (indexOfTarget !== -1) {
           const closestEdgeOfTarget = extractClosestEdge(taskDropTarget.data)

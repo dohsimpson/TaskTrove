@@ -6,6 +6,7 @@ import { LabelContextMenu } from "./label-context-menu"
 import { labels } from "@/lib/atoms"
 import { startEditingLabelAtom } from "@/lib/atoms/ui/navigation"
 import { TEST_LABEL_ID_1, TEST_LABEL_ID_2 } from "@/lib/utils/test-constants"
+import { createLabelId } from "@tasktrove/types"
 
 // Mock component interfaces
 interface MockButtonProps {
@@ -191,16 +192,18 @@ describe("LabelContextMenu", () => {
       expect(screen.getByTestId("dropdown-content")).toBeInTheDocument()
       const items = screen.getAllByTestId("dropdown-item")
       expect(items.length).toBeGreaterThanOrEqual(3)
-      expect(items[0]).toHaveTextContent("Edit label")
+      expect(items[0]).toHaveTextContent("Edit Name")
       expect(items[1]).toHaveTextContent("Change color")
-      expect(items[items.length - 1]).toHaveTextContent("Delete label")
+      expect(items[items.length - 1]).toHaveTextContent("Delete")
     } else {
       expect(screen.queryByTestId("dropdown-menu")).not.toBeInTheDocument()
     }
   })
 
   it("returns null when label is not found", () => {
-    render(<LabelContextMenu labelId={TEST_LABEL_ID_2} isVisible={true} />, {
+    // Use a non-existent label ID that doesn't exist in test data
+    const nonExistentLabelId = createLabelId("99999999-9999-4999-8999-999999999999")
+    render(<LabelContextMenu labelId={nonExistentLabelId} isVisible={true} />, {
       initialAtomValues: [[labels, []]],
     })
 

@@ -14,6 +14,8 @@
     "./history": "./src/core/history.ts",
     "./groups": "./src/core/groups.ts",
     "./views": "./src/ui/views.ts",
+    "./ui/task-counts": "./src/ui/task-counts.ts",
+    "./ui/filtered-tasks": "./src/ui/filtered-tasks.ts",
     "./user-settings": "./src/ui/user-settings-atom.ts",
     "./focus-timer": "./src/ui/focus-timer.ts",
     "./dialogs": "./src/ui/dialogs.ts",
@@ -23,7 +25,9 @@
     "./navigation": "./src/ui/navigation.ts",
     "./analytics": "./src/features/analytics.ts",
     "./utils": "./src/utils/atom-helpers.ts",
-    "./utils/test-helpers": "./src/utils/test-helpers.ts"
+    "./utils/test-helpers": "./src/utils/test-helpers.ts",
+    "./utils/filters": "./src/utils/filters.ts",
+    "./utils/counts": "./src/utils/counts.ts"
   },
   "scripts": {
     "lint": "eslint .",

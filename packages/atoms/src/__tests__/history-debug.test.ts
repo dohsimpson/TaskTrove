@@ -15,8 +15,7 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { createStore, type Atom } from "jotai";
-import { v4 as uuidv4 } from "uuid";
+import { createStore } from "jotai";
 import {
   tasksHistoryAtom,
   projectsHistoryAtom,
@@ -30,79 +29,23 @@ import {
 import { taskAtoms } from "../core/tasks";
 import { projectAtoms } from "../core/projects";
 import { labelAtoms } from "../core/labels";
-import type { Task, Project } from "@tasktrove/types";
 import {
   createTaskId,
   createSectionId,
   createProjectId,
   INBOX_PROJECT_ID,
 } from "@tasktrove/types";
-
-// Test constants - defined locally since they're test-only
-const TEST_TASK_ID_1 = createTaskId("12345678-1234-4234-8234-123456789012");
-const TEST_PROJECT_ID_1 = createProjectId(
-  "12345678-1234-4234-8234-123456789012",
-);
+import {
+  createMockTask,
+  createMockProject,
+  snapshotAtom,
+  TEST_TASK_ID_1,
+  TEST_PROJECT_ID_1,
+} from "../utils/test-helpers";
 
 // =============================================================================
 // LOCAL TEST HELPERS
 // =============================================================================
-
-/**
- * Creates a mock task with reasonable defaults
- */
-function createMockTask(overrides: Partial<Task> = {}): Task {
-  const defaultTask: Task = {
-    id: createTaskId(uuidv4()),
-    title: "Mock Task",
-    description: "This is a mock task for testing",
-    completed: false,
-    priority: 2,
-    sectionId: createSectionId("00000000-0000-0000-0000-000000000000"),
-    projectId: INBOX_PROJECT_ID,
-    labels: [],
-    subtasks: [],
-    comments: [],
-    attachments: [],
-    createdAt: new Date(),
-    status: "active",
-    order: 0,
-    recurringMode: "dueDate",
-  };
-
-  return { ...defaultTask, ...overrides };
-}
-
-/**
- * Creates a mock project with reasonable defaults
- */
-function createMockProject(
-  overrides: Partial<Project> = {},
-): Omit<Project, "id" | "viewState"> {
-  const defaults = {
-    name: `Mock Project ${Date.now()}`,
-    slug: `mock-project-${Date.now()}`,
-    color: "#3b82f6",
-    favorite: false,
-    shared: false,
-    sections: [],
-  };
-
-  return { ...defaults, ...overrides };
-}
-
-/**
- * Snapshot an atom's value for comparison
- */
-async function snapshotAtom<T>(
-  store: ReturnType<typeof createStore>,
-  atom: Atom<T>,
-  label: string,
-): Promise<T> {
-  const value = await store.get(atom);
-  console.log(`📸 Snapshot [${label}]:`, JSON.stringify(value, null, 2));
-  return value;
-}
 
 // Type-safe debugging helper for object properties
 function logProperty(obj: unknown, prop: string, label?: string): void {

@@ -17,7 +17,7 @@ import {
   DEFAULT_ACTIVE_FILTERS,
   STANDARD_VIEW_IDS,
 } from "@tasktrove/constants";
-import { createAtomWithStorage, log } from "../utils/atom-helpers";
+import { createAtomWithStorage, log, namedAtom } from "../utils/atom-helpers";
 import { showTaskPanelAtom, selectedTaskIdAtom } from "./dialogs";
 import { tasksAtom } from "../core/tasks";
 
@@ -233,8 +233,10 @@ globalViewOptionsAtom.debugLabel = "globalViewOptionsAtom";
  * Currently active view/route (today, inbox, ProjectId, etc.)
  * Tracks which view the user is currently viewing
  */
-export const currentViewAtom = atom<ViewId>("today");
-currentViewAtom.debugLabel = "currentViewAtom";
+export const currentViewAtom = namedAtom(
+  "currentViewAtom",
+  atom<ViewId>("today"),
+);
 
 // =============================================================================
 // WRITE-ONLY ACTION ATOMS

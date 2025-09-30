@@ -16,7 +16,7 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createStore } from "jotai";
-import { filteredTasksAtom } from "../core/tasks";
+import { filteredTasksAtom } from "../ui/filtered-tasks";
 import { currentViewAtom, updateViewStateAtom } from "../ui/views";
 import { queryClientAtom } from "../core/base";
 import type { Task } from "@tasktrove/types";

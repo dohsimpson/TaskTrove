@@ -9,15 +9,18 @@
 
 import { atom } from "jotai";
 import { v4 as uuidv4 } from "uuid";
-import { handleAtomError, createAtomWithStorage } from "../utils/atom-helpers";
+import {
+  handleAtomError,
+  createAtomWithStorage,
+  namedAtom,
+  withErrorHandling,
+} from "../utils/atom-helpers";
 import type {
   Project,
   ProjectId,
   GroupId,
   SectionId,
   ProjectSection,
-  Task,
-  ViewStates,
 } from "@tasktrove/types";
 import {
   DEFAULT_INBOX_NAME,
@@ -32,14 +35,12 @@ import {
   createSectionId,
   ProjectIdSchema,
 } from "@tasktrove/types";
-import { activeTasksAtom } from "./tasks";
 import {
   projectsAtom,
   updateProjectsMutationAtom,
   createProjectMutationAtom,
   deleteProjectMutationAtom,
 } from "./base";
-import { viewStatesAtom, getViewStateOrDefault } from "../ui/views";
 import { recordOperationAtom } from "./history";
 import { log } from "../utils/atom-helpers";
 
@@ -81,30 +82,33 @@ currentProjectIdAtom.debugLabel = "currentProjectIdAtom";
  * This is a derived atom that gets the inbox project from projectsAtom
  * The inbox project is guaranteed to exist in projectsAtom
  */
-export const inboxProjectAtom = atom<Project>((get) => {
-  try {
-    const projects = get(projectsAtom);
-    const inboxProject = projects.find(
-      (p: Project) => p.id === INBOX_PROJECT_ID,
-    );
+export const inboxProjectAtom = namedAtom(
+  "inboxProjectAtom",
+  atom<Project>((get) =>
+    withErrorHandling(
+      () => {
+        const projects = get(projectsAtom);
+        const inboxProject = projects.find(
+          (p: Project) => p.id === INBOX_PROJECT_ID,
+        );
 
-    if (inboxProject) {
-      return inboxProject;
-    }
+        if (inboxProject) {
+          return inboxProject;
+        }
 
-    // This should never happen since projectsAtom guarantees inbox exists
-    // But we provide a fallback just in case
-    log.warn(
-      { module: "projects" },
-      "Inbox project not found in projectsAtom, returning default",
-    );
-    return createDefaultInboxProject();
-  } catch (error) {
-    handleAtomError(error, "inboxProjectAtom");
-    return createDefaultInboxProject();
-  }
-});
-inboxProjectAtom.debugLabel = "inboxProjectAtom";
+        // This should never happen since projectsAtom guarantees inbox exists
+        // But we provide a fallback just in case
+        log.warn(
+          { module: "projects" },
+          "Inbox project not found in projectsAtom, returning default",
+        );
+        return createDefaultInboxProject();
+      },
+      "inboxProjectAtom",
+      createDefaultInboxProject(),
+    ),
+  ),
+);
 
 // =============================================================================
 // WRITE-ONLY ACTION ATOMS
@@ -253,132 +257,109 @@ deleteProjectsAtom.debugLabel = "deleteProjectsAtom";
  * Projects excluding the special inbox project (for display in project lists)
  * The inbox project exists but should not appear in user-facing project lists
  */
-export const visibleProjectsAtom = atom((get) => {
-  try {
-    const projects = get(projectsAtom);
-    return projects.filter((project) => project.id !== INBOX_PROJECT_ID);
-  } catch (error) {
-    handleAtomError(error, "visibleProjects");
-    return [];
-  }
-});
-visibleProjectsAtom.debugLabel = "visibleProjectsAtom";
+export const visibleProjectsAtom = namedAtom(
+  "visibleProjectsAtom",
+  atom((get) =>
+    withErrorHandling(
+      () => {
+        const projects = get(projectsAtom);
+        return projects.filter((project) => project.id !== INBOX_PROJECT_ID);
+      },
+      "visibleProjectsAtom",
+      [],
+    ),
+  ),
+);
 
 /**
  * All projects including the special inbox project (for internal logic)
  * Use this when you need access to all projects including inbox
  */
-export const allProjectsAtom = atom((get) => {
-  try {
-    const projects = get(projectsAtom);
-    // projectsAtom now guarantees that inbox exists, so we can just return projects
-    return projects;
-  } catch (error) {
-    handleAtomError(error, "allProjects");
-    return [];
-  }
-});
+export const allProjectsAtom = namedAtom(
+  "allProjectsAtom",
+  atom((get) =>
+    withErrorHandling(
+      () => {
+        const projects = get(projectsAtom);
+        // projectsAtom now guarantees that inbox exists, so we can just return projects
+        return projects;
+      },
+      "allProjectsAtom",
+      [],
+    ),
+  ),
+);
+
 /**
  * Set of all valid project IDs
  * Used for efficient lookup when checking for orphaned tasks
  */
-export const projectIdsAtom = atom((get) => {
-  try {
-    const projects = get(projectsAtom);
-    return new Set(projects.map((p: Project) => p.id));
-  } catch (error) {
-    handleAtomError(error, "projectIdsAtom");
-    return new Set<ProjectId>();
-  }
-});
-projectIdsAtom.debugLabel = "projectIdsAtom";
-allProjectsAtom.debugLabel = "allProjectsAtom";
+export const projectIdsAtom = namedAtom(
+  "projectIdsAtom",
+  atom((get) =>
+    withErrorHandling(
+      () => {
+        const projects = get(projectsAtom);
+        return new Set(projects.map((p: Project) => p.id));
+      },
+      "projectIdsAtom",
+      new Set<ProjectId>(),
+    ),
+  ),
+);
 
 /**
  * Returns a function to get a project by ID (including inbox project)
  * Usage: const getProject = useAtomValue(projectByIdAtom); const project = getProject('123')
  */
-export const projectByIdAtom = atom((get) => {
-  try {
-    const allProjects = get(allProjectsAtom);
-    return (projectId: ProjectId): Project | undefined => {
-      return allProjects.find((project: Project) => project.id === projectId);
-    };
-  } catch (error) {
-    handleAtomError(error, "projectById");
-    return () => undefined;
-  }
-});
-projectByIdAtom.debugLabel = "projectByIdAtom";
-
-/**
- * Task counts per project calculated from active tasks
- * Returns filtered counts that respect view-specific showCompleted settings
- * Unified interface with taskCountsAtom - returns simple numbers
- */
-export const projectTaskCountsAtom = atom<Record<ProjectId, number>>((get) => {
-  try {
-    const projects = get(projectsAtom);
-    const activeTasks = get(activeTasksAtom);
-    const rawViewStates = get(viewStatesAtom);
-    const viewStates: ViewStates = rawViewStates;
-
-    // Filter tasks based on project view's showCompleted setting
-    const filterByViewCompleted = (tasks: Task[], projectId: ProjectId) => {
-      const showCompleted = getViewStateOrDefault(
-        viewStates,
-        projectId,
-      ).showCompleted;
-      return showCompleted
-        ? tasks
-        : tasks.filter((task: Task) => !task.completed);
-    };
-
-    const counts: Record<ProjectId, number> = {};
-
-    for (const project of projects) {
-      const projectTasks = activeTasks.filter(
-        (task: Task) => task.projectId === project.id,
-      );
-      const filteredTasks = filterByViewCompleted(projectTasks, project.id);
-      counts[project.id] = filteredTasks.length;
-    }
-
-    return counts;
-  } catch (error) {
-    handleAtomError(error, "projectTaskCounts");
-    return {};
-  }
-});
-projectTaskCountsAtom.debugLabel = "projectTaskCountsAtom";
+export const projectByIdAtom = namedAtom(
+  "projectByIdAtom",
+  atom((get) =>
+    withErrorHandling(
+      () => {
+        const allProjects = get(allProjectsAtom);
+        return (projectId: ProjectId): Project | undefined => {
+          return allProjects.find(
+            (project: Project) => project.id === projectId,
+          );
+        };
+      },
+      "projectByIdAtom",
+      () => undefined,
+    ),
+  ),
+);
 
 /**
  * Currently selected project object
  */
-export const currentProjectAtom = atom((get) => {
-  try {
-    const currentProjectId = get(currentProjectIdAtom);
-    if (!currentProjectId) return null;
+export const currentProjectAtom = namedAtom(
+  "currentProjectAtom",
+  atom((get) =>
+    withErrorHandling(
+      () => {
+        const currentProjectId = get(currentProjectIdAtom);
+        if (!currentProjectId) return null;
 
-    // Validate that currentProjectId is a valid ProjectId
-    try {
-      const validProjectId = ProjectIdSchema.parse(currentProjectId);
-      const getProjectById = get(projectByIdAtom);
-      return getProjectById(validProjectId) || null;
-    } catch {
-      // Invalid ProjectId stored in localStorage, clear it
-      console.warn(
-        "Invalid project ID in storage, clearing:",
-        currentProjectId,
-      );
-      return null;
-    }
-  } catch (error) {
-    handleAtomError(error, "currentProject");
-    return null;
-  }
-});
-currentProjectAtom.debugLabel = "currentProjectAtom";
+        // Validate that currentProjectId is a valid ProjectId
+        try {
+          const validProjectId = ProjectIdSchema.parse(currentProjectId);
+          const getProjectById = get(projectByIdAtom);
+          return getProjectById(validProjectId) || null;
+        } catch {
+          // Invalid ProjectId stored in localStorage, clear it
+          console.warn(
+            "Invalid project ID in storage, clearing:",
+            currentProjectId,
+          );
+          return null;
+        }
+      },
+      "currentProjectAtom",
+      null,
+    ),
+  ),
+);
 
 // =============================================================================
 // UTILITY FUNCTIONS
@@ -768,8 +749,8 @@ export const projectAtoms = {
     inboxProject: inboxProjectAtom,
     projectById: projectByIdAtom,
     projectIds: projectIdsAtom,
-    projectTaskCounts: projectTaskCountsAtom,
     currentProject: currentProjectAtom,
+    // Note: projectTaskCountsAtom moved to ui/task-counts.ts (UI-dependent)
   },
 } as const;
 

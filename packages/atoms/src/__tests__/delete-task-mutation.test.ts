@@ -19,45 +19,19 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { createStore } from "jotai";
-import { v4 as uuidv4 } from "uuid";
 import { taskAtoms } from "../core/tasks";
 import { deleteTaskMutationAtom } from "../core/base";
-import type { Task } from "@tasktrove/types";
 import {
   createTaskId,
   createSubtaskId,
   createSectionId,
   INBOX_PROJECT_ID,
 } from "@tasktrove/types";
-
-// Test constants - defined locally since they're test-only
-const TEST_TASK_ID_1 = createTaskId("12345678-1234-4234-8234-123456789012");
-const TEST_TASK_ID_2 = createTaskId("12345678-1234-4234-8234-123456789013");
-
-/**
- * Creates a mock task with reasonable defaults
- */
-function createMockTask(overrides: Partial<Task> = {}): Task {
-  const defaultTask: Task = {
-    id: createTaskId(uuidv4()),
-    title: "Mock Task",
-    description: "This is a mock task for testing",
-    completed: false,
-    priority: 2,
-    sectionId: createSectionId("00000000-0000-0000-0000-000000000000"),
-    projectId: INBOX_PROJECT_ID,
-    labels: [],
-    subtasks: [],
-    comments: [],
-    attachments: [],
-    createdAt: new Date(),
-    status: "active",
-    order: 0,
-    recurringMode: "dueDate",
-  };
-
-  return { ...defaultTask, ...overrides };
-}
+import {
+  createMockTask,
+  TEST_TASK_ID_1,
+  TEST_TASK_ID_2,
+} from "../utils/test-helpers";
 
 // Mock the atoms package logger to avoid console noise in tests
 vi.mock("@tasktrove/atoms/utils", () => ({
@@ -71,6 +45,10 @@ vi.mock("@tasktrove/atoms/utils", () => ({
     const mockAtom = vi.fn() as any;
     mockAtom.debugLabel = "";
     return mockAtom;
+  }),
+  namedAtom: vi.fn((name, atom) => {
+    atom.debugLabel = name;
+    return atom;
   }),
   handleAtomError: vi.fn(),
   playSoundAtom: vi.fn(),

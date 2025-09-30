@@ -1,0 +1,78 @@
+{
+  "app": {
+    "name": "TaskTrove",
+    "description": "Uw persoonlijke taakbeheerder"
+  },
+  "navigation": {
+    "today": "Vandaag",
+    "upcoming": "Binnenkort",
+    "all": "Alle taken",
+    "completed": "Voltooid",
+    "projects": "Projecten",
+    "labels": "Labels",
+    "inbox": "Inbox",
+    "calendar": "Kalender",
+    "analytics": "Analyse",
+    "profile": "Profiel"
+  },
+  "tasks": {
+    "task": "Taak",
+    "tasks": "Taken",
+    "addTask": "Taak toevoegen",
+    "editTask": "Taak bewerken",
+    "deleteTask": "Taak verwijderen",
+    "completeTask": "Taak voltooien",
+    "uncompleteTask": "Markeer als niet voltooid",
+    "title": "Titel",
+    "description": "Beschrijving",
+    "dueDate": "Vervaldatum",
+    "priority": "Prioriteit",
+    "project": "Project",
+    "labels": "Labels",
+    "noTasks": "Geen taken gevonden",
+    "filter": "Taken filteren"
+  },
+  "projects": {
+    "project": "Project",
+    "projects": "Projecten",
+    "addProject": "Project toevoegen",
+    "editProject": "Project bewerken",
+    "deleteProject": "Project verwijderen",
+    "projectName": "Projectnaam",
+    "projectDescription": "Projectbeschrijving",
+    "noProjects": "Geen projecten gevonden"
+  },
+  "labels": {
+    "label": "Label",
+    "labels": "Labels",
+    "addLabel": "Label toevoegen",
+    "editLabel": "Label bewerken",
+    "deleteLabel": "Label verwijderen",
+    "labelName": "Labelnaam",
+    "labelColor": "Labelkleur",
+    "noLabels": "Geen labels gevonden"
+  },
+  "common": {
+    "save": "Opslaan",
+    "cancel": "Annuleren",
+    "delete": "Verwijderen",
+    "edit": "Bewerken",
+    "add": "Toevoegen",
+    "close": "Sluiten",
+    "confirm": "Bevestigen",
+    "loading": "Laden...",
+    "error": "Fout",
+    "success": "Succes",
+    "warning": "Waarschuwing",
+    "info": "Informatie"
+  },
+  "settings": {
+    "settings": "Instellingen",
+    "general": "Algemeen",
+    "appearance": "Uiterlijk",
+    "language": "Taal",
+    "languageDescription": "Kies uw voorkeurstaal voor de interface",
+    "theme": "Thema",
+    "notifications": "Meldingen"
+  }
+}

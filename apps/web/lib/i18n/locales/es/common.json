@@ -1,0 +1,78 @@
+{
+  "app": {
+    "name": "TaskTrove",
+    "description": "Tu compañero personal de gestión de tareas"
+  },
+  "navigation": {
+    "today": "Hoy",
+    "upcoming": "Próximas",
+    "all": "Todas las tareas",
+    "completed": "Completadas",
+    "projects": "Proyectos",
+    "labels": "Etiquetas",
+    "inbox": "Bandeja de entrada",
+    "calendar": "Calendario",
+    "analytics": "Análisis",
+    "profile": "Perfil"
+  },
+  "tasks": {
+    "task": "Tarea",
+    "tasks": "Tareas",
+    "addTask": "Agregar tarea",
+    "editTask": "Editar tarea",
+    "deleteTask": "Eliminar tarea",
+    "completeTask": "Completar tarea",
+    "uncompleteTask": "Marcar como incompleta",
+    "title": "Título",
+    "description": "Descripción",
+    "dueDate": "Fecha de vencimiento",
+    "priority": "Prioridad",
+    "project": "Proyecto",
+    "labels": "Etiquetas",
+    "noTasks": "No se encontraron tareas",
+    "filter": "Filtrar tareas"
+  },
+  "projects": {
+    "project": "Proyecto",
+    "projects": "Proyectos",
+    "addProject": "Agregar proyecto",
+    "editProject": "Editar proyecto",
+    "deleteProject": "Eliminar proyecto",
+    "projectName": "Nombre del proyecto",
+    "projectDescription": "Descripción del proyecto",
+    "noProjects": "No se encontraron proyectos"
+  },
+  "labels": {
+    "label": "Etiqueta",
+    "labels": "Etiquetas",
+    "addLabel": "Agregar etiqueta",
+    "editLabel": "Editar etiqueta",
+    "deleteLabel": "Eliminar etiqueta",
+    "labelName": "Nombre de la etiqueta",
+    "labelColor": "Color de la etiqueta",
+    "noLabels": "No se encontraron etiquetas"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Agregar",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "warning": "Advertencia",
+    "info": "Información"
+  },
+  "settings": {
+    "settings": "Configuración",
+    "general": "General",
+    "appearance": "Apariencia",
+    "language": "Idioma",
+    "languageDescription": "Elige tu idioma preferido para la interfaz",
+    "theme": "Tema",
+    "notifications": "Notificaciones"
+  }
+}

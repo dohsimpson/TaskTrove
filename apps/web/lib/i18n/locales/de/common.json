@@ -1,0 +1,78 @@
+{
+  "app": {
+    "name": "TaskTrove",
+    "description": "Ihr persönlicher Aufgabenverwaltungsbegleiter"
+  },
+  "navigation": {
+    "today": "Heute",
+    "upcoming": "Bevorstehend",
+    "all": "Alle Aufgaben",
+    "completed": "Erledigt",
+    "projects": "Projekte",
+    "labels": "Etiketten",
+    "inbox": "Posteingang",
+    "calendar": "Kalender",
+    "analytics": "Analysen",
+    "profile": "Profil"
+  },
+  "tasks": {
+    "task": "Aufgabe",
+    "tasks": "Aufgaben",
+    "addTask": "Aufgabe hinzufügen",
+    "editTask": "Aufgabe bearbeiten",
+    "deleteTask": "Aufgabe löschen",
+    "completeTask": "Aufgabe abschließen",
+    "uncompleteTask": "Als unvollständig markieren",
+    "title": "Titel",
+    "description": "Beschreibung",
+    "dueDate": "Fälligkeitsdatum",
+    "priority": "Priorität",
+    "project": "Projekt",
+    "labels": "Etiketten",
+    "noTasks": "Keine Aufgaben gefunden",
+    "filter": "Aufgaben filtern"
+  },
+  "projects": {
+    "project": "Projekt",
+    "projects": "Projekte",
+    "addProject": "Projekt hinzufügen",
+    "editProject": "Projekt bearbeiten",
+    "deleteProject": "Projekt löschen",
+    "projectName": "Projektname",
+    "projectDescription": "Projektbeschreibung",
+    "noProjects": "Keine Projekte gefunden"
+  },
+  "labels": {
+    "label": "Etikett",
+    "labels": "Etiketten",
+    "addLabel": "Etikett hinzufügen",
+    "editLabel": "Etikett bearbeiten",
+    "deleteLabel": "Etikett löschen",
+    "labelName": "Etikettname",
+    "labelColor": "Etikettfarbe",
+    "noLabels": "Keine Etiketten gefunden"
+  },
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "add": "Hinzufügen",
+    "close": "Schließen",
+    "confirm": "Bestätigen",
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "warning": "Warnung",
+    "info": "Information"
+  },
+  "settings": {
+    "settings": "Einstellungen",
+    "general": "Allgemein",
+    "appearance": "Erscheinungsbild",
+    "language": "Sprache",
+    "languageDescription": "Wählen Sie Ihre bevorzugte Sprache für die Benutzeroberfläche",
+    "theme": "Thema",
+    "notifications": "Benachrichtigungen"
+  }
+}

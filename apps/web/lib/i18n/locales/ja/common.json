@@ -1,0 +1,78 @@
+{
+  "app": {
+    "name": "TaskTrove",
+    "description": "あなた専用のタスク管理ツール"
+  },
+  "navigation": {
+    "today": "今日",
+    "upcoming": "予定",
+    "all": "すべてのタスク",
+    "completed": "完了済み",
+    "projects": "プロジェクト",
+    "labels": "ラベル",
+    "inbox": "受信トレイ",
+    "calendar": "カレンダー",
+    "analytics": "分析",
+    "profile": "プロフィール"
+  },
+  "tasks": {
+    "task": "タスク",
+    "tasks": "タスク",
+    "addTask": "タスクを追加",
+    "editTask": "タスクを編集",
+    "deleteTask": "タスクを削除",
+    "completeTask": "タスクを完了",
+    "uncompleteTask": "未完了にする",
+    "title": "タイトル",
+    "description": "説明",
+    "dueDate": "期限",
+    "priority": "優先度",
+    "project": "プロジェクト",
+    "labels": "ラベル",
+    "noTasks": "タスクが見つかりません",
+    "filter": "フィルター"
+  },
+  "projects": {
+    "project": "プロジェクト",
+    "projects": "プロジェクト",
+    "addProject": "プロジェクトを追加",
+    "editProject": "プロジェクトを編集",
+    "deleteProject": "プロジェクトを削除",
+    "projectName": "プロジェクト名",
+    "projectDescription": "プロジェクトの説明",
+    "noProjects": "プロジェクトが見つかりません"
+  },
+  "labels": {
+    "label": "ラベル",
+    "labels": "ラベル",
+    "addLabel": "ラベルを追加",
+    "editLabel": "ラベルを編集",
+    "deleteLabel": "ラベルを削除",
+    "labelName": "ラベル名",
+    "labelColor": "ラベルの色",
+    "noLabels": "ラベルが見つかりません"
+  },
+  "common": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "add": "追加",
+    "close": "閉じる",
+    "confirm": "確認",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "warning": "警告",
+    "info": "情報"
+  },
+  "settings": {
+    "settings": "設定",
+    "general": "一般",
+    "appearance": "外観",
+    "language": "言語",
+    "languageDescription": "インターフェースの言語を選択してください",
+    "theme": "テーマ",
+    "notifications": "通知"
+  }
+}

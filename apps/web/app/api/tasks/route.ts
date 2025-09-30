@@ -15,6 +15,8 @@ import {
   DeleteTaskResponse,
   CreateTaskResponse,
   ErrorResponse,
+  ApiErrorCode,
+  GetTasksResponse,
 } from "@/lib/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
@@ -26,6 +28,7 @@ import {
   type EnhancedRequest,
 } from "@/lib/middleware/api-logger"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
+import { withAuthentication } from "@/lib/middleware/auth"
 import { v4 as uuidv4 } from "uuid"
 import {
   DEFAULT_TASK_COMPLETED,
@@ -43,13 +46,12 @@ import { processRecurringTaskCompletion } from "@/lib/utils/recurring-task-proce
 /**
  * GET /api/tasks
  *
- * Fetches all tasks data including tasks, projects, and labels.
- * This API route provides the complete data structure that matches
- * the Jotai atoms used for state management.
+ * Fetches only tasks data with metadata.
+ * Returns tasks array with count, timestamp, and version information.
  */
 async function getTasks(
   request: EnhancedRequest,
-): Promise<NextResponse<DataFileSerialization | ErrorResponse>> {
+): Promise<NextResponse<GetTasksResponse | ErrorResponse>> {
   const fileData = await withFileOperationLogging(
     () => safeReadDataFile(),
     "read-task-data-file",
@@ -57,31 +59,46 @@ async function getTasks(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
-
-  // const tasks = fileData.tasks;
-  //
-  // logBusinessEvent('tasks_fetched', {
-  //   tasksCount: tasks.length
-  // }, request.context);
-  //
-  // const response = {
-  //   tasks,
-  //   meta: {
-  //     tasksCount: tasks.length,
-  //     timestamp: new Date().toISOString(),
-  //   }
-  // };
 
   const serializationResult = DataFileSerializationSchema.safeParse(fileData)
   if (!serializationResult.success) {
-    return createErrorResponse("Failed to serialize data file", "Serialization failed", 500)
+    return createErrorResponse(
+      "Failed to serialize data file",
+      "Serialization failed",
+      500,
+      ApiErrorCode.DATA_FILE_VALIDATION_ERROR,
+    )
   }
 
   const serializedData = serializationResult.data
 
-  return NextResponse.json<DataFileSerialization>(serializedData, {
+  // Log business event
+  logBusinessEvent(
+    "tasks_fetched",
+    {
+      tasksCount: serializedData.tasks.length,
+    },
+    request.context,
+  )
+
+  // Build response with only tasks and metadata
+  const response: GetTasksResponse = {
+    tasks: serializedData.tasks,
+    meta: {
+      count: serializedData.tasks.length,
+      timestamp: new Date().toISOString(),
+      version: serializedData.version || "v0.7.0",
+    },
+  }
+
+  return NextResponse.json<GetTasksResponse>(response, {
     headers: {
       "Cache-Control": "no-cache, no-store, must-revalidate",
       Pragma: "no-cache",
@@ -91,10 +108,12 @@ async function getTasks(
 }
 
 export const GET = withMutexProtection(
-  withApiLogging(getTasks, {
-    endpoint: "/api/tasks",
-    module: "api-tasks",
-  }),
+  withAuthentication(
+    withApiLogging(getTasks, {
+      endpoint: "/api/tasks",
+      module: "api-tasks",
+    }),
+  ),
 )
 
 /**
@@ -137,7 +156,12 @@ async function createTask(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   fileData.tasks.push(newTask)
@@ -150,7 +174,12 @@ async function createTask(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save data", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save data",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   logBusinessEvent(
@@ -175,10 +204,12 @@ async function createTask(
 }
 
 export const POST = withMutexProtection(
-  withApiLogging(createTask, {
-    endpoint: "/api/tasks",
-    module: "api-tasks",
-  }),
+  withAuthentication(
+    withApiLogging(createTask, {
+      endpoint: "/api/tasks",
+      module: "api-tasks",
+    }),
+  ),
 )
 
 /**
@@ -209,7 +240,12 @@ async function updateTasks(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   // Create maps for efficient O(1) lookups
@@ -354,7 +390,12 @@ async function updateTasks(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save updated tasks", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save updated tasks",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   logBusinessEvent(
@@ -383,10 +424,12 @@ async function updateTasks(
 }
 
 export const PATCH = withMutexProtection(
-  withApiLogging(updateTasks, {
-    endpoint: "/api/tasks",
-    module: "api-tasks",
-  }),
+  withAuthentication(
+    withApiLogging(updateTasks, {
+      endpoint: "/api/tasks",
+      module: "api-tasks",
+    }),
+  ),
 )
 
 /**
@@ -416,7 +459,12 @@ async function deleteTasks(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   // Filter out the tasks to be deleted
@@ -433,7 +481,12 @@ async function deleteTasks(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save changes", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save changes",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   logBusinessEvent(
@@ -457,8 +510,10 @@ async function deleteTasks(
 }
 
 export const DELETE = withMutexProtection(
-  withApiLogging(deleteTasks, {
-    endpoint: "/api/tasks",
-    module: "api-tasks",
-  }),
+  withAuthentication(
+    withApiLogging(deleteTasks, {
+      endpoint: "/api/tasks",
+      module: "api-tasks",
+    }),
+  ),
 )

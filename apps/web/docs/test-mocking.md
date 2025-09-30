@@ -1,6 +1,66 @@
 # Test Mocking Guide
 
-This guide covers best practices for mocking in TaskTrove tests, focusing on avoiding over-mocking and understanding what's already provided by test-utils.
+This guide covers best practices for mocking in TaskTrove tests, focusing on avoiding over-mocking and understanding what's already provided by test-utils and setup files.
+
+## Test Setup Architecture
+
+TaskTrove uses a two-tier setup system:
+
+1. **`test-setup.ts`** - Global setup for ALL tests (component, API, lib, etc.)
+   - NextAuth mock
+   - Browser API mocks (matchMedia, AudioContext, etc.)
+
+2. **`api-test-setup.ts`** - API-specific setup (only affects API route tests)
+   - API middleware mocks (auth, versioning, mutex, logging)
+   - Only takes effect for tests that import these modules
+
+This separation ensures component tests aren't polluted with unnecessary API mocks.
+
+## What's Already Mocked
+
+### ✅ API Middleware (api-test-setup.ts)
+
+These are automatically mocked for all tests via `api-test-setup.ts`:
+
+- `@/lib/middleware/auth` - Authentication bypass
+- `@/lib/middleware/api-version` - Version negotiation bypass
+- `@/lib/utils/api-mutex` - Mutex protection bypass
+- `@/lib/middleware/api-logger` - Logging bypass
+
+**You don't need to mock these in your API route tests!**
+
+**Exception**: If you're testing the middleware itself (e.g., `auth.test.ts`), use `vi.unmock()`:
+
+```typescript
+// Unmock to test the real implementation
+vi.unmock("@/lib/middleware/auth")
+
+// Then mock only the dependencies
+vi.mock("@/auth", () => ({ ... }))
+```
+
+**Example: Clean API Route Test (no redundant middleware mocks)**
+
+```typescript
+// app/api/v1/tasks/route.test.ts
+import { describe, it, expect, vi } from "vitest"
+import { POST } from "./route"
+
+// Only mock what's specific to this test
+vi.mock("@/lib/utils/safe-file-operations", () => ({
+  safeReadDataFile: vi.fn(),
+  safeWriteDataFile: vi.fn(),
+}))
+
+// NO NEED to mock auth, api-version, mutex, or api-logger!
+// They're already mocked in api-test-setup.ts
+
+describe("POST /api/v1/tasks", () => {
+  it("creates a task", async () => {
+    // Your test here
+  })
+})
+```
 
 ## What NOT to Mock
 

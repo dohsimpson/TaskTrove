@@ -5,7 +5,10 @@ import {
   UpdateUserRequestSchema,
   UpdateUserResponse,
   ErrorResponse,
+  ApiErrorCode,
   createAvatarFilePath,
+  GetUserResponse,
+  DataFileSerializationSchema,
 } from "@/lib/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import {
@@ -21,15 +24,18 @@ import {
   type EnhancedRequest,
 } from "@/lib/middleware/api-logger"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
+import { withAuthentication } from "@/lib/middleware/auth"
 import { saltAndHashPassword, parseAvatarDataUrl } from "@tasktrove/utils"
 
 /**
  * GET /api/user
  *
- * Fetches the current user data from data.json file.
- * Returns the user object.
+ * Fetches only user data with metadata.
+ * Returns user object with count, timestamp, and version information.
  */
-async function getUser(request: EnhancedRequest): Promise<NextResponse<User | ErrorResponse>> {
+async function getUser(
+  request: EnhancedRequest,
+): Promise<NextResponse<GetUserResponse | ErrorResponse>> {
   const fileData = await withFileOperationLogging(
     () => safeReadDataFile(),
     "read-data-file",
@@ -37,25 +43,57 @@ async function getUser(request: EnhancedRequest): Promise<NextResponse<User | Er
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
-  logBusinessEvent(
-    "user_fetched",
-    {
-      username: fileData.user.username,
-    },
-    request.context,
-  )
+  const dataSerializationResult = DataFileSerializationSchema.safeParse(fileData)
+  if (!dataSerializationResult.success) {
+    return createErrorResponse(
+      "Failed to serialize data file",
+      "Serialization failed",
+      500,
+      ApiErrorCode.DATA_FILE_VALIDATION_ERROR,
+    )
+  }
 
-  const serializationResult = UserSerializationSchema.safeParse(fileData.user)
+  const serializedData = dataSerializationResult.data
+
+  const serializationResult = UserSerializationSchema.safeParse(serializedData.user)
   if (!serializationResult.success) {
-    return createErrorResponse("Failed to serialize user data", "Serialization failed", 500)
+    return createErrorResponse(
+      "Failed to serialize user data",
+      "Serialization failed",
+      500,
+      ApiErrorCode.DATA_FILE_VALIDATION_ERROR,
+    )
   }
 
   const serializedUser = serializationResult.data
 
-  return NextResponse.json<User>(serializedUser, {
+  logBusinessEvent(
+    "user_fetched",
+    {
+      username: serializedUser.username,
+    },
+    request.context,
+  )
+
+  // Build response with only user and metadata
+  const response: GetUserResponse = {
+    user: serializedUser,
+    meta: {
+      count: 1, // One user object
+      timestamp: new Date().toISOString(),
+      version: serializedData.version || "v0.7.0",
+    },
+  }
+
+  return NextResponse.json<GetUserResponse>(response, {
     headers: {
       "Cache-Control": "no-cache, no-store, must-revalidate",
       Pragma: "no-cache",
@@ -65,10 +103,12 @@ async function getUser(request: EnhancedRequest): Promise<NextResponse<User | Er
 }
 
 export const GET = withMutexProtection(
-  withApiLogging(getUser, {
-    endpoint: "/api/user",
-    module: "api-user",
-  }),
+  withAuthentication(
+    withApiLogging(getUser, {
+      endpoint: "/api/user",
+      module: "api-user",
+    }),
+  ),
 )
 
 /**
@@ -111,10 +151,20 @@ async function updateUser(
         // Save base64 data to file
         avatarPath = await saveBase64ToAvatarFile(base64Data, mimeType)
         if (!avatarPath) {
-          return createErrorResponse("Failed to save avatar", "Avatar processing failed", 500)
+          return createErrorResponse(
+            "Failed to save avatar",
+            "Avatar processing failed",
+            500,
+            ApiErrorCode.DATA_FILE_WRITE_ERROR,
+          )
         }
       } catch {
-        return createErrorResponse("Failed to process avatar", "Avatar processing failed", 500)
+        return createErrorResponse(
+          "Failed to process avatar",
+          "Avatar processing failed",
+          500,
+          ApiErrorCode.INTERNAL_SERVER_ERROR,
+        )
       }
     }
   }
@@ -124,7 +174,12 @@ async function updateUser(
     try {
       partialUser.password = saltAndHashPassword(partialUser.password)
     } catch (error) {
-      return createErrorResponse("Failed to hash password", "Password hashing failed", 500)
+      return createErrorResponse(
+        "Failed to hash password",
+        "Password hashing failed",
+        500,
+        ApiErrorCode.INTERNAL_SERVER_ERROR,
+      )
     }
   }
 
@@ -136,7 +191,12 @@ async function updateUser(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File reading failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File reading failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   // Merge partial user data with current user data, preserving required fields
@@ -177,7 +237,12 @@ async function updateUser(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save data", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save data",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   logBusinessEvent(
@@ -199,8 +264,10 @@ async function updateUser(
 }
 
 export const PATCH = withMutexProtection(
-  withApiLogging(updateUser, {
-    endpoint: "/api/user",
-    module: "api-user",
-  }),
+  withAuthentication(
+    withApiLogging(updateUser, {
+      endpoint: "/api/user",
+      module: "api-user",
+    }),
+  ),
 )

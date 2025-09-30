@@ -10,9 +10,11 @@ import {
   createLabelId,
   DataFileSerialization,
   ErrorResponse,
+  ApiErrorCode,
   LabelUpdateUnionSchema,
   LabelUpdateUnion,
   LabelId,
+  GetLabelsResponse,
 } from "@/lib/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
@@ -26,18 +28,18 @@ import {
   type EnhancedRequest,
 } from "@/lib/middleware/api-logger"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
+import { withAuthentication } from "@/lib/middleware/auth"
 import { DEFAULT_LABEL_COLORS } from "@tasktrove/constants"
 
 /**
  * GET /api/labels
  *
- * Fetches all labels data including tasks, projects, and labels.
- * This API route provides the complete data structure that matches
- * the Jotai atoms used for state management.
+ * Fetches only labels data with metadata.
+ * Returns labels array with count, timestamp, and version information.
  */
 async function getLabels(
   request: EnhancedRequest,
-): Promise<NextResponse<DataFileSerialization | ErrorResponse>> {
+): Promise<NextResponse<GetLabelsResponse | ErrorResponse>> {
   const fileData = await withFileOperationLogging(
     () => safeReadDataFile(),
     "read-label-data-file",
@@ -45,17 +47,46 @@ async function getLabels(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   const serializationResult = DataFileSerializationSchema.safeParse(fileData)
   if (!serializationResult.success) {
-    return createErrorResponse("Failed to serialize data file", "Serialization failed", 500)
+    return createErrorResponse(
+      "Failed to serialize data file",
+      "Serialization failed",
+      500,
+      ApiErrorCode.DATA_FILE_VALIDATION_ERROR,
+    )
   }
 
   const serializedData = serializationResult.data
 
-  return NextResponse.json<DataFileSerialization>(serializedData, {
+  // Log business event
+  logBusinessEvent(
+    "labels_fetched",
+    {
+      labelsCount: serializedData.labels.length,
+    },
+    request.context,
+  )
+
+  // Build response with only labels and metadata
+  const response: GetLabelsResponse = {
+    labels: serializedData.labels,
+    meta: {
+      count: serializedData.labels.length,
+      timestamp: new Date().toISOString(),
+      version: serializedData.version || "v0.7.0",
+    },
+  }
+
+  return NextResponse.json<GetLabelsResponse>(response, {
     headers: {
       "Cache-Control": "no-cache, no-store, must-revalidate",
       Pragma: "no-cache",
@@ -65,10 +96,12 @@ async function getLabels(
 }
 
 export const GET = withMutexProtection(
-  withApiLogging(getLabels, {
-    endpoint: "/api/labels",
-    module: "api-labels",
-  }),
+  withAuthentication(
+    withApiLogging(getLabels, {
+      endpoint: "/api/labels",
+      module: "api-labels",
+    }),
+  ),
 )
 
 /**
@@ -93,7 +126,12 @@ async function createLabel(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File operation failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File operation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   // Apply defaults for fields that weren't provided and generate required fields
@@ -114,7 +152,12 @@ async function createLabel(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save data", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save data",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   logBusinessEvent(
@@ -138,10 +181,12 @@ async function createLabel(
 }
 
 export const POST = withMutexProtection(
-  withApiLogging(createLabel, {
-    endpoint: "/api/labels",
-    module: "api-labels",
-  }),
+  withAuthentication(
+    withApiLogging(createLabel, {
+      endpoint: "/api/labels",
+      module: "api-labels",
+    }),
+  ),
 )
 
 /**
@@ -172,7 +217,12 @@ async function updateLabels(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to update labels", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to update labels",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   // Update existing labels with the provided data (partial updates)
@@ -220,7 +270,12 @@ async function updateLabels(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save data", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save data",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   logBusinessEvent(
@@ -244,10 +299,12 @@ async function updateLabels(
 }
 
 export const PATCH = withMutexProtection(
-  withApiLogging(updateLabels, {
-    endpoint: "/api/labels",
-    module: "api-labels",
-  }),
+  withAuthentication(
+    withApiLogging(updateLabels, {
+      endpoint: "/api/labels",
+      module: "api-labels",
+    }),
+  ),
 )
 
 /**
@@ -274,7 +331,12 @@ async function deleteLabel(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   // Filter out the label to be deleted
@@ -292,7 +354,12 @@ async function deleteLabel(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save changes", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save changes",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   logBusinessEvent(
@@ -315,8 +382,10 @@ async function deleteLabel(
 }
 
 export const DELETE = withMutexProtection(
-  withApiLogging(deleteLabel, {
-    endpoint: "/api/labels",
-    module: "api-labels",
-  }),
+  withAuthentication(
+    withApiLogging(deleteLabel, {
+      endpoint: "/api/labels",
+      module: "api-labels",
+    }),
+  ),
 )

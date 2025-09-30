@@ -6,7 +6,8 @@ export default defineConfig(
   mergeConfig(baseConfig, {
     test: {
       environment: "happy-dom",
-      setupFiles: ["./test-setup.ts"],
+      setupFiles: ["./test-setup.ts", "./api-test-setup.ts"],
+      globals: true,
       pool: "threads",
       onConsoleLog(log: string, type: "stdout" | "stderr"): boolean | void {
         // Only filter out happy-dom internal teardown abort errors

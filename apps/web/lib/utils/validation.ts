@@ -7,7 +7,7 @@
 
 import { z } from "zod"
 import { NextResponse } from "next/server"
-import { ErrorResponse } from "@/lib/types"
+import { ErrorResponse, ApiErrorCode } from "@/lib/types"
 
 // Re-export pure validation utilities from @tasktrove/utils package
 export {
@@ -39,6 +39,7 @@ export async function validateRequestBody<T>(
       // Use the pure formatZodErrors function from @tasktrove/utils
       const { formatZodErrors } = await import("@tasktrove/utils/validation")
       const errorResponse: ErrorResponse = {
+        code: ApiErrorCode.VALIDATION_ERROR,
         error: "Validation failed",
         message: formatZodErrors(result.error),
       }
@@ -55,6 +56,7 @@ export async function validateRequestBody<T>(
     }
   } catch (parseError) {
     const errorResponse: ErrorResponse = {
+      code: ApiErrorCode.INVALID_REQUEST_BODY,
       error: "Invalid JSON in request body",
       message: parseError instanceof Error ? parseError.message : "Unknown parsing error",
     }
@@ -77,6 +79,7 @@ export function validateData<T>(data: unknown, schema: z.ZodSchema<T>): Validati
     // Use the pure formatZodErrors function from @tasktrove/utils
     const { formatZodErrors } = require("@tasktrove/utils/validation")
     const errorResponse: ErrorResponse = {
+      code: ApiErrorCode.VALIDATION_ERROR,
       error: "Validation failed",
       message: formatZodErrors(result.error),
     }
@@ -95,14 +98,23 @@ export function validateData<T>(data: unknown, schema: z.ZodSchema<T>): Validati
 
 /**
  * Creates a standardized error response
+ *
+ * @param error - Human-readable error title
+ * @param message - Detailed error message
+ * @param status - HTTP status code (default: 500)
+ * @param code - Machine-readable error code (default: INTERNAL_SERVER_ERROR)
+ * @param additionalData - Optional additional error context
+ * @returns NextResponse with typed ErrorResponse
  */
 export function createErrorResponse(
   error: string,
   message: string,
   status: number = 500,
+  code: ApiErrorCode = ApiErrorCode.INTERNAL_SERVER_ERROR,
   additionalData?: Record<string, unknown>,
 ): NextResponse<ErrorResponse> {
   const errorResponse: ErrorResponse = {
+    code,
     error,
     message,
     ...additionalData,

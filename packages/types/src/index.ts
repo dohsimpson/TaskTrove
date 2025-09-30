@@ -12,6 +12,10 @@ import {
 } from "@tasktrove/constants";
 import { parse, isValid, parseISO, format } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
+import { ApiErrorCode, ApiErrorCodeSchema } from "./api-errors";
+
+// Re-export API error codes for convenience
+export { ApiErrorCode, ApiErrorCodeSchema } from "./api-errors";
 
 // =============================================================================
 // BRANDED ID TYPES
@@ -2182,10 +2186,79 @@ export const InitialSetupResponseSchema = ApiResponseSchema.extend({
  * Error response schema
  */
 export const ErrorResponseSchema = z.object({
+  code: ApiErrorCodeSchema,
   error: z.string(),
   message: z.string(),
   stack: z.string().optional(),
   filePath: z.string().optional(),
+});
+/**
+ * API Response Metadata - included in all GET responses
+ */
+export const ApiResponseMetaSchema = z.object({
+  /** Number of items in the response */
+  count: z.number(),
+  /** ISO timestamp of when the response was generated */
+  timestamp: z.string(),
+  /** Data version (semantic versioning) */
+  version: z.string(),
+});
+
+/**
+ * GET /api/tasks response schema - returns only tasks
+ */
+export const GetTasksResponseSchema = z.object({
+  tasks: z.array(TaskSerializationSchema),
+  meta: ApiResponseMetaSchema,
+});
+
+/**
+ * GET /api/projects response schema - returns only projects
+ */
+export const GetProjectsResponseSchema = z.object({
+  projects: z.array(ProjectSerializationSchema),
+  meta: ApiResponseMetaSchema,
+});
+
+/**
+ * GET /api/labels response schema - returns only labels
+ */
+export const GetLabelsResponseSchema = z.object({
+  labels: z.array(LabelSerializationSchema),
+  meta: ApiResponseMetaSchema,
+});
+
+/**
+ * GET /api/groups response schema - returns both project and label groups
+ */
+export const GetGroupsResponseSchema = z.object({
+  projectGroups: ProjectGroupSchema,
+  labelGroups: LabelGroupSchema,
+  meta: ApiResponseMetaSchema,
+});
+
+/**
+ * GET /api/settings response schema - returns user settings
+ */
+export const GetSettingsResponseSchema = z.object({
+  settings: UserSettingsSchema,
+  meta: ApiResponseMetaSchema,
+});
+
+/**
+ * GET /api/user response schema - returns user information
+ */
+export const GetUserResponseSchema = z.object({
+  user: UserSerializationSchema,
+  meta: ApiResponseMetaSchema,
+});
+
+/**
+ * GET /api/data response schema - returns complete data structure
+ * This endpoint is for clients that need the full data structure
+ */
+export const GetDataResponseSchema = DataFileSerializationSchema.extend({
+  meta: ApiResponseMetaSchema,
 });
 
 // =============================================================================
@@ -2342,6 +2415,15 @@ export type UpdateGroupResponse = z.infer<typeof UpdateGroupResponseSchema>;
 export type DeleteGroupResponse = z.infer<typeof DeleteGroupResponseSchema>;
 export type DeleteTaskResponse = z.infer<typeof DeleteTaskResponseSchema>;
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
+// GET endpoint response types
+export type ApiResponseMeta = z.infer<typeof ApiResponseMetaSchema>;
+export type GetTasksResponse = z.infer<typeof GetTasksResponseSchema>;
+export type GetProjectsResponse = z.infer<typeof GetProjectsResponseSchema>;
+export type GetLabelsResponse = z.infer<typeof GetLabelsResponseSchema>;
+export type GetGroupsResponse = z.infer<typeof GetGroupsResponseSchema>;
+export type GetSettingsResponse = z.infer<typeof GetSettingsResponseSchema>;
+export type GetUserResponse = z.infer<typeof GetUserResponseSchema>;
+export type GetDataResponse = z.infer<typeof GetDataResponseSchema>;
 
 // =============================================================================
 // VOICE COMMAND TYPES

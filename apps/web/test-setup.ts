@@ -2,6 +2,21 @@ import "@testing-library/jest-dom"
 import { cleanup } from "@testing-library/react"
 import { afterEach, vi } from "vitest"
 
+// Mock next-auth globally to prevent module resolution issues with v5 beta
+// Returns an authenticated session by default to allow tests to run
+vi.mock("@/auth", () => ({
+  auth: vi.fn().mockResolvedValue({
+    user: { id: "test-user", name: "Test User" },
+    expires: new Date(Date.now() + 86400000).toISOString(),
+  }),
+  signIn: vi.fn(),
+  signOut: vi.fn(),
+  handlers: {
+    GET: vi.fn(),
+    POST: vi.fn(),
+  },
+}))
+
 // Only set up browser mocks if window is available (not in Node environment)
 if (typeof window !== "undefined") {
   // Mock window.matchMedia

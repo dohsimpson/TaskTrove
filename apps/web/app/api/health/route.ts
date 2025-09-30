@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server"
 import { checkStartupPermissions, formatPermissionErrors } from "@/lib/startup-checks"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
+import { withApiLogging, type EnhancedRequest } from "@/lib/middleware/api-logger"
+import { CURRENT_API_VERSION, SUPPORTED_API_VERSIONS } from "@/lib/middleware/api-version"
 
-async function healthCheck() {
+async function healthCheck(_request: EnhancedRequest) {
   try {
     const permissionResult = await checkStartupPermissions()
 
@@ -11,6 +13,8 @@ async function healthCheck() {
       if (permissionResult.dataFileCheck.needsMigration) {
         return NextResponse.json({
           status: "needs_migration",
+          apiVersion: CURRENT_API_VERSION,
+          supportedVersions: SUPPORTED_API_VERSIONS,
           message: "Data file needs to be migrated",
           dataFileCheck: permissionResult.dataFileCheck,
           migrationInfo: permissionResult.dataFileCheck.migrationInfo,
@@ -20,6 +24,8 @@ async function healthCheck() {
 
       return NextResponse.json({
         status: "healthy",
+        apiVersion: CURRENT_API_VERSION,
+        supportedVersions: SUPPORTED_API_VERSIONS,
         message: "All permission checks passed",
         timestamp: new Date().toISOString(),
       })
@@ -28,6 +34,8 @@ async function healthCheck() {
       if (permissionResult.dataFileCheck.needsInitialization) {
         return NextResponse.json({
           status: "needs_initialization",
+          apiVersion: CURRENT_API_VERSION,
+          supportedVersions: SUPPORTED_API_VERSIONS,
           message: "Data file needs to be initialized",
           dataFileCheck: permissionResult.dataFileCheck,
           timestamp: new Date().toISOString(),
@@ -41,6 +49,8 @@ async function healthCheck() {
       return NextResponse.json(
         {
           status: "error",
+          apiVersion: CURRENT_API_VERSION,
+          supportedVersions: SUPPORTED_API_VERSIONS,
           message: "Permission check failed",
           errors: permissionResult.errors,
           details: errorMessage,
@@ -56,6 +66,8 @@ async function healthCheck() {
     return NextResponse.json(
       {
         status: "error",
+        apiVersion: CURRENT_API_VERSION,
+        supportedVersions: SUPPORTED_API_VERSIONS,
         message: errorMessage,
         timestamp: new Date().toISOString(),
       },
@@ -64,4 +76,9 @@ async function healthCheck() {
   }
 }
 
-export const GET = withMutexProtection(healthCheck)
+export const GET = withMutexProtection(
+  withApiLogging(healthCheck, {
+    endpoint: "/api/health",
+    module: "api-health",
+  }),
+)

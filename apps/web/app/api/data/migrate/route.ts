@@ -3,10 +3,13 @@ import { promises as fs } from "fs"
 import { DEFAULT_DATA_FILE_PATH } from "@tasktrove/constants"
 import { migrateDataFile } from "@/lib/utils/data-migration"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
+import { withAuthentication } from "@/lib/middleware/auth"
+import { withApiLogging, type EnhancedRequest } from "@/lib/middleware/api-logger"
 import { safeWriteDataFile } from "@/lib/utils/safe-file-operations"
-import type { Json } from "@/lib/types"
+import type { Json, ErrorResponse } from "@/lib/types"
+import { ApiErrorCode } from "@/lib/types"
 
-async function migrateData() {
+async function migrateData(_request: EnhancedRequest) {
   try {
     // Read current data file
     const dataContent = await fs.readFile(DEFAULT_DATA_FILE_PATH, "utf8")
@@ -37,14 +40,20 @@ async function migrateData() {
     })
   } catch (error) {
     console.error("Migration failed:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        message: `Migration failed: ${error instanceof Error ? error.message : String(error)}`,
-      },
-      { status: 500 },
-    )
+    const errorResponse: ErrorResponse = {
+      code: ApiErrorCode.MIGRATION_FAILED,
+      error: "Migration failed",
+      message: error instanceof Error ? error.message : String(error),
+    }
+    return NextResponse.json<ErrorResponse>(errorResponse, { status: 500 })
   }
 }
 
-export const POST = withMutexProtection(migrateData)
+export const POST = withMutexProtection(
+  withAuthentication(
+    withApiLogging(migrateData, {
+      endpoint: "/api/data/migrate",
+      module: "api-data-migrate",
+    }),
+  ),
+)

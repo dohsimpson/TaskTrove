@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
-import { withFileOperationLogging } from "@/lib/middleware/api-logger"
+import {
+  withFileOperationLogging,
+  withApiLogging,
+  type EnhancedRequest,
+} from "@/lib/middleware/api-logger"
+import { withMutexProtection } from "@/lib/utils/api-mutex"
+import { withAuthentication } from "@/lib/middleware/auth"
 import { createErrorResponse } from "@/lib/utils/validation"
 import { log } from "@/lib/utils/logger"
-import { DataFile, DataFileSchema, JsonSchema } from "@/lib/types"
+import { DataFile, DataFileSchema, JsonSchema, ApiErrorCode } from "@/lib/types"
 import type { ErrorResponse, ProjectId, LabelId } from "@/lib/types"
 import { migrateDataFile, needsMigration, getMigrationInfo } from "@/lib/utils/data-migration"
 
@@ -21,7 +27,7 @@ interface ImportResponse {
 }
 
 async function importData(
-  request: NextRequest,
+  request: EnhancedRequest,
 ): Promise<NextResponse<ImportResponse | ErrorResponse>> {
   try {
     // Parse request body
@@ -84,6 +90,7 @@ async function importData(
           ? `Failed to migrate import data: ${migrationError instanceof Error ? migrationError.message : String(migrationError)}`
           : `Invalid data format: ${migrationError instanceof Error ? migrationError.message : String(migrationError)}`,
         400,
+        ApiErrorCode.INVALID_IMPORT_FORMAT,
       )
     }
 
@@ -98,6 +105,7 @@ async function importData(
         "Failed to read current data",
         "Unable to access current data file",
         500,
+        ApiErrorCode.DATA_FILE_READ_ERROR,
       )
     }
 
@@ -246,6 +254,7 @@ async function importData(
         "Failed to save imported data",
         "Unable to write updated data file",
         500,
+        ApiErrorCode.DATA_FILE_WRITE_ERROR,
       )
     }
 
@@ -278,6 +287,7 @@ async function importData(
         "Invalid import data format",
         "The uploaded file does not contain valid JSON data",
         400,
+        ApiErrorCode.INVALID_IMPORT_FORMAT,
       )
     }
 
@@ -285,8 +295,16 @@ async function importData(
       "Import failed",
       error instanceof Error ? error.message : "An unknown error occurred",
       500,
+      ApiErrorCode.IMPORT_FAILED,
     )
   }
 }
 
-export const POST = importData
+export const POST = withMutexProtection(
+  withAuthentication(
+    withApiLogging(importData, {
+      endpoint: "/api/import",
+      module: "api-import",
+    }),
+  ),
+)

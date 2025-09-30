@@ -5,7 +5,9 @@ import {
   UpdateSettingsRequestSchema,
   UpdateSettingsResponse,
   ErrorResponse,
+  ApiErrorCode,
   UserSettings,
+  GetSettingsResponse,
 } from "@/lib/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
@@ -17,16 +19,17 @@ import {
   type EnhancedRequest,
 } from "@/lib/middleware/api-logger"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
+import { withAuthentication } from "@/lib/middleware/auth"
 
 /**
  * GET /api/settings
  *
- * Fetches the current user settings from data.json file.
- * Returns the complete data file structure including settings.
+ * Fetches only user settings data with metadata.
+ * Returns settings object with count, timestamp, and version information.
  */
 async function getSettings(
   request: EnhancedRequest,
-): Promise<NextResponse<DataFileSerialization | ErrorResponse>> {
+): Promise<NextResponse<GetSettingsResponse | ErrorResponse>> {
   const fileData = await withFileOperationLogging(
     () => safeReadDataFile(),
     "read-data-file",
@@ -34,25 +37,45 @@ async function getSettings(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
-
-  logBusinessEvent(
-    "settings_fetched",
-    {
-      settingsVersion: fileData.version,
-    },
-    request.context,
-  )
 
   const serializationResult = DataFileSerializationSchema.safeParse(fileData)
   if (!serializationResult.success) {
-    return createErrorResponse("Failed to serialize data file", "Serialization failed", 500)
+    return createErrorResponse(
+      "Failed to serialize data file",
+      "Serialization failed",
+      500,
+      ApiErrorCode.DATA_FILE_VALIDATION_ERROR,
+    )
   }
 
   const serializedData = serializationResult.data
 
-  return NextResponse.json<DataFileSerialization>(serializedData, {
+  logBusinessEvent(
+    "settings_fetched",
+    {
+      settingsVersion: serializedData.version,
+    },
+    request.context,
+  )
+
+  // Build response with only settings and metadata
+  const response: GetSettingsResponse = {
+    settings: serializedData.settings,
+    meta: {
+      count: 1, // One settings object
+      timestamp: new Date().toISOString(),
+      version: serializedData.version || "v0.7.0",
+    },
+  }
+
+  return NextResponse.json<GetSettingsResponse>(response, {
     headers: {
       "Cache-Control": "no-cache, no-store, must-revalidate",
       Pragma: "no-cache",
@@ -62,10 +85,12 @@ async function getSettings(
 }
 
 export const GET = withMutexProtection(
-  withApiLogging(getSettings, {
-    endpoint: "/api/settings",
-    module: "api-settings",
-  }),
+  withAuthentication(
+    withApiLogging(getSettings, {
+      endpoint: "/api/settings",
+      module: "api-settings",
+    }),
+  ),
 )
 
 /**
@@ -93,7 +118,12 @@ async function updateSettings(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File reading failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File reading failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   // Merge partial settings with current settings
@@ -145,7 +175,12 @@ async function updateSettings(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save data", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save data",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   logBusinessEvent(
@@ -167,8 +202,10 @@ async function updateSettings(
 }
 
 export const PATCH = withMutexProtection(
-  withApiLogging(updateSettings, {
-    endpoint: "/api/settings",
-    module: "api-settings",
-  }),
+  withAuthentication(
+    withApiLogging(updateSettings, {
+      endpoint: "/api/settings",
+      module: "api-settings",
+    }),
+  ),
 )

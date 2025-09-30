@@ -11,6 +11,8 @@ import {
   DataFileSerializationSchema,
   DataFileSerialization,
   ErrorResponse,
+  ApiErrorCode,
+  GetProjectsResponse,
 } from "@/lib/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { v4 as uuidv4 } from "uuid"
@@ -31,18 +33,18 @@ import {
   type EnhancedRequest,
 } from "@/lib/middleware/api-logger"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
+import { withAuthentication } from "@/lib/middleware/auth"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 
 /**
  * GET /api/projects
  *
- * Fetches all projects data including tasks, projects, and labels.
- * This API route provides the complete data structure that matches
- * the Jotai atoms used for state management.
+ * Fetches only projects data with metadata.
+ * Returns projects array with count, timestamp, and version information.
  */
 async function getProjects(
   request: EnhancedRequest,
-): Promise<NextResponse<DataFileSerialization | ErrorResponse>> {
+): Promise<NextResponse<GetProjectsResponse | ErrorResponse>> {
   const fileData = await withFileOperationLogging(
     () => safeReadDataFile(),
     "read-projects-data-file",
@@ -50,17 +52,46 @@ async function getProjects(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   const serializationResult = DataFileSerializationSchema.safeParse(fileData)
   if (!serializationResult.success) {
-    return createErrorResponse("Failed to serialize data file", "Serialization failed", 500)
+    return createErrorResponse(
+      "Failed to serialize data file",
+      "Serialization failed",
+      500,
+      ApiErrorCode.DATA_FILE_VALIDATION_ERROR,
+    )
   }
 
   const serializedData = serializationResult.data
 
-  return NextResponse.json<DataFileSerialization>(serializedData, {
+  // Log business event
+  logBusinessEvent(
+    "projects_fetched",
+    {
+      projectsCount: serializedData.projects.length,
+    },
+    request.context,
+  )
+
+  // Build response with only projects and metadata
+  const response: GetProjectsResponse = {
+    projects: serializedData.projects,
+    meta: {
+      count: serializedData.projects.length,
+      timestamp: new Date().toISOString(),
+      version: serializedData.version || "v0.7.0",
+    },
+  }
+
+  return NextResponse.json<GetProjectsResponse>(response, {
     headers: {
       "Cache-Control": "no-cache, no-store, must-revalidate",
       Pragma: "no-cache",
@@ -70,10 +101,12 @@ async function getProjects(
 }
 
 export const GET = withMutexProtection(
-  withApiLogging(getProjects, {
-    endpoint: "/api/projects",
-    module: "api-projects",
-  }),
+  withAuthentication(
+    withApiLogging(getProjects, {
+      endpoint: "/api/projects",
+      module: "api-projects",
+    }),
+  ),
 )
 
 /**
@@ -97,7 +130,12 @@ async function createProject(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   // Apply defaults for fields that weren't provided and generate required fields
@@ -132,7 +170,12 @@ async function createProject(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save data", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save data",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   logBusinessEvent(
@@ -156,10 +199,12 @@ async function createProject(
 }
 
 export const POST = withMutexProtection(
-  withApiLogging(createProject, {
-    endpoint: "/api/projects",
-    module: "api-projects",
-  }),
+  withAuthentication(
+    withApiLogging(createProject, {
+      endpoint: "/api/projects",
+      module: "api-projects",
+    }),
+  ),
 )
 
 /**
@@ -230,7 +275,12 @@ async function updateProjects(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save data", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save data",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   logBusinessEvent(
@@ -259,10 +309,12 @@ async function updateProjects(
 }
 
 export const PATCH = withMutexProtection(
-  withApiLogging(updateProjects, {
-    endpoint: "/api/projects",
-    module: "api-projects",
-  }),
+  withAuthentication(
+    withApiLogging(updateProjects, {
+      endpoint: "/api/projects",
+      module: "api-projects",
+    }),
+  ),
 )
 
 /**
@@ -289,7 +341,12 @@ async function deleteProject(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   // Identify which requested IDs actually exist before filtering
@@ -313,7 +370,12 @@ async function deleteProject(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save changes", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save changes",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   logBusinessEvent(
@@ -336,8 +398,10 @@ async function deleteProject(
 }
 
 export const DELETE = withMutexProtection(
-  withApiLogging(deleteProject, {
-    endpoint: "/api/projects",
-    module: "api-projects",
-  }),
+  withAuthentication(
+    withApiLogging(deleteProject, {
+      endpoint: "/api/projects",
+      module: "api-projects",
+    }),
+  ),
 )

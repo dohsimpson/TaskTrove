@@ -4,7 +4,7 @@
  * This file tests the groups API endpoint functionality including tree-based CRUD operations.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest"
+import { vi, describe, it, expect, beforeEach } from "vitest"
 import { NextRequest } from "next/server"
 import { GET, POST, PATCH, DELETE } from "./route"
 import { createGroupId, createProjectId, type DataFile } from "@/lib/types"
@@ -108,6 +108,7 @@ describe("GET /api/groups", () => {
     const data = await response.json()
 
     expect(data).toEqual({
+      code: "DATA_FILE_READ_ERROR",
       error: "Failed to read data file",
       message: "File reading or validation failed",
     })

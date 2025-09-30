@@ -13,11 +13,13 @@ import {
   createProjectId,
   DataFileSerialization,
   ErrorResponse,
+  ApiErrorCode,
   GroupUpdateUnionSchema,
   GroupUpdateUnion,
   BulkGroupUpdateSchema,
   BulkGroupUpdate,
   GroupId,
+  GetGroupsResponse,
 } from "@/lib/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
@@ -31,19 +33,19 @@ import {
   type EnhancedRequest,
 } from "@/lib/middleware/api-logger"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
+import { withAuthentication } from "@/lib/middleware/auth"
 import { DEFAULT_LABEL_COLORS } from "@tasktrove/constants"
 import { isGroup } from "@/lib/types"
 
 /**
  * GET /api/groups
  *
- * Fetches all groups data including tasks, projects, labels, and all group trees.
- * This API route provides the complete data structure that matches
- * the Jotai atoms used for state management.
+ * Fetches only groups data with metadata.
+ * Returns both project and label group hierarchies with count, timestamp, and version information.
  */
 async function getGroups(
   request: EnhancedRequest,
-): Promise<NextResponse<DataFileSerialization | ErrorResponse>> {
+): Promise<NextResponse<GetGroupsResponse | ErrorResponse>> {
   const fileData = await withFileOperationLogging(
     () => safeReadDataFile(),
     "read-groups-data-file",
@@ -51,17 +53,48 @@ async function getGroups(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   const serializationResult = DataFileSerializationSchema.safeParse(fileData)
   if (!serializationResult.success) {
-    return createErrorResponse("Failed to serialize data file", "Serialization failed", 500)
+    return createErrorResponse(
+      "Failed to serialize data file",
+      "Serialization failed",
+      500,
+      ApiErrorCode.DATA_FILE_VALIDATION_ERROR,
+    )
   }
 
   const serializedData = serializationResult.data
 
-  return NextResponse.json<DataFileSerialization>(serializedData, {
+  // Log business event
+  logBusinessEvent(
+    "groups_fetched",
+    {
+      projectGroupsCount: serializedData.projectGroups ? 1 : 0,
+      labelGroupsCount: serializedData.labelGroups ? 1 : 0,
+    },
+    request.context,
+  )
+
+  // Build response with only groups and metadata
+  const response: GetGroupsResponse = {
+    projectGroups: serializedData.projectGroups,
+    labelGroups: serializedData.labelGroups,
+    meta: {
+      count: 2, // One root group for projects, one for labels
+      timestamp: new Date().toISOString(),
+      version: serializedData.version || "v0.7.0",
+    },
+  }
+
+  return NextResponse.json<GetGroupsResponse>(response, {
     headers: {
       "Cache-Control": "no-cache, no-store, must-revalidate",
       Pragma: "no-cache",
@@ -71,10 +104,12 @@ async function getGroups(
 }
 
 export const GET = withMutexProtection(
-  withApiLogging(getGroups, {
-    endpoint: "/api/groups",
-    module: "api-groups",
-  }),
+  withAuthentication(
+    withApiLogging(getGroups, {
+      endpoint: "/api/groups",
+      module: "api-groups",
+    }),
+  ),
 )
 
 /**
@@ -131,7 +166,12 @@ async function createGroup(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File operation failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File operation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   const { type, name, description, color, parentId } = validation.data
@@ -178,7 +218,12 @@ async function createGroup(
     )
 
     if (!writeSuccess) {
-      return createErrorResponse("Failed to save data", "File writing failed", 500)
+      return createErrorResponse(
+        "Failed to save data",
+        "File writing failed",
+        500,
+        ApiErrorCode.DATA_FILE_WRITE_ERROR,
+      )
     }
 
     logBusinessEvent(
@@ -264,7 +309,12 @@ async function createGroup(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save data", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save data",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   logBusinessEvent(
@@ -292,10 +342,12 @@ async function createGroup(
 }
 
 export const POST = withMutexProtection(
-  withApiLogging(createGroup, {
-    endpoint: "/api/groups",
-    module: "api-groups",
-  }),
+  withAuthentication(
+    withApiLogging(createGroup, {
+      endpoint: "/api/groups",
+      module: "api-groups",
+    }),
+  ),
 )
 
 /**
@@ -343,7 +395,12 @@ async function handleBulkGroupUpdate(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to update groups", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to update groups",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   // Replace ROOT group's items based on type
@@ -361,7 +418,12 @@ async function handleBulkGroupUpdate(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save data", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save data",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   logBusinessEvent(
@@ -404,7 +466,12 @@ async function handleIndividualGroupUpdates(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to update groups", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to update groups",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   const updatedGroups: Group[] = []
@@ -467,7 +534,12 @@ async function handleIndividualGroupUpdates(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save data", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save data",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   logBusinessEvent(
@@ -499,10 +571,12 @@ async function handleIndividualGroupUpdates(
 }
 
 export const PATCH = withMutexProtection(
-  withApiLogging(updateGroups, {
-    endpoint: "/api/groups",
-    module: "api-groups",
-  }),
+  withAuthentication(
+    withApiLogging(updateGroups, {
+      endpoint: "/api/groups",
+      module: "api-groups",
+    }),
+  ),
 )
 
 /**
@@ -568,7 +642,12 @@ async function deleteGroup(
   )
 
   if (!fileData) {
-    return createErrorResponse("Failed to read data file", "File reading or validation failed", 500)
+    return createErrorResponse(
+      "Failed to read data file",
+      "File reading or validation failed",
+      500,
+      ApiErrorCode.DATA_FILE_READ_ERROR,
+    )
   }
 
   // Find the group to be deleted to extract contained projects
@@ -603,7 +682,12 @@ async function deleteGroup(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save changes", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save changes",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   const deletedCount = deleted ? 1 : 0
@@ -631,8 +715,10 @@ async function deleteGroup(
 }
 
 export const DELETE = withMutexProtection(
-  withApiLogging(deleteGroup, {
-    endpoint: "/api/groups",
-    module: "api-groups",
-  }),
+  withAuthentication(
+    withApiLogging(deleteGroup, {
+      endpoint: "/api/groups",
+      module: "api-groups",
+    }),
+  ),
 )

@@ -84,7 +84,7 @@ function middleware(req: NextRequest) {
   const lng = handleI18n(req)
   const authReq = req as NextAuthRequest
 
-  // const isAPIRoute = req.nextUrl.pathname.startsWith("/api/")
+  const isAPIRoute = req.nextUrl.pathname.startsWith("/api/")
   const isAuthRoute = req.nextUrl.pathname.startsWith("/api/auth")
   const isSignInRoute = req.nextUrl.pathname.startsWith("/signin")
   const isInitialSetupAPIRoute = req.nextUrl.pathname.startsWith("/api/initial-setup")
@@ -98,16 +98,13 @@ function middleware(req: NextRequest) {
     if (authReq.auth) {
       return setI18nResponse(NextResponse.next(), lng, req)
     } else {
-      return setI18nResponse(NextResponse.redirect(new URL("/signin", req.url)), lng, req)
-      // if (isAPIAuthEnabled && isAPIRoute) {
-      //   if (checkBearerToken(req)) {
-      //     return NextResponse.next()
-      //   } else {
-      //     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-      //   }
-      // } else {
-      //   return setI18nResponse(NextResponse.redirect(new URL("/signin", req.url)), lng, req)
-      // }
+      // For API routes, let route handlers handle authentication with proper JSON responses
+      // For UI routes, redirect to sign-in page
+      if (isAPIRoute) {
+        return setI18nResponse(NextResponse.next(), lng, req)
+      } else {
+        return setI18nResponse(NextResponse.redirect(new URL("/signin", req.url)), lng, req)
+      }
     }
   }
 

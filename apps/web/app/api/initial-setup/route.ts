@@ -4,6 +4,7 @@ import {
   InitialSetupResponse,
   ErrorResponse,
   InitialSetupRequestSchema,
+  ApiErrorCode,
 } from "@tasktrove/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
@@ -83,7 +84,12 @@ async function initialSetup(
   try {
     hashedPassword = saltAndHashPassword(password)
   } catch (error) {
-    return createErrorResponse("Failed to hash password", "Password hashing failed", 500)
+    return createErrorResponse(
+      "Failed to hash password",
+      "Password hashing failed",
+      500,
+      ApiErrorCode.INTERNAL_SERVER_ERROR,
+    )
   }
 
   // Update user with the new password (keeping existing username and avatar)
@@ -107,7 +113,12 @@ async function initialSetup(
   )
 
   if (!writeSuccess) {
-    return createErrorResponse("Failed to save data", "File writing failed", 500)
+    return createErrorResponse(
+      "Failed to save data",
+      "File writing failed",
+      500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
 
   logBusinessEvent(

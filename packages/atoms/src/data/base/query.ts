@@ -26,6 +26,7 @@ import {
   DEFAULT_AUTO_BACKUP_ENABLED,
   DEFAULT_BACKUP_TIME,
   DEFAULT_MAX_BACKUPS,
+  DATA_QUERY_KEY,
 } from "@tasktrove/constants";
 import {
   DEFAULT_NOTIFICATION_SETTINGS,
@@ -49,7 +50,7 @@ import { log } from "../../utils/atom-helpers";
  * @returns DataFile containing tasks, projects, labels, groups, settings, and user
  */
 export const dataQueryAtom = atomWithQuery(() => ({
-  queryKey: ["tasks"],
+  queryKey: DATA_QUERY_KEY,
   queryFn: async (): Promise<DataFile> => {
     // Check if we're in a test environment or if API is unavailable
     if (typeof window === "undefined" || process.env.NODE_ENV === "test") {

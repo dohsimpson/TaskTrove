@@ -25,7 +25,11 @@ import {
   createProjectId,
   createSectionId,
 } from "@tasktrove/types";
-import { DEFAULT_PROJECT_COLORS, DEFAULT_UUID } from "@tasktrove/constants";
+import {
+  DEFAULT_PROJECT_COLORS,
+  DEFAULT_UUID,
+  DATA_QUERY_KEY,
+} from "@tasktrove/constants";
 import type { DataFile } from "@tasktrove/types";
 import { createSafeProjectNameSlug } from "@tasktrove/utils/routing";
 import { createEntityMutation } from "./entity-factory";
@@ -51,6 +55,7 @@ export const createProjectMutationAtom = createEntityMutation<
     request: ProjectCreateSerializationSchema,
     response: CreateProjectResponseSchema,
   },
+  queryKey: DATA_QUERY_KEY,
   // Custom optimistic data factory for project-specific defaults (section, slug, color)
   optimisticDataFactory: (
     projectData: CreateProjectRequest,
@@ -94,6 +99,7 @@ export const updateProjectsMutationAtom = createEntityMutation<
     request: ProjectUpdateArraySerializationSchema,
     response: UpdateProjectResponseSchema,
   },
+  queryKey: DATA_QUERY_KEY,
   // Use default test response and optimistic update
   // (default handles both single and array updates correctly)
 });
@@ -116,6 +122,7 @@ export const deleteProjectMutationAtom = createEntityMutation<
     request: ProjectDeleteSerializationSchema,
     response: DeleteProjectResponseSchema,
   },
+  queryKey: DATA_QUERY_KEY,
   // Auto-generates test response and optimistic update!
 });
 deleteProjectMutationAtom.debugLabel = "deleteProjectMutationAtom";

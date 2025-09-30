@@ -23,7 +23,7 @@ import {
   LabelDeleteSerializationSchema,
   createLabelId,
 } from "@tasktrove/types";
-import { DEFAULT_LABEL_COLORS } from "@tasktrove/constants";
+import { DEFAULT_LABEL_COLORS, DATA_QUERY_KEY } from "@tasktrove/constants";
 import type { DataFile } from "@tasktrove/types";
 import { createSafeLabelNameSlug } from "@tasktrove/utils/routing";
 import { createEntityMutation } from "./entity-factory";
@@ -49,6 +49,7 @@ export const createLabelMutationAtom = createEntityMutation<
     request: LabelCreateSerializationSchema,
     response: CreateLabelResponseSchema,
   },
+  queryKey: DATA_QUERY_KEY,
   // Custom optimistic data factory for label-specific defaults (slug, color)
   optimisticDataFactory: (
     labelData: CreateLabelRequest,
@@ -84,6 +85,7 @@ export const updateLabelsMutationAtom = createEntityMutation<
     request: LabelUpdateArraySerializationSchema,
     response: UpdateLabelResponseSchema,
   },
+  queryKey: DATA_QUERY_KEY,
   // Custom optimistic update: replace entire array (not merge)
   optimisticUpdateFn: (newLabels: Label[], oldData: DataFile) => {
     return {
@@ -110,6 +112,7 @@ export const deleteLabelMutationAtom = createEntityMutation<
     request: LabelDeleteSerializationSchema,
     response: DeleteLabelResponseSchema,
   },
+  queryKey: DATA_QUERY_KEY,
   // Auto-generates test response and optimistic update!
 });
 deleteLabelMutationAtom.debugLabel = "deleteLabelMutationAtom";

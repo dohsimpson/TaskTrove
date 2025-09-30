@@ -11,6 +11,7 @@
 import { z } from "zod";
 import { atomWithMutation } from "jotai-tanstack-query";
 import type { DataFile } from "@tasktrove/types";
+import { DATA_QUERY_KEY } from "@tasktrove/constants";
 import { queryClientAtom } from "../data/base/query";
 import { log, toast } from "../utils/atom-helpers";
 
@@ -191,7 +192,7 @@ export function createMutation<
     optimisticDataFactory,
     logModule = "tasks",
     apiEndpoint = "/api/tasks",
-    queryKey = ["tasks"],
+    queryKey = DATA_QUERY_KEY,
   } = config;
 
   return atomWithMutation<
@@ -293,7 +294,7 @@ export function createMutation<
 
       // Cache invalidation - standardized
       const queryClient = get(queryClientAtom);
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: DATA_QUERY_KEY });
     },
     onError: (
       error: Error,

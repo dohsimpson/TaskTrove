@@ -375,6 +375,13 @@ export const DEFAULT_ASSETS_DIR = "assets";
 export const DEFAULT_AVATAR_DIR = `${DEFAULT_ASSETS_DIR}/avatar`;
 
 // =============================================================================
+// API/QUERY DEFAULTS
+// =============================================================================
+
+/** Main query key for all application data (tasks, projects, labels, etc.) */
+export const DATA_QUERY_KEY = ["tasks"];
+
+// =============================================================================
 // BACKUP DEFAULTS
 // =============================================================================
 

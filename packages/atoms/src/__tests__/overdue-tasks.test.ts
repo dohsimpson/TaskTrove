@@ -23,6 +23,7 @@ import {
   createSectionId,
   INBOX_PROJECT_ID,
 } from "@tasktrove/types";
+import { DATA_QUERY_KEY } from "@tasktrove/constants";
 import { QueryClient } from "@tanstack/react-query";
 
 // Mock fetch globally
@@ -96,7 +97,7 @@ describe("overdueTasksAtom", () => {
   });
 
   const setupTasksInQueryClient = (tasks: Task[]) => {
-    queryClient.setQueryData(["tasks"], {
+    queryClient.setQueryData(DATA_QUERY_KEY, {
       tasks,
       projects: [],
       labels: [],

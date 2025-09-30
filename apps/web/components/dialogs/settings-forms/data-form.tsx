@@ -21,7 +21,7 @@ import { SiTodoist, SiTrello, SiAsana, SiTicktick } from "@icons-pack/react-simp
 import { toast } from "sonner"
 import { dataSettingsAtom, updateDataSettingsAtom } from "@/lib/atoms/ui/user-settings-atom"
 import { queryClientAtom } from "@/lib/atoms/core/base"
-import { DEFAULT_BACKUP_TIME, SUPPORTED_IMPORT_SOURCES } from "@tasktrove/constants"
+import { DEFAULT_BACKUP_TIME, SUPPORTED_IMPORT_SOURCES, DATA_QUERY_KEY } from "@tasktrove/constants"
 import { useTranslation } from "@/lib/i18n/client"
 import { useLanguage } from "@/components/providers/language-provider"
 
@@ -183,7 +183,7 @@ export function DataForm() {
       })
 
       // Invalidate queries to refresh the UI with imported data
-      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.invalidateQueries({ queryKey: DATA_QUERY_KEY })
     } catch (error) {
       console.error("Import error:", error)
       const errorMessage =

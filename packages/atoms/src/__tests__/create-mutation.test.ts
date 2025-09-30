@@ -24,6 +24,7 @@ import {
   DEFAULT_TASK_SUBTASKS,
   DEFAULT_TASK_COMMENTS,
   DEFAULT_TASK_ATTACHMENTS,
+  DATA_QUERY_KEY,
 } from "@tasktrove/constants";
 import { DEFAULT_EMPTY_DATA_FILE } from "@tasktrove/types/defaults";
 
@@ -378,7 +379,7 @@ describe("createMutation Function", () => {
     describe("Cache Management", () => {
       it("should cancel queries before applying optimistic updates", () => {
         // Arrange
-        const queryKey = ["tasks"];
+        const queryKey = DATA_QUERY_KEY;
 
         // This test verifies the concept - in real implementation,
         // query cancellation happens in the onMutate phase

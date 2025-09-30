@@ -23,6 +23,7 @@ import {
   createSectionId,
   INBOX_PROJECT_ID,
 } from "@tasktrove/types";
+import { DATA_QUERY_KEY } from "@tasktrove/constants";
 import { QueryClient } from "@tanstack/react-query";
 
 // Type guard for query data structure
@@ -110,7 +111,7 @@ beforeEach(() => {
   store.set(queryClientAtom, queryClient);
 
   // Setup initial data in query client
-  queryClient.setQueryData(["tasks"], {
+  queryClient.setQueryData(DATA_QUERY_KEY, {
     tasks: [mockTask, mockCompletedTask],
     projects: [],
     labels: [],
@@ -160,7 +161,7 @@ describe("Optimistic Updates", () => {
       await mutation.mutateAsync([taskUpdate]);
 
       // Check that optimistic update set completedAt
-      const rawQueryData = queryClient.getQueryData(["tasks"]);
+      const rawQueryData = queryClient.getQueryData(DATA_QUERY_KEY);
       if (!isTasksQueryData(rawQueryData)) {
         throw new Error("Query data has unexpected structure");
       }
@@ -207,7 +208,7 @@ describe("Optimistic Updates", () => {
       await mutation.mutateAsync([taskUpdate]);
 
       // Check that optimistic update cleared completedAt
-      const rawQueryData = queryClient.getQueryData(["tasks"]);
+      const rawQueryData = queryClient.getQueryData(DATA_QUERY_KEY);
       if (!isTasksQueryData(rawQueryData)) {
         throw new Error("Query data has unexpected structure");
       }
@@ -255,7 +256,7 @@ describe("Optimistic Updates", () => {
       await mutation.mutateAsync([taskUpdate]);
 
       // Check that completedAt was not modified
-      const rawQueryData = queryClient.getQueryData(["tasks"]);
+      const rawQueryData = queryClient.getQueryData(DATA_QUERY_KEY);
       if (!isTasksQueryData(rawQueryData)) {
         throw new Error("Query data has unexpected structure");
       }
@@ -301,7 +302,7 @@ describe("Optimistic Updates", () => {
       await mutation.mutateAsync(taskUpdates);
 
       // Check both tasks were updated correctly
-      const rawQueryData = queryClient.getQueryData(["tasks"]);
+      const rawQueryData = queryClient.getQueryData(DATA_QUERY_KEY);
       if (!isTasksQueryData(rawQueryData)) {
         throw new Error("Query data has unexpected structure");
       }
@@ -334,7 +335,7 @@ describe("Optimistic Updates", () => {
       vi.mocked(global.fetch).mockRejectedValueOnce(new Error("API Error"));
 
       // Store initial data for comparison
-      const initialData = queryClient.getQueryData(["tasks"]);
+      const initialData = queryClient.getQueryData(DATA_QUERY_KEY);
 
       // Update task
       const taskUpdate = {
@@ -348,7 +349,7 @@ describe("Optimistic Updates", () => {
       );
 
       // Check that data was rolled back
-      const finalData = queryClient.getQueryData(["tasks"]);
+      const finalData = queryClient.getQueryData(DATA_QUERY_KEY);
       expect(finalData).toEqual(initialData);
     });
   });

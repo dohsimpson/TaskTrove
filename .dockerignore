@@ -1,0 +1,48 @@
+# Build artifacts
+node_modules
+.next
+dist
+.cache
+.parcel-cache
+coverage
+.nyc_output
+
+# Development files
+*.log
+npm-debug.log
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.production.local
+.env.staging.local
+
+# Git
+.git
+.gitignore
+.github
+
+# IDE
+.vscode
+
+# Documentation (not needed in image)
+*.md
+!README.md
+docs
+plans
+
+# Vercel
+.vercel
+
+# Project-specific excludes
+Budfile
+CLAUDE.md
+.eslintrc.json
+
+# Data directories (runtime data, not source code)
+# IMPORTANT: These patterns exclude data storage directories,
+# but DO NOT exclude source code in app/api/data/
+/apps/web/data/
+/apps/web/dev-data/
+/apps/web/backups/

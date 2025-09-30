@@ -4,6 +4,7 @@ packages:
   - "modules.pro/apps/*"
   - "modules.pro/packages/*"
 
+catalogMode: strict
 catalog:
   # Build tools
   turbo: "^2.5.6"

@@ -1,45 +1,53 @@
-# Use build platform for base images to avoid emulation
+# credit to: https://turborepo.com/docs/guides/tools/docker
 FROM --platform=$BUILDPLATFORM node:22-alpine AS base
-
-# Install dependencies only when needed
-FROM base AS deps
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
-
-# Use cache mounts for pnpm cache
-COPY package.json pnpm-lock.yaml* ./
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
-    corepack enable pnpm && pnpm i --frozen-lockfile
-
-# Rebuild the source code only when needed
+ 
 FROM base AS builder
-
+RUN apk update
+RUN apk add --no-cache libc6-compat
+# Set working directory
 WORKDIR /app
-
-ENV NEXT_TELEMETRY_DISABLED=1
-
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Use cache mount for Next.js cache
-RUN --mount=type=cache,target=/app/.next/cache \
-    corepack enable pnpm && pnpm run build
-
-# use distroless image for security and image size
-FROM gcr.io/distroless/nodejs22-debian12 AS runner
-LABEL org.opencontainers.image.source=https://github.com/dohsimpson/TaskTrove
-
-USER 1000:1000
+RUN npm install -g turbo
+ 
+# Generate a partial monorepo with a pruned lockfile for a target workspace.
+# Assuming "web" is the name entered in the project's package.json: { name: "web" }
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    corepack enable pnpm && turbo prune web --docker
+ 
+# Add lockfile and package.json's of isolated subworkspace
+FROM base AS installer
+RUN apk update
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
+ 
+# First install the dependencies (as they change less often)
+COPY --from=builder /app/out/json/ .
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    corepack enable pnpm && pnpm install --frozen-lockfile
+ 
+# Build the project
+COPY --from=builder /app/out/full/ .
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    corepack enable pnpm && pnpm build
 
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-ENV HOSTNAME=0.0.0.0
-ENV PORT=3000
+# for backward compatibility and easier mounting, create a symlink to the data directory
+# symlink will be copied as long as they are inside a directory to be copied (copying symlink alone won't work)
+# reference: https://github.com/moby/moby/issues/40449#issuecomment-1545819389
+RUN ["ln", "-s", "/app/data", "/app/apps/web/.next/standalone/apps/web/data"]
 
-COPY --from=builder --chown=1000:1000 /app/.next/standalone ./
-COPY --from=builder --chown=1000:1000 /app/.next/static ./.next/static
 
-EXPOSE 3000
+# using distroless image for extra security and smaller size: https://github.com/GoogleContainerTools/distroless
+# image is architecture agnostic
+FROM gcr.io/distroless/nodejs22-debian12:debug AS runner
+WORKDIR /app
+ 
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=installer --chown=1000:1000 /app/apps/web/.next/standalone ./
+COPY --from=installer --chown=1000:1000 /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=installer --chown=1000:1000 /app/apps/web/public ./apps/web/public
+
+WORKDIR /app/apps/web
 
 CMD ["server.js"]

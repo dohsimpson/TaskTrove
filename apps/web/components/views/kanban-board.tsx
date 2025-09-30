@@ -15,7 +15,7 @@ import { stopEditingSectionAtom } from "@/lib/atoms/ui/navigation"
 import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
 import { projectAtoms } from "@/lib/atoms"
 import type { Project, Task as TaskType } from "@/lib/types"
-import { TaskIdSchema, ProjectIdSchema, createSectionId } from "@/lib/types"
+import { TaskIdSchema, ProjectIdSchema, createGroupId } from "@/lib/types"
 import { TaskItem } from "@/components/task/task-item"
 import { SelectionToolbar } from "@/components/task/selection-toolbar"
 import { ProjectViewToolbar } from "@/components/task/project-view-toolbar"
@@ -43,7 +43,7 @@ function isDragInput(input: unknown): input is DragInputType {
 import { log } from "@/lib/utils/logger"
 
 // Constants
-const DEFAULT_SECTION_ID = createSectionId(DEFAULT_UUID)
+const DEFAULT_SECTION_ID = createGroupId(DEFAULT_UUID)
 
 // Define type-safe interfaces for our drag-and-drop data
 interface TaskDragData {
@@ -146,7 +146,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
       }
 
       const viewId = projectId // ViewId is now directly the ProjectId
-      const sectionTasks = getOrderedTasksForSection(projectId, createSectionId(targetSectionId))
+      const sectionTasks = getOrderedTasksForSection(projectId, createGroupId(targetSectionId))
       const sourceIndex = sectionTasks.findIndex((task: TaskType) => task.id === taskId)
       let targetIndex = sectionTasks.length
 
@@ -178,8 +178,8 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
         moveTaskBetweenSections({
           taskId: taskId,
           projectId: projectId,
-          newSectionId: createSectionId(targetSectionId),
-          toIndex: targetIndex,
+          newSectionId: createGroupId(targetSectionId),
+          position: targetIndex,
         })
         log.info(
           {
@@ -228,6 +228,9 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
       const defaultSection = {
         id: DEFAULT_SECTION_ID,
         name: "(no section)",
+        slug: "no-section",
+        type: "section" as const,
+        items: [],
         color: "#6b7280", // Gray color for default section
       }
       // Add default section at the beginning
@@ -241,7 +244,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
         id: section.id.toString(),
         title: section.name,
         tasks: sectionTasks,
-        color: section.color,
+        color: section.color || "#6b7280", // Default gray if no color
       })
     })
 
@@ -271,7 +274,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
           // Update the section in the project (name and color)
           renameSection({
             projectId: project.id,
-            sectionId: createSectionId(sectionId),
+            sectionId: createGroupId(sectionId),
             newSectionName: trimmedName,
             newSectionColor: currentSection.color, // Keep existing color
           })

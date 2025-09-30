@@ -120,7 +120,6 @@ describe("TaskDetailDialog", () => {
     dueDate: new Date("2022-01-01"),
     projectId: TEST_PROJECT_ID_1,
     labels: [TEST_LABEL_ID_1, TEST_LABEL_ID_2], // Use label IDs matching sample data
-    sectionId: TEST_SECTION_ID_2,
     subtasks: [],
     comments: [],
     attachments: [],

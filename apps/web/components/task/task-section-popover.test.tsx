@@ -22,7 +22,6 @@ const mockProject = {
       color: "#10b981",
     },
   ],
-  taskOrder: [],
 }
 
 describe("TaskSectionPopover", () => {

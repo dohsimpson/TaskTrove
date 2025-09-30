@@ -68,7 +68,6 @@ export function createMockTask(overrides: Partial<Task> = {}): Task {
     description: "This is a mock task for testing",
     completed: false,
     priority: 2,
-    sectionId: createSectionId("00000000-0000-0000-0000-000000000000"),
     projectId: INBOX_PROJECT_ID,
     labels: [],
     subtasks: [],

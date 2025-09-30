@@ -6,6 +6,7 @@ import type {
   GlobalViewOptions,
   GroupId,
   User,
+  ProjectSection,
 } from "./index";
 import { SIDE_PANEL_WIDTH_DEFAULT } from "@tasktrove/constants";
 import { createGroupId } from "./index";
@@ -34,6 +35,23 @@ import {
  */
 export const ROOT_PROJECT_GROUP_ID: GroupId = createGroupId(DEFAULT_UUID);
 export const ROOT_LABEL_GROUP_ID: GroupId = createGroupId(DEFAULT_UUID);
+
+/**
+ * Default section ID for unsectioned tasks
+ */
+export const DEFAULT_SECTION_ID: GroupId = createGroupId(DEFAULT_UUID);
+
+/**
+ * Default project section
+ */
+export const DEFAULT_PROJECT_SECTION: ProjectSection = {
+  id: DEFAULT_SECTION_ID,
+  name: "Tasks",
+  slug: "",
+  color: "#808080",
+  type: "section",
+  items: [],
+};
 
 export const DEFAULT_PROJECT_GROUP: ProjectGroup = {
   type: "project",

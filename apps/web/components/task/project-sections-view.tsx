@@ -48,7 +48,7 @@ import {
   taskAtoms,
 } from "@/lib/atoms/core/tasks"
 import type { Task, Project, ProjectSection } from "@/lib/types"
-import { createSectionId, createTaskId, createProjectId } from "@/lib/types"
+import { createGroupId, createTaskId, createProjectId } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -182,7 +182,7 @@ export function ProjectSectionsView({
     if (editingSectionId && project) {
       const section = project.sections.find((s: ProjectSection) => s.id === editingSectionId)
       if (section) {
-        setEditingSectionColor(section.color)
+        setEditingSectionColor(section.color || "#808080")
       }
     }
   }, [editingSectionId, project])
@@ -363,7 +363,7 @@ export function ProjectSectionsView({
       const viewId = projectId // ViewId can be a ProjectId
 
       // Get current task positions
-      const sectionTasks = getOrderedTasksForSection(projectId, createSectionId(targetSectionId))
+      const sectionTasks = getOrderedTasksForSection(projectId, createGroupId(targetSectionId))
       const sourceIndex = sectionTasks.findIndex((task: Task) => task.id === taskId)
 
       // Calculate target index from drop position
@@ -403,8 +403,8 @@ export function ProjectSectionsView({
         moveTaskBetweenSections({
           taskId: taskId,
           projectId: projectId,
-          newSectionId: createSectionId(targetSectionId),
-          toIndex: targetIndex,
+          newSectionId: createGroupId(targetSectionId),
+          position: targetIndex,
         })
         log.info(
           {
@@ -457,21 +457,24 @@ export function ProjectSectionsView({
   const hasDefaultSection = sectionsToShow.some((section) => section.id === DEFAULT_UUID)
   if (!hasDefaultSection) {
     // Create default section if it doesn't exist
-    const defaultSection = {
-      id: createSectionId(DEFAULT_UUID),
+    const defaultSection: ProjectSection = {
+      id: createGroupId(DEFAULT_UUID),
       name: "(no section)",
+      slug: "",
+      type: "section",
       color: "#6b7280", // Gray color for default section
+      items: [],
     }
     // Add default section at the beginning
     sectionsToShow.unshift(defaultSection)
   }
 
-  const renderSection = (section: { id: string; name: string; color: string }) => {
+  const renderSection = (section: { id: string; name: string; color?: string }) => {
     const displayName = section.name
     const sectionId = section.id
     const sectionTasks = getOrderedTasksForSection(
       project?.id || "inbox",
-      createSectionId(section.id),
+      createGroupId(section.id),
     )
     const sectionDroppableId = `${droppableId}-section-${sectionId}`
     const isCollapsed = collapsedSections.includes(sectionId)
@@ -583,7 +586,7 @@ export function ProjectSectionsView({
 
           {/* Section context menu for non-unsectioned sections - only show if sections are supported */}
           {section.name !== "Unsectioned" && supportsSections && project?.id && (
-            <SectionContextMenu sectionId={createSectionId(section.id)} isVisible={true} />
+            <SectionContextMenu sectionId={createGroupId(section.id)} isVisible={true} />
           )}
         </div>
       </div>

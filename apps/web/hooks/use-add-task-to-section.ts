@@ -4,8 +4,8 @@ import {
   updateQuickAddTaskAtom,
   resetQuickAddTaskAtom,
 } from "@/lib/atoms/ui/dialogs"
-import { ProjectIdSchema, createSectionId, SectionIdSchema } from "@/lib/types"
-import type { ProjectId, SectionId } from "@/lib/types"
+import { ProjectIdSchema, createGroupId, GroupIdSchema } from "@/lib/types"
+import type { ProjectId, GroupId } from "@/lib/types"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 
 /**
@@ -17,18 +17,16 @@ export function useAddTaskToSection() {
   const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
   const resetQuickAddTask = useSetAtom(resetQuickAddTaskAtom)
 
-  return (projectId: ProjectId | undefined, sectionId: string | SectionId) => {
+  return (projectId: ProjectId | undefined, sectionId: string | GroupId) => {
     // Reset the quick add task form first
     resetQuickAddTask()
 
     // Parse and validate section ID
-    let parsedSectionId: SectionId | undefined
+    let parsedSectionId: GroupId | undefined
     if (sectionId && sectionId !== DEFAULT_UUID) {
       try {
         parsedSectionId =
-          typeof sectionId === "string"
-            ? createSectionId(sectionId)
-            : SectionIdSchema.parse(sectionId)
+          typeof sectionId === "string" ? createGroupId(sectionId) : GroupIdSchema.parse(sectionId)
       } catch (error) {
         console.warn("Invalid section ID provided:", sectionId, error)
         parsedSectionId = undefined

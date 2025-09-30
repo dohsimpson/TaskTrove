@@ -6,6 +6,9 @@ import { getLatestAvailableMigration } from "@/lib/utils/data-migration"
 describe("Tutorial Data Validation", () => {
   it("should parse tutorial-data.json against DataFileSchema", () => {
     const result = DataFileSchema.safeParse(tutorialData)
+    if (!result.success) {
+      console.error("Validation errors:", JSON.stringify(result.error.issues, null, 2))
+    }
     expect(result.success).toBe(true)
   })
 

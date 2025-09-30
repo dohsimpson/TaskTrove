@@ -97,7 +97,6 @@ describe("PATCH /api/projects", () => {
       id: TEST_PROJECT_ID_1,
       name: "Updated Project Name",
       color: "#10b981",
-      taskOrder: [TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3],
     }
 
     const request = new NextRequest("http://localhost:3000/api/projects", {
@@ -117,7 +116,6 @@ describe("PATCH /api/projects", () => {
     expect(responseData.projects[0].id).toBe(projectUpdate.id)
     expect(responseData.projects[0].name).toBe(projectUpdate.name)
     expect(responseData.projects[0].color).toBe(projectUpdate.color)
-    expect(responseData.projects[0].taskOrder).toEqual(projectUpdate.taskOrder)
     expect(responseData.count).toBe(1)
     expect(responseData.message).toBe("1 project(s) updated successfully")
   })

@@ -8,12 +8,12 @@ import {
   safeWriteDataFile,
   saveBase64ToAvatarFile,
 } from "./safe-file-operations"
-import { type DataFile } from "@/lib/types"
+import { type DataFile, type GroupId } from "@/lib/types"
 import {
   TEST_TASK_ID_1,
   TEST_PROJECT_ID_1,
   TEST_LABEL_ID_1,
-  TEST_SECTION_ID_1,
+  TEST_GROUP_ID_1,
 } from "@/lib/utils/test-constants"
 import {
   DEFAULT_PROJECT_GROUP,
@@ -325,7 +325,6 @@ describe("safe-file-operations", () => {
           createdAt: new Date("2024-01-15T10:00:00Z"),
           recurringMode: "dueDate",
           projectId: TEST_PROJECT_ID_1,
-          sectionId: TEST_SECTION_ID_1,
         },
       ],
       projects: [
@@ -337,8 +336,11 @@ describe("safe-file-operations", () => {
           shared: false,
           sections: [
             {
-              id: TEST_SECTION_ID_1,
+              id: TEST_GROUP_ID_1,
               name: "Test Section",
+              slug: "test-section",
+              type: "section" as const,
+              items: [],
               color: "#CCCCCC",
             },
           ],

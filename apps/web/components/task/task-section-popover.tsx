@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { projectsAtom } from "@/lib/atoms"
 import { updateTaskAtom } from "@/lib/atoms/core/tasks"
-import type { TaskId, ProjectSection, SectionId, ProjectId } from "@/lib/types"
-import { createSectionId, createTaskId } from "@/lib/types"
+import type { TaskId, ProjectSection, GroupId, ProjectId } from "@/lib/types"
+import { createGroupId, createTaskId } from "@/lib/types"
 
 // Constants
 const DEFAULT_SECTION_COLOR = "#6b7280" as const
@@ -16,7 +16,7 @@ const DEFAULT_SECTION_COLOR = "#6b7280" as const
 interface TaskSectionPopoverProps {
   taskId?: TaskId
   projectId?: ProjectId
-  onUpdate?: (sectionId?: SectionId) => void
+  onUpdate?: (sectionId?: GroupId) => void
   children: React.ReactNode
   className?: string
   align?: "start" | "center" | "end"
@@ -37,7 +37,7 @@ export function TaskSectionPopover({
   const projects = useAtomValue(projectsAtom)
   const updateTask = useSetAtom(updateTaskAtom)
 
-  const handleSectionSelect = (sectionId?: SectionId) => {
+  const handleSectionSelect = (sectionId?: GroupId) => {
     if (onUpdate) {
       onUpdate(sectionId)
     } else if (taskId) {
@@ -99,7 +99,7 @@ export function TaskSectionPopover({
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start h-8"
-                onClick={() => handleSectionSelect(createSectionId(section.id))}
+                onClick={() => handleSectionSelect(createGroupId(section.id))}
               >
                 <Square
                   className="w-3 h-3 mr-2"

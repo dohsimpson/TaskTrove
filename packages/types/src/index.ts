@@ -492,15 +492,23 @@ export const flexibleDateTimeSerializationSchema = z.union([
 // =============================================================================
 
 /**
- * Schema for a project section
+ * Schema for a project section - extends IBaseGroup with items array
  */
-export const ProjectSectionSchema = z.object({
+export const ProjectSectionSchema: z.ZodType<ProjectSection> = z.object({
   /** Unique identifier for the section */
-  id: SectionIdSchema,
+  id: GroupIdSchema,
   /** Display name of the section */
   name: z.string(),
+  /** Unique SEO friendly slug (empty string for sections) */
+  slug: z.string().default(""),
+  /** Optional description */
+  description: z.string().optional(),
   /** Section color (hex code) */
-  color: z.string(),
+  color: z.string().optional(),
+  /** Type discriminator for sections */
+  type: z.literal("section"),
+  /** Array of task IDs in display order for this section */
+  items: z.array(TaskIdSchema),
 });
 
 /**
@@ -894,8 +902,6 @@ export const TaskSchema = z.object({
   dueTime: flexibleTimeSchema.optional(),
   /** ID of the project this task belongs to (defaults to 'inbox' if not specified) */
   projectId: ProjectIdSchema.optional(),
-  /** ID of the project section this task belongs to */
-  sectionId: SectionIdSchema.optional(), // TODO: setting this to optional to appease the compiler, should remove this, and have section store it's own ordered tasks
   /** Array of label IDs associated with the task */
   labels: z.array(LabelIdSchema),
   /** Subtasks within this task */
@@ -963,8 +969,6 @@ export const ProjectSchema = z.object({
   shared: z.boolean(),
   /** Array of sections within this project */
   sections: z.array(ProjectSectionSchema),
-  /** Array of task IDs in display order for this project */
-  taskOrder: z.array(TaskIdSchema).optional(),
 });
 
 // Base serialization schema for Project (colocated with ProjectSchema for high correlation)
@@ -999,6 +1003,12 @@ interface IBaseGroup {
   slug: string;
   description?: string;
   color?: string;
+}
+
+/** Project Section interface - extends IBaseGroup with items for task ordering */
+export interface ProjectSection extends IBaseGroup {
+  type: "section";
+  items: TaskId[];
 }
 
 /** Project Group interface - can contain ProjectIds or other ProjectGroups */
@@ -1231,7 +1241,6 @@ export const DataFileSerializationSchema = z.object({
 // GENERATED TYPESCRIPT TYPES
 // =============================================================================
 
-export type ProjectSection = z.infer<typeof ProjectSectionSchema>;
 export type Subtask = z.infer<typeof SubtaskSchema>;
 export type TaskComment = z.infer<typeof TaskCommentSchema>;
 export type User = z.infer<typeof UserSchema>;
@@ -1879,6 +1888,7 @@ export type Json = z.infer<typeof JsonSchema>;
 /**
  * Schema for creating a new task via API
  * Uses .partial() to allow frontend to send partial data, with defaults applied in business logic
+ * Includes sectionId for API compatibility (not part of Task schema itself)
  */
 export const CreateTaskRequestSchema = TaskSchema.partial()
   .omit({
@@ -1889,6 +1899,9 @@ export const CreateTaskRequestSchema = TaskSchema.partial()
   })
   .required({
     title: true,
+  })
+  .extend({
+    sectionId: GroupIdSchema.optional(),
   });
 
 // Serialization schemas for CreateTask (colocated with request schema)
@@ -1958,6 +1971,7 @@ export const LabelCreateArraySerializationSchema = z.array(
 
 /**
  * Schema for updating tasks via API
+ * Includes sectionId for API compatibility (not part of Task schema itself)
  */
 export const UpdateTaskRequestSchema = TaskSchema.partial()
   .required({
@@ -1973,6 +1987,7 @@ export const UpdateTaskRequestSchema = TaskSchema.partial()
     recurring: TaskSchema.shape.recurring.nullable(),
     estimation: TaskSchema.shape.estimation.nullable(),
     projectId: TaskSchema.shape.projectId.nullable(),
+    sectionId: GroupIdSchema.optional(),
   });
 
 // Serialization schemas for UpdateTask (colocated with request schema)

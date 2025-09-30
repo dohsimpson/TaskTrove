@@ -410,7 +410,6 @@ describe("TaskTrove Jotai Atoms Integration Tests", () => {
         completed: false,
         priority: 2,
         projectId: INBOX_PROJECT_ID,
-        sectionId: TEST_SECTION_ID_1,
         labels: [],
         subtasks: [],
         comments: [],

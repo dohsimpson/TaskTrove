@@ -10,10 +10,10 @@ import {
 } from "@/lib/atoms/ui/navigation"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 import { isValidProjectId } from "@/lib/utils/routing"
-import type { Project, ProjectSection, SectionId } from "@/lib/types"
+import type { Project, ProjectSection, GroupId } from "@/lib/types"
 
 interface SectionContextMenuProps {
-  sectionId: SectionId
+  sectionId: GroupId
   isVisible: boolean
   open?: boolean
   onOpenChange?: (open: boolean) => void
@@ -97,7 +97,7 @@ export function SectionContextMenu({
       id={sectionId}
       entityType="section"
       entityName={section.name}
-      entityColor={section.color}
+      entityColor={section.color || "#808080"}
       isVisible={isVisible}
       showDeleteOption={showDeleteOption}
       onEdit={handleEdit}

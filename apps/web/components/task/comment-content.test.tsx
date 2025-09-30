@@ -8,7 +8,7 @@ import { createTaskId, createCommentId } from "@/lib/types"
 import {
   TEST_TASK_ID_1,
   TEST_PROJECT_ID_1,
-  TEST_SECTION_ID_1,
+  TEST_GROUP_ID_1,
   TEST_COMMENT_ID_1,
   TEST_COMMENT_ID_2,
   TEST_COMMENT_ID_3,
@@ -141,7 +141,6 @@ describe("CommentContent", () => {
     priority: 4 as const,
     dueDate: undefined,
     projectId: TEST_PROJECT_ID_1,
-    sectionId: TEST_SECTION_ID_1,
     labels: [],
     subtasks: [],
     comments: [],

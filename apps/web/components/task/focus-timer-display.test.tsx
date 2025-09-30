@@ -75,7 +75,6 @@ const mockTask = {
   recurring: undefined,
   dueDate: undefined,
   projectId: undefined,
-  sectionId: undefined,
   createdAt: new Date("2024-01-01"),
   recurringMode: "dueDate" as const,
 }

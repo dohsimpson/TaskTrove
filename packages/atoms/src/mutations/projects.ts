@@ -23,7 +23,7 @@ import {
   DeleteProjectResponseSchema,
   ProjectDeleteSerializationSchema,
   createProjectId,
-  createSectionId,
+  createGroupId,
 } from "@tasktrove/types";
 import { DEFAULT_PROJECT_COLORS, DEFAULT_UUID } from "@tasktrove/constants";
 import { createSafeProjectNameSlug } from "@tasktrove/utils/routing";
@@ -65,9 +65,12 @@ export const createProjectMutationAtom = createEntityMutation<
       shared: projectData.shared ?? false,
       sections: [
         {
-          id: createSectionId(DEFAULT_UUID),
+          id: createGroupId(DEFAULT_UUID),
           name: "Default",
+          slug: "",
           color: "#6b7280",
+          type: "section" as const,
+          items: [],
         },
       ],
     };

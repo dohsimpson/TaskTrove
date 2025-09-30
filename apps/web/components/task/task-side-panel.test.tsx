@@ -406,7 +406,6 @@ describe("TaskSidePanel", () => {
     priority: 2 as const,
     dueDate: new Date("2024-01-01"),
     projectId: "project-1",
-    sectionId: DEFAULT_UUID,
     labels: ["label-1"],
     subtasks: [
       { id: "sub-1", title: "Subtask 1", completed: false },

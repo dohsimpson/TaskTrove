@@ -19,7 +19,6 @@ import type {
   Project,
   ProjectId,
   GroupId,
-  SectionId,
   ProjectSection,
 } from "@tasktrove/types";
 import {
@@ -32,7 +31,7 @@ import {
 } from "@tasktrove/constants";
 import {
   INBOX_PROJECT_ID,
-  createSectionId,
+  createGroupId,
   ProjectIdSchema,
 } from "@tasktrove/types";
 import {
@@ -59,9 +58,12 @@ const createDefaultInboxProject = (): Project => ({
   shared: DEFAULT_PROJECT_SHARED,
   sections: [
     {
-      id: createSectionId(DEFAULT_UUID),
+      id: createGroupId(DEFAULT_UUID),
       name: DEFAULT_SECTION_NAME,
+      slug: "",
       color: DEFAULT_SECTION_COLOR,
+      type: "section" as const,
+      items: [],
     },
   ],
 });
@@ -420,9 +422,12 @@ export const addProjectSectionAtom = atom(
           const sectionColor = data.color || DEFAULT_SECTION_COLOR;
 
           const newSection: ProjectSection = {
-            id: createSectionId(uuidv4()),
+            id: createGroupId(uuidv4()),
             name: data.sectionName,
+            slug: "",
             color: sectionColor,
+            type: "section" as const,
+            items: [],
           };
 
           const newSections = [...project.sections];
@@ -464,14 +469,21 @@ addProjectSectionAtom.debugLabel = "addProjectSectionAtom";
 
 /**
  * Removes a section from a project
- * Also clears the projectSection field from any tasks in that section
+ * Validates that section has no tasks before removing
  * Uses server mutation for persistence
  */
 export const removeProjectSectionAtom = atom(
   null,
-  async (get, set, data: { projectId: ProjectId; sectionId: SectionId }) => {
+  async (get, set, data: { projectId: ProjectId; sectionId: GroupId }) => {
     try {
       const projects = get(projectsAtom);
+      const project = projects.find((p: Project) => p.id === data.projectId);
+      const section = project?.sections.find((s) => s.id === data.sectionId);
+
+      if (section && section.items.length > 0) {
+        throw new Error("Cannot remove section with tasks. Move tasks first.");
+      }
+
       const updatedProjects = projects.map((project: Project) => {
         if (project.id === data.projectId) {
           // Don't allow removing the default section
@@ -492,9 +504,6 @@ export const removeProjectSectionAtom = atom(
       // Use server mutation for persistence
       const updateProjectsMutation = get(updateProjectsMutationAtom);
       await updateProjectsMutation.mutateAsync(updatedProjects);
-
-      // Tasks in the removed section will need to be moved to default section (id: 0)
-      // This will be handled by a separate migration function
     } catch (error) {
       handleAtomError(error, "removeProjectSection");
       throw error;
@@ -514,7 +523,7 @@ export const renameProjectSectionAtom = atom(
     set,
     data: {
       projectId: ProjectId;
-      sectionId: SectionId;
+      sectionId: GroupId;
       newSectionName?: string;
       newSectionColor?: string;
     },
@@ -615,7 +624,7 @@ export const moveProjectSectionAtom = atom(
     set,
     data: {
       projectId: ProjectId;
-      sectionId: SectionId;
+      sectionId: GroupId;
       direction: "up" | "down";
     },
   ) => {
@@ -678,7 +687,7 @@ export const addProjectSectionAtPositionAtom = atom(
       projectId: ProjectId;
       sectionName: string;
       color?: string;
-      insertPosition?: { id: SectionId; placement: "above" | "below" };
+      insertPosition?: { id: GroupId; placement: "above" | "below" };
     },
   ) => {
     try {

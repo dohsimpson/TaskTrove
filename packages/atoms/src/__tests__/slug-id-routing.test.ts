@@ -168,7 +168,6 @@ describe("Slug/ID Routing", () => {
         color: "#ff0000",
         shared: false,
         sections: [],
-        taskOrder: [],
       },
       {
         id: TEST_PROJECT_ID_2,
@@ -177,7 +176,6 @@ describe("Slug/ID Routing", () => {
         color: "#00ff00",
         shared: true,
         sections: [],
-        taskOrder: [],
       },
     ];
 
@@ -364,7 +362,6 @@ describe("Slug/ID Routing", () => {
           color: "#ff0000",
           shared: false,
           sections: [],
-          taskOrder: [],
         },
         {
           id: TEST_PROJECT_ID_2,
@@ -373,7 +370,6 @@ describe("Slug/ID Routing", () => {
           color: "#00ff00",
           shared: false,
           sections: [],
-          taskOrder: [],
         },
       ];
 

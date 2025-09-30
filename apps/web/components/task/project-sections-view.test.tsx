@@ -9,9 +9,9 @@ import {
   TEST_TASK_ID_2,
   TEST_TASK_ID_3,
   TEST_PROJECT_ID_1,
-  TEST_SECTION_ID_1,
-  TEST_SECTION_ID_2,
-  TEST_SECTION_ID_3,
+  TEST_GROUP_ID_1,
+  TEST_GROUP_ID_2,
+  TEST_GROUP_ID_3,
 } from "@/lib/utils/test-constants"
 import { DEFAULT_SECTION_COLORS } from "@tasktrove/constants"
 
@@ -559,11 +559,31 @@ describe("ProjectSectionsView", () => {
     color: "#3B82F6",
     shared: false,
     sections: [
-      { id: TEST_SECTION_ID_1, name: "Planning", color: DEFAULT_SECTION_COLORS[0] },
-      { id: TEST_SECTION_ID_2, name: "In Progress", color: DEFAULT_SECTION_COLORS[1] },
-      { id: TEST_SECTION_ID_3, name: "Review", color: DEFAULT_SECTION_COLORS[2] },
+      {
+        id: TEST_GROUP_ID_1,
+        name: "Planning",
+        slug: "planning",
+        type: "section" as const,
+        items: [TEST_TASK_ID_1, TEST_TASK_ID_3],
+        color: DEFAULT_SECTION_COLORS[0],
+      },
+      {
+        id: TEST_GROUP_ID_2,
+        name: "In Progress",
+        slug: "in-progress",
+        type: "section" as const,
+        items: [TEST_TASK_ID_2],
+        color: DEFAULT_SECTION_COLORS[1],
+      },
+      {
+        id: TEST_GROUP_ID_3,
+        name: "Review",
+        slug: "review",
+        type: "section" as const,
+        items: [],
+        color: DEFAULT_SECTION_COLORS[2],
+      },
     ],
-    taskOrder: [TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3],
   }
 
   const mockTasks: Task[] = [
@@ -574,7 +594,6 @@ describe("ProjectSectionsView", () => {
       completed: false,
       priority: 2,
       projectId: TEST_PROJECT_ID_1,
-      sectionId: TEST_SECTION_ID_1,
       labels: [],
       subtasks: [],
       comments: [],
@@ -589,7 +608,6 @@ describe("ProjectSectionsView", () => {
       completed: true,
       priority: 1,
       projectId: TEST_PROJECT_ID_1,
-      sectionId: TEST_SECTION_ID_2,
       labels: [],
       subtasks: [],
       comments: [],
@@ -604,7 +622,6 @@ describe("ProjectSectionsView", () => {
       completed: false,
       priority: 3,
       projectId: TEST_PROJECT_ID_1,
-      sectionId: TEST_SECTION_ID_1,
       labels: [],
       subtasks: [],
       comments: [],
@@ -667,14 +684,14 @@ describe("ProjectSectionsView", () => {
       if (atom && vi.isMockFunction(atom)) {
         // This is the orderedTasksBySection atom (spy function)
         return (projectId: string, sectionId: string | null) => {
-          return mockTasks.filter((task) => {
-            const matchesProject =
-              projectId === "inbox"
-                ? !task.projectId || task.projectId === "inbox"
-                : task.projectId === projectId
-            const matchesSection = sectionId === null || task.sectionId === sectionId
-            return matchesProject && matchesSection
-          })
+          const project = mockProject
+          if (!project || project.id !== projectId) return []
+
+          // Find the section and return tasks from its items array
+          const section = project.sections.find((s) => s.id === sectionId)
+          if (!section) return []
+
+          return mockTasks.filter((task) => section.items.includes(task.id))
         }
       }
       return []
@@ -704,8 +721,8 @@ describe("ProjectSectionsView", () => {
     // Check badge content shows task count
     const badgeTexts = badges.map((badge) => badge.textContent)
     expect(badgeTexts).toContain("0") // Default section has 0 tasks
-    expect(badgeTexts).toContain("2") // Planning has 2 tasks (TEST_TASK_ID_1 and TEST_TASK_ID_3 both have sectionId: TEST_SECTION_ID_1)
-    expect(badgeTexts).toContain("1") // In Progress has 1 task (TEST_TASK_ID_2 has sectionId: TEST_SECTION_ID_2)
+    expect(badgeTexts).toContain("2") // Planning has 2 tasks (TEST_TASK_ID_1 and TEST_TASK_ID_3 both have sectionId: TEST_GROUP_ID_1)
+    expect(badgeTexts).toContain("1") // In Progress has 1 task (TEST_TASK_ID_2 has sectionId: TEST_GROUP_ID_2)
     expect(badgeTexts).toContain("0") // Review has 0 tasks (there will be two sections with 0 tasks)
   })
 
@@ -760,7 +777,7 @@ describe("ProjectSectionsView", () => {
               projectId === "inbox"
                 ? !task.projectId || task.projectId === "inbox"
                 : task.projectId === projectId
-            const matchesSection = sectionId === null || task.sectionId === sectionId
+            const matchesSection = true // Section filtering not needed in new architecture
             return matchesProject && matchesSection
           })
         }
@@ -773,7 +790,7 @@ describe("ProjectSectionsView", () => {
               projectId === "inbox"
                 ? !task.projectId || task.projectId === "inbox"
                 : task.projectId === projectId
-            const matchesSection = sectionId === null || task.sectionId === sectionId
+            const matchesSection = true // Section filtering not needed in new architecture
             return matchesProject && matchesSection
           })
         }
@@ -827,7 +844,7 @@ describe("ProjectSectionsView", () => {
               projectId === "inbox"
                 ? !task.projectId || task.projectId === "inbox"
                 : task.projectId === projectId
-            const matchesSection = sectionId === null || task.sectionId === sectionId
+            const matchesSection = true // Section filtering not needed in new architecture
             return matchesProject && matchesSection
           })
         }
@@ -986,7 +1003,7 @@ describe("ProjectSectionsView", () => {
             viewId: TEST_PROJECT_ID_1,
             routeType: "project",
           }
-        if (atom === "mockCollapsedSectionsAtom") return [TEST_SECTION_ID_1] // First section is collapsed
+        if (atom === "mockCollapsedSectionsAtom") return [TEST_GROUP_ID_1] // First section is collapsed
         if (atom === "mockShowTaskPanelAtom") return false
         if (atom === "mockSelectedTaskAtom") return null
         if (atom === "mockOrderedTasksByProjectAtom") {
@@ -1000,14 +1017,11 @@ describe("ProjectSectionsView", () => {
         // Handle orderedTasksBySection atom - it comes as a spy function
         if (atom && vi.isMockFunction(atom)) {
           return (projectId: string, sectionId: string | null) => {
-            return mockTasks.filter((task) => {
-              const matchesProject =
-                projectId === "inbox"
-                  ? !task.projectId || task.projectId === "inbox"
-                  : task.projectId === projectId
-              const matchesSection = sectionId === null || task.sectionId === sectionId
-              return matchesProject && matchesSection
-            })
+            const project = mockProject
+            if (!project || project.id !== projectId) return []
+            const section = project.sections.find((s) => s.id === sectionId)
+            if (!section) return []
+            return mockTasks.filter((task) => section.items.includes(task.id))
           }
         }
         return []
@@ -1028,7 +1042,7 @@ describe("ProjectSectionsView", () => {
 
       // Verify collapsed section has drag handlers (there should be two: one for collapsed header, one for expanded content)
       const collapsedSectionDroppables = screen.getAllByTestId(
-        "droppable-test-droppable-section-00000000-0000-4000-8000-000000000001",
+        `droppable-test-droppable-section-${TEST_GROUP_ID_1}`,
       )
       expect(collapsedSectionDroppables.length).toBeGreaterThan(0)
 
@@ -1062,7 +1076,7 @@ describe("ProjectSectionsView", () => {
             viewId: TEST_PROJECT_ID_1,
             routeType: "project",
           }
-        if (atom === "mockCollapsedSectionsAtom") return [TEST_SECTION_ID_1, TEST_SECTION_ID_3] // First and third sections collapsed
+        if (atom === "mockCollapsedSectionsAtom") return [TEST_GROUP_ID_1, TEST_GROUP_ID_3] // First and third sections collapsed
         if (atom === "mockShowTaskPanelAtom") return false
         if (atom === "mockSelectedTaskAtom") return null
         if (atom === "mockOrderedTasksByProjectAtom") {
@@ -1076,14 +1090,11 @@ describe("ProjectSectionsView", () => {
         // Handle orderedTasksBySection atom - it comes as a spy function
         if (atom && vi.isMockFunction(atom)) {
           return (projectId: string, sectionId: string | null) => {
-            return mockTasks.filter((task) => {
-              const matchesProject =
-                projectId === "inbox"
-                  ? !task.projectId || task.projectId === "inbox"
-                  : task.projectId === projectId
-              const matchesSection = sectionId === null || task.sectionId === sectionId
-              return matchesProject && matchesSection
-            })
+            const project = mockProject
+            if (!project || project.id !== projectId) return []
+            const section = project.sections.find((s) => s.id === sectionId)
+            if (!section) return []
+            return mockTasks.filter((task) => section.items.includes(task.id))
           }
         }
         return []
@@ -1125,7 +1136,7 @@ describe("ProjectSectionsView", () => {
             viewId: TEST_PROJECT_ID_1,
             routeType: "project",
           }
-        if (atom === "mockCollapsedSectionsAtom") return [TEST_SECTION_ID_1] // First section is collapsed
+        if (atom === "mockCollapsedSectionsAtom") return [TEST_GROUP_ID_1] // First section is collapsed
         if (atom === "mockShowTaskPanelAtom") return false
         if (atom === "mockSelectedTaskAtom") return null
         if (atom === "mockOrderedTasksByProjectAtom") {
@@ -1139,14 +1150,11 @@ describe("ProjectSectionsView", () => {
         // Handle orderedTasksBySection atom - it comes as a spy function
         if (atom && vi.isMockFunction(atom)) {
           return (projectId: string, sectionId: string | null) => {
-            return mockTasks.filter((task) => {
-              const matchesProject =
-                projectId === "inbox"
-                  ? !task.projectId || task.projectId === "inbox"
-                  : task.projectId === projectId
-              const matchesSection = sectionId === null || task.sectionId === sectionId
-              return matchesProject && matchesSection
-            })
+            const project = mockProject
+            if (!project || project.id !== projectId) return []
+            const section = project.sections.find((s) => s.id === sectionId)
+            if (!section) return []
+            return mockTasks.filter((task) => section.items.includes(task.id))
           }
         }
         return []
@@ -1161,7 +1169,7 @@ describe("ProjectSectionsView", () => {
       // Since we can't easily simulate the full drag event, we'll check that the
       // DropTargetWrapper for collapsed sections has the right handlers
       const collapsedSectionDroppables = screen.getAllByTestId(
-        "droppable-test-droppable-section-00000000-0000-4000-8000-000000000001",
+        `droppable-test-droppable-section-${TEST_GROUP_ID_1}`,
       )
 
       // Verify collapsed section has the required drag handlers for TaskShadow
@@ -1183,7 +1191,6 @@ describe("ProjectSectionsView", () => {
           completed: false,
           priority: 2,
           projectId: TEST_PROJECT_ID_1,
-          sectionId: TEST_SECTION_ID_1, // Planning section
           labels: [],
           subtasks: [],
           comments: [],
@@ -1191,7 +1198,7 @@ describe("ProjectSectionsView", () => {
           recurringMode: "dueDate",
           createdAt: new Date("2024-01-01"),
         },
-        // No tasks for Review section (TEST_SECTION_ID_3)
+        // No tasks for Review section (TEST_GROUP_ID_3)
       ]
 
       mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
@@ -1231,7 +1238,7 @@ describe("ProjectSectionsView", () => {
                 projectId === "inbox"
                   ? !task.projectId || task.projectId === "inbox"
                   : task.projectId === projectId
-              const matchesSection = sectionId === null || task.sectionId === sectionId
+              const matchesSection = true // Section filtering not needed in new architecture
               return matchesProject && matchesSection
             })
           }
@@ -1251,7 +1258,7 @@ describe("ProjectSectionsView", () => {
       // Check that Review section (which has no tasks) has a DropTargetWrapper for its header
       // The empty section should have drag handlers just like collapsed sections
       const reviewSectionDroppables = screen.getAllByTestId(
-        "droppable-test-droppable-section-00000000-0000-4000-8000-000000000003",
+        `droppable-test-droppable-section-${TEST_GROUP_ID_3}`,
       )
 
       // Verify the empty section has the required drag handlers for TaskShadow
@@ -1264,13 +1271,47 @@ describe("ProjectSectionsView", () => {
 
       // Verify that Planning section (which has tasks) also has handlers
       const planningSectionDroppables = screen.getAllByTestId(
-        "droppable-test-droppable-section-00000000-0000-4000-8000-000000000001",
+        `droppable-test-droppable-section-${TEST_GROUP_ID_1}`,
       )
       expect(planningSectionDroppables.length).toBeGreaterThan(0)
     })
   })
 
   describe("sorting functionality", () => {
+    const mockProjectForSorting: Project = {
+      id: TEST_PROJECT_ID_1,
+      name: "Test Project",
+      slug: "test-project",
+      color: "#3B82F6",
+      shared: false,
+      sections: [
+        {
+          id: TEST_GROUP_ID_1,
+          name: "Planning",
+          slug: "planning",
+          type: "section" as const,
+          items: [TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3],
+          color: DEFAULT_SECTION_COLORS[0],
+        },
+        {
+          id: TEST_GROUP_ID_2,
+          name: "In Progress",
+          slug: "in-progress",
+          type: "section" as const,
+          items: [],
+          color: DEFAULT_SECTION_COLORS[1],
+        },
+        {
+          id: TEST_GROUP_ID_3,
+          name: "Review",
+          slug: "review",
+          type: "section" as const,
+          items: [],
+          color: DEFAULT_SECTION_COLORS[2],
+        },
+      ],
+    }
+
     const mockTasksWithVariedProperties: Task[] = [
       {
         id: TEST_TASK_ID_1,
@@ -1279,7 +1320,6 @@ describe("ProjectSectionsView", () => {
         completed: false,
         priority: 3, // Lower priority (3 > 1)
         projectId: TEST_PROJECT_ID_1,
-        sectionId: TEST_SECTION_ID_1,
         labels: [],
         subtasks: [],
         comments: [],
@@ -1295,7 +1335,6 @@ describe("ProjectSectionsView", () => {
         completed: false,
         priority: 1, // Higher priority (1 < 3)
         projectId: TEST_PROJECT_ID_1,
-        sectionId: TEST_SECTION_ID_1,
         labels: [],
         subtasks: [],
         comments: [],
@@ -1311,7 +1350,6 @@ describe("ProjectSectionsView", () => {
         completed: true, // Completed task
         priority: 2,
         projectId: TEST_PROJECT_ID_1,
-        sectionId: TEST_SECTION_ID_1,
         labels: [],
         subtasks: [],
         comments: [],
@@ -1327,7 +1365,7 @@ describe("ProjectSectionsView", () => {
       mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
         if (atom === "mockTasks") return mockTasksWithVariedProperties
         if (atom === "mockFilteredTasksAtom") return mockTasksWithVariedProperties
-        if (atom === "mockProjectsAtom") return [mockProject]
+        if (atom === "mockProjectsAtom") return [mockProjectForSorting]
         if (atom === "mockCurrentRouteContextAtom")
           return {
             pathname: `/projects/${TEST_PROJECT_ID_1}`,
@@ -1352,7 +1390,7 @@ describe("ProjectSectionsView", () => {
                 projectId === "inbox"
                   ? !task.projectId || task.projectId === "inbox"
                   : task.projectId === projectId
-              const matchesSection = sectionId === null || task.sectionId === sectionId
+              const matchesSection = true // Section filtering not needed in new architecture
               return matchesProject && matchesSection
             })
           }
@@ -1369,7 +1407,7 @@ describe("ProjectSectionsView", () => {
           // Simulate what filteredTasksAtom does for priority sorting
           return [...mockTasksWithVariedProperties].sort((a, b) => a.priority - b.priority)
         }
-        if (atom === "mockProjectsAtom") return [mockProject]
+        if (atom === "mockProjectsAtom") return [mockProjectForSorting]
         if (atom === "mockCurrentViewStateAtom")
           return {
             showSidePanel: false,
@@ -1398,27 +1436,11 @@ describe("ProjectSectionsView", () => {
         // Handle orderedTasksBySection atom - it comes as a spy function
         if (atom && vi.isMockFunction(atom)) {
           return (projectId: string, sectionId: string | null) => {
-            return mockTasksWithVariedProperties.filter((task) => {
-              const matchesProject =
-                projectId === "inbox"
-                  ? !task.projectId || task.projectId === "inbox"
-                  : task.projectId === projectId
-              const matchesSection = sectionId === null || task.sectionId === sectionId
-              return matchesProject && matchesSection
-            })
-          }
-        }
-        // Handle orderedTasksBySection atom - it comes as a spy function
-        if (atom && vi.isMockFunction(atom)) {
-          return (projectId: string, sectionId: string | null) => {
-            return mockTasks.filter((task) => {
-              const matchesProject =
-                projectId === "inbox"
-                  ? !task.projectId || task.projectId === "inbox"
-                  : task.projectId === projectId
-              const matchesSection = sectionId === null || task.sectionId === sectionId
-              return matchesProject && matchesSection
-            })
+            const project = mockProjectForSorting
+            if (!project || project.id !== projectId) return []
+            const section = project.sections.find((s) => s.id === sectionId)
+            if (!section) return []
+            return mockTasksWithVariedProperties.filter((task) => section.items.includes(task.id))
           }
         }
         return []
@@ -1451,7 +1473,7 @@ describe("ProjectSectionsView", () => {
           // Simulate what filteredTasksAtom does for title sorting
           return [...mockTasksWithVariedProperties].sort((a, b) => a.title.localeCompare(b.title))
         }
-        if (atom === "mockProjectsAtom") return [mockProject]
+        if (atom === "mockProjectsAtom") return [mockProjectForSorting]
         if (atom === "mockCurrentViewStateAtom")
           return {
             showSidePanel: false,
@@ -1480,14 +1502,11 @@ describe("ProjectSectionsView", () => {
         // Handle orderedTasksBySection atom - it comes as a spy function
         if (atom && vi.isMockFunction(atom)) {
           return (projectId: string, sectionId: string | null) => {
-            return mockTasks.filter((task) => {
-              const matchesProject =
-                projectId === "inbox"
-                  ? !task.projectId || task.projectId === "inbox"
-                  : task.projectId === projectId
-              const matchesSection = sectionId === null || task.sectionId === sectionId
-              return matchesProject && matchesSection
-            })
+            const project = mockProject
+            if (!project || project.id !== projectId) return []
+            const section = project.sections.find((s) => s.id === sectionId)
+            if (!section) return []
+            return mockTasks.filter((task) => section.items.includes(task.id))
           }
         }
         return []
@@ -1514,7 +1533,7 @@ describe("ProjectSectionsView", () => {
             return 0 // No additional sorting for same completion status
           })
         }
-        if (atom === "mockProjectsAtom") return [mockProject]
+        if (atom === "mockProjectsAtom") return [mockProjectForSorting]
         if (atom === "mockCurrentViewStateAtom")
           return {
             showSidePanel: false,
@@ -1548,14 +1567,11 @@ describe("ProjectSectionsView", () => {
         // Handle orderedTasksBySection atom - it comes as a spy function
         if (atom && vi.isMockFunction(atom)) {
           return (projectId: string, sectionId: string | null) => {
-            return mockTasks.filter((task) => {
-              const matchesProject =
-                projectId === "inbox"
-                  ? !task.projectId || task.projectId === "inbox"
-                  : task.projectId === projectId
-              const matchesSection = sectionId === null || task.sectionId === sectionId
-              return matchesProject && matchesSection
-            })
+            const project = mockProject
+            if (!project || project.id !== projectId) return []
+            const section = project.sections.find((s) => s.id === sectionId)
+            if (!section) return []
+            return mockTasks.filter((task) => section.items.includes(task.id))
           }
         }
         return []
@@ -1580,7 +1596,7 @@ describe("ProjectSectionsView", () => {
           // Simulate priority sorting
           return [...mockTasksWithVariedProperties].sort((a, b) => a.priority - b.priority)
         }
-        if (atom === "mockProjectsAtom") return [mockProject]
+        if (atom === "mockProjectsAtom") return [mockProjectForSorting]
         if (atom === "mockCurrentViewStateAtom")
           return {
             showSidePanel: false,

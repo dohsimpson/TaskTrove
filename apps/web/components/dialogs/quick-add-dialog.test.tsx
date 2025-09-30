@@ -249,7 +249,6 @@ const mockProjects: Project[] = [
     color: "#3b82f6",
     shared: false,
     sections: [],
-    taskOrder: [],
   },
   {
     id: TEST_PROJECT_ID_2,
@@ -258,7 +257,6 @@ const mockProjects: Project[] = [
     color: "#ef4444",
     shared: false,
     sections: [],
-    taskOrder: [],
   },
 ]
 

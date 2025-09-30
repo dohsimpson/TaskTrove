@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { SectionContextMenu } from "./section-context-menu"
 import { editingSectionIdAtom } from "@/lib/atoms/ui/navigation"
-import { createSectionId } from "@/lib/types"
+import { createGroupId } from "@/lib/types"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 import { cn } from "@/lib/utils"
 
@@ -123,7 +123,7 @@ export function EditableSectionHeader({
 
         {/* Section context menu - only show for non-default sections */}
         {showContextMenu && !isDefaultSection && (
-          <SectionContextMenu sectionId={createSectionId(sectionId)} isVisible={true} />
+          <SectionContextMenu sectionId={createGroupId(sectionId)} isVisible={true} />
         )}
       </div>
     </div>

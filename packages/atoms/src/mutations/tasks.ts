@@ -23,7 +23,6 @@ import {
   DeleteTaskResponseSchema,
   TaskDeleteSerializationSchema,
   createTaskId,
-  createSectionId,
   INBOX_PROJECT_ID,
 } from "@tasktrove/types";
 import {
@@ -31,7 +30,6 @@ import {
   DEFAULT_TASK_TITLE,
   DEFAULT_TASK_COMPLETED,
   DEFAULT_TASK_STATUS,
-  DEFAULT_UUID,
   DEFAULT_TASK_SUBTASKS,
   DEFAULT_TASK_COMMENTS,
   DEFAULT_TASK_ATTACHMENTS,
@@ -88,7 +86,6 @@ export const createTaskMutationAtom = createMutation<
       // Ensure required fields have defaults
       title: taskData.title || DEFAULT_TASK_TITLE,
       priority: taskData.priority || DEFAULT_TASK_PRIORITY,
-      sectionId: taskData.sectionId || createSectionId(DEFAULT_UUID),
       projectId: taskData.projectId || INBOX_PROJECT_ID,
       labels: taskData.labels || [],
       // Ensure dates are properly converted if they come in as strings

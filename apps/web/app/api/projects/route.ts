@@ -16,7 +16,7 @@ import {
 } from "@/lib/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { v4 as uuidv4 } from "uuid"
-import { createProjectId, createSectionId } from "@/lib/types"
+import { createProjectId, createGroupId } from "@/lib/types"
 import {
   DEFAULT_PROJECT_SHARED,
   DEFAULT_SECTION_NAME,
@@ -149,9 +149,12 @@ async function createProject(
     shared: validation.data.shared ?? DEFAULT_PROJECT_SHARED,
     sections: validation.data.sections ?? [
       {
-        id: createSectionId(DEFAULT_UUID),
+        id: createGroupId(DEFAULT_UUID),
         name: DEFAULT_SECTION_NAME,
+        slug: "",
         color: DEFAULT_SECTION_COLOR,
+        type: "section" as const,
+        items: [],
       },
     ],
   }
@@ -287,7 +290,7 @@ async function updateProjects(
     "projects_updated",
     {
       projectsCount: updates.length,
-      updatedProjects: updates.map((u) => ({ id: u.id, taskOrder: u.taskOrder?.length })),
+      updatedProjects: updates.map((u) => ({ id: u.id })),
       totalProjects: finalProjects.length,
     },
     request.context,

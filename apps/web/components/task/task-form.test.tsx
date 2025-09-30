@@ -279,8 +279,22 @@ vi.mock("lucide-react", () => ({
 
 describe("TaskForm", () => {
   const mockProjects = [
-    { id: TEST_PROJECT_ID_1, name: "Project 1", color: "#ff0000" },
-    { id: TEST_PROJECT_ID_2, name: "Project 2", color: "#00ff00" },
+    {
+      id: TEST_PROJECT_ID_1,
+      name: "Project 1",
+      color: "#ff0000",
+      sections: [],
+      slug: "project-1",
+      shared: false,
+    },
+    {
+      id: TEST_PROJECT_ID_2,
+      name: "Project 2",
+      color: "#00ff00",
+      sections: [],
+      slug: "project-2",
+      shared: false,
+    },
   ]
 
   const mockLabels = [

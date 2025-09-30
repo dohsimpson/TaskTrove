@@ -82,7 +82,6 @@ describe("overdueTasksAtom", () => {
     priority: 4,
     createdAt: new Date("2024-01-10T10:00:00.000Z"),
     projectId: INBOX_PROJECT_ID,
-    sectionId: createSectionId("00000000-0000-0000-0000-000000000000"),
     labels: [],
     subtasks: [],
     comments: [],

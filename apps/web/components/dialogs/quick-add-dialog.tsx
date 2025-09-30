@@ -49,7 +49,7 @@ import {
   CreateTaskRequest,
   type ProjectId,
   type LabelId,
-  type SectionId,
+  type GroupId,
   type TaskPriority,
   ProjectIdSchema,
   LabelIdSchema,
@@ -479,7 +479,7 @@ export function QuickAddDialog() {
     })
   }
 
-  const handleManualProjectSelect = (projectId: ProjectId, sectionId?: SectionId) => {
+  const handleManualProjectSelect = (projectId: ProjectId, sectionId?: GroupId) => {
     projectSetByParsingRef.current = false
     updateNewTask({ updateRequest: { projectId, sectionId } })
   }
@@ -489,7 +489,7 @@ export function QuickAddDialog() {
     updateNewTask({ updateRequest: { priority } })
   }
 
-  const handleManualSectionSelect = (sectionId?: SectionId) => {
+  const handleManualSectionSelect = (sectionId?: GroupId) => {
     updateNewTask({ updateRequest: { sectionId } })
   }
 

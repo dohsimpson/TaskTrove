@@ -333,7 +333,7 @@ export function v060Migration(dataFile: Json): Json {
 
 export function v070Migration(dataFile: Json): Json {
   console.log("Migrating data file from v0.6.0 to v0.7.0...")
-  console.log("Adding user field to data file structure")
+  console.log("Adding user field and converting sections to items-based ordering")
 
   // Safely handle Json object type
   if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
@@ -345,13 +345,177 @@ export function v070Migration(dataFile: Json): Json {
     result[key] = value
   }
 
-  // Add default user structure if not present
+  // 1. Add default user structure if not present
   if (!("user" in result)) {
     console.log("✓ Adding default user structure")
     result.user = DEFAULT_USER
   }
 
-  console.log("✓ User field migration completed")
+  // 2. Migrate projects: convert sections and remove taskOrder
+  if (Array.isArray(result.projects)) {
+    result.projects = result.projects.map((project) => {
+      if (typeof project !== "object" || project === null || Array.isArray(project)) {
+        return project
+      }
+
+      const projectObj: Record<string, unknown> = {}
+      for (const [key, value] of Object.entries(project)) {
+        projectObj[key] = value
+      }
+
+      // Get project's taskOrder array (may be undefined)
+      const taskOrder = Array.isArray(projectObj.taskOrder) ? projectObj.taskOrder : []
+
+      // Build a map of tasks by ID for quick lookup
+      const taskMap = new Map<unknown, unknown>()
+      if (Array.isArray(result.tasks)) {
+        for (const task of result.tasks) {
+          if (typeof task === "object" && task !== null && "id" in task) {
+            taskMap.set(task.id, task)
+          }
+        }
+      }
+
+      // Build section items by processing taskOrder and tasks
+      const sectionTasksMap = new Map<unknown, unknown[]>()
+      const defaultSectionTasks: unknown[] = []
+
+      // Process tasks in taskOrder first (preserving order)
+      for (const taskId of taskOrder) {
+        const task = taskMap.get(taskId)
+        if (!task || typeof task !== "object" || task === null) {
+          continue // Skip orphaned task IDs
+        }
+
+        const sectionId = "sectionId" in task ? task.sectionId : undefined
+        if (sectionId !== undefined && sectionId !== null) {
+          // Add to specific section
+          const existing = sectionTasksMap.get(sectionId)
+          if (existing) {
+            existing.push(taskId)
+          } else {
+            sectionTasksMap.set(sectionId, [taskId])
+          }
+        } else {
+          // Add to default section
+          defaultSectionTasks.push(taskId)
+        }
+      }
+
+      // Process tasks not in taskOrder (add to end of appropriate section)
+      const tasksInOrder = new Set(taskOrder)
+      if (Array.isArray(result.tasks)) {
+        for (const task of result.tasks) {
+          if (typeof task !== "object" || task === null || !("id" in task)) {
+            continue
+          }
+
+          // Skip if task doesn't belong to this project
+          if ("projectId" in task && task.projectId !== projectObj.id) {
+            continue
+          }
+
+          // Skip if already processed
+          if (tasksInOrder.has(task.id)) {
+            continue
+          }
+
+          const sectionId = "sectionId" in task ? task.sectionId : undefined
+          if (sectionId !== undefined && sectionId !== null) {
+            // Add to end of specific section
+            const existing = sectionTasksMap.get(sectionId)
+            if (existing) {
+              existing.push(task.id)
+            } else {
+              sectionTasksMap.set(sectionId, [task.id])
+            }
+          } else {
+            // Add to end of default section
+            defaultSectionTasks.push(task.id)
+          }
+        }
+      }
+
+      // Transform sections to new structure
+      const newSections: unknown[] = []
+      if (Array.isArray(projectObj.sections)) {
+        for (const section of projectObj.sections) {
+          if (typeof section !== "object" || section === null || !("id" in section)) {
+            continue
+          }
+
+          const sectionObj: Record<string, unknown> = {}
+          for (const [key, value] of Object.entries(section)) {
+            sectionObj[key] = value
+          }
+
+          // Create new section with items-based ordering
+          const newSection: Record<string, unknown> = {
+            id: sectionObj.id, // Keep same UUID
+            name: sectionObj.name,
+            slug: "",
+            type: "section",
+            items: sectionTasksMap.get(sectionObj.id) || [],
+          }
+
+          // Add optional color field if it exists
+          if ("color" in sectionObj && sectionObj.color !== undefined) {
+            newSection.color = sectionObj.color
+          }
+
+          // Add optional description field if it exists
+          if ("description" in sectionObj && sectionObj.description !== undefined) {
+            newSection.description = sectionObj.description
+          }
+
+          newSections.push(newSection)
+        }
+      }
+
+      // Add default section if there are unsectioned tasks
+      if (defaultSectionTasks.length > 0) {
+        newSections.push({
+          id: DEFAULT_UUID,
+          name: "Tasks",
+          slug: "",
+          type: "section",
+          color: "#808080",
+          items: defaultSectionTasks,
+        })
+      }
+
+      // Update project object
+      projectObj.sections = newSections
+      delete projectObj.taskOrder
+
+      return projectObj
+    })
+
+    console.log("✓ Converted project sections to items-based ordering")
+  }
+
+  // 3. Remove sectionId from all tasks
+  if (Array.isArray(result.tasks)) {
+    result.tasks = result.tasks.map((task) => {
+      if (typeof task !== "object" || task === null || Array.isArray(task)) {
+        return task
+      }
+
+      const taskObj: Record<string, unknown> = {}
+      for (const [key, value] of Object.entries(task)) {
+        taskObj[key] = value
+      }
+
+      // Remove sectionId field
+      delete taskObj.sectionId
+
+      return taskObj
+    })
+
+    console.log("✓ Removed sectionId from tasks")
+  }
+
+  console.log("✓ User field and sections migration completed")
 
   // Return as Json by serializing/deserializing
   return JSON.parse(JSON.stringify(result))

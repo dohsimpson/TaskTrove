@@ -3,7 +3,7 @@ import type React from "react";
 import type {
   LabelId,
   ProjectId,
-  SectionId,
+  GroupId,
   Task,
   TaskId,
   CreateTaskRequest,
@@ -51,7 +51,7 @@ showProjectDialogAtom.debugLabel = "showProjectDialogAtom";
  * Generic Entity Dialog Context - Tracks insertion position and dialog mode
  * Can be used for projects, labels, and sections
  */
-type EntityDialogContext<T = LabelId | ProjectId | SectionId> = {
+type EntityDialogContext<T = LabelId | ProjectId | GroupId> = {
   mode: "create" | "edit";
   insertPosition?: {
     id: T;
@@ -86,7 +86,7 @@ showSectionDialogAtom.debugLabel = "showSectionDialogAtom";
 /**
  * Section Dialog Context - Tracks insertion position and related section info
  */
-export const sectionDialogContextAtom = atom<EntityDialogContext<SectionId>>({
+export const sectionDialogContextAtom = atom<EntityDialogContext<GroupId>>({
   mode: "create",
 });
 sectionDialogContextAtom.debugLabel = "sectionDialogContextAtom";

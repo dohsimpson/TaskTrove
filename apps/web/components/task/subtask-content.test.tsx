@@ -213,7 +213,6 @@ describe("SubtaskContent", () => {
     priority: 4 as const,
     dueDate: undefined,
     projectId: TEST_PROJECT_ID_1,
-    sectionId: TEST_SECTION_ID_1,
     labels: [],
     subtasks: [],
     comments: [],

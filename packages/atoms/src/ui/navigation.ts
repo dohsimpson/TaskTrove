@@ -35,7 +35,6 @@ import {
   type ProjectGroup,
   type ProjectId,
   type LabelId,
-  type SectionId,
   type GroupId,
   type ViewId,
   type StandardViewId,
@@ -258,7 +257,7 @@ export const openSectionDialogAtom = atom(
     get,
     set,
     options?: {
-      id?: SectionId;
+      id?: GroupId;
       placement?: "above" | "below";
       projectId?: ProjectId;
     },
@@ -801,17 +800,17 @@ closeLabelColorPickerAtom.debugLabel = "closeLabelColorPickerAtom";
  */
 
 /** Currently editing section ID */
-export const editingSectionIdAtom = atom<SectionId | null>(null);
+export const editingSectionIdAtom = atom<GroupId | null>(null);
 editingSectionIdAtom.debugLabel = "editingSectionIdAtom";
 
 /** Section color picker open state with section ID */
-export const sectionColorPickerAtom = atom<SectionId | null>(null);
+export const sectionColorPickerAtom = atom<GroupId | null>(null);
 sectionColorPickerAtom.debugLabel = "sectionColorPickerAtom";
 
 /** Start editing a section by ID */
 export const startEditingSectionAtom = atom(
   null,
-  (get, set, sectionId: SectionId) => {
+  (get, set, sectionId: GroupId) => {
     set(editingSectionIdAtom, sectionId);
   },
 );
@@ -826,7 +825,7 @@ stopEditingSectionAtom.debugLabel = "stopEditingSectionAtom";
 /** Open color picker for a section */
 export const openSectionColorPickerAtom = atom(
   null,
-  (get, set, sectionId: SectionId) => {
+  (get, set, sectionId: GroupId) => {
     set(sectionColorPickerAtom, sectionId);
   },
 );

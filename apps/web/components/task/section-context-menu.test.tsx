@@ -5,7 +5,7 @@ import { render } from "@/test-utils/render-with-providers"
 import { SectionContextMenu } from "./section-context-menu"
 import { projects } from "@/lib/atoms"
 import { pathnameAtom } from "@/lib/atoms/ui/navigation"
-import { createSectionId } from "@/lib/types"
+import { createGroupId } from "@/lib/types"
 import { TEST_PROJECT_ID_1 } from "@/lib/utils/test-constants"
 
 // Mock component interfaces
@@ -107,25 +107,31 @@ describe("SectionContextMenu", () => {
   const mockProject = {
     id: TEST_PROJECT_ID_1,
     name: "Test Project",
+    slug: "test-project",
     color: "#ff0000",
     shared: false,
     sections: [
       {
         id: "00000000-0000-4000-8000-000000000001",
         name: "Test Section",
+        slug: "test-section",
+        type: "section" as const,
+        items: [],
         color: "#blue",
       },
       {
         id: "00000000-0000-0000-0000-000000000000",
         name: "Default Section",
+        slug: "default-section",
+        type: "section" as const,
+        items: [],
         color: "#gray",
       },
     ],
-    taskOrder: [],
   }
 
   const defaultProps = {
-    sectionId: createSectionId("00000000-0000-4000-8000-000000000001"),
+    sectionId: createGroupId("12345678-1234-4234-8234-123456789abc"),
     isVisible: true,
   }
 
@@ -174,7 +180,7 @@ describe("SectionContextMenu", () => {
   it("returns null when section is not found", () => {
     render(
       <SectionContextMenu
-        sectionId={createSectionId("99999999-9999-4999-8999-999999999999")}
+        sectionId={createGroupId("99999999-9999-4999-8999-999999999999")}
         isVisible={true}
       />,
       {
@@ -208,7 +214,7 @@ describe("SectionContextMenu", () => {
     // Use DEFAULT_UUID for this test
     const { container } = render(
       <SectionContextMenu
-        sectionId={createSectionId("00000000-0000-0000-0000-000000000000")}
+        sectionId={createGroupId("00000000-0000-0000-0000-000000000000")}
         isVisible={true}
         open={true}
       />,

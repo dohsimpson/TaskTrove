@@ -5,7 +5,7 @@ import {
   Task,
   TaskComment,
   TaskId,
-  SectionId,
+  GroupId,
   ViewId,
   ProjectId,
   Project,
@@ -13,16 +13,15 @@ import {
   INBOX_PROJECT_ID,
   createTaskId,
   createProjectId,
-  createSectionId,
   createCommentId,
   UpdateTaskRequest,
   CreateTaskRequest,
 } from "@tasktrove/types";
+import { DEFAULT_SECTION_ID } from "@tasktrove/types/defaults";
 import {
   DEFAULT_TASK_PRIORITY,
   DEFAULT_TASK_TITLE,
   DEFAULT_TASK_COMPLETED,
-  DEFAULT_UUID,
   DEFAULT_TASK_SUBTASKS,
   DEFAULT_TASK_COMMENTS,
   DEFAULT_TASK_ATTACHMENTS,
@@ -38,10 +37,10 @@ import {
 import { notificationAtoms } from "./notifications";
 import {
   getOrderedTasksForProject,
-  moveTaskWithinProject,
-  moveTaskWithinSection as moveTaskWithinSectionUtil,
-  addTaskToProjectOrder,
-  removeTaskFromProjectOrder,
+  getOrderedTasksForSection,
+  moveTaskWithinSection,
+  addTaskToSection,
+  removeTaskFromSection,
 } from "../data/tasks/ordering";
 
 // Re-export for backwards compatibility
@@ -522,30 +521,12 @@ export const moveTaskAtom = atom(
       viewId?: ViewId;
       fromIndex?: number;
       toIndex?: number;
-      taskOrder?: Array<{ taskId: TaskId; order: number }>; // Legacy support
     },
   ) => {
     try {
       const tasks = get(tasksAtom);
 
-      // Legacy support for old taskOrder format
-      if (params.taskOrder) {
-        log.warn(
-          { module: "tasks" },
-          "Using legacy taskOrder format - consider migrating to nextTask",
-        );
-        const updatedTasks = tasks.map((task: Task) => {
-          const orderInfo = params.taskOrder?.find((t) => t.taskId === task.id);
-          if (orderInfo) {
-            return { ...task, order: orderInfo.order };
-          }
-          return task;
-        });
-        set(tasksAtom, updatedTasks);
-        return;
-      }
-
-      // Handle reordering within a project using taskOrder arrays
+      // Handle reordering within a project using section.items arrays
       if (
         params.viewId &&
         params.fromIndex !== undefined &&
@@ -572,11 +553,34 @@ export const moveTaskAtom = atom(
           }
         }
 
-        const updatedProjects = moveTaskWithinProject(
-          projectId,
+        // Find which section contains this task
+        const project = projects.find((p) => p.id === projectId);
+        if (!project) {
+          log.warn({ projectId }, "Project not found for moveTaskAtom");
+          return;
+        }
+
+        const section = project.sections.find((s) =>
+          s.items.includes(params.taskId),
+        );
+        if (!section) {
+          log.warn(
+            { taskId: params.taskId, projectId },
+            "Task not found in any section",
+          );
+          return;
+        }
+
+        // Update section items ordering
+        const updatedSections = moveTaskWithinSection(
+          section.id,
           params.taskId,
           params.toIndex,
-          projects,
+          project.sections,
+        );
+
+        const updatedProjects = projects.map((p) =>
+          p.id === projectId ? { ...p, sections: updatedSections } : p,
         );
         set(projectsAtom, updatedProjects);
       }
@@ -589,65 +593,87 @@ moveTaskAtom.debugLabel = "moveTaskAtom";
 
 /**
  * Moves a task between project sections
- * Updates the sectionId field and maintains view ordering
+ * Updates section.items arrays to reflect the new section membership
  */
 export const moveTaskBetweenSectionsAtom = atom(
   null,
-  (
+  async (
     get,
     set,
     params: {
       taskId: TaskId;
-      projectId: ProjectId;
-      newSectionId: SectionId; // section ID
-      toIndex?: number; // position within the new section
+      newSectionId: GroupId;
+      projectId: string;
+      position?: number;
     },
   ) => {
     try {
       const tasks = get(tasksAtom);
+      const task = tasks.find((t: Task) => t.id === params.taskId);
+      if (!task) {
+        throw new Error(`Task not found: ${params.taskId}`);
+      }
 
-      // Update the task's sectionId
-      const updatedTasks = tasks.map((task: Task) =>
-        task.id === params.taskId
-          ? {
-              ...task,
-              sectionId: params.newSectionId,
-              projectId: createProjectId(params.projectId), // Ensure task is in the correct project
-            }
-          : task,
+      const projects = get(projectsAtom);
+      const projectId = createProjectId(params.projectId);
+      const project = projects.find((p) => p.id === projectId);
+      if (!project) {
+        throw new Error(`Project not found: ${projectId}`);
+      }
+
+      // Find which section currently contains this task
+      const oldSection = project.sections.find((s) =>
+        s.items.includes(params.taskId),
       );
 
-      set(tasksAtom, updatedTasks);
-
-      // If a specific position is requested, also reorder within the view
-      if (params.toIndex !== undefined) {
-        const viewId = params.projectId; // ProjectId is now directly a ViewId
-        set(reorderTaskInViewAtom, {
-          taskId: params.taskId,
-          viewId,
-          fromIndex: 0, // We'll let the reorder logic figure out the current position
-          toIndex: params.toIndex,
-        });
+      // Remove from old section (if exists)
+      let updatedSections = project.sections;
+      if (oldSection) {
+        updatedSections = removeTaskFromSection(
+          params.taskId,
+          oldSection.id,
+          updatedSections,
+        );
       }
+
+      // Add to new section
+      updatedSections = addTaskToSection(
+        params.taskId,
+        params.newSectionId,
+        params.position,
+        updatedSections,
+      );
+
+      // Update project with new sections
+      const updatedProjects = projects.map((p) =>
+        p.id === projectId ? { ...p, sections: updatedSections } : p,
+      );
+
+      set(projectsAtom, updatedProjects);
 
       log.info(
         {
           taskId: params.taskId,
-          sectionId: params.newSectionId,
+          newSectionId: params.newSectionId,
+          oldSectionId: oldSection?.id,
           projectId: params.projectId,
           module: "tasks",
         },
-        "Task moved to section",
+        "Moved task between sections",
       );
     } catch (error) {
-      handleAtomError(error, "moveTaskBetweenSectionsAtom");
+      log.error(
+        { error, taskId: params.taskId, module: "tasks" },
+        "Failed to move task between sections",
+      );
+      throw error;
     }
   },
 );
 moveTaskBetweenSectionsAtom.debugLabel = "moveTaskBetweenSectionsAtom";
 
 /**
- * Reorders a task within a specific project using nextTask
+ * Reorders a task within a specific project section
  * This is the primary atom for handling drag-and-drop reordering
  */
 export const reorderTaskInViewAtom = atom(
@@ -692,16 +718,34 @@ export const reorderTaskInViewAtom = atom(
         }
       }
 
-      // Use section-aware reordering that maintains section boundaries
-      const taskSectionId = task.sectionId || createSectionId(DEFAULT_UUID);
+      // Find which section contains this task
+      const project = projects.find((p) => p.id === projectId);
+      if (!project) {
+        log.warn({ projectId }, "Project not found for reordering");
+        return;
+      }
 
-      const updatedProjects = moveTaskWithinSectionUtil(
-        projectId,
+      const section = project.sections.find((s) =>
+        s.items.includes(params.taskId),
+      );
+      if (!section) {
+        log.warn(
+          { taskId: params.taskId, projectId },
+          "Task not found in any section",
+        );
+        return;
+      }
+
+      // Update section items ordering
+      const updatedSections = moveTaskWithinSection(
+        section.id,
         params.taskId,
         params.toIndex,
-        taskSectionId,
-        projects,
-        tasks,
+        project.sections,
+      );
+
+      const updatedProjects = projects.map((p) =>
+        p.id === projectId ? { ...p, sections: updatedSections } : p,
       );
 
       set(projectsAtom, updatedProjects);
@@ -709,7 +753,7 @@ export const reorderTaskInViewAtom = atom(
         {
           taskId: params.taskId,
           projectId,
-          sectionId: taskSectionId,
+          sectionId: section.id,
           fromIndex: params.fromIndex,
           toIndex: params.toIndex,
           module: "tasks",
@@ -724,8 +768,8 @@ export const reorderTaskInViewAtom = atom(
 reorderTaskInViewAtom.debugLabel = "reorderTaskInViewAtom";
 
 /**
- * Adds a new task to a specific position in a project
- * Automatically manages nextTask for the new task
+ * Adds a new task to a specific position in a section
+ * Automatically adds task to section.items array
  */
 export const addTaskToViewAtom = atom(
   null,
@@ -747,7 +791,6 @@ export const addTaskToViewAtom = atom(
         description: params.taskData.description,
         completed: DEFAULT_TASK_COMPLETED,
         priority: params.taskData.priority || DEFAULT_TASK_PRIORITY,
-        sectionId: params.taskData.sectionId || createSectionId(DEFAULT_UUID),
         dueDate: params.taskData.dueDate,
         projectId: params.taskData.projectId || INBOX_PROJECT_ID,
         labels: params.taskData.labels || [],
@@ -766,23 +809,33 @@ export const addTaskToViewAtom = atom(
       const tasksWithNew = [...tasks, newTask];
       set(tasksAtom, tasksWithNew);
 
-      // Add to project's taskOrder array
-      const projectId = newTask.projectId || INBOX_PROJECT_ID;
+      // Add to section.items instead of project.taskOrder
+      // Always add to default section - UI can move tasks between sections later
+      const sectionId = DEFAULT_SECTION_ID;
       const projects = get(projectsAtom);
-      const position = params.position;
-      const updatedProjects = addTaskToProjectOrder(
-        newTask.id,
-        projectId,
-        position,
-        projects,
-      );
-      set(projectsAtom, updatedProjects);
+      const projectId = newTask.projectId || INBOX_PROJECT_ID;
+      const project = projects.find((p) => p.id === projectId);
+
+      if (project) {
+        const updatedSections = addTaskToSection(
+          newTask.id,
+          sectionId,
+          params.position,
+          project.sections,
+        );
+
+        const updatedProjects = projects.map((p) =>
+          p.id === projectId ? { ...p, sections: updatedSections } : p,
+        );
+        set(projectsAtom, updatedProjects);
+      }
 
       log.info(
         {
           taskId: newTask.id,
           taskTitle: newTask.title,
           projectId,
+          sectionId,
           module: "tasks",
         },
         "Task added to project",
@@ -795,8 +848,7 @@ export const addTaskToViewAtom = atom(
 addTaskToViewAtom.debugLabel = "addTaskToViewAtom";
 
 /**
- * Removes a task from a specific view (but keeps the task in other views)
- * If task is only in this view, removes it completely
+ * Removes a task from a specific view (removes from section.items)
  */
 export const removeTaskFromViewAtom = atom(
   null,
@@ -827,13 +879,25 @@ export const removeTaskFromViewAtom = atom(
         }
       }
 
-      // Remove from project's taskOrder array
-      const updatedProjects = removeTaskFromProjectOrder(
-        params.taskId,
-        projectId,
-        projects,
-      );
-      set(projectsAtom, updatedProjects);
+      // Find which section contains this task and remove it
+      const project = projects.find((p) => p.id === projectId);
+      if (project) {
+        const section = project.sections.find((s) =>
+          s.items.includes(params.taskId),
+        );
+        if (section) {
+          const updatedSections = removeTaskFromSection(
+            params.taskId,
+            section.id,
+            project.sections,
+          );
+
+          const updatedProjects = projects.map((p) =>
+            p.id === projectId ? { ...p, sections: updatedSections } : p,
+          );
+          set(projectsAtom, updatedProjects);
+        }
+      }
 
       log.info(
         { taskId: params.taskId, projectId, module: "tasks" },
@@ -847,8 +911,8 @@ export const removeTaskFromViewAtom = atom(
 removeTaskFromViewAtom.debugLabel = "removeTaskFromViewAtom";
 
 /**
- * Gets ordered tasks for a specific view using project taskOrder arrays
- * This replaces the old linked-list approach with array-based ordering
+ * Gets ordered tasks for a specific view using section.items arrays
+ * This replaces the old taskOrder approach with section-based ordering
  */
 export const getTasksForViewAtom = namedAtom(
   "getTasksForViewAtom",
@@ -918,57 +982,38 @@ export const orderedTasksByProjectAtom = atom((get) => {
 orderedTasksByProjectAtom.debugLabel = "orderedTasksByProjectAtom";
 
 /**
- * Returns tasks for a specific section within a project
- * Handles orphaned tasks (tasks with invalid section IDs) by including them in the default section
+ * Returns tasks for a specific section within a project using section.items
+ * Uses the section's items array to determine task membership and ordering
  */
 export const orderedTasksBySectionAtom = namedAtom(
   "orderedTasksBySectionAtom",
   atom((get) => {
-    return (projectId: ProjectId | "inbox", sectionId: SectionId | null) =>
+    return (projectId: ProjectId | "inbox", sectionId: GroupId | null) =>
       withErrorHandling(
         () => {
           const allTasks = get(tasksAtom);
           const allProjects = get(projectsAtom);
 
-          // Filter tasks by project
-          const tasks =
-            projectId === "inbox"
-              ? allTasks.filter(
-                  (task: Task) =>
-                    !task.projectId || task.projectId === INBOX_PROJECT_ID,
-                )
-              : allTasks.filter((task: Task) => task.projectId === projectId);
+          const actualProjectId =
+            projectId === "inbox" ? INBOX_PROJECT_ID : projectId;
+          const project = allProjects.find((p) => p.id === actualProjectId);
 
-          // Get project for section validation
-          const project =
-            projectId === "inbox"
-              ? null
-              : allProjects.find((p: Project) => p.id === projectId);
+          if (!project) {
+            return [];
+          }
 
-          // Get list of existing section IDs for orphan detection
-          const existingSectionIds = new Set([
-            createSectionId(DEFAULT_UUID),
-            ...(project?.sections.map((s: ProjectSection) => s.id) || []),
-          ]);
-
-          // Filter tasks and handle orphaned tasks
-          const sectionTasks = tasks.filter((task: Task) => {
-            if (sectionId === null || sectionId === DEFAULT_UUID) {
-              // Default section: include tasks with no section ID, default section ID,
-              // or orphaned section IDs (section IDs that don't exist in the project)
-              return (
-                task.sectionId === createSectionId(DEFAULT_UUID) ||
-                !task.sectionId ||
-                !existingSectionIds.has(task.sectionId)
-              );
-            }
-            return task.sectionId === sectionId;
-          });
-
-          // Sort by creation date for consistency
-          return sectionTasks.sort(
-            (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+          // Find section by ID
+          const targetSectionId = sectionId || DEFAULT_SECTION_ID;
+          const section = project.sections.find(
+            (s) => s.id === targetSectionId,
           );
+
+          if (!section) {
+            return [];
+          }
+
+          // Use getOrderedTasksForSection to get tasks in section.items order
+          return getOrderedTasksForSection(section, allTasks);
         },
         "orderedTasksBySectionAtom",
         [],

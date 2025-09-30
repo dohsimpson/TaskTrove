@@ -6,13 +6,13 @@ import { Provider } from "jotai"
 import { KanbanBoard } from "./kanban-board"
 import { DEFAULT_SECTION_COLORS, DEFAULT_UUID } from "@tasktrove/constants"
 import type { Task, TaskPriority } from "@/lib/types"
-import { createTaskId, createCommentId, createLabelId, createSectionId } from "@/lib/types"
+import { createTaskId, createCommentId, createLabelId, createGroupId } from "@/lib/types"
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
   TEST_PROJECT_ID_1,
-  TEST_SECTION_ID_1,
-  TEST_SECTION_ID_2,
+  TEST_GROUP_ID_1,
+  TEST_GROUP_ID_2,
   TEST_LABEL_ID_1,
   TEST_LABEL_ID_2,
 } from "@/lib/utils/test-constants"
@@ -21,8 +21,8 @@ import {
 const TASK_ID_3 = createTaskId("12345678-1234-4234-8234-123456789014")
 const TASK_ID_4 = createTaskId("12345678-1234-4234-8234-123456789015")
 const TASK_ID_5 = createTaskId("12345678-1234-4234-8234-123456789016")
-const SECTION_ID_3 = createSectionId("00000000-0000-4000-8000-000000000002")
-const SECTION_ID_4 = createSectionId("00000000-0000-4000-8000-000000000003")
+const SECTION_ID_3 = createGroupId("00000000-0000-4000-8000-000000000002")
+const SECTION_ID_4 = createGroupId("00000000-0000-4000-8000-000000000003")
 const COMMENT_ID_1 = createCommentId("11111111-1111-4111-8111-111111111111")
 const COMMENT_ID_2 = createCommentId("22222222-2222-4222-8222-222222222222")
 const COMMENT_ID_3 = createCommentId("33333333-3333-4333-8333-333333333333")
@@ -273,12 +273,39 @@ describe.skip("KanbanBoard", () => {
     shared: false,
     position: 1000,
     sections: [
-      { id: TEST_SECTION_ID_1, name: "To Do", color: DEFAULT_SECTION_COLORS[0] },
-      { id: TEST_SECTION_ID_2, name: "In Progress", color: DEFAULT_SECTION_COLORS[1] },
-      { id: SECTION_ID_3, name: "Review", color: DEFAULT_SECTION_COLORS[2] },
-      { id: SECTION_ID_4, name: "Done", color: DEFAULT_SECTION_COLORS[3] },
+      {
+        id: TEST_GROUP_ID_1,
+        name: "To Do",
+        slug: "to-do",
+        type: "section" as const,
+        items: [],
+        color: DEFAULT_SECTION_COLORS[0],
+      },
+      {
+        id: TEST_GROUP_ID_2,
+        name: "In Progress",
+        slug: "in-progress",
+        type: "section" as const,
+        items: [],
+        color: DEFAULT_SECTION_COLORS[1],
+      },
+      {
+        id: SECTION_ID_3,
+        name: "Review",
+        slug: "review",
+        type: "section" as const,
+        items: [],
+        color: DEFAULT_SECTION_COLORS[2],
+      },
+      {
+        id: SECTION_ID_4,
+        name: "Done",
+        slug: "done",
+        type: "section" as const,
+        items: [],
+        color: DEFAULT_SECTION_COLORS[3],
+      },
     ],
-    taskOrder: [],
   }
 
   // Helper function to create proper Task objects
@@ -292,7 +319,6 @@ describe.skip("KanbanBoard", () => {
     subtasks: [],
     comments: [],
     attachments: [],
-    sectionId: TEST_SECTION_ID_1,
     createdAt: new Date(),
     recurringMode: "dueDate",
     order: 1,
@@ -312,7 +338,6 @@ describe.skip("KanbanBoard", () => {
         { id: COMMENT_ID_2, content: "Comment 2", createdAt: new Date() },
       ],
       attachments: ["file1.pdf"],
-      sectionId: TEST_SECTION_ID_1,
       order: 1,
     }),
     createTask({
@@ -324,7 +349,6 @@ describe.skip("KanbanBoard", () => {
       labels: [LABEL_ID_3],
       comments: [],
       attachments: [],
-      sectionId: TEST_SECTION_ID_2,
       order: 1,
     }),
     createTask({
@@ -340,7 +364,6 @@ describe.skip("KanbanBoard", () => {
         { id: COMMENT_ID_7, content: "Comment 7", createdAt: new Date() },
       ],
       attachments: ["file2.pdf", "file3.png"],
-      sectionId: SECTION_ID_3,
       order: 1,
     }),
     createTask({
@@ -350,7 +373,6 @@ describe.skip("KanbanBoard", () => {
       labels: [],
       comments: [],
       attachments: [],
-      sectionId: SECTION_ID_4,
       order: 1,
     }),
   ]
@@ -600,7 +622,6 @@ describe.skip("KanbanBoard", () => {
         labels: [],
         comments: [],
         attachments: [],
-        sectionId: createSectionId("99999999-9999-4999-8999-999999999999"), // Non-existent section ID
         order: 1,
       }),
     ]
@@ -634,7 +655,6 @@ describe.skip("KanbanBoard", () => {
         labels: [],
         comments: [],
         attachments: [],
-        sectionId: TEST_SECTION_ID_1,
         order: 1,
       }),
     ]
@@ -674,7 +694,6 @@ describe.skip("KanbanBoard", () => {
         labels: [],
         comments: [],
         attachments: [],
-        sectionId: TEST_SECTION_ID_1,
         order: 1,
       }),
     ]
@@ -702,7 +721,6 @@ describe.skip("KanbanBoard", () => {
         labels: [],
         comments: [],
         attachments: [],
-        sectionId: TEST_SECTION_ID_1,
         order: 2,
       }),
       createTask({
@@ -712,7 +730,6 @@ describe.skip("KanbanBoard", () => {
         labels: [],
         comments: [],
         attachments: [],
-        sectionId: TEST_SECTION_ID_1,
         order: 1,
       }),
     ]
@@ -773,7 +790,6 @@ describe.skip("KanbanBoard", () => {
           labels: [],
           comments: [],
           attachments: [],
-          sectionId: TEST_SECTION_ID_1,
         }),
         createTask({
           id: TEST_TASK_ID_2,
@@ -782,7 +798,6 @@ describe.skip("KanbanBoard", () => {
           labels: [],
           comments: [],
           attachments: [],
-          sectionId: TEST_SECTION_ID_1,
         }),
         createTask({
           id: TASK_ID_3,
@@ -791,7 +806,6 @@ describe.skip("KanbanBoard", () => {
           labels: [],
           comments: [],
           attachments: [],
-          sectionId: TEST_SECTION_ID_1,
         }),
         createTask({
           id: TASK_ID_4,
@@ -800,7 +814,6 @@ describe.skip("KanbanBoard", () => {
           labels: [],
           comments: [],
           attachments: [],
-          sectionId: TEST_SECTION_ID_1,
         }),
       ]
 
@@ -907,13 +920,19 @@ describe.skip("KanbanBoard", () => {
         ...defaultProps.project,
         sections: [
           {
-            id: createSectionId(DEFAULT_UUID),
+            id: createGroupId(DEFAULT_UUID),
             name: "Custom Section 1",
+            slug: "custom-section-1",
+            type: "section" as const,
+            items: [],
             color: "#ff0000",
           },
           {
-            id: createSectionId("00000000-0000-4000-8000-000000000001"),
+            id: createGroupId("00000000-0000-4000-8000-000000000001"),
             name: "Custom Section 2",
+            slug: "custom-section-2",
+            type: "section" as const,
+            items: [],
             color: "#00ff00",
           },
         ],
@@ -937,13 +956,19 @@ describe.skip("KanbanBoard", () => {
         ...defaultProps.project,
         sections: [
           {
-            id: createSectionId(DEFAULT_UUID),
+            id: createGroupId(DEFAULT_UUID),
             name: "With Hash",
+            slug: "with-hash",
+            type: "section" as const,
+            items: [],
             color: "#3b82f6",
           },
           {
-            id: createSectionId("00000000-0000-4000-8000-000000000001"),
+            id: createGroupId("00000000-0000-4000-8000-000000000001"),
             name: "Without Hash",
+            slug: "without-hash",
+            type: "section" as const,
+            items: [],
             color: "3b82f6",
           },
         ],

@@ -27,7 +27,7 @@ import { log } from "@/lib/utils/logger"
 import { taskAtoms, projectAtoms, labelAtoms } from "@/lib/atoms"
 import { toast } from "sonner"
 import type { Task, CreateTaskRequest, Project } from "@/lib/types"
-import { INBOX_PROJECT_ID, createSectionId, createProjectId, isValidPriority } from "@/lib/types"
+import { INBOX_PROJECT_ID, createGroupId, createProjectId, isValidPriority } from "@/lib/types"
 
 interface TaskFormProps {
   task?: Partial<Task>
@@ -41,13 +41,20 @@ export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
   const labels = useAtomValue(labelAtoms.labels)
   const addTask = useSetAtom(taskAtoms.actions.addTask)
   const updateTask = useSetAtom(taskAtoms.actions.updateTask)
+  // Find which section contains this task (if any)
+  const taskSectionId = task?.id
+    ? projects
+        .find((p) => p.id === task.projectId)
+        ?.sections.find((s) => task.id && s.items.includes(task.id))?.id
+    : undefined
+
   const [formData, setFormData] = useState<CreateTaskRequest>({
     title: task?.title || "",
     description: task?.description || "",
     priority: task?.priority || DEFAULT_TASK_PRIORITY,
     dueDate: task?.dueDate,
     projectId: task?.projectId || projects[0]?.id || INBOX_PROJECT_ID,
-    sectionId: task?.sectionId || createSectionId("00000000-0000-0000-0000-000000000000"),
+    sectionId: taskSectionId || createGroupId("00000000-0000-4000-8000-000000000000"),
     labels: task?.labels || [],
     recurring: task?.recurring,
     ...(task?.recurringMode &&

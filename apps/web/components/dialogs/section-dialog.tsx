@@ -2,7 +2,7 @@ import { BaseDialog } from "./base-dialog"
 import { showSectionDialogAtom, sectionDialogContextAtom } from "@/lib/atoms/ui/dialogs"
 import { closeSectionDialogAtom } from "@/lib/atoms/ui/navigation"
 import { addProjectSectionAtPositionAtom } from "@/lib/atoms/core/projects"
-import { createProjectId, createSectionId } from "@/lib/types"
+import { createProjectId, createGroupId } from "@/lib/types"
 
 export function SectionDialog() {
   return (
@@ -26,7 +26,7 @@ export function SectionDialog() {
           insertPosition:
             context.insertPosition.id && context.insertPosition.placement
               ? {
-                  id: createSectionId(context.insertPosition.id),
+                  id: createGroupId(context.insertPosition.id),
                   placement: context.insertPosition.placement,
                 }
               : undefined,

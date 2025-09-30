@@ -347,7 +347,6 @@ const mockTaskWithSubtasks: Task = {
   description: "",
   completed: false,
   priority: 4,
-  sectionId: TEST_SECTION_ID_1,
   labels: [],
   subtasks: [
     {

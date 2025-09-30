@@ -257,7 +257,6 @@ export function TaskItem({
         priority: 4 satisfies TaskPriority,
         dueDate: undefined,
         projectId: INBOX_PROJECT_ID,
-        sectionId: "sectionId" in parent ? parent.sectionId : undefined,
         labels: [],
         subtasks: [],
         comments: [],

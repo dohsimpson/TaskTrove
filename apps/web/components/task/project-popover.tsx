@@ -3,12 +3,12 @@
 import React, { useState } from "react"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { ProjectContent } from "./project-content"
-import type { Task, ProjectId, SectionId } from "@/lib/types"
+import type { Task, ProjectId, GroupId } from "@/lib/types"
 
 interface ProjectPopoverProps {
   // Mode 1: Task-based (for TaskItem)
   task?: Task
-  onUpdate?: (projectId: ProjectId, sectionId?: SectionId) => void
+  onUpdate?: (projectId: ProjectId, sectionId?: GroupId) => void
   // Common props
   children: React.ReactNode
   className?: string

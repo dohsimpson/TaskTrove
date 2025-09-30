@@ -360,7 +360,6 @@ describe("routing utilities", () => {
         color: "#ff0000",
         shared: false,
         sections: [],
-        taskOrder: [],
       },
       {
         id: TEST_PROJECT_ID_2,
@@ -369,7 +368,6 @@ describe("routing utilities", () => {
         color: "#00ff00",
         shared: false,
         sections: [],
-        taskOrder: [],
       },
     ];
 
@@ -394,7 +392,6 @@ describe("routing utilities", () => {
           color: "#ff0000",
           shared: false,
           sections: [],
-          taskOrder: [],
         },
         {
           id: TEST_PROJECT_ID_2,
@@ -403,7 +400,6 @@ describe("routing utilities", () => {
           color: "#00ff00",
           shared: false,
           sections: [],
-          taskOrder: [],
         },
       ];
 

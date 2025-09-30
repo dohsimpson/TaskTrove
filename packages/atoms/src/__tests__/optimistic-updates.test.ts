@@ -39,7 +39,6 @@ const mockTask: Task = {
   completed: false,
   priority: 2,
   projectId: INBOX_PROJECT_ID,
-  sectionId: createSectionId("00000000-0000-0000-0000-000000000000"),
   labels: [],
   subtasks: [],
   comments: [],

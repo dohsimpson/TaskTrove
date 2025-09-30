@@ -9,13 +9,13 @@ import { projectIdsAtom } from "@/lib/atoms/core/projects"
 import { allGroupsAtom } from "@/lib/atoms/core/groups"
 import { useLanguage } from "@/components/providers/language-provider"
 import { useTranslation } from "@/lib/i18n/client"
-import type { Task, ProjectId, SectionId, ProjectGroup } from "@/lib/types"
+import type { Task, ProjectId, GroupId, ProjectGroup } from "@/lib/types"
 import { INBOX_PROJECT_ID, isGroup } from "@/lib/types"
 
 interface ProjectContentProps {
   // Mode 1: Task-based (for TaskItem)
   task?: Task
-  onUpdate?: (projectId: ProjectId, sectionId?: SectionId) => void
+  onUpdate?: (projectId: ProjectId, sectionId?: GroupId) => void
   className?: string
 }
 
@@ -52,13 +52,16 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
   // Determine current project based on mode
   const currentProjectId = task?.projectId
   const currentProject = allProjects.find((p) => p.id === currentProjectId)
-  const currentSectionId = task?.sectionId
+  // Find which section contains this task (if any)
+  const currentSectionId = currentProject?.sections.find((s) =>
+    task?.id ? s.items.includes(task.id) : false,
+  )?.id
 
   // Check if currently in inbox (includes orphaned tasks)
   const projectIds = useAtomValue(projectIdsAtom)
   const isInboxSelected = shouldTaskBeInInbox(currentProjectId, projectIds)
 
-  const handleProjectSelect = (projectId: ProjectId, sectionId?: SectionId) => {
+  const handleProjectSelect = (projectId: ProjectId, sectionId?: GroupId) => {
     if (onUpdate) {
       // Callback mode (QuickAdd)
       onUpdate(projectId, sectionId)
@@ -68,7 +71,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
     }
   }
 
-  const handleSectionSelect = (projectId: ProjectId, sectionId: SectionId) => {
+  const handleSectionSelect = (projectId: ProjectId, sectionId: GroupId) => {
     handleProjectSelect(projectId, sectionId)
   }
 

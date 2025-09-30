@@ -7,7 +7,6 @@
       "completed": false,
       "priority": 1,
       "projectId": "550e8400-e29b-41d4-a716-446655440000",
-      "sectionId": "6ba7b810-9dad-41d1-8696-f01c6a84b1a0",
       "labels": ["6ba7b811-9dad-41d1-8696-f01c6a84b1a1"],
       "subtasks": [
         {
@@ -48,7 +47,6 @@
       "completed": false,
       "priority": 1,
       "projectId": "550e8400-e29b-41d4-a716-446655440000",
-      "sectionId": "6ba7b810-9dad-41d1-8696-f01c6a84b1a0",
       "labels": ["6ba7b811-9dad-41d1-8696-f01c6a84b1a1"],
       "subtasks": [
         {
@@ -83,7 +81,6 @@
       "completed": false,
       "priority": 1,
       "projectId": "550e8400-e29b-41d4-a716-446655440000",
-      "sectionId": "6ba7b820-9dad-41d1-8696-f01c6a84b1b0",
       "labels": ["6ba7b811-9dad-41d1-8696-f01c6a84b1a1"],
       "subtasks": [
         {
@@ -136,7 +133,6 @@
       "completed": false,
       "priority": 1,
       "projectId": "550e8400-e29b-41d4-a716-446655440000",
-      "sectionId": "6ba7b830-9dad-41d1-8696-f01c6a84b1c0",
       "labels": ["6ba7b811-9dad-41d1-8696-f01c6a84b1a1"],
       "subtasks": [
         {
@@ -186,26 +182,29 @@
       "shared": false,
       "sections": [
         {
+          "type": "section",
           "id": "6ba7b810-9dad-41d1-8696-f01c6a84b1a0",
           "name": "Getting Started",
-          "color": "#10B981"
+          "slug": "getting-started",
+          "color": "#10B981",
+          "items": ["f47ac10b-58cc-4372-a567-0e02b2c3d479", "f47ac111-58cc-4372-a567-0e02b2c3d47f"]
         },
         {
+          "type": "section",
           "id": "6ba7b820-9dad-41d1-8696-f01c6a84b1b0",
           "name": "In Progress",
-          "color": "#F59E0B"
+          "slug": "in-progress",
+          "color": "#F59E0B",
+          "items": ["f47ac117-58cc-4372-a567-0e02b2c3d485"]
         },
         {
+          "type": "section",
           "id": "6ba7b830-9dad-41d1-8696-f01c6a84b1c0",
           "name": "Done",
-          "color": "#10B981"
+          "slug": "done",
+          "color": "#10B981",
+          "items": ["f47ac11d-58cc-4372-a567-0e02b2c3d48b"]
         }
-      ],
-      "taskOrder": [
-        "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-        "f47ac111-58cc-4372-a567-0e02b2c3d47f",
-        "f47ac117-58cc-4372-a567-0e02b2c3d485",
-        "f47ac11d-58cc-4372-a567-0e02b2c3d48b"
       ]
     },
     {
@@ -216,22 +215,30 @@
       "shared": false,
       "sections": [
         {
+          "type": "section",
           "id": "6ba7b810-9dad-41d1-8696-f01c6a84b1a1",
           "name": "To Do",
-          "color": "#6B7280"
+          "slug": "to-do",
+          "color": "#6B7280",
+          "items": []
         },
         {
+          "type": "section",
           "id": "6ba7b820-9dad-41d1-8696-f01c6a84b1b1",
           "name": "In Progress",
-          "color": "#F59E0B"
+          "slug": "in-progress",
+          "color": "#F59E0B",
+          "items": []
         },
         {
+          "type": "section",
           "id": "6ba7b830-9dad-41d1-8696-f01c6a84b1c1",
           "name": "Completed",
-          "color": "#10B981"
+          "slug": "completed",
+          "color": "#10B981",
+          "items": []
         }
-      ],
-      "taskOrder": []
+      ]
     }
   ],
   "labels": [

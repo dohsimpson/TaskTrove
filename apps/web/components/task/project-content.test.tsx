@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { ProjectContent } from "./project-content"
 import type { Task, Project, ProjectGroup } from "@/lib/types"
-import { createProjectId, createSectionId, createTaskId } from "@/lib/types"
+import { createProjectId, createGroupId, createTaskId } from "@/lib/types"
 
 // Mock project data with groups and sections
 const mockProjects: Project[] = [
@@ -15,13 +15,19 @@ const mockProjects: Project[] = [
     color: "#3b82f6",
     sections: [
       {
-        id: createSectionId("550e8400-e29b-41d4-a716-446655440011"),
+        id: createGroupId("550e8400-e29b-41d4-a716-446655440011"),
         name: "To Do",
+        slug: "to-do",
+        type: "section" as const,
+        items: [createTaskId("550e8400-e29b-41d4-a716-446655440101")], // Contains mockTask
         color: "#ef4444",
       },
       {
-        id: createSectionId("550e8400-e29b-41d4-a716-446655440012"),
+        id: createGroupId("550e8400-e29b-41d4-a716-446655440012"),
         name: "In Progress",
+        slug: "in-progress",
+        type: "section" as const,
+        items: [],
         color: "#f59e0b",
       },
     ],
@@ -42,8 +48,11 @@ const mockProjects: Project[] = [
     color: "#8b5cf6",
     sections: [
       {
-        id: createSectionId("550e8400-e29b-41d4-a716-446655440013"),
+        id: createGroupId("550e8400-e29b-41d4-a716-446655440013"),
         name: "Research",
+        slug: "research",
+        type: "section" as const,
+        items: [],
         color: "#06b6d4",
       },
     ],
@@ -101,7 +110,6 @@ const mockTask: Task = {
   title: "Test Task",
   completed: false,
   projectId: createProjectId("550e8400-e29b-41d4-a716-446655440001"),
-  sectionId: createSectionId("550e8400-e29b-41d4-a716-446655440011"),
   priority: 1,
   labels: [],
   subtasks: [],
@@ -243,7 +251,7 @@ describe("ProjectContent", () => {
 
         expect(onUpdate).toHaveBeenCalledWith(
           createProjectId("550e8400-e29b-41d4-a716-446655440001"),
-          createSectionId("550e8400-e29b-41d4-a716-446655440011"),
+          createGroupId("550e8400-e29b-41d4-a716-446655440011"),
         )
       }
     })
@@ -285,7 +293,6 @@ describe("ProjectContent", () => {
         updateRequest: {
           id: mockTask.id,
           projectId: createProjectId("550e8400-e29b-41d4-a716-446655440002"),
-          sectionId: undefined,
         },
       })
     })

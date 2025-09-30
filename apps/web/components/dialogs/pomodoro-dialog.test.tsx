@@ -22,7 +22,6 @@ const createMockTask = (overrides: Partial<Task> = {}): Task => ({
   completed: false,
   createdAt: new Date(),
   priority: 2,
-  sectionId: TEST_SECTION_ID_1,
   labels: [],
   subtasks: [],
   comments: [],

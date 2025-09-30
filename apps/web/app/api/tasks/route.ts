@@ -6,7 +6,6 @@ import {
   DeleteTaskRequestSchema,
   createTaskId,
   TaskId,
-  createSectionId,
   DataFileSerializationSchema,
   DataFileSerialization,
   TaskUpdateUnionSchema,
@@ -17,6 +16,7 @@ import {
   ErrorResponse,
   ApiErrorCode,
   GetTasksResponse,
+  type GroupId,
 } from "@/lib/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
@@ -38,10 +38,11 @@ import {
   DEFAULT_TASK_COMMENTS,
   DEFAULT_TASK_ATTACHMENTS,
   DEFAULT_TASK_STATUS,
-  DEFAULT_UUID,
   DEFAULT_RECURRING_MODE,
 } from "@tasktrove/constants"
+import { DEFAULT_SECTION_ID } from "@tasktrove/types/defaults"
 import { processRecurringTaskCompletion } from "@/lib/utils/recurring-task-processor"
+import { addTaskToSection, removeTaskFromSection } from "@tasktrove/atoms/data/tasks/ordering"
 
 /**
  * GET /api/tasks
@@ -143,7 +144,6 @@ async function createTask(
     attachments: validation.data.attachments ?? DEFAULT_TASK_ATTACHMENTS,
     createdAt: new Date(),
     status: validation.data.status ?? DEFAULT_TASK_STATUS,
-    sectionId: validation.data.sectionId ?? createSectionId(DEFAULT_UUID),
     projectId: validation.data.projectId ?? INBOX_PROJECT_ID,
     dueDate: validation.data.dueDate, // Use the provided due date
     recurringMode: validation.data.recurringMode ?? DEFAULT_RECURRING_MODE,
@@ -165,6 +165,22 @@ async function createTask(
   }
 
   fileData.tasks.push(newTask)
+
+  // Determine target section (default section if not specified)
+  const targetSectionId: GroupId =
+    (validation.data.sectionId as GroupId | undefined) ?? DEFAULT_SECTION_ID
+  const projectId = newTask.projectId
+
+  // Find the project and add task to section
+  const project = fileData.projects.find((p) => p.id === projectId)
+  if (project) {
+    project.sections = addTaskToSection(
+      newTask.id,
+      targetSectionId,
+      undefined, // append to end
+      project.sections,
+    )
+  }
 
   const writeSuccess = await withPerformanceLogging(
     () => safeWriteDataFile({ data: fileData }),
@@ -278,6 +294,36 @@ async function updateTasks(
     if (cleanedUpdate.projectId === null) cleanedUpdate.projectId = undefined
 
     updateMap.set(update.id, cleanedUpdate)
+  }
+
+  // Handle section changes - update section.items arrays
+  for (const update of updates) {
+    const originalTask = taskMap.get(update.id)
+    if (!originalTask) continue
+
+    // If sectionId is in the update data, handle section migration
+    if (update.sectionId !== undefined) {
+      const newSectionId = update.sectionId as GroupId
+      const taskId = createTaskId(update.id)
+
+      // Find current project
+      const project = fileData.projects.find((p) => p.id === originalTask.projectId)
+      if (project) {
+        // Find the section that currently contains this task
+        const oldSection = project.sections.find((s) => s.items.includes(taskId))
+
+        // Remove from old section if it's different from new section
+        if (oldSection && oldSection.id !== newSectionId) {
+          project.sections = removeTaskFromSection(taskId, oldSection.id, project.sections)
+        }
+
+        // Add to new section if not already there
+        const newSection = project.sections.find((s) => s.id === newSectionId)
+        if (newSection && !newSection.items.includes(taskId)) {
+          project.sections = addTaskToSection(taskId, newSectionId, undefined, project.sections)
+        }
+      }
+    }
   }
 
   // Update the tasks in the file data
@@ -465,6 +511,20 @@ async function deleteTasks(
       500,
       ApiErrorCode.DATA_FILE_READ_ERROR,
     )
+  }
+
+  // Remove tasks from section.items arrays before deleting
+  for (const taskId of taskIds) {
+    const task = fileData.tasks.find((t) => t.id === taskId)
+    if (!task) continue
+
+    const project = fileData.projects.find((p) => p.id === task.projectId)
+    if (project) {
+      const section = project.sections.find((s) => s.items.includes(taskId))
+      if (section) {
+        project.sections = removeTaskFromSection(taskId, section.id, project.sections)
+      }
+    }
   }
 
   // Filter out the tasks to be deleted

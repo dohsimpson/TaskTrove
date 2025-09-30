@@ -6,8 +6,12 @@
 
 export {
   getOrderedTasksForProject,
-  moveTaskWithinProject,
+  getOrderedTasksForSection,
   moveTaskWithinSection,
+  addTaskToSection,
+  removeTaskFromSection,
+  // Deprecated - will be removed in future refactoring
+  moveTaskWithinProject,
   addTaskToProjectOrder,
   removeTaskFromProjectOrder,
   taskOrderingUtils,

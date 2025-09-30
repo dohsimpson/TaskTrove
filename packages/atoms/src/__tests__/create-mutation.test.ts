@@ -144,7 +144,6 @@ describe("createMutation Function", () => {
             color: "#3b82f6",
             shared: false,
             sections: [],
-            taskOrder: [],
           },
         ];
 

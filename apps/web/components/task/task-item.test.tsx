@@ -95,6 +95,7 @@ vi.mock("@/lib/atoms", () => ({
 vi.mock("@/lib/atoms/core/labels", () => ({
   sortedLabelsAtom: { toString: () => "sortedLabelsAtom" },
   addLabelAtom: { toString: () => "addLabelAtom" },
+  addLabelAndWaitForRealIdAtom: { toString: () => "addLabelAndWaitForRealIdAtom" },
   labelsFromIdsAtom: { toString: () => "labelsFromIdsAtom" },
   labelsAtom: { toString: () => "labelsAtom" },
 }))

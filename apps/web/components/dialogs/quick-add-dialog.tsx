@@ -24,7 +24,7 @@ import {
 import { cn } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { useAtomValue, useSetAtom } from "jotai"
-import { labelsAtom, addLabelAtom } from "@/lib/atoms/core/labels"
+import { labelsAtom, addLabelAndWaitForRealIdAtom } from "@/lib/atoms/core/labels"
 import { visibleProjectsAtom } from "@/lib/atoms/core/projects"
 import { addTaskAtom } from "@/lib/atoms/core/tasks"
 import {
@@ -54,14 +54,12 @@ import {
   ProjectIdSchema,
   LabelIdSchema,
   isValidPriority,
-  createLabelId,
 } from "@/lib/types"
 import { PLACEHOLDER_TASK_INPUT } from "@tasktrove/constants"
 import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
 import { log } from "@/lib/utils/logger"
 import { convertTimeToHHMMSS } from "@/lib/utils/enhanced-natural-language-parser"
 import { getPriorityTextColor } from "@/lib/color-utils"
-import { v4 as uuidv4 } from "uuid"
 import { useDebouncedParse } from "@/hooks/use-debounced-parse"
 import { useTranslation } from "@/lib/i18n/client"
 import { useLanguage } from "@/components/providers/language-provider"
@@ -132,7 +130,7 @@ export function QuickAddDialog() {
   const labels = useAtomValue(labelsAtom)
   const projects = useAtomValue(visibleProjectsAtom)
   const addTask = useSetAtom(addTaskAtom)
-  const addLabel = useSetAtom(addLabelAtom)
+  const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
   const nlpEnabled = useAtomValue(nlpEnabledAtom)
   const setNlpEnabled = useSetAtom(nlpEnabledAtom)
 
@@ -429,13 +427,13 @@ export function QuickAddDialog() {
 
   // Helper functions
 
-  const handleAddLabel = (labelName?: string) => {
+  const handleAddLabel = async (labelName?: string) => {
     if (labelName) {
       const existingLabel = labels.find(
         (label) => label.name.toLowerCase() === labelName.toLowerCase(),
       )
 
-      let labelId: LabelId
+      let labelId: LabelId | undefined
       if (!existingLabel) {
         const colors = [
           "#ef4444",
@@ -451,8 +449,9 @@ export function QuickAddDialog() {
         ]
         const randomColor = colors[Math.floor(Math.random() * colors.length)]
 
-        labelId = createLabelId(uuidv4())
-        addLabel({
+        // Wait for the real label ID from the server
+        // Use addLabelAndWaitForRealId to disable optimistic updates and get the real ID immediately
+        labelId = await addLabelAndWaitForRealId({
           name: labelName,
           slug: labelName.toLowerCase().replace(/\s+/g, "-"),
           color: randomColor,
@@ -460,6 +459,9 @@ export function QuickAddDialog() {
       } else {
         labelId = existingLabel.id
       }
+
+      // Guard against undefined labelId
+      if (!labelId) return
 
       const currentLabels = newTask.labels || []
       if (!currentLabels.includes(labelId)) {

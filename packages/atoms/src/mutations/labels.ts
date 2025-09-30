@@ -32,10 +32,11 @@ import { createEntityMutation } from "./entity-factory";
 // =============================================================================
 
 /**
- * Mutation atom for creating labels
+ * Mutation atom for creating labels with optimistic updates
  *
  * Creates a new label and optimistically adds it to the label list.
  * The temporary ID will be replaced with the server-generated ID on success.
+ * Use this for better UX when the caller doesn't need the real server ID immediately.
  */
 export const createLabelMutationAtom = createEntityMutation<
   Label,
@@ -61,9 +62,37 @@ export const createLabelMutationAtom = createEntityMutation<
       color: labelData.color || DEFAULT_LABEL_COLORS[0],
     };
   },
-  // Auto-generates test response and optimistic update!
 });
 createLabelMutationAtom.debugLabel = "createLabelMutationAtom";
+
+/**
+ * Mutation atom for creating labels WITHOUT optimistic updates
+ *
+ * Creates a new label and waits for server response before updating cache.
+ * Use this when you need the real server-generated ID immediately
+ * (e.g., when adding a label to a task during task creation).
+ *
+ * This mutation provides an optimistic update function that doesn't modify the cache,
+ * effectively disabling optimistic updates while still satisfying the mutation factory requirements.
+ */
+export const createLabelWithoutOptimisticUpdateAtom = createEntityMutation<
+  Label,
+  CreateLabelRequest,
+  CreateLabelResponse
+>({
+  entity: "label",
+  operation: "create",
+  schemas: {
+    request: LabelCreateSerializationSchema,
+    response: CreateLabelResponseSchema,
+  },
+  // No optimistic data factory - we don't create temporary labels
+  // Custom optimistic update function that returns unchanged labels
+  // This effectively disables optimistic updates while satisfying factory requirements
+  optimisticUpdateFn: (_variables: CreateLabelRequest, oldLabels: Label[]) => {
+    return oldLabels; // Return unchanged - no optimistic update
+  },
+});
 
 /**
  * Mutation atom for updating labels with optimistic updates

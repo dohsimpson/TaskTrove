@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
-import { v4 as uuidv4 } from "uuid"
 import { useLanguage } from "@/components/providers/language-provider"
 import { useTranslation } from "@/lib/i18n/client"
 import {
@@ -45,8 +44,8 @@ import {
   deleteTaskAtom,
 } from "@/lib/atoms"
 import { log } from "@/lib/utils/logger"
-import { labelsAtom, addLabelAtom } from "@/lib/atoms/core/labels"
-import { Task, createLabelId, type LabelId } from "@/lib/types"
+import { labelsAtom, addLabelAndWaitForRealIdAtom } from "@/lib/atoms/core/labels"
+import { Task, type LabelId } from "@/lib/types"
 import { getDueDateTextColor, getPriorityTextColor } from "@/lib/color-utils"
 
 // Constants
@@ -68,7 +67,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
   // Atom actions
   const updateTask = useSetAtom(updateTaskAtom)
   const addComment = useSetAtom(addCommentAtom)
-  const addLabel = useSetAtom(addLabelAtom)
+  const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
   const deleteTask = useSetAtom(deleteTaskAtom)
 
   // Atom values
@@ -243,14 +242,14 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
         </h3>
         <LabelContent
           task={task}
-          onAddLabel={(labelName) => {
+          onAddLabel={async (labelName) => {
             const labelToAdd = labelName?.trim()
             if (labelToAdd) {
               const existingLabel = allLabels.find(
                 (label) => label.name.toLowerCase() === labelToAdd.toLowerCase(),
               )
 
-              let labelId: LabelId
+              let labelId: LabelId | undefined
               if (!existingLabel) {
                 const colors = [
                   "#ef4444",
@@ -266,8 +265,8 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
                 ]
                 const randomColor = colors[Math.floor(Math.random() * colors.length)]
 
-                labelId = createLabelId(uuidv4())
-                addLabel({
+                // Wait for the real label ID from the server
+                labelId = await addLabelAndWaitForRealId({
                   name: labelToAdd,
                   slug: labelToAdd.toLowerCase().replace(/\s+/g, "-"),
                   color: randomColor,
@@ -275,6 +274,9 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
               } else {
                 labelId = existingLabel.id
               }
+
+              // Guard against undefined labelId
+              if (!labelId) return
 
               if (!task.labels.includes(labelId)) {
                 const updatedLabels = [...task.labels, labelId]

@@ -7,6 +7,7 @@ import {
 import { Label, LabelId, CreateLabelRequest } from "@tasktrove/types";
 import {
   createLabelMutationAtom,
+  createLabelWithoutOptimisticUpdateAtom,
   labelsAtom,
   deleteLabelMutationAtom,
 } from "./base";
@@ -114,14 +115,19 @@ export const labelsFromIdsAtom = namedAtom(
 // =============================================================================
 
 /**
- * Adds a new label
+ * Adds a new label with optimistic updates (default behavior)
+ *
+ * Use this for better UX when you don't need the real server ID immediately.
+ * For adding labels to tasks during task creation, use `addLabelAndWaitForRealIdAtom`.
  */
 export const addLabelAtom = atom(
   null,
   async (get, set, labelData: CreateLabelRequest) => {
     try {
-      // Add to labels data using server mutation for optimistic updates
+      // Use mutation with optimistic updates for better UX
       const createLabelMutation = get(createLabelMutationAtom);
+
+      // Wait for mutation to complete
       const result = await createLabelMutation.mutateAsync(labelData);
 
       // Get the first (and only) label ID from the response
@@ -130,6 +136,7 @@ export const addLabelAtom = atom(
       // Record the operation for undo/redo feedback
       set(recordOperationAtom, `Added label: "${labelData.name}"`);
 
+      // Return the server-generated ID
       return newLabelId;
     } catch (error) {
       handleAtomError(error, "addLabelAtom");
@@ -138,6 +145,38 @@ export const addLabelAtom = atom(
   },
 );
 addLabelAtom.debugLabel = "addLabelAtom";
+
+/**
+ * Adds a new label WITHOUT optimistic updates to get the real server ID immediately
+ *
+ * Use this when you need the real server-generated ID right away
+ * (e.g., when adding a label to a task during task creation).
+ */
+export const addLabelAndWaitForRealIdAtom = atom(
+  null,
+  async (get, set, labelData: CreateLabelRequest) => {
+    try {
+      // Use mutation WITHOUT optimistic updates to get real ID immediately
+      const createLabelMutation = get(createLabelWithoutOptimisticUpdateAtom);
+
+      // Wait for mutation to complete
+      const result = await createLabelMutation.mutateAsync(labelData);
+
+      // Get the first (and only) label ID from the response
+      const newLabelId = result.labelIds[0];
+
+      // Record the operation for undo/redo feedback
+      set(recordOperationAtom, `Added label: "${labelData.name}"`);
+
+      // Return the real server-generated ID
+      return newLabelId;
+    } catch (error) {
+      handleAtomError(error, "addLabelAndWaitForRealIdAtom");
+      throw error;
+    }
+  },
+);
+addLabelAndWaitForRealIdAtom.debugLabel = "addLabelAndWaitForRealIdAtom";
 
 /**
  * Updates an existing label's properties (name, color)

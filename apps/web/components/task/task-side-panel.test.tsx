@@ -60,6 +60,7 @@ vi.mock("@/lib/atoms", () => ({
 vi.mock("@/lib/atoms/core/labels", () => ({
   sortedLabelsAtom: "mockSortedLabelsAtom",
   addLabelAtom: "mockAddLabelAtom",
+  addLabelAndWaitForRealIdAtom: "mockAddLabelAndWaitForRealIdAtom",
   labelsFromIdsAtom: "mockLabelsFromIdsAtom",
   labelsAtom: "mockLabelsAtom",
 }))

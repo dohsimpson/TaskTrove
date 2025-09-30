@@ -2,7 +2,6 @@
 
 import React, { useState } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
-import { v4 as uuidv4 } from "uuid"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import { TaskDueDate } from "@/components/ui/custom/task-due-date"
@@ -53,7 +52,11 @@ import {
   selectionModeAtom,
   selectionToggleTaskSelectionAtom,
 } from "@/lib/atoms"
-import { labelsAtom, addLabelAtom, labelsFromIdsAtom } from "@/lib/atoms/core/labels"
+import {
+  labelsAtom,
+  addLabelAndWaitForRealIdAtom,
+  labelsFromIdsAtom,
+} from "@/lib/atoms/core/labels"
 import { projectsAtom } from "@/lib/atoms"
 import {
   quickAddTaskAtom,
@@ -61,7 +64,7 @@ import {
   updateQuickAddTaskAtom,
 } from "@/lib/atoms/ui/dialogs"
 import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } from "@/lib/types"
-import { INBOX_PROJECT_ID, createTaskId, createLabelId } from "@/lib/types"
+import { INBOX_PROJECT_ID, createTaskId } from "@/lib/types"
 import { TimeEstimationPicker } from "../ui/custom/time-estimation-picker"
 import { useLanguage } from "@/components/providers/language-provider"
 import { useTranslation } from "@/lib/i18n/client"
@@ -230,7 +233,7 @@ export function TaskItem({
   const addComment = useSetAtom(addCommentAtom)
   const toggleTaskPanel = useSetAtom(toggleTaskPanelWithViewStateAtom)
   const toggleTaskSelection = useSetAtom(selectionToggleTaskSelectionAtom)
-  const addLabel = useSetAtom(addLabelAtom)
+  const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
 
   // Quick-add atoms for subtask handling in new tasks
   const quickAddTask = useAtomValue(quickAddTaskAtom)
@@ -407,14 +410,14 @@ export function TaskItem({
     // }
   }
 
-  const handleAddLabel = (labelName?: string) => {
+  const handleAddLabel = async (labelName?: string) => {
     if (labelName) {
       // Check if label exists in the system
       const existingLabel = allLabels.find(
         (label) => label.name.toLowerCase() === labelName.toLowerCase(),
       )
 
-      let labelId: LabelId
+      let labelId: LabelId | undefined
       if (!existingLabel) {
         // Create new label with a default color
         const colors = [
@@ -431,8 +434,8 @@ export function TaskItem({
         ]
         const randomColor = colors[Math.floor(Math.random() * colors.length)]
 
-        labelId = createLabelId(uuidv4()) // Generate UUID for new label
-        addLabel({
+        // Wait for the real label ID from the server
+        labelId = await addLabelAndWaitForRealId({
           name: labelName,
           slug: labelName.toLowerCase().replace(/\s+/g, "-"),
           color: randomColor,
@@ -440,6 +443,9 @@ export function TaskItem({
       } else {
         labelId = existingLabel.id
       }
+
+      // Guard against undefined labelId
+      if (!labelId) return
 
       // Add label ID to task if not already present
       if (!task.labels.includes(labelId)) {
@@ -868,27 +874,8 @@ export function TaskItem({
                   <LabelManagementPopover
                     key={label.id}
                     task={task}
-                    onAddLabel={(labelName) => {
-                      if (labelName) {
-                        const newLabel = allLabels.find((l) => l.name === labelName) || {
-                          id: createLabelId(uuidv4()),
-                          name: labelName,
-                          color: "#3b82f6",
-                          nextLabelId: null,
-                        }
-                        updateTask({
-                          updateRequest: { id: task.id, labels: [...task.labels, newLabel.id] },
-                        })
-                      }
-                    }}
-                    onRemoveLabel={(labelId: LabelId) => {
-                      updateTask({
-                        updateRequest: {
-                          id: task.id,
-                          labels: task.labels.filter((id: LabelId) => id !== labelId),
-                        },
-                      })
-                    }}
+                    onAddLabel={handleAddLabel}
+                    onRemoveLabel={handleRemoveLabel}
                   >
                     <Badge
                       variant="outline"
@@ -906,27 +893,8 @@ export function TaskItem({
                 {taskLabels.length > 2 && (
                   <LabelManagementPopover
                     task={task}
-                    onAddLabel={(labelName) => {
-                      if (labelName) {
-                        const newLabel = allLabels.find((l) => l.name === labelName) || {
-                          id: createLabelId(uuidv4()),
-                          name: labelName,
-                          color: "#3b82f6",
-                          nextLabelId: null,
-                        }
-                        updateTask({
-                          updateRequest: { id: task.id, labels: [...task.labels, newLabel.id] },
-                        })
-                      }
-                    }}
-                    onRemoveLabel={(labelId: LabelId) => {
-                      updateTask({
-                        updateRequest: {
-                          id: task.id,
-                          labels: task.labels.filter((id: LabelId) => id !== labelId),
-                        },
-                      })
-                    }}
+                    onAddLabel={handleAddLabel}
+                    onRemoveLabel={handleRemoveLabel}
                   >
                     <Badge
                       variant="outline"
@@ -940,33 +908,8 @@ export function TaskItem({
             ) : (
               <LabelManagementPopover
                 task={task}
-                onAddLabel={(labelName) => {
-                  if (labelName) {
-                    const existingLabel = allLabels.find((l) => l.name === labelName)
-                    if (existingLabel) {
-                      updateTask({
-                        updateRequest: {
-                          id: task.id,
-                          labels: [...task.labels, existingLabel.id],
-                        },
-                      })
-                    } else {
-                      // Create a new label ID (this should ideally be handled by a label creation atom)
-                      const newLabelId = createLabelId(uuidv4())
-                      updateTask({
-                        updateRequest: { id: task.id, labels: [...task.labels, newLabelId] },
-                      })
-                    }
-                  }
-                }}
-                onRemoveLabel={(labelId: LabelId) => {
-                  updateTask({
-                    updateRequest: {
-                      id: task.id,
-                      labels: task.labels.filter((id: LabelId) => id !== labelId),
-                    },
-                  })
-                }}
+                onAddLabel={handleAddLabel}
+                onRemoveLabel={handleRemoveLabel}
               >
                 <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
                   <Tag className="h-3 w-3" />

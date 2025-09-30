@@ -50,6 +50,7 @@ export {
 // Label mutations
 export {
   createLabelMutationAtom,
+  createLabelWithoutOptimisticUpdateAtom,
   updateLabelsMutationAtom,
   deleteLabelMutationAtom,
 } from "../mutations/labels";

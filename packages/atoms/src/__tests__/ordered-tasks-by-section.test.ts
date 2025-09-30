@@ -1,7 +1,9 @@
 /**
- * DISABLED: Tests for orderedTasksBySectionAtom
- * This atom has been temporarily disabled because it has UI dependencies.
- * It needs to be refactored to the UI layer.
+ * Tests for orderedTasksBySectionAtom logic
+ * Tests section filtering and orphaned task handling
+ *
+ * Note: Uses mock atoms to test the logic in isolation with full control
+ * over test data. The mock implementation mirrors the real atom's logic.
  */
 
 import { expect, describe, it, beforeEach } from "vitest";
@@ -16,33 +18,11 @@ import {
 } from "@tasktrove/types";
 import { DEFAULT_UUID } from "@tasktrove/constants";
 
-// Test constants - defined locally since they're test-only
-const TEST_TASK_ID_1 = createTaskId("12345678-1234-4234-8234-123456789012");
-const TEST_TASK_ID_2 = createTaskId("12345678-1234-4234-8234-123456789013");
-const TEST_TASK_ID_3 = createTaskId("12345678-1234-4234-8234-123456789014");
-const TEST_PROJECT_ID_1 = createProjectId(
-  "12345678-1234-4234-8234-123456789012",
-);
-const TEST_SECTION_ID_1 = createSectionId(
-  "12345678-1234-4234-8234-123456789012",
-);
-const TEST_SECTION_ID_2 = createSectionId(
-  "12345678-1234-4234-8234-123456789013",
-);
-const TEST_SECTION_ID_3 = createSectionId(
-  "12345678-1234-4234-8234-123456789014",
-);
-
-// Additional test IDs (using existing constants)
-const TEST_TASK_ID_4 = createTaskId("12345678-1234-4234-8234-123456789015");
-// Using TEST_SECTION_ID_3 as orphan section (doesn't exist in test project)
-
-// Mock atoms for testing
+// Mock atoms for testing - allows direct control of test data
 const mockTasksAtom = atom<Task[]>([]);
 const mockProjectsAtom = atom<Project[]>([]);
-const mockCurrentViewAtom = atom<string>("inbox");
 
-// Mock the orderedTasksBySection atom with the same logic as the real one
+// Mock implementation matching real orderedTasksBySectionAtom logic
 const mockOrderedTasksBySectionAtom = atom((get) => {
   return (projectId: string, sectionId: string | null) => {
     const allTasks = get(mockTasksAtom);
@@ -82,14 +62,35 @@ const mockOrderedTasksBySectionAtom = atom((get) => {
       return task.sectionId === sectionId;
     });
 
-    // Sort by creation date for consistency (same as real atom)
+    // Sort by creation date for consistency
     return sectionTasks.sort(
       (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
     );
   };
 });
 
-describe.skip("Ordered Tasks By Section Atom", () => {
+// Test constants - defined locally since they're test-only
+const TEST_TASK_ID_1 = createTaskId("12345678-1234-4234-8234-123456789012");
+const TEST_TASK_ID_2 = createTaskId("12345678-1234-4234-8234-123456789013");
+const TEST_TASK_ID_3 = createTaskId("12345678-1234-4234-8234-123456789014");
+const TEST_PROJECT_ID_1 = createProjectId(
+  "12345678-1234-4234-8234-123456789012",
+);
+const TEST_SECTION_ID_1 = createSectionId(
+  "12345678-1234-4234-8234-123456789012",
+);
+const TEST_SECTION_ID_2 = createSectionId(
+  "12345678-1234-4234-8234-123456789013",
+);
+const TEST_SECTION_ID_3 = createSectionId(
+  "12345678-1234-4234-8234-123456789014",
+);
+
+// Additional test IDs (using existing constants)
+const TEST_TASK_ID_4 = createTaskId("12345678-1234-4234-8234-123456789015");
+// Using TEST_SECTION_ID_3 as orphan section (doesn't exist in test project)
+
+describe("Ordered Tasks By Section Atom", () => {
   let store: ReturnType<typeof createStore>;
 
   // Test project with sections
@@ -177,7 +178,6 @@ describe.skip("Ordered Tasks By Section Atom", () => {
     store = createStore();
     store.set(mockTasksAtom, testTasks);
     store.set(mockProjectsAtom, [testProject]);
-    store.set(mockCurrentViewAtom, "project");
   });
 
   describe("Valid Section Filtering", () => {

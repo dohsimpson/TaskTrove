@@ -3,6 +3,9 @@
  *
  * Contains mutation atoms for settings operations:
  * - Updating user settings
+ *
+ * Note: Settings use a single object structure (not arrays),
+ * so they use createMutation directly instead of createEntityMutation.
  */
 
 import {
@@ -12,17 +15,18 @@ import {
   UpdateSettingsRequestSchema,
   type UserSettings,
 } from "@tasktrove/types";
+import { DEFAULT_USER_SETTINGS } from "@tasktrove/types/defaults";
 import {
   DEFAULT_AUTO_BACKUP_ENABLED,
   DEFAULT_BACKUP_TIME,
   DEFAULT_MAX_BACKUPS,
+  SETTINGS_QUERY_KEY,
 } from "@tasktrove/constants";
 import {
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_GENERAL_SETTINGS,
 } from "@tasktrove/types/defaults";
-import type { DataFile } from "@tasktrove/types";
-import { createEntityMutation } from "./entity-factory";
+import { createMutation } from "./factory";
 
 // =============================================================================
 // SETTINGS MUTATION ATOMS
@@ -34,18 +38,19 @@ import { createEntityMutation } from "./entity-factory";
  * Updates user settings and optimistically applies partial changes.
  * Merges partial settings with current settings, preserving existing values.
  */
-export const updateSettingsMutationAtom = createEntityMutation<
-  UserSettings,
+export const updateSettingsMutationAtom = createMutation<
+  UpdateSettingsResponse,
   UpdateSettingsRequest,
-  UpdateSettingsResponse
+  UserSettings
 >({
-  entity: "setting",
-  operation: "update",
-  schemas: {
-    request: UpdateSettingsRequestSchema,
-    response: UpdateSettingsResponseSchema,
-  },
-  // Custom test response for settings-specific structure
+  method: "PATCH",
+  operationName: "Updated settings",
+  apiEndpoint: "/api/settings",
+  resourceQueryKey: SETTINGS_QUERY_KEY,
+  defaultResourceValue: DEFAULT_USER_SETTINGS,
+  responseSchema: UpdateSettingsResponseSchema,
+  serializationSchema: UpdateSettingsRequestSchema,
+  logModule: "settings",
   testResponseFactory: (variables: UpdateSettingsRequest) => {
     // For test mode, construct a complete UserSettings from the partial updates
     const testUserSettings: UserSettings = {
@@ -91,51 +96,50 @@ export const updateSettingsMutationAtom = createEntityMutation<
       message: "Settings updated successfully (test mode)",
     };
   },
-  // Custom optimistic update for nested settings merge
-  optimisticUpdateFn: (variables: UpdateSettingsRequest, oldData: DataFile) => {
+  optimisticUpdateFn: (
+    variables: UpdateSettingsRequest,
+    oldSettings: UserSettings,
+  ): UserSettings => {
     // Merge partial settings with current settings, preserving existing values
     const updatedSettings: UserSettings = {
       data: {
         autoBackup: {
           enabled:
             variables.settings.data?.autoBackup?.enabled ??
-            oldData.settings.data.autoBackup.enabled,
+            oldSettings.data.autoBackup.enabled,
           backupTime:
             variables.settings.data?.autoBackup?.backupTime ??
-            oldData.settings.data.autoBackup.backupTime,
+            oldSettings.data.autoBackup.backupTime,
           maxBackups:
             variables.settings.data?.autoBackup?.maxBackups ??
-            oldData.settings.data.autoBackup.maxBackups,
+            oldSettings.data.autoBackup.maxBackups,
         },
       },
       notifications: {
         enabled:
           variables.settings.notifications?.enabled ??
-          oldData.settings.notifications.enabled,
+          oldSettings.notifications.enabled,
         requireInteraction:
           variables.settings.notifications?.requireInteraction ??
-          oldData.settings.notifications.requireInteraction,
+          oldSettings.notifications.requireInteraction,
       },
       general: {
         startView:
           variables.settings.general?.startView ??
-          oldData.settings.general.startView,
+          oldSettings.general.startView,
         soundEnabled:
           variables.settings.general?.soundEnabled ??
-          oldData.settings.general.soundEnabled,
+          oldSettings.general.soundEnabled,
         linkifyEnabled:
           variables.settings.general?.linkifyEnabled ??
-          oldData.settings.general.linkifyEnabled,
+          oldSettings.general.linkifyEnabled,
         popoverHoverOpen:
           variables.settings.general?.popoverHoverOpen ??
-          oldData.settings.general.popoverHoverOpen,
+          oldSettings.general.popoverHoverOpen,
       },
     };
 
-    return {
-      ...oldData,
-      settings: updatedSettings,
-    };
+    return updatedSettings;
   },
 });
 updateSettingsMutationAtom.debugLabel = "updateSettingsMutationAtom";

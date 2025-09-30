@@ -3,6 +3,9 @@
  *
  * Contains mutation atoms for user operations:
  * - Updating user profile
+ *
+ * Note: User uses a single object structure (not arrays),
+ * so they use createMutation directly instead of createEntityMutation.
  */
 
 import {
@@ -14,8 +17,8 @@ import {
   type AvatarFilePath,
 } from "@tasktrove/types";
 import { DEFAULT_USER } from "@tasktrove/types/defaults";
-import type { DataFile } from "@tasktrove/types";
-import { createEntityMutation } from "./entity-factory";
+import { USER_QUERY_KEY } from "@tasktrove/constants";
+import { createMutation } from "./factory";
 
 // =============================================================================
 // USER MUTATION ATOMS
@@ -27,21 +30,19 @@ import { createEntityMutation } from "./entity-factory";
  * Updates user profile data and optimistically applies changes.
  * Handles avatar conversion from base64 to file path.
  */
-export const updateUserMutationAtom = createEntityMutation<
-  User,
+export const updateUserMutationAtom = createMutation<
+  UpdateUserResponse,
   UpdateUserRequest,
-  UpdateUserResponse
+  User
 >({
-  entity: "user" as "setting", // Use "setting" entity type since user is a single object
-  operation: "update",
-  schemas: {
-    request: UserUpdateSerializationSchema,
-    response: UpdateUserResponseSchema,
-  },
-  apiEndpoint: "/api/user",
-  logModule: "user",
+  method: "PATCH",
   operationName: "Updated user",
-  // Custom test response for user-specific avatar handling
+  apiEndpoint: "/api/user",
+  resourceQueryKey: USER_QUERY_KEY,
+  defaultResourceValue: DEFAULT_USER,
+  responseSchema: UpdateUserResponseSchema,
+  serializationSchema: UserUpdateSerializationSchema,
+  logModule: "user",
   testResponseFactory: (variables: UpdateUserRequest) => {
     // For test mode, merge updates with default user
     // Simulate avatar conversion: base64 -> file path (in real API, this would save the file)
@@ -68,19 +69,15 @@ export const updateUserMutationAtom = createEntityMutation<
       message: "User updated successfully (test mode)",
     };
   },
-  // Custom optimistic update for user object merge
-  optimisticUpdateFn: (variables: UpdateUserRequest, oldData: DataFile) => {
+  optimisticUpdateFn: (variables: UpdateUserRequest, oldUser: User): User => {
     // Merge partial user updates with current user data
     const updatedUser: User = {
-      username: variables.username ?? oldData.user.username,
-      password: variables.password ?? oldData.user.password,
-      avatar: oldData.user.avatar,
+      username: variables.username ?? oldUser.username,
+      password: variables.password ?? oldUser.password,
+      avatar: oldUser.avatar,
     };
 
-    return {
-      ...oldData,
-      user: updatedUser,
-    };
+    return updatedUser;
   },
 });
 updateUserMutationAtom.debugLabel = "updateUserMutationAtom";

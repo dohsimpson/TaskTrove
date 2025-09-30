@@ -23,8 +23,7 @@ import {
   LabelDeleteSerializationSchema,
   createLabelId,
 } from "@tasktrove/types";
-import { DEFAULT_LABEL_COLORS, DATA_QUERY_KEY } from "@tasktrove/constants";
-import type { DataFile } from "@tasktrove/types";
+import { DEFAULT_LABEL_COLORS } from "@tasktrove/constants";
 import { createSafeLabelNameSlug } from "@tasktrove/utils/routing";
 import { createEntityMutation } from "./entity-factory";
 
@@ -49,18 +48,16 @@ export const createLabelMutationAtom = createEntityMutation<
     request: LabelCreateSerializationSchema,
     response: CreateLabelResponseSchema,
   },
-  queryKey: DATA_QUERY_KEY,
   // Custom optimistic data factory for label-specific defaults (slug, color)
   optimisticDataFactory: (
     labelData: CreateLabelRequest,
-    oldData?: DataFile,
+    oldLabels: Label[],
   ) => {
     return {
       id: createLabelId(uuidv4()), // Temporary ID that will be replaced by server response
       name: labelData.name,
       slug:
-        labelData.slug ??
-        createSafeLabelNameSlug(labelData.name, oldData?.labels || []),
+        labelData.slug ?? createSafeLabelNameSlug(labelData.name, oldLabels),
       color: labelData.color || DEFAULT_LABEL_COLORS[0],
     };
   },
@@ -75,7 +72,7 @@ createLabelMutationAtom.debugLabel = "createLabelMutationAtom";
  * Replaces the current labels with the provided array.
  */
 export const updateLabelsMutationAtom = createEntityMutation<
-  Label[],
+  Label,
   Label[],
   UpdateLabelResponse
 >({
@@ -85,13 +82,9 @@ export const updateLabelsMutationAtom = createEntityMutation<
     request: LabelUpdateArraySerializationSchema,
     response: UpdateLabelResponseSchema,
   },
-  queryKey: DATA_QUERY_KEY,
   // Custom optimistic update: replace entire array (not merge)
-  optimisticUpdateFn: (newLabels: Label[], oldData: DataFile) => {
-    return {
-      ...oldData,
-      labels: newLabels,
-    };
+  optimisticUpdateFn: (newLabels: Label[], _oldLabels: Label[]) => {
+    return newLabels;
   },
 });
 updateLabelsMutationAtom.debugLabel = "updateLabelsMutationAtom";
@@ -112,7 +105,6 @@ export const deleteLabelMutationAtom = createEntityMutation<
     request: LabelDeleteSerializationSchema,
     response: DeleteLabelResponseSchema,
   },
-  queryKey: DATA_QUERY_KEY,
   // Auto-generates test response and optimistic update!
 });
 deleteLabelMutationAtom.debugLabel = "deleteLabelMutationAtom";

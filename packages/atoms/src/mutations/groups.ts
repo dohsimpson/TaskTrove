@@ -6,11 +6,15 @@
  * - Updating project groups
  * - Deleting project groups
  * - Bulk updating groups (reordering)
+ *
+ * Note: Groups use a special nested tree structure (not flat arrays),
+ * so they use createMutation directly instead of createEntityMutation.
  */
 
 import { v4 as uuidv4 } from "uuid";
 import {
   type ProjectGroup,
+  type LabelGroup,
   type GroupId,
   type CreateGroupRequest,
   type CreateGroupResponse,
@@ -28,9 +32,22 @@ import {
   BulkGroupUpdateSchema,
   createGroupId,
 } from "@tasktrove/types";
-import type { DataFile } from "@tasktrove/types";
+import {
+  DEFAULT_PROJECT_GROUP,
+  DEFAULT_LABEL_GROUP,
+} from "@tasktrove/types/defaults";
+import { GROUPS_QUERY_KEY } from "@tasktrove/constants";
 import { createSafeProjectGroupNameSlug } from "@tasktrove/utils/routing";
-import { createEntityMutation } from "./entity-factory";
+import { createMutation } from "./factory";
+
+// Type for groups cache structure
+type GroupsResource = { projectGroups: ProjectGroup; labelGroups: LabelGroup };
+
+// Default empty groups structure for cache fallback
+const DEFAULT_GROUPS_RESOURCE: GroupsResource = {
+  projectGroups: DEFAULT_PROJECT_GROUP,
+  labelGroups: DEFAULT_LABEL_GROUP,
+};
 
 // =============================================================================
 // GROUP MUTATION ATOMS
@@ -42,18 +59,25 @@ import { createEntityMutation } from "./entity-factory";
  * Creates a new project group and optimistically adds it to the group tree.
  * The temporary ID will be replaced with the server-generated ID on success.
  */
-export const createProjectGroupMutationAtom = createEntityMutation<
-  ProjectGroup,
+export const createProjectGroupMutationAtom = createMutation<
+  CreateGroupResponse,
   CreateGroupRequest,
-  CreateGroupResponse
+  GroupsResource,
+  ProjectGroup
 >({
-  entity: "group",
-  operation: "create",
-  schemas: {
-    request: CreateGroupRequestSchema,
-    response: CreateGroupResponseSchema,
-  },
-  // Custom optimistic data factory for group-specific validation and defaults
+  method: "POST",
+  operationName: "Created group",
+  apiEndpoint: "/api/groups",
+  resourceQueryKey: GROUPS_QUERY_KEY,
+  defaultResourceValue: DEFAULT_GROUPS_RESOURCE,
+  responseSchema: CreateGroupResponseSchema,
+  serializationSchema: CreateGroupRequestSchema,
+  logModule: "groups",
+  testResponseFactory: () => ({
+    success: true,
+    groupIds: [createGroupId(uuidv4())],
+    message: "Group created successfully (test mode)",
+  }),
   optimisticDataFactory: (request: CreateGroupRequest): ProjectGroup => {
     if (request.type !== "project") {
       throw new Error(
@@ -70,19 +94,18 @@ export const createProjectGroupMutationAtom = createEntityMutation<
       items: [],
     };
   },
-  // Custom optimistic update for nested projectGroups structure
   optimisticUpdateFn: (
-    request: CreateGroupRequest,
-    oldData: DataFile,
+    _request: CreateGroupRequest,
+    oldGroups: GroupsResource,
     optimisticGroup?: ProjectGroup,
-  ) => {
+  ): GroupsResource => {
     if (!optimisticGroup) throw new Error("Optimistic group not provided");
 
     return {
-      ...oldData,
+      ...oldGroups,
       projectGroups: {
-        ...oldData.projectGroups,
-        items: [...oldData.projectGroups.items, optimisticGroup],
+        ...oldGroups.projectGroups,
+        items: [...oldGroups.projectGroups.items, optimisticGroup],
       },
     };
   },
@@ -95,18 +118,19 @@ createProjectGroupMutationAtom.debugLabel = "createProjectGroupMutationAtom";
  * Updates one or more project groups and optimistically applies changes.
  * Recursively updates groups within the ROOT group structure.
  */
-export const updateProjectGroupMutationAtom = createEntityMutation<
-  ProjectGroup,
+export const updateProjectGroupMutationAtom = createMutation<
+  UpdateGroupResponse,
   UpdateProjectGroupRequest,
-  UpdateGroupResponse
+  GroupsResource
 >({
-  entity: "group",
-  operation: "update",
-  schemas: {
-    request: UpdateProjectGroupRequestSchema,
-    response: UpdateGroupResponseSchema,
-  },
-  // Custom test response for group-specific structure
+  method: "PATCH",
+  operationName: "Updated group",
+  apiEndpoint: "/api/groups",
+  resourceQueryKey: GROUPS_QUERY_KEY,
+  defaultResourceValue: DEFAULT_GROUPS_RESOURCE,
+  responseSchema: UpdateGroupResponseSchema,
+  serializationSchema: UpdateProjectGroupRequestSchema,
+  logModule: "groups",
   testResponseFactory: (
     request: UpdateProjectGroupRequest,
   ): UpdateGroupResponse => {
@@ -127,11 +151,10 @@ export const updateProjectGroupMutationAtom = createEntityMutation<
       message: "Group updated successfully (test mode)",
     };
   },
-  // Custom optimistic update for recursive group tree structure
   optimisticUpdateFn: (
     request: UpdateProjectGroupRequest,
-    oldData: DataFile,
-  ) => {
+    oldGroups: GroupsResource,
+  ): GroupsResource => {
     const updateRequest = Array.isArray(request) ? request : [request];
 
     // Helper function to recursively update groups within ROOT structure
@@ -161,8 +184,8 @@ export const updateProjectGroupMutationAtom = createEntityMutation<
     };
 
     return {
-      ...oldData,
-      projectGroups: updateGroupInTree(oldData.projectGroups),
+      ...oldGroups,
+      projectGroups: updateGroupInTree(oldGroups.projectGroups),
     };
   },
 });
@@ -175,28 +198,31 @@ updateProjectGroupMutationAtom.debugLabel = "updateProjectGroupMutationAtom";
  * Recursively removes the group from nested structures.
  * Cannot delete the ROOT group itself.
  */
-export const deleteProjectGroupMutationAtom = createEntityMutation<
-  ProjectGroup,
+export const deleteProjectGroupMutationAtom = createMutation<
+  DeleteGroupResponse,
   DeleteGroupRequest,
-  DeleteGroupResponse
+  GroupsResource
 >({
-  entity: "group",
-  operation: "delete",
-  schemas: {
-    request: DeleteGroupRequestSchema,
-    response: DeleteGroupResponseSchema,
-  },
-  // Custom test response for group-specific structure
+  method: "DELETE",
+  operationName: "Deleted group",
+  apiEndpoint: "/api/groups",
+  resourceQueryKey: GROUPS_QUERY_KEY,
+  defaultResourceValue: DEFAULT_GROUPS_RESOURCE,
+  responseSchema: DeleteGroupResponseSchema,
+  serializationSchema: DeleteGroupRequestSchema,
+  logModule: "groups",
   testResponseFactory: (request: DeleteGroupRequest) => ({
     success: true,
     groupIds: [request.id],
     message: "Group deleted successfully (test mode)",
   }),
-  // Custom optimistic update for recursive group deletion
-  optimisticUpdateFn: (request: DeleteGroupRequest, oldData: DataFile) => {
+  optimisticUpdateFn: (
+    request: DeleteGroupRequest,
+    oldGroups: GroupsResource,
+  ): GroupsResource => {
     // Cannot delete the ROOT group itself
-    if (oldData.projectGroups.id === request.id) {
-      return oldData;
+    if (oldGroups.projectGroups.id === request.id) {
+      return oldGroups;
     }
 
     // Remove the group recursively from ROOT group structure
@@ -219,8 +245,8 @@ export const deleteProjectGroupMutationAtom = createEntityMutation<
     };
 
     return {
-      ...oldData,
-      projectGroups: removeGroupFromTree(oldData.projectGroups, request.id),
+      ...oldGroups,
+      projectGroups: removeGroupFromTree(oldGroups.projectGroups, request.id),
     };
   },
 });
@@ -232,41 +258,42 @@ deleteProjectGroupMutationAtom.debugLabel = "deleteProjectGroupMutationAtom";
  * Replaces the entire items array of the ROOT group with a new structure.
  * Used primarily for reordering groups and projects.
  */
-export const bulkUpdateGroupsMutationAtom = createEntityMutation<
-  ProjectGroup,
+export const bulkUpdateGroupsMutationAtom = createMutation<
+  UpdateGroupResponse,
   BulkGroupUpdate,
-  UpdateGroupResponse
+  GroupsResource
 >({
-  entity: "group",
-  operation: "update",
-  schemas: {
-    request: BulkGroupUpdateSchema,
-    response: UpdateGroupResponseSchema,
-  },
+  method: "PATCH",
   operationName: "Bulk updated groups",
-  // Custom test response for bulk update structure
+  apiEndpoint: "/api/groups",
+  resourceQueryKey: GROUPS_QUERY_KEY,
+  defaultResourceValue: DEFAULT_GROUPS_RESOURCE,
+  responseSchema: UpdateGroupResponseSchema,
+  serializationSchema: BulkGroupUpdateSchema,
+  logModule: "groups",
   testResponseFactory: (request: BulkGroupUpdate): UpdateGroupResponse => ({
     success: true,
-    groups: request.groups as ProjectGroup[],
+    groups: [] as ProjectGroup[],
     count: request.groups.length,
-    message: `${request.groups.length} ${request.type} group(s) bulk updated successfully (test mode)`,
+    message: "Groups bulk updated successfully (test mode)",
   }),
-  // Custom optimistic update for bulk group reordering
-  optimisticUpdateFn: (request: BulkGroupUpdate, oldData: DataFile) => {
-    // Replace ROOT group's items array based on type
+  optimisticUpdateFn: (
+    request: BulkGroupUpdate,
+    oldGroups: GroupsResource,
+  ): GroupsResource => {
     if (request.type === "project") {
       return {
-        ...oldData,
+        ...oldGroups,
         projectGroups: {
-          ...oldData.projectGroups,
+          ...oldGroups.projectGroups,
           items: request.groups,
         },
       };
     } else {
       return {
-        ...oldData,
+        ...oldGroups,
         labelGroups: {
-          ...oldData.labelGroups,
+          ...oldGroups.labelGroups,
           items: request.groups,
         },
       };

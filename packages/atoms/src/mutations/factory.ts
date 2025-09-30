@@ -3,15 +3,15 @@
  *
  * Provides consistent patterns for:
  * - API request/response handling
- * - Optimistic updates
+ * - Optimistic updates with resource-specific arrays
  * - Error handling and rollback
  * - Test environment simulation
+ * - Granular cache invalidation
  */
 
 import { z } from "zod";
 import { atomWithMutation } from "jotai-tanstack-query";
-import type { DataFile } from "@tasktrove/types";
-import { DATA_QUERY_KEY } from "@tasktrove/constants";
+import type { QueryKey } from "@tanstack/react-query";
 import { queryClientAtom } from "../data/base/query";
 import { log, toast } from "../utils/atom-helpers";
 
@@ -47,87 +47,46 @@ async function handleApiError(
 }
 
 /**
- * Default empty cache data structure that matches DataFile schema
+ * Type guard to check if data exists and is valid
  */
-const EMPTY_CACHE_DATA: DataFile = {
-  tasks: [],
-  projects: [],
-  labels: [],
-  projectGroups: {
-    type: "project",
-    id: "root-project-group" as any,
-    name: "All Projects",
-    slug: "all-projects",
-    items: [],
-  },
-  labelGroups: {
-    type: "label",
-    id: "root-label-group" as any,
-    name: "All Labels",
-    slug: "all-labels",
-    items: [],
-  },
-  settings: {
-    data: {
-      autoBackup: {
-        enabled: false,
-        backupTime: "02:00",
-        maxBackups: 10,
-      },
-    },
-    notifications: {
-      enabled: false,
-      requireInteraction: false,
-    },
-    general: {
-      startView: "today",
-      soundEnabled: true,
-      linkifyEnabled: true,
-      popoverHoverOpen: false,
-    },
-  },
-  user: {
-    username: "defaultuser",
-    password: "defaultpassword",
-    avatar: undefined,
-  },
-};
-
-/**
- * Type guard to check if data has the expected structure
- */
-function isValidCacheData(data: unknown): data is DataFile {
-  if (!data || typeof data !== "object") return false;
-
-  // Type narrowing without assertion
-  if (!("tasks" in data && "projects" in data && "labels" in data)) {
-    return false;
-  }
-
-  return !!(
-    Array.isArray(data.tasks) &&
-    Array.isArray(data.projects) &&
-    Array.isArray(data.labels)
-  );
+function isValidResource<T>(data: unknown): data is T {
+  return data !== null && data !== undefined;
 }
 
 /**
- * Generic utility for optimistic cache updates
+ * Get default value for a resource type
+ * Returns empty array for array types, undefined for object types
  */
-function updateCache(
+function getDefaultResource<TResource>(sampleResource: TResource): TResource {
+  if (Array.isArray(sampleResource)) {
+    return [] as TResource;
+  }
+  // For non-array types (objects), return undefined
+  // The caller should handle this case appropriately
+  return undefined as TResource;
+}
+
+/**
+ * Generic utility for optimistic cache updates with any resource type
+ */
+function updateCache<TResource>(
   queryClient: {
-    getQueryData: (key: string[]) => unknown;
+    getQueryData: (key: QueryKey) => unknown;
     setQueryData: (
-      key: string[],
+      key: QueryKey,
       updater: (oldData: unknown) => unknown,
     ) => void;
   },
-  queryKey: string[],
-  updater: (oldData: DataFile) => DataFile,
+  queryKey: QueryKey,
+  updater: (oldData: TResource) => TResource,
+  defaultValue: TResource,
 ): unknown {
   const previousData = queryClient.getQueryData(queryKey);
   queryClient.setQueryData(queryKey, (oldData: unknown) => {
-    if (!isValidCacheData(oldData)) return oldData;
+    if (!isValidResource<TResource>(oldData)) {
+      // Use provided default value if cache is invalid
+      return updater(defaultValue);
+    }
     return updater(oldData);
   });
   return previousData;
@@ -139,29 +98,88 @@ function updateCache(
 
 /**
  * Configuration for creating a generic mutation atom
+ *
+ * @template TResponse - API response type
+ * @template TRequest - API request payload type
+ * @template TResource - Resource type stored in cache (e.g., Project, Label, Task)
+ * @template TOptimisticData - Custom optimistic data type (defaults to TResource)
  */
 export interface MutationConfig<
   TResponse,
   TRequest,
-  TOptimisticData = unknown,
+  TResource,
+  TOptimisticData = TResource,
 > {
+  /** HTTP method for the API request */
   method: "POST" | "PATCH" | "DELETE";
+
+  /** Human-readable operation name (e.g., "Created task", "Updated project") */
   operationName: string;
+
+  /** Zod schema for validating API response */
   responseSchema: z.ZodType<TResponse>;
+
+  /** Zod schema for validating/serializing request payload */
   serializationSchema: z.ZodType;
+
+  /** Factory for generating test response in test environment */
   testResponseFactory: (variables: TRequest) => TResponse;
+
+  /**
+   * Query key for the resource being mutated (used for optimistic updates).
+   * Example: ["data", "projects"] for project mutations
+   */
+  resourceQueryKey: QueryKey;
+
+  /**
+   * Default value for the resource when cache is empty or invalid.
+   * For arrays: [] (empty array)
+   * For objects: the object's default structure
+   * Example: For tasks mutations, pass [] (empty Task array)
+   * Example: For settings mutations, pass DEFAULT_USER_SETTINGS
+   */
+  defaultResourceValue: TResource;
+
+  /**
+   * Array of query keys to invalidate after successful mutation.
+   * Example: [["data", "projects"], ["data", "groups"]] for project mutations
+   * that affect both projects and groups.
+   * Defaults to [resourceQueryKey] if not provided.
+   */
+  invalidateQueryKeys?: QueryKey[];
+
+  /**
+   * Function to compute optimistic update for the resource.
+   *
+   * @param variables - Request payload
+   * @param oldResource - Current resource from cache (e.g., Project[], UserSettings, GroupsResource)
+   * @param optimisticData - Pre-computed optimistic entity (if factory provided)
+   * @returns Updated resource to write to cache
+   */
   optimisticUpdateFn: (
     variables: TRequest,
-    oldData: DataFile,
+    oldResource: TResource,
     optimisticData?: TOptimisticData,
-  ) => DataFile;
+  ) => TResource;
+
+  /**
+   * Optional factory for creating optimistic data with defaults.
+   * Useful when you need to generate IDs, slugs, colors, etc.
+   *
+   * @param variables - Request payload
+   * @param oldResource - Current resource (for context like ID generation)
+   * @returns Optimistic entity with computed defaults
+   */
   optimisticDataFactory?: (
     variables: TRequest,
-    oldData?: DataFile,
+    oldResource: TResource,
   ) => TOptimisticData;
+
+  /** Module name for logging (e.g., "projects", "labels") */
   logModule?: string;
-  apiEndpoint?: string; // Optional API endpoint (defaults to '/api/tasks')
-  queryKey?: string[]; // Optional query key (defaults to ['tasks'])
+
+  /** API endpoint (defaults to "/api/tasks") */
+  apiEndpoint?: string;
 }
 
 /**
@@ -171,8 +189,9 @@ export interface MutationConfig<
  * - Automatic test environment handling
  * - Input validation and serialization
  * - API request/response processing
- * - Optimistic updates with rollback
- * - Error handling and user notifications
+ * - Optimistic updates with resource arrays
+ * - Rollback on error
+ * - Granular cache invalidation
  *
  * @param config - Mutation configuration
  * @returns Mutation atom ready for use with Jotai
@@ -180,19 +199,22 @@ export interface MutationConfig<
 export function createMutation<
   TResponse,
   TVariables,
-  TOptimisticData = unknown,
->(config: MutationConfig<TResponse, TVariables, TOptimisticData>) {
+  TResource,
+  TOptimisticData = TResource,
+>(config: MutationConfig<TResponse, TVariables, TResource, TOptimisticData>) {
   const {
     method,
     operationName,
     responseSchema,
     serializationSchema,
     testResponseFactory,
+    resourceQueryKey,
+    defaultResourceValue,
+    invalidateQueryKeys = [resourceQueryKey],
     optimisticUpdateFn,
     optimisticDataFactory,
     logModule = "tasks",
     apiEndpoint = "/api/tasks",
-    queryKey = DATA_QUERY_KEY,
   } = config;
 
   return atomWithMutation<
@@ -258,23 +280,27 @@ export function createMutation<
     onMutate: async (variables: TVariables) => {
       const queryClient = get(queryClientAtom);
 
-      // Cancel queries - standardized
-      await queryClient.cancelQueries({ queryKey });
+      // Cancel queries for the resource being mutated
+      await queryClient.cancelQueries({ queryKey: resourceQueryKey });
 
-      // Get current data for optimistic factory context
-      const currentData = queryClient.getQueryData(queryKey);
-      const validCurrentData = isValidCacheData(currentData)
+      // Get current resource from cache
+      const currentData = queryClient.getQueryData(resourceQueryKey);
+      const currentResource = isValidResource<TResource>(currentData)
         ? currentData
-        : EMPTY_CACHE_DATA;
+        : defaultResourceValue;
 
       // Create optimistic data if factory provided
       const optimisticData = optimisticDataFactory
-        ? optimisticDataFactory(variables, validCurrentData)
+        ? optimisticDataFactory(variables, currentResource)
         : undefined;
 
-      // Optimistic cache update - parameterized logic
-      const previousData = updateCache(queryClient, queryKey, (oldData) =>
-        optimisticUpdateFn(variables, oldData, optimisticData),
+      // Optimistic cache update with resource
+      const previousData = updateCache<TResource>(
+        queryClient,
+        resourceQueryKey,
+        (oldResource) =>
+          optimisticUpdateFn(variables, oldResource, optimisticData),
+        defaultResourceValue,
       );
 
       return { previousData, variables, optimisticData };
@@ -292,9 +318,11 @@ export function createMutation<
       // Success toast notification
       toast.success(`${operationName} successfully`);
 
-      // Cache invalidation - standardized
+      // Cache invalidation - invalidate all specified query keys
       const queryClient = get(queryClientAtom);
-      queryClient.invalidateQueries({ queryKey: DATA_QUERY_KEY });
+      invalidateQueryKeys.forEach((queryKey) => {
+        queryClient.invalidateQueries({ queryKey });
+      });
     },
     onError: (
       error: Error,
@@ -310,10 +338,10 @@ export function createMutation<
       // Error toast notification
       toast.error(`Failed to ${operationName.toLowerCase()}: ${error.message}`);
 
-      // Rollback - standardized
+      // Rollback - restore previous resource array
       const queryClient = get(queryClientAtom);
-      if (context?.previousData) {
-        queryClient.setQueryData(queryKey, context.previousData);
+      if (context?.previousData !== undefined) {
+        queryClient.setQueryData(resourceQueryKey, context.previousData);
       }
     },
   }));

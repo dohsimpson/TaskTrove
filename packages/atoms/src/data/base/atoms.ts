@@ -1,13 +1,25 @@
 /**
- * Base data atoms that directly read from dataQueryAtom
- * These are the source of truth for entity data in the application
+ * Base data atoms - derived from individual query atoms
+ * These unwrap query results and provide clean data interfaces to the application
  *
- * Note: Write functions currently contain mutation logic. This will be
- * refactored in Phase 2, Task 2.3 to separate mutation logic into mutations/.
+ * Architecture:
+ * Query Atoms (server state) → Derived Atoms (unwrap + defaults) → UI
+ *
+ * Benefits:
+ * - Hides TanStack Query mechanics from business logic
+ * - Provides sensible defaults (empty arrays, fallback values)
+ * - Simple interface for components (no query state handling)
  */
 
 import { atom } from "jotai";
-import { dataQueryAtom } from "./query";
+import {
+  tasksQueryAtom,
+  projectsQueryAtom,
+  labelsQueryAtom,
+  groupsQueryAtom,
+  settingsQueryAtom,
+  userQueryAtom,
+} from "./query";
 import type {
   Task,
   Project,
@@ -42,21 +54,18 @@ import { updateUserMutationAtom } from "../../mutations/user";
 // =============================================================================
 
 /**
- * Base tasks atom - reads tasks from dataQueryAtom
+ * Base tasks atom - unwraps tasks from tasksQueryAtom
  * Write: Updates tasks via mutation atom
  *
- * @read Returns array of all tasks
+ * @read Returns array of all tasks (empty array if loading/error)
  * @write Accepts array of task updates and applies via API
  */
 export const tasksAtom = namedAtom(
   "tasksAtom",
   atom(
     (get) => {
-      const result = get(dataQueryAtom);
-      if ("data" in result) {
-        return result.data?.tasks ?? [];
-      }
-      return [];
+      const query = get(tasksQueryAtom);
+      return query.data ?? [];
     },
     async (get, set, tasks: UpdateTaskRequest[]) => {
       try {
@@ -81,19 +90,16 @@ export const tasksAtom = namedAtom(
 // =============================================================================
 
 /**
- * Base projects atom - reads projects from dataQueryAtom
+ * Base projects atom - unwraps projects from projectsQueryAtom
  * Write: Updates projects via mutation atom
  *
- * @read Returns array of all projects
+ * @read Returns array of all projects (empty array if loading/error)
  * @write Accepts array of projects and updates via API
  */
 export const projectsAtom = atom(
   (get) => {
-    const result = get(dataQueryAtom);
-    if ("data" in result) {
-      return result.data?.projects ?? [];
-    }
-    return [];
+    const query = get(projectsQueryAtom);
+    return query.data ?? [];
   },
   async (get, set, projects: Project[]) => {
     try {
@@ -115,21 +121,18 @@ projectsAtom.debugLabel = "projectsAtom";
 // =============================================================================
 
 /**
- * Base labels atom - reads labels from dataQueryAtom
+ * Base labels atom - unwraps labels from labelsQueryAtom
  * Write: Updates labels via mutation atom
  *
- * @read Returns array of all labels
+ * @read Returns array of all labels (empty array if loading/error)
  * @write Accepts array of labels and updates via API
  */
 export const labelsAtom = namedAtom(
   "labelsAtom",
   atom(
     (get) => {
-      const result = get(dataQueryAtom);
-      if ("data" in result) {
-        return result.data?.labels ?? [];
-      }
-      return [];
+      const query = get(labelsQueryAtom);
+      return query.data ?? [];
     },
     async (get, set, labels: Label[]) => {
       try {
@@ -151,19 +154,19 @@ export const labelsAtom = namedAtom(
 // =============================================================================
 
 /**
- * Base settings atom - reads settings from dataQueryAtom
+ * Base settings atom - unwraps settings from settingsQueryAtom
  * Write: Updates settings via mutation atom
  *
- * @read Returns current user settings
+ * @read Returns current user settings (defaults if loading/error)
  * @write Accepts partial settings and updates via API
  */
 export const settingsAtom = atom(
   (get) => {
-    const result = get(dataQueryAtom);
-    if ("data" in result && result.data) {
-      return result.data.settings;
+    const query = get(settingsQueryAtom);
+    if (query.data) {
+      return query.data;
     }
-    // Return minimal default settings
+    // Return default settings if loading or error
     const defaultSettings: UserSettings = {
       data: {
         autoBackup: {
@@ -200,21 +203,16 @@ settingsAtom.debugLabel = "settingsAtom";
 // =============================================================================
 
 /**
- * Current user data atom
- * Read: Gets current user from data query
+ * Current user data atom - unwraps user from userQueryAtom
  * Write: Updates user via API
  *
- * @read Returns current user
+ * @read Returns current user (default user if loading/error)
  * @write Accepts user update request and updates via API
  */
 export const userAtom = atom(
   (get) => {
-    const result = get(dataQueryAtom);
-    if ("data" in result && result.data) {
-      return result.data.user;
-    }
-    // Return default user if no data
-    return DEFAULT_USER;
+    const query = get(userQueryAtom);
+    return query.data ?? DEFAULT_USER;
   },
   async (get, set, updateUserRequest: UpdateUserRequest) => {
     try {

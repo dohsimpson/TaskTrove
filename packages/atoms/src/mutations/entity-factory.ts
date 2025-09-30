@@ -13,7 +13,7 @@
  *     request: TaskCreateSerializationSchema,
  *     response: CreateTaskResponseSchema,
  *   },
- *   optimisticDataFactory: (taskData) => ({
+ *   optimisticDataFactory: (taskData, oldTasks) => ({
  *     id: createTaskId(uuidv4()),
  *     // ... other fields
  *   }),
@@ -39,9 +39,9 @@
  *   operation: "update",
  *   schemas: { ... },
  *   // Custom optimistic update for settings object structure
- *   optimisticUpdateFn: (variables, oldData) => ({
- *     ...oldData,
- *     settings: { ...oldData.settings, ...variables.settings }
+ *   optimisticUpdateFn: (variables, oldSettings) => ({
+ *     ...oldSettings,
+ *     ...variables.settings
  *   }),
  * });
  * ```
@@ -49,7 +49,14 @@
 
 import { v4 as uuidv4 } from "uuid";
 import type { z } from "zod";
-import type { DataFile } from "@tasktrove/types";
+import type { QueryKey } from "@tanstack/react-query";
+import {
+  TASKS_QUERY_KEY,
+  PROJECTS_QUERY_KEY,
+  LABELS_QUERY_KEY,
+  GROUPS_QUERY_KEY,
+  SETTINGS_QUERY_KEY,
+} from "@tasktrove/constants";
 import { createMutation, type MutationConfig } from "./factory";
 
 // =============================================================================
@@ -95,8 +102,17 @@ interface EntityMutationConfig<TEntity, TRequest, TResponse> {
   /** Override API endpoint (default: `/api/${entity}s`) */
   apiEndpoint?: string;
 
-  /** Override query key (default: [`${entity}s`]) */
-  queryKey?: string[];
+  /**
+   * Override resource query key for optimistic updates
+   * (default: ["data", "${entity}s"])
+   */
+  resourceQueryKey?: QueryKey;
+
+  /**
+   * Override query keys to invalidate after mutation
+   * (default: [resourceQueryKey])
+   */
+  invalidateQueryKeys?: QueryKey[];
 
   /** Override operation name (default: `${capitalize(operation)} ${entity}`) */
   operationName?: string;
@@ -114,7 +130,10 @@ interface EntityMutationConfig<TEntity, TRequest, TResponse> {
    * Override optimistic data factory (only for CREATE operations)
    * Required for CREATE if entity has complex defaults
    */
-  optimisticDataFactory?: (variables: TRequest, oldData?: DataFile) => TEntity;
+  optimisticDataFactory?: (
+    variables: TRequest,
+    oldResourceArray: TEntity[],
+  ) => TEntity;
 
   /**
    * Override optimistic update function
@@ -125,9 +144,9 @@ interface EntityMutationConfig<TEntity, TRequest, TResponse> {
    */
   optimisticUpdateFn?: (
     variables: TRequest,
-    oldData: DataFile,
+    oldResourceArray: TEntity[],
     optimisticData?: TEntity,
-  ) => DataFile;
+  ) => TEntity[];
 }
 
 // =============================================================================
@@ -142,13 +161,25 @@ function capitalize(str: string): string {
 }
 
 /**
- * Get the DataFile key for an entity type
- * @example getEntityKey("task") → "tasks"
- * @example getEntityKey("setting") → "settings"
+ * Get the query key for an entity type
+ * @example getEntityQueryKey("task") → ["data", "tasks"]
+ * @example getEntityQueryKey("project") → ["data", "projects"]
  */
-function getEntityKey(entity: EntityType): keyof DataFile {
-  if (entity === "group") return "projectGroups";
-  return `${entity}s` as keyof DataFile;
+function getEntityQueryKey(entity: EntityType): QueryKey {
+  switch (entity) {
+    case "task":
+      return TASKS_QUERY_KEY;
+    case "project":
+      return PROJECTS_QUERY_KEY;
+    case "label":
+      return LABELS_QUERY_KEY;
+    case "group":
+      return GROUPS_QUERY_KEY;
+    case "setting":
+      return SETTINGS_QUERY_KEY;
+    default:
+      return ["data", `${entity}s`];
+  }
 }
 
 /**
@@ -246,29 +277,14 @@ function createDefaultOptimisticUpdate<TEntity, TRequest>(
   operation: OperationType,
 ): (
   variables: TRequest,
-  oldData: DataFile,
+  oldResourceArray: TEntity[],
   optimisticData?: TEntity,
-) => DataFile {
+) => TEntity[] {
   return (
     variables: TRequest,
-    oldData: DataFile,
+    oldResourceArray: TEntity[],
     optimisticData?: TEntity,
-  ): DataFile => {
-    // Special handling for non-standard entities
-    if (entity === "group" || entity === "setting") {
-      // For groups and settings, cannot provide generic default
-      // These require custom optimisticUpdateFn
-      return oldData;
-    }
-
-    const entityKey = getEntityKey(entity);
-    const entities = oldData[entityKey];
-
-    // Type guard: only process if it's an array
-    if (!Array.isArray(entities)) {
-      return oldData;
-    }
-
+  ): TEntity[] => {
     switch (operation) {
       case "create": {
         if (!optimisticData) {
@@ -276,16 +292,13 @@ function createDefaultOptimisticUpdate<TEntity, TRequest>(
             `Optimistic data required for ${entity} create operation`,
           );
         }
-        return {
-          ...oldData,
-          [entityKey]: [...entities, optimisticData],
-        };
+        return [...oldResourceArray, optimisticData];
       }
 
       case "update": {
         // Handle both single and bulk updates
         const updates = Array.isArray(variables) ? variables : [variables];
-        const updatedEntities = entities.map((entity: unknown) => {
+        const updatedEntities = oldResourceArray.map((entity: TEntity) => {
           if (
             typeof entity !== "object" ||
             entity === null ||
@@ -302,13 +315,10 @@ function createDefaultOptimisticUpdate<TEntity, TRequest>(
               u.id === (entity as { id: unknown }).id,
           );
 
-          return update ? { ...entity, ...update } : entity;
+          return update ? ({ ...entity, ...update } as TEntity) : entity;
         });
 
-        return {
-          ...oldData,
-          [entityKey]: updatedEntities,
-        };
+        return updatedEntities;
       }
 
       case "delete": {
@@ -324,22 +334,19 @@ function createDefaultOptimisticUpdate<TEntity, TRequest>(
               ? [(variables as { id: string }).id]
               : [];
 
-        const filteredEntities = entities.filter(
-          (entity: unknown) =>
+        const filteredEntities = oldResourceArray.filter(
+          (entity: TEntity) =>
             typeof entity === "object" &&
             entity !== null &&
             "id" in entity &&
             !ids.includes((entity as { id: string }).id),
         );
 
-        return {
-          ...oldData,
-          [entityKey]: filteredEntities,
-        };
+        return filteredEntities;
       }
 
       default:
-        return oldData;
+        return oldResourceArray;
     }
   };
 }
@@ -356,7 +363,8 @@ function createDefaultOptimisticUpdate<TEntity, TRequest>(
  *
  * **Conventions applied (can be overridden):**
  * - API endpoint: `/api/${entity}s`
- * - Query key: `[${entity}s]`
+ * - Resource query key: `["data", "${entity}s"]`
+ * - Invalidate query keys: `[resourceQueryKey, ["data", "groups"]]` (for project/label)
  * - Operation name: `${capitalize(operation)} ${entity}`
  * - Test response: Standard `{ success: true, [entity]Ids: [...], message: "..." }`
  * - Optimistic update: Smart defaults based on operation (create/update/delete)
@@ -377,7 +385,8 @@ export function createEntityMutation<TEntity, TRequest, TResponse>(
     operation,
     schemas,
     apiEndpoint,
-    queryKey,
+    resourceQueryKey,
+    invalidateQueryKeys,
     operationName,
     logModule,
     testResponseFactory,
@@ -385,8 +394,19 @@ export function createEntityMutation<TEntity, TRequest, TResponse>(
     optimisticUpdateFn,
   } = config;
 
+  // Get default resource query key
+  const defaultResourceQueryKey = resourceQueryKey ?? getEntityQueryKey(entity);
+
+  // Determine which queries to invalidate based on entity type
+  // Projects and labels affect groups, so invalidate both
+  const defaultInvalidateQueryKeys =
+    invalidateQueryKeys ??
+    (entity === "project" || entity === "label"
+      ? [defaultResourceQueryKey, GROUPS_QUERY_KEY]
+      : [defaultResourceQueryKey]);
+
   // Apply conventions with override capability
-  const fullConfig: MutationConfig<TResponse, TRequest, TEntity> = {
+  const fullConfig: MutationConfig<TResponse, TRequest, TEntity[], TEntity> = {
     // Map operation to HTTP method
     method:
       operation === "create"
@@ -398,7 +418,9 @@ export function createEntityMutation<TEntity, TRequest, TResponse>(
     // Apply convention-based defaults
     operationName: operationName ?? `${capitalize(operation)}d ${entity}`, // "Created task", "Updated project"
     apiEndpoint: apiEndpoint ?? `/api/${entity}s`,
-    queryKey: queryKey ?? [`${entity}s`],
+    resourceQueryKey: defaultResourceQueryKey,
+    defaultResourceValue: [] as TEntity[], // Empty array as default for all entity mutations
+    invalidateQueryKeys: defaultInvalidateQueryKeys,
     logModule: logModule ?? `${entity}s`,
 
     // Schemas (always required)
@@ -419,5 +441,5 @@ export function createEntityMutation<TEntity, TRequest, TResponse>(
       createDefaultOptimisticUpdate<TEntity, TRequest>(entity, operation),
   };
 
-  return createMutation<TResponse, TRequest, TEntity>(fullConfig);
+  return createMutation<TResponse, TRequest, TEntity[], TEntity>(fullConfig);
 }

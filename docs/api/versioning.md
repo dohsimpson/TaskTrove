@@ -55,7 +55,6 @@ All endpoints under `/api/v1/` namespace:
 - `/api/v1/groups` - Group management
 - `/api/v1/settings` - Settings management
 - `/api/v1/user` - User management
-- `/api/v1/data` - Complete data retrieval
 - `/api/v1/backup` - Backup operations
 - `/api/v1/import` - Data import
 - `/api/v1/assets/**` - Static assets

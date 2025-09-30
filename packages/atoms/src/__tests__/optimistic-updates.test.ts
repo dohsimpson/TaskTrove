@@ -23,48 +23,8 @@ import {
   createSectionId,
   INBOX_PROJECT_ID,
 } from "@tasktrove/types";
-import { DATA_QUERY_KEY } from "@tasktrove/constants";
+import { TASKS_QUERY_KEY } from "@tasktrove/constants";
 import { QueryClient } from "@tanstack/react-query";
-
-// Type guard for query data structure
-interface TasksQueryData {
-  tasks: Task[];
-  projects: unknown[];
-  labels: unknown[];
-  ordering: { projects: unknown[]; labels: unknown[] };
-}
-
-function isTasksQueryData(data: unknown): data is TasksQueryData {
-  if (typeof data !== "object" || data === null) return false;
-
-  // Check if all required properties exist
-  if (
-    !(
-      "tasks" in data &&
-      "projects" in data &&
-      "labels" in data &&
-      "ordering" in data
-    )
-  ) {
-    return false;
-  }
-
-  // Type-safe property access after we know the properties exist
-  const obj: {
-    tasks: unknown;
-    projects: unknown;
-    labels: unknown;
-    ordering: unknown;
-  } = data;
-
-  return (
-    Array.isArray(obj.tasks) &&
-    Array.isArray(obj.projects) &&
-    Array.isArray(obj.labels) &&
-    typeof obj.ordering === "object" &&
-    obj.ordering !== null
-  );
-}
 
 // Mock fetch globally
 global.fetch = vi.fn();
@@ -111,12 +71,7 @@ beforeEach(() => {
   store.set(queryClientAtom, queryClient);
 
   // Setup initial data in query client
-  queryClient.setQueryData(DATA_QUERY_KEY, {
-    tasks: [mockTask, mockCompletedTask],
-    projects: [],
-    labels: [],
-    ordering: { projects: [], labels: [] },
-  });
+  queryClient.setQueryData(TASKS_QUERY_KEY, [mockTask, mockCompletedTask]);
 
   // Mock process.env to avoid test mode in mutations
   vi.stubEnv("NODE_ENV", "development");
@@ -161,14 +116,11 @@ describe("Optimistic Updates", () => {
       await mutation.mutateAsync([taskUpdate]);
 
       // Check that optimistic update set completedAt
-      const rawQueryData = queryClient.getQueryData(DATA_QUERY_KEY);
-      if (!isTasksQueryData(rawQueryData)) {
-        throw new Error("Query data has unexpected structure");
+      const tasks = queryClient.getQueryData<Task[]>(TASKS_QUERY_KEY);
+      if (!tasks) {
+        throw new Error("Tasks not found in query data");
       }
-      const queryData = rawQueryData;
-      const updatedTask = queryData.tasks.find(
-        (t: Task) => t.id === mockTask.id,
-      );
+      const updatedTask = tasks.find((t: Task) => t.id === mockTask.id);
 
       if (!updatedTask) {
         throw new Error("Updated task not found in query data");
@@ -208,12 +160,11 @@ describe("Optimistic Updates", () => {
       await mutation.mutateAsync([taskUpdate]);
 
       // Check that optimistic update cleared completedAt
-      const rawQueryData = queryClient.getQueryData(DATA_QUERY_KEY);
-      if (!isTasksQueryData(rawQueryData)) {
-        throw new Error("Query data has unexpected structure");
+      const tasks = queryClient.getQueryData<Task[]>(TASKS_QUERY_KEY);
+      if (!tasks) {
+        throw new Error("Tasks not found in query data");
       }
-      const queryData = rawQueryData;
-      const updatedTask = queryData.tasks.find(
+      const updatedTask = tasks.find(
         (t: Task) => t.id === mockCompletedTask.id,
       );
 
@@ -256,12 +207,11 @@ describe("Optimistic Updates", () => {
       await mutation.mutateAsync([taskUpdate]);
 
       // Check that completedAt was not modified
-      const rawQueryData = queryClient.getQueryData(DATA_QUERY_KEY);
-      if (!isTasksQueryData(rawQueryData)) {
-        throw new Error("Query data has unexpected structure");
+      const tasks = queryClient.getQueryData<Task[]>(TASKS_QUERY_KEY);
+      if (!tasks) {
+        throw new Error("Tasks not found in query data");
       }
-      const queryData = rawQueryData;
-      const updatedTask = queryData.tasks.find(
+      const updatedTask = tasks.find(
         (t: Task) => t.id === mockCompletedTask.id,
       );
 
@@ -302,15 +252,12 @@ describe("Optimistic Updates", () => {
       await mutation.mutateAsync(taskUpdates);
 
       // Check both tasks were updated correctly
-      const rawQueryData = queryClient.getQueryData(DATA_QUERY_KEY);
-      if (!isTasksQueryData(rawQueryData)) {
-        throw new Error("Query data has unexpected structure");
+      const tasks = queryClient.getQueryData<Task[]>(TASKS_QUERY_KEY);
+      if (!tasks) {
+        throw new Error("Tasks not found in query data");
       }
-      const queryData = rawQueryData;
-      const task1 = queryData.tasks.find((t: Task) => t.id === mockTask.id);
-      const task2 = queryData.tasks.find(
-        (t: Task) => t.id === mockCompletedTask.id,
-      );
+      const task1 = tasks.find((t: Task) => t.id === mockTask.id);
+      const task2 = tasks.find((t: Task) => t.id === mockCompletedTask.id);
 
       if (!task1) {
         throw new Error("Task 1 not found in query data");
@@ -335,7 +282,7 @@ describe("Optimistic Updates", () => {
       vi.mocked(global.fetch).mockRejectedValueOnce(new Error("API Error"));
 
       // Store initial data for comparison
-      const initialData = queryClient.getQueryData(DATA_QUERY_KEY);
+      const initialData = queryClient.getQueryData(TASKS_QUERY_KEY);
 
       // Update task
       const taskUpdate = {
@@ -349,7 +296,7 @@ describe("Optimistic Updates", () => {
       );
 
       // Check that data was rolled back
-      const finalData = queryClient.getQueryData(DATA_QUERY_KEY);
+      const finalData = queryClient.getQueryData(TASKS_QUERY_KEY);
       expect(finalData).toEqual(initialData);
     });
   });

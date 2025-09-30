@@ -14,7 +14,9 @@ import {
   createLabelId,
   createProjectId,
   createTaskId,
-  type DataFile,
+  type Label,
+  type Project,
+  type Task,
 } from "@tasktrove/types";
 import { QueryClient } from "@tanstack/react-query";
 import {
@@ -24,9 +26,8 @@ import {
   DEFAULT_TASK_SUBTASKS,
   DEFAULT_TASK_COMMENTS,
   DEFAULT_TASK_ATTACHMENTS,
-  DATA_QUERY_KEY,
+  TASKS_QUERY_KEY,
 } from "@tasktrove/constants";
-import { DEFAULT_EMPTY_DATA_FILE } from "@tasktrove/types/defaults";
 
 // Import shared test constants
 import {
@@ -61,8 +62,6 @@ vi.mock("@tanstack/react-query", () => ({
   })),
 }));
 
-// Using DataFile directly instead of CacheData
-
 // Helper function to get valid priority
 const getValidPriority = (index: number): 1 | 2 | 3 | 4 => {
   const priorities: readonly [1, 2, 3, 4] = [1, 2, 3, 4];
@@ -77,14 +76,12 @@ const getValidPriority = (index: number): 1 | 2 | 3 | 4 => {
 // Mock implementations to isolate the factory function behavior
 const createLabelOptimisticFactory = (
   labelData: { name: string; color?: string; slug?: string },
-  oldData?: DataFile,
+  oldLabels: Label[] = [],
 ) => {
   return {
     id: createLabelId(uuidv4()),
     name: labelData.name,
-    slug:
-      labelData.slug ??
-      createSafeLabelNameSlug(labelData.name, oldData?.labels || []),
+    slug: labelData.slug ?? createSafeLabelNameSlug(labelData.name, oldLabels),
     color: labelData.color || "#3b82f6",
   };
 };
@@ -96,14 +93,14 @@ const createProjectOptimisticFactory = (
     slug?: string;
     shared?: boolean;
   },
-  oldData?: DataFile,
+  oldProjects: Project[] = [],
 ) => {
   return {
     id: createProjectId(uuidv4()),
     name: projectData.name,
     slug:
       projectData.slug ??
-      createSafeProjectNameSlug(projectData.name, oldData?.projects || []),
+      createSafeProjectNameSlug(projectData.name, oldProjects),
     color: projectData.color ?? "#3b82f6",
     shared: projectData.shared ?? false,
     sections: [{ id: "default-section", name: "Default", color: "#6b7280" }],
@@ -114,20 +111,17 @@ describe("createMutation Function", () => {
   describe("Optimistic Data Factories", () => {
     describe("Label optimistic factory", () => {
       it("should use proper slug generation with collision detection", () => {
-        const mockCacheData: DataFile = {
-          ...DEFAULT_EMPTY_DATA_FILE,
-          labels: [
-            {
-              id: createLabelId(uuidv4()),
-              name: "Work",
-              slug: "work",
-              color: "#ef4444",
-            },
-          ],
-        };
+        const existingLabels: Label[] = [
+          {
+            id: createLabelId(uuidv4()),
+            name: "Work",
+            slug: "work",
+            color: "#ef4444",
+          },
+        ];
 
         const labelData = { name: "Work", color: "#10b981" };
-        const result = createLabelOptimisticFactory(labelData, mockCacheData);
+        const result = createLabelOptimisticFactory(labelData, existingLabels);
 
         expect(result.slug).toBe("work-1"); // Should handle collision
       });
@@ -142,25 +136,22 @@ describe("createMutation Function", () => {
 
     describe("Project optimistic factory", () => {
       it("should use proper slug generation with collision detection", () => {
-        const mockCacheData: DataFile = {
-          ...DEFAULT_EMPTY_DATA_FILE,
-          projects: [
-            {
-              id: createProjectId(uuidv4()),
-              name: "My Project",
-              slug: "my-project",
-              color: "#3b82f6",
-              shared: false,
-              sections: [],
-              taskOrder: [],
-            },
-          ],
-        };
+        const existingProjects: Project[] = [
+          {
+            id: createProjectId(uuidv4()),
+            name: "My Project",
+            slug: "my-project",
+            color: "#3b82f6",
+            shared: false,
+            sections: [],
+            taskOrder: [],
+          },
+        ];
 
         const projectData = { name: "My Project", color: "#10b981" };
         const result = createProjectOptimisticFactory(
           projectData,
-          mockCacheData,
+          existingProjects,
         );
 
         expect(result.slug).toBe("my-project-1"); // Should handle collision
@@ -215,10 +206,11 @@ describe("createMutation Function", () => {
           taskIds: ["test-id"],
         });
 
-        const mockOptimisticUpdateFn = vi.fn().mockReturnValue({
-          ...DEFAULT_EMPTY_DATA_FILE,
-          tasks: [{ id: "optimistic-task", title: "Optimistic Task" }],
-        });
+        const mockOptimisticUpdateFn = vi
+          .fn()
+          .mockReturnValue([
+            { id: "optimistic-task", title: "Optimistic Task" },
+          ]);
 
         const mockOptimisticDataFactory = vi.fn().mockReturnValue({
           id: "optimistic-task",
@@ -240,9 +232,7 @@ describe("createMutation Function", () => {
         };
 
         // Mock query client methods - using vi.mocked for test mocking
-        vi.mocked(mockQueryClient.getQueryData).mockReturnValue({
-          ...DEFAULT_EMPTY_DATA_FILE,
-        });
+        vi.mocked(mockQueryClient.getQueryData).mockReturnValue([]);
 
         // Act & Assert - Test mutation configuration
         expect(config.mutationFn).toBeDefined();
@@ -251,11 +241,7 @@ describe("createMutation Function", () => {
 
         // Verify optimistic factory was called with correct parameters
         const testVariables = { title: "Test Task" };
-        const optimisticData = config.optimisticDataFactory(testVariables, {
-          tasks: [],
-          projects: [],
-          labels: [],
-        });
+        const optimisticData = config.optimisticDataFactory(testVariables, []);
         expect(optimisticData).toEqual({
           id: "optimistic-task",
           title: "Optimistic Task",
@@ -291,9 +277,7 @@ describe("createMutation Function", () => {
     describe("Optimistic Updates", () => {
       it("should apply optimistic updates immediately", () => {
         // Arrange
-        const initialData: DataFile = {
-          ...DEFAULT_EMPTY_DATA_FILE,
-        };
+        const initialTasks: Task[] = [];
 
         const optimisticTask = {
           id: createTaskId(uuidv4()),
@@ -304,70 +288,59 @@ describe("createMutation Function", () => {
 
         const mockOptimisticUpdateFn = (
           variables: unknown,
-          oldData: DataFile,
+          oldTasks: Task[],
           optimisticData?: unknown,
         ) => {
-          return {
-            ...oldData,
-            tasks: [...oldData.tasks, optimisticData],
-          };
+          return [...oldTasks, optimisticData];
         };
 
         // Act
-        const updatedData = mockOptimisticUpdateFn(
+        const updatedTasks = mockOptimisticUpdateFn(
           { title: "Test Task" },
-          initialData,
+          initialTasks,
           optimisticTask,
         );
 
         // Assert
-        expect(updatedData.tasks).toHaveLength(1);
-        expect(updatedData.tasks[0]).toEqual(optimisticTask);
-        expect(updatedData.projects).toEqual(initialData.projects);
-        expect(updatedData.labels).toEqual(initialData.labels);
+        expect(updatedTasks).toHaveLength(1);
+        expect(updatedTasks[0]).toEqual(optimisticTask);
       });
 
       it("should handle optimistic updates without optimistic data factory", () => {
         // Arrange
-        const initialData: DataFile = {
-          ...DEFAULT_EMPTY_DATA_FILE,
-          tasks: [
-            {
-              id: TEST_TASK_ID_1,
-              title: "Existing Task",
-              completed: DEFAULT_TASK_COMPLETED,
-              priority: DEFAULT_TASK_PRIORITY,
-              labels: DEFAULT_TASK_LABELS,
-              subtasks: DEFAULT_TASK_SUBTASKS,
-              comments: DEFAULT_TASK_COMMENTS,
-              attachments: DEFAULT_TASK_ATTACHMENTS,
-              createdAt: new Date("2023-01-01"),
-              recurringMode: "dueDate",
-            },
-          ],
-        };
+        const initialTasks: Task[] = [
+          {
+            id: TEST_TASK_ID_1,
+            title: "Existing Task",
+            completed: DEFAULT_TASK_COMPLETED,
+            priority: DEFAULT_TASK_PRIORITY,
+            labels: DEFAULT_TASK_LABELS,
+            subtasks: DEFAULT_TASK_SUBTASKS,
+            comments: DEFAULT_TASK_COMMENTS,
+            attachments: DEFAULT_TASK_ATTACHMENTS,
+            createdAt: new Date("2023-01-01"),
+            recurringMode: "dueDate",
+          },
+        ];
 
         const mockOptimisticUpdateFn = (
           variables: { id: string; completed: boolean },
-          oldData: DataFile,
+          oldTasks: Task[],
         ) => {
-          return {
-            ...oldData,
-            tasks: oldData.tasks.map((task) =>
-              task.id === variables.id ? { ...task, ...variables } : task,
-            ),
-          };
+          return oldTasks.map((task) =>
+            task.id === variables.id ? { ...task, ...variables } : task,
+          );
         };
 
         // Act
-        const updatedData = mockOptimisticUpdateFn(
+        const updatedTasks = mockOptimisticUpdateFn(
           { id: TEST_TASK_ID_1, completed: true },
-          initialData,
+          initialTasks,
         );
 
         // Assert
-        expect(updatedData.tasks).toHaveLength(1);
-        const firstTask = updatedData.tasks[0];
+        expect(updatedTasks).toHaveLength(1);
+        const firstTask = updatedTasks[0];
         if (!firstTask) {
           throw new Error("Expected first task to exist");
         }
@@ -379,7 +352,7 @@ describe("createMutation Function", () => {
     describe("Cache Management", () => {
       it("should cancel queries before applying optimistic updates", () => {
         // Arrange
-        const queryKey = DATA_QUERY_KEY;
+        const queryKey = TASKS_QUERY_KEY;
 
         // This test verifies the concept - in real implementation,
         // query cancellation happens in the onMutate phase
@@ -394,30 +367,27 @@ describe("createMutation Function", () => {
 
       it("should provide previous data for rollback scenarios", () => {
         // Arrange
-        const previousData: DataFile = {
-          ...DEFAULT_EMPTY_DATA_FILE,
-          tasks: [
-            {
-              id: TEST_TASK_ID_1,
-              title: "Original Task",
-              completed: DEFAULT_TASK_COMPLETED,
-              priority: DEFAULT_TASK_PRIORITY,
-              labels: DEFAULT_TASK_LABELS,
-              subtasks: DEFAULT_TASK_SUBTASKS,
-              comments: DEFAULT_TASK_COMMENTS,
-              attachments: DEFAULT_TASK_ATTACHMENTS,
-              createdAt: new Date("2023-01-01"),
-              recurringMode: "dueDate",
-            },
-          ],
-        };
+        const previousTasks: Task[] = [
+          {
+            id: TEST_TASK_ID_1,
+            title: "Original Task",
+            completed: DEFAULT_TASK_COMPLETED,
+            priority: DEFAULT_TASK_PRIORITY,
+            labels: DEFAULT_TASK_LABELS,
+            subtasks: DEFAULT_TASK_SUBTASKS,
+            comments: DEFAULT_TASK_COMMENTS,
+            attachments: DEFAULT_TASK_ATTACHMENTS,
+            createdAt: new Date("2023-01-01"),
+            recurringMode: "dueDate",
+          },
+        ];
 
         // Act - Simulate rollback scenario
-        const rollbackData = { ...previousData };
+        const rollbackTasks = [...previousTasks];
 
         // Assert
-        expect(rollbackData).toEqual(previousData);
-        const firstTask = rollbackData.tasks[0];
+        expect(rollbackTasks).toEqual(previousTasks);
+        const firstTask = rollbackTasks[0];
         if (!firstTask) {
           throw new Error("Expected to find first task in rollback data");
         }
@@ -528,10 +498,10 @@ describe("createMutation Function", () => {
           mutationFn: mockMutationFn,
           optimisticUpdateFn: vi
             .fn()
-            .mockImplementation((variables, oldData, optimisticData) => ({
-              ...oldData,
-              tasks: [...oldData.tasks, optimisticData],
-            })),
+            .mockImplementation((variables, oldTasks, optimisticData) => [
+              ...oldTasks,
+              optimisticData,
+            ]),
           optimisticDataFactory: vi.fn().mockImplementation((variables) => ({
             id: createTaskId(uuidv4()),
             title: variables.title,
@@ -568,53 +538,39 @@ describe("createMutation Function", () => {
 
       it("should maintain data consistency during complex operations", () => {
         // Arrange
-        const initialState: DataFile = {
-          ...DEFAULT_EMPTY_DATA_FILE,
-          tasks: [
-            {
-              id: TEST_TASK_ID_1,
-              title: "Task 1",
-              completed: false,
-              priority: 1,
-              labels: DEFAULT_TASK_LABELS,
-              subtasks: DEFAULT_TASK_SUBTASKS,
-              comments: DEFAULT_TASK_COMMENTS,
-              attachments: DEFAULT_TASK_ATTACHMENTS,
-              createdAt: new Date("2023-01-01"),
-              recurringMode: "dueDate",
-            },
-            {
-              id: TEST_TASK_ID_2,
-              title: "Task 2",
-              completed: true,
-              priority: 2,
-              labels: DEFAULT_TASK_LABELS,
-              subtasks: DEFAULT_TASK_SUBTASKS,
-              comments: DEFAULT_TASK_COMMENTS,
-              attachments: DEFAULT_TASK_ATTACHMENTS,
-              createdAt: new Date("2023-01-01"),
-              recurringMode: "dueDate",
-            },
-          ],
-          projects: [
-            {
-              id: TEST_PROJECT_ID_1,
-              name: "Project 1",
-              slug: "project-1",
-              color: "#3b82f6",
-              shared: false,
-              sections: [],
-              taskOrder: [],
-            },
-          ],
-        };
+        const initialTasks: Task[] = [
+          {
+            id: TEST_TASK_ID_1,
+            title: "Task 1",
+            completed: false,
+            priority: 1,
+            labels: DEFAULT_TASK_LABELS,
+            subtasks: DEFAULT_TASK_SUBTASKS,
+            comments: DEFAULT_TASK_COMMENTS,
+            attachments: DEFAULT_TASK_ATTACHMENTS,
+            createdAt: new Date("2023-01-01"),
+            recurringMode: "dueDate",
+          },
+          {
+            id: TEST_TASK_ID_2,
+            title: "Task 2",
+            completed: true,
+            priority: 2,
+            labels: DEFAULT_TASK_LABELS,
+            subtasks: DEFAULT_TASK_SUBTASKS,
+            comments: DEFAULT_TASK_COMMENTS,
+            attachments: DEFAULT_TASK_ATTACHMENTS,
+            createdAt: new Date("2023-01-01"),
+            recurringMode: "dueDate",
+          },
+        ];
 
         // Act - Complex update operation
         const complexUpdateFn = (
           variables: { taskIds: string[]; projectId: string; priority: number },
-          oldData: DataFile,
+          oldTasks: Task[],
         ) => {
-          const updatedTasks = oldData.tasks.map((task) =>
+          return oldTasks.map((task) =>
             variables.taskIds.includes(task.id)
               ? {
                   ...task,
@@ -623,11 +579,6 @@ describe("createMutation Function", () => {
                 }
               : task,
           );
-
-          return {
-            ...oldData,
-            tasks: updatedTasks,
-          };
         };
 
         const updateVariables = {
@@ -636,66 +587,42 @@ describe("createMutation Function", () => {
           priority: 3,
         };
 
-        const updatedState = complexUpdateFn(updateVariables, initialState);
+        const updatedTasks = complexUpdateFn(updateVariables, initialTasks);
 
         // Assert
-        expect(updatedState.tasks).toHaveLength(2);
-        expect(updatedState.tasks.every((task) => task.priority === 3)).toBe(
-          true,
-        );
+        expect(updatedTasks).toHaveLength(2);
+        expect(updatedTasks.every((task) => task.priority === 3)).toBe(true);
         expect(
-          updatedState.tasks.every(
+          updatedTasks.every(
             (task) => task.projectId === updateVariables.projectId,
           ),
         ).toBe(true);
-        expect(updatedState.projects).toEqual(initialState.projects);
       });
     });
 
     describe("Performance & Memory Management", () => {
       it("should not create memory leaks with large datasets", () => {
         // Arrange - Simulate large dataset
-        const largeDataset: DataFile = {
-          ...DEFAULT_EMPTY_DATA_FILE,
-          tasks: Array.from({ length: 1000 }, (_, i) => ({
-            id: createTaskId(uuidv4()),
-            title: `Task ${i}`,
-            completed: i % 2 === 0,
-            recurringMode: "dueDate",
-            priority: getValidPriority(i),
-            labels: DEFAULT_TASK_LABELS,
-            subtasks: DEFAULT_TASK_SUBTASKS,
-            comments: DEFAULT_TASK_COMMENTS,
-            attachments: DEFAULT_TASK_ATTACHMENTS,
-            createdAt: new Date("2023-01-01"),
-          })),
-          projects: Array.from({ length: 50 }, (_, i) => ({
-            id: createProjectId(uuidv4()),
-            name: `Project ${i}`,
-            slug: `project-${i}`,
-            color: "#3b82f6",
-            shared: false,
-            sections: [],
-            taskOrder: [],
-          })),
-          labels: Array.from({ length: 20 }, (_, i) => ({
-            id: createLabelId(uuidv4()),
-            name: `Label ${i}`,
-            slug: `label-${i}`,
-            color: "#ef4444",
-          })),
-        };
+        const largeTasks: Task[] = Array.from({ length: 1000 }, (_, i) => ({
+          id: createTaskId(uuidv4()),
+          title: `Task ${i}`,
+          completed: i % 2 === 0,
+          recurringMode: "dueDate",
+          priority: getValidPriority(i),
+          labels: DEFAULT_TASK_LABELS,
+          subtasks: DEFAULT_TASK_SUBTASKS,
+          comments: DEFAULT_TASK_COMMENTS,
+          attachments: DEFAULT_TASK_ATTACHMENTS,
+          createdAt: new Date("2023-01-01"),
+        }));
 
         // Act - Perform optimistic update on large dataset
         const optimisticUpdateFn = (
           variables: unknown,
-          oldData: DataFile,
+          oldTasks: Task[],
           optimisticData: unknown,
         ) => {
-          return {
-            ...oldData,
-            tasks: [...oldData.tasks, optimisticData],
-          };
+          return [...oldTasks, optimisticData];
         };
 
         const newTask = {
@@ -712,72 +639,62 @@ describe("createMutation Function", () => {
         };
 
         const startTime = performance.now();
-        const updatedData = optimisticUpdateFn(
+        const updatedTasks = optimisticUpdateFn(
           { title: "New Task" },
-          largeDataset,
+          largeTasks,
           newTask,
         );
         const endTime = performance.now();
 
         // Assert - Operation should be reasonably fast
         expect(endTime - startTime).toBeLessThan(50); // Less than 50ms for 1000+ item dataset
-        expect(updatedData.tasks).toHaveLength(1001);
-        expect(updatedData.tasks[1000]).toEqual(newTask);
-        expect(updatedData.projects).toHaveLength(50);
-        expect(updatedData.labels).toHaveLength(20);
+        expect(updatedTasks).toHaveLength(1001);
+        expect(updatedTasks[1000]).toEqual(newTask);
       });
 
       it("should handle deep object cloning correctly", () => {
         // Arrange
-        const complexData: DataFile = {
-          ...DEFAULT_EMPTY_DATA_FILE,
-          tasks: [
-            {
-              id: TEST_TASK_ID_1,
-              title: "Complex Task",
-              completed: false,
-              priority: 1,
-              labels: DEFAULT_TASK_LABELS,
-              comments: DEFAULT_TASK_COMMENTS,
-              createdAt: new Date("2023-01-01"),
-              recurringMode: "dueDate",
-              subtasks: [
-                { id: TEST_SUBTASK_ID_1, title: "Subtask 1", completed: false },
-              ],
-              attachments: ["att-1"],
-            },
-          ],
-        };
+        const complexTasks: Task[] = [
+          {
+            id: TEST_TASK_ID_1,
+            title: "Complex Task",
+            completed: false,
+            priority: 1,
+            labels: DEFAULT_TASK_LABELS,
+            comments: DEFAULT_TASK_COMMENTS,
+            createdAt: new Date("2023-01-01"),
+            recurringMode: "dueDate",
+            subtasks: [
+              { id: TEST_SUBTASK_ID_1, title: "Subtask 1", completed: false },
+            ],
+            attachments: ["att-1"],
+          },
+        ];
 
         // Act - Optimistic update should not mutate original data
         const optimisticUpdateFn = (
           variables: { title: string },
-          oldData: DataFile,
+          oldTasks: Task[],
         ) => {
-          const updatedTasks = oldData.tasks.map((task) => ({
+          return oldTasks.map((task) => ({
             ...task,
             title: variables.title,
             subtasks: task.subtasks.map((subtask) => ({ ...subtask })),
             attachments: task.attachments.slice(),
           }));
-
-          return {
-            ...oldData,
-            tasks: updatedTasks,
-          };
         };
 
-        const originalTask = complexData.tasks[0];
+        const originalTask = complexTasks[0];
         if (!originalTask) {
           throw new Error("Expected to find first task in complex data");
         }
         const originalTitle = originalTask.title;
-        const updatedData = optimisticUpdateFn(
+        const updatedTasks = optimisticUpdateFn(
           { title: "Updated Title" },
-          complexData,
+          complexTasks,
         );
 
-        const updatedTask = updatedData.tasks[0];
+        const updatedTask = updatedTasks[0];
         if (!updatedTask) {
           throw new Error("Expected to find first task in updated data");
         }

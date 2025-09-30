@@ -8,10 +8,9 @@ export {
   settingsAtom,
   updateSettingsAtom,
   dataSettingsAtom,
-  settingsMetadataAtom,
   updateDataSettingsAtom,
   settingsAtoms,
-  dataQueryAtom,
+  settingsQueryAtom,
   updateSettingsMutationAtom,
 } from "./core/settings";
 export * from "./core/notifications";

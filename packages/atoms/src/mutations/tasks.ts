@@ -36,8 +36,8 @@ import {
   DEFAULT_TASK_COMMENTS,
   DEFAULT_TASK_ATTACHMENTS,
   DEFAULT_RECURRING_MODE,
+  TASKS_QUERY_KEY,
 } from "@tasktrove/constants";
-import type { DataFile } from "@tasktrove/types";
 import { createMutation } from "./factory";
 import { createEntityMutation } from "./entity-factory";
 
@@ -54,10 +54,13 @@ import { createEntityMutation } from "./entity-factory";
 export const createTaskMutationAtom = createMutation<
   CreateTaskResponse,
   CreateTaskRequest,
+  Task[],
   Task
 >({
   method: "POST",
   operationName: "Created task",
+  resourceQueryKey: TASKS_QUERY_KEY,
+  defaultResourceValue: [],
   responseSchema: CreateTaskResponseSchema,
   serializationSchema: TaskCreateSerializationSchema,
   testResponseFactory: () => {
@@ -68,7 +71,7 @@ export const createTaskMutationAtom = createMutation<
       message: "Task created successfully (test mode)",
     };
   },
-  optimisticDataFactory: (taskData: CreateTaskRequest) => {
+  optimisticDataFactory: (taskData: CreateTaskRequest, _oldTasks: Task[]) => {
     // Create optimistic task with temporary ID
     return {
       id: createTaskId(uuidv4()), // Temporary ID that will be replaced by server response
@@ -98,16 +101,12 @@ export const createTaskMutationAtom = createMutation<
     };
   },
   optimisticUpdateFn: (
-    taskData: CreateTaskRequest,
-    oldData: DataFile,
+    _taskData: CreateTaskRequest,
+    oldTasks: Task[],
     optimisticTask?: Task,
   ) => {
     if (!optimisticTask) throw new Error("Optimistic task not provided");
-
-    return {
-      ...oldData,
-      tasks: [...oldData.tasks, optimisticTask],
-    };
+    return [...oldTasks, optimisticTask];
   },
 });
 createTaskMutationAtom.debugLabel = "createTaskMutationAtom";
@@ -123,7 +122,7 @@ createTaskMutationAtom.debugLabel = "createTaskMutationAtom";
  * - Converts null to undefined to match API behavior
  */
 export const updateTasksMutationAtom = createEntityMutation<
-  Task[], // TEntity (optimistic data)
+  Task, // TEntity (individual entity type)
   TaskUpdateUnion, // TRequest (variables)
   UpdateTaskResponse // TResponse
 >({
@@ -134,7 +133,7 @@ export const updateTasksMutationAtom = createEntityMutation<
     response: UpdateTaskResponseSchema,
   },
   // Custom optimistic update for task-specific behavior
-  optimisticUpdateFn: (tasks: TaskUpdateUnion, oldData: DataFile) => {
+  optimisticUpdateFn: (tasks: TaskUpdateUnion, oldTasks: Task[]) => {
     // Convert TaskUpdateUnion to array of individual task updates
     const taskUpdates = Array.isArray(tasks) ? tasks : [tasks];
 
@@ -142,7 +141,7 @@ export const updateTasksMutationAtom = createEntityMutation<
     const newTasksMap = new Map(taskUpdates.map((task) => [task.id, task]));
 
     // Update the tasks array with optimistic data
-    const updatedTasks = oldData.tasks.map((task: Task) => {
+    const updatedTasks = oldTasks.map((task: Task) => {
       const newTask = newTasksMap.get(task.id);
       if (!newTask) return task;
 
@@ -188,10 +187,7 @@ export const updateTasksMutationAtom = createEntityMutation<
       return cleanedTask;
     });
 
-    return {
-      ...oldData,
-      tasks: updatedTasks,
-    };
+    return updatedTasks;
   },
 });
 updateTasksMutationAtom.debugLabel = "updateTasksMutationAtom";

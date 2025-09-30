@@ -378,8 +378,36 @@ export const DEFAULT_AVATAR_DIR = `${DEFAULT_ASSETS_DIR}/avatar`;
 // API/QUERY DEFAULTS
 // =============================================================================
 
-/** Main query key for all application data (tasks, projects, labels, etc.) */
-export const DATA_QUERY_KEY = ["tasks"];
+/**
+ * Individual resource query keys for granular cache management.
+ * Each resource has its own query key following the hierarchical pattern ["data", "resource"].
+ * This enables precise cache invalidation and optimistic updates per resource type.
+ */
+
+/** Query key for tasks data */
+export const TASKS_QUERY_KEY = ["data", "tasks"] as const;
+
+/** Query key for projects data */
+export const PROJECTS_QUERY_KEY = ["data", "projects"] as const;
+
+/** Query key for labels data */
+export const LABELS_QUERY_KEY = ["data", "labels"] as const;
+
+/** Query key for groups data (both project and label groups) */
+export const GROUPS_QUERY_KEY = ["data", "groups"] as const;
+
+/** Query key for settings data */
+export const SETTINGS_QUERY_KEY = ["data", "settings"] as const;
+
+/** Query key for user data */
+export const USER_QUERY_KEY = ["data", "user"] as const;
+
+/**
+ * Parent query key for invalidating all data queries at once.
+ * Use this when you need to invalidate all resource queries simultaneously.
+ * Due to TanStack Query's hierarchical invalidation, this will match all ["data", *] keys.
+ */
+export const DATA_QUERY_KEY = ["data"] as const;
 
 // =============================================================================
 // BACKUP DEFAULTS

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { screen, fireEvent } from "@/test-utils"
 import { render } from "@/test-utils/render-with-providers"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
-import { dataQueryAtom } from "@/lib/atoms/core/base"
+import { groupsQueryAtom } from "@/lib/atoms/core/base"
 import { createGroupId, createProjectId } from "@/lib/types"
 import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types"
 
@@ -160,15 +160,11 @@ describe("ProjectGroupContextMenu", () => {
 
   const defaultAtomValues: Array<[unknown, unknown]> = [
     [
-      dataQueryAtom,
+      groupsQueryAtom,
       {
         data: {
-          tasks: [],
-          projects: [],
-          labels: [],
           projectGroups: { ...DEFAULT_PROJECT_GROUP, items: [mockProjectGroup] },
           labelGroups: DEFAULT_LABEL_GROUP,
-          ordering: { projects: [], labels: [] },
         },
       },
     ],
@@ -243,15 +239,11 @@ describe("ProjectGroupContextMenu", () => {
       {
         initialAtomValues: [
           [
-            dataQueryAtom,
+            groupsQueryAtom,
             {
               data: {
-                tasks: [],
-                projects: [],
-                labels: [],
                 projectGroups: DEFAULT_PROJECT_GROUP,
                 labelGroups: DEFAULT_LABEL_GROUP,
-                ordering: { projects: [], labels: [] },
               },
             },
           ],
@@ -339,15 +331,11 @@ describe("ProjectGroupContextMenu", () => {
 
     const atomValuesWithProjects: Array<[unknown, unknown]> = [
       [
-        dataQueryAtom,
+        groupsQueryAtom,
         {
           data: {
-            tasks: [],
-            projects: [],
-            labels: [],
             projectGroups: { ...DEFAULT_PROJECT_GROUP, items: [mockProjectGroupWithProjects] },
             labelGroups: DEFAULT_LABEL_GROUP,
-            ordering: { projects: [], labels: [] },
           },
         },
       ],
@@ -401,15 +389,11 @@ describe("ProjectGroupContextMenu", () => {
 
     const atomValuesWithProjects: Array<[unknown, unknown]> = [
       [
-        dataQueryAtom,
+        groupsQueryAtom,
         {
           data: {
-            tasks: [],
-            projects: [],
-            labels: [],
             projectGroups: { ...DEFAULT_PROJECT_GROUP, items: [mockProjectGroupWithProjects] },
             labelGroups: DEFAULT_LABEL_GROUP,
-            ordering: { projects: [], labels: [] },
           },
         },
       ],

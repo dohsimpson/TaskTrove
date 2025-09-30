@@ -25,7 +25,7 @@ import {
   createSectionId,
   INBOX_PROJECT_ID,
 } from "@tasktrove/types";
-import { DATA_QUERY_KEY } from "@tasktrove/constants";
+import { TASKS_QUERY_KEY } from "@tasktrove/constants";
 import { QueryClient } from "@tanstack/react-query";
 
 // Mock fetch globally
@@ -120,12 +120,7 @@ beforeEach(() => {
   store.set(queryClientAtom, queryClient);
 
   // Setup initial data in query client
-  queryClient.setQueryData(DATA_QUERY_KEY, {
-    tasks: allTasks,
-    projects: [],
-    labels: [],
-    meta: { timestamp: new Date().toISOString() },
-  });
+  queryClient.setQueryData(TASKS_QUERY_KEY, allTasks);
 
   // Mock process.env to avoid test mode in mutations
   vi.stubEnv("NODE_ENV", "development");
@@ -250,12 +245,7 @@ describe("Completed View Filtering Fix", () => {
         order: 0,
       };
 
-      queryClient.setQueryData(DATA_QUERY_KEY, {
-        tasks: [bugTask],
-        projects: [],
-        labels: [],
-        meta: { timestamp: new Date().toISOString() },
-      });
+      queryClient.setQueryData(TASKS_QUERY_KEY, [bugTask]);
 
       // Navigate to completed view with showCompleted = false (bug scenario)
       store.set(currentViewAtom, "completed");

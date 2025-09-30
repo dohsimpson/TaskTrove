@@ -18,10 +18,8 @@ import {
   createProjectGroupMutationAtom,
   updateProjectGroupMutationAtom,
   deleteProjectGroupMutationAtom,
-  dataQueryAtom,
+  groupsQueryAtom,
 } from "./base";
-
-// Groups data comes from dataQueryAtom, following same pattern as projectsAtom
 
 // Derived atoms for each group type
 /**
@@ -33,16 +31,13 @@ import {
  * - Mutation handling through React Query
  */
 export const allGroupsAtom = atom((get) => {
-  const result = get(dataQueryAtom);
+  const query = get(groupsQueryAtom);
 
-  // Handle TanStack Query result structure - follow same pattern as projectsAtom
-  if ("data" in result && result.data) {
-    return {
-      projectGroups: result.data.projectGroups,
-      labelGroups: result.data.labelGroups,
-    };
+  if (query.data) {
+    return query.data;
   }
 
+  // Return default empty groups if loading or error
   return {
     projectGroups: {
       type: "project" as const,

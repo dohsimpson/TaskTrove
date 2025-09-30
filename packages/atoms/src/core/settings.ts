@@ -12,7 +12,7 @@ import { recordOperationAtom } from "./history";
 import {
   settingsAtom,
   updateSettingsMutationAtom,
-  dataQueryAtom,
+  settingsQueryAtom,
 } from "./base";
 import type { UserSettings, PartialUserSettings } from "@tasktrove/types";
 import {
@@ -95,35 +95,6 @@ export const dataSettingsAtom = atom((get) => {
 });
 dataSettingsAtom.debugLabel = "dataSettingsAtom";
 
-/**
- * Settings file metadata (version, lastModified)
- */
-export const settingsMetadataAtom = atom((get) => {
-  try {
-    const result = get(dataQueryAtom);
-    if ("data" in result && result.data) {
-      return {
-        version:
-          "version" in result.data && result.data.version
-            ? result.data.version
-            : "1.0.0",
-        lastModified: new Date(),
-      };
-    }
-    return {
-      version: "1.0.0",
-      lastModified: new Date(),
-    };
-  } catch (error) {
-    handleAtomError(error, "settingsMetadataAtom");
-    return {
-      version: "1.0.0",
-      lastModified: new Date(),
-    };
-  }
-});
-settingsMetadataAtom.debugLabel = "settingsMetadataAtom";
-
 // =============================================================================
 // UTILITY ATOMS
 // =============================================================================
@@ -170,18 +141,17 @@ export const settingsAtoms = {
   // Derived read atoms
   derived: {
     dataSettings: dataSettingsAtom,
-    settingsMetadata: settingsMetadataAtom,
   },
 
-  // Query atoms (settings now use main dataQueryAtom)
+  // Query atoms
   queries: {
-    dataQuery: dataQueryAtom,
+    settingsQuery: settingsQueryAtom,
   },
 };
 
 // Individual exports for backward compatibility
 export {
   settingsAtom,
-  dataQueryAtom,
+  settingsQueryAtom,
   updateSettingsMutationAtom,
 } from "./base";

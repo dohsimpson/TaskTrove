@@ -2,16 +2,32 @@
  * Base atoms for TaskTrove core state management
  *
  * This file now primarily serves as a re-export hub for:
- * - Data query atom (from data/base/query.ts)
+ * - Individual query atoms (from data/base/query.ts)
  * - Mutation atoms (from mutations/)
  * - Base data atoms (from data/base/atoms.ts)
  */
 
-// Import from query module
-import { dataQueryAtom, queryClientAtom } from "../data/base/query";
+// Import all query atoms
+import {
+  tasksQueryAtom,
+  projectsQueryAtom,
+  labelsQueryAtom,
+  groupsQueryAtom,
+  settingsQueryAtom,
+  userQueryAtom,
+  queryClientAtom,
+} from "../data/base/query";
 
-// Re-export for backward compatibility
-export { dataQueryAtom, queryClientAtom };
+// Re-export all query atoms
+export {
+  tasksQueryAtom,
+  projectsQueryAtom,
+  labelsQueryAtom,
+  groupsQueryAtom,
+  settingsQueryAtom,
+  userQueryAtom,
+  queryClientAtom,
+};
 
 // =============================================================================
 // MUTATION ATOMS - Re-exported from mutations/

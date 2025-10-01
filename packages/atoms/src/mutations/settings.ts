@@ -45,7 +45,7 @@ export const updateSettingsMutationAtom = createMutation<
 >({
   method: "PATCH",
   operationName: "Updated settings",
-  apiEndpoint: "/api/settings",
+  apiEndpoint: "/api/v1/settings",
   resourceQueryKey: SETTINGS_QUERY_KEY,
   defaultResourceValue: DEFAULT_USER_SETTINGS,
   responseSchema: UpdateSettingsResponseSchema,

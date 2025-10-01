@@ -417,7 +417,7 @@ export function createEntityMutation<TEntity, TRequest, TResponse>(
 
     // Apply convention-based defaults
     operationName: operationName ?? `${capitalize(operation)}d ${entity}`, // "Created task", "Updated project"
-    apiEndpoint: apiEndpoint ?? `/api/${entity}s`,
+    apiEndpoint: apiEndpoint ?? `/api/v1/${entity}s`,
     resourceQueryKey: defaultResourceQueryKey,
     defaultResourceValue: [] as TEntity[], // Empty array as default for all entity mutations
     invalidateQueryKeys: defaultInvalidateQueryKeys,

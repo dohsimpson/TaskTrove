@@ -90,6 +90,12 @@ export enum ApiErrorCode {
   // =============================================================================
 
   /**
+   * API endpoint does not exist
+   * Used when: Requested API route is not defined
+   */
+  ENDPOINT_NOT_FOUND = "ENDPOINT_NOT_FOUND",
+
+  /**
    * Generic resource not found error
    * Used when: Requested resource doesn't exist and no specific type applies
    */

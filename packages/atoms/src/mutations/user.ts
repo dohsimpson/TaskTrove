@@ -37,7 +37,7 @@ export const updateUserMutationAtom = createMutation<
 >({
   method: "PATCH",
   operationName: "Updated user",
-  apiEndpoint: "/api/user",
+  apiEndpoint: "/api/v1/user",
   resourceQueryKey: USER_QUERY_KEY,
   defaultResourceValue: DEFAULT_USER,
   responseSchema: UpdateUserResponseSchema,

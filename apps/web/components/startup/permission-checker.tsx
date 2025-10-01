@@ -33,7 +33,7 @@ export function PermissionChecker() {
   const checkHealth = async () => {
     setIsChecking(true)
     try {
-      const response = await fetch("/api/health")
+      const response = await fetch("/api/v1/health")
       const data: HealthCheckResponse = await response.json()
       setHealthStatus(data)
     } catch (error) {
@@ -50,7 +50,7 @@ export function PermissionChecker() {
   const initializeDataFile = async () => {
     setIsProcessing(true)
     try {
-      const response = await fetch("/api/data/initialize", {
+      const response = await fetch("/api/v1/data/initialize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
@@ -81,7 +81,7 @@ export function PermissionChecker() {
   const migrateDataFile = async () => {
     setIsProcessing(true)
     try {
-      const response = await fetch("/api/data/migrate", {
+      const response = await fetch("/api/v1/data/migrate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),

@@ -179,7 +179,7 @@ describe("Groups Atoms", () => {
         parentId: TEST_GROUP_ID_3,
       });
 
-      expect(mockFetch).toHaveBeenCalledWith("/api/groups", {
+      expect(mockFetch).toHaveBeenCalledWith("/api/v1/groups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -209,7 +209,7 @@ describe("Groups Atoms", () => {
         color: "#10b981",
       });
 
-      expect(mockFetch).toHaveBeenCalledWith("/api/groups", {
+      expect(mockFetch).toHaveBeenCalledWith("/api/v1/groups", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -231,7 +231,7 @@ describe("Groups Atoms", () => {
 
       await store.set(deleteProjectGroupAtom, TEST_GROUP_ID_1);
 
-      expect(mockFetch).toHaveBeenCalledWith("/api/groups", {
+      expect(mockFetch).toHaveBeenCalledWith("/api/v1/groups", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: TEST_GROUP_ID_1 }),

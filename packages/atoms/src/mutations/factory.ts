@@ -178,7 +178,7 @@ export interface MutationConfig<
   /** Module name for logging (e.g., "projects", "labels") */
   logModule?: string;
 
-  /** API endpoint (defaults to "/api/tasks") */
+  /** API endpoint (defaults to "/api/v1/tasks") */
   apiEndpoint?: string;
 }
 
@@ -214,7 +214,7 @@ export function createMutation<
     optimisticUpdateFn,
     optimisticDataFactory,
     logModule = "tasks",
-    apiEndpoint = "/api/tasks",
+    apiEndpoint = "/api/v1/tasks",
   } = config;
 
   return atomWithMutation<

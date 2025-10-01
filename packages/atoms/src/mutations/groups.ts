@@ -67,7 +67,7 @@ export const createProjectGroupMutationAtom = createMutation<
 >({
   method: "POST",
   operationName: "Created group",
-  apiEndpoint: "/api/groups",
+  apiEndpoint: "/api/v1/groups",
   resourceQueryKey: GROUPS_QUERY_KEY,
   defaultResourceValue: DEFAULT_GROUPS_RESOURCE,
   responseSchema: CreateGroupResponseSchema,
@@ -125,7 +125,7 @@ export const updateProjectGroupMutationAtom = createMutation<
 >({
   method: "PATCH",
   operationName: "Updated group",
-  apiEndpoint: "/api/groups",
+  apiEndpoint: "/api/v1/groups",
   resourceQueryKey: GROUPS_QUERY_KEY,
   defaultResourceValue: DEFAULT_GROUPS_RESOURCE,
   responseSchema: UpdateGroupResponseSchema,
@@ -205,7 +205,7 @@ export const deleteProjectGroupMutationAtom = createMutation<
 >({
   method: "DELETE",
   operationName: "Deleted group",
-  apiEndpoint: "/api/groups",
+  apiEndpoint: "/api/v1/groups",
   resourceQueryKey: GROUPS_QUERY_KEY,
   defaultResourceValue: DEFAULT_GROUPS_RESOURCE,
   responseSchema: DeleteGroupResponseSchema,
@@ -265,7 +265,7 @@ export const bulkUpdateGroupsMutationAtom = createMutation<
 >({
   method: "PATCH",
   operationName: "Bulk updated groups",
-  apiEndpoint: "/api/groups",
+  apiEndpoint: "/api/v1/groups",
   resourceQueryKey: GROUPS_QUERY_KEY,
   defaultResourceValue: DEFAULT_GROUPS_RESOURCE,
   responseSchema: UpdateGroupResponseSchema,

@@ -156,7 +156,7 @@ export function DataForm() {
       }
 
       // Send import data to backend API
-      const response = await fetch("/api/import", {
+      const response = await fetch("/api/v1/import", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -563,7 +563,7 @@ export function DataForm() {
             variant="outline"
             onClick={async () => {
               try {
-                const response = await fetch("/api/backup", {
+                const response = await fetch("/api/v1/backup", {
                   method: "POST",
                 })
                 if (response.ok) {

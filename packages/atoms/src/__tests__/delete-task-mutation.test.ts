@@ -157,7 +157,7 @@ describe("Delete Task Mutation Tests", () => {
         });
 
         // Verify the API was called correctly
-        expect(global.fetch).toHaveBeenCalledWith("/api/tasks", {
+        expect(global.fetch).toHaveBeenCalledWith("/api/v1/tasks", {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -205,7 +205,7 @@ describe("Delete Task Mutation Tests", () => {
         ).rejects.toThrow("Failed API request: Failed to delete task");
 
         // Verify the API was called
-        expect(global.fetch).toHaveBeenCalledWith("/api/tasks", {
+        expect(global.fetch).toHaveBeenCalledWith("/api/v1/tasks", {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -265,7 +265,7 @@ describe("Delete Task Mutation Tests", () => {
         ).rejects.toThrow("Network error");
 
         // Verify the API was called
-        expect(global.fetch).toHaveBeenCalledWith("/api/tasks", {
+        expect(global.fetch).toHaveBeenCalledWith("/api/v1/tasks", {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",

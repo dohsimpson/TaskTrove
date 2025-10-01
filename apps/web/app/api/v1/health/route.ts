@@ -2,7 +2,12 @@ import { NextResponse } from "next/server"
 import { checkStartupPermissions, formatPermissionErrors } from "@/lib/startup-checks"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
 import { withApiLogging, type EnhancedRequest } from "@/lib/middleware/api-logger"
-import { CURRENT_API_VERSION, SUPPORTED_API_VERSIONS } from "@/lib/middleware/api-version"
+import {
+  withApiVersion,
+  CURRENT_API_VERSION,
+  SUPPORTED_API_VERSIONS,
+} from "@/lib/middleware/api-version"
+import { withAuthentication } from "@/lib/middleware/auth"
 
 async function healthCheck(_request: EnhancedRequest) {
   try {
@@ -76,9 +81,13 @@ async function healthCheck(_request: EnhancedRequest) {
   }
 }
 
-export const GET = withMutexProtection(
-  withApiLogging(healthCheck, {
-    endpoint: "/api/health",
-    module: "api-health",
-  }),
+export const GET = withApiVersion(
+  withMutexProtection(
+    withAuthentication(
+      withApiLogging(healthCheck, {
+        endpoint: "/api/v1/health",
+        module: "api-v1-health",
+      }),
+    ),
+  ),
 )

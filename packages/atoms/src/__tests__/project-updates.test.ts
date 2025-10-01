@@ -115,7 +115,7 @@ describe("Project Updates and Task Reordering", () => {
     await mutation.mutateAsync([updatedProject]);
 
     // Verify fetch was called with correct data
-    expect(global.fetch).toHaveBeenCalledWith("/api/projects", {
+    expect(global.fetch).toHaveBeenCalledWith("/api/v1/projects", {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

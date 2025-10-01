@@ -5,6 +5,7 @@ import { withMutexProtection } from "@/lib/utils/api-mutex"
 import { withApiVersion } from "@/lib/middleware/api-version"
 import { writeInitialDataFile } from "@/lib/utils/data-initialization"
 import { withApiLogging, type EnhancedRequest } from "@/lib/middleware/api-logger"
+import { withAuthentication } from "@/lib/middleware/auth"
 import { ApiErrorCode, ErrorResponse } from "@/lib/types"
 
 async function initializeData(request: EnhancedRequest) {
@@ -57,9 +58,11 @@ async function initializeData(request: EnhancedRequest) {
 
 export const POST = withApiVersion(
   withMutexProtection(
-    withApiLogging(initializeData, {
-      endpoint: "/api/v1/data/initialize",
-      module: "api-v1-data-initialize",
-    }),
+    withAuthentication(
+      withApiLogging(initializeData, {
+        endpoint: "/api/v1/data/initialize",
+        module: "api-v1-data-initialize",
+      }),
+    ),
   ),
 )

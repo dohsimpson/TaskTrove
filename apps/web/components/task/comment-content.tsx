@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from "react"
-import { MessageSquare, User, Plus, X } from "lucide-react"
+import { MessageSquare, User, Plus, X, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
@@ -15,6 +15,7 @@ import type { Task, TaskComment, CreateTaskRequest } from "@/lib/types"
 import { createCommentId, createTaskId } from "@/lib/types"
 import { useLanguage } from "@/components/providers/language-provider"
 import { useTranslation } from "@/lib/i18n/client"
+import { EditableDiv } from "@/components/ui/custom/editable-div"
 
 interface CommentContentProps {
   taskId?: string // Optional for quick-add mode
@@ -30,11 +31,26 @@ function CommentItem({
   comment,
   mode = "inline",
   onDelete,
+  onUpdate,
 }: {
   comment: TaskComment
   mode?: "inline" | "popover"
   onDelete?: (commentId: string) => void
+  onUpdate?: (commentId: string, newContent: string) => void
 }) {
+  const [isEditing, setIsEditing] = useState(false)
+
+  const handleSave = (newContent: string) => {
+    if (newContent.trim() && newContent !== comment.content) {
+      onUpdate?.(comment.id, newContent)
+    }
+    setIsEditing(false)
+  }
+
+  const handleCancel = () => {
+    setIsEditing(false)
+  }
+
   return (
     <TooltipProvider delayDuration={0}>
       <div
@@ -61,21 +77,47 @@ function CommentItem({
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300 break-words leading-relaxed">
-            {comment.content}
-          </p>
+          {isEditing ? (
+            <EditableDiv
+              as="p"
+              value={comment.content}
+              onChange={handleSave}
+              onCancel={handleCancel}
+              className="text-sm text-gray-600 dark:text-gray-300 break-words leading-relaxed"
+              multiline
+              autoFocus
+              cursorPosition="end"
+            />
+          ) : (
+            <p className="text-sm text-gray-600 dark:text-gray-300 break-words leading-relaxed">
+              {comment.content}
+            </p>
+          )}
         </div>
-        {onDelete && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDelete(comment.id)}
-            className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-            data-testid={`comment-delete-button-${comment.id}`}
-          >
-            <X className="h-3 w-3" />
-          </Button>
-        )}
+        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {onUpdate && !isEditing && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditing(true)}
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
+              data-testid={`comment-edit-button-${comment.id}`}
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+          )}
+          {onDelete && !isEditing && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(comment.id)}
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+              data-testid={`comment-delete-button-${comment.id}`}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
       </div>
     </TooltipProvider>
   )
@@ -193,6 +235,21 @@ export function CommentContent({
     }
   }
 
+  const handleUpdateComment = (commentId: string, newContent: string) => {
+    const updatedComments = (task.comments || []).map((comment) =>
+      comment.id === commentId ? { ...comment, content: newContent } : comment,
+    )
+
+    // Update appropriate atom based on context
+    if (isNewTask) {
+      updateQuickAddTask({ updateRequest: { comments: updatedComments } })
+    } else if (legacyTask) {
+      updateTask({ updateRequest: { id: legacyTask.id, comments: updatedComments } })
+    } else if (taskId) {
+      updateTask({ updateRequest: { id: createTaskId(taskId), comments: updatedComments } })
+    }
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault()
@@ -238,6 +295,7 @@ export function CommentContent({
               comment={comment}
               mode={mode}
               onDelete={handleDeleteComment}
+              onUpdate={handleUpdateComment}
             />
           ))}
         </div>

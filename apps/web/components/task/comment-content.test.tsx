@@ -123,6 +123,38 @@ vi.mock("@/components/ui/tooltip", () => ({
   ),
 }))
 
+// Mock EditableDiv component
+vi.mock("@/components/ui/custom/editable-div", () => ({
+  EditableDiv: ({
+    value,
+    onChange,
+    onCancel,
+    ...props
+  }: {
+    value: string
+    onChange: (value: string) => void
+    onCancel?: () => void
+    [key: string]: unknown
+  }) => {
+    const [localValue, setLocalValue] = React.useState(value)
+
+    return (
+      <div data-testid="editable-div" {...props}>
+        <input
+          type="text"
+          value={localValue}
+          onChange={(e) => setLocalValue(e.target.value)}
+          onBlur={() => onChange(localValue)}
+          data-testid="editable-div-input"
+        />
+        <button onClick={onCancel} data-testid="editable-div-cancel">
+          Cancel
+        </button>
+      </div>
+    )
+  },
+}))
+
 // Mock utility functions
 vi.mock("@/lib/utils", () => ({
   cn: (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(" "),
@@ -748,6 +780,132 @@ describe("CommentContent", () => {
       // Only second comment should remain
       expect(screen.queryByText("First comment")).not.toBeInTheDocument()
       expect(screen.getByText("Second comment")).toBeInTheDocument()
+    })
+  })
+
+  describe("Comment Editing", () => {
+    it("renders edit button for each comment", () => {
+      const commentId1 = createCommentId("550e8400-e29b-41d4-a716-446655440010")
+      const commentId2 = createCommentId("550e8400-e29b-41d4-a716-446655440011")
+      const comments = [
+        createMockComment({ id: commentId1, content: "First comment" }),
+        createMockComment({ id: commentId2, content: "Second comment" }),
+      ]
+      const task = createMockTask({ comments })
+
+      render(<CommentContent task={task} />)
+
+      expect(screen.getByTestId(`comment-edit-button-${commentId1}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`comment-edit-button-${commentId2}`)).toBeInTheDocument()
+    })
+
+    it("shows EditableDiv when edit button is clicked", async () => {
+      const user = userEvent.setup()
+      const commentId = createCommentId("550e8400-e29b-41d4-a716-446655440010")
+      const comments = [createMockComment({ id: commentId, content: "Original comment" })]
+      const task = createMockTask({ comments })
+
+      render(<CommentContent task={task} />)
+
+      const editButton = screen.getByTestId(`comment-edit-button-${commentId}`)
+      await user.click(editButton)
+
+      expect(screen.getByTestId("editable-div")).toBeInTheDocument()
+      expect(screen.getByTestId("editable-div-input")).toHaveValue("Original comment")
+    })
+
+    it("updates comment when edited content is saved", async () => {
+      const user = userEvent.setup()
+      const commentId = createCommentId("550e8400-e29b-41d4-a716-446655440010")
+      const comments = [createMockComment({ id: commentId, content: "Original comment" })]
+      const task = createMockTask({ comments })
+
+      render(<CommentContent task={task} />)
+
+      const editButton = screen.getByTestId(`comment-edit-button-${commentId}`)
+      await user.click(editButton)
+
+      const input = screen.getByTestId("editable-div-input")
+      await user.clear(input)
+      await user.type(input, "Updated comment")
+
+      // Trigger onChange by changing the input value
+      await user.click(document.body) // blur triggers save
+
+      expect(mockUpdateTask).toHaveBeenCalledWith({
+        updateRequest: {
+          id: task.id,
+          comments: [{ ...comments[0], content: "Updated comment" }],
+        },
+      })
+    })
+
+    it("handles editing comment from quick-add task", async () => {
+      const user = userEvent.setup()
+      const commentId = createCommentId("550e8400-e29b-41d4-a716-446655440010")
+      const comments = [createMockComment({ id: commentId, content: "Original comment" })]
+      const createTaskRequest = createMockCreateTaskRequest({ comments })
+
+      mockNewTask = createTaskRequest
+      mockAllTasks = []
+
+      render(<CommentContent />)
+
+      const editButton = screen.getByTestId(`comment-edit-button-${commentId}`)
+      await user.click(editButton)
+
+      const input = screen.getByTestId("editable-div-input")
+      await user.clear(input)
+      await user.type(input, "Updated comment")
+      await user.click(document.body)
+
+      expect(mockUpdateQuickAddTask).toHaveBeenCalledWith({
+        updateRequest: {
+          comments: [{ ...comments[0], content: "Updated comment" }],
+        },
+      })
+    })
+
+    it("does not update comment if content is unchanged", async () => {
+      const user = userEvent.setup()
+      const commentId = createCommentId("550e8400-e29b-41d4-a716-446655440010")
+      const comments = [createMockComment({ id: commentId, content: "Same comment" })]
+      const task = createMockTask({ comments })
+
+      render(<CommentContent task={task} />)
+
+      const editButton = screen.getByTestId(`comment-edit-button-${commentId}`)
+      await user.click(editButton)
+
+      // Don't change the content, just blur
+      await user.click(document.body)
+
+      // Should not call updateTask if content is the same
+      expect(mockUpdateTask).not.toHaveBeenCalled()
+    })
+
+    it("cancels editing when cancel is triggered", async () => {
+      const user = userEvent.setup()
+      const commentId = createCommentId("550e8400-e29b-41d4-a716-446655440010")
+      const comments = [createMockComment({ id: commentId, content: "Original comment" })]
+      const task = createMockTask({ comments })
+
+      render(<CommentContent task={task} />)
+
+      const editButton = screen.getByTestId(`comment-edit-button-${commentId}`)
+      await user.click(editButton)
+
+      expect(screen.getByTestId("editable-div")).toBeInTheDocument()
+
+      const cancelButton = screen.getByTestId("editable-div-cancel")
+      await user.click(cancelButton)
+
+      // Should not update the task
+      expect(mockUpdateTask).not.toHaveBeenCalled()
+      // EditableDiv should be gone (component exits edit mode)
+      expect(screen.queryByTestId("editable-div")).not.toBeInTheDocument()
+      // Original text should be displayed again
+      expect(screen.getByText("Original comment")).toBeInTheDocument()
     })
   })
 })

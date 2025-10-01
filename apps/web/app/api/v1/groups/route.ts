@@ -111,6 +111,7 @@ export const GET = withApiVersion(
         endpoint: "/api/v1/groups",
         module: "api-v1-groups",
       }),
+      { allowApiToken: true },
     ),
   ),
 )
@@ -351,6 +352,7 @@ export const POST = withApiVersion(
         endpoint: "/api/v1/groups",
         module: "api-v1-groups",
       }),
+      { allowApiToken: true },
     ),
   ),
 )
@@ -582,6 +584,7 @@ export const PATCH = withApiVersion(
         endpoint: "/api/v1/groups",
         module: "api-v1-groups",
       }),
+      { allowApiToken: true },
     ),
   ),
 )
@@ -728,6 +731,7 @@ export const DELETE = withApiVersion(
         endpoint: "/api/v1/groups",
         module: "api-v1-groups",
       }),
+      { allowApiToken: true },
     ),
   ),
 )

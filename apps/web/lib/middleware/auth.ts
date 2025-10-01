@@ -36,22 +36,32 @@ async function isValidBearerToken(token: string): Promise<boolean> {
  * Wraps an API route handler with authentication protection.
  * Supports two authentication methods:
  * 1. NextAuth session-based authentication (cookies)
- * 2. Bearer token authentication (Authorization header)
+ * 2. Bearer token authentication (Authorization header) - only for /api/v1 routes
  *
  * If AUTH_SECRET is not set, authentication is bypassed (development mode).
  *
  * @param handler - The API route handler to protect
+ * @param options - Configuration options
+ * @param options.allowApiToken - Whether to allow bearer token auth (default: false, true for v1 routes)
  * @returns A wrapped handler that enforces authentication
  *
  * @example
  * ```typescript
+ * // Public API endpoint (v1) - allows bearer token
  * export const GET = withAuthentication(
- *   withApiLogging(handler, { endpoint: "/api/tasks" })
+ *   withApiLogging(handler, { endpoint: "/api/v1/tasks" }),
+ *   { allowApiToken: true }
+ * )
+ *
+ * // Private endpoint - session only
+ * export const GET = withAuthentication(
+ *   withApiLogging(handler, { endpoint: "/api/settings" })
  * )
  * ```
  */
 export function withAuthentication<T>(
   handler: (request: EnhancedRequest) => Promise<NextResponse<T | ErrorResponse>>,
+  options: { allowApiToken?: boolean } = {},
 ): (request: EnhancedRequest) => Promise<NextResponse<T | ErrorResponse>> {
   return async (request: EnhancedRequest) => {
     // Check if authentication is enabled via AUTH_SECRET environment variable
@@ -63,15 +73,17 @@ export function withAuthentication<T>(
       return handler(request)
     }
 
-    // Check for bearer token authentication first
-    const authHeader = request.headers?.get("Authorization")
-    if (authHeader?.startsWith("Bearer ")) {
-      const token = authHeader.slice(7) // Remove "Bearer " prefix
-      if (await isValidBearerToken(token)) {
-        // Token is valid, proceed with handler
-        return handler(request)
+    // Check for bearer token authentication first (only if allowed)
+    if (options.allowApiToken) {
+      const authHeader = request.headers?.get("Authorization")
+      if (authHeader?.startsWith("Bearer ")) {
+        const token = authHeader.slice(7) // Remove "Bearer " prefix
+        if (await isValidBearerToken(token)) {
+          // Token is valid, proceed with handler
+          return handler(request)
+        }
+        // Invalid token - fall through to return auth error
       }
-      // Invalid token - fall through to return auth error
     }
 
     // Fall back to session-based authentication

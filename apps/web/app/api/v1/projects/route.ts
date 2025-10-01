@@ -108,6 +108,7 @@ export const GET = withApiVersion(
         endpoint: "/api/v1/projects",
         module: "api-v1-projects",
       }),
+      { allowApiToken: true },
     ),
   ),
 )
@@ -211,6 +212,7 @@ export const POST = withApiVersion(
         endpoint: "/api/v1/projects",
         module: "api-v1-projects",
       }),
+      { allowApiToken: true },
     ),
   ),
 )
@@ -323,6 +325,7 @@ export const PATCH = withApiVersion(
         endpoint: "/api/v1/projects",
         module: "api-v1-projects",
       }),
+      { allowApiToken: true },
     ),
   ),
 )
@@ -414,6 +417,7 @@ export const DELETE = withApiVersion(
         endpoint: "/api/v1/projects",
         module: "api-v1-projects",
       }),
+      { allowApiToken: true },
     ),
   ),
 )

@@ -407,7 +407,7 @@ describe("withAuthentication", () => {
       } as EnhancedRequest
     })
 
-    it("should allow access with valid bearer token", async () => {
+    it("should allow access with valid bearer token when allowApiToken is true", async () => {
       const validToken = "test-valid-token-123"
       mockRequestWithHeaders.headers.set("authorization", `Bearer ${validToken}`)
 
@@ -426,7 +426,7 @@ describe("withAuthentication", () => {
         labelGroups: {} as any,
       })
 
-      const wrappedHandler = withAuthentication(mockHandler)
+      const wrappedHandler = withAuthentication(mockHandler, { allowApiToken: true })
       const response = await wrappedHandler(mockRequestWithHeaders)
 
       // Handler should be called (token is valid)
@@ -441,7 +441,7 @@ describe("withAuthentication", () => {
       expect(data).toEqual({ success: true })
     })
 
-    it("should reject invalid bearer token", async () => {
+    it("should reject invalid bearer token when allowApiToken is true", async () => {
       const invalidToken = "test-invalid-token"
       mockRequestWithHeaders.headers.set("authorization", `Bearer ${invalidToken}`)
 
@@ -463,7 +463,7 @@ describe("withAuthentication", () => {
       // Mock no valid session
       mockAuth.mockResolvedValue(null)
 
-      const wrappedHandler = withAuthentication(mockHandler)
+      const wrappedHandler = withAuthentication(mockHandler, { allowApiToken: true })
       const response = await wrappedHandler(mockRequestWithHeaders)
 
       // Handler should NOT be called
@@ -475,7 +475,7 @@ describe("withAuthentication", () => {
       expect(data.code).toBe(ApiErrorCode.AUTHENTICATION_REQUIRED)
     })
 
-    it("should reject when no API token is configured", async () => {
+    it("should reject when no API token is configured and allowApiToken is true", async () => {
       const token = "some-token"
       mockRequestWithHeaders.headers.set("authorization", `Bearer ${token}`)
 
@@ -497,7 +497,7 @@ describe("withAuthentication", () => {
       // Mock no valid session
       mockAuth.mockResolvedValue(null)
 
-      const wrappedHandler = withAuthentication(mockHandler)
+      const wrappedHandler = withAuthentication(mockHandler, { allowApiToken: true })
       const response = await wrappedHandler(mockRequestWithHeaders)
 
       // Handler should NOT be called
@@ -529,7 +529,7 @@ describe("withAuthentication", () => {
       expect(data).toEqual({ success: true })
     })
 
-    it("should handle safeReadDataFile errors gracefully", async () => {
+    it("should handle safeReadDataFile errors gracefully when allowApiToken is true", async () => {
       const token = "some-token"
       mockRequestWithHeaders.headers.set("authorization", `Bearer ${token}`)
 
@@ -539,12 +539,53 @@ describe("withAuthentication", () => {
       // Mock no valid session
       mockAuth.mockResolvedValue(null)
 
-      const wrappedHandler = withAuthentication(mockHandler)
+      const wrappedHandler = withAuthentication(mockHandler, { allowApiToken: true })
       const response = await wrappedHandler(mockRequestWithHeaders)
 
       // Should fall back to returning 401
       expect(response.status).toBe(401)
       expect(mockHandler).not.toHaveBeenCalled()
+    })
+
+    it("should ignore bearer token when allowApiToken is false", async () => {
+      const validToken = "test-valid-token-123"
+      mockRequestWithHeaders.headers.set("authorization", `Bearer ${validToken}`)
+
+      // Mock safeReadDataFile to return data file with matching API token
+      mockSafeReadDataFile.mockResolvedValue({
+        user: {
+          username: "admin",
+          password: "hashed-password",
+          apiToken: validToken,
+        },
+        settings: {} as any,
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {} as any,
+        labelGroups: {} as any,
+      })
+
+      // Mock valid session for fallback
+      const mockSession: Session = {
+        user: {
+          name: "Test User",
+          id: "test-user-id",
+        },
+        expires: new Date(Date.now() + 86400000).toISOString(),
+      }
+      mockAuth.mockResolvedValue(mockSession)
+
+      const wrappedHandler = withAuthentication(mockHandler, { allowApiToken: false })
+      const response = await wrappedHandler(mockRequestWithHeaders)
+
+      // Should NOT check bearer token, should use session auth instead
+      expect(mockSafeReadDataFile).not.toHaveBeenCalled()
+      expect(mockAuth).toHaveBeenCalled()
+      expect(mockHandler).toHaveBeenCalledWith(mockRequestWithHeaders)
+
+      const data = await response.json()
+      expect(data).toEqual({ success: true })
     })
   })
 })

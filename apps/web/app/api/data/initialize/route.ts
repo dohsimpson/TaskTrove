@@ -6,7 +6,7 @@ import { withApiVersion } from "@/lib/middleware/api-version"
 import { writeInitialDataFile } from "@/lib/utils/data-initialization"
 import { withApiLogging, type EnhancedRequest } from "@/lib/middleware/api-logger"
 import { withAuthentication } from "@/lib/middleware/auth"
-import { ApiErrorCode, ErrorResponse } from "@/lib/types"
+import { ApiErrorCode, ErrorResponse, API_ROUTES } from "@/lib/types"
 
 async function initializeData(request: EnhancedRequest) {
   // Validate origin first
@@ -60,7 +60,7 @@ export const POST = withApiVersion(
   withMutexProtection(
     withAuthentication(
       withApiLogging(initializeData, {
-        endpoint: "/api/v1/data/initialize",
+        endpoint: API_ROUTES.DATA_INITIALIZE,
         module: "api-v1-data-initialize",
       }),
     ),

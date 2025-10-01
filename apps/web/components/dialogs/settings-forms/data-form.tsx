@@ -24,6 +24,7 @@ import { queryClientAtom } from "@/lib/atoms/core/base"
 import { DEFAULT_BACKUP_TIME, SUPPORTED_IMPORT_SOURCES, DATA_QUERY_KEY } from "@tasktrove/constants"
 import { useTranslation } from "@/lib/i18n/client"
 import { useLanguage } from "@/components/providers/language-provider"
+import { API_ROUTES } from "@/lib/types"
 
 type UploadStatus = "idle" | "uploading" | "success" | "error"
 
@@ -156,7 +157,7 @@ export function DataForm() {
       }
 
       // Send import data to backend API
-      const response = await fetch("/api/v1/import", {
+      const response = await fetch(API_ROUTES.IMPORT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -563,7 +564,7 @@ export function DataForm() {
             variant="outline"
             onClick={async () => {
               try {
-                const response = await fetch("/api/v1/backup", {
+                const response = await fetch(API_ROUTES.BACKUP, {
                   method: "POST",
                 })
                 if (response.ok) {

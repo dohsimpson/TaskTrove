@@ -8,7 +8,7 @@ import { withApiVersion } from "@/lib/middleware/api-version"
 import { withApiLogging, type EnhancedRequest } from "@/lib/middleware/api-logger"
 import { safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import type { Json, ErrorResponse } from "@/lib/types"
-import { ApiErrorCode } from "@/lib/types"
+import { ApiErrorCode, API_ROUTES } from "@/lib/types"
 
 async function migrateData(_request: EnhancedRequest) {
   try {
@@ -54,7 +54,7 @@ export const POST = withApiVersion(
   withMutexProtection(
     withAuthentication(
       withApiLogging(migrateData, {
-        endpoint: "/api/v1/data/migrate",
+        endpoint: API_ROUTES.DATA_MIGRATE,
         module: "api-v1-data-migrate",
       }),
     ),

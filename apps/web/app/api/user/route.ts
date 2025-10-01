@@ -29,7 +29,7 @@ import { withApiVersion } from "@/lib/middleware/api-version"
 import { saltAndHashPassword, parseAvatarDataUrl } from "@tasktrove/utils"
 
 /**
- * GET /api/v1/user
+ * GET /api/user
  *
  * Fetches only user data with metadata.
  * Returns user object with count, timestamp, and version information.
@@ -107,7 +107,7 @@ export const GET = withApiVersion(
   withMutexProtection(
     withAuthentication(
       withApiLogging(getUser, {
-        endpoint: "/api/v1/user",
+        endpoint: "/api/user",
         module: "api-v1-user",
       }),
     ),
@@ -115,7 +115,7 @@ export const GET = withApiVersion(
 )
 
 /**
- * PATCH /api/v1/user
+ * PATCH /api/user
  *
  * Updates user data by merging provided data with existing user.
  * Supports partial updates for username, password, and avatar.
@@ -281,7 +281,7 @@ export const PATCH = withApiVersion(
   withMutexProtection(
     withAuthentication(
       withApiLogging(updateUser, {
-        endpoint: "/api/v1/user",
+        endpoint: "/api/user",
         module: "api-v1-user",
       }),
     ),

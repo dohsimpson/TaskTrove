@@ -47,21 +47,25 @@ The `/api/health` endpoint returns version information:
 
 ### Current Version (v1)
 
-All endpoints under `/api/v1/` namespace:
+**Versioned endpoints under `/api/v1/` namespace:**
 
 - `/api/v1/tasks` - Task management
 - `/api/v1/projects` - Project management
 - `/api/v1/labels` - Label management
 - `/api/v1/groups` - Group management
-- `/api/v1/settings` - Settings management
-- `/api/v1/user` - User management
-- `/api/v1/backup` - Backup operations
-- `/api/v1/import` - Data import
-- `/api/v1/assets/**` - Static assets
 
-### Legacy Endpoints
+**Root-level endpoints (not versioned):**
 
-The non-versioned `/api/*` endpoints (e.g., `/api/tasks`) are still available and currently map to v1 functionality. These may be deprecated in future versions.
+- `/api/settings` - Settings management
+- `/api/user` - User management
+- `/api/health` - Health checks
+- `/api/backup` - Backup operations
+- `/api/import` - Data import
+- `/api/data/initialize` - Data initialization
+- `/api/data/migrate` - Data migration
+- `/api/assets/**` - Static assets
+- `/api/initial-setup` - Initial setup
+- `/api/auth/**` - Authentication
 
 ## Migration Guide
 

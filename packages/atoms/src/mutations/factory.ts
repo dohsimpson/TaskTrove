@@ -14,6 +14,7 @@ import { atomWithMutation } from "jotai-tanstack-query";
 import type { QueryKey } from "@tanstack/react-query";
 import { queryClientAtom } from "../data/base/query";
 import { log, toast } from "../utils/atom-helpers";
+import { API_ROUTES } from "@tasktrove/types";
 
 // =============================================================================
 // MUTATION UTILITIES
@@ -214,7 +215,7 @@ export function createMutation<
     optimisticUpdateFn,
     optimisticDataFactory,
     logModule = "tasks",
-    apiEndpoint = "/api/v1/tasks",
+    apiEndpoint = API_ROUTES.V1_TASKS,
   } = config;
 
   return atomWithMutation<

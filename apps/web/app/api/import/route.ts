@@ -11,7 +11,7 @@ import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
 import { createErrorResponse } from "@/lib/utils/validation"
 import { log } from "@/lib/utils/logger"
-import { DataFile, DataFileSchema, JsonSchema, ApiErrorCode } from "@/lib/types"
+import { DataFile, DataFileSchema, JsonSchema, ApiErrorCode, API_ROUTES } from "@/lib/types"
 import type { ErrorResponse, ProjectId, LabelId } from "@/lib/types"
 import { migrateDataFile, needsMigration, getMigrationInfo } from "@/lib/utils/data-migration"
 
@@ -305,7 +305,7 @@ export const POST = withApiVersion(
   withMutexProtection(
     withAuthentication(
       withApiLogging(importData, {
-        endpoint: "/api/v1/import",
+        endpoint: API_ROUTES.IMPORT,
         module: "api-v1-import",
       }),
     ),

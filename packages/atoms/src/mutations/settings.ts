@@ -14,6 +14,7 @@ import {
   UpdateSettingsResponseSchema,
   UpdateSettingsRequestSchema,
   type UserSettings,
+  API_ROUTES,
 } from "@tasktrove/types";
 import { DEFAULT_USER_SETTINGS } from "@tasktrove/types/defaults";
 import {
@@ -45,7 +46,7 @@ export const updateSettingsMutationAtom = createMutation<
 >({
   method: "PATCH",
   operationName: "Updated settings",
-  apiEndpoint: "/api/v1/settings",
+  apiEndpoint: API_ROUTES.SETTINGS,
   resourceQueryKey: SETTINGS_QUERY_KEY,
   defaultResourceValue: DEFAULT_USER_SETTINGS,
   responseSchema: UpdateSettingsResponseSchema,

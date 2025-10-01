@@ -31,6 +31,7 @@ import {
   type BulkGroupUpdate,
   BulkGroupUpdateSchema,
   createGroupId,
+  API_ROUTES,
 } from "@tasktrove/types";
 import {
   DEFAULT_PROJECT_GROUP,
@@ -67,7 +68,7 @@ export const createProjectGroupMutationAtom = createMutation<
 >({
   method: "POST",
   operationName: "Created group",
-  apiEndpoint: "/api/v1/groups",
+  apiEndpoint: API_ROUTES.V1_GROUPS,
   resourceQueryKey: GROUPS_QUERY_KEY,
   defaultResourceValue: DEFAULT_GROUPS_RESOURCE,
   responseSchema: CreateGroupResponseSchema,
@@ -125,7 +126,7 @@ export const updateProjectGroupMutationAtom = createMutation<
 >({
   method: "PATCH",
   operationName: "Updated group",
-  apiEndpoint: "/api/v1/groups",
+  apiEndpoint: API_ROUTES.V1_GROUPS,
   resourceQueryKey: GROUPS_QUERY_KEY,
   defaultResourceValue: DEFAULT_GROUPS_RESOURCE,
   responseSchema: UpdateGroupResponseSchema,
@@ -205,7 +206,7 @@ export const deleteProjectGroupMutationAtom = createMutation<
 >({
   method: "DELETE",
   operationName: "Deleted group",
-  apiEndpoint: "/api/v1/groups",
+  apiEndpoint: API_ROUTES.V1_GROUPS,
   resourceQueryKey: GROUPS_QUERY_KEY,
   defaultResourceValue: DEFAULT_GROUPS_RESOURCE,
   responseSchema: DeleteGroupResponseSchema,
@@ -265,7 +266,7 @@ export const bulkUpdateGroupsMutationAtom = createMutation<
 >({
   method: "PATCH",
   operationName: "Bulk updated groups",
-  apiEndpoint: "/api/v1/groups",
+  apiEndpoint: API_ROUTES.V1_GROUPS,
   resourceQueryKey: GROUPS_QUERY_KEY,
   defaultResourceValue: DEFAULT_GROUPS_RESOURCE,
   responseSchema: UpdateGroupResponseSchema,

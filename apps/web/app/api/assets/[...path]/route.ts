@@ -3,11 +3,11 @@ import { readFile } from "fs/promises"
 import { log } from "@/lib/utils/logger"
 import { v4 as uuidv4 } from "uuid"
 import { getSecureAssetPath } from "@/lib/utils/path-validation"
-import { ApiErrorCode, ErrorResponse } from "@/lib/types"
+import { ApiErrorCode, ErrorResponse, API_ROUTES } from "@/lib/types"
 import { auth } from "@/auth"
 
 /**
- * GET /api/v1/assets/[...path]
+ * GET /api/assets/[...path]
  *
  * Serves asset files from the data/assets directory.
  * Supports any file type with appropriate MIME type detection.

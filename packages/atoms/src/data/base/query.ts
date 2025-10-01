@@ -2,15 +2,7 @@
  * Data query atoms for TaskTrove
  *
  * Individual query atoms for each resource type, following REST best practices.
- * Each resource is fetched independently from its own v1 API endpoint.
- *
- * Query hierarchy:
- * - ["data", "tasks"] → /api/v1/tasks
- * - ["data", "projects"] → /api/v1/projects
- * - ["data", "labels"] → /api/v1/labels
- * - ["data", "groups"] → /api/v1/groups
- * - ["data", "settings"] → /api/v1/settings
- * - ["data", "user"] → /api/v1/user
+ * Each resource is fetched independently from its own API endpoint.
  *
  * Benefits:
  * - Granular cache invalidation (invalidate ["data", "tasks"] vs ["data"])
@@ -49,6 +41,7 @@ import {
   createProjectId,
   createLabelId,
   createGroupId,
+  API_ROUTES,
 } from "@tasktrove/types";
 import {
   DEFAULT_AUTO_BACKUP_ENABLED,
@@ -199,7 +192,7 @@ async function fetchTasks(): Promise<Task[]> {
   }
 
   const response = await fetchAndValidate(
-    "/api/v1/tasks",
+    API_ROUTES.V1_TASKS,
     GetTasksResponseSchema,
     "tasks",
   );
@@ -215,7 +208,7 @@ async function fetchProjects(): Promise<Project[]> {
   }
 
   const response = await fetchAndValidate(
-    "/api/v1/projects",
+    API_ROUTES.V1_PROJECTS,
     GetProjectsResponseSchema,
     "projects",
   );
@@ -231,7 +224,7 @@ async function fetchLabels(): Promise<Label[]> {
   }
 
   const response = await fetchAndValidate(
-    "/api/v1/labels",
+    API_ROUTES.V1_LABELS,
     GetLabelsResponseSchema,
     "labels",
   );
@@ -253,7 +246,7 @@ async function fetchGroups(): Promise<{
   }
 
   const response = await fetchAndValidate(
-    "/api/v1/groups",
+    API_ROUTES.V1_GROUPS,
     GetGroupsResponseSchema,
     "groups",
   );
@@ -272,7 +265,7 @@ async function fetchSettings(): Promise<UserSettings> {
   }
 
   const response = await fetchAndValidate(
-    "/api/v1/settings",
+    API_ROUTES.SETTINGS,
     GetSettingsResponseSchema,
     "settings",
   );
@@ -288,7 +281,7 @@ async function fetchUser(): Promise<User> {
   }
 
   const response = await fetchAndValidate(
-    "/api/v1/user",
+    API_ROUTES.USER,
     GetUserResponseSchema,
     "user",
   );

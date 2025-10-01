@@ -15,6 +15,7 @@ import {
   UpdateUserResponseSchema,
   UserUpdateSerializationSchema,
   type AvatarFilePath,
+  API_ROUTES,
 } from "@tasktrove/types";
 import { DEFAULT_USER } from "@tasktrove/types/defaults";
 import { USER_QUERY_KEY } from "@tasktrove/constants";
@@ -37,7 +38,7 @@ export const updateUserMutationAtom = createMutation<
 >({
   method: "PATCH",
   operationName: "Updated user",
-  apiEndpoint: "/api/v1/user",
+  apiEndpoint: API_ROUTES.USER,
   resourceQueryKey: USER_QUERY_KEY,
   defaultResourceValue: DEFAULT_USER,
   responseSchema: UpdateUserResponseSchema,

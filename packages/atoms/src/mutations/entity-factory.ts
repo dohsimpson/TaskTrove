@@ -58,10 +58,31 @@ import {
   SETTINGS_QUERY_KEY,
 } from "@tasktrove/constants";
 import { createMutation, type MutationConfig } from "./factory";
+import { API_ROUTES } from "@tasktrove/types";
 
 // =============================================================================
 // TYPES
 // =============================================================================
+
+/**
+ * Get default API route for an entity based on conventions
+ */
+function getDefaultEntityRoute(entity: string): string {
+  switch (entity) {
+    case "task":
+      return API_ROUTES.V1_TASKS;
+    case "project":
+      return API_ROUTES.V1_PROJECTS;
+    case "label":
+      return API_ROUTES.V1_LABELS;
+    case "group":
+      return API_ROUTES.V1_GROUPS;
+    case "setting":
+      return API_ROUTES.SETTINGS;
+    default:
+      throw new Error(`Unknown entity "${entity}" provided`);
+  }
+}
 
 /**
  * Entity types that follow standard array-based CRUD patterns
@@ -417,7 +438,7 @@ export function createEntityMutation<TEntity, TRequest, TResponse>(
 
     // Apply convention-based defaults
     operationName: operationName ?? `${capitalize(operation)}d ${entity}`, // "Created task", "Updated project"
-    apiEndpoint: apiEndpoint ?? `/api/v1/${entity}s`,
+    apiEndpoint: apiEndpoint ?? getDefaultEntityRoute(entity),
     resourceQueryKey: defaultResourceQueryKey,
     defaultResourceValue: [] as TEntity[], // Empty array as default for all entity mutations
     invalidateQueryKeys: defaultInvalidateQueryKeys,

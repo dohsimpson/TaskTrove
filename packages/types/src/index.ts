@@ -18,6 +18,57 @@ import { ApiErrorCode, ApiErrorCodeSchema } from "./api-errors";
 export { ApiErrorCode, ApiErrorCodeSchema } from "./api-errors";
 
 // =============================================================================
+// API ROUTE TYPES
+// =============================================================================
+
+/**
+ * Branded type for API routes to ensure type safety
+ */
+export const ApiRouteSchema = z.string().brand("ApiRoute");
+export type ApiRoute = z.infer<typeof ApiRouteSchema>;
+
+/**
+ * Create a typed API route
+ */
+export function createApiRoute(path: string): ApiRoute {
+  return path as ApiRoute;
+}
+
+/**
+ * All available API routes - single source of truth for route paths
+ */
+export const API_ROUTES = {
+  // v1 routes (actually in v1/ directory)
+  V1_TASKS: createApiRoute("/api/v1/tasks"),
+  V1_PROJECTS: createApiRoute("/api/v1/projects"),
+  V1_LABELS: createApiRoute("/api/v1/labels"),
+  V1_GROUPS: createApiRoute("/api/v1/groups"),
+
+  // Root-level routes (NOT in v1/ directory)
+  SETTINGS: createApiRoute("/api/settings"),
+  USER: createApiRoute("/api/user"),
+  HEALTH: createApiRoute("/api/health"),
+  BACKUP: createApiRoute("/api/backup"),
+  IMPORT: createApiRoute("/api/import"),
+  DATA_INITIALIZE: createApiRoute("/api/data/initialize"),
+  DATA_MIGRATE: createApiRoute("/api/data/migrate"),
+  ASSETS: createApiRoute("/api/assets/[...path]"),
+  INITIAL_SETUP: createApiRoute("/api/initial-setup"),
+  AUTH: createApiRoute("/api/auth/[...nextauth]"),
+  NOT_FOUND: createApiRoute("/api/[...notFound]"),
+} as const;
+
+/**
+ * Type for all available API route keys
+ */
+export type ApiRouteKey = keyof typeof API_ROUTES;
+
+/**
+ * Type for API route values (the actual path strings)
+ */
+export type ApiRoutePath = (typeof API_ROUTES)[ApiRouteKey];
+
+// =============================================================================
 // BRANDED ID TYPES
 // =============================================================================
 

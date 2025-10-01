@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { AlertTriangle, FileText, DatabaseBackup } from "lucide-react"
 import { StartupAlert } from "./startup-alert"
+import { API_ROUTES } from "@/lib/types"
 
 interface HealthCheckResponse {
   status: "healthy" | "error" | "needs_initialization" | "needs_migration"
@@ -33,7 +34,7 @@ export function PermissionChecker() {
   const checkHealth = async () => {
     setIsChecking(true)
     try {
-      const response = await fetch("/api/v1/health")
+      const response = await fetch(API_ROUTES.HEALTH)
       const data: HealthCheckResponse = await response.json()
       setHealthStatus(data)
     } catch (error) {
@@ -50,7 +51,7 @@ export function PermissionChecker() {
   const initializeDataFile = async () => {
     setIsProcessing(true)
     try {
-      const response = await fetch("/api/v1/data/initialize", {
+      const response = await fetch(API_ROUTES.DATA_INITIALIZE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
@@ -81,7 +82,7 @@ export function PermissionChecker() {
   const migrateDataFile = async () => {
     setIsProcessing(true)
     try {
-      const response = await fetch("/api/v1/data/migrate", {
+      const response = await fetch(API_ROUTES.DATA_MIGRATE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),

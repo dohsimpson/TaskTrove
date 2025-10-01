@@ -113,7 +113,11 @@ export function addTaskToSection(
     if (position === undefined) {
       items.push(taskId);
     } else {
-      items.splice(position, 0, taskId);
+      // Normalize negative indices to 0 (beginning of array)
+      // This handles the case where getReorderDestinationIndex returns -1
+      // to indicate "insert at beginning"
+      const normalizedPosition = position < 0 ? 0 : position;
+      items.splice(normalizedPosition, 0, taskId);
     }
 
     return { ...section, items };

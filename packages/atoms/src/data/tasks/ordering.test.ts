@@ -471,6 +471,40 @@ describe("addTaskToSection", () => {
     // Should not modify existing section
     expect(result[0]?.items).toEqual([]);
   });
+
+  it("should normalize negative position to 0 (insert at beginning)", () => {
+    const sectionId = createGroupId(uuidv4());
+    const existingTaskIds = [createTaskId(uuidv4()), createTaskId(uuidv4())];
+    const newTaskId = createTaskId(uuidv4());
+    const sections = [
+      createTestSection({
+        id: sectionId,
+        items: existingTaskIds,
+      }),
+    ];
+
+    // Position -1 should be normalized to 0, inserting at the beginning
+    const result = addTaskToSection(newTaskId, sectionId, -1, sections);
+
+    expect(result[0]?.items).toEqual([newTaskId, ...existingTaskIds]);
+  });
+
+  it("should normalize any negative position to 0", () => {
+    const sectionId = createGroupId(uuidv4());
+    const existingTaskIds = [createTaskId(uuidv4()), createTaskId(uuidv4())];
+    const newTaskId = createTaskId(uuidv4());
+    const sections = [
+      createTestSection({
+        id: sectionId,
+        items: existingTaskIds,
+      }),
+    ];
+
+    // Position -5 should also be normalized to 0
+    const result = addTaskToSection(newTaskId, sectionId, -5, sections);
+
+    expect(result[0]?.items).toEqual([newTaskId, ...existingTaskIds]);
+  });
 });
 
 describe("removeTaskFromSection", () => {

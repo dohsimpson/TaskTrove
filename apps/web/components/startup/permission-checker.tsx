@@ -4,6 +4,8 @@ import { useEffect, useState } from "react"
 import { AlertTriangle, FileText, DatabaseBackup } from "lucide-react"
 import { StartupAlert } from "./startup-alert"
 import { API_ROUTES } from "@/lib/types"
+import { useAtomValue } from "jotai"
+import { queryClientAtom } from "@/lib/atoms/core/base"
 
 interface HealthCheckResponse {
   status: "healthy" | "error" | "needs_initialization" | "needs_migration"
@@ -30,6 +32,7 @@ export function PermissionChecker() {
   const [isChecking, setIsChecking] = useState(true)
   const [isProcessing, setIsProcessing] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const queryClient = useAtomValue(queryClientAtom)
 
   const checkHealth = async () => {
     setIsChecking(true)
@@ -60,6 +63,8 @@ export function PermissionChecker() {
       const data = await response.json()
 
       if (response.ok) {
+        // Invalidate all queries to refresh data after initialization
+        queryClient.invalidateQueries()
         await checkHealth()
       } else {
         setHealthStatus({

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { CommentContent } from "./comment-content"
 import type { Task } from "@/lib/types"
@@ -23,18 +23,32 @@ export function CommentManagementPopover({
   onOpenChange,
 }: CommentManagementPopoverProps) {
   const [open, setOpen] = useState(false)
+  const [scrollToBottomKey, setScrollToBottomKey] = useState(0)
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen)
     onOpenChange?.(newOpen)
   }
 
+  // Trigger scroll to bottom when popover opens
+  useEffect(() => {
+    if (open) {
+      setScrollToBottomKey((prev) => prev + 1)
+    }
+  }, [open])
+
   return (
     <ContentPopover
       open={open}
       onOpenChange={handleOpenChange}
       content={
-        <CommentContent taskId={taskId} task={task} onAddComment={onAddComment} mode="popover" />
+        <CommentContent
+          taskId={taskId}
+          task={task}
+          onAddComment={onAddComment}
+          mode="popover"
+          scrollToBottomKey={scrollToBottomKey}
+        />
       }
       side="bottom"
       align="start"

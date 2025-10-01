@@ -58,15 +58,23 @@ interface MockCommentContentProps {
   task?: Task
   onAddComment?: (content: string) => void
   mode?: "inline" | "popover"
+  scrollToBottomKey?: number
 }
 
 vi.mock("./comment-content", () => ({
-  CommentContent: ({ taskId, task, onAddComment, mode }: MockCommentContentProps) => (
+  CommentContent: ({
+    taskId,
+    task,
+    onAddComment,
+    mode,
+    scrollToBottomKey,
+  }: MockCommentContentProps) => (
     <div data-testid="comment-content">
       <div data-testid="comment-content-taskId">{taskId || "undefined"}</div>
       <div data-testid="comment-content-task">{task?.id || "undefined"}</div>
       <div data-testid="comment-content-mode">{mode}</div>
       <div data-testid="comment-content-comments-count">{task?.comments.length}</div>
+      <div data-testid="comment-content-scroll-key">{scrollToBottomKey ?? "undefined"}</div>
       <input
         data-testid="comment-input"
         placeholder={task?.comments.length ? "Add another comment..." : "Add comments..."}
@@ -471,6 +479,74 @@ describe("CommentManagementPopover", () => {
       await user.click(screen.getByText("Open Comments"))
 
       expect(screen.getByRole("dialog")).toBeInTheDocument()
+    })
+  })
+
+  describe("Auto-scroll on Open", () => {
+    it("increments scrollToBottomKey when popover opens", async () => {
+      const user = userEvent.setup()
+      const task = createMockTask({
+        comments: [createMockComment(), createMockComment()],
+      })
+
+      render(
+        <CommentManagementPopover task={task} onAddComment={vi.fn()}>
+          <button>Open Comments</button>
+        </CommentManagementPopover>,
+      )
+
+      // Initially closed, scrollToBottomKey should be 0
+      await user.click(screen.getByText("Open Comments"))
+
+      // When opened, scrollToBottomKey should be incremented to trigger scroll
+      expect(screen.getByTestId("comment-content-scroll-key")).toHaveTextContent("1")
+    })
+
+    it("increments scrollToBottomKey each time popover reopens", async () => {
+      const user = userEvent.setup()
+      const task = createMockTask({
+        comments: [createMockComment()],
+      })
+
+      render(
+        <CommentManagementPopover task={task} onAddComment={vi.fn()}>
+          <button>Open Comments</button>
+        </CommentManagementPopover>,
+      )
+
+      // First open
+      await user.click(screen.getByText("Open Comments"))
+      expect(screen.getByTestId("comment-content-scroll-key")).toHaveTextContent("1")
+
+      // Close
+      await user.click(screen.getByText("Open Comments"))
+
+      // Second open - key should increment again
+      await user.click(screen.getByText("Open Comments"))
+      expect(screen.getByTestId("comment-content-scroll-key")).toHaveTextContent("2")
+
+      // Close
+      await user.click(screen.getByText("Open Comments"))
+
+      // Third open
+      await user.click(screen.getByText("Open Comments"))
+      expect(screen.getByTestId("comment-content-scroll-key")).toHaveTextContent("3")
+    })
+
+    it("triggers auto-scroll for task with no comments", async () => {
+      const user = userEvent.setup()
+      const task = createMockTask({ comments: [] })
+
+      render(
+        <CommentManagementPopover task={task} onAddComment={vi.fn()}>
+          <button>Open Comments</button>
+        </CommentManagementPopover>,
+      )
+
+      await user.click(screen.getByText("Open Comments"))
+
+      // Should trigger scroll even when there are no comments
+      expect(screen.getByTestId("comment-content-scroll-key")).toHaveTextContent("1")
     })
   })
 })

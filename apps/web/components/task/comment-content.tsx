@@ -23,6 +23,7 @@ interface CommentContentProps {
   onViewAll?: () => void
   mode?: "inline" | "popover"
   className?: string
+  scrollToBottomKey?: number // When this changes, triggers scroll to bottom
 }
 
 function CommentItem({
@@ -86,6 +87,7 @@ export function CommentContent({
   onAddComment,
   mode = "inline",
   className,
+  scrollToBottomKey,
 }: CommentContentProps) {
   // Translation setup
   const { language } = useLanguage()
@@ -127,6 +129,21 @@ export function CommentContent({
       }, 100)
     }
   }, [displayComments.length, shouldScrollToBottom])
+
+  // Scroll to bottom when popover opens (triggered by scrollToBottomKey change)
+  useEffect(() => {
+    if (scrollToBottomKey !== undefined && scrollToBottomKey > 0 && commentsContainerRef.current) {
+      // Brief timeout to ensure DOM is rendered
+      setTimeout(() => {
+        if (commentsContainerRef.current) {
+          commentsContainerRef.current.scrollTo({
+            top: commentsContainerRef.current.scrollHeight,
+            behavior: "smooth",
+          })
+        }
+      }, 100)
+    }
+  }, [scrollToBottomKey])
 
   if (!task) {
     console.warn("Task not found", taskId)

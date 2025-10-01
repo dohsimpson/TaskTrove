@@ -206,7 +206,9 @@ async function updateUser(
   // Use processed avatar path if avatar was updated, otherwise keep existing avatar
   const updatedUser = {
     ...fileData.user,
-    ...Object.fromEntries(Object.entries(partialUser).filter(([key]) => key !== "avatar")),
+    ...Object.fromEntries(
+      Object.entries(partialUser).filter(([key]) => key !== "avatar" && key !== "apiToken"),
+    ),
   }
 
   // Handle avatar update separately
@@ -215,6 +217,15 @@ async function updateUser(
       updatedUser.avatar = undefined // Remove avatar
     } else {
       updatedUser.avatar = createAvatarFilePath(avatarPath) // Set new avatar path
+    }
+  }
+
+  // Handle apiToken update separately
+  if ("apiToken" in partialUser) {
+    if (partialUser.apiToken === null) {
+      updatedUser.apiToken = undefined // Remove apiToken
+    } else {
+      updatedUser.apiToken = partialUser.apiToken // Set new apiToken
     }
   }
 

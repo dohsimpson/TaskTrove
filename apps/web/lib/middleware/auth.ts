@@ -1,7 +1,8 @@
 /**
  * Authentication Middleware
  *
- * Provides authentication protection for API routes using NextAuth.
+ * Provides authentication protection for API routes using NextAuth session-based auth
+ * or Bearer token authentication.
  * Ensures only authenticated users can access protected resources.
  * Respects the AUTH_SECRET environment variable - if not set, authentication is bypassed.
  */
@@ -10,10 +11,33 @@ import { auth } from "@/auth"
 import { NextResponse } from "next/server"
 import { ApiErrorCode, ErrorResponse } from "@/lib/types"
 import type { EnhancedRequest } from "./api-logger"
+import { safeReadDataFile } from "@/lib/utils/safe-file-operations"
+
+/**
+ * Checks if the provided bearer token matches the user's API token
+ * @param token - Bearer token from Authorization header
+ * @returns true if token is valid, false otherwise
+ */
+async function isValidBearerToken(token: string): Promise<boolean> {
+  try {
+    const dataFile = await safeReadDataFile()
+    if (!dataFile) return false
+
+    const apiToken = dataFile.user.apiToken
+    if (!apiToken) return false
+
+    return token === apiToken
+  } catch {
+    return false
+  }
+}
 
 /**
  * Wraps an API route handler with authentication protection.
- * Checks for a valid NextAuth session before allowing access.
+ * Supports two authentication methods:
+ * 1. NextAuth session-based authentication (cookies)
+ * 2. Bearer token authentication (Authorization header)
+ *
  * If AUTH_SECRET is not set, authentication is bypassed (development mode).
  *
  * @param handler - The API route handler to protect
@@ -39,7 +63,18 @@ export function withAuthentication<T>(
       return handler(request)
     }
 
-    // Get current session using NextAuth
+    // Check for bearer token authentication first
+    const authHeader = request.headers?.get("Authorization")
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7) // Remove "Bearer " prefix
+      if (await isValidBearerToken(token)) {
+        // Token is valid, proceed with handler
+        return handler(request)
+      }
+      // Invalid token - fall through to return auth error
+    }
+
+    // Fall back to session-based authentication
     const session = await auth()
 
     // Check if session exists and has a valid user

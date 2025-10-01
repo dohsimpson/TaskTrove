@@ -555,6 +555,15 @@ export const UserSchema = z.object({
   password: z.string(),
   /** File path to user's avatar image */
   avatar: AvatarFilePathSchema.optional(),
+  /** API token for bearer authentication - 32 character hexadecimal string */
+  apiToken: z
+    .string()
+    .length(32)
+    .regex(
+      /^[0-9a-f]{32}$/,
+      "API token must be a 32-character hexadecimal string",
+    )
+    .optional(),
 });
 
 // Serialization schema for User (colocated with UserSchema for high correlation)
@@ -2071,6 +2080,7 @@ export const LabelUpdateArraySerializationSchema = z.array(
  */
 export const UpdateUserRequestSchema = UserSchema.partial().extend({
   avatar: AvatarBase64Schema.nullable().optional(),
+  apiToken: UserSchema.shape.apiToken.nullable(),
 });
 
 /**

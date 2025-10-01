@@ -1,9 +1,11 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
@@ -13,13 +15,28 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { SettingsCard } from "@/components/ui/custom/settings-card"
-import { settingsAtom, updateSettingsAtom } from "@/lib/atoms"
-import type { StandardViewId } from "@/lib/types"
+import { settingsAtom, updateSettingsAtom, userAtom } from "@/lib/atoms"
+import { UserSchema, type StandardViewId } from "@/lib/types"
 import { START_VIEW_METADATA } from "@tasktrove/constants"
-import { Inbox, Calendar, Clock, CheckSquare, ListCheck, Home, Languages } from "lucide-react"
+import {
+  Inbox,
+  Calendar,
+  Clock,
+  CheckSquare,
+  ListCheck,
+  Home,
+  Languages,
+  Copy,
+  RefreshCw,
+  Trash2,
+  Eye,
+  EyeOff,
+  ExternalLink,
+} from "lucide-react"
 import { useTranslation } from "@/lib/i18n/client"
 import { useLanguage } from "@/components/providers/language-provider"
 import { languages, type Language } from "@/lib/i18n/settings"
+import { toast } from "sonner"
 
 // Language display names
 const languageNames: Record<Language, string> = {
@@ -48,8 +65,11 @@ const ICON_MAP = {
 export function GeneralForm() {
   const settings = useAtomValue(settingsAtom)
   const updateSettings = useSetAtom(updateSettingsAtom)
+  const user = useAtomValue(userAtom)
+  const updateUser = useSetAtom(userAtom)
   const { language, setLanguage } = useLanguage()
   const { t } = useTranslation(language, "settings")
+  const [showApiToken, setShowApiToken] = useState(false)
 
   // Generate start view options with translations
   const allStartViewOptions: Array<{
@@ -111,6 +131,41 @@ export function GeneralForm() {
 
   const handleLanguageChange = (newLanguage: Language) => {
     setLanguage(newLanguage)
+  }
+
+  const handleGenerateToken = () => {
+    // Generate a 32-character hexadecimal string
+    const newToken = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("")
+
+    // Validate the token with Zod schema
+    const validationResult = UserSchema.shape.apiToken.safeParse(newToken)
+    if (!validationResult.success) {
+      toast.error("Failed to generate valid API token")
+      return
+    }
+
+    updateUser({
+      apiToken: validationResult.data,
+    })
+    setShowApiToken(true)
+    toast.success("API token generated and saved")
+  }
+
+  const handleRevokeToken = () => {
+    updateUser({
+      apiToken: null,
+    })
+    setShowApiToken(false)
+    toast.success("API token revoked")
+  }
+
+  const handleCopyToken = async () => {
+    if (user.apiToken) {
+      await navigator.clipboard.writeText(user.apiToken)
+      toast.success("API token copied to clipboard")
+    }
   }
 
   const selectedOption = allStartViewOptions.find((option) => option.value === currentStartView)
@@ -268,6 +323,74 @@ export function GeneralForm() {
             checked={currentPopoverHoverOpen}
             onCheckedChange={handlePopoverHoverOpenChange}
           />
+        </div>
+      </SettingsCard>
+
+      {/* API Token Settings */}
+      <SettingsCard title={t("general.apiToken.title", "API")} experimental>
+        <div className="space-y-4">
+          <div className="space-y-0.5">
+            <Label>{t("general.apiToken.label", "API Token")}</Label>
+            <p className="text-sm text-muted-foreground">
+              {t(
+                "general.apiToken.description",
+                "Generate an API token for programmatic access. Use this token in the Authorization header as 'Bearer YOUR_TOKEN' to authenticate API requests.",
+              )}
+            </p>
+            <a
+              href="https://docs.tasktrove.io/api"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+            >
+              {t("general.apiToken.viewDocs", "View API Documentation")}
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+
+          {user.apiToken ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Input
+                  type={showApiToken ? "text" : "password"}
+                  value={user.apiToken}
+                  readOnly
+                  className="flex-1 font-mono text-sm"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setShowApiToken(!showApiToken)}
+                  title={showApiToken ? "Hide token" : "Show token"}
+                >
+                  {showApiToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+                <Button variant="outline" size="icon" onClick={handleCopyToken} title="Copy token">
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={handleGenerateToken} className="gap-2">
+                  <RefreshCw className="h-4 w-4" />
+                  {t("general.apiToken.regenerate", "Regenerate Token")}
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleRevokeToken}
+                  className="gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {t("general.apiToken.revoke", "Revoke Token")}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button onClick={handleGenerateToken} className="gap-2">
+              <RefreshCw className="h-4 w-4" />
+              {t("general.apiToken.generate", "Generate Token")}
+            </Button>
+          )}
         </div>
       </SettingsCard>
 

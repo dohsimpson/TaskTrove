@@ -37,6 +37,15 @@ export * from "./shared-patterns";
 // Encryption utilities
 export * from "./encryption";
 
+// Color utilities
+export * from "./color-utils";
+
+// Date filter utilities
+export * from "./date-filter-utils";
+
+// Task date formatter utilities
+export * from "./task-date-formatter";
+
 // Re-export commonly used utilities for convenience
 export { cn } from "./styling";
 export {
@@ -75,7 +84,7 @@ export {
   convertToRRule,
   convertTimeToHHMMSS,
   getPriorityDisplay,
-  getPriorityColor,
+  getPriorityBackgroundColor,
   getDateDisplay,
   getRecurringDisplay,
   getTimeDisplay,
@@ -84,3 +93,29 @@ export {
   TIME_SUGGESTIONS,
 } from "./parser";
 export { saltAndHashPassword, verifyPassword } from "./encryption";
+export {
+  getPriorityColor,
+  getPriorityTextColor,
+  getPriorityLabel,
+  getDueDateTextColor,
+  getScheduleIcons,
+} from "./color-utils";
+export {
+  getDateRangeForPreset,
+  matchesDueDateFilter,
+  getPresetLabel,
+  getCustomRangeLabel,
+  getPresetTaskCounts,
+} from "./date-filter-utils";
+export type { DueDatePreset, DateRange } from "./date-filter-utils";
+export {
+  formatTaskDateTime,
+  formatTimeShort,
+  formatTaskDateTimeBadge,
+  isTaskOverdue,
+  getTaskDueDateStatus,
+} from "./task-date-formatter";
+export type {
+  TaskDateFormat,
+  TaskDateFormatOptions,
+} from "./task-date-formatter";

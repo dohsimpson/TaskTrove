@@ -6,8 +6,6 @@ import {
   isTaskOverdue,
   getTaskDueDateStatus,
 } from "./task-date-formatter"
-import type { Task } from "@/lib/types"
-import { TEST_TASK_ID_1 } from "../utils/test-constants"
 
 // Mock date-fns functions
 const { mockIsToday, mockIsTomorrow, mockIsPast, mockFormat } = vi.hoisted(() => ({
@@ -51,18 +49,11 @@ vi.mock("date-fns", () => ({
 }))
 
 describe("task-date-formatter", () => {
-  const mockTask: Omit<Task, "dueDate" | "dueTime"> = {
-    id: TEST_TASK_ID_1,
-    title: "Test Task",
-    description: "",
+  // Use plain objects instead of Task type
+  const mockTask = {
+    dueDate: undefined as Date | null | undefined,
+    dueTime: undefined as Date | null | undefined,
     completed: false,
-    priority: 3,
-    labels: [],
-    subtasks: [],
-    comments: [],
-    attachments: [],
-    createdAt: new Date("2024-01-01"),
-    recurringMode: "dueDate",
   }
 
   beforeEach(() => {

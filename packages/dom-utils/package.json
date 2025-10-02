@@ -10,7 +10,9 @@
     ".": "./src/index.ts",
     "./audio": "./src/audio.ts",
     "./toast": "./src/toast.ts",
-    "./notifications": "./src/notifications.ts"
+    "./notifications": "./src/notifications.ts",
+    "./keyboard": "./src/keyboard.ts",
+    "./type-safe-dom": "./src/type-safe-dom.ts"
   },
   "scripts": {
     "lint": "eslint .",
@@ -22,6 +24,7 @@
   "dependencies": {
     "@tasktrove/types": "workspace:*",
     "@tasktrove/constants": "workspace:*",
+    "react": "catalog:",
     "sonner": "catalog:"
   },
   "devDependencies": {
@@ -29,6 +32,7 @@
     "@repo/typescript-config": "workspace:*",
     "@testing-library/jest-dom": "catalog:",
     "@types/node": "catalog:",
+    "@types/react": "catalog:",
     "@typescript/native-preview": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",

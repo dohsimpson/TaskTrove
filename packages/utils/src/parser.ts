@@ -1584,7 +1584,7 @@ export function getPriorityDisplay(priority: number): string {
   }
 }
 
-export function getPriorityColor(priority: number): string {
+export function getPriorityBackgroundColor(priority: number): string {
   switch (priority) {
     case 1:
       return "bg-red-500 hover:bg-red-600 text-white";

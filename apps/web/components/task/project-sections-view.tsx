@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"

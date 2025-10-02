@@ -1,8 +1,7 @@
 "use client"
 
 import { useAtomValue } from "jotai"
-import { useTranslation } from "@/lib/i18n/client"
-import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 import { pathnameAtom } from "@/lib/atoms/ui/navigation"
 import { MainContent } from "@/components/layout/main-content"
 import { SearchPage } from "@/components/pages/search-page"

@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useCallback, useMemo } from "react"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"

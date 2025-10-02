@@ -2,8 +2,7 @@
 
 import React, { useState } from "react"
 import { useAtomValue, useSetAtom, atom } from "jotai"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 import {
   activeFiltersAtom,
   hasActiveFiltersAtom,

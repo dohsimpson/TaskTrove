@@ -4,12 +4,12 @@ import { SessionProvider } from "next-auth/react"
 import { JotaiProvider } from "@/providers/index"
 import { MainLayoutWrapper } from "@/components/layout/main-layout-wrapper"
 import { HydrateWrapper } from "@/providers/hydrate-wrapper"
-import { LanguageProvider } from "@/components/providers/language-provider"
-import { type Language } from "@/lib/i18n/settings"
+import { LanguageProvider } from "@tasktrove/i18n"
+import { i18nConfig, type AppLanguage } from "@/lib/i18n/config"
 
 interface ClientAppProps {
   children: React.ReactNode
-  initialLanguage: Language
+  initialLanguage: AppLanguage
 }
 
 /**
@@ -20,7 +20,7 @@ interface ClientAppProps {
 export function ClientApp({ children, initialLanguage }: ClientAppProps) {
   return (
     <SessionProvider>
-      <LanguageProvider initialLanguage={initialLanguage}>
+      <LanguageProvider config={i18nConfig} initialLanguage={initialLanguage}>
         <JotaiProvider>
           <HydrateWrapper>
             <MainLayoutWrapper>{children}</MainLayoutWrapper>

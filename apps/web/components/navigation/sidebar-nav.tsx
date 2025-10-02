@@ -68,9 +68,7 @@ import {
   stopEditingLabelAtom,
 } from "@/lib/atoms/ui/navigation"
 import { ROOT_PROJECT_GROUP_ID } from "@/lib/types"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
-
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 export function SidebarNav() {
   // Translation setup
   const { language } = useLanguage()

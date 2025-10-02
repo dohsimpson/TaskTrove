@@ -20,9 +20,7 @@ import { showProjectDialogAtom } from "@/lib/atoms/ui/dialogs"
 import { closeProjectDialogAtom } from "@/lib/atoms/ui/navigation"
 import { addProjectAtom } from "@/lib/atoms/core/projects"
 import { addProjectGroupAtom } from "@/lib/atoms/core/groups"
-import { useTranslation } from "@/lib/i18n/client"
-import { useLanguage } from "@/components/providers/language-provider"
-
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 export function ProjectDialog() {
   const [entityType, setEntityType] = useState<"project" | "projectGroup">("project")
   const [name, setName] = useState("")

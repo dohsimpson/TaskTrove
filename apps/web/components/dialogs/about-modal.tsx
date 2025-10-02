@@ -11,9 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Star, Heart } from "lucide-react"
 import { TaskTroveLogo } from "@/components/ui/custom/tasktrove-logo"
 import packageJson from "@/package.json"
-import { useTranslation } from "@/lib/i18n/client"
-import { useLanguage } from "@/components/providers/language-provider"
-
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 interface AboutModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void

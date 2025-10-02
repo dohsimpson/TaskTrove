@@ -15,9 +15,7 @@ import type { NotificationSettings } from "@/lib/types"
 import { SettingsCard } from "@/components/ui/custom/settings-card"
 import { isSecureContext } from "@tasktrove/dom-utils/notifications"
 import { log } from "@/lib/utils/logger"
-import { useTranslation } from "@/lib/i18n/client"
-import { useLanguage } from "@/components/providers/language-provider"
-
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 export function NotificationsForm() {
   const notificationSettings = useAtomValue(notificationAtoms.settings)
   const updateSettings = useSetAtom(settingsAtoms.actions.updateSettings)

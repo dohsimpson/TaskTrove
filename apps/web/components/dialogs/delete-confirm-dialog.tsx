@@ -13,9 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { useTranslation } from "@/lib/i18n/client"
-import { useLanguage } from "@/components/providers/language-provider"
-
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 export type DeleteEntityType =
   | "task"
   | "project"

@@ -66,9 +66,7 @@ import {
 import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } from "@/lib/types"
 import { INBOX_PROJECT_ID, createTaskId } from "@/lib/types"
 import { TimeEstimationPicker } from "../ui/custom/time-estimation-picker"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
-
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 // Responsive width for metadata columns to ensure consistent alignment
 const METADATA_COLUMN_WIDTH = "w-auto sm:w-20 md:w-24"
 

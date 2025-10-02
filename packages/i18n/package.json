@@ -1,0 +1,35 @@
+{
+  "name": "@tasktrove/i18n",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types/index.ts",
+    "./hooks": "./src/hooks/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsgo --noEmit",
+    "check": "tsgo --noEmit && pnpm lint && pnpm test",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "i18next": "catalog:",
+    "react-i18next": "catalog:",
+    "i18next-browser-languagedetector": "catalog:",
+    "i18next-resources-to-backend": "catalog:",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
+    "@typescript/native-preview": "catalog:",
+    "@types/react": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

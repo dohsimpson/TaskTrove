@@ -9,8 +9,7 @@ import {
   Archive,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 import type { ViewId } from "@/lib/types"
 
 interface ViewEmptyStateProps {

@@ -4,8 +4,7 @@ import React from "react"
 import { Download } from "lucide-react"
 import { SidebarFooter, SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar"
 import { useUpdateChecker } from "@/hooks/use-update-checker"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 import { NavUser } from "./nav-user"
 
 export function AppSidebarFooter() {

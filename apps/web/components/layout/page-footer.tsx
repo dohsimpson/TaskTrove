@@ -15,9 +15,7 @@ import { TaskDueDate } from "@/components/ui/custom/task-due-date"
 import type { Task } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { FocusTimerDisplay } from "@/components/task/focus-timer-display"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
-
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 interface PageFooterProps {
   className?: string
 }

@@ -61,8 +61,7 @@ import { log } from "@/lib/utils/logger"
 import { convertTimeToHHMMSS } from "@/lib/utils/enhanced-natural-language-parser"
 import { getPriorityTextColor } from "@/lib/color-utils"
 import { useDebouncedParse } from "@/hooks/use-debounced-parse"
-import { useTranslation } from "@/lib/i18n/client"
-import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 import { generateEstimationSuggestions } from "@/lib/utils/shared-patterns"
 
 // Enhanced autocomplete interface

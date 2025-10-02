@@ -13,8 +13,7 @@ import { updateTaskAtom, tasksAtom } from "@/lib/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
 import type { Task, TaskComment, CreateTaskRequest } from "@/lib/types"
 import { createCommentId, createTaskId } from "@/lib/types"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 
 interface CommentContentProps {

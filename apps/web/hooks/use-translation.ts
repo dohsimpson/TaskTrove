@@ -1,17 +1,11 @@
 "use client"
 
-import { useLanguage } from "@/components/providers/language-provider"
+import { useLanguage } from "@tasktrove/i18n"
 
 /**
  * Custom hook for accessing translations in client components
- * This provides a simple interface that works with our LanguageProvider
+ * Re-export of useLanguage from @tasktrove/i18n for convenience
  */
 export function useTranslation() {
-  const { t, language, setLanguage } = useLanguage()
-
-  return {
-    t,
-    language,
-    setLanguage,
-  }
+  return useLanguage()
 }

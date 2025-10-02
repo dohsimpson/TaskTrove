@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useLanguage } from "@/components/providers/language-provider"
+import { useLanguage } from "@tasktrove/i18n"
 import { languages, type Language } from "@/lib/i18n/settings"
 import { Languages } from "lucide-react"
 
@@ -37,7 +37,7 @@ export function LanguageSwitcher({ variant = "ghost", size = "default" }: Langua
       <DropdownMenuTrigger asChild>
         <Button variant={variant} size={size} className="gap-2">
           <Languages className="h-4 w-4" />
-          <span className="hidden sm:inline-block">{languageNames[language]}</span>
+          <span className="hidden sm:inline-block">{languageNames[language as Language]}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

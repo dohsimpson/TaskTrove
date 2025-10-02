@@ -2,8 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 import {
   X,
   Star,

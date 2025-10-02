@@ -24,8 +24,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { AboutModal } from "@/components/dialogs/about-modal"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 import { openSettingsDialogAtom, openUserProfileDialogAtom } from "@/lib/atoms/ui/dialogs"
 import { userAtom } from "@/lib/atoms"
 import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"

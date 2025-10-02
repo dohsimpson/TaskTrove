@@ -1,6 +1,35 @@
 import "@testing-library/jest-dom"
 import { cleanup } from "@testing-library/react"
 import { afterEach, vi } from "vitest"
+import i18next from "i18next"
+import { initReactI18next } from "react-i18next"
+
+// Initialize i18next before any tests run
+// This mimics what the old @/lib/i18n/client.ts did at module load time
+// The LanguageProvider will skip initialization if already initialized
+if (!i18next.isInitialized) {
+  i18next.use(initReactI18next).init({
+    lng: "en",
+    fallbackLng: "en",
+    ns: ["common", "dialogs", "settings", "layout", "navigation", "task", "auth"],
+    defaultNS: "common",
+    interpolation: {
+      escapeValue: false,
+    },
+    // Empty resources - tests will use translation keys as fallback
+    resources: {
+      en: {
+        common: {},
+        dialogs: {},
+        settings: {},
+        layout: {},
+        navigation: {},
+        task: {},
+        auth: {},
+      },
+    },
+  })
+}
 
 // Mock next-auth globally to prevent module resolution issues with v5 beta
 // Returns an authenticated session by default to allow tests to run

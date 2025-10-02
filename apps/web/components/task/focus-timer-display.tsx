@@ -1,8 +1,7 @@
 "use client"
 
 import { useSetAtom } from "jotai"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 import { Coffee, Pause, Play, Square } from "lucide-react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"

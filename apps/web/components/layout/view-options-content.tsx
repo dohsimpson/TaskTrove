@@ -32,9 +32,7 @@ import {
 } from "lucide-react"
 import { HelpPopover } from "@/components/ui/help-popover"
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
-
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 interface ViewOptionsContentProps {
   onAdvancedSearch?: () => void
 }

@@ -10,8 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { TaskTroveLogo } from "@/components/ui/custom/tasktrove-logo"
 import { TaskTroveIcon } from "@/components/ui/custom/tasktrove-icon"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 
 export interface LoginFormProps {
   needsPasswordSetup: boolean

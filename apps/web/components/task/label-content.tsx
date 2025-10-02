@@ -10,8 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
 import { labelsFromIdsAtom, labelsAtom } from "@/lib/atoms/core/labels"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 import type { Task, LabelId, Label } from "@/lib/types"
 
 interface LabelContentProps {

@@ -14,8 +14,7 @@ import {
 } from "@/components/ui/select"
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 import {
   format,
   startOfMonth,

@@ -2,8 +2,7 @@
 
 import React, { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { useLanguage } from "@/components/providers/language-provider"
-import { useTranslation } from "@/lib/i18n/client"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 import { Coffee, Play, Pause, Square } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ContentPopover } from "@/components/ui/content-popover"

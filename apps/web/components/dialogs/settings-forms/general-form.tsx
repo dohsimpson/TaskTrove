@@ -33,8 +33,7 @@ import {
   EyeOff,
   ExternalLink,
 } from "lucide-react"
-import { useTranslation } from "@/lib/i18n/client"
-import { useLanguage } from "@/components/providers/language-provider"
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 import { languages, type Language } from "@/lib/i18n/settings"
 import { toast } from "sonner"
 
@@ -242,7 +241,7 @@ export function GeneralForm() {
               <SelectValue>
                 <div className="flex items-center gap-2">
                   <Languages className="w-4 h-4" />
-                  <span>{languageNames[language]}</span>
+                  <span>{languageNames[language as Language]}</span>
                 </div>
               </SelectValue>
             </SelectTrigger>

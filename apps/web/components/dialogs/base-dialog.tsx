@@ -23,9 +23,7 @@ import { ColorPicker } from "@/components/ui/custom/color-picker"
 import { COLOR_OPTIONS } from "@tasktrove/constants"
 import { useAtomValue, useSetAtom } from "jotai"
 import type { Atom, WritableAtom } from "jotai"
-import { useTranslation } from "@/lib/i18n/client"
-import { useLanguage } from "@/components/providers/language-provider"
-
+import { useTranslation, useLanguage } from "@tasktrove/i18n"
 interface DialogContext {
   mode?: "create" | "edit"
   insertPosition?: {

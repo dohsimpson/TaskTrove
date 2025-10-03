@@ -63,6 +63,7 @@ import { getPriorityTextColor } from "@/lib/color-utils"
 import { useDebouncedParse } from "@/hooks/use-debounced-parse"
 import { useTranslation } from "@tasktrove/i18n"
 import { generateEstimationSuggestions } from "@/lib/utils/shared-patterns"
+import { UnsavedConfirmationDialog } from "./unsaved-confirmation-dialog"
 
 // Enhanced autocomplete interface
 type AutocompleteType = "project" | "label" | "date" | "estimation"
@@ -109,6 +110,7 @@ export function QuickAddDialog() {
   // UI-only state (stays local)
   const [input, setInput] = useState("")
   const [showAdvancedRow, setShowAdvancedRow] = useState(false)
+  const [showConfirmCloseDialog, setShowConfirmCloseDialog] = useState(false)
 
   // Track whether values were set by parsing (to avoid clearing manually selected values)
   const projectSetByParsingRef = useRef(false)
@@ -137,6 +139,10 @@ export function QuickAddDialog() {
 
   // Use debounced parsing for better performance (disabled when NLP toggle is off)
   const parsed = useDebouncedParse(input, disabledSections)
+
+  // Initialize initialTask after newTask is available
+  const [initialTask, setInitialTask] = useState<typeof newTask>(newTask)
+  const hasInitializedRef = useRef(false)
 
   // Clear any values that were set by parsing when NLP is disabled
   useEffect(() => {
@@ -314,12 +320,29 @@ export function QuickAddDialog() {
 
   // Auto-initialize values based on route context when dialog opens
   useEffect(() => {
-    if (open) {
+    if (open && !hasInitializedRef.current) {
+      // Initialize with current project/label, then set the initial task state
+      const updates: Partial<CreateTaskRequest> = {}
       if (currentLabel) {
-        updateNewTask({ updateRequest: { labels: [...(newTask.labels || []), currentLabel] } })
+        updates.labels = [...(newTask.labels || []), currentLabel]
       } else if (currentProject) {
-        updateNewTask({ updateRequest: { projectId: currentProject } })
+        updates.projectId = currentProject
       }
+
+      if (Object.keys(updates).length > 0) {
+        updateNewTask({ updateRequest: updates })
+        // Set initial task state to what it will be after updates
+        const updatedTask = { ...newTask, ...updates }
+        setInitialTask(updatedTask)
+      } else {
+        // No updates needed, set initial task to current state
+        setInitialTask({ ...newTask })
+      }
+
+      hasInitializedRef.current = true
+    } else if (!open) {
+      // Reset the initialization flag when dialog closes
+      hasInitializedRef.current = false
     }
   }, [currentLabel, currentProject, open])
 
@@ -401,7 +424,7 @@ export function QuickAddDialog() {
 
       setInput("")
       resetNewTask()
-      closeDialog()
+      performCloseDialog()
     } catch (error) {
       log.error({ error, module: "quick-add" }, "Failed to create task")
     }
@@ -492,8 +515,21 @@ export function QuickAddDialog() {
   }
 
   const handleCloseDialog = () => {
+    const hasInputChanges = input.trim() !== ""
+    const hasTaskChanges = JSON.stringify(newTask) !== JSON.stringify(initialTask)
+    const hasUnsavedData = hasInputChanges || hasTaskChanges
+
+    if (hasUnsavedData) {
+      setShowConfirmCloseDialog(true)
+    } else {
+      performCloseDialog()
+    }
+  }
+
+  const performCloseDialog = () => {
     setInput("")
     resetNewTask()
+    setInitialTask(newTask)
     setShowAdvancedRow(false)
     // Reset all tracking flags
     projectSetByParsingRef.current = false
@@ -507,221 +543,121 @@ export function QuickAddDialog() {
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleCloseDialog}>
-      <DialogContentWithoutOverlay
-        className="w-[95vw] max-w-[420px] sm:max-w-[520px] md:max-w-[600px] p-1 border shadow-2xl"
-        showCloseButton={false}
-      >
-        <VisuallyHidden>
-          <DialogTitle>{t("quickAdd.title", "Quick Add Task")}</DialogTitle>
-        </VisuallyHidden>
-        <div className="flex flex-col justify-between gap-1">
-          {/* Main Input */}
-          <div>
-            <div className="relative">
-              <EnhancedHighlightedInput
-                placeholder={PLACEHOLDER_TASK_INPUT}
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                autoFocus
-                onAutocompleteSelect={handleAutocompleteSelect}
-                autocompleteItems={autocompleteItems}
+    <>
+      <Dialog open={open} onOpenChange={handleCloseDialog}>
+        <DialogContentWithoutOverlay
+          className="w-[95vw] max-w-[420px] sm:max-w-[520px] md:max-w-[600px] p-1 border shadow-2xl"
+          showCloseButton={false}
+        >
+          <VisuallyHidden>
+            <DialogTitle>{t("quickAdd.title", "Quick Add Task")}</DialogTitle>
+          </VisuallyHidden>
+          <div className="flex flex-col justify-between gap-1">
+            {/* Main Input */}
+            <div>
+              <div className="relative">
+                <EnhancedHighlightedInput
+                  placeholder={PLACEHOLDER_TASK_INPUT}
+                  value={input}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  autoFocus
+                  onAutocompleteSelect={handleAutocompleteSelect}
+                  autocompleteItems={autocompleteItems}
+                />
+              </div>
+
+              {/* Description */}
+              <Textarea
+                placeholder={t("quickAdd.description.placeholder", "Description")}
+                value={newTask.description ?? ""}
+                onChange={(e) => updateNewTask({ updateRequest: { description: e.target.value } })}
+                className="border-0 shadow-none focus-visible:ring-0 placeholder:text-gray-400 resize-none p-2 bg-muted/50 min-h-16 sm:min-h-24"
+                rows={2}
               />
             </div>
 
-            {/* Description */}
-            <Textarea
-              placeholder={t("quickAdd.description.placeholder", "Description")}
-              value={newTask.description ?? ""}
-              onChange={(e) => updateNewTask({ updateRequest: { description: e.target.value } })}
-              className="border-0 shadow-none focus-visible:ring-0 placeholder:text-gray-400 resize-none p-2 bg-muted/50 min-h-16 sm:min-h-24"
-              rows={2}
-            />
-          </div>
-
-          {/* Quick Actions Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2 sm:pt-3 pb-1">
-            <div className="flex items-center gap-1 flex-wrap">
-              {/* Due Date */}
-              <TaskSchedulePopover>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-2 gap-1 text-xs sm:text-sm min-w-0"
-                  asChild
-                >
-                  {newTask.dueDate || newTask.recurring ? (
-                    <TaskDueDate
-                      dueDate={newTask.dueDate}
-                      dueTime={newTask.dueTime}
-                      recurring={newTask.recurring}
-                      completed={false}
-                    />
-                  ) : (
-                    <span className="flex items-center gap-1 text-muted-foreground">
-                      <Calendar className="h-3 w-3 flex-shrink-0" />
-                      <span className="whitespace-nowrap hidden sm:inline">
-                        {t("quickAdd.buttons.date", "Date")}
-                      </span>
-                    </span>
-                  )}
-                </Button>
-              </TaskSchedulePopover>
-
-              {/* Priority */}
-              <TaskPriorityPopover
-                onUpdate={(priority) => handleManualPrioritySelect(priority)}
-                align="start"
-                contentClassName="w-48 p-1"
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    "h-8 px-2 gap-1 text-xs sm:text-sm min-w-0",
-                    newTask.priority && newTask.priority < 4
-                      ? getPriorityTextColor(newTask.priority)
-                      : "text-muted-foreground",
-                  )}
-                >
-                  <Flag className="h-3 w-3 flex-shrink-0" />
-                  <span
-                    className={cn(
-                      "whitespace-nowrap",
-                      newTask.priority && newTask.priority < 4 ? "" : "hidden sm:inline",
-                    )}
+            {/* Quick Actions Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2 sm:pt-3 pb-1">
+              <div className="flex items-center gap-1 flex-wrap">
+                {/* Due Date */}
+                <TaskSchedulePopover>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 gap-1 text-xs sm:text-sm min-w-0"
+                    asChild
                   >
-                    {newTask.priority && newTask.priority < 4
-                      ? `P${newTask.priority}`
-                      : t("quickAdd.buttons.priority", "Priority")}
-                  </span>
-                </Button>
-              </TaskPriorityPopover>
-
-              {/* Add Label */}
-              <LabelManagementPopover onAddLabel={handleAddLabel} onRemoveLabel={handleRemoveLabel}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
-                >
-                  <Tag className="h-3 w-3 flex-shrink-0" />
-                  <span className="hidden sm:inline whitespace-nowrap">
-                    {t("quickAdd.buttons.label", "Label")}
-                  </span>
-                </Button>
-              </LabelManagementPopover>
-
-              {/* Project */}
-              <ProjectPopover
-                onUpdate={(projectId) => handleManualProjectSelect(projectId)}
-                align="start"
-                contentClassName="w-64 p-0"
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
-                >
-                  {(() => {
-                    const selectedProjectId = newTask.projectId
-                    const project = projects.find((p) => p.id === selectedProjectId)
-                    return (
-                      <>
-                        <Folder
-                          className="h-3 w-3 flex-shrink-0"
-                          style={{ color: project?.color || undefined }}
-                        />
-                        <span
-                          className={cn(
-                            "whitespace-nowrap truncate max-w-16 sm:max-w-24",
-                            project && project.id !== INBOX_PROJECT_ID ? "" : "hidden sm:inline",
-                          )}
-                        >
-                          {project ? project.name : t("quickAdd.buttons.project", "Project")}
+                    {newTask.dueDate || newTask.recurring ? (
+                      <TaskDueDate
+                        dueDate={newTask.dueDate}
+                        dueTime={newTask.dueTime}
+                        recurring={newTask.recurring}
+                        completed={false}
+                      />
+                    ) : (
+                      <span className="flex items-center gap-1 text-muted-foreground">
+                        <Calendar className="h-3 w-3 flex-shrink-0" />
+                        <span className="whitespace-nowrap hidden sm:inline">
+                          {t("quickAdd.buttons.date", "Date")}
                         </span>
-                      </>
-                    )
-                  })()}
-                </Button>
-              </ProjectPopover>
+                      </span>
+                    )}
+                  </Button>
+                </TaskSchedulePopover>
 
-              {/* Expansion Toggle */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2 text-muted-foreground"
-                onClick={() => setShowAdvancedRow(!showAdvancedRow)}
-              >
-                <MoreHorizontal className="h-3 w-3" />
-              </Button>
-            </div>
-
-            {/* NLP Toggle */}
-            <div className="flex items-center gap-2 mt-2 sm:mt-0 flex-shrink-0">
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {t("quickAdd.smartParsing.label", "Smart Parsing")}
-                </span>
-                <HelpPopover
-                  content={t(
-                    "quickAdd.smartParsing.help",
-                    "Smart Parsing is an experimental feature that automatically detects and extracts task details from your input. It can identify priorities (P1-P4), due dates (tomorrow, next week, etc.), project names (#project), labels (@label), and recurring patterns (daily, weekly).",
-                  )}
-                  side="left"
-                  align="center"
-                />
-              </div>
-              <div className="flex items-center gap-1">
-                <Switch
-                  checked={nlpEnabled}
-                  onCheckedChange={setNlpEnabled}
-                  className="scale-75"
-                  data-testid="nlp-toggle"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Advanced Row - Second row of options */}
-          {showAdvancedRow && (
-            <div className="flex items-center gap-1 flex-wrap">
-              {/* Subtasks */}
-              <SubtaskPopover onOpenChange={() => {}}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
-                >
-                  <CheckSquare className="h-3 w-3 flex-shrink-0" />
-                  <span className="hidden sm:inline whitespace-nowrap">
-                    {t("quickAdd.buttons.subtasks", "Subtasks")}
-                  </span>
-                </Button>
-              </SubtaskPopover>
-
-              {/* Comments */}
-              <CommentManagementPopover onOpenChange={() => {}}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
-                >
-                  <MessageSquare className="h-3 w-3 flex-shrink-0" />
-                  <span className="hidden sm:inline whitespace-nowrap">
-                    {t("quickAdd.buttons.comments", "Comments")}
-                  </span>
-                </Button>
-              </CommentManagementPopover>
-
-              {/* Section - Only show if a project is selected */}
-              {newTask.projectId !== INBOX_PROJECT_ID && (
-                <TaskSectionPopover
-                  projectId={newTask.projectId}
-                  onUpdate={handleManualSectionSelect}
+                {/* Priority */}
+                <TaskPriorityPopover
+                  onUpdate={(priority) => handleManualPrioritySelect(priority)}
                   align="start"
                   contentClassName="w-48 p-1"
+                >
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "h-8 px-2 gap-1 text-xs sm:text-sm min-w-0",
+                      newTask.priority && newTask.priority < 4
+                        ? getPriorityTextColor(newTask.priority)
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    <Flag className="h-3 w-3 flex-shrink-0" />
+                    <span
+                      className={cn(
+                        "whitespace-nowrap",
+                        newTask.priority && newTask.priority < 4 ? "" : "hidden sm:inline",
+                      )}
+                    >
+                      {newTask.priority && newTask.priority < 4
+                        ? `P${newTask.priority}`
+                        : t("quickAdd.buttons.priority", "Priority")}
+                    </span>
+                  </Button>
+                </TaskPriorityPopover>
+
+                {/* Add Label */}
+                <LabelManagementPopover
+                  onAddLabel={handleAddLabel}
+                  onRemoveLabel={handleRemoveLabel}
+                >
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
+                  >
+                    <Tag className="h-3 w-3 flex-shrink-0" />
+                    <span className="hidden sm:inline whitespace-nowrap">
+                      {t("quickAdd.buttons.label", "Label")}
+                    </span>
+                  </Button>
+                </LabelManagementPopover>
+
+                {/* Project */}
+                <ProjectPopover
+                  onUpdate={(projectId) => handleManualProjectSelect(projectId)}
+                  align="start"
+                  contentClassName="w-64 p-0"
                 >
                   <Button
                     variant="ghost"
@@ -729,90 +665,202 @@ export function QuickAddDialog() {
                     className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
                   >
                     {(() => {
-                      const project = projects.find((p) => p.id === newTask.projectId)
-                      const section = project?.sections.find((s) => s.id === newTask.sectionId)
-
+                      const selectedProjectId = newTask.projectId
+                      const project = projects.find((p) => p.id === selectedProjectId)
                       return (
                         <>
-                          <Square
+                          <Folder
                             className="h-3 w-3 flex-shrink-0"
-                            style={{ color: section?.color || undefined }}
+                            style={{ color: project?.color || undefined }}
                           />
-                          <span className="hidden sm:inline whitespace-nowrap truncate max-w-16 sm:max-w-24">
-                            {section ? section.name : t("quickAdd.buttons.section", "Section")}
+                          <span
+                            className={cn(
+                              "whitespace-nowrap truncate max-w-16 sm:max-w-24",
+                              project && project.id !== INBOX_PROJECT_ID ? "" : "hidden sm:inline",
+                            )}
+                          >
+                            {project ? project.name : t("quickAdd.buttons.project", "Project")}
                           </span>
                         </>
                       )
                     })()}
                   </Button>
-                </TaskSectionPopover>
-              )}
-            </div>
-          )}
+                </ProjectPopover>
 
-          {/* Labels Display */}
-          {newTask.labels && newTask.labels.length > 0 && (
-            <div className="flex flex-wrap gap-1 py-2">
-              {newTask.labels.map((labelId) => {
-                const label = labels.find((l) => l.id === labelId)
-                if (!label) return null
-                return (
-                  <Badge
-                    key={labelId}
-                    variant="secondary"
-                    className="gap-1 px-2 py-0.5 text-xs"
-                    style={{
-                      backgroundColor: label.color,
-                      color: "white",
-                      border: "none",
-                    }}
+                {/* Expansion Toggle */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-muted-foreground"
+                  onClick={() => setShowAdvancedRow(!showAdvancedRow)}
+                >
+                  <MoreHorizontal className="h-3 w-3" />
+                </Button>
+              </div>
+
+              {/* NLP Toggle */}
+              <div className="flex items-center gap-2 mt-2 sm:mt-0 flex-shrink-0">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {t("quickAdd.smartParsing.label", "Smart Parsing")}
+                  </span>
+                  <HelpPopover
+                    content={t(
+                      "quickAdd.smartParsing.help",
+                      "Smart Parsing is an experimental feature that automatically detects and extracts task details from your input. It can identify priorities (P1-P4), due dates (tomorrow, next week, etc.), project names (#project), labels (@label), and recurring patterns (daily, weekly).",
+                    )}
+                    side="left"
+                    align="center"
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <Switch
+                    checked={nlpEnabled}
+                    onCheckedChange={setNlpEnabled}
+                    className="scale-75"
+                    data-testid="nlp-toggle"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Advanced Row - Second row of options */}
+            {showAdvancedRow && (
+              <div className="flex items-center gap-1 flex-wrap">
+                {/* Subtasks */}
+                <SubtaskPopover onOpenChange={() => {}}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
                   >
-                    <Tag className="h-3 w-3" />
-                    {label.name}
-                    <button
-                      onClick={() => handleRemoveLabel(labelId)}
-                      className="hover:bg-black/20 rounded-full p-0.5"
+                    <CheckSquare className="h-3 w-3 flex-shrink-0" />
+                    <span className="hidden sm:inline whitespace-nowrap">
+                      {t("quickAdd.buttons.subtasks", "Subtasks")}
+                    </span>
+                  </Button>
+                </SubtaskPopover>
+
+                {/* Comments */}
+                <CommentManagementPopover onOpenChange={() => {}}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
+                  >
+                    <MessageSquare className="h-3 w-3 flex-shrink-0" />
+                    <span className="hidden sm:inline whitespace-nowrap">
+                      {t("quickAdd.buttons.comments", "Comments")}
+                    </span>
+                  </Button>
+                </CommentManagementPopover>
+
+                {/* Section - Only show if a project is selected */}
+                {newTask.projectId !== INBOX_PROJECT_ID && (
+                  <TaskSectionPopover
+                    projectId={newTask.projectId}
+                    onUpdate={handleManualSectionSelect}
+                    align="start"
+                    contentClassName="w-48 p-1"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
                     >
-                      <X className="h-2 w-2" />
-                    </button>
-                  </Badge>
-                )
-              })}
+                      {(() => {
+                        const project = projects.find((p) => p.id === newTask.projectId)
+                        const section = project?.sections.find((s) => s.id === newTask.sectionId)
+
+                        return (
+                          <>
+                            <Square
+                              className="h-3 w-3 flex-shrink-0"
+                              style={{ color: section?.color || undefined }}
+                            />
+                            <span className="hidden sm:inline whitespace-nowrap truncate max-w-16 sm:max-w-24">
+                              {section ? section.name : t("quickAdd.buttons.section", "Section")}
+                            </span>
+                          </>
+                        )
+                      })()}
+                    </Button>
+                  </TaskSectionPopover>
+                )}
+              </div>
+            )}
+
+            {/* Labels Display */}
+            {newTask.labels && newTask.labels.length > 0 && (
+              <div className="flex flex-wrap gap-1 py-2">
+                {newTask.labels.map((labelId) => {
+                  const label = labels.find((l) => l.id === labelId)
+                  if (!label) return null
+                  return (
+                    <Badge
+                      key={labelId}
+                      variant="secondary"
+                      className="gap-1 px-2 py-0.5 text-xs"
+                      style={{
+                        backgroundColor: label.color,
+                        color: "white",
+                        border: "none",
+                      }}
+                    >
+                      <Tag className="h-3 w-3" />
+                      {label.name}
+                      <button
+                        onClick={() => handleRemoveLabel(labelId)}
+                        className="hover:bg-black/20 rounded-full p-0.5"
+                      >
+                        <X className="h-2 w-2" />
+                      </button>
+                    </Badge>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Advanced Sections */}
+            {/* <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}> */}
+            {/*   <CollapsibleContent className="space-y-4"> */}
+            {/*     <div className="space-y-2"> */}
+            {/*       <label className="text-xs text-muted-foreground">Time Estimate (minutes)</label> */}
+            {/*       <input */}
+            {/*         type="number" */}
+            {/*         placeholder="e.g. 30" */}
+            {/*         value={timeEstimate || ""} */}
+            {/*         onChange={(e) => setTimeEstimate(e.target.value ? parseInt(e.target.value) : undefined)} */}
+            {/*         className="w-24 px-2 py-1 text-sm bg-transparent border border-border rounded" */}
+            {/*         min="1" */}
+            {/*       /> */}
+            {/*     </div> */}
+            {/*   </CollapsibleContent> */}
+            {/* </Collapsible> */}
+
+            {/* Bottom Section */}
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button variant="ghost" onClick={handleCloseDialog} className="text-xs sm:text-sm">
+                {t("common.cancel", "Cancel")}
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={!parsed?.title && !input.trim()}
+                className="text-xs sm:text-sm"
+              >
+                {t("quickAdd.addTask", "Add task")}
+              </Button>
             </div>
-          )}
-
-          {/* Advanced Sections */}
-          {/* <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}> */}
-          {/*   <CollapsibleContent className="space-y-4"> */}
-          {/*     <div className="space-y-2"> */}
-          {/*       <label className="text-xs text-muted-foreground">Time Estimate (minutes)</label> */}
-          {/*       <input */}
-          {/*         type="number" */}
-          {/*         placeholder="e.g. 30" */}
-          {/*         value={timeEstimate || ""} */}
-          {/*         onChange={(e) => setTimeEstimate(e.target.value ? parseInt(e.target.value) : undefined)} */}
-          {/*         className="w-24 px-2 py-1 text-sm bg-transparent border border-border rounded" */}
-          {/*         min="1" */}
-          {/*       /> */}
-          {/*     </div> */}
-          {/*   </CollapsibleContent> */}
-          {/* </Collapsible> */}
-
-          {/* Bottom Section */}
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <Button variant="ghost" onClick={handleCloseDialog} className="text-xs sm:text-sm">
-              {t("common.cancel", "Cancel")}
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!parsed?.title && !input.trim()}
-              className="text-xs sm:text-sm"
-            >
-              {t("quickAdd.addTask", "Add task")}
-            </Button>
           </div>
-        </div>
-      </DialogContentWithoutOverlay>
-    </Dialog>
+        </DialogContentWithoutOverlay>
+      </Dialog>
+
+      {/* Confirmation dialog for unsaved data */}
+      <UnsavedConfirmationDialog
+        open={showConfirmCloseDialog}
+        onOpenChange={setShowConfirmCloseDialog}
+        onConfirm={performCloseDialog}
+      />
+    </>
   )
 }

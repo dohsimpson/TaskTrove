@@ -872,14 +872,12 @@ describe("generateNextTaskInstance", () => {
     recurring: "RRULE:FREQ=DAILY",
     createdAt: new Date("2024-01-01T00:00:00.000Z"),
     recurringMode: "dueDate",
-    status: "completed" satisfies Task["status"],
     priority: 2 satisfies TaskPriority,
     labels: [],
     projectId: undefined,
     description: "Daily team standup meeting",
     subtasks: [],
     comments: [],
-    attachments: [],
   }
 
   beforeEach(() => {
@@ -897,7 +895,7 @@ describe("generateNextTaskInstance", () => {
       expect(nextTask.completedAt).toBeUndefined()
       expect(nextTask.dueDate).toEqual(new Date("2024-01-16T09:00:00.000Z"))
       expect(nextTask.recurring).toBe("RRULE:FREQ=DAILY")
-      expect(nextTask.status).toBe("active")
+      // Status feature removed
       expect(nextTask.description).toBe("Daily team standup meeting")
     }
   })
@@ -939,7 +937,6 @@ describe("generateNextTaskInstance", () => {
           completed: false,
         },
       ],
-      attachments: ["file1.pdf"],
     }
 
     const nextTask = generateNextTaskInstance(taskWithMetadata)
@@ -958,7 +955,7 @@ describe("generateNextTaskInstance", () => {
           completed: false,
         },
       ])
-      expect(nextTask.attachments).toEqual(["file1.pdf"])
+      // Attachments feature removed
     }
   })
 
@@ -1016,13 +1013,11 @@ describe("shouldGenerateNextInstance", () => {
       id: createTaskId("550e8400-e29b-41d4-a716-446655440010"),
       title: "Test task",
       completed: false,
-      status: "active",
       priority: 1,
       labels: [],
       projectId: undefined,
       subtasks: [],
       comments: [],
-      attachments: [],
       createdAt: new Date(),
       recurringMode: "dueDate",
       recurring: "RRULE:FREQ=DAILY",
@@ -1037,13 +1032,11 @@ describe("shouldGenerateNextInstance", () => {
       id: createTaskId("550e8400-e29b-41d4-a716-446655440010"),
       title: "Test task",
       completed: false,
-      status: "active",
       priority: 1,
       labels: [],
       projectId: undefined,
       subtasks: [],
       comments: [],
-      attachments: [],
       createdAt: new Date(),
       recurringMode: "dueDate",
       recurring: undefined,
@@ -1058,13 +1051,11 @@ describe("shouldGenerateNextInstance", () => {
       id: createTaskId("550e8400-e29b-41d4-a716-446655440010"),
       title: "Test task",
       completed: false,
-      status: "active",
       priority: 1,
       labels: [],
       projectId: undefined,
       subtasks: [],
       comments: [],
-      attachments: [],
       createdAt: new Date(),
       recurringMode: "dueDate",
       recurring: "RRULE:FREQ=DAILY",
@@ -1079,13 +1070,11 @@ describe("shouldGenerateNextInstance", () => {
       id: createTaskId("550e8400-e29b-41d4-a716-446655440010"),
       title: "Test task",
       completed: false,
-      status: "active",
       priority: 1,
       labels: [],
       projectId: undefined,
       subtasks: [],
       comments: [],
-      attachments: [],
       createdAt: new Date(),
       recurringMode: "dueDate",
       recurring: "",
@@ -1105,13 +1094,11 @@ describe("processRecurringTaskCompletion", () => {
     recurring: "RRULE:FREQ=WEEKLY",
     createdAt: new Date("2024-01-01T00:00:00.000Z"),
     recurringMode: "dueDate",
-    status: "active" satisfies Task["status"],
     priority: 2,
     labels: [],
     projectId: undefined,
     subtasks: [],
     comments: [],
-    attachments: [],
   }
 
   beforeEach(() => {
@@ -1267,13 +1254,11 @@ describe("Edge Cases and Error Handling", () => {
       id: createTaskId("550e8400-e29b-41d4-a716-446655440003"),
       title: "Minimal task",
       completed: false,
-      status: "active" satisfies Task["status"],
       priority: 1 satisfies TaskPriority,
       labels: [],
       projectId: undefined,
       subtasks: [],
       comments: [],
-      attachments: [],
       createdAt: new Date(),
       recurringMode: "dueDate",
       dueDate: new Date("2024-01-15T10:00:00.000Z"),
@@ -1298,13 +1283,11 @@ describe("recurringMode functionality", () => {
     recurring: "RRULE:FREQ=WEEKLY",
     createdAt: new Date("2024-01-01T00:00:00.000Z"),
     recurringMode: "dueDate",
-    status: "active" satisfies Task["status"],
     priority: 2,
     labels: [],
     projectId: undefined,
     subtasks: [],
     comments: [],
-    attachments: [],
   }
 
   beforeEach(() => {
@@ -1434,13 +1417,11 @@ describe("recurringMode functionality", () => {
         recurring: "RRULE:FREQ=DAILY",
         recurringMode: "completedAt",
         createdAt: new Date("2024-08-20T00:00:00.000Z"),
-        status: "completed",
         priority: 2,
         labels: [],
         projectId: undefined,
         subtasks: [],
         comments: [],
-        attachments: [],
       }
 
       const nextTask = generateNextTaskInstance(task)
@@ -1469,13 +1450,11 @@ describe("recurringMode functionality", () => {
         recurring: "RRULE:FREQ=DAILY",
         recurringMode: "completedAt",
         createdAt: new Date("2024-08-20T00:00:00.000Z"),
-        status: "completed",
         priority: 2,
         labels: [],
         projectId: undefined,
         subtasks: [],
         comments: [],
-        attachments: [],
       }
 
       const nextTask = generateNextTaskInstance(task)
@@ -1502,13 +1481,11 @@ describe("recurringMode functionality", () => {
         recurring: "RRULE:FREQ=DAILY",
         recurringMode: "completedAt",
         createdAt: new Date("2024-08-20T00:00:00.000Z"),
-        status: "completed",
         priority: 2,
         labels: [],
         projectId: undefined,
         subtasks: [],
         comments: [],
-        attachments: [],
       }
 
       const nextTask = generateNextTaskInstance(task)
@@ -1536,13 +1513,11 @@ describe("recurringMode functionality", () => {
         recurring: "RRULE:FREQ=WEEKLY",
         recurringMode: "completedAt",
         createdAt: new Date("2024-08-20T00:00:00.000Z"),
-        status: "completed",
         priority: 2,
         labels: [],
         projectId: undefined,
         subtasks: [],
         comments: [],
-        attachments: [],
       }
 
       const nextTask = generateNextTaskInstance(task)

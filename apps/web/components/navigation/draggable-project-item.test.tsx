@@ -124,7 +124,6 @@ describe("DraggableProjectItem", () => {
     name: "Test Project",
     slug: "test-project",
     color: "#3498DB",
-    shared: false,
     sections: [],
   }
 

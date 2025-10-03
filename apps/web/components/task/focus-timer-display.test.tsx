@@ -70,8 +70,6 @@ const mockTask = {
   labels: [],
   comments: [],
   subtasks: [],
-  attachments: [],
-  favorite: false,
   recurring: undefined,
   dueDate: undefined,
   projectId: undefined,

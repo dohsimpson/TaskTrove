@@ -94,12 +94,7 @@ const tasksForCountsAtom = atom((get) => {
 
     // NOTE: We intentionally skip dueDateFilter here so counts show accurately
 
-    // Filter by task status
-    if (activeFilters.status?.length) {
-      result = result.filter(
-        (task: Task) => task.status && (activeFilters.status?.includes(task.status) ?? false),
-      )
-    }
+    // Status filtering removed
   }
 
   return result

@@ -132,13 +132,7 @@ export const uiFilteredTasksForViewAtom = atomFamily((viewId: ViewId) =>
         //   );
         // }
 
-        // Filter by task status
-        if (activeFilters.status?.length) {
-          result = result.filter(
-            (task: Task) =>
-              task.status && activeFilters.status?.includes(task.status),
-          );
-        }
+        // Status filtering removed
       }
 
       return result;

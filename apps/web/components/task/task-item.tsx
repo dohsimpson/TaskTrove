@@ -258,10 +258,7 @@ export function TaskItem({
         labels: [],
         subtasks: [],
         comments: [],
-        attachments: [],
         createdAt: new Date(),
-        status: subtask.completed ? "completed" : "active",
-        order: subtask.order || 0,
         recurringMode: "dueDate",
         estimation: subtask.estimation, // Include estimation from subtask
       }
@@ -519,10 +516,7 @@ export function TaskItem({
 
               {/* Essential metadata - always in first row */}
               <div className="flex items-center gap-1 text-xs flex-shrink-0">
-                {/* Favorite Star */}
-                {task.favorite && (
-                  <Star className="h-3 w-3 text-yellow-500 fill-current flex-shrink-0" />
-                )}
+                {/* Favorite feature removed */}
 
                 {/* Due Date/Recurring - Show all dates and recurring in compact variant */}
                 {shouldShowSchedule ? (
@@ -958,13 +952,7 @@ export function TaskItem({
               </CommentManagementPopover>
             )}
 
-            {/* Attachments - show if present */}
-            {task.attachments.length > 0 && (
-              <span className="flex items-center gap-1">
-                <Paperclip className="h-3 w-3" />
-                {task.attachments.length}
-              </span>
-            )}
+            {/* Attachments feature removed */}
           </div>
         </div>
       </div>
@@ -1137,10 +1125,7 @@ export function TaskItem({
                 allowEmpty={false}
               />
 
-              {/* Favorite Star */}
-              {task.favorite && (
-                <Star className="h-3 sm:h-4 w-3 sm:w-4 text-yellow-500 fill-current flex-shrink-0" />
-              )}
+              {/* Favorite feature removed */}
             </div>
 
             {/* Timer and Actions - Now on the right */}
@@ -1438,18 +1423,7 @@ export function TaskItem({
               }
             }
 
-            // Attachments (keeping on left for now)
-            if (task.attachments.length > 0) {
-              leftMetadataItems.push(
-                <span
-                  key="attachments"
-                  className={cn("flex items-center gap-1", METADATA_COLUMN_WIDTH)}
-                >
-                  <Paperclip className="h-3 w-3" />
-                  {task.attachments.length}
-                </span>,
-              )
-            }
+            // Attachments feature removed
 
             return leftMetadataItems.length > 0 || rightMetadataItems.length > 0 ? (
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-muted-foreground">

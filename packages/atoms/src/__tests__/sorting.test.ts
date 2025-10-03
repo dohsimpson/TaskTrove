@@ -99,7 +99,6 @@ describe("Task Sorting Functionality", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
       projectId: TEST_PROJECT_ID_1,
     },
     {
@@ -113,7 +112,6 @@ describe("Task Sorting Functionality", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
       projectId: TEST_PROJECT_ID_1,
     },
     {
@@ -127,7 +125,6 @@ describe("Task Sorting Functionality", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
       projectId: TEST_PROJECT_ID_1,
     },
     {
@@ -140,7 +137,6 @@ describe("Task Sorting Functionality", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
       projectId: TEST_PROJECT_ID_1,
     },
     {
@@ -154,7 +150,6 @@ describe("Task Sorting Functionality", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
       projectId: TEST_PROJECT_ID_1,
     },
   ];
@@ -576,7 +571,6 @@ describe("Task Sorting Functionality", () => {
           labels: [],
           subtasks: [],
           comments: [],
-          attachments: [],
           recurringMode: "dueDate",
           // Missing dueDate, projectId
         },
@@ -726,7 +720,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
           {
@@ -740,7 +733,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
           {
@@ -754,7 +746,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
         ];
@@ -807,7 +798,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
           {
@@ -821,7 +811,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
           {
@@ -835,7 +824,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
           {
@@ -849,7 +837,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
           {
@@ -863,7 +850,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
         ];
@@ -918,7 +904,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
           {
@@ -932,7 +917,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
           {
@@ -946,7 +930,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
         ];
@@ -1012,7 +995,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
           {
@@ -1026,7 +1008,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
         ];
@@ -1072,7 +1053,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
           {
@@ -1086,7 +1066,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
         ];
@@ -1147,7 +1126,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
           {
@@ -1161,7 +1139,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
           {
@@ -1175,7 +1152,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
           {
@@ -1189,7 +1165,6 @@ describe("Task Sorting Functionality", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             projectId: INBOX_PROJECT_ID,
           },
         ];

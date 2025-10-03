@@ -122,10 +122,7 @@ describe("TaskDetailDialog", () => {
     labels: [TEST_LABEL_ID_1, TEST_LABEL_ID_2], // Use label IDs matching sample data
     subtasks: [],
     comments: [],
-    attachments: [],
     createdAt: new Date("2022-01-01"),
-    status: "active",
-    order: 0,
     recurringMode: "dueDate",
   }
 

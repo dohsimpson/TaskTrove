@@ -16,8 +16,6 @@ const mockTask: Task = {
   labels: [],
   comments: [],
   subtasks: [],
-  attachments: [],
-  favorite: false,
   recurring: undefined,
   dueDate: undefined,
   projectId: undefined,

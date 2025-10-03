@@ -280,7 +280,6 @@ describe("Keyboard Manager System", () => {
           labels: [],
           subtasks: [],
           comments: [],
-          attachments: [],
           createdAt: new Date(),
           recurringMode: "dueDate" as const,
         },

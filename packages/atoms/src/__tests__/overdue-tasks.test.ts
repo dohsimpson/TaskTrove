@@ -85,14 +85,10 @@ describe("overdueTasksAtom", () => {
     labels: [],
     subtasks: [],
     comments: [],
-    attachments: [],
     dueDate: dueDate ?? undefined,
     dueTime: undefined,
     completedAt: undefined,
     recurringMode: "dueDate",
-    favorite: false,
-    status: "active",
-    order: 0,
   });
 
   const setupTasksInQueryClient = (tasks: Task[]) => {

@@ -193,9 +193,6 @@ describe("TaskTrove Jotai Atoms Integration Tests", () => {
       // Test active tasks filter
       const activeTasks = await store.get(taskAtoms.derived.activeTasks);
       expect(Array.isArray(activeTasks)).toBe(true);
-      expect(activeTasks.every((t: Task) => t.status !== "archived")).toBe(
-        true,
-      );
 
       // Test completed tasks filter
       const completedTasks = await store.get(taskAtoms.derived.completedTasks);
@@ -413,7 +410,6 @@ describe("TaskTrove Jotai Atoms Integration Tests", () => {
         labels: [],
         subtasks: [],
         comments: [],
-        attachments: [],
         createdAt: new Date(),
         recurringMode: "dueDate",
       };

@@ -743,7 +743,6 @@ export function generateNextTaskInstance(completedTask: Task): Task | null {
     completedAt: undefined,
     dueDate: nextDueDate, // Keep as Date object
     createdAt: new Date(),
-    status: "active",
     recurring: nextRecurringPattern, // Use the updated recurring pattern with decremented COUNT
     subtasks: resetSubtasks, // Use the reset subtasks array
   }

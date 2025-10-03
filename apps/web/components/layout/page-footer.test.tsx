@@ -116,8 +116,6 @@ describe("PageFooter Popover Tests", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
-      status: "completed",
       recurringMode: "dueDate",
     },
     {
@@ -131,8 +129,6 @@ describe("PageFooter Popover Tests", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
-      status: "completed",
       recurringMode: "dueDate",
     },
   ]
@@ -149,8 +145,6 @@ describe("PageFooter Popover Tests", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
-      status: "active",
       recurringMode: "dueDate",
     },
     {
@@ -164,8 +158,6 @@ describe("PageFooter Popover Tests", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
-      status: "active",
       recurringMode: "dueDate",
     },
     {
@@ -180,8 +172,6 @@ describe("PageFooter Popover Tests", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
-      status: "completed",
       recurringMode: "dueDate",
     },
   ]

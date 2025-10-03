@@ -35,7 +35,7 @@ export const activeTasksAtom = namedAtom(
     withErrorHandling(
       () => {
         const tasks = get(tasksAtom);
-        return tasks.filter((task: Task) => task.status !== "archived");
+        return tasks; // status filtering removed
       },
       "activeTasksAtom",
       [],

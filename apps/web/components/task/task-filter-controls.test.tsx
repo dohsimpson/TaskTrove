@@ -402,7 +402,6 @@ describe("TaskFilterControls", () => {
           name: "Work Project",
           color: "#3b82f6",
           slug: "work",
-          shared: false,
           sections: [],
         },
         {
@@ -410,7 +409,6 @@ describe("TaskFilterControls", () => {
           name: "Personal Project",
           color: "#10b981",
           slug: "personal",
-          shared: false,
           sections: [],
         },
       )
@@ -526,7 +524,6 @@ describe("TaskFilterControls", () => {
         name: "Work Project",
         color: "#3b82f6",
         slug: "work",
-        shared: false,
         sections: [],
       })
 
@@ -783,9 +780,7 @@ describe("TaskFilterControls", () => {
           projectId: createProjectId("87654321-4321-4321-8321-876543210987"),
           subtasks: [],
           comments: [],
-          attachments: [],
           createdAt: new Date(),
-          status: "active",
           recurringMode: "dueDate",
         },
         {
@@ -797,9 +792,7 @@ describe("TaskFilterControls", () => {
           projectId: createProjectId("87654321-4321-4321-8321-876543210987"),
           subtasks: [],
           comments: [],
-          attachments: [],
           createdAt: new Date(),
-          status: "active",
           recurringMode: "dueDate",
         },
       ]

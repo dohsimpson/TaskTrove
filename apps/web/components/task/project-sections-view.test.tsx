@@ -557,7 +557,6 @@ describe("ProjectSectionsView", () => {
     name: "Test Project",
     slug: "test-project",
     color: "#3B82F6",
-    shared: false,
     sections: [
       {
         id: TEST_GROUP_ID_1,
@@ -597,7 +596,6 @@ describe("ProjectSectionsView", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
       recurringMode: "dueDate",
       createdAt: new Date("2024-01-01"),
     },
@@ -611,7 +609,6 @@ describe("ProjectSectionsView", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
       recurringMode: "dueDate",
       createdAt: new Date("2024-01-02"),
     },
@@ -625,7 +622,6 @@ describe("ProjectSectionsView", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
       recurringMode: "dueDate",
       createdAt: new Date("2024-01-03"),
     },
@@ -1194,7 +1190,6 @@ describe("ProjectSectionsView", () => {
           labels: [],
           subtasks: [],
           comments: [],
-          attachments: [],
           recurringMode: "dueDate",
           createdAt: new Date("2024-01-01"),
         },
@@ -1283,7 +1278,6 @@ describe("ProjectSectionsView", () => {
       name: "Test Project",
       slug: "test-project",
       color: "#3B82F6",
-      shared: false,
       sections: [
         {
           id: TEST_GROUP_ID_1,
@@ -1323,7 +1317,6 @@ describe("ProjectSectionsView", () => {
         labels: [],
         subtasks: [],
         comments: [],
-        attachments: [],
         recurringMode: "dueDate",
         createdAt: new Date("2024-01-03"), // Created last
         dueDate: new Date("2024-01-05"), // Due later
@@ -1338,7 +1331,6 @@ describe("ProjectSectionsView", () => {
         labels: [],
         subtasks: [],
         comments: [],
-        attachments: [],
         recurringMode: "dueDate",
         createdAt: new Date("2024-01-01"), // Created first
         dueDate: new Date("2024-01-03"), // Due earlier
@@ -1353,7 +1345,6 @@ describe("ProjectSectionsView", () => {
         labels: [],
         subtasks: [],
         comments: [],
-        attachments: [],
         recurringMode: "dueDate",
         createdAt: new Date("2024-01-02"), // Created middle
         dueDate: new Date("2024-01-04"), // Due middle

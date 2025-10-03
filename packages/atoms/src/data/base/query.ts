@@ -67,7 +67,6 @@ const TEST_PROJECTS: Project[] = [
     name: "Test Project 1",
     slug: "test-project-1",
     color: "#ef4444",
-    shared: false,
     sections: [],
   },
   {
@@ -75,7 +74,6 @@ const TEST_PROJECTS: Project[] = [
     name: "Test Project 2",
     slug: "test-project-2",
     color: "#10b981",
-    shared: false,
     sections: [],
   },
 ];

@@ -18,7 +18,6 @@ import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation
 import { v4 as uuidv4 } from "uuid"
 import { createProjectId, createGroupId } from "@/lib/types"
 import {
-  DEFAULT_PROJECT_SHARED,
   DEFAULT_SECTION_NAME,
   DEFAULT_SECTION_COLOR,
   DEFAULT_PROJECT_COLORS,
@@ -150,7 +149,6 @@ async function createProject(
     slug:
       validation.data.slug ?? createSafeProjectNameSlug(validation.data.name, fileData.projects),
     color: validation.data.color ?? DEFAULT_PROJECT_COLORS[0], // Default color if not provided
-    shared: validation.data.shared ?? DEFAULT_PROJECT_SHARED,
     sections: validation.data.sections ?? [
       {
         id: createGroupId(DEFAULT_UUID),

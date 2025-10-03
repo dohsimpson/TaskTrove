@@ -12,7 +12,6 @@ import {
   DEFAULT_INBOX_NAME,
   DEFAULT_INBOX_COLOR,
   DEFAULT_SECTION_NAME,
-  DEFAULT_PROJECT_SHARED,
   DEFAULT_VIEW_MODE,
   DEFAULT_SORT_BY,
   DEFAULT_SORT_DIRECTION,
@@ -83,9 +82,7 @@ describe("TaskTrove Default Constants", () => {
       expect(typeof DEFAULT_SECTION_NAME).toBe("string");
     });
 
-    it("should have correct project status defaults", () => {
-      expect(DEFAULT_PROJECT_SHARED).toBe(false);
-    });
+    // Project shared feature removed
   });
 
   describe("View State Defaults", () => {
@@ -213,7 +210,6 @@ describe("TaskTrove Default Constants", () => {
     it("should maintain consistent default patterns", () => {
       // Boolean defaults should be false for optional features
       expect(DEFAULT_TASK_COMPLETED).toBe(false);
-      expect(DEFAULT_PROJECT_SHARED).toBe(false);
       expect(DEFAULT_SHOW_COMPLETED).toBe(false);
       expect(DEFAULT_SHOW_SIDE_PANEL).toBe(false);
       expect(DEFAULT_COMPACT_VIEW).toBe(false);

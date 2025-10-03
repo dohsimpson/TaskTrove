@@ -142,7 +142,6 @@ describe("createMutation Function", () => {
             name: "My Project",
             slug: "my-project",
             color: "#3b82f6",
-            shared: false,
             sections: [],
           },
         ];
@@ -316,7 +315,6 @@ describe("createMutation Function", () => {
             labels: DEFAULT_TASK_LABELS,
             subtasks: DEFAULT_TASK_SUBTASKS,
             comments: DEFAULT_TASK_COMMENTS,
-            attachments: DEFAULT_TASK_ATTACHMENTS,
             createdAt: new Date("2023-01-01"),
             recurringMode: "dueDate",
           },
@@ -375,7 +373,6 @@ describe("createMutation Function", () => {
             labels: DEFAULT_TASK_LABELS,
             subtasks: DEFAULT_TASK_SUBTASKS,
             comments: DEFAULT_TASK_COMMENTS,
-            attachments: DEFAULT_TASK_ATTACHMENTS,
             createdAt: new Date("2023-01-01"),
             recurringMode: "dueDate",
           },
@@ -546,7 +543,6 @@ describe("createMutation Function", () => {
             labels: DEFAULT_TASK_LABELS,
             subtasks: DEFAULT_TASK_SUBTASKS,
             comments: DEFAULT_TASK_COMMENTS,
-            attachments: DEFAULT_TASK_ATTACHMENTS,
             createdAt: new Date("2023-01-01"),
             recurringMode: "dueDate",
           },
@@ -558,7 +554,6 @@ describe("createMutation Function", () => {
             labels: DEFAULT_TASK_LABELS,
             subtasks: DEFAULT_TASK_SUBTASKS,
             comments: DEFAULT_TASK_COMMENTS,
-            attachments: DEFAULT_TASK_ATTACHMENTS,
             createdAt: new Date("2023-01-01"),
             recurringMode: "dueDate",
           },
@@ -611,7 +606,6 @@ describe("createMutation Function", () => {
           labels: DEFAULT_TASK_LABELS,
           subtasks: DEFAULT_TASK_SUBTASKS,
           comments: DEFAULT_TASK_COMMENTS,
-          attachments: DEFAULT_TASK_ATTACHMENTS,
           createdAt: new Date("2023-01-01"),
         }));
 
@@ -632,7 +626,6 @@ describe("createMutation Function", () => {
           labels: DEFAULT_TASK_LABELS,
           subtasks: DEFAULT_TASK_SUBTASKS,
           comments: DEFAULT_TASK_COMMENTS,
-          attachments: DEFAULT_TASK_ATTACHMENTS,
           createdAt: new Date("2023-01-01"),
           recurringMode: "dueDate",
         };
@@ -666,7 +659,6 @@ describe("createMutation Function", () => {
             subtasks: [
               { id: TEST_SUBTASK_ID_1, title: "Subtask 1", completed: false },
             ],
-            attachments: ["att-1"],
           },
         ];
 
@@ -679,7 +671,6 @@ describe("createMutation Function", () => {
             ...task,
             title: variables.title,
             subtasks: task.subtasks.map((subtask) => ({ ...subtask })),
-            attachments: task.attachments.slice(),
           }));
         };
 

@@ -44,11 +44,8 @@ const activeTasks: Task[] = [
     labels: [],
     subtasks: [],
     comments: [],
-    attachments: [],
     createdAt: new Date("2024-01-01T12:00:00Z"),
     recurringMode: "dueDate",
-    status: "active",
-    order: 0,
   },
   {
     id: createTaskId("12345678-1234-4234-8234-123456789ab2"),
@@ -59,11 +56,8 @@ const activeTasks: Task[] = [
     labels: [],
     subtasks: [],
     comments: [],
-    attachments: [],
     createdAt: new Date("2024-01-01T13:00:00Z"),
     recurringMode: "dueDate",
-    status: "active",
-    order: 1,
   },
 ];
 
@@ -78,11 +72,8 @@ const completedTasks: Task[] = [
     labels: [],
     subtasks: [],
     comments: [],
-    attachments: [],
     createdAt: new Date("2024-01-01T12:00:00Z"),
     recurringMode: "dueDate",
-    status: "completed",
-    order: 2,
   },
   {
     id: createTaskId("12345678-1234-4234-8234-123456789ab4"),
@@ -94,11 +85,8 @@ const completedTasks: Task[] = [
     labels: [],
     subtasks: [],
     comments: [],
-    attachments: [],
     createdAt: new Date("2024-01-01T13:00:00Z"),
     recurringMode: "dueDate",
-    status: "completed",
-    order: 3,
   },
 ];
 
@@ -233,11 +221,8 @@ describe("Completed View Filtering Fix", () => {
         labels: [],
         subtasks: [],
         comments: [],
-        attachments: [],
         createdAt: new Date("2024-01-01T12:00:00Z"),
         recurringMode: "dueDate",
-        status: "completed",
-        order: 0,
       };
 
       queryClient.setQueryData(TASKS_QUERY_KEY, [bugTask]);

@@ -29,10 +29,8 @@ import {
   DEFAULT_TASK_PRIORITY,
   DEFAULT_TASK_TITLE,
   DEFAULT_TASK_COMPLETED,
-  DEFAULT_TASK_STATUS,
   DEFAULT_TASK_SUBTASKS,
   DEFAULT_TASK_COMMENTS,
-  DEFAULT_TASK_ATTACHMENTS,
   DEFAULT_RECURRING_MODE,
   TASKS_QUERY_KEY,
 } from "@tasktrove/constants";
@@ -76,9 +74,6 @@ export const createTaskMutationAtom = createMutation<
       completed: DEFAULT_TASK_COMPLETED,
       subtasks: DEFAULT_TASK_SUBTASKS,
       comments: DEFAULT_TASK_COMMENTS,
-      attachments: DEFAULT_TASK_ATTACHMENTS,
-      status: DEFAULT_TASK_STATUS,
-      order: 0,
       createdAt: new Date(), // Always set for new tasks
       completedAt: undefined, // Never set for new tasks
       // Apply all provided data

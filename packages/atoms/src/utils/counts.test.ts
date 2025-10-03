@@ -21,14 +21,12 @@ const createTask = (overrides: Partial<Task> = {}): Task => ({
   title: "Test Task",
   description: "",
   completed: false,
-  status: "active",
   priority: 3,
   projectId: undefined,
   labels: [],
   createdAt: new Date(),
   subtasks: [],
   comments: [],
-  attachments: [],
   recurringMode: "dueDate",
   ...overrides,
 });
@@ -38,7 +36,6 @@ const createProject = (overrides: Partial<Project> = {}): Project => ({
   name: "Test Project",
   slug: "test-project",
   color: "#3b82f6",
-  shared: false,
   sections: [],
   ...overrides,
 });

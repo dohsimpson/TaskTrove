@@ -36,7 +36,6 @@ describe("routing utilities", () => {
         name: "Existing Project",
         slug: "existing-project",
         color: "#3b82f6",
-        shared: false,
         sections: [],
       },
       {
@@ -44,7 +43,6 @@ describe("routing utilities", () => {
         name: "Another Project",
         slug: "another-project",
         color: "#ef4444",
-        shared: false,
         sections: [],
       },
       {
@@ -52,7 +50,6 @@ describe("routing utilities", () => {
         name: "Test Project",
         slug: "test-project",
         color: "#10b981",
-        shared: false,
         sections: [],
       },
       {
@@ -60,7 +57,6 @@ describe("routing utilities", () => {
         name: "Test Project Copy",
         slug: "test-project-1",
         color: "#f59e0b",
-        shared: false,
         sections: [],
       },
     ];
@@ -104,7 +100,6 @@ describe("routing utilities", () => {
           name: "Test Project 2",
           slug: "test-project-2",
           color: "#8b5cf6",
-          shared: false,
           sections: [],
         },
       ];
@@ -130,7 +125,6 @@ describe("routing utilities", () => {
         name: `Test Project ${i}`,
         slug: i === 0 ? "test-project" : `test-project-${i}`,
         color: "#3b82f6",
-        shared: false,
         sections: [],
       }));
 
@@ -358,7 +352,6 @@ describe("routing utilities", () => {
         name: "First Project",
         slug: "first-project",
         color: "#ff0000",
-        shared: false,
         sections: [],
       },
       {
@@ -366,7 +359,6 @@ describe("routing utilities", () => {
         name: "Second Project",
         slug: "second-project",
         color: "#00ff00",
-        shared: false,
         sections: [],
       },
     ];
@@ -390,7 +382,6 @@ describe("routing utilities", () => {
           name: "First Project",
           slug: "first-project",
           color: "#ff0000",
-          shared: false,
           sections: [],
         },
         {
@@ -398,7 +389,6 @@ describe("routing utilities", () => {
           name: "Second Project",
           slug: TEST_PROJECT_ID_1, // slug same as first project's ID
           color: "#00ff00",
-          shared: false,
           sections: [],
         },
       ];

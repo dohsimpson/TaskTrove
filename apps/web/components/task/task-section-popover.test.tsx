@@ -9,7 +9,6 @@ const mockProject = {
   name: "Test Project",
   slug: "test-project",
   color: "#3b82f6",
-  shared: false,
   sections: [
     {
       id: createSectionId("123e4567-e89b-12d3-a456-426614174001"),

@@ -15,7 +15,6 @@ import {
   filterTasksByCompletionStatus,
   filterTasksByDueDate,
   filterTasksByAssignedTo,
-  filterTasksByStatus,
   filterTasks,
   viewStateToFilterConfig,
   type FilterConfig,
@@ -60,7 +59,6 @@ function createTestTask(overrides: Partial<Task> = {}): Task {
     labels: [],
     subtasks: [],
     comments: [],
-    attachments: [],
     createdAt: now,
     recurringMode: "dueDate",
     ...overrides,
@@ -862,90 +860,6 @@ describe("filterTasksByAssignedTo", () => {
 });
 
 // =============================================================================
-// FILTER BY STATUS
-// =============================================================================
-
-describe("filterTasksByStatus", () => {
-  it("should return all tasks when status is undefined", () => {
-    const tasks: Task[] = [
-      createTestTask({ status: "active" }),
-      createTestTask({ status: "pending" }),
-    ];
-
-    const result = filterTasksByStatus(tasks, undefined);
-    expect(result).toHaveLength(2);
-  });
-
-  it("should return all tasks when status is empty array", () => {
-    const tasks: Task[] = [
-      createTestTask({ status: "active" }),
-      createTestTask({ status: "pending" }),
-    ];
-
-    const result = filterTasksByStatus(tasks, []);
-    expect(result).toHaveLength(2);
-  });
-
-  it("should filter tasks by single status", () => {
-    const tasks: Task[] = [
-      createTestTask({
-        id: createTaskId("60000000-0000-4000-8000-000000000001"),
-        status: "active",
-      }),
-      createTestTask({
-        id: createTaskId("60000000-0000-4000-8000-000000000002"),
-        status: "pending",
-      }),
-    ];
-
-    const result = filterTasksByStatus(tasks, ["active"]);
-    expect(result).toHaveLength(1);
-    expect(result[0]?.status).toBe("active");
-  });
-
-  it("should filter tasks by multiple statuses", () => {
-    const tasks: Task[] = [
-      createTestTask({
-        id: createTaskId("60000000-0000-4000-8000-000000000001"),
-        status: "active",
-      }),
-      createTestTask({
-        id: createTaskId("60000000-0000-4000-8000-000000000002"),
-        status: "pending",
-      }),
-      createTestTask({
-        id: createTaskId("60000000-0000-4000-8000-000000000003"),
-        status: "completed",
-      }),
-    ];
-
-    const result = filterTasksByStatus(tasks, ["active", "pending"]);
-    expect(result).toHaveLength(2);
-  });
-
-  it("should filter out tasks without status", () => {
-    const tasks: Task[] = [
-      createTestTask({
-        id: createTaskId("60000000-0000-4000-8000-000000000001"),
-        status: "active",
-      }),
-      createTestTask({
-        id: createTaskId("60000000-0000-4000-8000-000000000002"),
-        status: undefined,
-      }),
-    ];
-
-    const result = filterTasksByStatus(tasks, ["active"]);
-    expect(result).toHaveLength(1);
-  });
-
-  it("should handle empty array", () => {
-    const result = filterTasksByStatus([], ["active"]);
-    expect(result).toHaveLength(0);
-  });
-});
-
-// =============================================================================
 // COMPREHENSIVE FILTER
 // =============================================================================
 
@@ -1021,7 +935,6 @@ describe("filterTasks", () => {
         priority: 1,
         projectId: projectId1,
         labels: [labelId1],
-        status: "active",
         dueDate: tomorrow,
       }),
       createTestTask({
@@ -1038,7 +951,6 @@ describe("filterTasks", () => {
       projectIds: [projectId1],
       labels: [labelId1],
       priorities: [1],
-      status: ["active"],
       dueDateFilter: { customRange: { start: today, end: nextWeek } },
     };
 
@@ -1137,7 +1049,6 @@ describe("viewStateToFilterConfig", () => {
         labels: [labelId1],
         priorities: [1, 2],
         completed: false,
-        status: ["active"],
       },
     };
 
@@ -1147,7 +1058,6 @@ describe("viewStateToFilterConfig", () => {
     expect(config.labels).toEqual([labelId1]);
     expect(config.priorities).toEqual([1, 2]);
     expect(config.completed).toBe(false);
-    expect(config.status).toEqual(["active"]);
   });
 
   it("should handle ViewState without activeFilters", () => {

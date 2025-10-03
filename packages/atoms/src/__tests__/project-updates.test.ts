@@ -61,7 +61,6 @@ describe("Project Updates and Task Reordering", () => {
           name: "Test Project",
           slug: "test-project",
           color: "#3b82f6",
-          shared: false,
           viewState: {
             viewMode: "list" as const,
             sortBy: "dueDate",
@@ -92,7 +91,6 @@ describe("Project Updates and Task Reordering", () => {
         name: "Test Project",
         slug: "test-project",
         color: "#3b82f6",
-        shared: false,
         sections: [],
       },
     ];
@@ -142,7 +140,6 @@ describe("Project Updates and Task Reordering", () => {
         name: "Test Project",
         slug: "test-project",
         color: "#3b82f6",
-        shared: false,
         sections: [],
       },
     ];
@@ -201,7 +198,6 @@ describe("Project Updates and Task Reordering", () => {
         name: "Project To Keep",
         slug: "project-to-keep",
         color: "#3b82f6",
-        shared: false,
         sections: [],
       },
       {
@@ -209,7 +205,6 @@ describe("Project Updates and Task Reordering", () => {
         name: "Project To Delete",
         slug: "project-to-delete",
         color: "#ef4444",
-        shared: false,
         sections: [],
       },
     ];

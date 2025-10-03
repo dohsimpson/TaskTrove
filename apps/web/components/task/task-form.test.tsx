@@ -285,7 +285,6 @@ describe("TaskForm", () => {
       color: "#ff0000",
       sections: [],
       slug: "project-1",
-      shared: false,
     },
     {
       id: TEST_PROJECT_ID_2,
@@ -293,7 +292,6 @@ describe("TaskForm", () => {
       color: "#00ff00",
       sections: [],
       slug: "project-2",
-      shared: false,
     },
   ]
 
@@ -349,7 +347,6 @@ describe("TaskForm", () => {
       expect(screen.getByText(/priority/i)).toBeInTheDocument()
       expect(screen.getByText(/due date/i)).toBeInTheDocument()
       expect(screen.getByText(/labels/i)).toBeInTheDocument()
-      expect(screen.getByText(/mark as favorite/i)).toBeInTheDocument()
     })
 
     it("renders submit and cancel buttons", () => {
@@ -371,7 +368,6 @@ describe("TaskForm", () => {
         priority: 2 as const,
         projectId: TEST_PROJECT_ID_1,
         labels: [TEST_LABEL_ID_1],
-        favorite: true,
       }
 
       render(
@@ -484,22 +480,6 @@ describe("TaskForm", () => {
       await user.type(descriptionInput, "Task description")
 
       expect(descriptionInput).toHaveValue("Task description")
-    })
-
-    it("toggles favorite switch", async () => {
-      const user = userEvent.setup()
-
-      render(
-        <Provider>
-          <TaskForm onCancel={mockOnCancel} />
-        </Provider>,
-      )
-
-      const favoriteSwitch = screen.getByTestId("switch")
-      expect(favoriteSwitch).not.toBeChecked()
-
-      await user.click(favoriteSwitch)
-      expect(favoriteSwitch).toBeChecked()
     })
 
     it("calls onCancel when cancel button is clicked", async () => {

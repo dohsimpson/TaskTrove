@@ -190,7 +190,6 @@ describe("TaskFilterBadges", () => {
         name: "Work Project",
         color: "#3b82f6",
         slug: "work",
-        shared: false,
         sections: [],
       },
       {
@@ -198,7 +197,6 @@ describe("TaskFilterBadges", () => {
         name: "Personal Project",
         color: "#10b981",
         slug: "personal",
-        shared: false,
         sections: [],
       },
     )
@@ -380,7 +378,6 @@ describe("TaskFilterBadges", () => {
         name: "Work Project",
         color: "#3b82f6",
         slug: "work",
-        shared: false,
         sections: [],
       })
 
@@ -464,7 +461,6 @@ describe("TaskFilterBadges", () => {
         name: "Work Project",
         color: "#3b82f6",
         slug: "work",
-        shared: false,
         sections: [],
       })
 

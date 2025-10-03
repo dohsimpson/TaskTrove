@@ -176,12 +176,8 @@ describe("CommentContent", () => {
     labels: [],
     subtasks: [],
     comments: [],
-    attachments: [],
     createdAt: new Date(),
     recurringMode: "dueDate",
-    status: "active" as const,
-    order: 0,
-    favorite: false,
     recurring: undefined,
     ...overrides,
   })

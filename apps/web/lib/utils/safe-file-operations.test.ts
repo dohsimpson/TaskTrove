@@ -321,7 +321,6 @@ describe("safe-file-operations", () => {
           labels: [],
           subtasks: [],
           comments: [],
-          attachments: [],
           createdAt: new Date("2024-01-15T10:00:00Z"),
           recurringMode: "dueDate",
           projectId: TEST_PROJECT_ID_1,
@@ -333,7 +332,6 @@ describe("safe-file-operations", () => {
           name: "Test Project",
           slug: "test-project",
           color: "#FF0000",
-          shared: false,
           sections: [
             {
               id: TEST_GROUP_ID_1,

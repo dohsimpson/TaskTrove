@@ -47,13 +47,11 @@ describe("API Route - Recurring Tasks Integration", () => {
     dueDate: new Date("2024-01-15T09:00:00.000Z"),
     recurring: "RRULE:FREQ=DAILY",
     createdAt: new Date("2024-01-01T00:00:00.000Z"),
-    status: "active" as const,
     priority: 2,
     labels: [],
     projectId: undefined,
     subtasks: [],
     comments: [],
-    attachments: [],
     recurringMode: "dueDate",
     ...overrides,
   })
@@ -483,7 +481,6 @@ describe("API Route - Recurring Tasks Integration", () => {
           completed: false,
         },
       ],
-      attachments: ["file1.pdf"],
     })
 
     const nextInstance = createMockTask({
@@ -503,7 +500,6 @@ describe("API Route - Recurring Tasks Integration", () => {
           completed: false,
         },
       ],
-      attachments: ["file1.pdf"],
     })
 
     const mockDataFile = createMockDataFile([recurringTaskWithMetadata])

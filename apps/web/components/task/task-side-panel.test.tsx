@@ -419,9 +419,7 @@ describe("TaskSidePanel", () => {
         createdAt: new Date("2024-01-01"),
       },
     ],
-    attachments: ["file1.pdf", "file2.jpg"],
     createdAt: new Date("2024-01-01"),
-    favorite: true,
   }
 
   const mockProjects = [
@@ -429,8 +427,6 @@ describe("TaskSidePanel", () => {
       id: "project-1",
       name: "Project 1",
       color: "#ff0000",
-      favorite: false,
-      shared: false,
       position: 1000,
       sections: [
         {
@@ -454,8 +450,6 @@ describe("TaskSidePanel", () => {
       id: "project-2",
       name: "Project 2",
       color: "#00ff00",
-      favorite: false,
-      shared: false,
       position: 2000,
       sections: [
         {
@@ -725,17 +719,6 @@ describe("TaskSidePanel", () => {
     expect(screen.getByText("1 comment")).toBeInTheDocument()
   })
 
-  it("expands and collapses attachments section", async () => {
-    render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
-
-    // Find the attachments section (should contain "2 attachments")
-    const attachmentsSection = screen.getByText("2 attachments")
-    await userEvent.click(attachmentsSection)
-
-    expect(screen.getByText("file1.pdf")).toBeInTheDocument()
-    expect(screen.getByText("file2.jpg")).toBeInTheDocument()
-  })
-
   it("displays subtask progress correctly", () => {
     render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
@@ -867,25 +850,6 @@ describe("TaskSidePanel", () => {
 
     // Should show "Add comment" text
     expect(screen.getByText("Add comment")).toBeInTheDocument()
-  })
-
-  it("handles task with no attachments", () => {
-    const taskWithoutAttachments = { ...mockTask, attachments: [] }
-
-    // Update mock to return task without attachments
-    mockJotai.useAtomValue.mockImplementation((atom) => {
-      if (atom === "mockSelectedTaskAtom") return taskWithoutAttachments
-      if (atom === "mockSortedLabelsAtom") return mockAllLabels
-      if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-      if (atom === "mockSortedProjectsAtom") return mockProjects
-      if (atom === "mockSettingsAtom") return mockSettings
-      return []
-    })
-
-    render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
-
-    // Should not show attachments count
-    expect(screen.queryByText("Attachments")).not.toBeInTheDocument()
   })
 
   describe("EditableDiv Integration", () => {
@@ -1297,7 +1261,6 @@ describe("TaskSidePanel", () => {
         screen.getAllByText("Subtasks")
         screen.getAllByText("Labels")
         screen.getAllByText("Comments")
-        screen.getByText("Attachments")
 
         // Switch to desktop
         mockUseIsMobile.mockReturnValue(false)
@@ -1309,7 +1272,6 @@ describe("TaskSidePanel", () => {
         expect(screen.getByText("Category")).toBeInTheDocument()
         expect(screen.getByText("Description")).toBeInTheDocument()
         expect(screen.getAllByText("Comments")[0]).toBeInTheDocument()
-        expect(screen.getByText("Attachments")).toBeInTheDocument()
       })
 
       it("handles auto-save functionality in both modes", async () => {

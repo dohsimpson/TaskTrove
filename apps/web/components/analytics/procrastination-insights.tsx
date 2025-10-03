@@ -41,7 +41,7 @@ export function ProcrastinationInsights({ tasks }: ProcrastinationInsightsProps)
     completedTasks.forEach((task) => {
       if (task.dueDate && task.completedAt) {
         const daysDelayed = differenceInDays(task.completedAt, task.dueDate)
-        const postponedCount = task.postponedCount || 0
+        const postponedCount = 0 // postponedCount tracking removed
 
         if (daysDelayed > 0 || postponedCount > 0) {
           let pattern: "chronic" | "occasional" | "deadline-driven"
@@ -63,7 +63,7 @@ export function ProcrastinationInsights({ tasks }: ProcrastinationInsightsProps)
     })
 
     return patterns.sort(
-      (a, b) => b.daysDelayed + b.postponedCount - (a.daysDelayed + a.postponedCount),
+      (a, b) => b.daysDelayed - a.daysDelayed, // postponedCount removed
     )
   }
 
@@ -215,11 +215,7 @@ export function ProcrastinationInsights({ tasks }: ProcrastinationInsightsProps)
                           {pattern.daysDelayed} days late
                         </span>
                       )}
-                      {pattern.postponedCount > 0 && (
-                        <span className="text-xs text-gray-500">
-                          {pattern.postponedCount} postponements
-                        </span>
-                      )}
+                      {/* PostponedCount feature removed */}
                     </div>
                   </div>
                 </div>

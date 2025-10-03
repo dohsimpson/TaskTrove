@@ -24,8 +24,6 @@ import {
   DEFAULT_TASK_COMPLETED,
   DEFAULT_TASK_SUBTASKS,
   DEFAULT_TASK_COMMENTS,
-  DEFAULT_TASK_ATTACHMENTS,
-  DEFAULT_TASK_STATUS,
   DEFAULT_RECURRING_MODE,
 } from "@tasktrove/constants";
 import {
@@ -796,10 +794,7 @@ export const addTaskToViewAtom = atom(
         labels: params.taskData.labels || [],
         subtasks: DEFAULT_TASK_SUBTASKS,
         comments: DEFAULT_TASK_COMMENTS,
-        attachments: DEFAULT_TASK_ATTACHMENTS,
         createdAt: new Date(),
-        status: DEFAULT_TASK_STATUS,
-        order: 0,
         ...params.taskData,
         title: params.taskData.title || DEFAULT_TASK_TITLE,
         recurringMode: params.taskData.recurringMode || DEFAULT_RECURRING_MODE,

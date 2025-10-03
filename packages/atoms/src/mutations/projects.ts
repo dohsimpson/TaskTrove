@@ -62,7 +62,6 @@ export const createProjectMutationAtom = createEntityMutation<
         projectData.slug ??
         createSafeProjectNameSlug(projectData.name, oldProjects),
       color: projectData.color ?? DEFAULT_PROJECT_COLORS[0],
-      shared: projectData.shared ?? false,
       sections: [
         {
           id: createGroupId(DEFAULT_UUID),

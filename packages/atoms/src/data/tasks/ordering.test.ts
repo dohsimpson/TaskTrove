@@ -29,8 +29,6 @@ function createTestTask(overrides: Partial<Task> = {}): Task {
     labels: [],
     subtasks: [],
     comments: [],
-    attachments: [],
-    status: "active",
     recurringMode: "dueDate",
     createdAt: new Date(),
     ...overrides,
@@ -44,7 +42,6 @@ function createTestProject(overrides: Partial<Project> = {}): Project {
     slug: "test-project",
     sections: [],
     color: "#000000",
-    shared: false,
     ...overrides,
   };
 }

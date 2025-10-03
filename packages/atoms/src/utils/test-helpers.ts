@@ -72,10 +72,7 @@ export function createMockTask(overrides: Partial<Task> = {}): Task {
     labels: [],
     subtasks: [],
     comments: [],
-    attachments: [],
     createdAt: new Date(),
-    status: "active",
-    order: 0,
     recurringMode: "dueDate",
   };
 
@@ -92,8 +89,6 @@ export function createMockProject(
     name: `Mock Project ${Date.now()}`,
     slug: `mock-project-${Date.now()}`,
     color: "#3b82f6",
-    favorite: false,
-    shared: false,
     sections: [],
   };
 
@@ -134,7 +129,6 @@ export function createMockTaskSet(): Task[] {
       title: "Completed Task",
       completed: true,
       completedAt: now,
-      status: "completed",
     }),
     createMockTask({
       title: "Overdue Task",

@@ -36,7 +36,6 @@ describe("TaskSchedulePopover", () => {
     labels: [],
     subtasks: [],
     comments: [],
-    attachments: [],
     createdAt: new Date(),
     recurringMode: "dueDate",
   }

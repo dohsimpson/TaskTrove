@@ -111,10 +111,7 @@ export const currentMetricsAtom = atom<ProductivityMetrics>((get) => {
         : 0;
     const averageCompletionTime =
       completedTasks.length > 0
-        ? completedTasks.reduce(
-            (acc: number, task: Task) => acc + (task.timeSpent || 0),
-            0,
-          ) / completedTasks.length
+        ? 0 // timeSpent tracking removed
         : 0;
 
     // Calculate streak (exact algorithm from useAnalytics)
@@ -254,13 +251,7 @@ export const projectAnalyticsAtom = atom<ProjectAnalytics[]>((get) => {
         projectTasks.length > 0
           ? (completedTasks.length / projectTasks.length) * 100
           : 0;
-      const averageTimeSpent =
-        completedTasks.length > 0
-          ? completedTasks.reduce(
-              (acc: number, task: Task) => acc + (task.timeSpent || 0),
-              0,
-            ) / completedTasks.length
-          : 0;
+      const averageTimeSpent = 0; // timeSpent tracking removed
 
       return {
         projectId: project.id,

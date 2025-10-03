@@ -86,7 +86,6 @@ describe("Ordered Tasks By Section Atom", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
       projectId: TEST_PROJECT_ID_1,
     },
     {
@@ -99,7 +98,6 @@ describe("Ordered Tasks By Section Atom", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
       projectId: TEST_PROJECT_ID_1,
     },
     {
@@ -112,7 +110,6 @@ describe("Ordered Tasks By Section Atom", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
       projectId: TEST_PROJECT_ID_1,
     },
     {
@@ -125,7 +122,6 @@ describe("Ordered Tasks By Section Atom", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
       projectId: TEST_PROJECT_ID_1,
     },
   ];
@@ -136,7 +132,6 @@ describe("Ordered Tasks By Section Atom", () => {
     name: "Test Project",
     slug: "test-project",
     color: "#3b82f6",
-    shared: false,
     sections: [
       {
         id: createGroupId(DEFAULT_UUID),
@@ -293,7 +288,6 @@ describe("Ordered Tasks By Section Atom", () => {
         name: "Project No Sections",
         slug: "project-no-sections",
         color: "#ef4444",
-        shared: false,
         sections: [], // No sections
       };
 

@@ -347,19 +347,7 @@ export function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
         )}
       </div>
 
-      {/* Additional Options */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label>Mark as favorite</Label>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Add to your favorites list</p>
-          </div>
-          <Switch
-            checked={formData.favorite}
-            onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, favorite: checked }))}
-          />
-        </div>
-      </div>
+      {/* Favorite feature removed */}
 
       {/* Form Actions */}
       <div className="flex gap-3 pt-4">

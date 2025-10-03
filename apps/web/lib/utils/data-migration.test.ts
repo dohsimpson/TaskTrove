@@ -269,7 +269,6 @@ describe("Data Migration Utility", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             createdAt: new Date().toISOString(),
             // Note: no recurringMode field
           },
@@ -281,7 +280,6 @@ describe("Data Migration Utility", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             createdAt: new Date().toISOString(),
             recurring: "RRULE:FREQ=DAILY;INTERVAL=1",
             // Note: no recurringMode field
@@ -366,7 +364,6 @@ describe("Data Migration Utility", () => {
             slug: "project-1",
             color: "#ff0000",
             sections: [],
-            shared: false,
             defaultView: "list",
           },
           {
@@ -375,7 +372,6 @@ describe("Data Migration Utility", () => {
             slug: "project-2",
             color: "#00ff00",
             sections: [],
-            shared: false,
             defaultView: "list",
           },
         ],
@@ -470,7 +466,6 @@ describe("Data Migration Utility", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             createdAt: new Date().toISOString(),
             recurringMode: "completedAt", // Already has recurringMode
           },
@@ -508,7 +503,6 @@ describe("Data Migration Utility", () => {
             labels: [labelId1],
             subtasks: [],
             comments: [],
-            attachments: [],
             createdAt: new Date().toISOString(),
             recurring: "RRULE:FREQ=WEEKLY",
           },
@@ -519,7 +513,6 @@ describe("Data Migration Utility", () => {
             name: "Sample Project",
             slug: "sample-project",
             color: "#ff0000",
-            shared: false,
             sections: [],
           },
         ],
@@ -677,7 +670,6 @@ describe("Data Migration Utility", () => {
             labels: [labelId1],
             subtasks: [],
             comments: [],
-            attachments: [],
             createdAt: new Date().toISOString(),
             recurringMode: "dueDate", // v0.3.0 field
           },
@@ -688,7 +680,6 @@ describe("Data Migration Utility", () => {
             name: "Sample Project",
             slug: "sample-project",
             color: "#ff0000",
-            shared: false,
             sections: [],
           },
         ],
@@ -769,7 +760,6 @@ describe("Data Migration Utility", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             createdAt: new Date().toISOString(),
             recurringMode: "dueDate",
           },
@@ -783,7 +773,6 @@ describe("Data Migration Utility", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             createdAt: new Date().toISOString(),
             recurringMode: "dueDate",
           },
@@ -794,7 +783,6 @@ describe("Data Migration Utility", () => {
             name: "Sample Project",
             slug: "sample-project",
             color: "#ff0000",
-            shared: false,
             sections: [{ id: sectionId1, name: "Section 1", color: "#00ff00" }],
             taskOrder: [taskId1, taskId2], // Should be removed
           },
@@ -897,7 +885,6 @@ describe("Data Migration Utility", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             createdAt: new Date().toISOString(),
             recurringMode: "dueDate",
           },
@@ -911,7 +898,6 @@ describe("Data Migration Utility", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             createdAt: new Date().toISOString(),
             recurringMode: "dueDate",
           },
@@ -925,7 +911,6 @@ describe("Data Migration Utility", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             createdAt: new Date().toISOString(),
             recurringMode: "dueDate",
           },
@@ -936,7 +921,6 @@ describe("Data Migration Utility", () => {
             name: "Multi-Section Project",
             slug: "multi-section-project",
             color: "#0000ff",
-            shared: false,
             sections: [
               { id: sectionId1, name: "Section 1", color: "#ff0000" },
               { id: sectionId2, name: "Section 2", color: "#00ff00" },
@@ -1578,9 +1562,7 @@ describe("Data Migration Utility", () => {
             labels: [TEST_LABEL_ID_1],
             subtasks: [],
             comments: [],
-            attachments: [],
             createdAt: "2024-01-01T00:00:00.000Z",
-            order: 1,
             // Note: No recurringMode field - should be added during migration
           },
           {
@@ -1593,9 +1575,7 @@ describe("Data Migration Utility", () => {
             labels: [],
             subtasks: [],
             comments: [],
-            attachments: [],
             createdAt: "2024-01-02T00:00:00.000Z",
-            order: 2,
           },
         ],
         projects: [
@@ -1604,7 +1584,6 @@ describe("Data Migration Utility", () => {
             name: "Test Project",
             slug: "test-project",
             color: "#3b82f6",
-            shared: false,
             sections: [
               {
                 id: TEST_SECTION_ID_1,

@@ -53,9 +53,6 @@ export const DEFAULT_SECTION_COLOR = "#6b7280";
 /** Default section color for groups */
 export const DEFAULT_GROUP_COLOR = "#6b7280";
 
-/** Default project shared status */
-export const DEFAULT_PROJECT_SHARED = false;
-
 // =============================================================================
 // VIEW STATE DEFAULTS
 // =============================================================================

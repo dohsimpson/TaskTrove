@@ -93,11 +93,7 @@ export function useAnalytics(tasks: Task[], projects: any[], labels: any[]) {
 
     const completionRate =
       periodTasks.length > 0 ? (completedTasks.length / periodTasks.length) * 100 : 0
-    const averageCompletionTime =
-      completedTasks.length > 0
-        ? completedTasks.reduce((acc, task) => acc + (task.timeSpent || 0), 0) /
-          completedTasks.length
-        : 0
+    const averageCompletionTime = 0 // timeSpent tracking removed
 
     // Calculate streak
     let streak = 0
@@ -183,11 +179,7 @@ export function useAnalytics(tasks: Task[], projects: any[], labels: any[]) {
       const completedTasks = projectTasks.filter((task) => task.completed)
       const completionRate =
         projectTasks.length > 0 ? (completedTasks.length / projectTasks.length) * 100 : 0
-      const averageTimeSpent =
-        completedTasks.length > 0
-          ? completedTasks.reduce((acc, task) => acc + (task.timeSpent || 0), 0) /
-            completedTasks.length
-          : 0
+      const averageTimeSpent = 0 // timeSpent tracking removed
 
       return {
         projectId: project.id,

@@ -172,7 +172,6 @@ describe("TaskScheduleContent", () => {
     labels: [],
     subtasks: [],
     comments: [],
-    attachments: [],
     createdAt: new Date(),
     recurringMode: "dueDate",
   }

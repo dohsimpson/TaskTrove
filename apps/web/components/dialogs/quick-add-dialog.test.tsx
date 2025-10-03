@@ -247,7 +247,6 @@ const mockProjects: Project[] = [
     name: "Work",
     slug: "work",
     color: "#3b82f6",
-    shared: false,
     sections: [],
   },
   {
@@ -255,7 +254,6 @@ const mockProjects: Project[] = [
     name: "Personal",
     slug: "personal",
     color: "#ef4444",
-    shared: false,
     sections: [],
   },
 ]

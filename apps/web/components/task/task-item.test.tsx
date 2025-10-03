@@ -109,7 +109,6 @@ vi.mock("./focus-timer-popover", () => ({
 vi.mock("@/hooks/use-focus-timer-display", () => ({
   useFocusTimerDisplay: () => ({
     activeTimer: null,
-    status: "stopped",
     task: null,
     displayTime: "00:00",
   }),
@@ -758,9 +757,7 @@ describe("TaskItem", () => {
       { id: TEST_SUBTASK_ID_1, title: "Subtask 1", completed: true },
       { id: TEST_SUBTASK_ID_2, title: "Subtask 2", completed: false },
     ],
-    attachments: ["/file.pdf"],
     recurring: "weekly",
-    favorite: true,
     createdAt: new Date(),
     recurringMode: "dueDate",
   }
@@ -894,7 +891,6 @@ describe("TaskItem", () => {
 
       expect(screen.getByText("Test Task")).toBeInTheDocument()
       expect(screen.getByText("Test description")).toBeInTheDocument()
-      expect(screen.getByTestId("star-icon")).toBeInTheDocument() // favorite
       expect(screen.getByTestId("task-actions-menu")).toBeInTheDocument()
     })
 
@@ -907,7 +903,6 @@ describe("TaskItem", () => {
         labels: [],
         comments: [],
         subtasks: [],
-        attachments: [],
         createdAt: new Date(),
         recurringMode: "dueDate",
       }
@@ -1374,16 +1369,6 @@ describe("TaskItem", () => {
       expect(screen.getByText("1/2")).toBeInTheDocument()
     })
 
-    it("displays attachments indicator", () => {
-      render(
-        <Provider>
-          <TaskItem taskId={mockTask.id} />
-        </Provider>,
-      )
-
-      expect(screen.getByTestId("paperclip-icon")).toBeInTheDocument()
-    })
-
     it("displays recurring indicator", () => {
       render(
         <Provider>
@@ -1765,7 +1750,6 @@ describe("TaskItem", () => {
         labels: [],
         comments: [],
         subtasks: [],
-        attachments: [],
         createdAt: new Date(),
         recurringMode: "dueDate",
       }
@@ -2225,7 +2209,6 @@ describe("TaskItem", () => {
               id: TEST_SUBTASK_ID_1,
               title: "Subtask 1",
               completed: false,
-              order: 0,
             },
           ],
           comments: [{ id: TEST_COMMENT_ID_1, content: "Test comment", createdAt: new Date() }],
@@ -2335,7 +2318,6 @@ describe("TaskItem", () => {
         { id: TEST_SUBTASK_ID_2, title: "Subtask 2", completed: false, order: 1 },
       ],
       comments: [{ id: TEST_COMMENT_ID_1, content: "Test comment", createdAt: new Date() }],
-      attachments: ["file1.pdf", "file2.png"],
     }
 
     beforeEach(() => {
@@ -2559,20 +2541,6 @@ describe("TaskItem", () => {
       const commentElement = commentIcon.parentElement
       expect(commentElement).toHaveClass("cursor-pointer")
       expect(commentElement).toHaveClass("hover:opacity-100")
-    })
-
-    it("displays attachments count in kanban variant", () => {
-      render(
-        <Provider>
-          <TaskItem taskId={kanbanTask.id} variant="kanban" />
-        </Provider>,
-      )
-
-      const attachmentIcon = screen.getByTestId("paperclip-icon")
-      expect(attachmentIcon).toBeInTheDocument()
-
-      // Should show attachment count
-      expect(screen.getByText("2")).toBeInTheDocument()
     })
 
     it("displays interactive labels in kanban variant", () => {
@@ -2881,11 +2849,8 @@ describe("TaskItem", () => {
         { id: TEST_SUBTASK_ID_2, title: "Completed Subtask", completed: true, order: 1 },
       ],
       comments: [],
-      attachments: [],
       createdAt: new Date(),
       recurringMode: "dueDate",
-      status: "active",
-      order: 0,
     }
 
     const subtaskAsTask: Task = {
@@ -2899,11 +2864,8 @@ describe("TaskItem", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
       createdAt: new Date(),
       recurringMode: "dueDate",
-      status: "active",
-      order: 0,
     }
 
     const completedSubtaskAsTask: Task = {
@@ -2911,7 +2873,6 @@ describe("TaskItem", () => {
       id: TEST_TASK_ID_3,
       title: "Completed Subtask",
       completed: true,
-      status: "completed",
     }
 
     beforeEach(() => {
@@ -3010,12 +2971,10 @@ describe("TaskItem", () => {
             expect.objectContaining({
               id: TEST_SUBTASK_ID_1,
               title: "Test Subtask",
-              order: 0,
             }),
             expect.objectContaining({
               id: TEST_SUBTASK_ID_2,
               title: "Completed Subtask",
-              order: 1,
             }),
           ]),
         },
@@ -3165,7 +3124,6 @@ describe("TaskItem", () => {
             id: TEST_SUBTASK_ID_1,
             title: "Test Subtask",
             completed: false,
-            order: 0,
             estimation: 3600,
           }, // 1 hour
         ],

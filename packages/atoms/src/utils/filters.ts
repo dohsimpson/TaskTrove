@@ -348,25 +348,6 @@ export function filterTasksByAssignedTo(
   return tasks;
 }
 
-/**
- * Filters tasks by status
- *
- * @param tasks - Array of tasks to filter
- * @param status - Array of status values to filter by
- * @returns Filtered array of tasks
- */
-export function filterTasksByStatus(
-  tasks: Task[],
-  status: string[] | undefined,
-): Task[] {
-  if (!status || status.length === 0) return tasks;
-
-  return tasks.filter((task) => {
-    if (!task.status) return false;
-    return status.includes(task.status);
-  });
-}
-
 // =============================================================================
 // COMPREHENSIVE FILTER FUNCTION
 // =============================================================================
@@ -427,10 +408,7 @@ export function filterTasks(tasks: Task[], config: FilterConfig): Task[] {
     filtered = filterTasksByAssignedTo(filtered, config.assignedTo);
   }
 
-  // Apply status filter
-  if (config.status) {
-    filtered = filterTasksByStatus(filtered, config.status);
-  }
+  // Status filtering removed
 
   return filtered;
 }
@@ -457,6 +435,5 @@ export function viewStateToFilterConfig(viewState: ViewState): FilterConfig {
     completed: viewState.activeFilters?.completed,
     dueDateFilter: viewState.activeFilters?.dueDateFilter,
     assignedTo: viewState.activeFilters?.assignedTo,
-    status: viewState.activeFilters?.status,
   };
 }

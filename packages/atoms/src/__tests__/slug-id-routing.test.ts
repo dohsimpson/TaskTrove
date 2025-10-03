@@ -166,7 +166,6 @@ describe("Slug/ID Routing", () => {
         name: "Test Project",
         slug: "test-project",
         color: "#ff0000",
-        shared: false,
         sections: [],
       },
       {
@@ -174,7 +173,6 @@ describe("Slug/ID Routing", () => {
         name: "Another Project",
         slug: "another-project",
         color: "#00ff00",
-        shared: true,
         sections: [],
       },
     ];
@@ -360,7 +358,6 @@ describe("Slug/ID Routing", () => {
           name: "First Project",
           slug: "first-project",
           color: "#ff0000",
-          shared: false,
           sections: [],
         },
         {
@@ -368,7 +365,6 @@ describe("Slug/ID Routing", () => {
           name: "Second Project",
           slug: TEST_PROJECT_ID_1, // slug same as first project's ID
           color: "#00ff00",
-          shared: false,
           sections: [],
         },
       ];

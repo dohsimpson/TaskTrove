@@ -399,7 +399,6 @@ describe("dynamicPageInfoAtom", () => {
           name: "My Project",
           slug: "my-project",
           color: "#3b82f6",
-          shared: false,
           sections: [],
         },
         {
@@ -407,7 +406,6 @@ describe("dynamicPageInfoAtom", () => {
           name: "Work Tasks 2024",
           slug: "work-tasks-2024",
           color: "#ef4444",
-          shared: false,
           sections: [],
         },
       ]);
@@ -572,7 +570,6 @@ describe("dynamicPageInfoAtom", () => {
           name: "Test Project",
           slug: "test-project",
           color: "#3b82f6",
-          shared: false,
           sections: [],
         },
       ]);
@@ -633,7 +630,6 @@ describe("dynamicPageInfoAtom", () => {
           name: "Dynamic Project",
           slug: "dynamic-project",
           color: "#10b981",
-          shared: false,
           sections: [],
         },
       ]);
@@ -667,7 +663,6 @@ describe("dynamicPageInfoAtom", () => {
           name: "Work Tasks",
           slug: "work-tasks",
           color: "#3b82f6",
-          shared: false,
           sections: [],
         },
       ]);

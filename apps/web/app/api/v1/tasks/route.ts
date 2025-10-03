@@ -37,8 +37,6 @@ import {
   DEFAULT_TASK_LABELS,
   DEFAULT_TASK_SUBTASKS,
   DEFAULT_TASK_COMMENTS,
-  DEFAULT_TASK_ATTACHMENTS,
-  DEFAULT_TASK_STATUS,
   DEFAULT_RECURRING_MODE,
 } from "@tasktrove/constants"
 import { DEFAULT_SECTION_ID } from "@tasktrove/types/defaults"
@@ -145,9 +143,7 @@ async function createTask(
     labels: validation.data.labels ?? DEFAULT_TASK_LABELS,
     subtasks: validation.data.subtasks ?? DEFAULT_TASK_SUBTASKS,
     comments: validation.data.comments ?? DEFAULT_TASK_COMMENTS,
-    attachments: validation.data.attachments ?? DEFAULT_TASK_ATTACHMENTS,
     createdAt: new Date(),
-    status: validation.data.status ?? DEFAULT_TASK_STATUS,
     projectId: validation.data.projectId ?? INBOX_PROJECT_ID,
     dueDate: validation.data.dueDate, // Use the provided due date
     recurringMode: validation.data.recurringMode ?? DEFAULT_RECURRING_MODE,

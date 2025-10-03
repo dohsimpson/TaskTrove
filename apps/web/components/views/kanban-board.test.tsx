@@ -269,8 +269,6 @@ describe.skip("KanbanBoard", () => {
     name: "Test Project",
     slug: "test-project",
     color: "#3b82f6",
-    favorite: false,
-    shared: false,
     position: 1000,
     sections: [
       {
@@ -318,10 +316,8 @@ describe.skip("KanbanBoard", () => {
     labels: [],
     subtasks: [],
     comments: [],
-    attachments: [],
     createdAt: new Date(),
     recurringMode: "dueDate",
-    order: 1,
     ...overrides,
   })
 
@@ -337,8 +333,6 @@ describe.skip("KanbanBoard", () => {
         { id: COMMENT_ID_1, content: "Comment 1", createdAt: new Date() },
         { id: COMMENT_ID_2, content: "Comment 2", createdAt: new Date() },
       ],
-      attachments: ["file1.pdf"],
-      order: 1,
     }),
     createTask({
       id: TEST_TASK_ID_2,
@@ -348,8 +342,6 @@ describe.skip("KanbanBoard", () => {
       dueDate: new Date("2024-01-02"),
       labels: [LABEL_ID_3],
       comments: [],
-      attachments: [],
-      order: 1,
     }),
     createTask({
       id: TASK_ID_3,
@@ -363,8 +355,6 @@ describe.skip("KanbanBoard", () => {
         { id: COMMENT_ID_6, content: "Comment 6", createdAt: new Date() },
         { id: COMMENT_ID_7, content: "Comment 7", createdAt: new Date() },
       ],
-      attachments: ["file2.pdf", "file3.png"],
-      order: 1,
     }),
     createTask({
       id: TASK_ID_4,
@@ -372,8 +362,6 @@ describe.skip("KanbanBoard", () => {
       priority: 4 satisfies TaskPriority,
       labels: [],
       comments: [],
-      attachments: [],
-      order: 1,
     }),
   ]
 
@@ -621,8 +609,6 @@ describe.skip("KanbanBoard", () => {
         priority: 1 satisfies TaskPriority,
         labels: [],
         comments: [],
-        attachments: [],
-        order: 1,
       }),
     ]
 
@@ -654,8 +640,6 @@ describe.skip("KanbanBoard", () => {
         priority: 1 satisfies TaskPriority,
         labels: [],
         comments: [],
-        attachments: [],
-        order: 1,
       }),
     ]
 
@@ -693,8 +677,6 @@ describe.skip("KanbanBoard", () => {
         priority: 1 satisfies TaskPriority,
         labels: [],
         comments: [],
-        attachments: [],
-        order: 1,
       }),
     ]
 
@@ -720,8 +702,6 @@ describe.skip("KanbanBoard", () => {
         priority: 1 satisfies TaskPriority,
         labels: [],
         comments: [],
-        attachments: [],
-        order: 2,
       }),
       createTask({
         id: TEST_TASK_ID_2,
@@ -729,8 +709,6 @@ describe.skip("KanbanBoard", () => {
         priority: 1 satisfies TaskPriority,
         labels: [],
         comments: [],
-        attachments: [],
-        order: 1,
       }),
     ]
 
@@ -789,7 +767,6 @@ describe.skip("KanbanBoard", () => {
           priority: 1 as const,
           labels: [],
           comments: [],
-          attachments: [],
         }),
         createTask({
           id: TEST_TASK_ID_2,
@@ -797,7 +774,6 @@ describe.skip("KanbanBoard", () => {
           priority: 2 satisfies TaskPriority,
           labels: [],
           comments: [],
-          attachments: [],
         }),
         createTask({
           id: TASK_ID_3,
@@ -805,7 +781,6 @@ describe.skip("KanbanBoard", () => {
           priority: 3 satisfies TaskPriority,
           labels: [],
           comments: [],
-          attachments: [],
         }),
         createTask({
           id: TASK_ID_4,
@@ -813,7 +788,6 @@ describe.skip("KanbanBoard", () => {
           priority: 4 satisfies TaskPriority,
           labels: [],
           comments: [],
-          attachments: [],
         }),
       ]
 

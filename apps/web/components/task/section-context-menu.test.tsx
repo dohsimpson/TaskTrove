@@ -109,7 +109,6 @@ describe("SectionContextMenu", () => {
     name: "Test Project",
     slug: "test-project",
     color: "#ff0000",
-    shared: false,
     sections: [
       {
         id: "00000000-0000-4000-8000-000000000001",

@@ -72,7 +72,6 @@ describe("PATCH /api/projects", () => {
           name: "Test Project",
           slug: "test-project",
           color: "#3b82f6",
-          shared: false,
           taskOrder: [],
           sections: [],
         },
@@ -81,7 +80,6 @@ describe("PATCH /api/projects", () => {
           name: "Another Project",
           slug: "another-project",
           color: "#ef4444",
-          shared: false,
           taskOrder: [],
           sections: [],
         },
@@ -336,7 +334,6 @@ describe("POST /api/projects", () => {
           name: "Existing Project",
           slug: "existing-project",
           color: "#3b82f6",
-          shared: false,
           taskOrder: [TEST_TASK_ID_1],
           sections: [],
         },
@@ -439,7 +436,6 @@ describe("POST /api/projects", () => {
     const projectData = {
       name: "Shared Project",
       color: "#ef4444",
-      shared: true,
     }
 
     const request = new NextRequest("http://localhost:3000/api/projects", {
@@ -518,7 +514,6 @@ describe("DELETE /api/projects", () => {
           name: "Test Project",
           slug: "test-project",
           color: "#3b82f6",
-          shared: false,
           taskOrder: [TEST_TASK_ID_1, TEST_TASK_ID_2],
           sections: [],
         },
@@ -527,7 +522,6 @@ describe("DELETE /api/projects", () => {
           name: "Another Project",
           slug: "another-project",
           color: "#ef4444",
-          shared: false,
           taskOrder: [],
           sections: [],
         },

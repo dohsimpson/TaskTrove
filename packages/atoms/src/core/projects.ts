@@ -24,7 +24,6 @@ import type {
 import {
   DEFAULT_INBOX_NAME,
   DEFAULT_INBOX_COLOR,
-  DEFAULT_PROJECT_SHARED,
   DEFAULT_UUID,
   DEFAULT_SECTION_NAME,
   DEFAULT_SECTION_COLOR,
@@ -55,7 +54,6 @@ const createDefaultInboxProject = (): Project => ({
   name: DEFAULT_INBOX_NAME,
   slug: "inbox",
   color: DEFAULT_INBOX_COLOR,
-  shared: DEFAULT_PROJECT_SHARED,
   sections: [
     {
       id: createGroupId(DEFAULT_UUID),
@@ -136,7 +134,6 @@ export const addProjectAtom = atom(
       const result = await createProjectMutation.mutateAsync({
         name: projectData.name,
         color: projectData.color,
-        shared: DEFAULT_PROJECT_SHARED,
       });
 
       // Get the first (and only) project ID from the response

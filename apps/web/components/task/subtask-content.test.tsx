@@ -216,12 +216,8 @@ describe("SubtaskContent", () => {
     labels: [],
     subtasks: [],
     comments: [],
-    attachments: [],
     createdAt: new Date(),
     recurringMode: "dueDate",
-    status: "active" as const,
-    order: 0,
-    favorite: false,
     recurring: undefined,
     ...overrides,
   })
@@ -230,7 +226,6 @@ describe("SubtaskContent", () => {
     id: TEST_SUBTASK_ID_1,
     title: "Test Subtask",
     completed: false,
-    order: 0,
     ...overrides,
   })
 

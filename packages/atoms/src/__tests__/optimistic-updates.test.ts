@@ -42,11 +42,8 @@ const mockTask: Task = {
   labels: [],
   subtasks: [],
   comments: [],
-  attachments: [],
   createdAt: new Date("2024-01-01T12:00:00Z"),
   recurringMode: "dueDate",
-  status: "active",
-  order: 0,
 };
 
 const mockCompletedTask: Task = {

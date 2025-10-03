@@ -3,16 +3,7 @@
 import { useState, useCallback, useEffect } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
 import { useTranslation, useLanguage } from "@tasktrove/i18n"
-import {
-  X,
-  Star,
-  ChevronRight,
-  Paperclip,
-  Calendar,
-  Flag,
-  Folder,
-  AlertTriangle,
-} from "lucide-react"
+import { X, Star, ChevronRight, Calendar, Flag, Folder, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
@@ -58,7 +49,6 @@ interface TaskSidePanelProps {
 
 export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSidePanelProps) {
   const isMobile = useIsMobile()
-  const [expandedAttachments, setExpandedAttachments] = useState(false)
   const [isAutoSaving, setIsAutoSaving] = useState(false)
   const { language } = useLanguage()
   const { t } = useTranslation(language, "task")
@@ -303,47 +293,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
         />
       </div>
 
-      {/* Attachments Section */}
-      {task.attachments.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-sm text-foreground font-bold">
-            {t("sidePanel.attachments.title", "Attachments")}
-          </h3>
-          <div
-            className="flex items-center gap-3 p-3.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/20 border border-transparent hover:border-border/50"
-            onClick={() => setExpandedAttachments(!expandedAttachments)}
-          >
-            <Paperclip className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground font-medium">
-              {task.attachments.length === 1
-                ? t("sidePanel.attachments.count", "{{count}} attachment", {
-                    count: task.attachments.length,
-                  })
-                : t("sidePanel.attachments.count", "{{count}} attachments", {
-                    count: task.attachments.length,
-                  })}
-            </span>
-            <ChevronRight
-              className={cn(
-                "h-4 w-4 text-muted-foreground transition-transform ml-auto",
-                expandedAttachments && "rotate-90",
-              )}
-            />
-          </div>
-
-          {/* Expandable Attachments */}
-          {expandedAttachments && (
-            <div className="space-y-2 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-              {task.attachments.map((attachment, index) => (
-                <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
-                  <Paperclip className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm text-muted-foreground">{attachment}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      {/* Attachments feature removed */}
 
       {/* Keyboard Shortcuts Hint */}
       {!isMobile && (
@@ -396,9 +346,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
                   )}
                   placeholder={t("sidePanel.taskTitle.placeholder", "Task title...")}
                 />
-                {task.favorite && (
-                  <Star className="h-4 w-4 text-yellow-500 fill-current flex-shrink-0" />
-                )}
+                {/* Favorite feature removed */}
               </div>
               <TaskActionsMenu
                 task={task}
@@ -468,9 +416,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
                 )}
                 placeholder="Task title..."
               />
-              {task.favorite && (
-                <Star className="h-4 w-4 text-yellow-500 fill-current flex-shrink-0" />
-              )}
+              {/* Favorite feature removed */}
             </div>
             <TaskActionsMenu
               task={task}

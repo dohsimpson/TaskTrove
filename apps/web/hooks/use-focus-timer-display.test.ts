@@ -78,7 +78,6 @@ describe("useFocusTimerDisplay", () => {
     labels: [],
     subtasks: [],
     comments: [],
-    attachments: [],
     createdAt: new Date("2024-01-01T10:00:00Z"),
     recurringMode: "dueDate",
   }

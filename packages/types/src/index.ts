@@ -968,36 +968,14 @@ export const TaskSchema = z.object({
   subtasks: z.array(SubtaskSchema),
   /** Comments on this task */
   comments: z.array(TaskCommentSchema),
-  /** File attachments (URLs or file paths) */
-  attachments: z.array(z.string()),
   /** When the task was created */
   createdAt: flexibleDateTimeSchema.default(new Date()),
   /** When the task was completed (if completed) */
   completedAt: flexibleDateTimeSchema.optional(),
-  /** Current status of the task */
-  status: z.string().optional(),
-  /** Order index for display/sorting */
-  order: z.number().optional(),
   /** Recurring pattern using RRULE format (RFC 5545) */
   recurring: z.string().optional().superRefine(validateRRule),
   /** Mode for calculating next due date in recurring tasks (defaults to "dueDate") */
   recurringMode: z.union([z.literal("dueDate"), z.literal("completedAt")]),
-  /** Whether the task is marked as favorite */
-  favorite: z.boolean().optional(),
-  /** Time spent on task in minutes */
-  timeSpent: z.number().optional(),
-  /** Number of times task was postponed */
-  postponedCount: z.number().optional(),
-  /** Energy level required (1=low, 5=high) */
-  energyLevel: z
-    .union([
-      z.literal(1),
-      z.literal(2),
-      z.literal(3),
-      z.literal(4),
-      z.literal(5),
-    ])
-    .optional(),
   /** Task estimation in seconds */
   estimation: z.number().optional(),
 });
@@ -1025,8 +1003,6 @@ export const ProjectSchema = z.object({
   slug: z.string(),
   /** Project color (hex code) */
   color: z.string(),
-  /** Whether the project is shared with team */
-  shared: z.boolean(),
   /** Array of sections within this project */
   sections: z.array(ProjectSectionSchema),
 });

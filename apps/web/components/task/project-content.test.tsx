@@ -31,7 +31,6 @@ const mockProjects: Project[] = [
         color: "#f59e0b",
       },
     ],
-    shared: false,
   },
   {
     id: createProjectId("550e8400-e29b-41d4-a716-446655440002"),
@@ -39,7 +38,6 @@ const mockProjects: Project[] = [
     slug: "personal-project",
     color: "#10b981",
     sections: [],
-    shared: false,
   },
   {
     id: createProjectId("550e8400-e29b-41d4-a716-446655440003"),
@@ -56,7 +54,6 @@ const mockProjects: Project[] = [
         color: "#06b6d4",
       },
     ],
-    shared: false,
   },
 ]
 
@@ -113,9 +110,7 @@ const mockTask: Task = {
   priority: 1,
   labels: [],
   subtasks: [],
-  attachments: [],
   comments: [],
-  favorite: false,
   recurringMode: "dueDate",
   createdAt: new Date(),
 }

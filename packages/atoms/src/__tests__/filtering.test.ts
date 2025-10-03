@@ -24,9 +24,7 @@ describe("No Labels Filtering", () => {
       ],
       subtasks: [],
       comments: [],
-      attachments: [],
       createdAt: new Date(),
-      status: "active",
       recurringMode: "dueDate",
     },
     {
@@ -39,9 +37,7 @@ describe("No Labels Filtering", () => {
       labels: [createLabelId("abcdefab-abcd-4bcd-8bcd-abcdefabcdef")],
       subtasks: [],
       comments: [],
-      attachments: [],
       createdAt: new Date(),
-      status: "active",
       recurringMode: "dueDate",
     },
     {
@@ -54,9 +50,7 @@ describe("No Labels Filtering", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
       createdAt: new Date(),
-      status: "active",
       recurringMode: "dueDate",
     },
     {
@@ -69,9 +63,7 @@ describe("No Labels Filtering", () => {
       labels: [],
       subtasks: [],
       comments: [],
-      attachments: [],
       createdAt: new Date(),
-      status: "active",
       recurringMode: "dueDate",
     },
   ];
@@ -86,7 +78,6 @@ describe("No Labels Filtering", () => {
         completed: undefined,
         dueDateFilter: undefined,
         assignedTo: undefined,
-        status: undefined,
       };
 
       // Test logic: should return false for empty filters
@@ -101,7 +92,6 @@ describe("No Labels Filtering", () => {
         completed: undefined,
         dueDateFilter: undefined,
         assignedTo: undefined,
-        status: undefined,
       };
 
       // Test the logic that should be in hasActiveFiltersAtom
@@ -121,7 +111,6 @@ describe("No Labels Filtering", () => {
         completed: undefined,
         dueDateFilter: undefined,
         assignedTo: undefined,
-        status: undefined,
       };
 
       // Test the logic that should be in hasActiveFiltersAtom
@@ -141,7 +130,6 @@ describe("No Labels Filtering", () => {
         completed: undefined,
         dueDateFilter: undefined,
         assignedTo: undefined,
-        status: undefined,
       };
 
       // Test the logic that should be in hasActiveFiltersAtom
@@ -163,7 +151,6 @@ describe("No Labels Filtering", () => {
         completed: undefined,
         dueDateFilter: undefined,
         assignedTo: undefined,
-        status: undefined,
       };
 
       // Test the logic that should be in activeFilterCountAtom
@@ -201,7 +188,6 @@ describe("No Labels Filtering", () => {
         completed: undefined,
         dueDateFilter: undefined,
         assignedTo: undefined,
-        status: undefined,
       };
 
       // Test the logic that should be in activeFilterCountAtom
@@ -239,7 +225,6 @@ describe("No Labels Filtering", () => {
         completed: undefined,
         dueDateFilter: undefined,
         assignedTo: undefined,
-        status: undefined,
       };
 
       // Test the logic that should be in activeFilterCountAtom
@@ -280,7 +265,6 @@ describe("No Labels Filtering", () => {
         completed: true,
         dueDateFilter: { preset: "today" as const },
         assignedTo: undefined,
-        status: undefined,
       };
 
       // Test the logic that should be in activeFilterCountAtom
@@ -321,7 +305,6 @@ describe("No Labels Filtering", () => {
         completed: undefined,
         dueDateFilter: undefined,
         assignedTo: undefined,
-        status: undefined,
       };
 
       // Test the filtering logic
@@ -353,7 +336,6 @@ describe("No Labels Filtering", () => {
         completed: undefined,
         dueDateFilter: undefined,
         assignedTo: undefined,
-        status: undefined,
       };
 
       // Test the filtering logic
@@ -383,7 +365,6 @@ describe("No Labels Filtering", () => {
         completed: undefined,
         dueDateFilter: undefined,
         assignedTo: undefined,
-        status: undefined,
       };
 
       // Test the filtering logic

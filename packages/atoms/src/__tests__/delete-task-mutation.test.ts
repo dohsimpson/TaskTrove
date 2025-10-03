@@ -185,7 +185,6 @@ describe("Delete Task Mutation Tests", () => {
         // Mock API error response with proper Response interface
         const mockErrorResponse: Partial<Response> = {
           ok: false,
-          status: 500,
           statusText: "Internal Server Error",
           json: () =>
             Promise.resolve({
@@ -369,7 +368,6 @@ describe("Delete Task Mutation Tests", () => {
         // Mock API error with proper Response interface
         const mockErrorResponse: Partial<Response> = {
           ok: false,
-          status: 500,
           statusText: "Internal Server Error",
           json: () =>
             Promise.resolve({

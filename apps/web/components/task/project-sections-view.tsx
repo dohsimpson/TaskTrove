@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
@@ -109,8 +109,7 @@ export function ProjectSectionsView({
   supportsSections = true,
 }: ProjectSectionsViewProps) {
   // Translation hooks
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
 
   // Get data from atoms
   const tasks = useAtomValue(filteredTasksAtom)

@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
 import { labelsFromIdsAtom, labelsAtom } from "@/lib/atoms/core/labels"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import type { Task, LabelId, Label } from "@/lib/types"
 
 interface LabelContentProps {
@@ -35,8 +35,7 @@ export function LabelContent({
   focusInput,
 }: LabelContentProps) {
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
 
   const [inputFocus, setInputFocus] = useState(focusInput)
   const [newLabel, setNewLabel] = useState("")

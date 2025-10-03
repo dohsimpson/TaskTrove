@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { showUserProfileDialogAtom, closeUserProfileDialogAtom } from "@/lib/atoms/ui/dialogs"
 import { userAtom } from "@/lib/atoms"
 import type { UpdateUserRequest } from "@tasktrove/types"
@@ -18,8 +18,7 @@ import { createAvatarBase64 } from "@tasktrove/types"
 import { encodeFileToBase64, isSupportedAvatarMimeType, getAvatarApiUrl } from "@tasktrove/utils"
 
 export function UserProfileDialog() {
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "dialogs")
+  const { t } = useTranslation("dialogs")
 
   const open = useAtomValue(showUserProfileDialogAtom)
   const closeDialog = useSetAtom(closeUserProfileDialogAtom)

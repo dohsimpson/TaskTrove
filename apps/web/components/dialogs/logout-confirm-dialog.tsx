@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 export interface LogoutConfirmDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -19,8 +19,7 @@ export interface LogoutConfirmDialogProps {
 }
 
 export function LogoutConfirmDialog({ open, onOpenChange, onConfirm }: LogoutConfirmDialogProps) {
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "dialogs")
+  const { t } = useTranslation("dialogs")
 
   const handleConfirm = () => {
     onConfirm()

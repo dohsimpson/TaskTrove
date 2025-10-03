@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { Coffee, Play, Pause, Square } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ContentPopover } from "@/components/ui/content-popover"
@@ -25,8 +25,7 @@ interface FocusTimerPopoverProps {
 
 function FocusTimerContent({ taskId }: { taskId: TaskId }) {
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
 
   const tasks = useAtomValue(tasksAtom)
   const isTaskTimerActive = useAtomValue(isTaskTimerActiveAtom)

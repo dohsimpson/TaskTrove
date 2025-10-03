@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import {
   Dialog,
   DialogContent,
@@ -69,8 +69,7 @@ export function TaskTemplates({
   onToggleFavorite,
   projects,
 }: TaskTemplatesProps) {
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<TaskTemplate | null>(null)
   const [selectedProject, setSelectedProject] = useState("")

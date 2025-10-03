@@ -1,7 +1,7 @@
 "use client"
 
 import { useSetAtom } from "jotai"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { Coffee, Pause, Play, Square } from "lucide-react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
@@ -16,8 +16,7 @@ interface FocusTimerDisplayProps {
 
 function FocusTimerDetailsContent() {
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
 
   const { activeTimer, status, task, displayTime } = useFocusTimerDisplay()
   const pauseTimer = useSetAtom(pauseFocusTimerAtom)

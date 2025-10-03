@@ -32,15 +32,14 @@ import {
 } from "lucide-react"
 import { HelpPopover } from "@/components/ui/help-popover"
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 interface ViewOptionsContentProps {
   onAdvancedSearch?: () => void
 }
 
 export function ViewOptionsContent({}: ViewOptionsContentProps) {
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "layout")
+  const { t } = useTranslation("layout")
 
   const currentView = useAtomValue(currentViewAtom)
   const viewState = useAtomValue(currentViewStateAtom)

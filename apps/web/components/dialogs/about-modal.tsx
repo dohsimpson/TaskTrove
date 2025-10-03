@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Star, Heart } from "lucide-react"
 import { TaskTroveLogo } from "@/components/ui/custom/tasktrove-logo"
 import packageJson from "@/package.json"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 interface AboutModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -19,8 +19,7 @@ interface AboutModalProps {
 
 export function AboutModal({ open, onOpenChange }: AboutModalProps) {
   const version = packageJson.version
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "dialogs")
+  const { t } = useTranslation("dialogs")
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select"
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import {
   format,
   startOfMonth,
@@ -60,8 +60,7 @@ interface CalendarViewProps {
 }
 
 export function CalendarView({ tasks, onDateClick, droppableId, project }: CalendarViewProps) {
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [alwaysShow6Rows] = useState(true) // TODO: Extract to view settings when needed

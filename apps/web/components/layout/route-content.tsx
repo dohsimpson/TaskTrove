@@ -1,7 +1,7 @@
 "use client"
 
 import { useAtomValue } from "jotai"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { pathnameAtom } from "@/lib/atoms/ui/navigation"
 import { MainContent } from "@/components/layout/main-content"
 import { SearchPage } from "@/components/pages/search-page"
@@ -16,8 +16,7 @@ interface RouteContentProps {
 }
 
 export function RouteContent({ onVoiceCommand, onTaskClick }: RouteContentProps) {
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "layout")
+  const { t } = useTranslation("layout")
   const pathname = useAtomValue(pathnameAtom)
 
   // Handle search page

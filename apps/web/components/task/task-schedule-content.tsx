@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, useMemo } from "react"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
@@ -59,8 +59,7 @@ export function TaskScheduleContent({
   defaultTab = "schedule",
 }: TaskScheduleContentProps) {
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
 
   const allTasks = useAtomValue(tasksAtom)
   const updateTask = useSetAtom(updateTaskAtom)

@@ -9,7 +9,7 @@ import { Database, X, Bell, Settings, Menu } from "lucide-react"
 // Future icons (not used yet):
 // import { Link, Palette, Target, Code } from "lucide-react"
 import { showSettingsDialogAtom, closeSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { DataForm } from "./settings-forms/data-form"
 import { NotificationsForm } from "./settings-forms/notifications-form"
 import { GeneralForm } from "./settings-forms/general-form"
@@ -27,8 +27,7 @@ interface SettingsCategory {
 }
 
 function SettingsContent() {
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "dialogs")
+  const { t } = useTranslation("dialogs")
   const closeDialog = useSetAtom(closeSettingsDialogAtom)
   const [activeCategory, setActiveCategory] = useState("general")
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
@@ -220,8 +219,7 @@ function SettingsContent() {
 }
 
 export function SettingsDialog() {
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "dialogs")
+  const { t } = useTranslation("dialogs")
   const open = useAtomValue(showSettingsDialogAtom)
   const closeDialog = useSetAtom(closeSettingsDialogAtom)
 

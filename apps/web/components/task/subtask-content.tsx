@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 import { formatTime } from "@/lib/utils/time-estimation"
 import { updateTaskAtom, tasksAtom } from "@/lib/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import type { Task, Subtask, CreateTaskRequest } from "@/lib/types"
 import { createSubtaskId, createTaskId } from "@/lib/types"
 
@@ -33,8 +33,7 @@ export function SubtaskContent({
   persistEstimationOnAdd = true,
 }: SubtaskContentProps) {
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
 
   const allTasks = useAtomValue(tasksAtom)
   const updateTask = useSetAtom(updateTaskAtom)

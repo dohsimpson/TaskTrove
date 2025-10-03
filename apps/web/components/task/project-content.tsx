@@ -7,7 +7,7 @@ import { cn, shouldTaskBeInInbox } from "@/lib/utils"
 import { projectsAtom, updateTaskAtom } from "@/lib/atoms"
 import { projectIdsAtom } from "@/lib/atoms/core/projects"
 import { allGroupsAtom } from "@/lib/atoms/core/groups"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import type { Task, ProjectId, GroupId, ProjectGroup } from "@/lib/types"
 import { INBOX_PROJECT_ID, isGroup } from "@/lib/types"
 
@@ -20,8 +20,7 @@ interface ProjectContentProps {
 
 export function ProjectContent({ task, onUpdate, className }: ProjectContentProps) {
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
 
   const allProjects = useAtomValue(projectsAtom)
   const groups = useAtomValue(allGroupsAtom)

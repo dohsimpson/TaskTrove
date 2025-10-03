@@ -182,8 +182,7 @@ const title = "Delete Task"
 const description = `Are you sure you want to delete "${taskName}"?`
 
 // After
-const { language } = useLanguage()
-const { t } = useTranslation(language, "dialogs")
+const { t } = useTranslation("dialogs")
 
 const title = t("delete.task.title", "Delete Task")
 const description = t("delete.task.description", 'Are you sure you want to delete "{{- name}}"?', {

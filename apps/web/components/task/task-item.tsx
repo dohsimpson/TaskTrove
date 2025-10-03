@@ -66,7 +66,7 @@ import {
 import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } from "@/lib/types"
 import { INBOX_PROJECT_ID, createTaskId } from "@/lib/types"
 import { TimeEstimationPicker } from "../ui/custom/time-estimation-picker"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 // Responsive width for metadata columns to ensure consistent alignment
 const METADATA_COLUMN_WIDTH = "w-auto sm:w-20 md:w-24"
 
@@ -109,8 +109,7 @@ function shouldShowFocusTimer(taskId: TaskId, activeTimer: { taskId: TaskId } | 
 // Helper component for focus timer trigger button
 function FocusTimerTrigger({ taskId, className }: { taskId: TaskId; className?: string }) {
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
 
   const isTaskTimerActive = useAtomValue(isTaskTimerActiveAtom)
   const timerStatus = useAtomValue(focusTimerStatusAtom)
@@ -204,8 +203,7 @@ export function TaskItem({
   parentTask,
 }: TaskItemProps) {
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
 
   const [isHovered, setIsHovered] = useState(false)
   // Compact variant specific state

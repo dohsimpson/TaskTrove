@@ -24,7 +24,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { AboutModal } from "@/components/dialogs/about-modal"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { openSettingsDialogAtom, openUserProfileDialogAtom } from "@/lib/atoms/ui/dialogs"
 import { userAtom } from "@/lib/atoms"
 import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
@@ -44,8 +44,7 @@ interface NavUserProps {
 
 export function NavUser() {
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "navigation")
+  const { t } = useTranslation("navigation")
 
   const { isMobile } = useSidebar()
   const [aboutModalOpen, setAboutModalOpen] = useState(false)

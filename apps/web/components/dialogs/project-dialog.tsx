@@ -20,7 +20,7 @@ import { showProjectDialogAtom } from "@/lib/atoms/ui/dialogs"
 import { closeProjectDialogAtom } from "@/lib/atoms/ui/navigation"
 import { addProjectAtom } from "@/lib/atoms/core/projects"
 import { addProjectGroupAtom } from "@/lib/atoms/core/groups"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 export function ProjectDialog() {
   const [entityType, setEntityType] = useState<"project" | "projectGroup">("project")
   const [name, setName] = useState("")
@@ -28,8 +28,7 @@ export function ProjectDialog() {
   const [selectedColor, setSelectedColor] = useState<string>(COLOR_OPTIONS[0].value)
 
   // Translation hooks
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "dialogs")
+  const { t } = useTranslation("dialogs")
 
   const open = useAtomValue(showProjectDialogAtom)
   const closeDialog = useSetAtom(closeProjectDialogAtom)

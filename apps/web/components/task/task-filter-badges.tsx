@@ -7,7 +7,7 @@ import { projectAtoms } from "@/lib/atoms"
 import { labelsAtom } from "@/lib/atoms/core/labels"
 import { type Project, type Label, type ProjectId } from "@/lib/types"
 import { getPresetLabel, getCustomRangeLabel } from "@/lib/utils/date-filter-utils"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { Badge } from "@/components/ui/badge"
 import { X, Flag, Calendar, CheckCircle, Clock, Folder, Tag } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -43,8 +43,7 @@ function FilterBadge({ icon, label, onRemove }: FilterBadgeProps) {
 }
 
 export function TaskFilterBadges({ className }: TaskFilterBadgesProps) {
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
 
   const activeFilters = useAtomValue(activeFiltersAtom)
   const hasActiveFilters = useAtomValue(hasActiveFiltersAtom)

@@ -33,7 +33,7 @@ import {
   EyeOff,
   ExternalLink,
 } from "lucide-react"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { languages, type Language } from "@/lib/i18n/settings"
 import { toast } from "sonner"
 
@@ -66,8 +66,7 @@ export function GeneralForm() {
   const updateSettings = useSetAtom(updateSettingsAtom)
   const user = useAtomValue(userAtom)
   const updateUser = useSetAtom(userAtom)
-  const { language, setLanguage } = useLanguage()
-  const { t } = useTranslation(language, "settings")
+  const { t, i18n } = useTranslation("settings")
   const [showApiToken, setShowApiToken] = useState(false)
 
   // Generate start view options with translations
@@ -129,7 +128,7 @@ export function GeneralForm() {
   }
 
   const handleLanguageChange = (newLanguage: Language) => {
-    setLanguage(newLanguage)
+    i18n.changeLanguage(newLanguage)
   }
 
   const handleGenerateToken = () => {
@@ -236,12 +235,12 @@ export function GeneralForm() {
               {t("general.language.description", "Select the display language for the application")}
             </p>
           </div>
-          <Select value={language} onValueChange={handleLanguageChange}>
+          <Select value={i18n.resolvedLanguage || "en"} onValueChange={handleLanguageChange}>
             <SelectTrigger id="language-select" className="w-auto min-w-[180px]">
               <SelectValue>
                 <div className="flex items-center gap-2">
                   <Languages className="w-4 h-4" />
-                  <span>{languageNames[language as Language]}</span>
+                  <span>{languageNames[(i18n.resolvedLanguage || "en") as Language]}</span>
                 </div>
               </SelectValue>
             </SelectTrigger>

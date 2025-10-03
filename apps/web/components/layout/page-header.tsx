@@ -34,7 +34,7 @@ import { CommandPalette } from "@/components/search/command-palette"
 import { HelpPopover } from "@/components/ui/help-popover"
 import { getHelpContent } from "@/lib/help-content"
 import { useTheme } from "next-themes"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { OnlineStatus } from "@/components/layout/online-status"
 // import { ToolbarUndoRedo } from "@/components/history/undo-redo-buttons"
 
@@ -61,8 +61,7 @@ export function PageHeader({
   const [mounted, setMounted] = useState(false)
 
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "layout")
+  const { t } = useTranslation("layout")
 
   // Atom state and actions
   const routeContext = useAtomValue(currentRouteContextAtom)

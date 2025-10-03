@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -36,8 +36,7 @@ export function TimeEstimationPicker({
   disableOutsideInteraction = false,
 }: TimeEstimationPickerProps) {
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
 
   // Get task data and update function for existing tasks
   const tasks = useAtomValue(tasksAtom)

@@ -23,7 +23,7 @@ import { ColorPicker } from "@/components/ui/custom/color-picker"
 import { COLOR_OPTIONS } from "@tasktrove/constants"
 import { useAtomValue, useSetAtom } from "jotai"
 import type { Atom, WritableAtom } from "jotai"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 interface DialogContext {
   mode?: "create" | "edit"
   insertPosition?: {
@@ -62,8 +62,7 @@ export function BaseDialog<T, R = void>({
   parentPickerLabel = "Parent",
 }: BaseDialogProps<T, R>) {
   // Translation hooks
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "dialogs")
+  const { t } = useTranslation("dialogs")
 
   const open = useAtomValue(showAtom)
   const context = useAtomValue(contextAtom)

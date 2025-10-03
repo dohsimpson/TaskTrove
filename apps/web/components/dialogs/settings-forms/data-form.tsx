@@ -22,7 +22,7 @@ import { toast } from "sonner"
 import { dataSettingsAtom, updateDataSettingsAtom } from "@/lib/atoms/ui/user-settings-atom"
 import { queryClientAtom } from "@/lib/atoms/core/base"
 import { DEFAULT_BACKUP_TIME, SUPPORTED_IMPORT_SOURCES, DATA_QUERY_KEY } from "@tasktrove/constants"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { API_ROUTES } from "@/lib/types"
 
 type UploadStatus = "idle" | "uploading" | "success" | "error"
@@ -47,8 +47,7 @@ export function DataForm() {
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
 
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "settings")
+  const { t } = useTranslation("settings")
 
   // Calendar functionality not implemented yet
   // const handleCalendarUpdate = (field: keyof typeof settings.calendar, value: string | boolean) => {

@@ -9,7 +9,7 @@ import {
   Archive,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import type { ViewId } from "@/lib/types"
 
 interface ViewEmptyStateProps {
@@ -152,8 +152,7 @@ export function ViewEmptyState({
   action,
   className = "",
 }: ViewEmptyStateProps) {
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
 
   const config = getViewConfig(t, viewId, projectName, labelName)
   const Icon = config.icon

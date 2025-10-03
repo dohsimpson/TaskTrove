@@ -15,7 +15,7 @@ import { TaskDueDate } from "@/components/ui/custom/task-due-date"
 import type { Task } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { FocusTimerDisplay } from "@/components/task/focus-timer-display"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 interface PageFooterProps {
   className?: string
 }
@@ -33,8 +33,7 @@ function TaskListContent({
   const toggleTaskPanel = useSetAtom(toggleTaskPanelWithViewStateAtom)
 
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "layout")
+  const { t } = useTranslation("layout")
 
   const handleTaskClick = (e: React.MouseEvent, task: Task) => {
     // Don't trigger if clicking on buttons or interactive elements
@@ -114,8 +113,7 @@ export function PageFooter({ className }: PageFooterProps) {
   const dueTodayCount = todayTasks.length
 
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "layout")
+  const { t } = useTranslation("layout")
 
   return (
     <div

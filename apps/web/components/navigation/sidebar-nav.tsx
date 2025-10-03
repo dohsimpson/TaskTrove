@@ -68,11 +68,10 @@ import {
   stopEditingLabelAtom,
 } from "@/lib/atoms/ui/navigation"
 import { ROOT_PROJECT_GROUP_ID } from "@/lib/types"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 export function SidebarNav() {
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "navigation")
+  const { t } = useTranslation("navigation")
 
   // Get data from atoms instead of props
   const [projects] = useAtom(visibleProjectsAtom)

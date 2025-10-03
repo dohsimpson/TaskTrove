@@ -61,7 +61,7 @@ import { log } from "@/lib/utils/logger"
 import { convertTimeToHHMMSS } from "@/lib/utils/enhanced-natural-language-parser"
 import { getPriorityTextColor } from "@/lib/color-utils"
 import { useDebouncedParse } from "@/hooks/use-debounced-parse"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { generateEstimationSuggestions } from "@/lib/utils/shared-patterns"
 
 // Enhanced autocomplete interface
@@ -80,8 +80,7 @@ export function QuickAddDialog() {
   const closeDialog = useSetAtom(closeQuickAddAtom)
 
   // Translation hooks
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "dialogs")
+  const { t } = useTranslation("dialogs")
 
   // Route context for current project and label
   const routeContext = useAtomValue(currentRouteContextAtom)

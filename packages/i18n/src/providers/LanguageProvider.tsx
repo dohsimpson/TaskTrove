@@ -147,6 +147,9 @@ interface LanguageProviderProps<
  * }
  * ```
  */
+// Cache for initialization promise to ensure consistent Suspense behavior
+let initPromise: Promise<void> | null = null;
+
 export function LanguageProvider<
   L extends Language = Language,
   NS extends string = string,
@@ -157,11 +160,10 @@ export function LanguageProvider<
     return initialLanguage || config.fallbackLng;
   });
 
-  // Initialize i18next once on mount (skipped if already initialized in tests)
-  useEffect(() => {
-    const initI18n = async () => {
-      if (i18next.isInitialized) return;
-
+  // Suspense-compatible initialization
+  // Throw a promise on first render if i18next isn't ready
+  if (!i18next.isInitialized && !initPromise) {
+    initPromise = (async () => {
       const resourcesToBackend = (await import("i18next-resources-to-backend"))
         .default;
       const resourceBackend = resourcesToBackend(config.resourceLoader);
@@ -179,10 +181,39 @@ export function LanguageProvider<
         lng: initialLanguage || undefined,
         ns: [...config.namespaces],
         defaultNS: config.defaultNS,
+        react: {
+          useSuspense: true, // Enable Suspense for proper loading states
+        },
+        // Configure LanguageDetector to auto-persist language changes to cookies
+        detection: config.cookieName
+          ? {
+              order: ["cookie", "navigator"],
+              lookupCookie: config.cookieName,
+              caches: ["cookie"], // Enable automatic cookie caching
+              cookieOptions: {
+                path: "/",
+                maxAge: 60 * 60 * 24 * 365, // 1 year
+                sameSite: "lax",
+              },
+            }
+          : undefined,
       });
-    };
 
-    initI18n();
+      // Clear the promise cache after successful initialization
+      initPromise = null;
+    })();
+  }
+
+  // Throw the promise to trigger Suspense
+  if (!i18next.isInitialized && initPromise) {
+    throw initPromise;
+  }
+
+  // Ensure we're on the correct language after initialization
+  useEffect(() => {
+    if (i18next.isInitialized && i18next.language !== initialLanguage) {
+      i18next.changeLanguage(initialLanguage || config.fallbackLng);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -192,7 +223,8 @@ export function LanguageProvider<
   /**
    * Set language and persist to cookie
    *
-   * Validates the language is supported, then updates state, cookie, and i18next.
+   * Validates the language is supported, then updates i18next.
+   * LanguageDetector automatically handles cookie persistence.
    */
   const setLanguage = (lng: Language) => {
     // Validate language is supported
@@ -208,15 +240,9 @@ export function LanguageProvider<
       return;
     }
 
-    setLanguageState(lng);
-
-    // Set cookie for persistence
-    if (config.cookieName) {
-      document.cookie = `${config.cookieName}=${lng}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
-    }
-
-    // Change i18next language
+    // Change i18next language - LanguageDetector will auto-persist to cookie
     i18next.changeLanguage(lng);
+    setLanguageState(lng);
   };
 
   // Sync initial state with i18next's detected language (e.g., from cookie)

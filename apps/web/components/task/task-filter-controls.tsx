@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { useAtomValue, useSetAtom, atom } from "jotai"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import {
   activeFiltersAtom,
   hasActiveFiltersAtom,
@@ -105,8 +105,7 @@ interface TaskFilterControlsProps {
 }
 
 export function TaskFilterControls({ className }: TaskFilterControlsProps) {
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
   const [isOpen, setIsOpen] = useState(false)
   const [showCustomRange, setShowCustomRange] = useState(false)
   const [customStart, setCustomStart] = useState<Date | undefined>()

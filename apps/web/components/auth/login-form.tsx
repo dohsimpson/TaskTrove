@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { TaskTroveLogo } from "@/components/ui/custom/tasktrove-logo"
 import { TaskTroveIcon } from "@/components/ui/custom/tasktrove-icon"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 
 export interface LoginFormProps {
   needsPasswordSetup: boolean
@@ -24,8 +24,7 @@ export function LoginForm({
   onCancel: _onCancel,
 }: LoginFormProps) {
   // Translation hooks
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "auth")
+  const { t } = useTranslation("auth")
 
   // Local state to track if password setup is still needed
   // This allows us to transition from setup mode to login mode after password is set

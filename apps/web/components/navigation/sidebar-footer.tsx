@@ -4,13 +4,12 @@ import React from "react"
 import { Download } from "lucide-react"
 import { SidebarFooter, SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar"
 import { useUpdateChecker } from "@/hooks/use-update-checker"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { NavUser } from "./nav-user"
 
 export function AppSidebarFooter() {
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "navigation")
+  const { t } = useTranslation("navigation")
 
   const { hasUpdate, latestVersion, releaseUrl } = useUpdateChecker()
 

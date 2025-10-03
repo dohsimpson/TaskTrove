@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import {
   projectAtoms,
   addCommentAtom,
@@ -32,8 +32,7 @@ interface MainContentProps {
 }
 
 export function MainContent({}: MainContentProps) {
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "layout")
+  const { t } = useTranslation("layout")
 
   // Get data from atoms
   const currentView = useAtomValue(currentViewAtom)

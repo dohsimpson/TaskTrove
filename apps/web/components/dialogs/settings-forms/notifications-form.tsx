@@ -15,7 +15,7 @@ import type { NotificationSettings } from "@/lib/types"
 import { SettingsCard } from "@/components/ui/custom/settings-card"
 import { isSecureContext } from "@tasktrove/dom-utils/notifications"
 import { log } from "@/lib/utils/logger"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 export function NotificationsForm() {
   const notificationSettings = useAtomValue(notificationAtoms.settings)
   const updateSettings = useSetAtom(settingsAtoms.actions.updateSettings)
@@ -26,8 +26,7 @@ export function NotificationsForm() {
   const [isRequestingPermission, setIsRequestingPermission] = useState(false)
   const [hasTriedRetry, setHasTriedRetry] = useState(false)
 
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "settings")
+  const { t } = useTranslation("settings")
 
   // Check if we're in a secure context (HTTPS or localhost)
   const isInSecureContext = isSecureContext()

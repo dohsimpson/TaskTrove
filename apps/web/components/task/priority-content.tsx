@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { updateTaskAtom } from "@/lib/atoms"
 import { isValidPriority } from "@/lib/types"
 import { getPriorityTextColor } from "@/lib/color-utils"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import type { Task } from "@/lib/types"
 
 interface PriorityContentProps {
@@ -18,8 +18,7 @@ interface PriorityContentProps {
 
 export function PriorityContent({ task, className, onPrioritySelect }: PriorityContentProps) {
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
 
   const updateTask = useSetAtom(updateTaskAtom)
 

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { X, Star, ChevronRight, Calendar, Flag, Folder, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
@@ -50,8 +50,7 @@ interface TaskSidePanelProps {
 export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSidePanelProps) {
   const isMobile = useIsMobile()
   const [isAutoSaving, setIsAutoSaving] = useState(false)
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
 
   // Atom actions
   const updateTask = useSetAtom(updateTaskAtom)

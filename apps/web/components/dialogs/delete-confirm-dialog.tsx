@@ -13,7 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 export type DeleteEntityType =
   | "task"
   | "project"
@@ -48,8 +48,7 @@ export function DeleteConfirmDialog({
   confirmButtonText,
   variant = "destructive",
 }: DeleteConfirmDialogProps) {
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "dialogs")
+  const { t } = useTranslation("dialogs")
   const [deleteContainedResources, setDeleteContainedResources] = useState(false)
 
   // Show checkbox for groups and projects only

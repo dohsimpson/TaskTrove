@@ -13,7 +13,7 @@ import { updateTaskAtom, tasksAtom } from "@/lib/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
 import type { Task, TaskComment, CreateTaskRequest } from "@/lib/types"
 import { createCommentId, createTaskId } from "@/lib/types"
-import { useTranslation, useLanguage } from "@tasktrove/i18n"
+import { useTranslation } from "@tasktrove/i18n"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 
 interface CommentContentProps {
@@ -131,8 +131,7 @@ export function CommentContent({
   scrollToBottomKey,
 }: CommentContentProps) {
   // Translation setup
-  const { language } = useLanguage()
-  const { t } = useTranslation(language, "task")
+  const { t } = useTranslation("task")
 
   const allTasks = useAtomValue(tasksAtom)
   const updateTask = useSetAtom(updateTaskAtom)

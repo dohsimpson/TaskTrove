@@ -694,11 +694,23 @@ export function QuickAddDialog() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
+                    className={cn(
+                      "h-8 px-2 gap-1 text-xs sm:text-sm min-w-0",
+                      newTask.labels && newTask.labels.length > 0
+                        ? "text-foreground font-medium"
+                        : "text-muted-foreground",
+                    )}
                   >
                     <Tag className="h-3 w-3 flex-shrink-0" />
-                    <span className="hidden sm:inline whitespace-nowrap">
-                      {t("quickAdd.buttons.label", "Label")}
+                    <span
+                      className={cn(
+                        "whitespace-nowrap",
+                        newTask.labels && newTask.labels.length > 0 ? "" : "hidden sm:inline",
+                      )}
+                    >
+                      {newTask.labels && newTask.labels.length > 0
+                        ? `${t("quickAdd.buttons.label", "Label")} (${newTask.labels.length})`
+                        : t("quickAdd.buttons.label", "Label")}
                     </span>
                   </Button>
                 </LabelManagementPopover>
@@ -782,11 +794,23 @@ export function QuickAddDialog() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
+                    className={cn(
+                      "h-8 px-2 gap-1 text-xs sm:text-sm min-w-0",
+                      newTask.subtasks && newTask.subtasks.length > 0
+                        ? "text-foreground font-medium"
+                        : "text-muted-foreground",
+                    )}
                   >
                     <CheckSquare className="h-3 w-3 flex-shrink-0" />
-                    <span className="hidden sm:inline whitespace-nowrap">
-                      {t("quickAdd.buttons.subtasks", "Subtasks")}
+                    <span
+                      className={cn(
+                        "whitespace-nowrap",
+                        newTask.subtasks && newTask.subtasks.length > 0 ? "" : "hidden sm:inline",
+                      )}
+                    >
+                      {newTask.subtasks && newTask.subtasks.length > 0
+                        ? `${t("quickAdd.buttons.subtasks", "Subtasks")} (${newTask.subtasks.length})`
+                        : t("quickAdd.buttons.subtasks", "Subtasks")}
                     </span>
                   </Button>
                 </SubtaskPopover>
@@ -796,11 +820,23 @@ export function QuickAddDialog() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
+                    className={cn(
+                      "h-8 px-2 gap-1 text-xs sm:text-sm min-w-0",
+                      newTask.comments && newTask.comments.length > 0
+                        ? "text-foreground font-medium"
+                        : "text-muted-foreground",
+                    )}
                   >
                     <MessageSquare className="h-3 w-3 flex-shrink-0" />
-                    <span className="hidden sm:inline whitespace-nowrap">
-                      {t("quickAdd.buttons.comments", "Comments")}
+                    <span
+                      className={cn(
+                        "whitespace-nowrap",
+                        newTask.comments && newTask.comments.length > 0 ? "" : "hidden sm:inline",
+                      )}
+                    >
+                      {newTask.comments && newTask.comments.length > 0
+                        ? `${t("quickAdd.buttons.comments", "Comments")} (${newTask.comments.length})`
+                        : t("quickAdd.buttons.comments", "Comments")}
                     </span>
                   </Button>
                 </CommentManagementPopover>

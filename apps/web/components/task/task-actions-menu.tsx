@@ -15,9 +15,12 @@ import {
   // Timer, // Commented out since pomodoro timer is disabled
   Edit3,
   ClockFading,
+  Copy,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Task } from "@/lib/types"
+import { useSetAtom } from "jotai"
+import { openQuickAddWithCopyAtom } from "@/lib/atoms/ui/dialogs"
 // import { openPomodoroAtom } from "@/lib/atoms/ui/dialogs" // Commented out since pomodoro timer is disabled
 
 interface TaskActionsMenuProps {
@@ -43,6 +46,7 @@ export function TaskActionsMenu({
 }: TaskActionsMenuProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [internalOpen, setInternalOpen] = useState(false)
+  const openQuickAddWithCopy = useSetAtom(openQuickAddWithCopyAtom)
   // const openPomodoro = useSetAtom(openPomodoroAtom) // Commented out since pomodoro timer is disabled
 
   // Use controlled or uncontrolled state
@@ -98,6 +102,13 @@ export function TaskActionsMenu({
     // setIsOpen(false) // NOTE: Must not close menu when opening estimation modal, otherwise estimation modal is closed too
   }
 
+  const handleCopyClick = (e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    e?.preventDefault()
+    openQuickAddWithCopy(task.id)
+    setIsOpen(false)
+  }
+
   // const handleTimerClick = () => {
   //   openPomodoro(task)
   //   setIsOpen(false)
@@ -121,13 +132,17 @@ export function TaskActionsMenu({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className={cn("w-32", variant === "subtask" && "w-36")}>
             {onEditClick && (
-              <DropdownMenuItem onClick={handleEditClick}>
+              <DropdownMenuItem onClick={handleEditClick} className="cursor-pointer">
                 <Edit3 className="h-3.5 w-3.5 mr-2" />
                 Edit
               </DropdownMenuItem>
             )}
+            <DropdownMenuItem onClick={handleCopyClick} className="cursor-pointer">
+              <Copy className="h-3.5 w-3.5 mr-2" />
+              Duplicate
+            </DropdownMenuItem>
             {variant === "subtask" && onEstimationClick && (
-              <DropdownMenuItem onClick={handleEstimationClick}>
+              <DropdownMenuItem onClick={handleEstimationClick} className="cursor-pointer">
                 <ClockFading className="h-3.5 w-3.5 mr-2" />
                 Estimation
               </DropdownMenuItem>
@@ -138,7 +153,7 @@ export function TaskActionsMenu({
             </DropdownMenuItem> */}
             <DropdownMenuItem
               onClick={handleDeleteClick}
-              className="text-destructive focus:text-destructive"
+              className="text-destructive dark:text-red-400 focus:text-destructive dark:focus:text-red-300 cursor-pointer"
             >
               <Trash2 className="h-3.5 w-3.5 mr-2" />
               Delete
@@ -164,7 +179,7 @@ export function TaskActionsMenu({
         {/* Delete Button */}
         <Button
           variant="ghost"
-          className="text-red-600 hover:text-red-700 cursor-pointer h-full w-5"
+          className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 cursor-pointer h-full w-5"
           onClick={handleDeleteClick}
         >
           <Trash2 className="h-3.5 w-3.5" />
@@ -179,11 +194,15 @@ export function TaskActionsMenu({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {onEditClick && (
-              <DropdownMenuItem onClick={handleEditClick}>
+              <DropdownMenuItem onClick={handleEditClick} className="cursor-pointer">
                 <Edit3 className="h-4 w-4 mr-2" />
                 Edit
               </DropdownMenuItem>
             )}
+            <DropdownMenuItem onClick={handleCopyClick} className="cursor-pointer">
+              <Copy className="h-4 w-4 mr-2" />
+              Duplicate
+            </DropdownMenuItem>
             {/* <DropdownMenuItem onClick={handleTimerClick}>
               <Timer className="h-4 w-4 mr-2" />
               Start timer

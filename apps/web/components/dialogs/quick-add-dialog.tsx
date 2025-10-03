@@ -26,13 +26,15 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { useAtomValue, useSetAtom } from "jotai"
 import { labelsAtom, addLabelAndWaitForRealIdAtom } from "@/lib/atoms/core/labels"
 import { visibleProjectsAtom } from "@/lib/atoms/core/projects"
-import { addTaskAtom } from "@/lib/atoms/core/tasks"
+import { addTaskAtom, tasksAtom } from "@/lib/atoms/core/tasks"
 import {
   showQuickAddAtom,
   closeQuickAddAtom,
   quickAddTaskAtom,
   updateQuickAddTaskAtom,
   resetQuickAddTaskAtom,
+  copyTaskAtom,
+  resetCopyTaskAtom,
   nlpEnabledAtom,
 } from "@/lib/atoms/ui/dialogs"
 import { currentRouteContextAtom } from "@/lib/atoms/ui/navigation"
@@ -54,11 +56,14 @@ import {
   ProjectIdSchema,
   LabelIdSchema,
   isValidPriority,
+  createSubtaskId,
+  createCommentId,
 } from "@/lib/types"
 import { PLACEHOLDER_TASK_INPUT } from "@tasktrove/constants"
 import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
 import { log } from "@/lib/utils/logger"
 import { convertTimeToHHMMSS } from "@/lib/utils/enhanced-natural-language-parser"
+import { v4 as uuidv4 } from "uuid"
 import { getPriorityTextColor } from "@/lib/color-utils"
 import { useDebouncedParse } from "@/hooks/use-debounced-parse"
 import { useTranslation } from "@tasktrove/i18n"
@@ -79,6 +84,8 @@ export function QuickAddDialog() {
   // Dialog state atoms
   const open = useAtomValue(showQuickAddAtom)
   const closeDialog = useSetAtom(closeQuickAddAtom)
+  const copyTaskId = useAtomValue(copyTaskAtom)
+  const resetCopyTask = useSetAtom(resetCopyTaskAtom)
 
   // Translation hooks
   const { t } = useTranslation("dialogs")
@@ -129,10 +136,14 @@ export function QuickAddDialog() {
   // Get data from atoms
   const labels = useAtomValue(labelsAtom)
   const projects = useAtomValue(visibleProjectsAtom)
+  const tasks = useAtomValue(tasksAtom)
   const addTask = useSetAtom(addTaskAtom)
   const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
   const nlpEnabled = useAtomValue(nlpEnabledAtom)
   const setNlpEnabled = useSetAtom(nlpEnabledAtom)
+
+  // Get the task to copy
+  const taskToCopy = copyTaskId ? tasks.find((t) => t.id === copyTaskId) : null
 
   // Create empty Set once to avoid re-creating on every render (which causes infinite loop)
   const disabledSections = useMemo(() => new Set<string>(), [])
@@ -321,12 +332,46 @@ export function QuickAddDialog() {
   // Auto-initialize values based on route context when dialog opens
   useEffect(() => {
     if (open && !hasInitializedRef.current) {
-      // Initialize with current project/label, then set the initial task state
-      const updates: Partial<CreateTaskRequest> = {}
-      if (currentLabel) {
-        updates.labels = [...(newTask.labels || []), currentLabel]
-      } else if (currentProject) {
-        updates.projectId = currentProject
+      let updates: Partial<CreateTaskRequest> = {}
+
+      // If copying a task, pre-fill with its attributes
+      if (taskToCopy) {
+        // Generate new IDs for subtasks and comments to avoid conflicts
+        const subtasksWithNewIds = taskToCopy.subtasks.map((subtask) => ({
+          ...subtask,
+          id: createSubtaskId(uuidv4()),
+        }))
+
+        const commentsWithNewIds = taskToCopy.comments.map((comment) => ({
+          ...comment,
+          id: createCommentId(uuidv4()),
+        }))
+
+        // When copying, we have all required fields, so we can type it as CreateTaskRequest
+        const copyData: CreateTaskRequest = {
+          title: taskToCopy.title,
+          description: taskToCopy.description,
+          priority: taskToCopy.priority,
+          dueDate: taskToCopy.dueDate,
+          dueTime: taskToCopy.dueTime,
+          projectId: taskToCopy.projectId,
+          labels: [...taskToCopy.labels],
+          subtasks: subtasksWithNewIds,
+          comments: commentsWithNewIds,
+          recurring: taskToCopy.recurring,
+          estimation: taskToCopy.estimation,
+        }
+
+        updates = copyData
+        setInput(taskToCopy.title) // Also set the input field
+        setShowAdvancedRow(true) // Show advanced options since we have data to display
+      } else {
+        // Regular task creation - initialize with current project/label, then set the initial task state
+        if (currentLabel) {
+          updates.labels = [...(newTask.labels || []), currentLabel]
+        } else if (currentProject) {
+          updates.projectId = currentProject
+        }
       }
 
       if (Object.keys(updates).length > 0) {
@@ -341,10 +386,11 @@ export function QuickAddDialog() {
 
       hasInitializedRef.current = true
     } else if (!open) {
-      // Reset the initialization flag when dialog closes
+      // Reset the initialization flag and copy state when dialog closes
       hasInitializedRef.current = false
+      resetCopyTask()
     }
-  }, [currentLabel, currentProject, open])
+  }, [currentLabel, currentProject, open, taskToCopy, newTask, resetCopyTask, updateNewTask])
 
   // Prepare autocomplete items
   const autocompleteItems = useMemo(
@@ -550,7 +596,11 @@ export function QuickAddDialog() {
           showCloseButton={false}
         >
           <VisuallyHidden>
-            <DialogTitle>{t("quickAdd.title", "Quick Add Task")}</DialogTitle>
+            <DialogTitle>
+              {taskToCopy
+                ? t("quickAdd.copyTitle", "Duplicate Task")
+                : t("quickAdd.title", "Quick Add Task")}
+            </DialogTitle>
           </VisuallyHidden>
           <div className="flex flex-col justify-between gap-1">
             {/* Main Input */}

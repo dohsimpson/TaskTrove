@@ -494,6 +494,20 @@ export const resetQuickAddTaskAtom = atom(null, (get, set) => {
     title: "",
   });
 });
+// Task copying functionality
+export const copyTaskAtom = atom<TaskId | null>(null);
+
+export const openQuickAddWithCopyAtom = atom(
+  null,
+  (get, set, taskId: TaskId) => {
+    set(copyTaskAtom, taskId);
+    set(showQuickAddAtom, true);
+  },
+);
+
+export const resetCopyTaskAtom = atom(null, (get, set) => {
+  set(copyTaskAtom, null);
+});
 resetQuickAddTaskAtom.debugLabel = "resetQuickAddTaskAtom";
 
 // =============================================================================

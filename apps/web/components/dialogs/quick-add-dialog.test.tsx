@@ -480,6 +480,8 @@ describe("QuickAddDialog", () => {
       if (atomStr.includes("label") || atomStr.includes("Label")) return mockLabels
       if (atomStr.includes("project") || atomStr.includes("Project")) return mockProjects
       if (atomStr.includes("route") || atomStr.includes("context")) return mockRouteContext
+      if (atomStr.includes("tasks") && atomStr.includes("Atom")) return [] // tasksAtom should return an array
+      if (atomStr.includes("copyTask")) return null // copyTaskAtom should return null by default
       if (atomStr.includes("task") || atomStr.includes("Task")) return mockTaskForm
       return []
     })

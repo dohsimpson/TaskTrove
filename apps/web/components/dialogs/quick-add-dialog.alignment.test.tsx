@@ -268,6 +268,7 @@ vi.mock("@/lib/atoms/core/projects", () => ({
 }))
 
 vi.mock("@/lib/atoms/core/tasks", () => ({
+  tasksAtom: [],
   addTaskAtom: "mockAddTaskAtom",
   updateTaskAtom: "mockUpdateTaskAtom",
   taskAtoms: {
@@ -461,6 +462,17 @@ vi.mock("@/lib/types", () => ({
   UpdateProjectGroupRequestSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
   },
+}))
+
+vi.mock("@/lib/atoms/ui/dialogs", () => ({
+  showQuickAddAtom: true,
+  closeQuickAddAtom: vi.fn(),
+  copyTaskAtom: null,
+  resetCopyTaskAtom: vi.fn(),
+  quickAddTaskAtom: {},
+  updateQuickAddTaskAtom: vi.fn(),
+  resetQuickAddTaskAtom: vi.fn(),
+  nlpEnabledAtom: true,
 }))
 
 vi.mock("@/lib/utils/logger", () => ({

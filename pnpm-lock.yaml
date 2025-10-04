@@ -280,8 +280,8 @@ catalogs:
       specifier: ^19.1.1
       version: 19.1.1
     react-hook-form:
-      specifier: ^7.63.0
-      version: 7.63.0
+      specifier: ^7.64.0
+      version: 7.64.0
     react-i18next:
       specifier: ^15.7.3
       version: 15.7.3
@@ -364,7 +364,7 @@ importers:
         version: 3.2.7(@types/react@19.1.13)(react@19.1.1)
       '@hookform/resolvers':
         specifier: 'catalog:'
-        version: 5.2.2(react-hook-form@7.63.0(react@19.1.1))
+        version: 5.2.2(react-hook-form@7.64.0(react@19.1.1))
       '@icons-pack/react-simple-icons':
         specifier: 'catalog:'
         version: 13.7.0(react@19.1.1)
@@ -565,7 +565,7 @@ importers:
         version: 19.1.1(react@19.1.1)
       react-hook-form:
         specifier: 'catalog:'
-        version: 7.63.0(react@19.1.1)
+        version: 7.64.0(react@19.1.1)
       react-i18next:
         specifier: 'catalog:'
         version: 15.7.3(i18next@25.5.2(typescript@5.9.2))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.9.2)
@@ -4495,7 +4495,6 @@ packages:
     resolution: {integrity: sha512-Quz3MvAwHxVYNXsOByL7xI5EB2WYOeFswqaHIA3qOK3isRWTxiplBEocmmru6XmxDB2L7jDNYtYA4FyimoAFEw==}
     engines: {node: '>=8.17.0'}
     hasBin: true
-    bundledDependencies: []
 
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
@@ -5122,8 +5121,8 @@ packages:
     peerDependencies:
       react: '>=16.13.1'
 
-  react-hook-form@7.63.0:
-    resolution: {integrity: sha512-ZwueDMvUeucovM2VjkCf7zIHcs1aAlDimZu2Hvel5C5907gUzMpm4xCrQXtRzCvsBqFjonB4m3x4LzCFI1ZKWA==}
+  react-hook-form@7.64.0:
+    resolution: {integrity: sha512-fnN+vvTiMLnRqKNTVhDysdrUay0kUUAymQnFIznmgDvapjveUWOOPqMNzPg+A+0yf9DuE2h6xzBjN1s+Qx8wcg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -6627,10 +6626,10 @@ snapshots:
     dependencies:
       is-negated-glob: 1.0.0
 
-  '@hookform/resolvers@5.2.2(react-hook-form@7.63.0(react@19.1.1))':
+  '@hookform/resolvers@5.2.2(react-hook-form@7.64.0(react@19.1.1))':
     dependencies:
       '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.63.0(react@19.1.1)
+      react-hook-form: 7.64.0(react@19.1.1)
 
   '@humanfs/core@0.19.1': {}
 
@@ -10398,7 +10397,7 @@ snapshots:
       '@babel/runtime': 7.28.4
       react: 19.1.1
 
-  react-hook-form@7.63.0(react@19.1.1):
+  react-hook-form@7.64.0(react@19.1.1):
     dependencies:
       react: 19.1.1
 

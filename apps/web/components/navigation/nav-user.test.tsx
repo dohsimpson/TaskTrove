@@ -1,5 +1,5 @@
 import React from "react"
-import { render, screen, fireEvent } from "@/test-utils"
+import { render, screen, fireEvent, waitFor } from "@/test-utils"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { NavUser } from "./nav-user"
 import { SidebarProvider } from "@/components/ui/sidebar"
@@ -306,8 +306,10 @@ describe("NavUser", () => {
       const confirmButton = screen.getByTestId("logout-confirm-button")
       fireEvent.click(confirmButton)
 
-      // Verify that success toast was shown
-      expect(toast.success).toHaveBeenCalledWith("Signing out...")
+      // Wait for async signOut to complete and verify that success toast was shown
+      await waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith("Signed out")
+      })
     })
 
     it("closes dialog when cancel is clicked", () => {

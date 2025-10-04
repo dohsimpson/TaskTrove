@@ -59,9 +59,10 @@ export function NavUser() {
     setLogoutDialogOpen(true)
   }
 
-  const handleConfirmLogout = () => {
-    signOut()
-    toast.success("Signing out...")
+  const handleConfirmLogout = async () => {
+    await signOut({ redirect: false }) // disable redirect to avoid redirecting to wrong URL behind reverse proxy: https://github.com/nextauthjs/next-auth/issues/10928
+    toast.success("Signed out")
+    window.location.reload()
   }
 
   const contextMenuItems: ContextMenuItem[] = [

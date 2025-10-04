@@ -1,5 +1,39 @@
 # tasktrove
 
+## 0.7.0
+
+### Features
+
+🎉 Feature - Add API Support with Bearer Token Authentication.
+🎉 Feature - Add password authentication support.
+🎉 Feature - Apply consistent cursor pointer style on all buttons.
+
+### Minor Changes
+
+🎉 Feature - Add task duplication functionality. (#89)
+🎉 Feature - Add unsaved changes confirmation for quick add dialog. (#93)
+🎉 Feature - Add inline editing functionality with pencil icon for comments.
+🎉 Feature - Add auto-scroll to latest comment when opening comment popover.
+🎉 Feature - Add delete contained resources option for project deletion.
+🎉 Feature - Add global view options with persistent side panel width.
+🎉 Feature - Add resizable panels to calendar and project views. (#72)
+🎉 Feature - Add comprehensive user profile management system.
+🎉 Feature - Add Portuguese, Italian, Japanese, and Korean language support.
+🎉 Feature - Add estimation support with ~syntax in quick add.
+🎉 Feature - Add offline status indicator in header.
+
+### Patch Changes
+
+🐛 Bug - Normalize negative indices in addTaskToSection to fix cross-section drag-and-drop.
+🐛 Bug - Ensure real server IDs used when adding labels to tasks. (#75)
+🐛 Bug - Improve drop zone coverage to span entire column height. (#86)
+🐛 Bug - Convert to dynamic manifest.ts to resolve installation issues. (#66)
+🐛 Bug - Prevent infinite re-render loop caused by new Set() creation. (#80)
+🐛 Bug - Display time for daily recurring tasks without specific due date.
+🐛 Bug - Resolve overflow scroll issue in main content container.
+🐛 Bug - Ensure orphaned project tasks show in inbox.
+🐛 Bug - Show available labels immediately in popover without typing. (#58)
+
 ## 0.6.0
 
 ### Features

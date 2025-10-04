@@ -39,7 +39,7 @@ RUN ["ln", "-s", "/app/data", "/app/apps/web/.next/standalone/apps/web/data"]
 
 # using distroless image for extra security and smaller size: https://github.com/GoogleContainerTools/distroless
 # image is architecture agnostic
-FROM gcr.io/distroless/nodejs22-debian12:debug AS runner
+FROM gcr.io/distroless/nodejs22-debian12 AS runner
 WORKDIR /app
  
 # Automatically leverage output traces to reduce image size

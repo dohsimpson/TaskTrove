@@ -1,6 +1,6 @@
 import type { DataFile, VersionString, Json } from "@/lib/types"
 import { createVersionString, DataFileSchema } from "@/lib/types"
-import { DEFAULT_UUID } from "@tasktrove/constants"
+import { DEFAULT_UUID, DEFAULT_SECTION_NAME, DEFAULT_SECTION_COLOR } from "@tasktrove/constants"
 import { DEFAULT_USER_SETTINGS, DEFAULT_USER } from "@/lib/types"
 import packageJson from "@/package.json"
 
@@ -388,7 +388,8 @@ export function v070Migration(dataFile: Json): Json {
         }
 
         const sectionId = "sectionId" in task ? task.sectionId : undefined
-        if (sectionId !== undefined && sectionId !== null) {
+        // Treat undefined, null, and DEFAULT_UUID as default section
+        if (sectionId !== undefined && sectionId !== null && sectionId !== DEFAULT_UUID) {
           // Add to specific section
           const existing = sectionTasksMap.get(sectionId)
           if (existing) {
@@ -421,7 +422,8 @@ export function v070Migration(dataFile: Json): Json {
           }
 
           const sectionId = "sectionId" in task ? task.sectionId : undefined
-          if (sectionId !== undefined && sectionId !== null) {
+          // Treat undefined, null, and DEFAULT_UUID as default section
+          if (sectionId !== undefined && sectionId !== null && sectionId !== DEFAULT_UUID) {
             // Add to end of specific section
             const existing = sectionTasksMap.get(sectionId)
             if (existing) {
@@ -438,6 +440,18 @@ export function v070Migration(dataFile: Json): Json {
 
       // Transform sections to new structure
       const newSections: unknown[] = []
+
+      // Always create default section first (at the top)
+      newSections.push({
+        id: DEFAULT_UUID,
+        name: DEFAULT_SECTION_NAME,
+        slug: "",
+        type: "section",
+        color: DEFAULT_SECTION_COLOR,
+        items: defaultSectionTasks,
+      })
+
+      // Then add other sections
       if (Array.isArray(projectObj.sections)) {
         for (const section of projectObj.sections) {
           if (typeof section !== "object" || section === null || !("id" in section)) {
@@ -447,6 +461,11 @@ export function v070Migration(dataFile: Json): Json {
           const sectionObj: Record<string, unknown> = {}
           for (const [key, value] of Object.entries(section)) {
             sectionObj[key] = value
+          }
+
+          // Skip DEFAULT_UUID section - already created above
+          if (sectionObj.id === DEFAULT_UUID) {
+            continue
           }
 
           // Create new section with items-based ordering
@@ -470,18 +489,6 @@ export function v070Migration(dataFile: Json): Json {
 
           newSections.push(newSection)
         }
-      }
-
-      // Add default section if there are unsectioned tasks
-      if (defaultSectionTasks.length > 0) {
-        newSections.push({
-          id: DEFAULT_UUID,
-          name: "Tasks",
-          slug: "",
-          type: "section",
-          color: "#808080",
-          items: defaultSectionTasks,
-        })
       }
 
       // Update project object

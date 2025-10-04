@@ -50,7 +50,7 @@ export function UnsavedConfirmationDialog({
           <AlertDialogAction asChild>
             <Button
               variant="outline"
-              className="border border-red-600 text-red-600 hover:text-red-700 hover:bg-transparent"
+              className="border border-red-600 text-red-600 bg-background hover:text-red-700 hover:bg-transparent"
               onClick={handleConfirm}
             >
               {t("unsavedConfirmation.confirm", "Discard Changes")}

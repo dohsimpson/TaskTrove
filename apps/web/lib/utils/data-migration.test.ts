@@ -14,7 +14,7 @@ import {
 import type { Json } from "@/lib/types"
 import { createVersionString, createProjectId, createLabelId, DataFileSchema } from "@/lib/types"
 import { DEFAULT_EMPTY_DATA_FILE, DEFAULT_USER_SETTINGS, DEFAULT_USER } from "@/lib/types"
-import { DEFAULT_UUID } from "@tasktrove/constants"
+import { DEFAULT_UUID, DEFAULT_SECTION_NAME, DEFAULT_SECTION_COLOR } from "@tasktrove/constants"
 import packageJson from "@/package.json"
 import {
   TEST_TASK_ID_1,
@@ -844,24 +844,24 @@ describe("Data Migration Utility", () => {
       // 4. Sections should have new structure
       expect(project.sections).toHaveLength(2)
 
-      // First section should have the task that had sectionId
+      // Default section should be first
       expect(project.sections[0]).toEqual({
+        id: DEFAULT_UUID,
+        name: DEFAULT_SECTION_NAME,
+        slug: "",
+        type: "section",
+        color: DEFAULT_SECTION_COLOR,
+        items: [taskId2],
+      })
+
+      // Named section should be second
+      expect(project.sections[1]).toEqual({
         id: sectionId1,
         name: "Section 1",
         slug: "",
         type: "section",
         color: "#00ff00",
         items: [taskId1],
-      })
-
-      // 5. Default section should be created for unsectioned task
-      expect(project.sections[1]).toEqual({
-        id: DEFAULT_UUID,
-        name: "Tasks",
-        slug: "",
-        type: "section",
-        color: "#808080",
-        items: [taskId2],
       })
     })
 
@@ -982,10 +982,20 @@ describe("Data Migration Utility", () => {
       expect(project).not.toHaveProperty("taskOrder")
 
       // 4. All sections should be transformed correctly
-      expect(project.sections).toHaveLength(2)
+      expect(project.sections).toHaveLength(3)
+
+      // Default section should be first (empty since all tasks have sections)
+      expect(project.sections[0]).toEqual({
+        id: DEFAULT_UUID,
+        name: DEFAULT_SECTION_NAME,
+        slug: "",
+        type: "section",
+        color: DEFAULT_SECTION_COLOR,
+        items: [],
+      })
 
       // Section 1 should contain taskId1 and taskId3 in that order (from taskOrder)
-      expect(project.sections[0]).toEqual({
+      expect(project.sections[1]).toEqual({
         id: sectionId1,
         name: "Section 1",
         slug: "",
@@ -995,7 +1005,7 @@ describe("Data Migration Utility", () => {
       })
 
       // Section 2 should contain taskId2
-      expect(project.sections[1]).toEqual({
+      expect(project.sections[2]).toEqual({
         id: sectionId2,
         name: "Section 2",
         slug: "",
@@ -1003,10 +1013,144 @@ describe("Data Migration Utility", () => {
         color: "#00ff00",
         items: [taskId2],
       })
+    })
 
-      // 5. No default section should be created (all tasks have sections)
-      const hasDefaultSection = project.sections.some((s: any) => s.id === DEFAULT_UUID)
-      expect(hasDefaultSection).toBe(false)
+    it("should consolidate tasks with no sectionId and sectionId=DEFAULT_UUID into single default section", () => {
+      const taskId1 = TEST_TASK_ID_1
+      const taskId2 = TEST_TASK_ID_2
+      const taskId3 = TEST_TASK_ID_3
+      const projectId1 = TEST_PROJECT_ID_1
+      const sectionId1 = TEST_SECTION_ID_1
+
+      const v060Data = createJsonData({
+        tasks: [
+          {
+            id: taskId1,
+            title: "Task 1 with no sectionId",
+            // No sectionId - should go to default section
+            projectId: projectId1,
+            completed: false,
+            priority: 1,
+            labels: [],
+            subtasks: [],
+            comments: [],
+            createdAt: new Date().toISOString(),
+            recurringMode: "dueDate",
+          },
+          {
+            id: taskId2,
+            title: "Task 2 with DEFAULT_UUID sectionId",
+            sectionId: DEFAULT_UUID, // Should go to default section
+            projectId: projectId1,
+            completed: false,
+            priority: 2,
+            labels: [],
+            subtasks: [],
+            comments: [],
+            createdAt: new Date().toISOString(),
+            recurringMode: "dueDate",
+          },
+          {
+            id: taskId3,
+            title: "Task 3 in regular section",
+            sectionId: sectionId1,
+            projectId: projectId1,
+            completed: false,
+            priority: 3,
+            labels: [],
+            subtasks: [],
+            comments: [],
+            createdAt: new Date().toISOString(),
+            recurringMode: "dueDate",
+          },
+        ],
+        projects: [
+          {
+            id: projectId1,
+            name: "Test Project",
+            slug: "test-project",
+            color: "#0000ff",
+            sections: [
+              { id: sectionId1, name: "Regular Section", color: "#ff0000" },
+              // Pre-existing DEFAULT_UUID section should be replaced
+              { id: DEFAULT_UUID, name: "Old Default", color: "#999999" },
+            ],
+            taskOrder: [taskId1, taskId2, taskId3],
+          },
+        ],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: DEFAULT_UUID,
+          name: "All Projects",
+          slug: "all-projects",
+          items: [projectId1],
+        },
+        labelGroups: {
+          type: "label",
+          id: DEFAULT_UUID,
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: {
+          data: {
+            autoBackup: {
+              enabled: true,
+              backupTime: "09:00",
+              maxBackups: 7,
+            },
+          },
+          notifications: {
+            enabled: true,
+            requireInteraction: true,
+          },
+          general: {
+            startView: "lastViewed",
+            soundEnabled: false,
+            linkifyEnabled: true,
+            popoverHoverOpen: false,
+          },
+        },
+        version: "v0.6.0",
+      })
+
+      const result = v070Migration(v060Data)
+
+      const project = (result as any).projects[0]
+
+      // Should have exactly 2 sections: default section + regular section
+      expect(project.sections).toHaveLength(2)
+
+      // Default section should be first with taskId1 and taskId2 (in order)
+      expect(project.sections[0]).toEqual({
+        id: DEFAULT_UUID,
+        name: DEFAULT_SECTION_NAME,
+        slug: "",
+        type: "section",
+        color: DEFAULT_SECTION_COLOR,
+        items: [taskId1, taskId2],
+      })
+
+      // Regular section should be second with taskId3
+      expect(project.sections[1]).toEqual({
+        id: sectionId1,
+        name: "Regular Section",
+        slug: "",
+        type: "section",
+        color: "#ff0000",
+        items: [taskId3],
+      })
+
+      // Verify no duplicate DEFAULT_UUID sections
+      const defaultSections = project.sections.filter((s: any) => s.id === DEFAULT_UUID)
+      expect(defaultSections).toHaveLength(1)
+
+      // Verify all tasks have sectionId removed
+      const tasks = (result as any).tasks
+      tasks.forEach((task: any) => {
+        expect(task).not.toHaveProperty("sectionId")
+      })
     })
   })
 

@@ -49,6 +49,7 @@ import {
   updateTasksMutationAtom,
   deleteTaskMutationAtom,
   projectsAtom,
+  updateProjectsMutationAtom,
 } from "./base";
 import { recordOperationAtom } from "./history";
 import { log } from "../utils/atom-helpers";
@@ -81,6 +82,10 @@ export const addTaskAtom = namedAtom(
   "addTaskAtom",
   atom(null, async (get, set, taskData: CreateTaskRequest) => {
     try {
+      // Extract sectionId (use default section if not provided)
+      const targetSectionId = taskData.sectionId ?? DEFAULT_SECTION_ID;
+      const projectId = taskData.projectId ?? INBOX_PROJECT_ID;
+
       // Get the create task mutation
       const createTaskMutation = get(createTaskMutationAtom);
 
@@ -94,6 +99,38 @@ export const addTaskAtom = namedAtom(
       const createdTaskId = result.taskIds[0];
       if (!createdTaskId) {
         throw new Error("Failed to create task: no task ID returned");
+      }
+
+      // Add task to the section's items array
+      const projects = get(projectsAtom);
+      const project = projects.find((p) => p.id === projectId);
+
+      if (project) {
+        const updatedSections = addTaskToSection(
+          createdTaskId,
+          targetSectionId,
+          undefined, // Append to end
+          project.sections,
+        );
+
+        // Update the project with the new sections (expects array for bulk updates)
+        const updateProjectsMutation = get(updateProjectsMutationAtom);
+        await updateProjectsMutation.mutateAsync([
+          {
+            id: projectId,
+            sections: updatedSections,
+          },
+        ]);
+
+        log.info(
+          {
+            taskId: createdTaskId,
+            sectionId: targetSectionId,
+            projectId,
+            module: "tasks",
+          },
+          "Task added to section",
+        );
       }
 
       // Record the operation for undo/redo feedback using the title from taskData

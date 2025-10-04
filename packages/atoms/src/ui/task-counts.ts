@@ -25,11 +25,13 @@ import {
   calculateLabelTaskCounts,
   type CountConfig,
 } from "../utils/counts";
+import { applyViewStateFilters } from "../utils/view-filters";
 import { handleAtomError } from "../utils/atom-helpers";
 
 /**
  * UI-specific atom for project task counts
- * Respects per-project showCompleted settings from viewStates
+ * Respects per-project view state settings (showCompleted, showOverdue, filters, etc.)
+ * Uses the same filtering logic as the main view to ensure counts match what users see
  */
 export const projectTaskCountsAtom = atom<Record<ProjectId, number>>((get) => {
   try {
@@ -37,21 +39,20 @@ export const projectTaskCountsAtom = atom<Record<ProjectId, number>>((get) => {
     const tasks = get(activeTasksAtom);
     const viewStates = get(viewStatesAtom);
 
-    // For each project, use its own showCompleted setting
     const counts: Record<ProjectId, number> = {};
 
     for (const project of projects) {
       const projectTasks = tasks.filter((t) => t.projectId === project.id);
       const viewState = getViewStateOrDefault(viewStates, project.id);
-      const config: CountConfig = { showCompleted: viewState.showCompleted };
 
-      // Use pure function (testable in isolation)
-      const projectCounts = calculateProjectTaskCounts(
-        [project],
+      // Use the same filtering logic as the main view to ensure counts match exactly
+      const filteredTasks = applyViewStateFilters(
         projectTasks,
-        config,
+        viewState,
+        project.id,
       );
-      counts[project.id] = projectCounts[project.id] || 0;
+
+      counts[project.id] = filteredTasks.length;
     }
 
     return counts;
@@ -64,7 +65,8 @@ projectTaskCountsAtom.debugLabel = "projectTaskCountsAtom";
 
 /**
  * UI-specific atom for label task counts
- * Respects per-label showCompleted settings from viewStates
+ * Respects per-label view state settings (showCompleted, showOverdue, filters, etc.)
+ * Uses the same filtering logic as the main view to ensure counts match what users see
  */
 export const labelTaskCountsAtom = atom<Record<LabelId, number>>((get) => {
   try {
@@ -77,10 +79,15 @@ export const labelTaskCountsAtom = atom<Record<LabelId, number>>((get) => {
     for (const label of labels) {
       const labelTasks = tasks.filter((t) => t.labels.includes(label.id));
       const viewState = getViewStateOrDefault(viewStates, label.id);
-      const config: CountConfig = { showCompleted: viewState.showCompleted };
 
-      const labelCounts = calculateLabelTaskCounts([label], labelTasks, config);
-      counts[label.id] = labelCounts[label.id] || 0;
+      // Use the same filtering logic as the main view to ensure counts match exactly
+      const filteredTasks = applyViewStateFilters(
+        labelTasks,
+        viewState,
+        label.id,
+      );
+
+      counts[label.id] = filteredTasks.length;
     }
 
     return counts;

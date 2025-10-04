@@ -97,6 +97,10 @@ export {
   viewStateToFilterConfig,
 } from "./utils/filters";
 
+// View state utilities
+export { applyViewStateFilters } from "./utils/view-filters";
+export { sortTasksByViewState } from "./utils/view-sorting";
+
 // Count utilities
 export {
   calculateProjectTaskCounts,

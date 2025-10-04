@@ -85,6 +85,12 @@ vi.mock("@/lib/atoms/core/tasks", () => ({
   },
 }))
 
+// Mock view state utilities to prevent atom loading issues
+vi.mock("@tasktrove/atoms", () => ({
+  applyViewStateFilters: vi.fn((tasks) => tasks),
+  sortTasksByViewState: vi.fn((tasks) => tasks),
+}))
+
 vi.mock("@/lib/atoms/ui/navigation", () => ({
   currentRouteContextAtom: { debugLabel: "currentRouteContextAtom" },
   editingSectionIdAtom: { debugLabel: "editingSectionIdAtom" },

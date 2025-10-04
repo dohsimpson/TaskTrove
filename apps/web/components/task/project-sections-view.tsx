@@ -48,6 +48,7 @@ import {
 } from "@/lib/atoms/core/tasks"
 import type { Task, Project, ProjectSection } from "@/lib/types"
 import { createGroupId, createTaskId, createProjectId } from "@/lib/types"
+import { applyViewStateFilters, sortTasksByViewState } from "@tasktrove/atoms"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -470,10 +471,19 @@ export function ProjectSectionsView({
   const renderSection = (section: { id: string; name: string; color?: string }) => {
     const displayName = section.name
     const sectionId = section.id
-    const sectionTasks = getOrderedTasksForSection(
+    const baseSectionTasks = getOrderedTasksForSection(
       project?.id || "inbox",
       createGroupId(section.id),
     )
+
+    // Apply view state filters and sorting to sectioned tasks
+    const filteredSectionTasks = applyViewStateFilters(
+      baseSectionTasks,
+      currentViewState,
+      routeContext.viewId,
+    )
+    const sectionTasks = sortTasksByViewState([...filteredSectionTasks], currentViewState)
+
     const sectionDroppableId = `${droppableId}-section-${sectionId}`
     const isCollapsed = collapsedSections.includes(sectionId)
     const isEditing = editingSectionId === section.id

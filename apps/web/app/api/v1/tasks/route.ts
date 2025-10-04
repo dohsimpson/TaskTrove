@@ -299,33 +299,40 @@ async function updateTasks(
     updateMap.set(update.id, cleanedUpdate)
   }
 
-  // Handle section changes - update section.items arrays
+  // Handle project and section changes - update section.items arrays
   for (const update of updates) {
     const originalTask = taskMap.get(update.id)
     if (!originalTask) continue
 
-    // If sectionId is in the update data, handle section migration
-    if (update.sectionId !== undefined) {
-      const newSectionId = update.sectionId as GroupId
-      const taskId = createTaskId(update.id)
+    // Skip if neither project nor section is changing
+    if (update.projectId === undefined && update.sectionId === undefined) continue
 
-      // Find current project
-      const project = fileData.projects.find((p) => p.id === originalTask.projectId)
-      if (project) {
-        // Find the section that currently contains this task
-        const oldSection = project.sections.find((s) => s.items.includes(taskId))
+    const taskId = createTaskId(update.id)
+    const oldProjectId = originalTask.projectId
+    const newProjectId = update.projectId !== undefined ? update.projectId : oldProjectId
 
-        // Remove from old section if it's different from new section
-        if (oldSection && oldSection.id !== newSectionId) {
-          project.sections = removeTaskFromSection(taskId, oldSection.id, project.sections)
-        }
+    // Determine target section
+    // If sectionId is specified, use it; otherwise use default section (for project changes)
+    const targetSectionId: GroupId = (update.sectionId as GroupId | undefined) ?? DEFAULT_SECTION_ID
 
-        // Add to new section if not already there
-        const newSection = project.sections.find((s) => s.id === newSectionId)
-        if (newSection && !newSection.items.includes(taskId)) {
-          project.sections = addTaskToSection(taskId, newSectionId, undefined, project.sections)
-        }
+    // Remove from old project's section
+    const oldProject = fileData.projects.find((p) => p.id === oldProjectId)
+    if (oldProject) {
+      const oldSection = oldProject.sections.find((s) => s.items.includes(taskId))
+      if (oldSection) {
+        oldProject.sections = removeTaskFromSection(taskId, oldSection.id, oldProject.sections)
       }
+    }
+
+    // Add to new project's section
+    const newProject = fileData.projects.find((p) => p.id === newProjectId)
+    if (newProject) {
+      newProject.sections = addTaskToSection(
+        taskId,
+        targetSectionId,
+        undefined,
+        newProject.sections,
+      )
     }
   }
 

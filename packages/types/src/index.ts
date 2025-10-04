@@ -1950,6 +1950,9 @@ export const TaskCreateSerializationSchema = TaskSerializationSchema.partial()
   })
   .required({
     title: true,
+  })
+  .extend({
+    sectionId: GroupIdSchema.optional(),
   });
 export const TaskCreateArraySerializationSchema = z.array(
   TaskCreateSerializationSchema,
@@ -2041,6 +2044,7 @@ export const TaskUpdateSerializationSchema = TaskSerializationSchema.partial()
     recurring: TaskSerializationSchema.shape.recurring.nullable(),
     estimation: TaskSerializationSchema.shape.estimation.nullable(),
     projectId: TaskSerializationSchema.shape.projectId.nullable(),
+    sectionId: GroupIdSchema.optional(),
   });
 export const TaskUpdateArraySerializationSchema = z.array(
   TaskUpdateSerializationSchema,

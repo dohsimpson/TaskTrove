@@ -33,6 +33,7 @@ import {
   DEFAULT_TASK_COMMENTS,
   DEFAULT_RECURRING_MODE,
   TASKS_QUERY_KEY,
+  PROJECTS_QUERY_KEY,
 } from "@tasktrove/constants";
 import { createMutation } from "./factory";
 import { createEntityMutation } from "./entity-factory";
@@ -112,6 +113,7 @@ createTaskMutationAtom.debugLabel = "createTaskMutationAtom";
  * Note: Uses custom optimistic update to handle task-specific logic:
  * - Predicts completedAt changes based on completion status
  * - Converts null to undefined to match API behavior
+ * - Invalidates projects cache when tasks move between projects/sections
  */
 export const updateTasksMutationAtom = createEntityMutation<
   Task, // TEntity (individual entity type)
@@ -124,6 +126,8 @@ export const updateTasksMutationAtom = createEntityMutation<
     request: TaskUpdateArraySerializationSchema,
     response: UpdateTaskResponseSchema,
   },
+  // Invalidate both tasks and projects queries since task updates can modify project sections
+  invalidateQueryKeys: [TASKS_QUERY_KEY, PROJECTS_QUERY_KEY],
   // Custom optimistic update for task-specific behavior
   optimisticUpdateFn: (tasks: TaskUpdateUnion, oldTasks: Task[]) => {
     // Convert TaskUpdateUnion to array of individual task updates

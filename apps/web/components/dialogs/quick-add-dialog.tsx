@@ -717,7 +717,9 @@ export function QuickAddDialog() {
 
                 {/* Project */}
                 <ProjectPopover
-                  onUpdate={(projectId) => handleManualProjectSelect(projectId)}
+                  onUpdate={(projectId, sectionId) =>
+                    handleManualProjectSelect(projectId, sectionId)
+                  }
                   align="start"
                   contentClassName="w-64 p-0"
                 >

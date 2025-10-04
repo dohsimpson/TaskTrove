@@ -336,7 +336,7 @@ export function GeneralForm() {
               )}
             </p>
             <a
-              href="https://docs.tasktrove.io/api"
+              href="https://developer.tasktrove.io/api"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-sm text-primary hover:underline"

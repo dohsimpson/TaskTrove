@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
@@ -11,7 +11,8 @@ import {
   moveTaskBetweenSectionsAtom,
   taskAtoms,
 } from "@/lib/atoms/core/tasks"
-import { stopEditingSectionAtom } from "@/lib/atoms/ui/navigation"
+import { stopEditingSectionAtom, currentRouteContextAtom } from "@/lib/atoms/ui/navigation"
+import { currentViewStateAtom } from "@/lib/atoms/ui/views"
 import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
 import { projectAtoms } from "@/lib/atoms"
 import type { Project, Task as TaskType } from "@/lib/types"
@@ -22,6 +23,7 @@ import { ProjectViewToolbar } from "@/components/task/project-view-toolbar"
 import { EditableSectionHeader } from "@/components/task/editable-section-header"
 import { TaskShadow } from "@/components/ui/custom/task-shadow"
 import { DEFAULT_SECTION_COLOR, DEFAULT_UUID } from "@tasktrove/constants"
+import { applyViewStateFilters, sortTasksByViewState } from "@tasktrove/atoms"
 import {
   extractClosestEdge,
   attachClosestEdge,
@@ -73,8 +75,6 @@ interface KanbanBoardProps {
 }
 
 export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
-  const [columns, setColumns] = useState<KanbanColumn[]>([])
-
   // Track drag state for shadow rendering per column
   const [columnDragStates, setColumnDragStates] = useState<
     Map<
@@ -98,8 +98,34 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
   const stopEditingSection = useSetAtom(stopEditingSectionAtom)
   const renameSection = useSetAtom(projectAtoms.actions.renameSection)
 
+  // View state atoms
+  const currentViewState = useAtomValue(currentViewStateAtom)
+  const routeContext = useAtomValue(currentRouteContextAtom)
+
   // Hook for adding tasks to sections
   const addTaskToSection = useAddTaskToSection()
+
+  // Compute columns from project sections (reactive via props and atoms)
+  const columns = useMemo<KanbanColumn[]>(() => {
+    if (!project) return []
+
+    return project.sections.map((section) => {
+      const baseSectionTasks = getOrderedTasksForSection(project.id || "inbox", section.id)
+      const filteredSectionTasks = applyViewStateFilters(
+        baseSectionTasks,
+        currentViewState,
+        routeContext.viewId,
+      )
+      const sectionTasks = sortTasksByViewState([...filteredSectionTasks], currentViewState)
+
+      return {
+        id: section.id.toString(),
+        title: section.name,
+        tasks: sectionTasks,
+        color: section.color || "#6b7280",
+      }
+    })
+  }, [project, tasks, getOrderedTasksForSection, currentViewState, routeContext.viewId])
 
   // Handle task drop - matches project-sections-view logic
   const handleTaskDrop = (data: TaskDragData) => {
@@ -210,48 +236,6 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
       )
     }
   }
-
-  // Update columns when tasks or project change
-  useEffect(() => {
-    if (!project) {
-      setColumns([])
-      return
-    }
-
-    // Get sections from project and ensure default section is always present (matches project-sections-view logic)
-    const sectionsToShow = [...project.sections]
-
-    // Always ensure default section is present
-    const hasDefaultSection = sectionsToShow.some((section) => section.id === DEFAULT_SECTION_ID)
-    if (!hasDefaultSection) {
-      // Create default section if it doesn't exist
-      const defaultSection = {
-        id: DEFAULT_SECTION_ID,
-        name: "(no section)",
-        slug: "no-section",
-        type: "section" as const,
-        items: [],
-        color: "#6b7280", // Gray color for default section
-      }
-      // Add default section at the beginning
-      sectionsToShow.unshift(defaultSection)
-    }
-
-    const newColumns: KanbanColumn[] = []
-    sectionsToShow.forEach((section) => {
-      const sectionTasks = getOrderedTasksForSection(project.id || "inbox", section.id)
-      newColumns.push({
-        id: section.id.toString(),
-        title: section.name,
-        tasks: sectionTasks,
-        color: section.color || "#6b7280", // Default gray if no color
-      })
-    })
-
-    setColumns(newColumns)
-  }, [tasks, project, getOrderedTasksForSection])
-
-  // Initialize editing state when section editing starts - handled by EditableSectionHeader
 
   const handleSaveEditSection = (sectionId: string) => (newName: string) => {
     if (project) {

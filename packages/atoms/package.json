@@ -28,7 +28,9 @@
     "./utils": "./src/utils/atom-helpers.ts",
     "./utils/test-helpers": "./src/utils/test-helpers.ts",
     "./utils/filters": "./src/utils/filters.ts",
-    "./utils/counts": "./src/utils/counts.ts"
+    "./utils/counts": "./src/utils/counts.ts",
+    "./utils/view-filters": "./src/utils/view-filters.ts",
+    "./utils/view-sorting": "./src/utils/view-sorting.ts"
   },
   "scripts": {
     "lint": "eslint .",

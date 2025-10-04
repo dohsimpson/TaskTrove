@@ -7,6 +7,7 @@
 🎉 Feature - Add API Support with Bearer Token Authentication.
 🎉 Feature - Add password authentication support.
 🎉 Feature - Apply consistent cursor pointer style on all buttons.
+🎉 Feature - Build distroless docker image to improve security and image size.
 
 ### Minor Changes
 

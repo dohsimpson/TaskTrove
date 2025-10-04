@@ -6,7 +6,7 @@ import { PageFooter } from "./page-footer"
 // Mock the atoms instead of importing them
 vi.mock("@/lib/atoms", () => ({
   completedTasksTodayAtom: { toString: () => "completedTasksTodayAtom" },
-  baseFilteredTasksForViewAtom: vi.fn(() => ({ toString: () => "baseFilteredTasksForViewAtom" })),
+  uiFilteredTasksForViewAtom: vi.fn(() => ({ toString: () => "uiFilteredTasksForViewAtom" })),
   toggleTaskAtom: { toString: () => "toggleTaskAtom" },
   toggleTaskPanelWithViewStateAtom: { toString: () => "toggleTaskPanelWithViewStateAtom" },
   // Focus timer atoms

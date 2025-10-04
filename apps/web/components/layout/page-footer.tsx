@@ -4,7 +4,7 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { CheckCircle, Calendar } from "lucide-react"
 import {
   completedTasksTodayAtom,
-  baseFilteredTasksForViewAtom,
+  uiFilteredTasksForViewAtom,
   toggleTaskAtom,
   toggleTaskPanelWithViewStateAtom,
 } from "@/lib/atoms"
@@ -109,7 +109,7 @@ function TaskListContent({
 export function PageFooter({ className }: PageFooterProps) {
   // Task counts - using the same filtered atom as the "today" view for consistency
   const completedTasksToday = useAtomValue(completedTasksTodayAtom)
-  const todayTasks = useAtomValue(baseFilteredTasksForViewAtom("today"))
+  const todayTasks = useAtomValue(uiFilteredTasksForViewAtom("today"))
   const dueTodayCount = todayTasks.length
 
   // Translation setup

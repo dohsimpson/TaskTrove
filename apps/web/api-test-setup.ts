@@ -28,9 +28,21 @@ vi.mock("@/lib/utils/api-mutex", () => ({
   withMutexProtection: (handler: (...args: unknown[]) => unknown) => handler,
 }))
 
-// Mock API logging middleware - bypass logging in tests
+// Mock API logging middleware - bypass logging in tests but preserve header behavior
 vi.mock("@/lib/middleware/api-logger", () => ({
-  withApiLogging: (handler: (...args: unknown[]) => unknown) => handler,
+  withApiLogging: (handler: (...args: unknown[]) => unknown) => {
+    return async (...args: unknown[]) => {
+      const response = await handler(...args)
+      // Add X-Request-ID header to match middleware behavior
+      if (response && typeof response === "object" && "headers" in response) {
+        const headers = response.headers as Headers
+        if (!headers.get("X-Request-ID")) {
+          headers.set("X-Request-ID", "test-request-id")
+        }
+      }
+      return response
+    }
+  },
   logBusinessEvent: vi.fn(),
   withFileOperationLogging: async (operation: () => Promise<unknown>) => {
     try {

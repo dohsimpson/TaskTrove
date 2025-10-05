@@ -31,10 +31,11 @@ COPY --from=builder /app/out/full/ .
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     corepack enable pnpm && pnpm build
 
-# for backward compatibility and easier mounting, create a symlink to the data directory
+# for backward compatibility and easier mounting, create a symlink to the data and backups directory
 # symlink will be copied as long as they are inside a directory to be copied (copying symlink alone won't work)
 # reference: https://github.com/moby/moby/issues/40449#issuecomment-1545819389
 RUN ["ln", "-s", "/app/data", "/app/apps/web/.next/standalone/apps/web/data"]
+RUN ["ln", "-s", "/app/backups", "/app/apps/web/.next/standalone/apps/web/backups"]
 
 
 # using distroless image for extra security and smaller size: https://github.com/GoogleContainerTools/distroless

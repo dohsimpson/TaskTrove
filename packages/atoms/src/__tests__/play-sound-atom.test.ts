@@ -26,6 +26,9 @@ import {
   DEFAULT_BACKUP_TIME,
   DEFAULT_MAX_BACKUPS,
 } from "@tasktrove/constants";
+import { playSoundAtom } from "../utils/atom-helpers";
+import { settingsAtom } from "../data/base/atoms";
+import { playSound } from "@tasktrove/dom-utils/audio";
 
 // Mock the audio utils with web-specific types
 type SoundType =
@@ -47,8 +50,6 @@ type SoundType =
   | "error"
   | "confirm";
 
-const playSound = vi.fn().mockResolvedValue(undefined);
-
 // Mock the logger to avoid console noise in tests
 vi.mock("../../utils/logger", () => ({
   log: {
@@ -59,8 +60,26 @@ vi.mock("../../utils/logger", () => ({
 }));
 
 // Mock the audio utils
-vi.mock("../../utils/audio", () => ({
+vi.mock("@tasktrove/dom-utils/audio", () => ({
   playSound: vi.fn().mockResolvedValue(undefined),
+}));
+
+// Mock the settings atom to control it in our tests
+vi.mock("../data/base/atoms", () => ({
+  settingsAtom: atom({
+    data: {
+      autoBackup: {
+        enabled: DEFAULT_AUTO_BACKUP_ENABLED,
+        backupTime: DEFAULT_BACKUP_TIME,
+        maxBackups: DEFAULT_MAX_BACKUPS,
+      },
+    },
+    notifications: DEFAULT_NOTIFICATION_SETTINGS,
+    general: {
+      ...DEFAULT_GENERAL_SETTINGS,
+      soundEnabled: true, // Default to enabled
+    },
+  }),
 }));
 
 describe("playSoundAtom", () => {
@@ -314,6 +333,60 @@ describe("playSoundAtom", () => {
           1.0,
         );
       });
+    });
+  });
+
+  describe("settings integration", () => {
+    it("should respect soundEnabled setting from settingsAtom", async () => {
+      // Test the actual playSoundAtom from atom-helpers.ts
+      // This test will fail if the real playSoundAtom doesn't check soundEnabled
+
+      // Create a fresh store to test with
+      const testStore = createStore();
+
+      // Test 1: Override settings atom to have soundEnabled = false
+      const disabledSettings: UserSettings = {
+        data: {
+          autoBackup: {
+            enabled: DEFAULT_AUTO_BACKUP_ENABLED,
+            backupTime: DEFAULT_BACKUP_TIME,
+            maxBackups: DEFAULT_MAX_BACKUPS,
+          },
+        },
+        notifications: DEFAULT_NOTIFICATION_SETTINGS,
+        general: {
+          ...DEFAULT_GENERAL_SETTINGS,
+          soundEnabled: false, // Sound disabled
+        },
+      };
+
+      // Set the disabled settings
+      testStore.set(settingsAtom, disabledSettings);
+
+      // Try to play sound - should NOT call playSound because soundEnabled is false
+      await testStore.set(playSoundAtom, { soundType: "confirm" });
+
+      // Verify playSound was not called
+      expect(mockPlaySound).not.toHaveBeenCalled();
+
+      // Test 2: Enable sound and try again
+      const enabledSettings: UserSettings = {
+        ...disabledSettings,
+        general: {
+          ...disabledSettings.general,
+          soundEnabled: true,
+        },
+      };
+
+      // Set the enabled settings
+      testStore.set(settingsAtom, enabledSettings);
+
+      // Try to play sound - should call playSound now
+      await testStore.set(playSoundAtom, { soundType: "bell" });
+
+      // Verify playSound was called exactly once
+      expect(mockPlaySound).toHaveBeenCalledTimes(1);
+      expect(mockPlaySound).toHaveBeenCalledWith("bell", 1.0);
     });
   });
 });

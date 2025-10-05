@@ -7,6 +7,7 @@ import { atomWithStorage } from "jotai/utils";
 import { playSound, type SoundType } from "@tasktrove/dom-utils/audio";
 import { toast } from "@tasktrove/dom-utils/toast";
 import { showServiceWorkerNotification } from "@tasktrove/dom-utils/notifications";
+import { settingsAtom } from "../data/base/atoms";
 
 // Storage key prefix for the app
 export const STORAGE_PREFIX = "tasktrove-";
@@ -136,6 +137,11 @@ export const playSoundAtom = namedAtom(
           // Server-side rendering or non-DOM environment
           return;
         }
+
+        // Check if sound is enabled in settings
+        const settings = get(settingsAtom);
+        const generalSettings = settings.general;
+        if (!generalSettings.soundEnabled) return;
 
         await playSound(soundType, volume);
       } catch (error) {

@@ -10,7 +10,7 @@
     "test": "turbo run test",
     "test:changed": "turbo run test:changed",
     "test:coverage": "turbo run test:coverage",
-    "check": "turbo run check",
+    "check": "turbo run check --output-logs errors-only && echo 'All checks passed!'",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "docker:build": "docker build -t tasktrove .",
     "changeset": "changeset",

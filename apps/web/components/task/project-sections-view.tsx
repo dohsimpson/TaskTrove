@@ -815,6 +815,9 @@ export function ProjectSectionsView({
     if (!supportsSections) {
       return (
         <div className="px-4 py-3">
+          {/* Selection Toolbar - Full Width */}
+          <SelectionToolbar />
+
           {/* Filter Controls, Search Input and Add Task Button - Full Width */}
           <ProjectViewToolbar className="mb-3" />
 

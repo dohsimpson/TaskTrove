@@ -138,7 +138,7 @@ showUserProfileDialogAtom.debugLabel = "showUserProfileDialogAtom";
 /**
  * Selected Task ID - Currently selected task ID for viewing/editing
  */
-export const selectedTaskIdAtom = atom<string | null>(null);
+export const selectedTaskIdAtom = atom<TaskId | null>(null);
 selectedTaskIdAtom.debugLabel = "selectedTaskIdAtom";
 
 /**
@@ -155,9 +155,31 @@ export const selectedTaskAtom = atom<Task | null>((get) => {
 selectedTaskAtom.debugLabel = "selectedTaskAtom";
 
 /**
- * Selected Tasks - Array of task IDs selected for bulk operations
+ * Base selected tasks - Manually selected tasks for bulk operations (internal)
  */
-export const selectedTasksAtom = atom<TaskId[]>([]);
+export const baseSelectedTasksAtom = atom<TaskId[]>([]);
+baseSelectedTasksAtom.debugLabel = "baseSelectedTasksAtom";
+
+/**
+ * Selected Tasks - Array of task IDs selected for bulk operations
+ * Automatically includes selectedTaskId if set, ensuring panel task is always in selection
+ */
+export const selectedTasksAtom = atom(
+  (get) => {
+    const baseSelected = get(baseSelectedTasksAtom);
+    const panelTaskId = get(selectedTaskIdAtom);
+
+    // If there's a panel task, ensure it's included in the selection
+    if (panelTaskId && !baseSelected.includes(panelTaskId)) {
+      return [...baseSelected, panelTaskId];
+    }
+
+    return baseSelected;
+  },
+  (_get, set, newValue: TaskId[]) => {
+    set(baseSelectedTasksAtom, newValue);
+  },
+);
 selectedTasksAtom.debugLabel = "selectedTasksAtom";
 
 // =============================================================================

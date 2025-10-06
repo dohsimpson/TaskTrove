@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { selectedTasksAtom } from "./dialogs";
+import { selectedTasksAtom, baseSelectedTasksAtom } from "./dialogs";
 import { filteredTasksAtom } from "./filtered-tasks";
 import { updateTasksAtom, deleteTasksAtom } from "../core/tasks";
 import {
@@ -27,10 +27,20 @@ import {
 // =============================================================================
 
 /**
- * Selection mode state - controls whether the UI is in selection mode
+ * Selection mode state - automatically derived from baseSelectedTasksAtom
+ * True when there are manually selected tasks, false otherwise
  */
-export const selectionModeAtom = atom<boolean>(false);
+export const selectionModeAtom = atom<boolean>((get) => {
+  const baseSelected = get(baseSelectedTasksAtom);
+  return baseSelected.length > 0;
+});
 selectionModeAtom.debugLabel = "selectionModeAtom";
+
+/**
+ * Last selected task - used as anchor for SHIFT+click range selection
+ */
+export const lastSelectedTaskAtom = atom<TaskId | null>(null);
+lastSelectedTaskAtom.debugLabel = "lastSelectedTaskAtom";
 
 // =============================================================================
 // DERIVED SELECTION STATE ATOMS
@@ -75,42 +85,37 @@ isTaskSelectedAtom.debugLabel = "isTaskSelectedAtom";
 export const toggleTaskSelectionAtom = atom(
   null,
   (get, set, taskId: TaskId) => {
-    const currentSelected = get(selectedTasksAtom);
-    const isSelected = currentSelected.includes(taskId);
+    const selectedTasks = get(baseSelectedTasksAtom);
+    const isSelected = selectedTasks.includes(taskId);
 
     let updatedSelected: TaskId[];
     if (isSelected) {
       // Remove from selection
-      updatedSelected = currentSelected.filter((id) => id !== taskId);
+      updatedSelected = selectedTasks.filter((id) => id !== taskId);
     } else {
       // Add to selection
-      updatedSelected = [...currentSelected, taskId];
+      updatedSelected = [...selectedTasks, taskId];
+      // Track last selected task for range selection
+      set(lastSelectedTaskAtom, taskId);
     }
 
-    set(selectedTasksAtom, updatedSelected);
-
-    // Auto-manage selection mode
-    if (updatedSelected.length > 0 && !get(selectionModeAtom)) {
-      // Auto-enter selection mode when selecting first task
-      set(selectionModeAtom, true);
-    } else if (updatedSelected.length === 0 && get(selectionModeAtom)) {
-      // Auto-exit selection mode when no tasks are selected
-      set(selectionModeAtom, false);
-    }
+    set(baseSelectedTasksAtom, updatedSelected);
+    // Selection mode is automatically managed by selectionModeAtom (derived from baseSelectedTasksAtom)
   },
 );
 toggleTaskSelectionAtom.debugLabel = "toggleTaskSelectionAtom";
 
 /**
  * Enter selection mode with optional initial task selection
+ * Selection mode is automatically activated when tasks are selected
  */
 export const enterSelectionModeAtom = atom(
   null,
   (get, set, initialTaskId?: TaskId) => {
-    set(selectionModeAtom, true);
-    if (initialTaskId && !get(selectedTasksAtom).includes(initialTaskId)) {
-      const currentSelected = get(selectedTasksAtom);
-      set(selectedTasksAtom, [...currentSelected, initialTaskId]);
+    // Selection mode is automatically managed - just add the task if provided
+    if (initialTaskId && !get(baseSelectedTasksAtom).includes(initialTaskId)) {
+      const selectedTasks = get(baseSelectedTasksAtom);
+      set(baseSelectedTasksAtom, [...selectedTasks, initialTaskId]);
     }
   },
 );
@@ -118,10 +123,11 @@ enterSelectionModeAtom.debugLabel = "enterSelectionModeAtom";
 
 /**
  * Exit selection mode and clear all selections
+ * Selection mode is automatically deactivated when all tasks are deselected
  */
 export const exitSelectionModeAtom = atom(null, (get, set) => {
-  set(selectionModeAtom, false);
-  set(selectedTasksAtom, []);
+  // Clear selections - selection mode will automatically become false
+  set(baseSelectedTasksAtom, []);
 });
 exitSelectionModeAtom.debugLabel = "exitSelectionModeAtom";
 
@@ -131,16 +137,17 @@ exitSelectionModeAtom.debugLabel = "exitSelectionModeAtom";
 export const selectAllVisibleTasksAtom = atom(null, (get, set) => {
   const visibleTasks = get(filteredTasksAtom);
   const visibleTaskIds = visibleTasks.map((task: Task) => task.id);
-  set(selectedTasksAtom, visibleTaskIds);
-  set(selectionModeAtom, true);
+  set(baseSelectedTasksAtom, visibleTaskIds);
+  // Selection mode is automatically activated when tasks are selected
 });
 selectAllVisibleTasksAtom.debugLabel = "selectAllVisibleTasksAtom";
 
 /**
- * Clear all selections but maintain selection mode
+ * Clear all selections and exit selection mode
  */
 export const clearSelectionAtom = atom(null, (get, set) => {
-  set(selectedTasksAtom, []);
+  set(baseSelectedTasksAtom, []);
+  // Selection mode is automatically deactivated when all tasks are deselected
 });
 clearSelectionAtom.debugLabel = "clearSelectionAtom";
 
@@ -148,12 +155,12 @@ clearSelectionAtom.debugLabel = "clearSelectionAtom";
  * Add specific task to selection (doesn't toggle, always adds)
  */
 export const addTaskToSelectionAtom = atom(null, (get, set, taskId: TaskId) => {
-  const currentSelected = get(selectedTasksAtom);
-  if (!currentSelected.includes(taskId)) {
-    set(selectedTasksAtom, [...currentSelected, taskId]);
-    if (!get(selectionModeAtom)) {
-      set(selectionModeAtom, true);
-    }
+  const selectedTasks = get(baseSelectedTasksAtom);
+  if (!selectedTasks.includes(taskId)) {
+    set(baseSelectedTasksAtom, [...selectedTasks, taskId]);
+    // Track last selected task for range selection
+    set(lastSelectedTaskAtom, taskId);
+    // Selection mode is automatically activated when tasks are selected
   }
 });
 addTaskToSelectionAtom.debugLabel = "addTaskToSelectionAtom";
@@ -164,17 +171,73 @@ addTaskToSelectionAtom.debugLabel = "addTaskToSelectionAtom";
 export const removeTaskFromSelectionAtom = atom(
   null,
   (get, set, taskId: TaskId) => {
-    const currentSelected = get(selectedTasksAtom);
-    const updatedSelected = currentSelected.filter((id) => id !== taskId);
-    set(selectedTasksAtom, updatedSelected);
-
-    // Auto-exit selection mode if no tasks remain selected
-    if (updatedSelected.length === 0 && get(selectionModeAtom)) {
-      set(selectionModeAtom, false);
-    }
+    const selectedTasks = get(baseSelectedTasksAtom);
+    const updatedSelected = selectedTasks.filter((id) => id !== taskId);
+    set(baseSelectedTasksAtom, updatedSelected);
+    // Selection mode is automatically deactivated when all tasks are deselected
   },
 );
 removeTaskFromSelectionAtom.debugLabel = "removeTaskFromSelectionAtom";
+
+/**
+ * Select range of tasks from last selected task to current task (SHIFT+click)
+ * Uses visible/filtered tasks order for range selection
+ */
+export const selectTaskRangeAtom = atom(null, (get, set, taskId: TaskId) => {
+  const visibleTasks = get(filteredTasksAtom);
+  const selectedTasks = get(baseSelectedTasksAtom);
+
+  // Determine the anchor point for range selection
+  let lastSelected: TaskId | null;
+  if (selectedTasks.length === 0) {
+    // No selection: use first visible task as anchor
+    lastSelected = visibleTasks[0]?.id ?? null;
+  } else if (selectedTasks.length === 1) {
+    // Single selection: use that task as anchor
+    lastSelected = selectedTasks[0] ?? null;
+  } else {
+    // Multiple selections: use lastSelectedTaskAtom as anchor
+    lastSelected = get(lastSelectedTaskAtom);
+  }
+
+  // If no anchor point, just select the current one
+  if (!lastSelected) {
+    set(addTaskToSelectionAtom, taskId);
+    return;
+  }
+
+  // Find indices of both tasks in visible tasks
+  const lastIndex = visibleTasks.findIndex(
+    (task: Task) => task.id === lastSelected,
+  );
+  const currentIndex = visibleTasks.findIndex(
+    (task: Task) => task.id === taskId,
+  );
+
+  // If either task is not in visible tasks, just select current
+  if (lastIndex === -1 || currentIndex === -1) {
+    set(addTaskToSelectionAtom, taskId);
+    return;
+  }
+
+  // Determine range
+  const startIndex = Math.min(lastIndex, currentIndex);
+  const endIndex = Math.max(lastIndex, currentIndex);
+
+  // Get all task IDs in range
+  const rangeTaskIds = visibleTasks
+    .slice(startIndex, endIndex + 1)
+    .map((task: Task) => task.id);
+
+  // Merge with existing selection (union)
+  const newSelection = Array.from(new Set([...selectedTasks, ...rangeTaskIds]));
+
+  set(baseSelectedTasksAtom, newSelection);
+  // Update last selected to current task
+  set(lastSelectedTaskAtom, taskId);
+  // Selection mode is automatically activated when tasks are selected
+});
+selectTaskRangeAtom.debugLabel = "selectTaskRangeAtom";
 
 // =============================================================================
 // BULK OPERATION ATOMS
@@ -394,6 +457,7 @@ export const selectionActionAtoms = {
   clearSelection: clearSelectionAtom,
   addTaskToSelection: addTaskToSelectionAtom,
   removeTaskFromSelection: removeTaskFromSelectionAtom,
+  selectTaskRange: selectTaskRangeAtom,
   toggleSelectAllVisibleTasks: toggleSelectAllVisibleTasksAtom,
 } as const;
 

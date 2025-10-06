@@ -16,6 +16,7 @@ import {
   Edit3,
   ClockFading,
   Copy,
+  CheckSquare,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Task } from "@/lib/types"
@@ -29,6 +30,7 @@ interface TaskActionsMenuProps {
   onDeleteClick: () => void
   onEditClick?: () => void
   onEstimationClick?: () => void
+  onSelectClick?: () => void
   variant?: "full" | "compact" | "kanban" | "subtask"
   open?: boolean
   onOpenChange?: (open: boolean) => void
@@ -40,6 +42,7 @@ export function TaskActionsMenu({
   onDeleteClick,
   onEditClick,
   onEstimationClick,
+  onSelectClick,
   variant = "full",
   open,
   onOpenChange,
@@ -109,6 +112,13 @@ export function TaskActionsMenu({
     setIsOpen(false)
   }
 
+  const handleSelectClick = (e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    e?.preventDefault()
+    onSelectClick?.()
+    setIsOpen(false)
+  }
+
   // const handleTimerClick = () => {
   //   openPomodoro(task)
   //   setIsOpen(false)
@@ -117,7 +127,7 @@ export function TaskActionsMenu({
   if (variant === "compact" || variant === "kanban" || variant === "subtask") {
     return (
       <>
-        <DropdownMenu modal={false}>
+        <DropdownMenu modal={false} open={isOpen} onOpenChange={setIsOpen}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
@@ -131,6 +141,12 @@ export function TaskActionsMenu({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className={cn("w-32", variant === "subtask" && "w-36")}>
+            {onSelectClick && (
+              <DropdownMenuItem onClick={handleSelectClick} className="cursor-pointer">
+                <CheckSquare className="h-3.5 w-3.5 mr-2" />
+                Select
+              </DropdownMenuItem>
+            )}
             {onEditClick && (
               <DropdownMenuItem onClick={handleEditClick} className="cursor-pointer">
                 <Edit3 className="h-3.5 w-3.5 mr-2" />
@@ -193,6 +209,12 @@ export function TaskActionsMenu({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            {onSelectClick && (
+              <DropdownMenuItem onClick={handleSelectClick} className="cursor-pointer">
+                <CheckSquare className="h-4 w-4 mr-2" />
+                Select
+              </DropdownMenuItem>
+            )}
             {onEditClick && (
               <DropdownMenuItem onClick={handleEditClick} className="cursor-pointer">
                 <Edit3 className="h-4 w-4 mr-2" />

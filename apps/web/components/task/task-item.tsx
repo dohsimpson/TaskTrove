@@ -50,7 +50,10 @@ import {
   stopFocusTimerAtom,
   // Use centralized selection atoms
   selectionModeAtom,
+  selectedTasksAtom,
   selectionToggleTaskSelectionAtom,
+  addTaskToSelectionAtom,
+  selectTaskRangeAtom,
 } from "@/lib/atoms"
 import {
   labelsAtom,
@@ -216,6 +219,7 @@ export function TaskItem({
   // Get task data from atoms - MUST be called before any conditional returns
   const allTasks = useAtomValue(tasksAtom)
   const selectionMode = useAtomValue(selectionModeAtom)
+  const selectedTasks = useAtomValue(selectedTasksAtom)
   const allLabels = useAtomValue(labelsAtom)
   const getLabelsFromIds = useAtomValue(labelsFromIdsAtom)
   const allProjects = useAtomValue(projectsAtom)
@@ -229,6 +233,8 @@ export function TaskItem({
   const addComment = useSetAtom(addCommentAtom)
   const toggleTaskPanel = useSetAtom(toggleTaskPanelWithViewStateAtom)
   const toggleTaskSelection = useSetAtom(selectionToggleTaskSelectionAtom)
+  const addTaskToSelection = useSetAtom(addTaskToSelectionAtom)
+  const selectTaskRange = useSetAtom(selectTaskRangeAtom)
   const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
 
   // Quick-add atoms for subtask handling in new tasks
@@ -265,7 +271,8 @@ export function TaskItem({
 
   // Derived state from atoms
   const isSelected = selectedTaskId === taskId
-  const isSelectionMode = selectionMode
+  const isInSelection = selectedTasks.includes(taskId)
+  const isSelectionMode = useAtomValue(selectionModeAtom)
 
   // Context menu visibility with flicker prevention
   const {
@@ -383,6 +390,22 @@ export function TaskItem({
       return
     }
 
+    // Check for multiselect modifiers
+    const isCmdOrCtrl = e.metaKey || e.ctrlKey // metaKey = CMD on Mac, ctrlKey = CTRL on others
+    const isShift = e.shiftKey
+
+    // Handle multiselect with CMD/CTRL - toggle selection
+    if (isCmdOrCtrl) {
+      toggleTaskSelection(taskId)
+      return
+    }
+
+    // Handle range selection with SHIFT
+    if (isShift) {
+      selectTaskRange(taskId)
+      return
+    }
+
     // If in selection mode, toggle selection instead of opening panel
     if (isSelectionMode) {
       toggleTaskSelection(taskId)
@@ -391,15 +414,6 @@ export function TaskItem({
 
     // Use atom action to open task panel
     toggleTaskPanel(task)
-  }
-
-  const handleContextMenu = (e: React.MouseEvent) => {
-    // Prevent default context menu and enter selection mode
-    e.preventDefault()
-    // TODO: commented out right click triggering selection mode, as it's not supported at the moment
-    // if (!isSelectionMode) {
-    //   enterSelectionMode(taskId)
-    // }
   }
 
   const handleAddLabel = async (labelName?: string) => {
@@ -460,7 +474,9 @@ export function TaskItem({
           "group/task relative rounded border border-border border-l-3 transition-all duration-200",
           "hover:shadow-md dark:hover:shadow-gray-300/30",
           task.completed && "opacity-60",
-          isSelected ? "bg-accent text-accent-foreground border-accent-foreground/20" : "bg-card",
+          isSelected || isInSelection
+            ? "bg-accent text-accent-foreground border-accent-foreground/20"
+            : "bg-card",
           "cursor-pointer",
           getPriorityColor(task.priority, variant),
           className,
@@ -468,7 +484,6 @@ export function TaskItem({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleTaskClick}
-        onContextMenu={handleContextMenu}
         data-task-focused={isSelected}
       >
         {/* Main content area - responsive layout */}
@@ -477,14 +492,6 @@ export function TaskItem({
           <div className="flex flex-col md:flex-row md:items-center gap-2">
             {/* Left section - checkboxes and title */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              {/* Selection Checkbox */}
-              {isSelectionMode && (
-                <TaskCheckbox
-                  checked={isSelected}
-                  onCheckedChange={() => toggleTaskSelection(taskId)}
-                />
-              )}
-
               {/* Task Completion Checkbox */}
               <TaskCheckbox
                 checked={task.completed}
@@ -572,6 +579,7 @@ export function TaskItem({
                     task={task}
                     isVisible={actionsMenuVisible}
                     onDeleteClick={() => deleteTask(task.id)}
+                    onSelectClick={() => toggleTaskSelection(taskId)}
                     variant="compact"
                     open={actionsMenuOpen}
                     onOpenChange={handleActionsMenuChange}
@@ -707,6 +715,7 @@ export function TaskItem({
                     task={task}
                     isVisible={actionsMenuVisible}
                     onDeleteClick={() => deleteTask(task.id)}
+                    onSelectClick={() => toggleTaskSelection(taskId)}
                     variant="compact"
                     open={actionsMenuOpen}
                     onOpenChange={handleActionsMenuChange}
@@ -729,14 +738,15 @@ export function TaskItem({
         className={cn(
           "group/task relative p-3 border border-border border-l-3 rounded-lg shadow-xs cursor-pointer hover:shadow-md dark:hover:shadow-gray-300/30 transition-all duration-200",
           task.completed && "opacity-60",
-          isSelected ? "bg-accent text-accent-foreground border-accent-foreground/20" : "bg-card",
+          isSelected || isInSelection
+            ? "bg-accent text-accent-foreground border-accent-foreground/20"
+            : "bg-card",
           getPriorityColor(task.priority, variant),
           className,
         )}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleTaskClick}
-        onContextMenu={handleContextMenu}
         data-task-focused={isSelected}
       >
         {/* Header with title, priority, and key metadata */}
@@ -817,6 +827,7 @@ export function TaskItem({
               task={task}
               isVisible={actionsMenuVisible}
               onDeleteClick={() => deleteTask(task.id)}
+              onSelectClick={() => toggleTaskSelection(taskId)}
               variant="kanban"
               open={actionsMenuOpen}
               onOpenChange={handleActionsMenuChange}
@@ -1041,6 +1052,7 @@ export function TaskItem({
             task={task}
             isVisible={actionsMenuVisible}
             onDeleteClick={handleSubtaskDelete}
+            onSelectClick={() => toggleTaskSelection(taskId)}
             onEstimationClick={handleEstimationMenuClick}
             variant="subtask"
             open={actionsMenuOpen}
@@ -1069,7 +1081,9 @@ export function TaskItem({
         "group relative p-2 sm:p-3 md:p-4 rounded-lg border border-border border-l-3 transition-all duration-200",
         "hover:shadow-md dark:hover:shadow-gray-300/30",
         task.completed && "opacity-60",
-        isSelected ? "bg-accent text-accent-foreground border-accent-foreground/20" : "bg-card",
+        isSelected || isInSelection
+          ? "bg-accent text-accent-foreground border-accent-foreground/20"
+          : "bg-card",
         "cursor-pointer",
         getPriorityColor(task.priority, variant),
         className,
@@ -1077,21 +1091,12 @@ export function TaskItem({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleTaskClick}
-      onContextMenu={handleContextMenu}
       data-task-focused={isSelected}
     >
       {/* Main Layout - Flex with proper alignment */}
       <div className="flex gap-2 sm:gap-3">
         {/* Left Side - Checkboxes aligned with title */}
         <div className="flex items-start gap-2 sm:gap-3 flex-shrink-0">
-          {/* Selection Checkbox */}
-          {isSelectionMode && (
-            <TaskCheckbox
-              checked={isSelected}
-              onCheckedChange={() => toggleTaskSelection(taskId)}
-            />
-          )}
-
           {/* Task Completion Checkbox */}
           <TaskCheckbox
             checked={task.completed}
@@ -1140,6 +1145,7 @@ export function TaskItem({
                 task={task}
                 isVisible={actionsMenuVisible}
                 onDeleteClick={() => deleteTask(task.id)}
+                onSelectClick={() => toggleTaskSelection(taskId)}
                 variant="compact"
                 open={actionsMenuOpen}
                 onOpenChange={handleActionsMenuChange}

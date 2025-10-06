@@ -29,6 +29,15 @@ export const TEST_TASK_ID_1 = createTaskId(
 export const TEST_TASK_ID_2 = createTaskId(
   "12345678-1234-4234-8234-123456789013",
 );
+export const TEST_TASK_ID_3 = createTaskId(
+  "12345678-1234-4234-8234-123456789014",
+);
+export const TEST_TASK_ID_4 = createTaskId(
+  "12345678-1234-4234-8234-123456789015",
+);
+export const TEST_TASK_ID_5 = createTaskId(
+  "12345678-1234-4234-8234-123456789016",
+);
 export const TEST_PROJECT_ID_1 = createProjectId(
   "11111111-1111-4111-8111-111111111111",
 );

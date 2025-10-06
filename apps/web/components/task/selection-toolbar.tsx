@@ -58,8 +58,20 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
   const bulkSetPriority = useSetAtom(bulkSetPriorityAtom)
   const bulkSchedule = useSetAtom(bulkScheduleTasksAtom)
 
-  // Don't render if not in selection mode or no tasks selected
-  if (!selectionMode || selectedTasks.length === 0) {
+  // Handle Escape key to exit selection mode
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && selectionMode) {
+        exitSelectionMode()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [selectionMode, exitSelectionMode])
+
+  // Don't render if not in selection mode
+  if (!selectionMode) {
     return null
   }
 
@@ -133,7 +145,7 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
               {allVisibleSelected ? "Deselect All" : "Select All"}
             </Button>
             <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
-              {selectedTasks.length} of {filteredTasks.length} selected
+              {selectedTasks.length} selected
             </span>
           </div>
 

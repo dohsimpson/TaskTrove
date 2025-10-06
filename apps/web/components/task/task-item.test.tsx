@@ -65,6 +65,8 @@ vi.mock("@/lib/atoms", () => ({
   selectedTasksAtom: { toString: () => "selectedTasksAtom" },
   selectionModeAtom: { toString: () => "selectionModeAtom" },
   selectionToggleTaskSelectionAtom: { toString: () => "selectionToggleTaskSelectionAtom" },
+  addTaskToSelectionAtom: { toString: () => "addTaskToSelectionAtom" },
+  selectTaskRangeAtom: { toString: () => "selectTaskRangeAtom" },
   enterSelectionModeAtom: { toString: () => "enterSelectionModeAtom" },
   tasksAtom: { toString: () => "tasksAtom" },
   sortedProjectsAtom: { toString: () => "sortedProjectsAtom" },
@@ -936,7 +938,7 @@ describe("TaskItem", () => {
       expect(taskElement).toHaveClass("line-through")
     })
 
-    it("shows selection checkbox when in selection mode", async () => {
+    it("highlights task when in selection mode and selected", async () => {
       // Update mock to return selection mode enabled and task selected
       const { useAtomValue } = await import("jotai")
       vi.mocked(useAtomValue).mockImplementation((atom: unknown) => {
@@ -977,8 +979,13 @@ describe("TaskItem", () => {
         </Provider>,
       )
 
+      // Only completion checkbox should be present
       const checkboxes = screen.getAllByTestId("checkbox")
-      expect(checkboxes).toHaveLength(2) // Selection + completion checkboxes
+      expect(checkboxes).toHaveLength(1)
+
+      // Task should have accent background when selected
+      const taskElement = screen.getByText("Test Task").closest("div[class*='group']")
+      expect(taskElement).toHaveClass("bg-accent")
     })
 
     it("hides selection checkbox when not in selection mode", () => {
@@ -1011,7 +1018,7 @@ describe("TaskItem", () => {
       expect(mockToggleTask).toHaveBeenCalledWith(TEST_TASK_ID_1)
     })
 
-    it("shows selection checkbox in selection mode", async () => {
+    it("shows only completion checkbox in selection mode", async () => {
       // Update mock to enable selection mode
       const { useAtomValue } = await import("jotai")
       vi.mocked(useAtomValue).mockImplementation((atom: unknown) => {
@@ -1052,8 +1059,9 @@ describe("TaskItem", () => {
         </Provider>,
       )
 
+      // Only completion checkbox (no selection checkbox)
       const checkboxes = screen.getAllByTestId("checkbox")
-      expect(checkboxes).toHaveLength(2) // Selection + completion
+      expect(checkboxes).toHaveLength(1)
     })
   })
 

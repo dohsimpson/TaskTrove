@@ -60,6 +60,7 @@ export {
 // Selection exports (avoiding conflicts with dialogs)
 export {
   selectionModeAtom,
+  lastSelectedTaskAtom,
   hasSelectedTasksAtom,
   allVisibleTasksSelectedAtom,
   someVisibleTasksSelectedAtom,
@@ -69,6 +70,7 @@ export {
   clearSelectionAtom,
   addTaskToSelectionAtom,
   removeTaskFromSelectionAtom,
+  selectTaskRangeAtom,
   toggleSelectAllVisibleTasksAtom,
   bulkActionAtom,
   bulkCompleteTasksAtom,

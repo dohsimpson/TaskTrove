@@ -21,6 +21,9 @@ catalogs:
     '@changesets/get-github-info':
       specifier: ^0.6.0
       version: 0.6.0
+    '@eslint/js':
+      specifier: ^9.34.0
+      version: 9.36.0
     '@hookform/resolvers':
       specifier: ^5.2.2
       version: 5.2.2
@@ -29,6 +32,9 @@ catalogs:
       version: 13.7.0
     '@next/bundle-analyzer':
       specifier: ^15.4.6
+      version: 15.5.3
+    '@next/eslint-plugin-next':
+      specifier: ^15.5.0
       version: 15.5.3
     '@radix-ui/react-accordion':
       specifier: ^1.2.12
@@ -156,6 +162,12 @@ catalogs:
     '@types/uuid':
       specifier: ^10.0.0
       version: 10.0.0
+    '@typescript-eslint/eslint-plugin':
+      specifier: ^8.38.0
+      version: 8.44.1
+    '@typescript-eslint/parser':
+      specifier: ^8.38.0
+      version: 8.44.1
     '@typescript/native-preview':
       specifier: 7.0.0-dev.20250723.1
       version: 7.0.0-dev.20250723.1
@@ -195,6 +207,30 @@ catalogs:
     eslint:
       specifier: ^9.31.0
       version: 9.36.0
+    eslint-config-next:
+      specifier: ^15.3.5
+      version: 15.5.3
+    eslint-config-prettier:
+      specifier: ^10.1.1
+      version: 10.1.8
+    eslint-config-turbo:
+      specifier: ^2.5.8
+      version: 2.5.8
+    eslint-plugin-only-warn:
+      specifier: ^1.1.0
+      version: 1.1.0
+    eslint-plugin-react:
+      specifier: ^7.37.5
+      version: 7.37.5
+    eslint-plugin-react-hooks:
+      specifier: ^5.2.0
+      version: 5.2.0
+    eslint-plugin-turbo:
+      specifier: ^2.5.0
+      version: 2.5.8
+    globals:
+      specifier: ^16.3.0
+      version: 16.4.0
     happy-dom:
       specifier: ^18.0.1
       version: 18.0.1
@@ -312,6 +348,9 @@ catalogs:
     typescript:
       specifier: ^5.9.2
       version: 5.9.2
+    typescript-eslint:
+      specifier: ^8.40.0
+      version: 8.44.1
     uuid:
       specifier: ^13.0.0
       version: 13.0.0
@@ -825,46 +864,49 @@ importers:
   packages/eslint-config:
     devDependencies:
       '@eslint/js':
-        specifier: ^9.34.0
+        specifier: 'catalog:'
         version: 9.36.0
       '@next/eslint-plugin-next':
-        specifier: ^15.5.0
+        specifier: 'catalog:'
         version: 15.5.3
       '@typescript-eslint/eslint-plugin':
-        specifier: ^8.38.0
+        specifier: 'catalog:'
         version: 8.44.1(@typescript-eslint/parser@8.44.1(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.2))(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.2)
       '@typescript-eslint/parser':
-        specifier: ^8.38.0
+        specifier: 'catalog:'
         version: 8.44.1(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.2)
       eslint:
-        specifier: ^9.31.0
+        specifier: 'catalog:'
         version: 9.36.0(jiti@2.6.0)
       eslint-config-next:
-        specifier: ^15.3.5
+        specifier: 'catalog:'
         version: 15.5.3(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.2)
       eslint-config-prettier:
-        specifier: ^10.1.1
+        specifier: 'catalog:'
         version: 10.1.8(eslint@9.36.0(jiti@2.6.0))
+      eslint-config-turbo:
+        specifier: 'catalog:'
+        version: 2.5.8(eslint@9.36.0(jiti@2.6.0))(turbo@2.5.6)
       eslint-plugin-only-warn:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       eslint-plugin-react:
-        specifier: ^7.37.5
+        specifier: 'catalog:'
         version: 7.37.5(eslint@9.36.0(jiti@2.6.0))
       eslint-plugin-react-hooks:
-        specifier: ^5.2.0
+        specifier: 'catalog:'
         version: 5.2.0(eslint@9.36.0(jiti@2.6.0))
       eslint-plugin-turbo:
-        specifier: ^2.5.0
-        version: 2.5.6(eslint@9.36.0(jiti@2.6.0))(turbo@2.5.6)
+        specifier: 'catalog:'
+        version: 2.5.8(eslint@9.36.0(jiti@2.6.0))(turbo@2.5.6)
       globals:
-        specifier: ^16.3.0
+        specifier: 'catalog:'
         version: 16.4.0
       typescript:
-        specifier: ^5.9.2
+        specifier: 'catalog:'
         version: 5.9.2
       typescript-eslint:
-        specifier: ^8.40.0
+        specifier: 'catalog:'
         version: 8.44.1(eslint@9.36.0(jiti@2.6.0))(typescript@5.9.2)
 
   packages/i18n:
@@ -3703,6 +3745,12 @@ packages:
     peerDependencies:
       eslint: '>=7.0.0'
 
+  eslint-config-turbo@2.5.8:
+    resolution: {integrity: sha512-wzxmN7dJNFGDwOvR/4j8U2iaIH/ruYez8qg/sCKrezJ3+ljbFMvJLmgKKt/1mDuyU9wj5aZqO6VijP3QH169FA==}
+    peerDependencies:
+      eslint: '>6.6.0'
+      turbo: '>2.0.0'
+
   eslint-import-resolver-node@0.3.9:
     resolution: {integrity: sha512-WFj2isz22JahUv+B788TlO3N6zL3nNJGU8CcZbPZvVEkBPaJdCV4vy5wyghty5ROFbCRnm132v8BScu5/1BQ8g==}
 
@@ -3772,8 +3820,8 @@ packages:
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7
 
-  eslint-plugin-turbo@2.5.6:
-    resolution: {integrity: sha512-KUDE23aP2JV8zbfZ4TeM1HpAXzMM/AYG/bJam7P4AalUxas8Pd/lS/6R3p4uX91qJcH1LwL4h0ED48nDe8KorQ==}
+  eslint-plugin-turbo@2.5.8:
+    resolution: {integrity: sha512-bVjx4vTH0oTKIyQ7EGFAXnuhZMrKIfu17qlex/dps7eScPnGQLJ3r1/nFq80l8xA+8oYjsSirSQ2tXOKbz3kEw==}
     peerDependencies:
       eslint: '>6.6.0'
       turbo: '>2.0.0'
@@ -8921,6 +8969,12 @@ snapshots:
     dependencies:
       eslint: 9.36.0(jiti@2.6.0)
 
+  eslint-config-turbo@2.5.8(eslint@9.36.0(jiti@2.6.0))(turbo@2.5.6):
+    dependencies:
+      eslint: 9.36.0(jiti@2.6.0)
+      eslint-plugin-turbo: 2.5.8(eslint@9.36.0(jiti@2.6.0))(turbo@2.5.6)
+      turbo: 2.5.6
+
   eslint-import-resolver-node@0.3.9:
     dependencies:
       debug: 3.2.7
@@ -9031,7 +9085,7 @@ snapshots:
       string.prototype.matchall: 4.0.12
       string.prototype.repeat: 1.0.0
 
-  eslint-plugin-turbo@2.5.6(eslint@9.36.0(jiti@2.6.0))(turbo@2.5.6):
+  eslint-plugin-turbo@2.5.8(eslint@9.36.0(jiti@2.6.0))(turbo@2.5.6):
     dependencies:
       dotenv: 16.0.3
       eslint: 9.36.0(jiti@2.6.0)

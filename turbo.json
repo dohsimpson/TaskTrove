@@ -35,5 +35,6 @@
     "check": {
       "dependsOn": ["transit"]
     }
-  }
+  },
+  "globalPassThroughEnv": ["PORT"]
 }

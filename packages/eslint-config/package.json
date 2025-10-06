@@ -8,19 +8,20 @@
     "./next-js": "./next.js"
   },
   "devDependencies": {
-    "@eslint/js": "^9.34.0",
-    "@next/eslint-plugin-next": "^15.5.0",
-    "@typescript-eslint/eslint-plugin": "^8.38.0",
-    "@typescript-eslint/parser": "^8.38.0",
-    "eslint": "^9.31.0",
-    "eslint-config-next": "^15.3.5",
-    "eslint-config-prettier": "^10.1.1",
-    "eslint-plugin-only-warn": "^1.1.0",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-turbo": "^2.5.0",
-    "globals": "^16.3.0",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.40.0"
+    "@eslint/js": "catalog:",
+    "@next/eslint-plugin-next": "catalog:",
+    "@typescript-eslint/eslint-plugin": "catalog:",
+    "@typescript-eslint/parser": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-next": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "eslint-config-turbo": "catalog:",
+    "eslint-plugin-only-warn": "catalog:",
+    "eslint-plugin-react": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
+    "eslint-plugin-turbo": "catalog:",
+    "globals": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   }
 }

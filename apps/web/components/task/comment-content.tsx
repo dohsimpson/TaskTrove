@@ -272,7 +272,7 @@ export function CommentContent({
           </div>
           {commentsLength > 0 && (
             <span className="text-xs text-muted-foreground">
-              {t("comments.commentCount", "{{count}} 条评论", { count: commentsLength })}
+              {t("comments.commentCount", "{{count}} comments", { count: commentsLength })}
             </span>
           )}
         </div>

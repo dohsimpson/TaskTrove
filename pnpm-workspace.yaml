@@ -16,7 +16,7 @@ catalog:
   react-dom: "^19.1.1"
   next: "latest"
   "@hookform/resolvers": "^5.2.2"
-  "react-hook-form": "^7.63.0"
+  "react-hook-form": "^7.64.0"
   "react-i18next": "^15.7.3"
   "react-day-picker": "^9.11.0"
   "react-resizable-panels": "^3.0.6"

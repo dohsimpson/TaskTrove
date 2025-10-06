@@ -4,14 +4,14 @@ import React from "react"
 import { useSetAtom } from "jotai"
 import { Flag } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { updateTaskAtom } from "@/lib/atoms"
+import { tasksAtom } from "@/lib/atoms"
 import { isValidPriority } from "@/lib/types"
 import { getPriorityTextColor } from "@/lib/color-utils"
 import { useTranslation } from "@tasktrove/i18n"
 import type { Task } from "@/lib/types"
 
 interface PriorityContentProps {
-  task: Task
+  task: Task | Task[]
   className?: string
   onPrioritySelect?: () => void
 }
@@ -20,11 +20,19 @@ export function PriorityContent({ task, className, onPrioritySelect }: PriorityC
   // Translation setup
   const { t } = useTranslation("task")
 
-  const updateTask = useSetAtom(updateTaskAtom)
+  const updateTasks = useSetAtom(tasksAtom)
+
+  const isMultipleTasks = Array.isArray(task)
 
   const handlePriorityUpdate = (priority: number) => {
     if (isValidPriority(priority)) {
-      updateTask({ updateRequest: { id: task.id, priority } })
+      if (isMultipleTasks) {
+        // For multiple tasks, update all at once
+        updateTasks(task.map((t) => ({ id: t.id, priority })))
+      } else {
+        // For single task
+        updateTasks([{ id: task.id, priority }])
+      }
       onPrioritySelect?.()
     }
   }
@@ -50,7 +58,7 @@ export function PriorityContent({ task, className, onPrioritySelect }: PriorityC
             key={priority.value}
             className={cn(
               "flex items-center gap-3 rounded-md cursor-pointer hover:bg-accent/50 transition-all duration-200 p-2",
-              task.priority === priority.value && "bg-accent",
+              !isMultipleTasks && task.priority === priority.value && "bg-accent",
             )}
             onClick={() => handlePriorityUpdate(priority.value)}
           >

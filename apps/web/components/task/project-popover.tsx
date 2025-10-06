@@ -7,7 +7,7 @@ import type { Task, ProjectId, GroupId } from "@/lib/types"
 
 interface ProjectPopoverProps {
   // Mode 1: Task-based (for TaskItem)
-  task?: Task
+  task?: Task | Task[]
   onUpdate?: (projectId: ProjectId, sectionId?: GroupId) => void
   // Common props
   children: React.ReactNode

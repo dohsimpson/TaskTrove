@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Folder, Inbox, ChevronRight, ChevronDown, FolderOpen, Folders } from "lucide-react"
 import { cn, shouldTaskBeInInbox } from "@/lib/utils"
-import { projectsAtom, updateTaskAtom } from "@/lib/atoms"
+import { projectsAtom, tasksAtom } from "@/lib/atoms"
 import { projectIdsAtom } from "@/lib/atoms/core/projects"
 import { allGroupsAtom } from "@/lib/atoms/core/groups"
 import { useTranslation } from "@tasktrove/i18n"
@@ -13,7 +13,7 @@ import { INBOX_PROJECT_ID, isGroup } from "@/lib/types"
 
 interface ProjectContentProps {
   // Mode 1: Task-based (for TaskItem)
-  task?: Task
+  task?: Task | Task[]
   onUpdate?: (projectId: ProjectId, sectionId?: GroupId) => void
   className?: string
 }
@@ -24,7 +24,9 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
 
   const allProjects = useAtomValue(projectsAtom)
   const groups = useAtomValue(allGroupsAtom)
-  const updateTask = useSetAtom(updateTaskAtom)
+  const updateTasks = useSetAtom(tasksAtom)
+
+  const isMultipleTasks = Array.isArray(task)
 
   // Helper function to collect all group IDs recursively
   const collectAllGroupIds = (items: (ProjectGroup | ProjectId)[]): Set<string> => {
@@ -47,17 +49,20 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
     collectAllGroupIds(groups.projectGroups?.items || []),
   )
 
-  // Determine current project based on mode
-  const currentProjectId = task?.projectId
-  const currentProject = allProjects.find((p) => p.id === currentProjectId)
-  // Find which section contains this task (if any)
-  const currentSectionId = currentProject?.sections.find((s) =>
-    task?.id ? s.items.includes(task.id) : false,
-  )?.id
+  // Determine current project based on mode (only for single task)
+  const currentProjectId = isMultipleTasks ? undefined : task?.projectId
+  const currentProject = currentProjectId
+    ? allProjects.find((p) => p.id === currentProjectId)
+    : undefined
+  // Find which section contains this task (if any, only for single task)
+  const currentSectionId =
+    !isMultipleTasks && currentProject && task
+      ? currentProject.sections.find((s) => s.items.includes(task.id))?.id
+      : undefined
 
-  // Check if currently in inbox (includes orphaned tasks)
+  // Check if currently in inbox (includes orphaned tasks, only for single task)
   const projectIds = useAtomValue(projectIdsAtom)
-  const isInboxSelected = shouldTaskBeInInbox(currentProjectId, projectIds)
+  const isInboxSelected = !isMultipleTasks && shouldTaskBeInInbox(currentProjectId, projectIds)
 
   const handleProjectSelect = (projectId: ProjectId, sectionId?: GroupId) => {
     if (onUpdate) {
@@ -65,7 +70,13 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
       onUpdate(projectId, sectionId)
     } else if (task) {
       // Task mode (TaskItem)
-      updateTask({ updateRequest: { id: task.id, projectId, sectionId } })
+      if (isMultipleTasks) {
+        // For multiple tasks, update all at once
+        updateTasks(task.map((t) => ({ id: t.id, projectId, sectionId })))
+      } else {
+        // For single task
+        updateTasks([{ id: task.id, projectId, sectionId }])
+      }
     }
   }
 
@@ -79,9 +90,15 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
       onUpdate(INBOX_PROJECT_ID)
     } else if (task) {
       // Task mode (TaskItem)
-      updateTask({
-        updateRequest: { id: task.id, projectId: INBOX_PROJECT_ID, sectionId: undefined },
-      })
+      if (isMultipleTasks) {
+        // For multiple tasks, update all at once
+        updateTasks(
+          task.map((t) => ({ id: t.id, projectId: INBOX_PROJECT_ID, sectionId: undefined })),
+        )
+      } else {
+        // For single task
+        updateTasks([{ id: task.id, projectId: INBOX_PROJECT_ID, sectionId: undefined }])
+      }
     }
   }
 

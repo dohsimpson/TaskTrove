@@ -6,7 +6,7 @@ import { PriorityContent } from "./priority-content"
 import type { Task } from "@/lib/types"
 
 interface PriorityPopoverProps {
-  task: Task
+  task: Task | Task[]
   children: React.ReactNode
   className?: string
   onOpenChange?: (open: boolean) => void

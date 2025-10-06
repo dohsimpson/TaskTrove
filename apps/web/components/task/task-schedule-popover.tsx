@@ -6,7 +6,7 @@ import { TaskScheduleContent } from "./task-schedule-content"
 import type { TaskId } from "@/lib/types"
 
 interface TaskSchedulePopoverProps {
-  taskId?: TaskId
+  taskId?: TaskId | TaskId[]
   children: React.ReactNode
   className?: string
   onOpenChange?: (open: boolean) => void

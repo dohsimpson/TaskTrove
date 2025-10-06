@@ -150,6 +150,7 @@ vi.mock("jotai", () => ({
 vi.mock("@/lib/atoms", () => ({
   projectsAtom: "mockProjectsAtom",
   updateTaskAtom: "mockUpdateTaskAtom",
+  tasksAtom: "mockTasksAtom",
 }))
 
 vi.mock("@/lib/atoms/core/projects", () => ({
@@ -284,12 +285,13 @@ describe("ProjectContent", () => {
       const personalProject = screen.getByText("Personal Project")
       await user.click(personalProject)
 
-      expect(mockUpdateTask).toHaveBeenCalledWith({
-        updateRequest: {
+      expect(mockUpdateTask).toHaveBeenCalledWith([
+        {
           id: mockTask.id,
           projectId: createProjectId("550e8400-e29b-41d4-a716-446655440002"),
+          sectionId: undefined,
         },
-      })
+      ])
     })
 
     it("highlights currently selected project and section", () => {

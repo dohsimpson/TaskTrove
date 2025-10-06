@@ -2,15 +2,31 @@
 
 import React from "react"
 import { useAtomValue, useSetAtom } from "jotai"
+import { v4 as uuidv4 } from "uuid"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CheckSquare, Trash2, Calendar, Flag, Move, MoreHorizontal, X } from "lucide-react"
+import { SimpleInputDialog } from "@/components/ui/custom/simple-input-dialog"
+import {
+  CheckSquare,
+  Trash2,
+  Calendar,
+  Flag,
+  MoreHorizontal,
+  X,
+  Square,
+  MessageSquare,
+  ListTodo,
+  CheckCircle,
+  XCircle,
+  Plus,
+  Folder,
+} from "lucide-react"
 import {
   selectionModeAtom,
   selectedTasksAtom,
@@ -18,17 +34,15 @@ import {
   clearSelectionAtom,
   selectAllVisibleTasksAtom,
   allVisibleTasksSelectedAtom,
-  bulkCompleteTasksAtom,
-  bulkDeleteTasksAtom,
-  bulkMoveTasksAtom,
-  bulkSetPriorityAtom,
-  bulkScheduleTasksAtom,
-  filteredTasksAtom,
 } from "@/lib/atoms"
-import { projectsAtom } from "@/lib/atoms"
+import { tasksAtom, deleteTasksAtom } from "@/lib/atoms"
 import { DeleteConfirmDialog } from "@/components/dialogs/delete-confirm-dialog"
+import { PriorityPopover } from "@/components/task/priority-popover"
+import { TaskSchedulePopover } from "@/components/task/task-schedule-popover"
+import { ProjectPopover } from "@/components/task/project-popover"
 import { cn } from "@/lib/utils"
-import type { ProjectId } from "@/lib/types"
+import { createCommentId, createSubtaskId } from "@/lib/types"
+import type { TaskComment, Subtask } from "@/lib/types"
 
 interface SelectionToolbarProps {
   className?: string
@@ -36,27 +50,31 @@ interface SelectionToolbarProps {
 
 export function SelectionToolbar({ className }: SelectionToolbarProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false)
+  const [showAddCommentDialog, setShowAddCommentDialog] = React.useState(false)
+  const [showAddSubtaskDialog, setShowAddSubtaskDialog] = React.useState(false)
+  const [commentInput, setCommentInput] = React.useState("")
+  const [subtaskInput, setSubtaskInput] = React.useState("")
 
   // Selection state
   const selectionMode = useAtomValue(selectionModeAtom)
-  const selectedTasks = useAtomValue(selectedTasksAtom)
+  const selectedTaskIds = useAtomValue(selectedTasksAtom)
   const allVisibleSelected = useAtomValue(allVisibleTasksSelectedAtom)
-  const filteredTasks = useAtomValue(filteredTasksAtom)
 
-  // Projects for move operation
-  const projects = useAtomValue(projectsAtom)
+  // Get all tasks to map IDs to Task objects
+  const allTasks = useAtomValue(tasksAtom)
+  const selectedTasks = React.useMemo(
+    () => allTasks.filter((task) => selectedTaskIds.includes(task.id)),
+    [allTasks, selectedTaskIds],
+  )
 
   // Selection actions
   const exitSelectionMode = useSetAtom(exitSelectionModeAtom)
   const clearSelection = useSetAtom(clearSelectionAtom)
   const selectAllVisible = useSetAtom(selectAllVisibleTasksAtom)
 
-  // Bulk actions
-  const bulkComplete = useSetAtom(bulkCompleteTasksAtom)
-  const bulkDelete = useSetAtom(bulkDeleteTasksAtom)
-  const bulkMove = useSetAtom(bulkMoveTasksAtom)
-  const bulkSetPriority = useSetAtom(bulkSetPriorityAtom)
-  const bulkSchedule = useSetAtom(bulkScheduleTasksAtom)
+  // Bulk actions - use tasksAtom directly
+  const updateTasks = useSetAtom(tasksAtom)
+  const deleteTasks = useSetAtom(deleteTasksAtom)
 
   // Handle Escape key to exit selection mode
   React.useEffect(() => {
@@ -83,6 +101,14 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
     }
   }
 
+  const handleBulkComplete = () => {
+    // Complete all selected tasks
+    const updates = selectedTaskIds.map((id) => ({ id, completed: true }))
+    updateTasks(updates)
+    // Exit selection mode after completing
+    exitSelectionMode()
+  }
+
   const handleBulkDelete = () => {
     setShowDeleteConfirm(true)
   }
@@ -90,182 +116,163 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
   const handleConfirmDelete = (deleteContainedResources?: boolean) => {
     // For bulk task deletion, we don't currently use deleteContainedResources
     // but we need to match the new DeleteConfirmDialog signature
-    bulkDelete()
+    deleteTasks(selectedTaskIds)
     setShowDeleteConfirm(false)
+    // Exit selection mode after deleting
+    exitSelectionMode()
   }
 
-  const handleMoveTo = (projectId: ProjectId | null) => {
-    bulkMove(projectId)
+  const handleClearComments = () => {
+    const updates = selectedTaskIds.map((id) => ({ id, comments: [] }))
+    updateTasks(updates)
   }
 
-  const handleSetPriority = (priority: 1 | 2 | 3 | 4) => {
-    bulkSetPriority(priority)
+  const handleClearSubtasks = () => {
+    const updates = selectedTaskIds.map((id) => ({ id, subtasks: [] }))
+    updateTasks(updates)
   }
 
-  const handleSchedule = (type: "today" | "tomorrow" | "next-week" | "clear") => {
-    const now = new Date()
-    let dueDate: Date | null = null
+  const handleCompleteSubtasks = () => {
+    const updates = selectedTasks.map((task) => ({
+      id: task.id,
+      subtasks: task.subtasks.map((subtask) => ({ ...subtask, completed: true })),
+    }))
+    updateTasks(updates)
+  }
 
-    switch (type) {
-      case "today":
-        dueDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
-        break
-      case "tomorrow":
-        dueDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 23, 59, 59)
-        break
-      case "next-week":
-        dueDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7, 23, 59, 59)
-        break
-      case "clear":
-        dueDate = null
-        break
+  const handleUncompleteSubtasks = () => {
+    const updates = selectedTasks.map((task) => ({
+      id: task.id,
+      subtasks: task.subtasks.map((subtask) => ({ ...subtask, completed: false })),
+    }))
+    updateTasks(updates)
+  }
+
+  const handleAddComment = () => {
+    if (!commentInput.trim()) return
+
+    const newComment: TaskComment = {
+      id: createCommentId(uuidv4()),
+      content: commentInput.trim(),
+      createdAt: new Date(),
     }
 
-    bulkSchedule(dueDate)
+    const updates = selectedTasks.map((task) => ({
+      id: task.id,
+      comments: [...task.comments, newComment],
+    }))
+
+    updateTasks(updates)
+    setCommentInput("")
+    setShowAddCommentDialog(false)
+  }
+
+  const handleAddSubtask = () => {
+    if (!subtaskInput.trim()) return
+
+    const newSubtask: Subtask = {
+      id: createSubtaskId(uuidv4()),
+      title: subtaskInput.trim(),
+      completed: false,
+    }
+
+    const updates = selectedTasks.map((task) => ({
+      id: task.id,
+      subtasks: [...task.subtasks, newSubtask],
+    }))
+
+    updateTasks(updates)
+    setSubtaskInput("")
+    setShowAddSubtaskDialog(false)
   }
 
   return (
     <>
-      <div
-        className={cn(
-          "flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/20 border-b border-blue-200 dark:border-blue-800",
-          className,
-        )}
-      >
-        <div className="flex items-center gap-4">
+      <div className={cn("flex items-center justify-between pb-3 mb-3 border-b", className)}>
+        <div className="flex items-center gap-3">
           {/* Selection count and select all toggle */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSelectAll}
-              className="text-blue-900 dark:text-blue-100 hover:bg-blue-100 dark:hover:bg-blue-900/30"
-            >
-              <CheckSquare className="h-4 w-4 mr-1" />
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={handleSelectAll} className="h-8">
+              {allVisibleSelected ? (
+                <CheckSquare className="h-4 w-4 mr-1.5" />
+              ) : (
+                <Square className="h-4 w-4 mr-1.5" />
+              )}
               {allVisibleSelected ? "Deselect All" : "Select All"}
             </Button>
-            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+            <span className="text-sm font-medium text-muted-foreground">
               {selectedTasks.length} selected
             </span>
           </div>
 
           {/* Quick actions */}
           {selectedTasks.length > 0 && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 ml-2">
               {/* Complete tasks */}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={bulkComplete}
-                className="text-green-700 border-green-300 hover:bg-green-50 dark:text-green-400 dark:border-green-600 dark:hover:bg-green-950/20"
-              >
-                <CheckSquare className="h-4 w-4 mr-1" />
+              <Button size="sm" variant="ghost" onClick={handleBulkComplete} className="h-8">
+                <CheckSquare className="h-4 w-4 mr-1.5" />
                 Complete
               </Button>
 
-              {/* Schedule dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-blue-700 border-blue-300 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-600 dark:hover:bg-blue-950/20"
-                  >
-                    <Calendar className="h-4 w-4 mr-1" />
-                    Schedule
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => handleSchedule("today")}>Today</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleSchedule("tomorrow")}>
-                    Tomorrow
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleSchedule("next-week")}>
-                    Next week
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => handleSchedule("clear")}>
-                    Clear due date
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {/* Schedule popover */}
+              <TaskSchedulePopover taskId={selectedTaskIds}>
+                <Button size="sm" variant="ghost" className="h-8">
+                  <Calendar className="h-4 w-4 mr-1.5" />
+                  Schedule
+                </Button>
+              </TaskSchedulePopover>
 
-              {/* Priority dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-orange-700 border-orange-300 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-600 dark:hover:bg-orange-950/20"
-                  >
-                    <Flag className="h-4 w-4 mr-1" />
-                    Priority
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => handleSetPriority(1)}>
-                    <Flag className="h-4 w-4 mr-2 text-red-500" />
-                    Priority 1
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleSetPriority(2)}>
-                    <Flag className="h-4 w-4 mr-2 text-orange-500" />
-                    Priority 2
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleSetPriority(3)}>
-                    <Flag className="h-4 w-4 mr-2 text-blue-500" />
-                    Priority 3
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleSetPriority(4)}>
-                    <Flag className="h-4 w-4 mr-2 text-gray-400" />
-                    Priority 4 (None)
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {/* Priority popover */}
+              <PriorityPopover task={selectedTasks}>
+                <Button size="sm" variant="ghost" className="h-8">
+                  <Flag className="h-4 w-4 mr-1.5" />
+                  Priority
+                </Button>
+              </PriorityPopover>
 
-              {/* Move to project dropdown */}
-              {projects.length > 0 && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-purple-700 border-purple-300 hover:bg-purple-50 dark:text-purple-400 dark:border-purple-600 dark:hover:bg-purple-950/20"
-                    >
-                      <Move className="h-4 w-4 mr-1" />
-                      Move
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    {projects.map((project) => (
-                      <DropdownMenuItem key={project.id} onClick={() => handleMoveTo(project.id)}>
-                        <div
-                          className="w-3 h-3 rounded-sm mr-2"
-                          style={{ backgroundColor: project.color }}
-                        />
-                        {project.name}
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => handleMoveTo(null)}>
-                      <div className="w-3 h-3 rounded-sm bg-muted mr-2" />
-                      No project (Inbox)
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+              {/* Project popover */}
+              <ProjectPopover task={selectedTasks}>
+                <Button size="sm" variant="ghost" className="h-8">
+                  <Folder className="h-4 w-4 mr-1.5" />
+                  Project
+                </Button>
+              </ProjectPopover>
 
               {/* More actions dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-gray-700 border-gray-300 hover:bg-gray-50 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-950/20"
-                  >
+                  <Button size="sm" variant="ghost" className="h-8 px-2">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => setShowAddCommentDialog(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add comment
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowAddSubtaskDialog(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add subtask
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleCompleteSubtasks}>
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Complete all subtasks
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleUncompleteSubtasks}>
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Uncomplete all subtasks
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleClearComments}>
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Clear all comments
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleClearSubtasks}>
+                    <ListTodo className="h-4 w-4 mr-2" />
+                    Clear all subtasks
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleBulkDelete}
                     className="text-red-600 dark:text-red-400"
@@ -280,13 +287,8 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
         </div>
 
         {/* Cancel button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={exitSelectionMode}
-          className="text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30"
-        >
-          <X className="h-4 w-4 mr-1" />
+        <Button variant="ghost" size="sm" onClick={exitSelectionMode} className="h-8">
+          <X className="h-4 w-4 mr-1.5" />
           Cancel
         </Button>
       </div>
@@ -298,6 +300,28 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
         onConfirm={handleConfirmDelete}
         entityType="bulk"
         entityCount={selectedTasks.length}
+      />
+
+      {/* Add comment dialog */}
+      <SimpleInputDialog
+        open={showAddCommentDialog}
+        onOpenChange={setShowAddCommentDialog}
+        title={`Add comment to ${selectedTasks.length} task${selectedTasks.length !== 1 ? "s" : ""}`}
+        placeholder="Enter comment..."
+        value={commentInput}
+        onChange={setCommentInput}
+        onSubmit={handleAddComment}
+      />
+
+      {/* Add subtask dialog */}
+      <SimpleInputDialog
+        open={showAddSubtaskDialog}
+        onOpenChange={setShowAddSubtaskDialog}
+        title={`Add subtask to ${selectedTasks.length} task${selectedTasks.length !== 1 ? "s" : ""}`}
+        placeholder="Enter subtask title..."
+        value={subtaskInput}
+        onChange={setSubtaskInput}
+        onSubmit={handleAddSubtask}
       />
     </>
   )

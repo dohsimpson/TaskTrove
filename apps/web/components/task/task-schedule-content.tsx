@@ -37,7 +37,7 @@ import {
   getRecurringReferenceDate,
 } from "@/lib/utils/recurring-task-processor"
 import { useAtomValue, useSetAtom } from "jotai"
-import { tasksAtom, updateTaskAtom } from "@/lib/atoms"
+import { tasksAtom } from "@/lib/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
 import { HelpPopover } from "@/components/ui/help-popover"
 import {
@@ -47,7 +47,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile"
 
 interface TaskScheduleContentProps {
-  taskId?: TaskId
+  taskId?: TaskId | TaskId[]
   onClose?: () => void // close the popover
   isNewTask?: boolean
   defaultTab?: "schedule" | "recurring" // for testing
@@ -62,13 +62,19 @@ export function TaskScheduleContent({
   const { t } = useTranslation("task")
 
   const allTasks = useAtomValue(tasksAtom)
-  const updateTask = useSetAtom(updateTaskAtom)
+  const updateTasks = useSetAtom(tasksAtom)
   const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
   const newTask = useAtomValue(quickAddTaskAtom)
+
+  const isMultipleTasks = Array.isArray(taskId)
   const isNewTask = !taskId
+
+  // For multiple tasks, we don't have a single task to show - we'll only allow basic operations
   const task: Task | CreateTaskRequest | undefined = isNewTask
     ? newTask
-    : allTasks.find((t: Task) => t.id === taskId)
+    : isMultipleTasks
+      ? undefined
+      : allTasks.find((t: Task) => t.id === taskId)
   const isMobile = useIsMobile()
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(task?.dueDate)
   const [selectedMonthlyDays, setSelectedMonthlyDays] = useState<number[]>(() => {
@@ -251,7 +257,7 @@ export function TaskScheduleContent({
 
   const handleUpdate = useCallback(
     (
-      taskId: TaskId | undefined,
+      taskId: TaskId | TaskId[] | undefined,
       date: Date | undefined | null,
       time: Date | undefined | null,
       type: string,
@@ -286,11 +292,15 @@ export function TaskScheduleContent({
       // Apply updates using appropriate function
       if (!taskId) {
         updateQuickAddTask({ updateRequest: updates })
+      } else if (Array.isArray(taskId)) {
+        // For multiple tasks, update all at once
+        updateTasks(taskId.map((id) => ({ id, ...updates })))
       } else {
-        updateTask({ updateRequest: { id: taskId, ...updates } })
+        // For single task
+        updateTasks([{ id: taskId, ...updates }])
       }
     },
-    [isNewTask, updateTask, updateQuickAddTask],
+    [isNewTask, updateTasks, updateQuickAddTask],
   )
 
   // Handle clearing all schedule and recurring data
@@ -305,8 +315,12 @@ export function TaskScheduleContent({
     // Apply updates using appropriate function
     if (!taskId) {
       updateQuickAddTask({ updateRequest: updates })
+    } else if (Array.isArray(taskId)) {
+      // For multiple tasks, update all at once
+      updateTasks(taskId.map((id) => ({ id, ...updates })))
     } else {
-      updateTask({ updateRequest: { id: taskId, ...updates } })
+      // For single task
+      updateTasks([{ id: taskId, ...updates }])
     }
 
     // Clear all UI states
@@ -327,7 +341,7 @@ export function TaskScheduleContent({
     setShowInlineCalendar(false)
     setShowIntervalConfig(false)
     setNlInput("")
-  }, [isNewTask, taskId, updateTask, updateQuickAddTask])
+  }, [isNewTask, taskId, updateTasks, updateQuickAddTask])
 
   // Handle manual natural language parsing
   const handleParseInput = useCallback(() => {
@@ -636,8 +650,6 @@ export function TaskScheduleContent({
   }
 
   const handleRecurringSelect = (type: string) => {
-    if (!task) return
-
     let rrule: string | null = null
 
     switch (type) {
@@ -809,7 +821,7 @@ export function TaskScheduleContent({
     // If task already has a due date, preserve it and just add recurring pattern
     // If no due date, calculate one based on the recurring pattern
     if (rrule) {
-      if (task.dueDate) {
+      if (task?.dueDate) {
         // Keep existing due date and time, just add recurring pattern
         handleUpdate(taskId, undefined, undefined, type, rrule)
       } else {
@@ -836,7 +848,8 @@ export function TaskScheduleContent({
     handleUpdate(taskId, date, preserveTime, "custom")
   }
 
-  if (!task) {
+  // Allow rendering for multiple tasks mode (task will be undefined but that's ok)
+  if (!task && !isMultipleTasks && !isNewTask) {
     console.warn("Task not found", taskId)
     return null
   }
@@ -864,14 +877,14 @@ export function TaskScheduleContent({
           <TabsTrigger value="schedule" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
             {t("schedule.title", "Schedule")}
-            {(task.dueDate || task.dueTime) && (
+            {(task?.dueDate || task?.dueTime) && (
               <div className="w-1.5 h-1.5 bg-foreground rounded-full" />
             )}
           </TabsTrigger>
           <TabsTrigger value="recurring" className="flex items-center gap-2">
             <Repeat className="h-4 w-4" />
             {t("schedule.recurring", "Recurring")}
-            {task.recurring && <div className="w-1.5 h-1.5 bg-foreground rounded-full" />}
+            {task?.recurring && <div className="w-1.5 h-1.5 bg-foreground rounded-full" />}
           </TabsTrigger>
         </TabsList>
 
@@ -950,7 +963,7 @@ export function TaskScheduleContent({
               variant="ghost"
               className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSkipToNext}
-              disabled={!task.dueDate}
+              disabled={!task?.dueDate}
             >
               <FastForward className="h-4 w-4 text-blue-600 mb-1" />
               <span className="text-center leading-tight">{t("schedule.skip", "Skip")}</span>
@@ -959,7 +972,7 @@ export function TaskScheduleContent({
               variant="ghost"
               className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={() => handleUpdate(taskId, undefined, null, "remove-time")}
-              disabled={!task.dueTime}
+              disabled={!task?.dueTime}
             >
               <AlarmClockOff className="h-4 w-4 mb-1" />
               <span className="text-center leading-tight">
@@ -970,7 +983,7 @@ export function TaskScheduleContent({
               variant="ghost"
               className="flex-1 h-12 text-xs flex flex-col items-center justify-center p-1 text-red-600 hover:text-red-700 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleClearAll}
-              disabled={!task.dueDate && !task.dueTime && !task.recurring}
+              disabled={!task?.dueDate && !task?.dueTime && !task?.recurring}
             >
               <Ban className="h-4 w-4 mb-1" />
               <span className="text-center leading-tight">{t("schedule.clear", "Clear")}</span>
@@ -1090,7 +1103,7 @@ export function TaskScheduleContent({
             </div>
           )}
 
-          {task.dueDate && (
+          {task?.dueDate && (
             <div className="pt-3 mt-3 border-t">
               <div className="text-xs text-gray-500 flex items-center gap-1">
                 <Clock className="h-3 w-3" />
@@ -1202,7 +1215,7 @@ export function TaskScheduleContent({
                   setShowIntervalConfig(false)
                   handleClearAll()
                 }}
-                disabled={!task.dueDate && !task.dueTime && !task.recurring}
+                disabled={!task?.dueDate && !task?.dueTime && !task?.recurring}
               >
                 <Ban className="h-4 w-4 mb-1" />
                 <span className="text-center leading-tight">{t("schedule.clear", "Clear")}</span>
@@ -1741,7 +1754,7 @@ export function TaskScheduleContent({
             )}
 
             {/* Recurring Mode Toggle */}
-            {task.recurring && (
+            {task?.recurring && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -1751,30 +1764,34 @@ export function TaskScheduleContent({
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant={task.recurringMode !== "completedAt" ? "default" : "outline"}
+                    variant={task?.recurringMode !== "completedAt" ? "default" : "outline"}
                     size="sm"
                     className="flex-1 text-xs"
                     onClick={() => {
                       const updates = { recurringMode: "dueDate" as const }
                       if (!taskId) {
                         updateQuickAddTask({ updateRequest: updates })
+                      } else if (Array.isArray(taskId)) {
+                        updateTasks(taskId.map((id) => ({ id, ...updates })))
                       } else {
-                        updateTask({ updateRequest: { id: taskId, ...updates } })
+                        updateTasks([{ id: taskId, ...updates }])
                       }
                     }}
                   >
                     {t("recurring.dueDate", "Due date")}
                   </Button>
                   <Button
-                    variant={task.recurringMode === "completedAt" ? "default" : "outline"}
+                    variant={task?.recurringMode === "completedAt" ? "default" : "outline"}
                     size="sm"
                     className="flex-1 text-xs"
                     onClick={() => {
                       const updates = { recurringMode: "completedAt" as const }
                       if (!taskId) {
                         updateQuickAddTask({ updateRequest: updates })
+                      } else if (Array.isArray(taskId)) {
+                        updateTasks(taskId.map((id) => ({ id, ...updates })))
                       } else {
-                        updateTask({ updateRequest: { id: taskId, ...updates } })
+                        updateTasks([{ id: taskId, ...updates }])
                       }
                     }}
                   >
@@ -1785,11 +1802,11 @@ export function TaskScheduleContent({
             )}
           </div>
 
-          {task.recurring && (
+          {task?.recurring && (
             <div className="pt-3 mt-3 border-t">
               <div className="text-xs text-gray-500 flex items-center gap-1">
                 <Repeat className="h-3 w-3" />
-                {t("recurring.current", "Current:")} {getRRuleDisplay(task.recurring || "")}
+                {t("recurring.current", "Current:")} {getRRuleDisplay(task?.recurring || "")}
               </div>
             </div>
           )}

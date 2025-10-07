@@ -189,7 +189,7 @@ export function EditableDiv({
 
   return React.createElement(Component, {
     ref,
-    contentEditable: true,
+    contentEditable: "plaintext-only",
     suppressContentEditableWarning: true,
     className: cn(
       "outline-none cursor-text",

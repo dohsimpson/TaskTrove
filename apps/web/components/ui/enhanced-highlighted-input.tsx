@@ -530,7 +530,7 @@ export function EnhancedHighlightedInput({
       {/* ContentEditable input */}
       <div
         ref={inputRef}
-        contentEditable
+        contentEditable="plaintext-only"
         role="combobox"
         aria-expanded={autocomplete.show}
         aria-haspopup="listbox"
@@ -545,6 +545,7 @@ export function EnhancedHighlightedInput({
         onBlur={() => setIsFocused(false)}
         suppressContentEditableWarning
         style={{ caretColor: "hsl(var(--foreground))" }}
+        tabIndex={0}
       />
 
       {/* Screen reader help text */}

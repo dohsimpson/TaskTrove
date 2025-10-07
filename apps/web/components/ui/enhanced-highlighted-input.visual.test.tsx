@@ -34,7 +34,7 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
@@ -57,7 +57,7 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
@@ -73,7 +73,7 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
@@ -140,7 +140,7 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
@@ -158,7 +158,7 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
@@ -218,7 +218,7 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
@@ -243,7 +243,7 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
 
@@ -257,7 +257,7 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       const { container } = render(<EnhancedHighlightedInput {...defaultProps} value="" />)
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
@@ -293,7 +293,7 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
         )
 
         const contentEditable = getTypedElement(
-          container.querySelector('[contenteditable="true"]'),
+          container.querySelector('[contenteditable="plaintext-only"]'),
           HTMLElement,
         )
         const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
@@ -312,7 +312,7 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
 

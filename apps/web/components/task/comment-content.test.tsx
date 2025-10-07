@@ -128,17 +128,37 @@ vi.mock("@/components/ui/custom/editable-div", () => ({
     value,
     onChange,
     onCancel,
-    ...props
+    multiline,
+    cursorPosition,
+    allowEmpty,
+    autoFocus,
+    onEditingChange,
+    placeholder,
+    ...domProps
   }: {
     value: string
     onChange: (value: string) => void
     onCancel?: () => void
+    multiline?: boolean
+    cursorPosition?: "start" | "end"
+    allowEmpty?: boolean
+    autoFocus?: boolean
+    onEditingChange?: (isEditing: boolean) => void
+    placeholder?: string
     [key: string]: unknown
   }) => {
+    // Component-specific props are extracted but not used in the mock
+    void multiline
+    void cursorPosition
+    void allowEmpty
+    void autoFocus
+    void onEditingChange
+    void placeholder
+
     const [localValue, setLocalValue] = React.useState(value)
 
     return (
-      <div data-testid="editable-div" {...props}>
+      <div data-testid="editable-div" {...domProps}>
         <input
           type="text"
           value={localValue}

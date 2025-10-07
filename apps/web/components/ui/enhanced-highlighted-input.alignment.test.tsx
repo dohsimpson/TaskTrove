@@ -34,7 +34,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       expect(contentEditable).toBeTruthy()
@@ -56,7 +56,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       expect(contentEditable).toBeTruthy()
@@ -96,7 +96,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       expect(contentEditable).toBeTruthy()
@@ -183,7 +183,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       expect(contentEditable).toBeTruthy()
@@ -200,7 +200,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       expect(contentEditable).toBeTruthy()
@@ -218,7 +218,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       expect(contentEditable).toBeTruthy()
@@ -241,7 +241,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       expect(contentEditable).toBeTruthy()
@@ -266,7 +266,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       expect(contentEditable).toBeTruthy()
@@ -303,7 +303,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       expect(contentEditable).toBeTruthy()
@@ -327,7 +327,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       expect(contentEditable).toBeTruthy()
@@ -370,7 +370,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       expect(contentEditable).toBeTruthy()
@@ -388,7 +388,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       )
 
       const contentEditable = getTypedElement(
-        container.querySelector('[contenteditable="true"]'),
+        container.querySelector('[contenteditable="plaintext-only"]'),
         HTMLElement,
       )
       expect(contentEditable).toBeTruthy()

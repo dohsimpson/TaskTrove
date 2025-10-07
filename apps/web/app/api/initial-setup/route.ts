@@ -83,7 +83,7 @@ async function initialSetup(
   let hashedPassword: string
   try {
     hashedPassword = saltAndHashPassword(password)
-  } catch (error) {
+  } catch {
     return createErrorResponse(
       "Failed to hash password",
       "Password hashing failed",

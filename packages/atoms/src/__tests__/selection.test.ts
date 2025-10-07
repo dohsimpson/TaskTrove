@@ -9,27 +9,19 @@ import {
   toggleTaskSelectionAtom,
   enterSelectionModeAtom,
   exitSelectionModeAtom,
-  selectAllVisibleTasksAtom,
   clearSelectionAtom,
   addTaskToSelectionAtom,
   removeTaskFromSelectionAtom,
-  selectTaskRangeAtom,
-  allVisibleTasksSelectedAtom,
-  someVisibleTasksSelectedAtom,
 } from "../ui/selection";
 import {
   selectedTasksAtom,
   baseSelectedTasksAtom,
   selectedTaskIdAtom,
 } from "../ui/dialogs";
-import { filteredTasksAtom } from "../ui/filtered-tasks";
-import { createTaskId, type Task, type TaskId } from "@tasktrove/types";
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
   TEST_TASK_ID_3,
-  TEST_TASK_ID_4,
-  TEST_TASK_ID_5,
 } from "../utils/test-helpers";
 
 describe("Selection Atoms", () => {
@@ -37,19 +29,6 @@ describe("Selection Atoms", () => {
 
   beforeEach(() => {
     store = createStore();
-  });
-
-  const createMockTask = (id: TaskId, title: string): Task => ({
-    id,
-    title,
-    completed: false,
-    createdAt: new Date(),
-    description: "",
-    priority: 4,
-    labels: [],
-    subtasks: [],
-    comments: [],
-    recurringMode: "dueDate",
   });
 
   describe("Base State Atoms", () => {

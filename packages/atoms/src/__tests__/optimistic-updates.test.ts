@@ -18,11 +18,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createStore } from "jotai";
 import { updateTasksMutationAtom, queryClientAtom } from "../core/base";
 import type { Task } from "@tasktrove/types";
-import {
-  createTaskId,
-  createSectionId,
-  INBOX_PROJECT_ID,
-} from "@tasktrove/types";
+import { createTaskId, INBOX_PROJECT_ID } from "@tasktrove/types";
 import { TASKS_QUERY_KEY } from "@tasktrove/constants";
 import { QueryClient } from "@tanstack/react-query";
 
@@ -93,14 +89,11 @@ describe("Optimistic Updates", () => {
         message: "Task updated successfully",
       };
 
-      const mockFetchResponse: Partial<Response> = {
-        ok: true,
-        json: () => Promise.resolve(mockResponse),
-      };
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      vi.mocked(global.fetch).mockResolvedValueOnce(
-        mockFetchResponse as Response,
-      );
+      const mockFetchResponse = new Response(JSON.stringify(mockResponse), {
+        status: 200,
+        statusText: "OK",
+      });
+      vi.mocked(global.fetch).mockResolvedValueOnce(mockFetchResponse);
 
       // Update task to completed
       const taskUpdate = {
@@ -137,14 +130,11 @@ describe("Optimistic Updates", () => {
         message: "Task updated successfully",
       };
 
-      const mockFetchResponse: Partial<Response> = {
-        ok: true,
-        json: () => Promise.resolve(mockResponse),
-      };
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      vi.mocked(global.fetch).mockResolvedValueOnce(
-        mockFetchResponse as Response,
-      );
+      const mockFetchResponse = new Response(JSON.stringify(mockResponse), {
+        status: 200,
+        statusText: "OK",
+      });
+      vi.mocked(global.fetch).mockResolvedValueOnce(mockFetchResponse);
 
       // Update completed task to incomplete
       const taskUpdate = {
@@ -182,14 +172,11 @@ describe("Optimistic Updates", () => {
         message: "Task updated successfully",
       };
 
-      const mockFetchResponse: Partial<Response> = {
-        ok: true,
-        json: () => Promise.resolve(mockResponse),
-      };
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      vi.mocked(global.fetch).mockResolvedValueOnce(
-        mockFetchResponse as Response,
-      );
+      const mockFetchResponse = new Response(JSON.stringify(mockResponse), {
+        status: 200,
+        statusText: "OK",
+      });
+      vi.mocked(global.fetch).mockResolvedValueOnce(mockFetchResponse);
 
       const originalCompletedAt = mockCompletedTask.completedAt;
 
@@ -229,14 +216,11 @@ describe("Optimistic Updates", () => {
         message: "Tasks updated successfully",
       };
 
-      const mockFetchResponse: Partial<Response> = {
-        ok: true,
-        json: () => Promise.resolve(mockResponse),
-      };
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      vi.mocked(global.fetch).mockResolvedValueOnce(
-        mockFetchResponse as Response,
-      );
+      const mockFetchResponse = new Response(JSON.stringify(mockResponse), {
+        status: 200,
+        statusText: "OK",
+      });
+      vi.mocked(global.fetch).mockResolvedValueOnce(mockFetchResponse);
 
       // Update both tasks with different completion transitions
       const taskUpdates = [

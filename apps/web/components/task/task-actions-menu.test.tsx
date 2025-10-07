@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@/test-utils/render-with-pro
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { TaskActionsMenu } from "./task-actions-menu"
 import type { Task } from "@/lib/types"
-import { TEST_TASK_ID_1, TEST_SECTION_ID_1 } from "@/lib/utils/test-constants"
+import { TEST_TASK_ID_1 } from "@/lib/utils/test-constants"
 
 // Mock the atoms
 vi.mock("@/lib/atoms", () => ({}))

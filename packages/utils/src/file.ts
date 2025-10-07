@@ -42,7 +42,14 @@ export function parseAvatarDataUrl(
  * @returns true if supported, false otherwise
  */
 export function isSupportedAvatarMimeType(mimeType: string): boolean {
-  return SUPPORTED_AVATAR_MIME_TYPES.includes(mimeType as any);
+  const supportedTypes = [
+    "image/png",
+    "image/jpeg",
+    "image/jpg",
+    "image/gif",
+    "image/webp",
+  ];
+  return supportedTypes.includes(mimeType);
 }
 
 /**

@@ -14,7 +14,6 @@ import { SubtaskPopover } from "./subtask-popover"
 import type { Task } from "@/lib/types"
 import {
   TEST_TASK_ID_1,
-  TEST_SECTION_ID_1,
   TEST_SUBTASK_ID_1,
   TEST_SUBTASK_ID_2,
   TEST_SUBTASK_ID_3,

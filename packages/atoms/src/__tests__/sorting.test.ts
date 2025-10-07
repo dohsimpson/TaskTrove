@@ -13,7 +13,6 @@ import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
   TEST_PROJECT_ID_1,
-  TEST_SECTION_ID_1,
 } from "../utils/test-helpers";
 
 // Define task IDs for consistent use in tests

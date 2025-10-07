@@ -140,8 +140,6 @@ vi.mock("lucide-react", () => ({
 // Create spy functions to track atom calls
 const mockDeleteProjectGroup = vi.fn()
 const mockDeleteProjects = vi.fn()
-const mockUpdateProjectGroup = vi.fn()
-const mockStartEditing = vi.fn()
 
 describe("ProjectGroupContextMenu", () => {
   const mockProjectGroup = {

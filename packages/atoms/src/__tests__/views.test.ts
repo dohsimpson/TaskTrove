@@ -19,9 +19,6 @@ import { createProjectId, createLabelId } from "@tasktrove/types";
 import { DEFAULT_VIEW_STATE } from "@tasktrove/types/defaults";
 import { migrateViewStates, getViewStateOrDefault } from "../ui/views";
 
-// Import the mocked log function
-const { log } = (await vi.importMock("@tasktrove/atoms/utils")) as any;
-
 // Mock the atoms package logger to avoid console output during tests
 vi.mock("@tasktrove/atoms/utils", () => ({
   log: {
@@ -31,8 +28,13 @@ vi.mock("@tasktrove/atoms/utils", () => ({
   },
   // Re-export other utils that might be needed
   createAtomWithStorage: vi.fn(() => {
-    const mockAtom = vi.fn() as any;
-    mockAtom.debugLabel = "";
+    const mockAtom = vi.fn();
+    Object.defineProperty(mockAtom, "debugLabel", {
+      value: "",
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
     return mockAtom;
   }),
   namedAtom: vi.fn((name, atom) => {
@@ -317,6 +319,9 @@ describe("migrateViewStates", () => {
 
       migrateViewStates(partialData);
 
+      // Get the mocked log for testing
+      const { log } = await import("@tasktrove/atoms/utils");
+
       expect(log.info).toHaveBeenCalledWith(
         expect.objectContaining({
           module: "views",
@@ -329,6 +334,9 @@ describe("migrateViewStates", () => {
 
     it("should log warning for invalid data types", async () => {
       migrateViewStates("invalid");
+
+      // Get the mocked log for testing
+      const { log } = await import("@tasktrove/atoms/utils");
 
       expect(log.warn).toHaveBeenCalledWith(
         { module: "views" },

@@ -53,7 +53,7 @@ export function SectionContextMenu({
     startEditing(sectionId)
   }
 
-  const handleDelete = (deleteContainedResources?: boolean) => {
+  const handleDelete = () => {
     // For sections, deleteContainedResources would mean deleting tasks in the section
     // This functionality is not implemented yet
     removeSection({ projectId, sectionId })

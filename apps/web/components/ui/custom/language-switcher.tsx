@@ -32,12 +32,19 @@ interface LanguageSwitcherProps {
 export function LanguageSwitcher({ variant = "ghost", size = "default" }: LanguageSwitcherProps) {
   const { language, setLanguage } = useLanguage()
 
+  // Type guard to ensure language is a valid Language type
+  const isValidLanguage = (lang: string): lang is Language => {
+    return lang in languageNames
+  }
+
+  const displayName = isValidLanguage(language) ? languageNames[language] : language
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant={variant} size={size} className="gap-2">
           <Languages className="h-4 w-4" />
-          <span className="hidden sm:inline-block">{languageNames[language as Language]}</span>
+          <span className="hidden sm:inline-block">{displayName}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

@@ -25,13 +25,8 @@ export type AppNamespace = (typeof namespaces)[number]
 async function loadResources(language: AppLanguage, namespace: AppNamespace): Promise<unknown> {
   // For English, skip colocated files and use inline defaults
   if (language === "en") {
-    try {
-      const mainTranslations = await import(`@/lib/i18n/locales/${language}/${namespace}.json`)
-      return mainTranslations
-    } catch (error) {
-      // No English file found - let i18next use inline defaults
-      throw error
-    }
+    const mainTranslations = await import(`@/lib/i18n/locales/${language}/${namespace}.json`)
+    return mainTranslations
   }
 
   // For non-English languages, try colocated translations first

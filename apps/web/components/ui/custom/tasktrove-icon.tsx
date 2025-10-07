@@ -1,4 +1,5 @@
 import React from "react"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 
 interface TaskTroveIconProps {
@@ -13,5 +14,19 @@ export function TaskTroveIcon({ className, size = "md" }: TaskTroveIconProps) {
     lg: "w-16 h-16",
   }
 
-  return <img src="/icon0.svg" alt="TaskTrove Icon" className={cn(sizeClasses[size], className)} />
+  const sizeDimensions = {
+    sm: 32,
+    md: 48,
+    lg: 64,
+  }
+
+  return (
+    <Image
+      src="/icon0.svg"
+      alt="TaskTrove Icon"
+      width={sizeDimensions[size]}
+      height={sizeDimensions[size]}
+      className={cn(sizeClasses[size], className)}
+    />
+  )
 }

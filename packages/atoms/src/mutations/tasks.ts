@@ -68,7 +68,7 @@ export const createTaskMutationAtom = createMutation<
       message: "Task created successfully (test mode)",
     };
   },
-  optimisticDataFactory: (taskData: CreateTaskRequest, _oldTasks: Task[]) => {
+  optimisticDataFactory: (taskData: CreateTaskRequest) => {
     // Create optimistic task with temporary ID
     return {
       id: createTaskId(uuidv4()), // Temporary ID that will be replaced by server response

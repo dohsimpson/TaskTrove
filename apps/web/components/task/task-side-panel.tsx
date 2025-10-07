@@ -1,9 +1,10 @@
+/* eslint-disable react/prop-types */
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
 import { useTranslation } from "@tasktrove/i18n"
-import { X, Star, ChevronRight, Calendar, Flag, Folder, AlertTriangle } from "lucide-react"
+import { X, Calendar, Flag, Folder, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
@@ -109,7 +110,12 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
   // in main-layout-wrapper.tsx to ensure proper context management
 
   // Shared task panel content component
-  const TaskPanelContent = ({ task, className = "" }: { task: Task; className?: string }) => (
+  interface TaskPanelContentProps {
+    task: Task
+    className?: string
+  }
+
+  const TaskPanelContent = ({ task, className = "" }: TaskPanelContentProps) => (
     <div className={cn("space-y-4", className)}>
       {/* Due Date Section - Prominent */}
       <div className="space-y-3">

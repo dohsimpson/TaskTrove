@@ -4,11 +4,9 @@ import { render, screen, waitFor } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { LabelContent } from "./label-content"
 import type { Task, Label, LabelId } from "@/lib/types"
-import { createLabelId } from "@/lib/types"
 import {
   TEST_TASK_ID_1,
   TEST_PROJECT_ID_1,
-  TEST_GROUP_ID_1,
   TEST_LABEL_ID_1,
   TEST_LABEL_ID_2,
   TEST_LABEL_ID_3,

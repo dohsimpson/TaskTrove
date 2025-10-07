@@ -176,7 +176,7 @@ async function updateUser(
   if (partialUser.password && partialUser.password.length > 0) {
     try {
       partialUser.password = saltAndHashPassword(partialUser.password)
-    } catch (error) {
+    } catch {
       return createErrorResponse(
         "Failed to hash password",
         "Password hashing failed",

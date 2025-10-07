@@ -46,6 +46,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
   // State for expanded projects and groups (default all groups expanded)
   const [expandedProjects, setExpandedProjects] = useState<Set<ProjectId>>(new Set())
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() =>
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     collectAllGroupIds(groups.projectGroups?.items || []),
   )
 
@@ -127,6 +128,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
   }
 
   // Recursive component to render project groups and individual projects
+  /* eslint-disable react/prop-types */
   const ProjectGroupItem = ({
     item,
     level = 0,
@@ -295,6 +297,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
   return (
     <div className={cn("p-1", className)}>
       {/* Projects and Groups List */}
+      {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
       {groups.projectGroups?.items && groups.projectGroups.items.length > 0 && (
         <div className="space-y-1">
           {/* Render root group items (can be groups or direct projects) */}
@@ -309,6 +312,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
       )}
 
       {/* Separator */}
+      {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
       {groups.projectGroups?.items && groups.projectGroups.items.length > 0 && (
         <div className="my-1">
           <div className="bg-border h-px mx-1" />

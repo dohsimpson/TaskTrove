@@ -8,7 +8,7 @@ import {
   safeWriteDataFile,
   saveBase64ToAvatarFile,
 } from "./safe-file-operations"
-import { type DataFile, type GroupId } from "@/lib/types"
+import { type DataFile } from "@/lib/types"
 import {
   TEST_TASK_ID_1,
   TEST_PROJECT_ID_1,
@@ -498,6 +498,7 @@ describe("safe-file-operations", () => {
     const mockUuidV4 = vi.mocked(uuidv4)
 
     beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/consistent-type-assertions
       ;(mockUuidV4 as any).mockReturnValue("test-uuid-123")
       mockFs.mkdir.mockResolvedValue(undefined)
       mockFs.writeFile.mockResolvedValue(undefined)

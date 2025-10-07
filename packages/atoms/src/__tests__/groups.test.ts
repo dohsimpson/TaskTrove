@@ -431,16 +431,14 @@ describe("Groups Atoms", () => {
       const tree = await store.get(projectGroupTreeAtom);
 
       const rootNode = tree[0];
-      if (!rootNode || !rootNode.children) {
-        throw new Error("Expected to find root node with children");
+      if (!rootNode) {
+        throw new Error("Root node not found in project group tree");
       }
       const firstChild = rootNode.children[0];
-      if (!firstChild || !firstChild.children) {
-        throw new Error("Expected to find first child with children");
-      }
-      expect(firstChild.children).toHaveLength(1);
+      const firstChildChildren = firstChild?.children || [];
+      expect(firstChildChildren).toHaveLength(1);
 
-      const deepChild = firstChild.children[0];
+      const deepChild = firstChildChildren[0];
       if (!deepChild) {
         throw new Error("Expected to find deep child");
       }

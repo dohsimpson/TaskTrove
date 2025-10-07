@@ -113,7 +113,7 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
     setShowDeleteConfirm(true)
   }
 
-  const handleConfirmDelete = (deleteContainedResources?: boolean) => {
+  const handleConfirmDelete = () => {
     // For bulk task deletion, we don't currently use deleteContainedResources
     // but we need to match the new DeleteConfirmDialog signature
     deleteTasks(selectedTaskIds)

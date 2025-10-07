@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { checkStartupPermissions, formatPermissionErrors } from "@/lib/startup-checks"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
-import { withApiLogging, type EnhancedRequest } from "@/lib/middleware/api-logger"
+import { withApiLogging } from "@/lib/middleware/api-logger"
 import {
   withApiVersion,
   CURRENT_API_VERSION,
@@ -10,7 +10,7 @@ import {
 import { withAuthentication } from "@/lib/middleware/auth"
 import { API_ROUTES } from "@/lib/types"
 
-async function healthCheck(_request: EnhancedRequest) {
+async function healthCheck() {
   try {
     const permissionResult = await checkStartupPermissions()
 

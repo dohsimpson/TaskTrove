@@ -3,10 +3,10 @@ import { runBackup } from "@/lib/backup"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
 import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
-import { withApiLogging, type EnhancedRequest } from "@/lib/middleware/api-logger"
+import { withApiLogging } from "@/lib/middleware/api-logger"
 import { ApiErrorCode, ErrorResponse, API_ROUTES } from "@/lib/types"
 
-async function createBackup(_request: EnhancedRequest) {
+async function createBackup() {
   try {
     console.log("Manual backup triggered via API...")
     await runBackup()

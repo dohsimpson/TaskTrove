@@ -30,18 +30,10 @@ vi.mock("@/lib/middleware/api-logger", () => ({
   withApiLogging: (handler: (...args: unknown[]) => unknown) => handler,
   logBusinessEvent: vi.fn(),
   withFileOperationLogging: async (operation: () => Promise<unknown>) => {
-    try {
-      return await operation()
-    } catch (error) {
-      throw error // Re-throw to maintain test behavior
-    }
+    return await operation()
   },
   withPerformanceLogging: async (operation: () => Promise<unknown>) => {
-    try {
-      return await operation()
-    } catch (error) {
-      throw error // Re-throw to maintain test behavior
-    }
+    return await operation()
   },
 }))
 

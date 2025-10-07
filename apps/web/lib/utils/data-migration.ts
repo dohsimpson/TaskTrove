@@ -383,7 +383,7 @@ export function v070Migration(dataFile: Json): Json {
       // Process tasks in taskOrder first (preserving order)
       for (const taskId of taskOrder) {
         const task = taskMap.get(taskId)
-        if (!task || typeof task !== "object" || task === null) {
+        if (!task || typeof task !== "object") {
           continue // Skip orphaned task IDs
         }
 

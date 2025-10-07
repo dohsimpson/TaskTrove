@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from "vitest";
 import { applyViewStateFilters } from "./view-filters";
-import type { Task, ViewState, ViewId } from "@tasktrove/types";
+import type { Task, ViewState } from "@tasktrove/types";
 import { createTaskId, createProjectId, createLabelId } from "@tasktrove/types";
 
 describe("applyViewStateFilters", () => {
@@ -19,8 +19,8 @@ describe("applyViewStateFilters", () => {
     compactView: false,
   };
 
-  const createTask = (overrides: Partial<Task> = {}): Task =>
-    ({
+  const createTask = (overrides: Partial<Task> = {}): Task => {
+    const defaultTask: Task = {
       id: createTaskId("12345678-1234-4234-8234-123456789abc"),
       title: "Test Task",
       description: "",
@@ -31,8 +31,11 @@ describe("applyViewStateFilters", () => {
       subtasks: [],
       comments: [],
       createdAt: new Date("2024-01-01"),
-      ...overrides,
-    }) as Task;
+      recurringMode: "dueDate",
+    };
+
+    return { ...defaultTask, ...overrides };
+  };
 
   describe("showCompleted filter", () => {
     it("should include completed tasks when showCompleted is true", () => {
@@ -275,9 +278,10 @@ describe("applyViewStateFilters", () => {
         }),
       ];
 
+      const priorities: (1 | 2 | 3 | 4)[] = [1, 2];
       const viewState = {
         ...baseViewState,
-        activeFilters: { priorities: [1, 2] as (1 | 2 | 3 | 4)[] },
+        activeFilters: { priorities },
       };
       const result = applyViewStateFilters(tasks, viewState, "all");
 

@@ -47,13 +47,14 @@ export function getDateRangeForPreset(preset: DueDatePreset): DateRange | null {
         end: endOfDay(today),
       };
 
-    case "tomorrow":
+    case "tomorrow": {
       // Start and end of tomorrow
       const tomorrow = addDays(today, 1);
       return {
         start: startOfDay(tomorrow),
         end: endOfDay(tomorrow),
       };
+    }
 
     case "thisWeek":
       // Monday to Sunday of current week
@@ -62,7 +63,7 @@ export function getDateRangeForPreset(preset: DueDatePreset): DateRange | null {
         end: endOfWeek(today, { weekStartsOn: 1 }), // Sunday
       };
 
-    case "nextWeek":
+    case "nextWeek": {
       // Monday to Sunday of next week
       const nextWeekStart = addWeeks(
         startOfWeek(today, { weekStartsOn: 1 }),
@@ -72,6 +73,7 @@ export function getDateRangeForPreset(preset: DueDatePreset): DateRange | null {
         start: nextWeekStart,
         end: endOfWeek(nextWeekStart, { weekStartsOn: 1 }),
       };
+    }
 
     case "noDueDate":
       // Special case - this will be handled differently in filtering logic
@@ -102,12 +104,13 @@ export function matchesDueDateFilter(
         if (taskCompleted || !taskDueDate) return false;
         return isBefore(taskDueDate, startOfDay(new Date()));
 
-      default:
+      default: {
         // For other presets, get the date range and check if task due date falls within it
         if (!taskDueDate) return false;
         const range = getDateRangeForPreset(preset);
         if (!range) return false;
         return taskDueDate >= range.start && taskDueDate <= range.end;
+      }
     }
   }
 

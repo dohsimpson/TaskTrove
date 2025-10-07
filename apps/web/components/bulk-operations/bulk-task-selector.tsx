@@ -78,7 +78,7 @@ export function BulkTaskSelector({
     }
   }
 
-  const handleConfirmDelete = (deleteContainedResources?: boolean) => {
+  const handleConfirmDelete = () => {
     // For bulk task deletion, we don't currently use deleteContainedResources
     // but we need to match the new DeleteConfirmDialog signature
     onBulkAction("delete", selectedTasks)

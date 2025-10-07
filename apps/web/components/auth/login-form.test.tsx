@@ -4,6 +4,15 @@ import { render, screen, waitFor } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { LoginForm } from "./login-form"
 
+// Define SignInResult type based on next-auth documentation
+type SignInResult = {
+  error: string | undefined
+  code: string | undefined
+  status: number
+  ok: boolean
+  url: string | null
+}
+
 // Mock sonner toast
 vi.mock("sonner", () => ({
   toast: {
@@ -30,7 +39,13 @@ describe("LoginForm", () => {
     vi.clearAllMocks()
     // Reset signIn mock to default behavior (return error)
     const { signIn } = await import("next-auth/react")
-    vi.mocked(signIn).mockResolvedValue({ error: "default-error" } as any)
+    vi.mocked(signIn).mockResolvedValue({
+      error: "default-error",
+      code: "CREDENTIALS_SIGNIN",
+      status: 401,
+      ok: false,
+      url: null,
+    })
   })
 
   describe("Rendering", () => {
@@ -184,11 +199,11 @@ describe("LoginForm", () => {
       const { signIn } = await import("next-auth/react")
 
       // Mock slow sign in that resolves after loading is checked
-      let resolveSignIn: any
-      const signInPromise = new Promise((resolve) => {
+      let resolveSignIn: (value: SignInResult) => void = () => {}
+      const signInPromise = new Promise<SignInResult>((resolve) => {
         resolveSignIn = resolve
       })
-      vi.mocked(signIn).mockReturnValue(signInPromise as any)
+      vi.mocked(signIn).mockReturnValue(signInPromise)
 
       render(
         <LoginForm needsPasswordSetup={false} onSuccess={mockOnSuccess} onCancel={mockOnCancel} />,
@@ -204,18 +219,18 @@ describe("LoginForm", () => {
       expect(submitButton).toBeDisabled()
 
       // Resolve the promise to clean up
-      resolveSignIn({ ok: true, error: null })
+      resolveSignIn({ ok: true, status: 200, url: "/", error: undefined, code: undefined })
     })
 
     it("disables form fields during loading", async () => {
       const { signIn } = await import("next-auth/react")
 
       // Mock slow sign in that resolves after loading is checked
-      let resolveSignIn: any
-      const signInPromise = new Promise((resolve) => {
+      let resolveSignIn: (value: SignInResult) => void = () => {}
+      const signInPromise = new Promise<SignInResult>((resolve) => {
         resolveSignIn = resolve
       })
-      vi.mocked(signIn).mockReturnValue(signInPromise as any)
+      vi.mocked(signIn).mockReturnValue(signInPromise)
 
       render(
         <LoginForm needsPasswordSetup={false} onSuccess={mockOnSuccess} onCancel={mockOnCancel} />,
@@ -230,7 +245,7 @@ describe("LoginForm", () => {
       expect(passwordInput).toBeDisabled()
 
       // Resolve the promise to clean up
-      resolveSignIn({ ok: true, error: null })
+      resolveSignIn({ ok: true, status: 200, url: "/", error: undefined, code: undefined })
     })
 
     it("disables toggle button during loading", async () => {
@@ -256,7 +271,13 @@ describe("LoginForm", () => {
       const { signIn } = await import("next-auth/react")
 
       // Mock successful sign in
-      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null } as any)
+      vi.mocked(signIn).mockResolvedValue({
+        ok: true,
+        status: 200,
+        url: "/",
+        error: undefined,
+        code: undefined,
+      })
 
       render(
         <LoginForm needsPasswordSetup={false} onSuccess={mockOnSuccess} onCancel={mockOnCancel} />,
@@ -299,7 +320,13 @@ describe("LoginForm", () => {
       const { signIn } = await import("next-auth/react")
 
       // Mock successful sign in
-      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null } as any)
+      vi.mocked(signIn).mockResolvedValue({
+        ok: true,
+        status: 200,
+        url: "/",
+        error: undefined,
+        code: undefined,
+      })
 
       render(
         <LoginForm needsPasswordSetup={false} onSuccess={mockOnSuccess} onCancel={mockOnCancel} />,
@@ -340,7 +367,13 @@ describe("LoginForm", () => {
       expect(passwordInput).toHaveClass("border-red-500")
 
       // Mock successful sign in for second attempt
-      vi.mocked(signIn).mockResolvedValue({ ok: true, error: null } as any)
+      vi.mocked(signIn).mockResolvedValue({
+        ok: true,
+        status: 200,
+        url: "/",
+        error: undefined,
+        code: undefined,
+      })
 
       // Then fix the error
       await user.type(passwordInput, "password123")

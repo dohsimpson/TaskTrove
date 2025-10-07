@@ -20,7 +20,6 @@ import {
 // Define additional constants for this test file
 const TASK_ID_3 = createTaskId("12345678-1234-4234-8234-123456789014")
 const TASK_ID_4 = createTaskId("12345678-1234-4234-8234-123456789015")
-const TASK_ID_5 = createTaskId("12345678-1234-4234-8234-123456789016")
 const SECTION_ID_3 = createGroupId("00000000-0000-4000-8000-000000000002")
 const SECTION_ID_4 = createGroupId("00000000-0000-4000-8000-000000000003")
 const COMMENT_ID_1 = createCommentId("11111111-1111-4111-8111-111111111111")
@@ -590,7 +589,7 @@ describe.skip("KanbanBoard", () => {
   it("renders empty state when no project is provided", () => {
     render(
       <Provider>
-        <KanbanBoard tasks={mockTasks} onTaskClick={vi.fn()} />
+        <KanbanBoard onTaskClick={vi.fn()} />
       </Provider>,
     )
 
@@ -602,19 +601,9 @@ describe.skip("KanbanBoard", () => {
   })
 
   it("handles tasks with non-existent sections", () => {
-    const orphanedTasks: Task[] = [
-      createTask({
-        id: TEST_TASK_ID_1,
-        title: "Orphaned Task",
-        priority: 1 satisfies TaskPriority,
-        labels: [],
-        comments: [],
-      }),
-    ]
-
     render(
       <Provider>
-        <KanbanBoard tasks={orphanedTasks} project={mockProject} onTaskClick={vi.fn()} />
+        <KanbanBoard project={mockProject} onTaskClick={vi.fn()} />
       </Provider>,
     )
 
@@ -633,23 +622,9 @@ describe.skip("KanbanBoard", () => {
       sections: [],
     }
 
-    const defaultSectionTasks: Task[] = [
-      createTask({
-        id: TEST_TASK_ID_1,
-        title: "Task without section",
-        priority: 1 satisfies TaskPriority,
-        labels: [],
-        comments: [],
-      }),
-    ]
-
     render(
       <Provider>
-        <KanbanBoard
-          tasks={defaultSectionTasks}
-          project={projectWithNoSections}
-          onTaskClick={vi.fn()}
-        />
+        <KanbanBoard project={projectWithNoSections} onTaskClick={vi.fn()} />
       </Provider>,
     )
 
@@ -670,23 +645,9 @@ describe.skip("KanbanBoard", () => {
 
     expect(screen.getByText("Mock Task 1")).toBeInTheDocument()
 
-    const newTasks: Task[] = [
-      createTask({
-        id: TASK_ID_5,
-        title: "New Task",
-        priority: 1 satisfies TaskPriority,
-        labels: [],
-        comments: [],
-      }),
-    ]
-
     rerender(
       <Provider>
-        <KanbanBoard
-          tasks={newTasks}
-          project={mockProject}
-          onTaskClick={defaultProps.onTaskClick}
-        />
+        <KanbanBoard project={mockProject} onTaskClick={defaultProps.onTaskClick} />
       </Provider>,
     )
 
@@ -695,30 +656,9 @@ describe.skip("KanbanBoard", () => {
   })
 
   it("sorts tasks by order within columns", () => {
-    const tasksWithOrder: Task[] = [
-      createTask({
-        id: TEST_TASK_ID_1,
-        title: "First Task",
-        priority: 1 satisfies TaskPriority,
-        labels: [],
-        comments: [],
-      }),
-      createTask({
-        id: TEST_TASK_ID_2,
-        title: "Second Task",
-        priority: 1 satisfies TaskPriority,
-        labels: [],
-        comments: [],
-      }),
-    ]
-
     render(
       <Provider>
-        <KanbanBoard
-          tasks={tasksWithOrder}
-          project={mockProject}
-          onTaskClick={defaultProps.onTaskClick}
-        />
+        <KanbanBoard project={mockProject} onTaskClick={defaultProps.onTaskClick} />
       </Provider>,
     )
 
@@ -730,7 +670,7 @@ describe.skip("KanbanBoard", () => {
   it("handles empty task lists", () => {
     render(
       <Provider>
-        <KanbanBoard tasks={[]} project={mockProject} onTaskClick={defaultProps.onTaskClick} />
+        <KanbanBoard project={mockProject} onTaskClick={defaultProps.onTaskClick} />
       </Provider>,
     )
 
@@ -760,44 +700,9 @@ describe.skip("KanbanBoard", () => {
 
   describe("Priority mapping", () => {
     it("handles all priority levels correctly", () => {
-      const allPriorityTasks: Task[] = [
-        createTask({
-          id: TEST_TASK_ID_1,
-          title: "P1",
-          priority: 1 as const,
-          labels: [],
-          comments: [],
-        }),
-        createTask({
-          id: TEST_TASK_ID_2,
-          title: "P2",
-          priority: 2 satisfies TaskPriority,
-          labels: [],
-          comments: [],
-        }),
-        createTask({
-          id: TASK_ID_3,
-          title: "P3",
-          priority: 3 satisfies TaskPriority,
-          labels: [],
-          comments: [],
-        }),
-        createTask({
-          id: TASK_ID_4,
-          title: "P4",
-          priority: 4 satisfies TaskPriority,
-          labels: [],
-          comments: [],
-        }),
-      ]
-
       render(
         <Provider>
-          <KanbanBoard
-            tasks={allPriorityTasks}
-            project={mockProject}
-            onTaskClick={defaultProps.onTaskClick}
-          />
+          <KanbanBoard project={mockProject} onTaskClick={defaultProps.onTaskClick} />
         </Provider>,
       )
 

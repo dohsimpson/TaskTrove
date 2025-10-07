@@ -37,7 +37,8 @@ interface ViewOptionsContentProps {
   onAdvancedSearch?: () => void
 }
 
-export function ViewOptionsContent({}: ViewOptionsContentProps) {
+export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps) {
+  void onAdvancedSearch // Mark as intentionally unused
   // Translation setup
   const { t } = useTranslation("layout")
 

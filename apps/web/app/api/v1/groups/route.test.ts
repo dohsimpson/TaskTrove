@@ -36,18 +36,10 @@ vi.mock("@/lib/middleware/api-logger", () => ({
   withApiLogging: (handler: (...args: unknown[]) => unknown) => handler,
   logBusinessEvent: vi.fn(),
   withFileOperationLogging: async (operation: () => Promise<unknown>) => {
-    try {
-      return await operation()
-    } catch (error) {
-      throw error // Re-throw to maintain test behavior
-    }
+    return await operation()
   },
   withPerformanceLogging: async (operation: () => Promise<unknown>) => {
-    try {
-      return await operation()
-    } catch (error) {
-      throw error // Re-throw to maintain test behavior
-    }
+    return await operation()
   },
   logSecurityEvent: vi.fn(),
 }))
@@ -378,18 +370,17 @@ describe("DELETE /api/groups", () => {
     expect(mockSafeWriteDataFile).toHaveBeenCalled()
 
     // Verify that contained projects were moved to the root group
-    const writeCall = mockSafeWriteDataFile.mock.calls[0]
-    if (!writeCall || !writeCall[0]) {
-      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
-    }
-    const savedData = writeCall[0].data as DataFile
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const savedData = mockSafeWriteDataFile.mock.calls[0]?.[0]?.data as DataFile
 
     // The deleted group should no longer exist in the projectGroups.items
     const nestedGroups = savedData.projectGroups.items.filter((item) => typeof item !== "string")
     expect(nestedGroups).toHaveLength(0)
 
     // The project that was in the deleted group should now be in the root projectGroups.items
-    const projects = savedData.projectGroups.items.filter((item) => typeof item === "string")
+    const projects: string[] = savedData.projectGroups.items.filter(
+      (item) => typeof item === "string",
+    )
     expect(projects).toContain(TEST_PROJECT_ID_1)
   })
 })

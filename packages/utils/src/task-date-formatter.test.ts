@@ -55,9 +55,13 @@ vi.mock("date-fns", () => ({
 
 describe("task-date-formatter", () => {
   // Use plain objects instead of Task type
-  const mockTask = {
-    dueDate: undefined as Date | null | undefined,
-    dueTime: undefined as Date | null | undefined,
+  const mockTask: {
+    dueDate: Date | null | undefined;
+    dueTime: Date | null | undefined;
+    completed: boolean;
+  } = {
+    dueDate: undefined,
+    dueTime: undefined,
     completed: false,
   };
 

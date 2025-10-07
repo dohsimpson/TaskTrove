@@ -162,7 +162,7 @@ export function dateMatchesRecurringPattern(
   const interval = parsed.interval || 1
 
   switch (parsed.freq) {
-    case "DAILY":
+    case "DAILY": {
       // For daily, when date === referenceDate (same day), it always matches
       const dateNormalized = new Date(date.getFullYear(), date.getMonth(), date.getDate())
       const refNormalized = new Date(
@@ -180,8 +180,9 @@ export function dateMatchesRecurringPattern(
         (dateNormalized.getTime() - refNormalized.getTime()) / (24 * 60 * 60 * 1000),
       )
       return daysDiff > 0 && daysDiff % interval === 0
+    }
 
-    case "WEEKLY":
+    case "WEEKLY": {
       if (parsed.byday) {
         const weekdayMap: Record<string, number> = {
           SU: 0,
@@ -205,20 +206,23 @@ export function dateMatchesRecurringPattern(
           date.getDay() === referenceDate.getDay() && weeksDiff >= 0 && weeksDiff % interval === 0
         )
       }
+    }
 
-    case "MONTHLY":
+    case "MONTHLY": {
       if (parsed.bymonthday && parsed.bymonthday.length > 0) {
         return parsed.bymonthday.includes(date.getDate())
       } else {
         // Same day of month
         return date.getDate() === referenceDate.getDate()
       }
+    }
 
-    case "YEARLY":
+    case "YEARLY": {
       // Same month and day
       return (
         date.getMonth() === referenceDate.getMonth() && date.getDate() === referenceDate.getDate()
       )
+    }
 
     default:
       return false

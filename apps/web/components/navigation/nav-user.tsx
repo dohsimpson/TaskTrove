@@ -38,9 +38,7 @@ interface ContextMenuItem {
   comingSoon?: boolean
 }
 
-interface NavUserProps {
-  // No longer need user prop - getting from userAtom
-}
+// No longer need NavUserProps - getting user from userAtom
 
 export function NavUser() {
   // Translation setup

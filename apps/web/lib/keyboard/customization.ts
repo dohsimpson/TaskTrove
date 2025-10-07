@@ -360,8 +360,8 @@ export function validateCustomShortcut(shortcut: string): ValidationResult {
 
   // Check for obviously invalid format (contains invalid characters or suspicious patterns)
   if (
-    !/^[A-Za-z0-9+\-=\[\]\\;',./?`~!@#$%^&*()_\s]+$/.test(trimmed) ||
-    (trimmed.includes("-") && !trimmed.match(/^[A-Za-z0-9+\[\]\\;',./?`~!@#$%^&*()_\s]+$/))
+    !/^[A-Za-z0-9+\-=[\]\\;',./?`~!@#$%^&*()_\s]+$/.test(trimmed) ||
+    (trimmed.includes("-") && !trimmed.match(/^[A-Za-z0-9+[\]\\;',./?`~!@#$%^&*()_\s]+$/))
   ) {
     return {
       isValid: false,

@@ -7,7 +7,6 @@ import type { Task, LabelId } from "@/lib/types"
 import {
   TEST_TASK_ID_1,
   TEST_PROJECT_ID_1,
-  TEST_GROUP_ID_1,
   TEST_LABEL_ID_1,
   TEST_LABEL_ID_2,
 } from "@/lib/utils/test-constants"

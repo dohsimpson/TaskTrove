@@ -39,14 +39,12 @@ export function ProjectGroupContextMenu({
   const collectProjectIdsFromGroup = (group: typeof projectGroup): ProjectId[] => {
     const projectIds: ProjectId[] = []
 
-    if (group.items) {
-      for (const item of group.items) {
-        if (typeof item === "string") {
-          // It's a project ID
-          projectIds.push(createProjectId(item))
-        } else {
-          // It's a nested group, not supported for now
-        }
+    for (const item of group.items) {
+      if (typeof item === "string") {
+        // It's a project ID
+        projectIds.push(createProjectId(item))
+      } else {
+        // It's a nested group, not supported for now
       }
     }
 

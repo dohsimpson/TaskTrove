@@ -6,7 +6,7 @@
  */
 
 import type { Task, ViewState, ViewId, LabelId } from "@tasktrove/types";
-import { matchesDueDateFilter } from "./atom-helpers";
+import { matchesDueDateFilter } from "@tasktrove/utils";
 
 /**
  * Apply all view state filters to a list of tasks
@@ -107,7 +107,7 @@ export function applyViewStateFilters(
         return matchesDueDateFilter(
           task.dueDate || null,
           task.completed,
-          preset || "",
+          preset || undefined,
           customRange,
         );
       });

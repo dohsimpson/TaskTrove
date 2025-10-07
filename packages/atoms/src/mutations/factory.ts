@@ -55,19 +55,6 @@ function isValidResource<T>(data: unknown): data is T {
 }
 
 /**
- * Get default value for a resource type
- * Returns empty array for array types, undefined for object types
- */
-function getDefaultResource<TResource>(sampleResource: TResource): TResource {
-  if (Array.isArray(sampleResource)) {
-    return [] as TResource;
-  }
-  // For non-array types (objects), return undefined
-  // The caller should handle this case appropriately
-  return undefined as TResource;
-}
-
-/**
  * Generic utility for optimistic cache updates with any resource type
  */
 function updateCache<TResource>(

@@ -20,11 +20,7 @@ import { filteredTasksAtom } from "../ui/filtered-tasks";
 import { currentViewAtom, updateViewStateAtom } from "../ui/views";
 import { queryClientAtom } from "../core/base";
 import type { Task } from "@tasktrove/types";
-import {
-  createTaskId,
-  createSectionId,
-  INBOX_PROJECT_ID,
-} from "@tasktrove/types";
+import { createTaskId, INBOX_PROJECT_ID } from "@tasktrove/types";
 import { TASKS_QUERY_KEY } from "@tasktrove/constants";
 import { QueryClient } from "@tanstack/react-query";
 

@@ -11,8 +11,10 @@ interface PomodoroTimerProps {
   onSessionComplete?: (duration: number, type: "work" | "break") => void
 }
 
-export function PomodoroTimer({}: PomodoroTimerProps) {
+export function PomodoroTimer({ taskTitle, onSessionComplete }: PomodoroTimerProps) {
   // Temporarily disabled - return null for now
   // TODO: Re-enable when needed by uncommenting the original implementation
+  void taskTitle
+  void onSessionComplete
   return null
 }

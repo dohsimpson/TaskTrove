@@ -2,7 +2,7 @@
  * Utility functions for atoms package
  */
 
-import { atom, type Atom, type WritableAtom } from "jotai";
+import { atom, type Atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { playSound, type SoundType } from "@tasktrove/dom-utils/audio";
 import { toast } from "@tasktrove/dom-utils/toast";
@@ -96,25 +96,20 @@ export function createAtomWithStorage<T>(
 
 // Simple logging function - could be replaced with proper logging later
 export const log = {
-  info: (...args: any[]) => console.log(...args),
-  warn: (...args: any[]) => console.warn(...args),
-  error: (...args: any[]) => console.error(...args),
+  info: (...args: unknown[]) => console.log(...args),
+  warn: (...args: unknown[]) => console.warn(...args),
+  error: (...args: unknown[]) => console.error(...args),
 };
 
 // Simple date filter function - this should be moved to @tasktrove/utils
-export function matchesDueDateFilter(
-  dueDate: Date | null,
-  completed: boolean,
-  preset: string,
-  customRange: any,
-): boolean {
+export function matchesDueDateFilter(): boolean {
   // For now, return true to not break functionality
   // TODO: Move proper implementation from web app to @tasktrove/utils
   return true;
 }
 
 // Simple error handler
-export function handleAtomError(error: any, context?: string) {
+export function handleAtomError(error: unknown, context?: string) {
   console.error(`Atom error${context ? ` in ${context}` : ""}:`, error);
 }
 

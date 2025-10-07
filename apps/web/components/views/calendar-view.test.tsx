@@ -10,7 +10,6 @@ import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
   TEST_TASK_ID_3,
-  TEST_SECTION_ID_1,
   TEST_LABEL_ID_1,
   TEST_LABEL_ID_2,
 } from "@/lib/utils/test-constants"

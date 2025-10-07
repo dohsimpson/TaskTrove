@@ -267,7 +267,7 @@ export const bulkActionAtom = atom(
     if (selectedIds.length === 0) return;
 
     switch (action) {
-      case "complete":
+      case "complete": {
         // Complete all selected tasks
         const updates = selectedIds.map((taskId) => ({
           id: taskId,
@@ -275,6 +275,7 @@ export const bulkActionAtom = atom(
         }));
         set(updateTasksAtom, updates);
         break;
+      }
 
       case "delete":
         // Delete all selected tasks

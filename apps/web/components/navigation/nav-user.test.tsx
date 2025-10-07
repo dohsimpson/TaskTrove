@@ -52,11 +52,14 @@ vi.mock("@/components/ui/dropdown-menu", () => ({
     children: React.ReactNode
     open?: boolean
     onOpenChange?: (open: boolean) => void
-  }) => (
-    <div data-testid="dropdown-menu" data-open={open}>
-      {children}
-    </div>
-  ),
+  }) => {
+    void onOpenChange // Mark as intentionally unused
+    return (
+      <div data-testid="dropdown-menu" data-open={open}>
+        {children}
+      </div>
+    )
+  },
   DropdownMenuTrigger: ({
     children,
     asChild,

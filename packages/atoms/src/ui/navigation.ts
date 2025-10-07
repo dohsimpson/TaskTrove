@@ -578,6 +578,15 @@ export interface DynamicPageInfo {
 }
 
 /**
+ * Type guard to check if viewId is a standard view
+ */
+function isStandardView(
+  viewId: ViewId,
+): viewId is (typeof STANDARD_VIEW_IDS)[number] {
+  return viewId in STANDARD_VIEW_METADATA;
+}
+
+/**
  * Generate page information from route context
  */
 function generatePageInfo(
@@ -664,16 +673,13 @@ function generatePageInfo(
   }
 
   // Handle standard routes using centralized metadata
-  if (viewId in STANDARD_VIEW_METADATA) {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    return STANDARD_VIEW_METADATA[
-      viewId as keyof typeof STANDARD_VIEW_METADATA
-    ];
+  if (isStandardView(viewId)) {
+    return STANDARD_VIEW_METADATA[viewId];
   }
 
   // Handle non-standard routes
   switch (true) {
-    default:
+    default: {
       // Capitalize first letter for unknown routes
       const capitalizedTitle = viewId.charAt(0).toUpperCase() + viewId.slice(1);
       return {
@@ -681,6 +687,7 @@ function generatePageInfo(
         description: "Page content",
         iconType: "default",
       };
+    }
   }
 }
 

@@ -5,12 +5,12 @@ import { migrateDataFile } from "@/lib/utils/data-migration"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
 import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
-import { withApiLogging, type EnhancedRequest } from "@/lib/middleware/api-logger"
+import { withApiLogging } from "@/lib/middleware/api-logger"
 import { safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import type { Json, ErrorResponse } from "@/lib/types"
 import { ApiErrorCode, API_ROUTES } from "@/lib/types"
 
-async function migrateData(_request: EnhancedRequest) {
+async function migrateData() {
   try {
     // Read current data file
     const dataContent = await fs.readFile(DEFAULT_DATA_FILE_PATH, "utf8")

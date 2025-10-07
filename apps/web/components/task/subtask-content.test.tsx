@@ -9,7 +9,6 @@ import { createSubtaskId } from "@/lib/types"
 import {
   TEST_TASK_ID_1,
   TEST_PROJECT_ID_1,
-  TEST_SECTION_ID_1,
   TEST_SUBTASK_ID_1,
   TEST_SUBTASK_ID_2,
   TEST_SUBTASK_ID_3,

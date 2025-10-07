@@ -18,7 +18,7 @@ import { baseFilteredTasksForViewAtom } from "@/lib/atoms/core/tasks"
 import type { Task, Project, Label as LabelType } from "@/lib/types"
 import { type ProjectId } from "@/lib/types"
 import { cn } from "@/lib/utils"
-import { getPriorityLabel, getPriorityTextColor } from "@/lib/color-utils"
+import { getPriorityTextColor } from "@/lib/color-utils"
 import { DueDatePreset, getPresetLabel, getPresetTaskCounts } from "@/lib/utils/date-filter-utils"
 import { format } from "date-fns"
 

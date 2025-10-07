@@ -139,7 +139,7 @@ export const updateProjectGroupMutationAtom = createMutation<
       success: true,
       groups: [
         {
-          type: "project" as const,
+          type: "project",
           id: request.id,
           name: request.name || "Updated Group",
           slug: request.slug || "updated-group",
@@ -147,7 +147,7 @@ export const updateProjectGroupMutationAtom = createMutation<
           color: request.color,
           items: request.items || [],
         },
-      ] as ProjectGroup[],
+      ],
       count: 1,
       message: "Group updated successfully (test mode)",
     };
@@ -274,7 +274,7 @@ export const bulkUpdateGroupsMutationAtom = createMutation<
   logModule: "groups",
   testResponseFactory: (request: BulkGroupUpdate): UpdateGroupResponse => ({
     success: true,
-    groups: [] as ProjectGroup[],
+    groups: [],
     count: request.groups.length,
     message: "Groups bulk updated successfully (test mode)",
   }),

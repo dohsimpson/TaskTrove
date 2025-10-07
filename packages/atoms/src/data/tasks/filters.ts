@@ -246,7 +246,7 @@ export const baseFilteredTasksForViewAtom = atomFamily((viewId: ViewId) =>
         case "all":
           result = get(activeTasksAtom);
           break;
-        default:
+        default: {
           // Use route context to determine if this is a project or label view
           const activeTasks = get(activeTasksAtom);
 
@@ -275,6 +275,7 @@ export const baseFilteredTasksForViewAtom = atomFamily((viewId: ViewId) =>
             result = activeTasks;
           }
           break;
+        }
       }
 
       // Do NOT apply showCompleted or showOverdue here - that's UI layer responsibility

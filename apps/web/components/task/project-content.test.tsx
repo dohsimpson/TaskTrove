@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { ProjectContent } from "./project-content"
-import type { Task, Project, ProjectGroup } from "@/lib/types"
+import type { Task, Project } from "@/lib/types"
 import { createProjectId, createGroupId, createTaskId } from "@/lib/types"
 
 // Mock project data with groups and sections
@@ -18,7 +18,7 @@ const mockProjects: Project[] = [
         id: createGroupId("550e8400-e29b-41d4-a716-446655440011"),
         name: "To Do",
         slug: "to-do",
-        type: "section" as const,
+        type: "section",
         items: [createTaskId("550e8400-e29b-41d4-a716-446655440101")], // Contains mockTask
         color: "#ef4444",
       },
@@ -26,7 +26,7 @@ const mockProjects: Project[] = [
         id: createGroupId("550e8400-e29b-41d4-a716-446655440012"),
         name: "In Progress",
         slug: "in-progress",
-        type: "section" as const,
+        type: "section",
         items: [],
         color: "#f59e0b",
       },
@@ -49,7 +49,7 @@ const mockProjects: Project[] = [
         id: createGroupId("550e8400-e29b-41d4-a716-446655440013"),
         name: "Research",
         slug: "research",
-        type: "section" as const,
+        type: "section",
         items: [],
         color: "#06b6d4",
       },
@@ -59,13 +59,13 @@ const mockProjects: Project[] = [
 
 const mockProjectGroups = {
   projectGroups: {
-    type: "project" as const,
+    type: "project",
     id: "root",
     name: "All Projects",
     slug: "all-projects",
     items: [
       {
-        type: "project" as const,
+        type: "project",
         id: "group-1",
         name: "Work Group",
         slug: "work-group",
@@ -73,7 +73,7 @@ const mockProjectGroups = {
         items: [createProjectId("550e8400-e29b-41d4-a716-446655440001")],
       },
       {
-        type: "project" as const,
+        type: "project",
         id: "group-2",
         name: "Personal Group",
         slug: "personal-group",
@@ -84,7 +84,7 @@ const mockProjectGroups = {
         ],
       },
       {
-        type: "project" as const,
+        type: "project",
         id: "group-3",
         name: "Empty Group",
         slug: "empty-group",
@@ -94,7 +94,7 @@ const mockProjectGroups = {
     ],
   },
   labelGroups: {
-    type: "label" as const,
+    type: "label",
     id: "root-labels",
     name: "All Labels",
     slug: "all-labels",
@@ -357,8 +357,7 @@ describe("ProjectContent", () => {
       expect(screen.getByText("Learning Project")).toBeInTheDocument()
     })
 
-    it("can collapse and expand groups", async () => {
-      const user = userEvent.setup()
+    it("can collapse and expand groups", () => {
       render(<ProjectContent />)
 
       // Find the Work Group and its chevron

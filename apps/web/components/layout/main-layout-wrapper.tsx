@@ -353,7 +353,7 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
         if (!focusedTask) return false
 
         switch (key) {
-          case "Enter":
+          case "Enter": {
             // Edit task
             const editButton = focusedTask.querySelector('[data-action="edit"]')
             if (editButton instanceof HTMLElement) {
@@ -361,7 +361,8 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
               return true
             }
             break
-          case " ":
+          }
+          case " ": {
             // Toggle completion
             const toggleButton = focusedTask.querySelector('[data-action="toggle"]')
             if (toggleButton instanceof HTMLElement) {
@@ -369,6 +370,7 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
               return true
             }
             break
+          }
           case "Delete":
           case "Backspace":
             if (modifier) {

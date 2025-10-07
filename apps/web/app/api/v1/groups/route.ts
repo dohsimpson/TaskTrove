@@ -11,7 +11,6 @@ import {
   DataFileSerializationSchema,
   createGroupId,
   createProjectId,
-  DataFileSerialization,
   ErrorResponse,
   ApiErrorCode,
   GroupUpdateUnionSchema,
@@ -78,8 +77,8 @@ async function getGroups(
   logBusinessEvent(
     "groups_fetched",
     {
-      projectGroupsCount: serializedData.projectGroups ? 1 : 0,
-      labelGroupsCount: serializedData.labelGroups ? 1 : 0,
+      projectGroupsCount: 1,
+      labelGroupsCount: 1,
     },
     request.context,
   )
@@ -665,9 +664,9 @@ async function deleteGroup(
 
   if (groupResult && groupResult.group.type === "project") {
     // Extract any contained projects (string items) from the group being deleted
-    const containedProjects = groupResult.group.items.filter(
+    const containedProjects: string[] = groupResult.group.items.filter(
       (item) => typeof item === "string",
-    ) as string[]
+    )
 
     // Move contained projects to the root project group
     if (containedProjects.length > 0) {

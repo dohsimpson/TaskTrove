@@ -69,12 +69,11 @@ interface KanbanColumn {
 }
 
 interface KanbanBoardProps {
-  tasks: TaskType[]
   project?: Project
   onTaskClick?: (task: TaskType) => void
 }
 
-export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
+export function KanbanBoard({ project }: KanbanBoardProps) {
   // Track drag state for shadow rendering per column
   const [columnDragStates, setColumnDragStates] = useState<
     Map<
@@ -125,7 +124,7 @@ export function KanbanBoard({ tasks, project }: KanbanBoardProps) {
         color: section.color || "#6b7280",
       }
     })
-  }, [project, tasks, getOrderedTasksForSection, currentViewState, routeContext.viewId])
+  }, [project, getOrderedTasksForSection, currentViewState, routeContext.viewId])
 
   // Handle task drop - matches project-sections-view logic
   const handleTaskDrop = (data: TaskDragData) => {

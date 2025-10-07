@@ -75,7 +75,7 @@ export function withAuthentication<T>(
 
     // Check for bearer token authentication first (only if allowed)
     if (options.allowApiToken) {
-      const authHeader = request.headers?.get("Authorization")
+      const authHeader = request.headers.get("Authorization")
       if (authHeader?.startsWith("Bearer ")) {
         const token = authHeader.slice(7) // Remove "Bearer " prefix
         if (await isValidBearerToken(token)) {

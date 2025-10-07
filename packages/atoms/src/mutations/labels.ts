@@ -112,7 +112,7 @@ export const updateLabelsMutationAtom = createEntityMutation<
     response: UpdateLabelResponseSchema,
   },
   // Custom optimistic update: replace entire array (not merge)
-  optimisticUpdateFn: (newLabels: Label[], _oldLabels: Label[]) => {
+  optimisticUpdateFn: (newLabels: Label[]) => {
     return newLabels;
   },
 });

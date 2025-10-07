@@ -221,7 +221,6 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
 
   // Calculate side panel margin (same logic as project-sections-view)
   const isPanelOpen = (showTaskPanel || currentViewState.showSidePanel) && Boolean(selectedTask)
-  const shouldApplyMargin = isPanelOpen && !isMobile
 
   // Generate calendar grid with proper week alignment
   const monthStart = startOfMonth(currentDate)

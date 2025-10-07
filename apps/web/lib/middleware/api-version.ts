@@ -32,7 +32,7 @@ export function withApiVersion<T>(
           code: ApiErrorCode.UNSUPPORTED_API_VERSION,
           error: "Unsupported API version",
           message: `API version ${requestedVersion} is not supported. Supported versions: ${SUPPORTED_API_VERSIONS.join(", ")}`,
-        } as ErrorResponse,
+        },
         { status: 400 },
       )
     }

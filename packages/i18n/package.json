@@ -29,6 +29,7 @@
     "@typescript/native-preview": "catalog:",
     "@types/react": "catalog:",
     "eslint": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

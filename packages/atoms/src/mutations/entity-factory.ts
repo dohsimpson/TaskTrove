@@ -50,6 +50,31 @@
 import { v4 as uuidv4 } from "uuid";
 import type { z } from "zod";
 import type { QueryKey } from "@tanstack/react-query";
+
+// Type guard function to check if object has id property
+function hasId(obj: unknown): obj is { id: string } {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "id" in obj &&
+    // Type assertion is needed in type guards for property access
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    typeof (obj as Record<string, unknown>).id === "string"
+  );
+}
+
+// Type guard function to check if object has ids property
+function hasIds(obj: unknown): obj is { ids: string[] } {
+  if (typeof obj !== "object" || obj === null || !("ids" in obj)) {
+    return false;
+  }
+  // Type assertion is necessary in type guards
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const ids = (obj as Record<string, unknown>).ids;
+  return (
+    Array.isArray(ids) && ids.every((id: unknown) => typeof id === "string")
+  );
+}
 import {
   TASKS_QUERY_KEY,
   PROJECTS_QUERY_KEY,
@@ -221,67 +246,74 @@ function getIdFieldName(entity: EntityType): string {
  *
  * All TaskTrove APIs return: `{ success: true, [entity]Ids: [...], message: "..." }`
  */
-function createDefaultTestResponse<TRequest>(
+function createDefaultTestResponse<TRequest, TResponse>(
   entity: EntityType,
   operation: OperationType,
-): (variables: TRequest) => unknown {
+): (variables: TRequest) => TResponse {
   return (variables: TRequest) => {
     const entityName = capitalize(entity);
     const idField = getIdFieldName(entity);
 
+    // Create base response object that follows TaskTrove conventions
+    let baseResponse: Record<string, unknown>;
+
     switch (operation) {
       case "create": {
-        return {
+        baseResponse = {
           success: true,
           [idField]: [uuidv4()],
           message: `${entityName} created successfully (test mode)`,
         };
+        break;
       }
 
       case "update": {
         // Handle both single and bulk updates
         const ids = Array.isArray(variables)
-          ? (variables as unknown[]).map((v: unknown) =>
-              typeof v === "object" && v !== null && "id" in v
-                ? (v as { id: string }).id
-                : uuidv4(),
-            )
-          : typeof variables === "object" &&
-              variables !== null &&
-              "id" in variables
-            ? [(variables as { id: string }).id]
+          ? variables.map((v: unknown) => {
+              if (hasId(v)) {
+                return v.id;
+              }
+              return uuidv4();
+            })
+          : hasId(variables)
+            ? [variables.id]
             : [uuidv4()];
 
-        return {
+        baseResponse = {
           success: true,
           [idField]: ids,
           message: `${entityName}${ids.length > 1 ? "s" : ""} updated successfully (test mode)`,
         };
+        break;
       }
 
       case "delete": {
         // Extract IDs from delete request
-        const ids =
-          typeof variables === "object" &&
-          variables !== null &&
-          "ids" in variables
-            ? (variables as { ids: string[] }).ids
-            : typeof variables === "object" &&
-                variables !== null &&
-                "id" in variables
-              ? [(variables as { id: string }).id]
-              : [uuidv4()];
+        const ids = hasIds(variables)
+          ? variables.ids
+          : hasId(variables)
+            ? [variables.id]
+            : [uuidv4()];
 
-        return {
+        baseResponse = {
           success: true,
           [idField]: ids,
           message: `${entityName}${ids.length > 1 ? "s" : ""} deleted successfully (test mode)`,
         };
+        break;
       }
 
-      default:
-        return { success: true };
+      default: {
+        baseResponse = { success: true };
+        break;
+      }
     }
+
+    // Since this is test code and we're following conventions, we can safely cast
+    // The actual TResponse should conform to the structure we created
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    return baseResponse as TResponse;
   };
 }
 
@@ -333,10 +365,11 @@ function createDefaultOptimisticUpdate<TEntity, TRequest>(
               typeof u === "object" &&
               u !== null &&
               "id" in u &&
-              u.id === (entity as { id: unknown }).id,
+              // Both have id property, safe to compare
+              u.id === entity.id,
           );
 
-          return update ? ({ ...entity, ...update } as TEntity) : entity;
+          return update ? { ...entity, ...update } : entity;
         });
 
         return updatedEntities;
@@ -344,23 +377,19 @@ function createDefaultOptimisticUpdate<TEntity, TRequest>(
 
       case "delete": {
         // Extract IDs from delete request
-        const ids =
-          typeof variables === "object" &&
-          variables !== null &&
-          "ids" in variables
-            ? (variables as { ids: string[] }).ids
-            : typeof variables === "object" &&
-                variables !== null &&
-                "id" in variables
-              ? [(variables as { id: string }).id]
-              : [];
+        const ids = hasIds(variables)
+          ? variables.ids
+          : hasId(variables)
+            ? [variables.id]
+            : [];
 
         const filteredEntities = oldResourceArray.filter(
           (entity: TEntity) =>
             typeof entity === "object" &&
             entity !== null &&
             "id" in entity &&
-            !ids.includes((entity as { id: string }).id),
+            typeof entity.id === "string" &&
+            !ids.includes(entity.id),
         );
 
         return filteredEntities;
@@ -440,7 +469,7 @@ export function createEntityMutation<TEntity, TRequest, TResponse>(
     operationName: operationName ?? `${capitalize(operation)}d ${entity}`, // "Created task", "Updated project"
     apiEndpoint: apiEndpoint ?? getDefaultEntityRoute(entity),
     resourceQueryKey: defaultResourceQueryKey,
-    defaultResourceValue: [] as TEntity[], // Empty array as default for all entity mutations
+    defaultResourceValue: [], // Empty array as default for all entity mutations
     invalidateQueryKeys: defaultInvalidateQueryKeys,
     logModule: logModule ?? `${entity}s`,
 
@@ -451,9 +480,7 @@ export function createEntityMutation<TEntity, TRequest, TResponse>(
     // Factories with smart defaults
     testResponseFactory:
       testResponseFactory ??
-      (createDefaultTestResponse(entity, operation) as (
-        variables: TRequest,
-      ) => TResponse),
+      createDefaultTestResponse<TRequest, TResponse>(entity, operation),
 
     optimisticDataFactory: optimisticDataFactory, // Optional, only for create
 

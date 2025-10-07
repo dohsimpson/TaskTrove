@@ -22,6 +22,31 @@ export function createMockAtomValue<T>(value: T): {
   }
 }
 
+// Define minimal mock interfaces for testing
+interface MockRequestCookies {
+  get: (name: string) => string | undefined
+  getAll: () => Array<{ name: string; value: string }>
+  has: (name: string) => boolean
+  set: (name: string, value: string) => MockRequestCookies
+  delete: (name: string) => boolean
+  clear: () => MockRequestCookies
+  toString: () => string
+}
+
+interface MockNextUrl {
+  pathname: string
+  searchParams: URLSearchParams
+  href: string
+  origin: string
+  protocol: string
+  host: string
+  hostname: string
+  port: string
+  search: string
+  hash: string
+  toJSON: () => string
+}
+
 /**
  * Create a mock EnhancedRequest for API testing
  * Creates a mock that satisfies the EnhancedRequest interface for testing purposes.
@@ -35,9 +60,36 @@ export function createMockEnhancedRequest(request: Request): EnhancedRequest {
     endpoint: "/api/test",
   }
 
+  // Create mock cookies object
+  const mockCookies: MockRequestCookies = {
+    get: () => undefined,
+    getAll: () => [],
+    has: () => false,
+    set: () => mockCookies,
+    delete: () => true,
+    clear: () => mockCookies,
+    toString: () => "",
+  }
+
+  // Create mock nextUrl object
+  const url = request.url ? new URL(request.url) : new URL("http://localhost:3000/api/test")
+  const mockNextUrl: MockNextUrl = {
+    pathname: url.pathname,
+    searchParams: url.searchParams,
+    href: url.href,
+    origin: url.origin,
+    protocol: url.protocol,
+    host: url.host,
+    hostname: url.hostname,
+    port: url.port,
+    search: url.search,
+    hash: url.hash,
+    toJSON: () => url.href,
+  }
+
   // Create a mock that includes all required NextRequest properties
   // For testing purposes, we create a partial implementation
-  const mockEnhancedRequest: Partial<EnhancedRequest> = {
+  const mockEnhancedRequest = {
     // Copy all Request properties and ensure essential methods work
     method: request.method,
     url: request.url,
@@ -63,27 +115,8 @@ export function createMockEnhancedRequest(request: Request): EnhancedRequest {
     formData: () => request.formData(),
 
     // Required NextRequest-specific properties (minimal viable mocks)
-    [Symbol.for("internal")]: {}, // Mock internal NextRequest symbol
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/consistent-type-assertions
-    cookies: {
-      get: () => undefined,
-      getAll: () => [],
-      has: () => false,
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any
-      set: () => ({}) as any, // Mock return for RequestCookies
-      delete: () => true, // Mock return for boolean
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any
-      clear: () => ({}) as any, // Mock return for RequestCookies
-      toString: () => "",
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any
-    } as any,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any
-    nextUrl: {
-      pathname: request.url ? new URL(request.url).pathname : "/api/test",
-      searchParams: new URLSearchParams(),
-      href: request.url || "http://localhost:3000/api/test",
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any
-    } as any,
+    cookies: mockCookies,
+    nextUrl: mockNextUrl,
     page: undefined,
     ua: undefined,
 
@@ -91,7 +124,8 @@ export function createMockEnhancedRequest(request: Request): EnhancedRequest {
     context,
   }
 
-  // ESLint disable: Type assertion needed for test mock to satisfy interface
+  // Type assertion is necessary for test mocks to satisfy the interface
+  // This is a legitimate use case for testing utilities
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return mockEnhancedRequest as EnhancedRequest
 }

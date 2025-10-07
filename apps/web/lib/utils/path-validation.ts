@@ -120,9 +120,6 @@ export function getSecureAssetPath(pathSegments: string[]): string | null {
   // Construct the base assets directory path
   const baseAssetsDir = resolve(process.cwd(), DEFAULT_DATA_DIR, DEFAULT_ASSETS_DIR)
 
-  // Construct the requested file path
-  const requestedPath = join(baseAssetsDir, ...pathSegments)
-
   // Resolve to canonical path to handle any symlinks or relative components
   // This also normalizes the path for consistent comparison
   let canonicalPath: string

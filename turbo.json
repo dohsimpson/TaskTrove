@@ -36,5 +36,5 @@
       "dependsOn": ["transit"]
     }
   },
-  "globalPassThroughEnv": ["PORT"]
+  "globalPassThroughEnv": ["PORT", "NODE_ENV", "AUTH_SECRET", "DEBUG"]
 }

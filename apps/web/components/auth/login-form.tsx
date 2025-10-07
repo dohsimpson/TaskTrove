@@ -21,7 +21,6 @@ export interface LoginFormProps {
 export function LoginForm({
   needsPasswordSetup: initialNeedsPasswordSetup,
   onSuccess,
-  onCancel: _onCancel,
 }: LoginFormProps) {
   // Translation hooks
   const { t } = useTranslation("auth")
@@ -72,7 +71,7 @@ export function LoginForm({
           throw new Error(errorData.message || "Failed to set up password")
         }
 
-        const data = await response.json()
+        await response.json()
 
         toast.success(
           t("messages.passwordSetSuccess", "Password set successfully! Please sign in."),
@@ -104,7 +103,7 @@ export function LoginForm({
         redirect: false,
       })
 
-      if (result?.error) {
+      if (result.error) {
         setError(t("errors.invalidPassword", "Invalid password. Please try again."))
         setIsLoading(false)
         setPassword("")

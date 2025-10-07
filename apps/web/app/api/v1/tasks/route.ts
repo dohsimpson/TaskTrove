@@ -7,7 +7,6 @@ import {
   createTaskId,
   TaskId,
   DataFileSerializationSchema,
-  DataFileSerialization,
   TaskUpdateUnionSchema,
   UpdateTaskRequest,
   UpdateTaskResponse,
@@ -167,8 +166,7 @@ async function createTask(
   fileData.tasks.push(newTask)
 
   // Determine target section (default section if not specified)
-  const targetSectionId: GroupId =
-    (validation.data.sectionId as GroupId | undefined) ?? DEFAULT_SECTION_ID
+  const targetSectionId: GroupId = validation.data.sectionId ?? DEFAULT_SECTION_ID
   const projectId = newTask.projectId
 
   // Find the project and add task to section
@@ -313,7 +311,7 @@ async function updateTasks(
 
     // Determine target section
     // If sectionId is specified, use it; otherwise use default section (for project changes)
-    const targetSectionId: GroupId = (update.sectionId as GroupId | undefined) ?? DEFAULT_SECTION_ID
+    const targetSectionId: GroupId = update.sectionId ?? DEFAULT_SECTION_ID
 
     // Remove from old project's section
     const oldProject = fileData.projects.find((p) => p.id === oldProjectId)

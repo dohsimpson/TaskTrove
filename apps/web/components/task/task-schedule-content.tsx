@@ -272,7 +272,7 @@ export function TaskScheduleContent({
             return { dueTime: isNewTask ? undefined : null }
           case "remove-recurring":
             return { recurring: isNewTask ? undefined : null }
-          default:
+          default: {
             // Handle cases where date, time, and recurring need to be set
             const updateObj: { recurring?: string; dueDate?: Date | null; dueTime?: Date | null } =
               {}
@@ -286,6 +286,7 @@ export function TaskScheduleContent({
               updateObj.dueTime = time
             }
             return updateObj
+          }
         }
       })()
 
@@ -415,14 +416,18 @@ export function TaskScheduleContent({
   const getDayWithSuffix = (day: number): string => {
     if (day >= 11 && day <= 13) return `${day}th`
     switch (day % 10) {
-      case 1:
+      case 1: {
         return `${day}st`
-      case 2:
+      }
+      case 2: {
         return `${day}nd`
-      case 3:
+      }
+      case 3: {
         return `${day}rd`
-      default:
+      }
+      default: {
         return `${day}th`
+      }
     }
   }
 
@@ -608,11 +613,12 @@ export function TaskScheduleContent({
       case "tomorrow":
         date = new Date(today.getTime() + 24 * 60 * 60 * 1000)
         break
-      case "next-week":
+      case "next-week": {
         const nextWeek = new Date(today)
         nextWeek.setDate(today.getDate() + 7)
         date = nextWeek
         break
+      }
       case "remove":
         date = null
         break
@@ -664,7 +670,7 @@ export function TaskScheduleContent({
           })
         }
         break
-      case "weekly":
+      case "weekly": {
         if (selectedWeekdays.length > 0) {
           // Convert numeric weekdays to RRULE format (0=SU, 1=MO, etc.)
           const weekdayMap = [
@@ -685,6 +691,7 @@ export function TaskScheduleContent({
           rrule = CommonRRules.weekly()
         }
         break
+      }
       case "monthly":
         if (selectedMonthlyDays.length > 0) {
           // Use specific days of the month
@@ -694,7 +701,7 @@ export function TaskScheduleContent({
           rrule = CommonRRules.monthly()
         }
         break
-      case "yearly":
+      case "yearly": {
         if (selectedYearlyDates.length > 0) {
           // Group dates by month to avoid Cartesian product issue
           const datesByMonth = new Map<number, number[]>()
@@ -743,7 +750,8 @@ export function TaskScheduleContent({
           rrule = buildRRule({ freq: RRuleFrequency.YEARLY, interval: 1 })
         }
         break
-      case "interval":
+      }
+      case "interval": {
         // Generate RRULE based on interval patterns (weekday or day-based)
         const weekdayMap = [
           RRuleWeekday.SU,
@@ -811,6 +819,7 @@ export function TaskScheduleContent({
           }
         }
         break
+      }
       case "remove":
         handleUpdate(taskId, null, null, "remove-recurring", undefined)
         return
@@ -1764,11 +1773,11 @@ export function TaskScheduleContent({
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    variant={task?.recurringMode !== "completedAt" ? "default" : "outline"}
+                    variant={task.recurringMode !== "completedAt" ? "default" : "outline"}
                     size="sm"
                     className="flex-1 text-xs"
                     onClick={() => {
-                      const updates = { recurringMode: "dueDate" as const }
+                      const updates: { recurringMode: "dueDate" } = { recurringMode: "dueDate" }
                       if (!taskId) {
                         updateQuickAddTask({ updateRequest: updates })
                       } else if (Array.isArray(taskId)) {
@@ -1781,11 +1790,13 @@ export function TaskScheduleContent({
                     {t("recurring.dueDate", "Due date")}
                   </Button>
                   <Button
-                    variant={task?.recurringMode === "completedAt" ? "default" : "outline"}
+                    variant={task.recurringMode === "completedAt" ? "default" : "outline"}
                     size="sm"
                     className="flex-1 text-xs"
                     onClick={() => {
-                      const updates = { recurringMode: "completedAt" as const }
+                      const updates: { recurringMode: "completedAt" } = {
+                        recurringMode: "completedAt",
+                      }
                       if (!taskId) {
                         updateQuickAddTask({ updateRequest: updates })
                       } else if (Array.isArray(taskId)) {
@@ -1806,7 +1817,7 @@ export function TaskScheduleContent({
             <div className="pt-3 mt-3 border-t">
               <div className="text-xs text-gray-500 flex items-center gap-1">
                 <Repeat className="h-3 w-3" />
-                {t("recurring.current", "Current:")} {getRRuleDisplay(task?.recurring || "")}
+                {t("recurring.current", "Current:")} {getRRuleDisplay(task.recurring || "")}
               </div>
             </div>
           )}

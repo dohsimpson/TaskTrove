@@ -16,16 +16,13 @@ import {
   tasksQueryAtom,
   projectsQueryAtom,
   labelsQueryAtom,
-  groupsQueryAtom,
   settingsQueryAtom,
   userQueryAtom,
 } from "./query";
 import type {
-  Task,
   Project,
   Label,
   UserSettings,
-  User,
   UpdateTaskRequest,
   PartialUserSettings,
   UpdateUserRequest,

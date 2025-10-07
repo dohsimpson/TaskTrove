@@ -568,7 +568,7 @@ describe("ProjectSectionsView", () => {
         id: TEST_GROUP_ID_1,
         name: "Planning",
         slug: "planning",
-        type: "section" as const,
+        type: "section",
         items: [TEST_TASK_ID_1, TEST_TASK_ID_3],
         color: DEFAULT_SECTION_COLORS[0],
       },
@@ -576,7 +576,7 @@ describe("ProjectSectionsView", () => {
         id: TEST_GROUP_ID_2,
         name: "In Progress",
         slug: "in-progress",
-        type: "section" as const,
+        type: "section",
         items: [TEST_TASK_ID_2],
         color: DEFAULT_SECTION_COLORS[1],
       },
@@ -584,7 +584,7 @@ describe("ProjectSectionsView", () => {
         id: TEST_GROUP_ID_3,
         name: "Review",
         slug: "review",
-        type: "section" as const,
+        type: "section",
         items: [],
         color: DEFAULT_SECTION_COLORS[2],
       },
@@ -774,6 +774,7 @@ describe("ProjectSectionsView", () => {
         atom.debugLabel === "orderedTasksBySection"
       ) {
         return (projectId: string, sectionId: string | null) => {
+          void sectionId // Mark as intentionally unused
           return mockTasks.filter((task) => {
             const matchesProject =
               projectId === "inbox"
@@ -787,6 +788,7 @@ describe("ProjectSectionsView", () => {
       // Handle orderedTasksBySection atom - it comes as a spy function
       if (atom && vi.isMockFunction(atom)) {
         return (projectId: string, sectionId: string | null) => {
+          void sectionId // Mark as intentionally unused
           return mockTasks.filter((task) => {
             const matchesProject =
               projectId === "inbox"
@@ -841,6 +843,7 @@ describe("ProjectSectionsView", () => {
       // Handle orderedTasksBySection atom - it comes as a spy function
       if (atom && vi.isMockFunction(atom)) {
         return (projectId: string, sectionId: string | null) => {
+          void sectionId // Mark as intentionally unused
           return mockTasks.filter((task) => {
             const matchesProject =
               projectId === "inbox"
@@ -1234,6 +1237,7 @@ describe("ProjectSectionsView", () => {
         // Handle orderedTasksBySection atom - return empty array for Review section
         if (atom && vi.isMockFunction(atom)) {
           return (projectId: string, sectionId: string | null) => {
+            void sectionId // Mark as intentionally unused
             return mockTasksEmptySection.filter((task) => {
               const matchesProject =
                 projectId === "inbox"
@@ -1289,7 +1293,7 @@ describe("ProjectSectionsView", () => {
           id: TEST_GROUP_ID_1,
           name: "Planning",
           slug: "planning",
-          type: "section" as const,
+          type: "section",
           items: [TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3],
           color: DEFAULT_SECTION_COLORS[0],
         },
@@ -1297,7 +1301,7 @@ describe("ProjectSectionsView", () => {
           id: TEST_GROUP_ID_2,
           name: "In Progress",
           slug: "in-progress",
-          type: "section" as const,
+          type: "section",
           items: [],
           color: DEFAULT_SECTION_COLORS[1],
         },
@@ -1305,7 +1309,7 @@ describe("ProjectSectionsView", () => {
           id: TEST_GROUP_ID_3,
           name: "Review",
           slug: "review",
-          type: "section" as const,
+          type: "section",
           items: [],
           color: DEFAULT_SECTION_COLORS[2],
         },
@@ -1382,6 +1386,7 @@ describe("ProjectSectionsView", () => {
         // Handle orderedTasksBySection atom - it comes as a spy function
         if (atom && vi.isMockFunction(atom)) {
           return (projectId: string, sectionId: string | null) => {
+            void sectionId // Mark as intentionally unused
             return mockTasksWithVariedProperties.filter((task) => {
               const matchesProject =
                 projectId === "inbox"

@@ -30,17 +30,9 @@ import { taskAtoms } from "../core/tasks";
 import { projectAtoms } from "../core/projects";
 import { labelAtoms } from "../core/labels";
 import {
-  createTaskId,
-  createSectionId,
-  createProjectId,
-  INBOX_PROJECT_ID,
-} from "@tasktrove/types";
-import {
   createMockTask,
   createMockProject,
   snapshotAtom,
-  TEST_TASK_ID_1,
-  TEST_PROJECT_ID_1,
 } from "../utils/test-helpers";
 
 // =============================================================================

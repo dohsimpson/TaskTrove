@@ -9,7 +9,6 @@ import {
   ViewId,
   ProjectId,
   Project,
-  ProjectSection,
   INBOX_PROJECT_ID,
   createTaskId,
   createProjectId,
@@ -372,7 +371,7 @@ export const bulkActionsAtom = atom(
       const tasks = get(tasksAtom);
 
       switch (action) {
-        case "complete":
+        case "complete": {
           const completedTasks = tasks.map((task: Task) =>
             taskIds.includes(task.id)
               ? {
@@ -385,20 +384,23 @@ export const bulkActionsAtom = atom(
           );
           set(tasksAtom, completedTasks);
           break;
+        }
 
-        case "delete":
+        case "delete": {
           const filteredTasks = tasks.filter(
             (task: Task) => !taskIds.includes(task.id),
           );
           set(tasksAtom, filteredTasks);
           break;
+        }
 
-        case "archive":
+        case "archive": {
           const archivedTasks = tasks.map((task: Task) =>
             taskIds.includes(task.id) ? { ...task, status: "archived" } : task,
           );
           set(tasksAtom, archivedTasks);
           break;
+        }
       }
     } catch (error) {
       handleAtomError(error, "bulkActionsAtom");
@@ -421,7 +423,6 @@ import {
   calendarTasksAtom,
   overdueTasksAtom,
   completedTasksAtom,
-  projectGroupTasksAtom,
   baseFilteredTasksForViewAtom,
 } from "../data/tasks/filters";
 

@@ -8,6 +8,7 @@
 import { z } from "zod"
 import { NextResponse } from "next/server"
 import { ErrorResponse, ApiErrorCode } from "@/lib/types"
+import { formatZodErrors } from "@tasktrove/utils/validation"
 
 // Re-export pure validation utilities from @tasktrove/utils package
 export {
@@ -76,8 +77,6 @@ export function validateData<T>(data: unknown, schema: z.ZodSchema<T>): Validati
   const result = schema.safeParse(data)
 
   if (!result.success) {
-    // Use the pure formatZodErrors function from @tasktrove/utils
-    const { formatZodErrors } = require("@tasktrove/utils/validation")
     const errorResponse: ErrorResponse = {
       code: ApiErrorCode.VALIDATION_ERROR,
       error: "Validation failed",

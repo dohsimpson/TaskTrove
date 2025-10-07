@@ -3,6 +3,7 @@
 import * as React from "react"
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker"
+import type { DayPickerProps, RootProps, ChevronProps, WeekNumberProps } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -16,8 +17,14 @@ function Calendar({
   formatters,
   components,
   ...props
-}: React.ComponentProps<typeof DayPicker> & {
+}: DayPickerProps & {
+  className?: string
+  classNames?: Partial<Record<string, string>>
+  showOutsideDays?: boolean
+  captionLayout?: "label" | "dropdown" | "dropdown-months" | "dropdown-years"
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
+  formatters?: DayPickerProps["formatters"]
+  components?: DayPickerProps["components"]
 }) {
   const defaultClassNames = getDefaultClassNames()
 
@@ -105,12 +112,12 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        Root: ({ className, rootRef, ...props }) => {
+        Root: ({ className, rootRef, ...props }: RootProps) => {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const _ = rootRef // Extract rootRef to prevent it from being passed to DOM
           return <div data-slot="calendar" className={cn(className)} {...props} />
         },
-        Chevron: ({ className, orientation, ...props }) => {
+        Chevron: ({ className, orientation, ...props }: ChevronProps) => {
           if (orientation === "left") {
             return <ChevronLeftIcon className={cn("size-4", className)} {...props} />
           }
@@ -122,11 +129,11 @@ function Calendar({
           return <ChevronDownIcon className={cn("size-4", className)} {...props} />
         },
         DayButton: CalendarDayButton,
-        WeekNumber: ({ children, ...props }) => {
+        WeekNumber: ({ week, ...props }: WeekNumberProps) => {
           return (
             <td {...props}>
               <div className="flex size-(--cell-size) items-center justify-center text-center">
-                {children}
+                {week.weekNumber}
               </div>
             </td>
           )
@@ -138,12 +145,11 @@ function Calendar({
   )
 }
 
-function CalendarDayButton({
-  className,
-  day,
-  modifiers,
-  ...props
-}: React.ComponentProps<typeof DayButton>) {
+interface CalendarDayButtonProps extends React.ComponentProps<typeof DayButton> {
+  className?: string
+}
+
+function CalendarDayButton({ className, day, modifiers, ...props }: CalendarDayButtonProps) {
   const defaultClassNames = getDefaultClassNames()
 
   const ref = React.useRef<HTMLButtonElement>(null)

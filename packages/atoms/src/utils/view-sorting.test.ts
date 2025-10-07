@@ -19,8 +19,8 @@ describe("sortTasksByViewState", () => {
     compactView: false,
   };
 
-  const createTask = (overrides: Partial<Task> = {}): Task =>
-    ({
+  const createTask = (overrides: Partial<Task> = {}): Task => {
+    const defaultTask: Task = {
       id: createTaskId("12345678-1234-4234-8234-123456789abc"),
       title: "Test Task",
       description: "",
@@ -31,8 +31,11 @@ describe("sortTasksByViewState", () => {
       subtasks: [],
       comments: [],
       createdAt: new Date("2024-01-01"),
-      ...overrides,
-    }) as Task;
+      recurringMode: "dueDate",
+    };
+
+    return { ...defaultTask, ...overrides };
+  };
 
   describe("default sort", () => {
     it("should put completed tasks at the bottom", () => {

@@ -7,9 +7,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { withAuthentication } from "./auth"
 import { NextResponse } from "next/server"
-import { ApiErrorCode, ErrorResponse } from "@/lib/types"
+import { ApiErrorCode, ErrorResponse, createGroupId } from "@/lib/types"
 import type { EnhancedRequest } from "./api-logger"
-import { auth } from "@/auth"
+import { createMockEnhancedRequest } from "@/lib/utils/test-helpers"
 import type { Session } from "next-auth"
 import { safeReadDataFile } from "@/lib/utils/safe-file-operations"
 
@@ -19,7 +19,7 @@ vi.unmock("@/lib/middleware/auth")
 
 // Mock NextAuth - auth() returns Promise<Session | null>
 vi.mock("@/auth", () => ({
-  auth: vi.fn<() => Promise<Session | null>>(),
+  auth: vi.fn().mockResolvedValue(null),
 }))
 
 // Mock safe-file-operations for bearer token tests
@@ -27,7 +27,9 @@ vi.mock("@/lib/utils/safe-file-operations", () => ({
   safeReadDataFile: vi.fn(),
 }))
 
-const mockAuth = vi.mocked(auth) as ReturnType<typeof vi.fn<() => Promise<Session | null>>>
+import { auth } from "@/auth"
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+const mockAuth = auth as ReturnType<typeof vi.fn>
 const mockSafeReadDataFile = vi.mocked(safeReadDataFile)
 
 describe("withAuthentication", () => {
@@ -40,14 +42,11 @@ describe("withAuthentication", () => {
     // Save and set AUTH_SECRET for regular tests (authentication enabled)
     originalAuthSecret = process.env.AUTH_SECRET
     process.env.AUTH_SECRET = "test-secret"
-    mockRequest = {
-      context: {
-        requestId: "test-request-id",
-        startTime: Date.now(),
+    mockRequest = createMockEnhancedRequest(
+      new Request("http://localhost:3000/api/tasks", {
         method: "GET",
-        endpoint: "/api/tasks",
-      },
-    } as EnhancedRequest
+      }),
+    )
     mockHandler.mockResolvedValue(NextResponse.json({ success: true }))
   })
 
@@ -115,17 +114,19 @@ describe("withAuthentication", () => {
       // Should return 401 error
       expect(response.status).toBe(401)
 
-      const data = (await response.json()) as ErrorResponse
-      expect(data.code).toBe(ApiErrorCode.AUTHENTICATION_REQUIRED)
-      expect(data.error).toBe("Authentication required")
-      expect(data.message).toBe("You must be authenticated to access this resource")
+      const data = await response.json()
+      expect(data).toMatchObject({
+        code: ApiErrorCode.AUTHENTICATION_REQUIRED,
+        error: "Authentication required",
+        message: "You must be authenticated to access this resource",
+      })
     })
 
     it("should return 401 when session exists but has no user", async () => {
-      const mockSession = {
+      const mockSession: Session = {
         user: undefined,
         expires: new Date(Date.now() + 86400000).toISOString(),
-      } as Session
+      }
       mockAuth.mockResolvedValue(mockSession)
 
       const wrappedHandler = withAuthentication(mockHandler)
@@ -137,15 +138,17 @@ describe("withAuthentication", () => {
       // Should return 401 error
       expect(response.status).toBe(401)
 
-      const data = (await response.json()) as ErrorResponse
-      expect(data.code).toBe(ApiErrorCode.AUTHENTICATION_REQUIRED)
+      const data = await response.json()
+      expect(data).toMatchObject({
+        code: ApiErrorCode.AUTHENTICATION_REQUIRED,
+      })
     })
 
     it("should return 401 when session.user is null", async () => {
-      const mockSession = {
-        user: null,
+      const mockSession: Session = {
+        user: undefined,
         expires: new Date(Date.now() + 86400000).toISOString(),
-      } as unknown as Session
+      }
       mockAuth.mockResolvedValue(mockSession)
 
       const wrappedHandler = withAuthentication(mockHandler)
@@ -157,8 +160,10 @@ describe("withAuthentication", () => {
       // Should return 401 error
       expect(response.status).toBe(401)
 
-      const data = (await response.json()) as ErrorResponse
-      expect(data.code).toBe(ApiErrorCode.AUTHENTICATION_REQUIRED)
+      const data = await response.json()
+      expect(data).toMatchObject({
+        code: ApiErrorCode.AUTHENTICATION_REQUIRED,
+      })
     })
   })
 
@@ -170,17 +175,21 @@ describe("withAuthentication", () => {
       const response = await wrappedHandler(mockRequest)
 
       // Check response structure
-      const data = (await response.json()) as ErrorResponse
+      const data = await response.json()
       expect(data).toHaveProperty("code")
       expect(data).toHaveProperty("error")
       expect(data).toHaveProperty("message")
 
       // Check correct values
-      expect(data.code).toBe(ApiErrorCode.AUTHENTICATION_REQUIRED)
+      expect(data).toMatchObject({
+        code: ApiErrorCode.AUTHENTICATION_REQUIRED,
+      })
       expect(typeof data.error).toBe("string")
       expect(typeof data.message).toBe("string")
-      expect(data.error.length).toBeGreaterThan(0)
-      expect(data.message.length).toBeGreaterThan(0)
+      expect(data.error && typeof data.error === "string" && data.error.length).toBeGreaterThan(0)
+      expect(
+        data.message && typeof data.message === "string" && data.message.length,
+      ).toBeGreaterThan(0)
     })
 
     it("should set correct HTTP status code", async () => {
@@ -198,9 +207,20 @@ describe("withAuthentication", () => {
       const wrappedHandler = withAuthentication(mockHandler)
       const response = await wrappedHandler(mockRequest)
 
-      const data = (await response.json()) as ErrorResponse
-      expect(data.message).toContain("authenticated")
-      expect(data.message.toLowerCase()).toContain("access")
+      const data = await response.json()
+      expect(data).toMatchObject({
+        code: ApiErrorCode.AUTHENTICATION_REQUIRED,
+      })
+      expect(
+        data && typeof data === "object" && "message" in data && typeof data.message === "string"
+          ? data.message
+          : "",
+      ).toContain("authenticated")
+      expect(
+        data && typeof data === "object" && "message" in data && typeof data.message === "string"
+          ? data.message.toLowerCase()
+          : "",
+      ).toContain("access")
     })
   })
 
@@ -313,6 +333,7 @@ describe("withAuthentication", () => {
       }
 
       const typedHandler = async (
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         _request: EnhancedRequest,
       ): Promise<NextResponse<CustomResponse | ErrorResponse>> => {
         return NextResponse.json<CustomResponse>({ data: "test", count: 1 })
@@ -401,10 +422,12 @@ describe("withAuthentication", () => {
       // Reset AUTH_SECRET for these tests
       process.env.AUTH_SECRET = "test-secret"
       // Create mock request with headers
-      mockRequestWithHeaders = {
-        ...mockRequest,
-        headers: new Headers(),
-      } as EnhancedRequest
+      mockRequestWithHeaders = createMockEnhancedRequest(
+        new Request("http://localhost:3000/api/tasks", {
+          method: "GET",
+          headers: new Headers(),
+        }),
+      )
     })
 
     it("should allow access with valid bearer token when allowApiToken is true", async () => {
@@ -418,12 +441,42 @@ describe("withAuthentication", () => {
           password: "hashed-password",
           apiToken: validToken,
         },
-        settings: {} as any,
+        settings: {
+          general: {
+            startView: "all",
+            soundEnabled: true,
+            linkifyEnabled: true,
+            popoverHoverOpen: false,
+          },
+          data: {
+            autoBackup: {
+              enabled: false,
+              backupTime: "00:00",
+              maxBackups: 10,
+            },
+          },
+          notifications: {
+            enabled: true,
+            requireInteraction: false,
+          },
+        },
         tasks: [],
         projects: [],
         labels: [],
-        projectGroups: {} as any,
-        labelGroups: {} as any,
+        projectGroups: {
+          type: "project",
+          id: createGroupId("12345678-1234-4234-8234-123456789abc"),
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: createGroupId("12345678-1234-4234-8234-123456789abc"),
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
       })
 
       const wrappedHandler = withAuthentication(mockHandler, { allowApiToken: true })
@@ -452,12 +505,42 @@ describe("withAuthentication", () => {
           password: "hashed-password",
           apiToken: "different-token-456",
         },
-        settings: {} as any,
+        settings: {
+          general: {
+            startView: "all",
+            soundEnabled: true,
+            linkifyEnabled: true,
+            popoverHoverOpen: false,
+          },
+          data: {
+            autoBackup: {
+              enabled: false,
+              backupTime: "00:00",
+              maxBackups: 10,
+            },
+          },
+          notifications: {
+            enabled: true,
+            requireInteraction: false,
+          },
+        },
         tasks: [],
         projects: [],
         labels: [],
-        projectGroups: {} as any,
-        labelGroups: {} as any,
+        projectGroups: {
+          type: "project",
+          id: createGroupId("12345678-1234-4234-8234-123456789abc"),
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: createGroupId("12345678-1234-4234-8234-123456789abc"),
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
       })
 
       // Mock no valid session
@@ -471,8 +554,10 @@ describe("withAuthentication", () => {
 
       // Should return 401
       expect(response.status).toBe(401)
-      const data = (await response.json()) as ErrorResponse
-      expect(data.code).toBe(ApiErrorCode.AUTHENTICATION_REQUIRED)
+      const data = await response.json()
+      expect(data).toMatchObject({
+        code: ApiErrorCode.AUTHENTICATION_REQUIRED,
+      })
     })
 
     it("should reject when no API token is configured and allowApiToken is true", async () => {
@@ -486,12 +571,42 @@ describe("withAuthentication", () => {
           password: "hashed-password",
           // No apiToken field
         },
-        settings: {} as any,
+        settings: {
+          general: {
+            startView: "all",
+            soundEnabled: true,
+            linkifyEnabled: true,
+            popoverHoverOpen: false,
+          },
+          data: {
+            autoBackup: {
+              enabled: false,
+              backupTime: "00:00",
+              maxBackups: 10,
+            },
+          },
+          notifications: {
+            enabled: true,
+            requireInteraction: false,
+          },
+        },
         tasks: [],
         projects: [],
         labels: [],
-        projectGroups: {} as any,
-        labelGroups: {} as any,
+        projectGroups: {
+          type: "project",
+          id: createGroupId("12345678-1234-4234-8234-123456789abc"),
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: createGroupId("12345678-1234-4234-8234-123456789abc"),
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
       })
 
       // Mock no valid session
@@ -558,12 +673,42 @@ describe("withAuthentication", () => {
           password: "hashed-password",
           apiToken: validToken,
         },
-        settings: {} as any,
+        settings: {
+          general: {
+            startView: "all",
+            soundEnabled: true,
+            linkifyEnabled: true,
+            popoverHoverOpen: false,
+          },
+          data: {
+            autoBackup: {
+              enabled: false,
+              backupTime: "00:00",
+              maxBackups: 10,
+            },
+          },
+          notifications: {
+            enabled: true,
+            requireInteraction: false,
+          },
+        },
         tasks: [],
         projects: [],
         labels: [],
-        projectGroups: {} as any,
-        labelGroups: {} as any,
+        projectGroups: {
+          type: "project",
+          id: createGroupId("12345678-1234-4234-8234-123456789abc"),
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: createGroupId("12345678-1234-4234-8234-123456789abc"),
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
       })
 
       // Mock valid session for fallback

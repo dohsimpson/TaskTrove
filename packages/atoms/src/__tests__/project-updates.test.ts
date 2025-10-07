@@ -21,7 +21,6 @@ import { DEFAULT_UUID } from "@tasktrove/constants";
 import type { Project } from "@tasktrove/types";
 import { createTaskId, createGroupId } from "@tasktrove/types";
 import {
-  createMockTask,
   TEST_PROJECT_ID_1,
   TEST_PROJECT_ID_2,
   TEST_TASK_ID_1,

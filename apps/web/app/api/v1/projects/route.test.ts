@@ -12,7 +12,6 @@ import {
   TEST_PROJECT_ID_2,
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
-  TEST_TASK_ID_3,
 } from "@/lib/utils/test-constants"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types"
@@ -36,18 +35,10 @@ vi.mock("@/lib/middleware/api-logger", () => ({
   withApiLogging: (handler: (...args: unknown[]) => unknown) => handler,
   logBusinessEvent: vi.fn(),
   withFileOperationLogging: async (operation: () => Promise<unknown>) => {
-    try {
-      return await operation()
-    } catch (error) {
-      throw error // Re-throw to maintain test behavior
-    }
+    return await operation()
   },
   withPerformanceLogging: async (operation: () => Promise<unknown>) => {
-    try {
-      return await operation()
-    } catch (error) {
-      throw error // Re-throw to maintain test behavior
-    }
+    return await operation()
   },
 }))
 

@@ -320,13 +320,14 @@ const dynamicPageInfoAtom = atom((get) => {
         description: "Custom task filters",
         iconType: "filters",
       };
-    default:
+    default: {
       const capitalizedTitle = viewId.charAt(0).toUpperCase() + viewId.slice(1);
       return {
         title: capitalizedTitle,
         description: "Page content",
         iconType: "default",
       };
+    }
   }
 });
 

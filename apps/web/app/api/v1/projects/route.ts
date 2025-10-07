@@ -9,7 +9,6 @@ import {
   ProjectUpdateUnionSchema,
   UpdateProjectRequest,
   DataFileSerializationSchema,
-  DataFileSerialization,
   ErrorResponse,
   ApiErrorCode,
   GetProjectsResponse,

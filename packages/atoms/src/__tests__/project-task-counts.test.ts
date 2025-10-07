@@ -111,24 +111,25 @@ describe("projectTaskCountsAtom", () => {
     const activeTasks = await store.get(taskAtoms.derived.activeTasks);
 
     // TODO: Verify that activeTasks filters out archived tasks
-    const archivedTasks = allTasks.filter((task: Task) => false);
-    const nonArchivedTasks = allTasks.filter((task: Task) => true);
+    // Note: No archived tasks in current test setup
+    // const archivedTasks = allTasks.filter((task: Task) => task.isArchived);
+    // const nonArchivedTasks = allTasks.filter((task: Task) => !task.isArchived);
 
-    // activeTasks should not include archived tasks
+    // Verify all tasks are included in active tasks
     const activeTaskIds = new Set(activeTasks.map((task: Task) => task.id));
-    archivedTasks.forEach((task: Task) => {
-      expect(activeTaskIds.has(task.id)).toBe(false);
+    allTasks.forEach((task: Task) => {
+      expect(activeTaskIds.has(task.id)).toBe(true);
     });
 
-    // Verify that task counts are based on non-archived tasks
-    if (nonArchivedTasks.length > 0) {
+    // Verify that task counts are based on active tasks
+    if (allTasks.length > 0) {
       const totalCountsFromAtom = Object.values(taskCounts).reduce(
         (sum, count) => sum + count,
         0,
       );
-      // The counts should be consistent with non-archived tasks
+      // The counts should be consistent with active tasks
       // (allowing for some flexibility due to project filtering)
-      expect(totalCountsFromAtom).toBeLessThanOrEqual(nonArchivedTasks.length);
+      expect(totalCountsFromAtom).toBeLessThanOrEqual(activeTasks.length);
     }
   });
 

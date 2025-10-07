@@ -7,16 +7,18 @@ import {
   removeTaskFromSection,
   taskOrderingUtils,
 } from "./ordering";
-import type {
-  Task,
-  Project,
-  ProjectSection,
-  TaskId,
-  ProjectId,
-  GroupId,
-} from "@tasktrove/types";
+import type { Task, Project, ProjectSection } from "@tasktrove/types";
 import { createTaskId, createProjectId, createGroupId } from "@tasktrove/types";
 import { v4 as uuidv4 } from "uuid";
+
+// Helper function to safely get element at specific index
+function getArrayElement<T>(arr: T[], index: number): T {
+  if (arr.length <= index) {
+    throw new Error(`Array index ${index} out of bounds`);
+  }
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  return arr[index]!;
+}
 
 // Test helper factories
 function createTestTask(overrides: Partial<Task> = {}): Task {
@@ -252,7 +254,9 @@ describe("moveTaskWithinSection", () => {
       }),
     ];
 
-    const result = moveTaskWithinSection(sectionId, taskIds[0]!, 2, sections);
+    const firstTaskId = getArrayElement(taskIds, 0);
+
+    const result = moveTaskWithinSection(sectionId, firstTaskId, 2, sections);
 
     expect(result[0]?.items).toEqual([taskIds[1], taskIds[2], taskIds[0]]);
   });
@@ -292,7 +296,8 @@ describe("moveTaskWithinSection", () => {
       }),
     ];
 
-    const result = moveTaskWithinSection(sectionId, taskIds[1]!, 1, sections);
+    const secondTaskId = getArrayElement(taskIds, 1);
+    const result = moveTaskWithinSection(sectionId, secondTaskId, 1, sections);
 
     expect(result[0]?.items).toEqual(taskIds);
   });
@@ -303,12 +308,14 @@ describe("moveTaskWithinSection", () => {
     const taskIds1 = [createTaskId(uuidv4()), createTaskId(uuidv4())];
     const taskIds2 = [createTaskId(uuidv4()), createTaskId(uuidv4())];
 
+    const firstTaskId1 = getArrayElement(taskIds1, 0);
+
     const sections = [
       createTestSection({ id: sectionId1, items: taskIds1 }),
       createTestSection({ id: sectionId2, items: taskIds2 }),
     ];
 
-    const result = moveTaskWithinSection(sectionId1, taskIds1[0]!, 1, sections);
+    const result = moveTaskWithinSection(sectionId1, firstTaskId1, 1, sections);
 
     expect(result[1]?.items).toEqual(taskIds2); // Unchanged
   });
@@ -337,7 +344,8 @@ describe("moveTaskWithinSection", () => {
       }),
     ];
 
-    const result = moveTaskWithinSection(sectionId, taskIds[2]!, 0, sections);
+    const thirdTaskId = getArrayElement(taskIds, 2);
+    const result = moveTaskWithinSection(sectionId, thirdTaskId, 0, sections);
 
     expect(result[0]?.items).toEqual([taskIds[2], taskIds[0], taskIds[1]]);
   });
@@ -356,7 +364,13 @@ describe("moveTaskWithinSection", () => {
       }),
     ];
 
-    const result = moveTaskWithinSection(sectionId, taskIds[0]!, 2, sections);
+    const moveToEndTaskId = getArrayElement(taskIds, 0);
+    const result = moveTaskWithinSection(
+      sectionId,
+      moveToEndTaskId,
+      2,
+      sections,
+    );
 
     expect(result[0]?.items).toEqual([taskIds[1], taskIds[2], taskIds[0]]);
   });
@@ -519,7 +533,12 @@ describe("removeTaskFromSection", () => {
       }),
     ];
 
-    const result = removeTaskFromSection(taskIds[1]!, sectionId, sections);
+    const removeSecondTaskId = getArrayElement(taskIds, 1);
+    const result = removeTaskFromSection(
+      removeSecondTaskId,
+      sectionId,
+      sections,
+    );
 
     expect(result[0]?.items).toEqual([taskIds[0], taskIds[2]]);
   });
@@ -621,7 +640,12 @@ describe("removeTaskFromSection", () => {
       }),
     ];
 
-    const result = removeTaskFromSection(taskIds[0]!, sectionId, sections);
+    const removeFirstTaskId = getArrayElement(taskIds, 0);
+    const result = removeTaskFromSection(
+      removeFirstTaskId,
+      sectionId,
+      sections,
+    );
 
     expect(result[0]?.items).toEqual([taskIds[1], taskIds[2]]);
   });
@@ -640,7 +664,12 @@ describe("removeTaskFromSection", () => {
       }),
     ];
 
-    const result = removeTaskFromSection(taskIds[2]!, sectionId, sections);
+    const removeThirdTaskId = getArrayElement(taskIds, 2);
+    const result = removeTaskFromSection(
+      removeThirdTaskId,
+      sectionId,
+      sections,
+    );
 
     expect(result[0]?.items).toEqual([taskIds[0], taskIds[1]]);
   });

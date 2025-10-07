@@ -12,10 +12,9 @@ import {
 } from "@tasktrove/constants";
 import { parse, isValid, parseISO, format } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
-import { ApiErrorCode, ApiErrorCodeSchema } from "./api-errors";
-
 // Re-export API error codes for convenience
 export { ApiErrorCode, ApiErrorCodeSchema } from "./api-errors";
+import { ApiErrorCodeSchema as _ApiErrorCodeSchema } from "./api-errors";
 
 // =============================================================================
 // API ROUTE TYPES
@@ -31,7 +30,7 @@ export type ApiRoute = z.infer<typeof ApiRouteSchema>;
  * Create a typed API route
  */
 export function createApiRoute(path: string): ApiRoute {
-  return path as ApiRoute;
+  return ApiRouteSchema.parse(path);
 }
 
 /**
@@ -2242,7 +2241,7 @@ export const InitialSetupResponseSchema = ApiResponseSchema.extend({
  * Error response schema
  */
 export const ErrorResponseSchema = z.object({
-  code: ApiErrorCodeSchema,
+  code: _ApiErrorCodeSchema,
   error: z.string(),
   message: z.string(),
   stack: z.string().optional(),

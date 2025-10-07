@@ -462,13 +462,14 @@ export function EnhancedHighlightedInput({
             break
 
           case "Tab":
-          case "Enter":
+          case "Enter": {
             e.preventDefault()
             const selectedItem = autocomplete.items[autocomplete.selectedIndex]
             if (selectedItem) {
               handleAutocompleteSelect(selectedItem)
             }
             break
+          }
 
           case "Escape":
             e.preventDefault()

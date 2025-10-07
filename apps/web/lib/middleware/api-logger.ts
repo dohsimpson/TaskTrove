@@ -131,18 +131,17 @@ export function withFileOperationLogging<T>(
   operationName: string,
   context: Partial<RequestContext> = {},
 ): Promise<T> {
-  return new Promise(async (resolve, reject) => {
-    const startTime = Date.now()
-    const logContext = {
-      operation: operationName,
-      requestId: context.requestId,
-      module: "api-file-ops",
-    }
+  const startTime = Date.now()
+  const logContext = {
+    operation: operationName,
+    requestId: context.requestId,
+    module: "api-file-ops",
+  }
 
-    log.debug(logContext, `Starting file operation: ${operationName}`)
+  log.debug(logContext, `Starting file operation: ${operationName}`)
 
-    try {
-      const result = await operation()
+  return operation()
+    .then((result) => {
       const duration = Date.now() - startTime
 
       log.info(
@@ -154,8 +153,9 @@ export function withFileOperationLogging<T>(
         `File operation completed: ${operationName}`,
       )
 
-      resolve(result)
-    } catch (error) {
+      return result
+    })
+    .catch((error) => {
       const duration = Date.now() - startTime
 
       log.error(
@@ -168,9 +168,8 @@ export function withFileOperationLogging<T>(
         `File operation failed: ${operationName}`,
       )
 
-      reject(error)
-    }
-  })
+      throw error
+    })
 }
 
 /**
@@ -223,11 +222,10 @@ export function withPerformanceLogging<T>(
   context?: Partial<RequestContext>,
   thresholdMs: number = 1000,
 ): Promise<T> {
-  return new Promise(async (resolve, reject) => {
-    const startTime = Date.now()
+  const startTime = Date.now()
 
-    try {
-      const result = await operation()
+  return operation()
+    .then((result) => {
       const duration = Date.now() - startTime
 
       const logContext = {
@@ -244,8 +242,9 @@ export function withPerformanceLogging<T>(
         log.debug(logContext, `Operation completed: ${operationName}`)
       }
 
-      resolve(result)
-    } catch (error) {
+      return result
+    })
+    .catch((error) => {
       const duration = Date.now() - startTime
 
       log.error(
@@ -259,9 +258,8 @@ export function withPerformanceLogging<T>(
         `Operation failed: ${operationName}`,
       )
 
-      reject(error)
-    }
-  })
+      throw error
+    })
 }
 
 // Helper functions

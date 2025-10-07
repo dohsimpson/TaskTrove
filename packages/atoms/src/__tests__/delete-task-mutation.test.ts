@@ -21,12 +21,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { createStore } from "jotai";
 import { taskAtoms } from "../core/tasks";
 import { deleteTaskMutationAtom } from "../core/base";
-import {
-  createTaskId,
-  createSubtaskId,
-  createSectionId,
-  INBOX_PROJECT_ID,
-} from "@tasktrove/types";
+import { createTaskId } from "@tasktrove/types";
 import {
   createMockTask,
   TEST_TASK_ID_1,
@@ -42,7 +37,10 @@ vi.mock("@tasktrove/atoms/utils", () => ({
   },
   // Re-export other utils that might be needed
   createAtomWithStorage: vi.fn(() => {
-    const mockAtom = vi.fn() as any;
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const mockAtom = vi.fn() as unknown as ReturnType<typeof vi.fn> & {
+      debugLabel: string;
+    };
     mockAtom.debugLabel = "";
     return mockAtom;
   }),
@@ -357,7 +355,6 @@ describe("Delete Task Mutation Tests", () => {
     });
 
     it("should log appropriate messages for different error scenarios in production", async () => {
-      const { log } = (await vi.importMock("@tasktrove/atoms/utils")) as any;
       const mockTaskId = TEST_TASK_ID_2;
 
       // Set NODE_ENV to production to avoid test environment bypass
@@ -389,6 +386,7 @@ describe("Delete Task Mutation Tests", () => {
         }
 
         // Verify error logging (mocked)
+        const { log } = await import("@tasktrove/atoms/utils");
         expect(log.error).toHaveBeenCalled();
       } finally {
         setMockedNodeEnv(originalEnv);

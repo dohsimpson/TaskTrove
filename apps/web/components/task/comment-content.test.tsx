@@ -8,7 +8,6 @@ import { createTaskId, createCommentId } from "@/lib/types"
 import {
   TEST_TASK_ID_1,
   TEST_PROJECT_ID_1,
-  TEST_GROUP_ID_1,
   TEST_COMMENT_ID_1,
   TEST_COMMENT_ID_2,
   TEST_COMMENT_ID_3,

@@ -95,7 +95,7 @@ export function ShortcutHandler({
       const focusedTask = document.querySelector('[data-task-focused="true"]')
       if (focusedTask) {
         switch (key) {
-          case "Enter":
+          case "Enter": {
             event.preventDefault()
             // Edit task
             const editButton = focusedTask.querySelector('[data-action="edit"]')
@@ -103,7 +103,8 @@ export function ShortcutHandler({
               editButton.click()
             }
             break
-          case " ":
+          }
+          case " ": {
             event.preventDefault()
             // Toggle completion
             const toggleButton = focusedTask.querySelector('[data-action="toggle"]')
@@ -111,6 +112,7 @@ export function ShortcutHandler({
               toggleButton.click()
             }
             break
+          }
           case "Delete":
           case "Backspace":
             if (modifier) {

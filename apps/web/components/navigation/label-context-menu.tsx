@@ -36,7 +36,7 @@ export function LabelContextMenu({
     startEditing(labelId)
   }
 
-  const handleDelete = (deleteContainedResources?: boolean) => {
+  const handleDelete = () => {
     // For labels, deleteContainedResources doesn't apply (labels don't contain other resources)
     deleteLabelAction(labelId)
   }

@@ -15,6 +15,7 @@ import {
   UpdateUserResponseSchema,
   UserUpdateSerializationSchema,
   type AvatarFilePath,
+  createAvatarFilePath,
   API_ROUTES,
 } from "@tasktrove/types";
 import { DEFAULT_USER } from "@tasktrove/types/defaults";
@@ -54,8 +55,9 @@ export const updateUserMutationAtom = createMutation<
         simulatedAvatarPath = undefined;
       } else {
         // User uploaded new avatar (base64) - simulate saving as file
-        simulatedAvatarPath =
-          "assets/avatar/simulated-test-avatar.png" as AvatarFilePath;
+        simulatedAvatarPath = createAvatarFilePath(
+          "assets/avatar/simulated-test-avatar.png",
+        );
       }
     }
 

@@ -216,9 +216,6 @@ catalogs:
     eslint-config-turbo:
       specifier: ^2.5.8
       version: 2.5.8
-    eslint-plugin-only-warn:
-      specifier: ^1.1.0
-      version: 1.1.0
     eslint-plugin-react:
       specifier: ^7.37.5
       version: 7.37.5
@@ -887,9 +884,6 @@ importers:
       eslint-config-turbo:
         specifier: 'catalog:'
         version: 2.5.8(eslint@9.36.0(jiti@2.6.0))(turbo@2.5.6)
-      eslint-plugin-only-warn:
-        specifier: 'catalog:'
-        version: 1.1.0
       eslint-plugin-react:
         specifier: 'catalog:'
         version: 7.37.5(eslint@9.36.0(jiti@2.6.0))
@@ -945,6 +939,9 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 9.36.0(jiti@2.6.0)
+      eslint-plugin-react-hooks:
+        specifier: 'catalog:'
+        version: 5.2.0(eslint@9.36.0(jiti@2.6.0))
       typescript:
         specifier: 'catalog:'
         version: 5.9.2
@@ -3803,10 +3800,6 @@ packages:
     engines: {node: '>=4.0'}
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9
-
-  eslint-plugin-only-warn@1.1.0:
-    resolution: {integrity: sha512-2tktqUAT+Q3hCAU0iSf4xAN1k9zOpjK5WO8104mB0rT/dGhOa09582HN5HlbxNbPRZ0THV7nLGvzugcNOSjzfA==}
-    engines: {node: '>=6'}
 
   eslint-plugin-react-hooks@5.2.0:
     resolution: {integrity: sha512-+f15FfK64YQwZdJNELETdn5ibXEUQmW1DZL6KXhNnc2heoy/sg9VJJeT7n8TlMWouzWqSWavFkIhHyIbIAEapg==}
@@ -9056,8 +9049,6 @@ snapshots:
       object.fromentries: 2.0.8
       safe-regex-test: 1.1.0
       string.prototype.includes: 2.0.1
-
-  eslint-plugin-only-warn@1.1.0: {}
 
   eslint-plugin-react-hooks@5.2.0(eslint@9.36.0(jiti@2.6.0)):
     dependencies:

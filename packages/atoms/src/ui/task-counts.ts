@@ -20,11 +20,6 @@ import {
 } from "../core/tasks";
 import { viewStatesAtom, getViewStateOrDefault } from "./views";
 import { uiFilteredTasksForViewAtom } from "./filtered-tasks";
-import {
-  calculateProjectTaskCounts,
-  calculateLabelTaskCounts,
-  type CountConfig,
-} from "../utils/counts";
 import { applyViewStateFilters } from "../utils/view-filters";
 import { handleAtomError } from "../utils/atom-helpers";
 

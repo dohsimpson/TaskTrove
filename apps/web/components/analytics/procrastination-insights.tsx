@@ -43,10 +43,9 @@ export function ProcrastinationInsights({ tasks }: ProcrastinationInsightsProps)
         const daysDelayed = differenceInDays(task.completedAt, task.dueDate)
         const postponedCount = 0 // postponedCount tracking removed
 
-        if (daysDelayed > 0 || postponedCount > 0) {
+        if (daysDelayed > 0) {
           let pattern: "chronic" | "occasional" | "deadline-driven"
-          if (postponedCount >= 3) pattern = "chronic"
-          else if (daysDelayed > 7) pattern = "deadline-driven"
+          if (daysDelayed > 7) pattern = "deadline-driven"
           else pattern = "occasional"
 
           patterns.push({

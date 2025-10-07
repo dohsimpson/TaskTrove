@@ -8,7 +8,6 @@ import {
   DeleteLabelResponse,
   DataFileSerializationSchema,
   createLabelId,
-  DataFileSerialization,
   ErrorResponse,
   ApiErrorCode,
   LabelUpdateUnionSchema,

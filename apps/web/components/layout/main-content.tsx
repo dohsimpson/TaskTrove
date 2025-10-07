@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { useTranslation } from "@tasktrove/i18n"
@@ -31,8 +32,10 @@ interface MainContentProps {
   onVoiceCommand: (command: VoiceCommand) => void
 }
 
-export function MainContent({}: MainContentProps) {
+export function MainContent({ onVoiceCommand }: MainContentProps): React.ReactElement {
   const { t } = useTranslation("layout")
+  // TODO: Implement voice command functionality
+  void onVoiceCommand // Mark as intentionally used for future implementation
 
   // Get data from atoms
   const currentView = useAtomValue(currentViewAtom)
@@ -117,7 +120,7 @@ export function MainContent({}: MainContentProps) {
           />
         )
 
-      default:
+      default: {
         // Task views (inbox, today, upcoming, projects, etc.)
 
         // Configure section support based on view type
@@ -127,7 +130,7 @@ export function MainContent({}: MainContentProps) {
         }
 
         // Get project for project views
-        const getProjectForView = () => {
+        const getProjectForView = (): Project | undefined => {
           if (routeContext.routeType === "project" && currentProjectId) {
             return allProjects.find((p: Project) => p.id === currentProjectId)
           }
@@ -143,13 +146,7 @@ export function MainContent({}: MainContentProps) {
 
         switch (viewMode) {
           case "kanban":
-            return (
-              <KanbanBoard
-                tasks={filteredTasks}
-                project={projectForView}
-                onTaskClick={toggleTaskPanel}
-              />
-            )
+            return <KanbanBoard project={projectForView} onTaskClick={toggleTaskPanel} />
 
           case "calendar":
             return (
@@ -181,6 +178,7 @@ export function MainContent({}: MainContentProps) {
               </div>
             )
         }
+      }
     }
   }
 

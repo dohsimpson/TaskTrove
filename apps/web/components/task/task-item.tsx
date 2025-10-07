@@ -15,10 +15,8 @@ import { LabelManagementPopover } from "./label-management-popover"
 import {
   Calendar,
   MessageSquare,
-  Paperclip,
   Flag,
   CheckSquare,
-  Star,
   Folder,
   Tag,
   ClockFading,
@@ -52,7 +50,6 @@ import {
   selectionModeAtom,
   selectedTasksAtom,
   selectionToggleTaskSelectionAtom,
-  addTaskToSelectionAtom,
   selectTaskRangeAtom,
 } from "@/lib/atoms"
 import {
@@ -233,7 +230,6 @@ export function TaskItem({
   const addComment = useSetAtom(addCommentAtom)
   const toggleTaskPanel = useSetAtom(toggleTaskPanelWithViewStateAtom)
   const toggleTaskSelection = useSetAtom(selectionToggleTaskSelectionAtom)
-  const addTaskToSelection = useSetAtom(addTaskToSelectionAtom)
   const selectTaskRange = useSetAtom(selectTaskRangeAtom)
   const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
 
@@ -272,7 +268,6 @@ export function TaskItem({
   // Derived state from atoms
   const isSelected = selectedTaskId === taskId
   const isInSelection = selectedTasks.includes(taskId)
-  const isSelectionMode = useAtomValue(selectionModeAtom)
 
   // Context menu visibility with flicker prevention
   const {
@@ -407,7 +402,7 @@ export function TaskItem({
     }
 
     // If in selection mode, toggle selection instead of opening panel
-    if (isSelectionMode) {
+    if (selectionMode) {
       toggleTaskSelection(taskId)
       return
     }

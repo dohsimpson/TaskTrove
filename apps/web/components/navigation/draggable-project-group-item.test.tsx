@@ -221,7 +221,10 @@ describe("DraggableProjectGroupItem", () => {
       expect(mockNavigation.getRouter().push).not.toHaveBeenCalled()
 
       // Click on the button (but not on the chevron area)
-      fireEvent.click(menuButton!)
+      expect(menuButton).toBeInTheDocument()
+      if (menuButton) {
+        fireEvent.click(menuButton)
+      }
 
       // Should navigate to group page when not clicking chevron
       expect(mockNavigation.getRouter().push).toHaveBeenCalledWith("/projectgroups/test-group")

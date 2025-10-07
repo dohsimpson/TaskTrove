@@ -276,9 +276,7 @@ describe("Sidebar Integration", () => {
       });
 
       // Mark the second task as completed
-      if (task2Result && task2Result.id) {
-        store.set(taskAtoms.actions.toggleTask, task2Result.id);
-      }
+      store.set(taskAtoms.actions.toggleTask, task2Result.id);
     } catch {
       // If task creation fails in test environment, skip the dynamic test
       return;

@@ -41,11 +41,12 @@ export function TaskScheduleDropdown({ task, onSchedule, children }: TaskSchedul
       case "tomorrow":
         date = new Date(today.getTime() + 24 * 60 * 60 * 1000)
         break
-      case "next-week":
+      case "next-week": {
         const nextWeek = new Date(today)
         nextWeek.setDate(today.getDate() + 7)
         date = nextWeek
         break
+      }
       case "remove":
         date = undefined
         break

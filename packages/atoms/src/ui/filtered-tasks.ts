@@ -7,25 +7,15 @@
 
 import { atom } from "jotai";
 import { atomFamily } from "jotai/utils";
-import type {
-  Task,
-  ViewId,
-  LabelId,
-  ProjectId,
-  GroupId,
-} from "@tasktrove/types";
-import {
-  baseFilteredTasksForViewAtom,
-  orderedTasksBySectionAtom,
-} from "../core/tasks";
+import type { ViewId } from "@tasktrove/types";
+import { baseFilteredTasksForViewAtom } from "../core/tasks";
 import {
   currentViewAtom,
   currentViewStateAtom,
   viewStatesAtom,
   getViewStateOrDefault,
 } from "./views";
-import { filterTasks, viewStateToFilterConfig } from "../utils/filters";
-import { handleAtomError, matchesDueDateFilter } from "../utils/atom-helpers";
+import { handleAtomError } from "../utils/atom-helpers";
 import { applyViewStateFilters } from "../utils/view-filters";
 import { sortTasksByViewState } from "../utils/view-sorting";
 

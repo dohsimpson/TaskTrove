@@ -187,12 +187,10 @@ export function DeleteConfirmDialog({
                       "delete.project.deleteContainedResources",
                       "Also delete all tasks in this project",
                     )
-                  : entityType === "group"
-                    ? t(
-                        "delete.group.deleteContainedResources",
-                        "Also delete all projects and tasks in this group",
-                      )
-                    : t("delete.deleteContainedResources", "Also delete contained resources")}
+                  : t(
+                      "delete.group.deleteContainedResources",
+                      "Also delete all projects and tasks in this group",
+                    )}
               </label>
             </div>
           </div>

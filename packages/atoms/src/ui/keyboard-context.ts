@@ -16,12 +16,11 @@ import {
   isAnyDialogOpenAtom,
   showTaskPanelAtom,
   showSearchDialogAtom,
-  selectedTaskAtom,
-  selectedTasksAtom,
   showQuickAddAtom,
   showProjectDialogAtom,
   showPomodoroAtom,
 } from "./dialogs";
+import { selectedTaskAtom, selectedTasksAtom } from "./selection";
 import { currentViewAtom, searchQueryAtom } from "./views";
 
 // =============================================================================

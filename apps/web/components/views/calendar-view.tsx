@@ -30,12 +30,8 @@ import {
 import { TaskItem } from "@/components/task/task-item"
 import { SelectionToolbar } from "@/components/task/selection-toolbar"
 import { TaskSidePanel } from "@/components/task/task-side-panel"
-import {
-  showTaskPanelAtom,
-  closeTaskPanelAtom,
-  selectedTaskAtom,
-  updateQuickAddTaskAtom,
-} from "@/lib/atoms/ui/dialogs"
+import { showTaskPanelAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
+import { closeTaskPanelAtom, selectedTaskAtom } from "@/lib/atoms"
 import {
   currentViewStateAtom,
   taskActions,

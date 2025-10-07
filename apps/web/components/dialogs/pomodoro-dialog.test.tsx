@@ -47,12 +47,12 @@ vi.mock("jotai", async (importOriginal) => {
   return {
     ...actual,
     useAtomValue: vi.fn((atom) => {
-      if (atom === "showPomodoroAtom") return mockDialogOpen
-      if (atom === "selectedTaskAtom") return mockSelectedTask
+      if (atom.toString().includes("showPomodoro")) return mockDialogOpen
+      if (atom.toString().includes("selectedTask")) return mockSelectedTask
       return null
     }),
     useSetAtom: vi.fn((atom) => {
-      if (atom === "closePomodoroAtom") return mockClosePomodoro
+      if (atom.toString().includes("closePomodoro")) return mockClosePomodoro
       return vi.fn()
     }),
   }
@@ -167,6 +167,7 @@ describe("PomodoroDialog", () => {
 
     expect(screen.getByTestId("task-id")).toHaveTextContent("")
     expect(screen.getByTestId("task-title")).toHaveTextContent("")
+    expect(screen.getByTestId("dialog-title")).toHaveTextContent("Pomodoro Timer")
   })
 
   it("passes undefined task properties to PomodoroTimer when selectedTaskAtom is null", () => {

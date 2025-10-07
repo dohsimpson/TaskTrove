@@ -9,7 +9,7 @@ import type {
   CreateTaskRequest,
   UpdateTaskRequest,
 } from "@tasktrove/types";
-import { tasksAtom } from "../core/base";
+import { selectedTaskIdAtom, setSelectedTaskIdAtom } from "./selection";
 
 /**
  * Dialog state atoms for TaskTrove's UI components
@@ -135,53 +135,6 @@ projectGroupDialogContextAtom.debugLabel = "projectGroupDialogContextAtom";
 export const showUserProfileDialogAtom = atom<boolean>(false);
 showUserProfileDialogAtom.debugLabel = "showUserProfileDialogAtom";
 
-/**
- * Selected Task ID - Currently selected task ID for viewing/editing
- */
-export const selectedTaskIdAtom = atom<TaskId | null>(null);
-selectedTaskIdAtom.debugLabel = "selectedTaskIdAtom";
-
-/**
- * Selected Task - Derived atom that gets the current task from tasksAtom by ID
- * This ensures the selected task is always up-to-date with the latest task data
- */
-export const selectedTaskAtom = atom<Task | null>((get) => {
-  const selectedId = get(selectedTaskIdAtom);
-  if (!selectedId) return null;
-
-  const tasks = get(tasksAtom);
-  return tasks.find((task: Task) => task.id === selectedId) || null;
-});
-selectedTaskAtom.debugLabel = "selectedTaskAtom";
-
-/**
- * Base selected tasks - Manually selected tasks for bulk operations (internal)
- */
-export const baseSelectedTasksAtom = atom<TaskId[]>([]);
-baseSelectedTasksAtom.debugLabel = "baseSelectedTasksAtom";
-
-/**
- * Selected Tasks - Array of task IDs selected for bulk operations
- * Automatically includes selectedTaskId if set, ensuring panel task is always in selection
- */
-export const selectedTasksAtom = atom(
-  (get) => {
-    const baseSelected = get(baseSelectedTasksAtom);
-    const panelTaskId = get(selectedTaskIdAtom);
-
-    // If there's a panel task, ensure it's included in the selection
-    if (panelTaskId && !baseSelected.includes(panelTaskId)) {
-      return [...baseSelected, panelTaskId];
-    }
-
-    return baseSelected;
-  },
-  (_get, set, newValue: TaskId[]) => {
-    set(baseSelectedTasksAtom, newValue);
-  },
-);
-selectedTasksAtom.debugLabel = "selectedTasksAtom";
-
 // =============================================================================
 // WRITE-ONLY ACTION ATOMS
 // =============================================================================
@@ -212,10 +165,10 @@ export const toggleTaskPanelAtom = atom(null, (get, set, task: Task) => {
   if (isCurrentlyOpen && currentTaskId === task.id) {
     // If panel is open with the same task, close it
     set(showTaskPanelAtom, false);
-    set(selectedTaskIdAtom, null);
+    set(setSelectedTaskIdAtom, null);
   } else {
     // Otherwise, open/switch to the new task
-    set(selectedTaskIdAtom, task.id);
+    set(setSelectedTaskIdAtom, task.id);
     set(showTaskPanelAtom, true);
   }
 });
@@ -226,7 +179,7 @@ toggleTaskPanelAtom.debugLabel = "toggleTaskPanelAtom";
  */
 export const closeTaskPanelAtom = atom(null, (get, set) => {
   set(showTaskPanelAtom, false);
-  set(selectedTaskIdAtom, null);
+  set(setSelectedTaskIdAtom, null);
 });
 closeTaskPanelAtom.debugLabel = "closeTaskPanelAtom";
 
@@ -234,7 +187,7 @@ closeTaskPanelAtom.debugLabel = "closeTaskPanelAtom";
  * Opens the pomodoro dialog with a specific task
  */
 export const openPomodoroAtom = atom(null, (get, set, task: Task) => {
-  set(selectedTaskIdAtom, task.id);
+  set(setSelectedTaskIdAtom, task.id);
   set(showPomodoroAtom, true);
 });
 openPomodoroAtom.debugLabel = "openPomodoroAtom";
@@ -244,40 +197,9 @@ openPomodoroAtom.debugLabel = "openPomodoroAtom";
  */
 export const closePomodoroAtom = atom(null, (get, set) => {
   set(showPomodoroAtom, false);
-  set(selectedTaskIdAtom, null);
+  set(setSelectedTaskIdAtom, null);
 });
 closePomodoroAtom.debugLabel = "closePomodoroAtom";
-
-/**
- * Toggles a task in the selected tasks array
- */
-export const toggleTaskSelectionAtom = atom(
-  null,
-  (get, set, taskId: TaskId) => {
-    const currentSelected = get(selectedTasksAtom);
-    const isSelected = currentSelected.includes(taskId);
-
-    if (isSelected) {
-      // Remove from selection
-      set(
-        selectedTasksAtom,
-        currentSelected.filter((id) => id !== taskId),
-      );
-    } else {
-      // Add to selection
-      set(selectedTasksAtom, [...currentSelected, taskId]);
-    }
-  },
-);
-toggleTaskSelectionAtom.debugLabel = "toggleTaskSelectionAtom";
-
-/**
- * Clears all selected tasks
- */
-export const clearSelectedTasksAtom = atom(null, (get, set) => {
-  set(selectedTasksAtom, []);
-});
-clearSelectedTasksAtom.debugLabel = "clearSelectedTasksAtom";
 
 /**
  * Closes all dialogs and clears all selections
@@ -295,9 +217,8 @@ export const closeAllDialogsAtom = atom(null, (get, set) => {
   set(showProjectGroupDialogAtom, false);
   set(showUserProfileDialogAtom, false);
 
-  // Clear all selections
-  set(selectedTaskIdAtom, null);
-  set(selectedTasksAtom, []);
+  // Note: Selection clearing is handled by the selection module
+  // Import and use clearSelectedTasksAtom from selection.ts if needed
 });
 closeAllDialogsAtom.debugLabel = "closeAllDialogsAtom";
 
@@ -323,23 +244,6 @@ export const isAnyDialogOpenAtom = atom<boolean>((get) => {
   );
 });
 isAnyDialogOpenAtom.debugLabel = "isAnyDialogOpenAtom";
-
-/**
- * Returns the count of currently selected tasks
- */
-export const selectedTaskCountAtom = atom<number>((get) => {
-  return get(selectedTasksAtom).length;
-});
-selectedTaskCountAtom.debugLabel = "selectedTaskCountAtom";
-
-/**
- * Returns a function that checks if a specific task ID is selected
- */
-export const isTaskSelectedAtom = atom((get) => {
-  const selectedTasks = get(selectedTasksAtom);
-  return (taskId: TaskId): boolean => selectedTasks.includes(taskId);
-});
-isTaskSelectedAtom.debugLabel = "isTaskSelectedAtom";
 
 // =============================================================================
 // QUICK ADD NLP SETTINGS
@@ -547,9 +451,6 @@ export const baseDialogAtoms = {
   showSearchDialog: showSearchDialogAtom,
   showSettingsDialog: showSettingsDialogAtom,
   showUserProfileDialog: showUserProfileDialogAtom,
-  selectedTaskId: selectedTaskIdAtom,
-  selectedTask: selectedTaskAtom,
-  selectedTasks: selectedTasksAtom,
   quickAddAutocomplete: quickAddAutocompleteAtom,
   quickAddTask: quickAddTaskAtom,
   nlpEnabled: nlpEnabledAtom,
@@ -569,8 +470,6 @@ export const dialogActionAtoms = {
   closeSettingsDialog: closeSettingsDialogAtom,
   openUserProfileDialog: openUserProfileDialogAtom,
   closeUserProfileDialog: closeUserProfileDialogAtom,
-  toggleTaskSelection: toggleTaskSelectionAtom,
-  clearSelectedTasks: clearSelectedTasksAtom,
   closeAllDialogs: closeAllDialogsAtom,
   updateQuickAddAutocomplete: updateQuickAddAutocompleteAtom,
   closeQuickAddAutocomplete: closeQuickAddAutocompleteAtom,
@@ -584,8 +483,6 @@ export const dialogActionAtoms = {
  */
 export const derivedDialogAtoms = {
   isAnyDialogOpen: isAnyDialogOpenAtom,
-  selectedTaskCount: selectedTaskCountAtom,
-  isTaskSelected: isTaskSelectedAtom,
 } as const;
 
 /**

@@ -34,7 +34,6 @@ vi.mock("@/lib/atoms", () => ({
   addCommentAtom: vi.fn(),
   toggleTaskPanelAtom: vi.fn(),
   selectionToggleTaskSelectionAtom: vi.fn(),
-  enterSelectionModeAtom: vi.fn(),
   sortedProjectsAtom: { init: [] },
   tasks: [],
   projectDerived: {

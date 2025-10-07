@@ -12,7 +12,14 @@ import { projectAtoms } from "../core/projects";
 import { labelAtoms } from "../core/labels";
 import { viewAtoms } from "../ui/views";
 import { dialogAtoms } from "../ui/dialogs";
-import type { Task, Project, Label, CreateTaskRequest } from "@tasktrove/types";
+import { selectionAtoms } from "../ui/selection";
+import type {
+  Task,
+  Project,
+  Label,
+  CreateTaskRequest,
+  TaskId,
+} from "@tasktrove/types";
 import { INBOX_PROJECT_ID, createTaskId } from "@tasktrove/types";
 import {
   TEST_TASK_ID_1,
@@ -419,24 +426,24 @@ describe("TaskTrove Jotai Atoms Integration Tests", () => {
       // Add the mock task to tasksAtom so selectedTaskAtom can find it
       store.set(taskAtoms.tasks, [mockTask]);
       // Set the selected task ID so selectedTaskAtom can find it
-      store.set(dialogAtoms.selectedTaskId, mockTask.id);
+      store.set(selectionAtoms.selectedTaskId, mockTask.id);
       store.set(dialogAtoms.showTaskPanel, true);
       const taskPanelOpen = store.get(dialogAtoms.showTaskPanel);
-      const selectedTask = store.get(dialogAtoms.selectedTask);
+      const selectedTask = store.get(selectionAtoms.selectedTask);
 
       expect(taskPanelOpen).toBe(true);
       expect(selectedTask?.id).toBe(mockTask.id);
 
       // Test task selection for bulk operations
-      store.set(dialogAtoms.toggleTaskSelection, TEST_TASK_ID_1);
+      store.set(selectionAtoms.toggleTaskSelection, TEST_TASK_ID_1);
       store.set(
-        dialogAtoms.toggleTaskSelection,
+        selectionAtoms.toggleTaskSelection,
         createTaskId("12345678-1234-4234-8234-123456789ab2"),
       );
 
-      const selectedTasks = store.get(dialogAtoms.selectedTasks);
-      const selectedCount = store.get(dialogAtoms.selectedTaskCount);
-      const isTaskSelected = store.get(dialogAtoms.isTaskSelected);
+      const selectedTasks = store.get(selectionAtoms.selectedTasks);
+      const selectedCount = selectedTasks.length;
+      const isTaskSelected = (taskId: TaskId) => selectedTasks.includes(taskId);
 
       expect(selectedTasks.length).toBe(2);
       expect(selectedCount).toBe(2);
@@ -446,14 +453,14 @@ describe("TaskTrove Jotai Atoms Integration Tests", () => {
       ).toBe(false);
 
       // Test clearing selections
-      store.set(dialogAtoms.clearSelectedTasks);
-      const clearedSelections = store.get(dialogAtoms.selectedTasks);
+      store.set(selectionAtoms.clearSelectedTasks);
+      const clearedSelections = store.get(selectionAtoms.selectedTasks);
       expect(clearedSelections.length).toBe(0);
 
       // Test closing all dialogs
       store.set(dialogAtoms.closeAllDialogs);
       const allClosed = store.get(dialogAtoms.isAnyDialogOpen);
-      const selectedTaskAfterClose = store.get(dialogAtoms.selectedTask);
+      const selectedTaskAfterClose = store.get(selectionAtoms.selectedTask);
 
       expect(allClosed).toBe(false);
       expect(selectedTaskAfterClose).toBe(null);

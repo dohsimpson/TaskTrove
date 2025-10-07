@@ -47,10 +47,10 @@ import {
   pauseFocusTimerAtom,
   stopFocusTimerAtom,
   // Use centralized selection atoms
-  selectionModeAtom,
   selectedTasksAtom,
+  lastSelectedTaskAtom,
+  selectRangeAtom,
   selectionToggleTaskSelectionAtom,
-  selectTaskRangeAtom,
 } from "@/lib/atoms"
 import {
   labelsAtom,
@@ -58,11 +58,8 @@ import {
   labelsFromIdsAtom,
 } from "@/lib/atoms/core/labels"
 import { projectsAtom } from "@/lib/atoms"
-import {
-  quickAddTaskAtom,
-  selectedTaskIdAtom,
-  updateQuickAddTaskAtom,
-} from "@/lib/atoms/ui/dialogs"
+import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
+import { selectedTaskIdAtom } from "@/lib/atoms"
 import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } from "@/lib/types"
 import { INBOX_PROJECT_ID, createTaskId } from "@/lib/types"
 import { TimeEstimationPicker } from "../ui/custom/time-estimation-picker"
@@ -192,6 +189,8 @@ interface TaskItemProps {
   variant?: "default" | "compact" | "kanban" | "calendar" | "subtask"
   // Subtask-specific props
   parentTask?: Task | CreateTaskRequest // Parent task for subtask operations - can be CreateTaskRequest in quick-add
+  // Range selection props
+  sortedTaskIds?: TaskId[] // Array of task IDs in display order for range selection
 }
 
 export function TaskItem({
@@ -201,6 +200,7 @@ export function TaskItem({
   variant = "default",
   // Subtask-specific props
   parentTask,
+  sortedTaskIds,
 }: TaskItemProps) {
   // Translation setup
   const { t } = useTranslation("task")
@@ -215,8 +215,8 @@ export function TaskItem({
 
   // Get task data from atoms - MUST be called before any conditional returns
   const allTasks = useAtomValue(tasksAtom)
-  const selectionMode = useAtomValue(selectionModeAtom)
   const selectedTasks = useAtomValue(selectedTasksAtom)
+  const lastSelectedTask = useAtomValue(lastSelectedTaskAtom)
   const allLabels = useAtomValue(labelsAtom)
   const getLabelsFromIds = useAtomValue(labelsFromIdsAtom)
   const allProjects = useAtomValue(projectsAtom)
@@ -230,7 +230,7 @@ export function TaskItem({
   const addComment = useSetAtom(addCommentAtom)
   const toggleTaskPanel = useSetAtom(toggleTaskPanelWithViewStateAtom)
   const toggleTaskSelection = useSetAtom(selectionToggleTaskSelectionAtom)
-  const selectTaskRange = useSetAtom(selectTaskRangeAtom)
+  const selectRange = useSetAtom(selectRangeAtom)
   const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
 
   // Quick-add atoms for subtask handling in new tasks
@@ -396,18 +396,28 @@ export function TaskItem({
     }
 
     // Handle range selection with SHIFT
-    if (isShift) {
-      selectTaskRange(taskId)
+    console.log(
+      "isShift",
+      isShift,
+      "lastSelectedTask",
+      lastSelectedTask,
+      "sortedTaskIds",
+      sortedTaskIds,
+    )
+    if (isShift && lastSelectedTask && sortedTaskIds) {
+      selectRange({
+        startTaskId: lastSelectedTask,
+        endTaskId: taskId,
+        sortedTaskIds: sortedTaskIds,
+      })
       return
-    }
-
-    // If in selection mode, toggle selection instead of opening panel
-    if (selectionMode) {
+    } else if (isShift && !lastSelectedTask) {
+      // when shift but lastSelectedTask is null, treat shift as ctrl
       toggleTaskSelection(taskId)
       return
     }
 
-    // Use atom action to open task panel
+    // Regular click - open task panel
     toggleTaskPanel(task)
   }
 

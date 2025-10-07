@@ -18,7 +18,8 @@ import {
   STANDARD_VIEW_IDS,
 } from "@tasktrove/constants";
 import { createAtomWithStorage, log, namedAtom } from "../utils/atom-helpers";
-import { showTaskPanelAtom, selectedTaskIdAtom } from "./dialogs";
+import { showTaskPanelAtom } from "./dialogs";
+import { selectedTaskIdAtom, setSelectedTaskIdAtom } from "./selection";
 import { tasksAtom } from "../core/tasks";
 
 /**
@@ -297,13 +298,13 @@ export const setViewOptionsAtom = atom(
         const allTasks = get(tasksAtom);
         const firstTask = allTasks[0];
         if (firstTask) {
-          set(selectedTaskIdAtom, firstTask.id);
+          set(setSelectedTaskIdAtom, firstTask.id);
           set(showTaskPanelAtom, true);
         }
       } else {
         // When disabling side panel, close task panel
         set(showTaskPanelAtom, false);
-        set(selectedTaskIdAtom, null);
+        set(setSelectedTaskIdAtom, null);
       }
     }
   },
@@ -677,16 +678,10 @@ export const toggleTaskPanelWithViewStateAtom = atom(
 
     if (isCurrentlyOpen && currentTaskId === task.id) {
       // If panel is open with the same task, close it completely
-      set(showTaskPanelAtom, false);
-      set(selectedTaskIdAtom, null);
-      // Also disable side panel view option to ensure panel fully closes
-      set(updateViewStateAtom, {
-        viewId: currentView,
-        updates: { showSidePanel: false },
-      });
+      set(resetSidePanelStateAtom);
     } else {
       // Otherwise, open/switch to the new task
-      set(selectedTaskIdAtom, task.id);
+      set(setSelectedTaskIdAtom, task.id);
       set(showTaskPanelAtom, true);
       // Enable side panel view option if not already enabled
       if (!currentViewState.showSidePanel) {
@@ -700,6 +695,25 @@ export const toggleTaskPanelWithViewStateAtom = atom(
 );
 toggleTaskPanelWithViewStateAtom.debugLabel =
   "toggleTaskPanelWithViewStateAtom";
+
+/**
+ * Reset side panel state - closes panel and disables showSidePanel view option
+ * Used when entering selection mode or when panel needs to be fully closed
+ */
+export const resetSidePanelStateAtom = atom(null, (get, set) => {
+  const currentView = get(currentViewAtom);
+
+  // Close the panel completely
+  set(showTaskPanelAtom, false);
+  set(setSelectedTaskIdAtom, null);
+
+  // Also disable side panel view option to ensure panel fully closes
+  set(updateViewStateAtom, {
+    viewId: currentView,
+    updates: { showSidePanel: false },
+  });
+});
+resetSidePanelStateAtom.debugLabel = "resetSidePanelStateAtom";
 
 // =============================================================================
 // EXPORTS
@@ -730,6 +744,7 @@ export const viewAtoms = {
   toggleSectionCollapse: toggleSectionCollapseAtom,
   resetCurrentViewState: resetCurrentViewStateAtom,
   resetViewState: resetViewStateAtom,
+  resetSidePanelState: resetSidePanelStateAtom,
   // Filter actions
   setActiveFilters: setActiveFiltersAtom,
   clearActiveFilters: clearActiveFiltersAtom,

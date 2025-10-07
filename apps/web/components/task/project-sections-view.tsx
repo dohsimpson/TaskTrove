@@ -136,6 +136,9 @@ export function ProjectSectionsView({
   const { showSidePanel, compactView } = currentViewState
   const isMobile = useIsMobile()
 
+  // Get sorted task IDs for flat list view (when supportsSections is false)
+  const sortedFlatTaskIds = tasks.map((task: Task) => task.id)
+
   // Atom actions
   const setViewOptions = useSetAtom(setViewOptionsAtom)
   const toggleSectionCollapse = useSetAtom(toggleSectionCollapseAtom)
@@ -484,6 +487,9 @@ export function ProjectSectionsView({
     )
     const sectionTasks = sortTasksByViewState([...filteredSectionTasks], currentViewState)
 
+    // Get sorted task IDs for range selection
+    const sortedSectionTaskIds = sectionTasks.map((task: Task) => task.id)
+
     const sectionDroppableId = `${droppableId}-section-${sectionId}`
     const isCollapsed = collapsedSections.includes(sectionId)
     const isEditing = editingSectionId === section.id
@@ -772,6 +778,7 @@ export function ProjectSectionsView({
                           variant={compactView ? "compact" : "default"}
                           className="cursor-pointer mb-2 mx-2"
                           showProjectBadge={true}
+                          sortedTaskIds={sortedSectionTaskIds}
                         />
                       </DraggableWrapper>
 
@@ -878,6 +885,7 @@ export function ProjectSectionsView({
                             variant={compactView ? "compact" : "default"}
                             className="cursor-pointer mb-2"
                             showProjectBadge={true}
+                            sortedTaskIds={sortedFlatTaskIds}
                           />
                         </DraggableWrapper>
                       </DropTargetWrapper>

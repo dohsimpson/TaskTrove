@@ -1,28 +1,36 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createStore } from "jotai";
 import {
-  selectionModeAtom,
-  lastSelectedTaskAtom,
-  hasSelectedTasksAtom,
-  selectedTaskCountAtom,
-  isTaskSelectedAtom,
-  toggleTaskSelectionAtom,
-  enterSelectionModeAtom,
-  exitSelectionModeAtom,
-  clearSelectionAtom,
-  addTaskToSelectionAtom,
-  removeTaskFromSelectionAtom,
-} from "../ui/selection";
-import {
   selectedTasksAtom,
-  baseSelectedTasksAtom,
   selectedTaskIdAtom,
-} from "../ui/dialogs";
+  lastSelectedTaskAtom,
+  toggleTaskSelectionAtom,
+  clearSelectedTasksAtom,
+  setSelectedTaskIdAtom,
+  selectRangeAtom,
+} from "../ui/selection";
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
   TEST_TASK_ID_3,
 } from "../utils/test-helpers";
+import type { TaskId } from "@tasktrove/types";
+
+// Helper functions for derived logic
+const hasSelectedTasks = (store: ReturnType<typeof createStore>) => {
+  const selectedTasks = store.get(selectedTasksAtom);
+  return selectedTasks.length > 0;
+};
+
+const getSelectedTaskCount = (store: ReturnType<typeof createStore>) => {
+  const selectedTasks = store.get(selectedTasksAtom);
+  return selectedTasks.length;
+};
+
+const isTaskSelected = (store: ReturnType<typeof createStore>) => {
+  const selectedTasks = store.get(selectedTasksAtom);
+  return (taskId: TaskId) => selectedTasks.includes(taskId);
+};
 
 describe("Selection Atoms", () => {
   let store: ReturnType<typeof createStore>;
@@ -31,154 +39,120 @@ describe("Selection Atoms", () => {
     store = createStore();
   });
 
-  describe("Base State Atoms", () => {
-    describe("selectionModeAtom", () => {
-      it("is false when no tasks are selected", () => {
-        const selectionMode = store.get(selectionModeAtom);
-        expect(selectionMode).toBe(false);
-      });
-
-      it("becomes true when tasks are added to baseSelectedTasksAtom", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1]);
-        const selectionMode = store.get(selectionModeAtom);
-        expect(selectionMode).toBe(true);
-      });
-
-      it("becomes false when all tasks are removed from baseSelectedTasksAtom", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
-        expect(store.get(selectionModeAtom)).toBe(true);
-
-        store.set(baseSelectedTasksAtom, []);
-        expect(store.get(selectionModeAtom)).toBe(false);
-      });
-
-      it("updates automatically when baseSelectedTasksAtom changes", () => {
-        expect(store.get(selectionModeAtom)).toBe(false);
-
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1]);
-        expect(store.get(selectionModeAtom)).toBe(true);
-
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
-        expect(store.get(selectionModeAtom)).toBe(true);
-
-        store.set(baseSelectedTasksAtom, []);
-        expect(store.get(selectionModeAtom)).toBe(false);
-      });
-    });
-
+  describe("Core Selection Atoms", () => {
     describe("selectedTasksAtom", () => {
       it("returns empty array initially", () => {
         const selectedTasks = store.get(selectedTasksAtom);
         expect(selectedTasks).toEqual([]);
       });
 
-      it("returns tasks from baseSelectedTasksAtom", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
-        const selectedTasks = store.get(selectedTasksAtom);
-        expect(selectedTasks).toEqual([TEST_TASK_ID_1, TEST_TASK_ID_2]);
-      });
-
-      it("automatically includes selectedTaskId (panel task)", () => {
-        store.set(selectedTaskIdAtom, TEST_TASK_ID_1);
-        const selectedTasks = store.get(selectedTasksAtom);
-        expect(selectedTasks).toContain(TEST_TASK_ID_1);
-      });
-
-      it("includes panel task even when baseSelectedTasks is empty", () => {
-        store.set(baseSelectedTasksAtom, []);
-        store.set(selectedTaskIdAtom, TEST_TASK_ID_1);
+      it("stores selected task IDs", () => {
+        store.set(selectedTasksAtom, [TEST_TASK_ID_1]);
         const selectedTasks = store.get(selectedTasksAtom);
         expect(selectedTasks).toEqual([TEST_TASK_ID_1]);
       });
 
-      it("does not duplicate panel task if already in baseSelectedTasks", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
-        store.set(selectedTaskIdAtom, TEST_TASK_ID_1);
+      it("can store multiple selected task IDs", () => {
+        store.set(selectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
         const selectedTasks = store.get(selectedTasksAtom);
         expect(selectedTasks).toEqual([TEST_TASK_ID_1, TEST_TASK_ID_2]);
       });
 
-      it("merges baseSelectedTasks and panel task correctly", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_2, TEST_TASK_ID_3]);
-        store.set(selectedTaskIdAtom, TEST_TASK_ID_1);
-        const selectedTasks = store.get(selectedTasksAtom);
-        expect(selectedTasks).toContain(TEST_TASK_ID_1);
-        expect(selectedTasks).toContain(TEST_TASK_ID_2);
-        expect(selectedTasks).toContain(TEST_TASK_ID_3);
-        expect(selectedTasks).toHaveLength(3);
-      });
+      it("updates correctly when changed", () => {
+        expect(store.get(selectedTasksAtom)).toEqual([]);
 
-      it("updates when baseSelectedTasksAtom changes", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1]);
+        store.set(selectedTasksAtom, [TEST_TASK_ID_1]);
         expect(store.get(selectedTasksAtom)).toEqual([TEST_TASK_ID_1]);
 
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
+        store.set(selectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
         expect(store.get(selectedTasksAtom)).toEqual([
           TEST_TASK_ID_1,
           TEST_TASK_ID_2,
         ]);
+
+        store.set(selectedTasksAtom, []);
+        expect(store.get(selectedTasksAtom)).toEqual([]);
+      });
+    });
+
+    describe("selectedTaskIdAtom", () => {
+      it("returns null initially", () => {
+        const selectedTaskId = store.get(selectedTaskIdAtom);
+        expect(selectedTaskId).toBe(null);
+      });
+
+      it("stores the selected task ID for panel", () => {
+        store.set(selectedTaskIdAtom, TEST_TASK_ID_1);
+        const selectedTaskId = store.get(selectedTaskIdAtom);
+        expect(selectedTaskId).toBe(TEST_TASK_ID_1);
       });
     });
 
     describe("lastSelectedTaskAtom", () => {
-      it("is null initially", () => {
-        const lastSelected = store.get(lastSelectedTaskAtom);
-        expect(lastSelected).toBeNull();
+      it("returns null initially", () => {
+        const lastSelectedTask = store.get(lastSelectedTaskAtom);
+        expect(lastSelectedTask).toBe(null);
       });
 
-      it("can be set to a task ID", () => {
+      it("stores the last selected task ID", () => {
         store.set(lastSelectedTaskAtom, TEST_TASK_ID_1);
-        expect(store.get(lastSelectedTaskAtom)).toBe(TEST_TASK_ID_1);
+        const lastSelectedTask = store.get(lastSelectedTaskAtom);
+        expect(lastSelectedTask).toBe(TEST_TASK_ID_1);
       });
     });
   });
 
-  describe("Derived State Atoms", () => {
-    describe("hasSelectedTasksAtom", () => {
+  describe("Derived State Helpers", () => {
+    describe("hasSelectedTasks helper", () => {
       it("is false when no tasks selected", () => {
-        expect(store.get(hasSelectedTasksAtom)).toBe(false);
+        expect(hasSelectedTasks(store)).toBe(false);
       });
 
       it("is true when tasks are selected", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1]);
-        expect(store.get(hasSelectedTasksAtom)).toBe(true);
+        store.set(selectedTasksAtom, [TEST_TASK_ID_1]);
+        expect(hasSelectedTasks(store)).toBe(true);
       });
     });
 
-    describe("selectedTaskCountAtom", () => {
+    describe("getSelectedTaskCount helper", () => {
       it("is 0 when no tasks selected", () => {
-        expect(store.get(selectedTaskCountAtom)).toBe(0);
+        expect(getSelectedTaskCount(store)).toBe(0);
       });
 
       it("returns correct count", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
-        expect(store.get(selectedTaskCountAtom)).toBe(2);
-      });
-
-      it("includes panel task in count", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1]);
-        store.set(selectedTaskIdAtom, TEST_TASK_ID_2);
-        expect(store.get(selectedTaskCountAtom)).toBe(2);
+        store.set(selectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
+        expect(getSelectedTaskCount(store)).toBe(2);
       });
     });
 
-    describe("isTaskSelectedAtom", () => {
+    describe("isTaskSelected helper", () => {
       it("returns function that checks if task is selected", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
-        const isSelected = store.get(isTaskSelectedAtom);
-        expect(isSelected(TEST_TASK_ID_1)).toBe(true);
-        expect(isSelected(TEST_TASK_ID_2)).toBe(true);
-        expect(isSelected(TEST_TASK_ID_3)).toBe(false);
+        store.set(selectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
+        expect(isTaskSelected(store)(TEST_TASK_ID_1)).toBe(true);
+        expect(isTaskSelected(store)(TEST_TASK_ID_2)).toBe(true);
+        expect(isTaskSelected(store)(TEST_TASK_ID_3)).toBe(false);
       });
     });
-
-    // Note: Tests for allVisibleTasksSelectedAtom and someVisibleTasksSelectedAtom
-    // are skipped because they depend on filteredTasksAtom which is a derived atom
-    // and cannot be set directly in tests. These atoms are tested indirectly through
-    // integration tests below and in component tests.
   });
 
   describe("Action Atoms", () => {
+    describe("setSelectedTaskIdAtom", () => {
+      it("sets selected task ID and clears bulk selection", () => {
+        store.set(selectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
+        store.set(setSelectedTaskIdAtom, TEST_TASK_ID_3);
+
+        expect(store.get(selectedTaskIdAtom)).toBe(TEST_TASK_ID_3);
+        expect(store.get(selectedTasksAtom)).toEqual([]);
+      });
+
+      it("sets selected task ID to null", () => {
+        store.set(selectedTaskIdAtom, TEST_TASK_ID_1);
+        store.set(setSelectedTaskIdAtom, null);
+
+        expect(store.get(selectedTaskIdAtom)).toBe(null);
+      });
+    });
+
     describe("toggleTaskSelectionAtom", () => {
       it("adds task to selection when not selected", () => {
         store.set(toggleTaskSelectionAtom, TEST_TASK_ID_1);
@@ -186,189 +160,161 @@ describe("Selection Atoms", () => {
       });
 
       it("removes task from selection when selected", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1]);
+        store.set(selectedTasksAtom, [TEST_TASK_ID_1]);
         store.set(toggleTaskSelectionAtom, TEST_TASK_ID_1);
         expect(store.get(selectedTasksAtom)).not.toContain(TEST_TASK_ID_1);
       });
 
-      it("sets lastSelectedTaskAtom when adding task", () => {
+      it("tracks last selected task when adding to selection", () => {
         store.set(toggleTaskSelectionAtom, TEST_TASK_ID_1);
         expect(store.get(lastSelectedTaskAtom)).toBe(TEST_TASK_ID_1);
       });
 
-      it("does not change lastSelectedTaskAtom when removing task", () => {
+      it("clears last selected task when removing from selection", () => {
+        store.set(selectedTasksAtom, [TEST_TASK_ID_1]);
+        store.set(lastSelectedTaskAtom, TEST_TASK_ID_1);
         store.set(toggleTaskSelectionAtom, TEST_TASK_ID_1);
-        store.set(lastSelectedTaskAtom, TEST_TASK_ID_2);
-        store.set(toggleTaskSelectionAtom, TEST_TASK_ID_1);
-        expect(store.get(lastSelectedTaskAtom)).toBe(TEST_TASK_ID_2);
-      });
-
-      it("automatically activates selection mode when first task added", () => {
-        expect(store.get(selectionModeAtom)).toBe(false);
-        store.set(toggleTaskSelectionAtom, TEST_TASK_ID_1);
-        expect(store.get(selectionModeAtom)).toBe(true);
-      });
-
-      it("automatically deactivates selection mode when last task removed", () => {
-        store.set(toggleTaskSelectionAtom, TEST_TASK_ID_1);
-        expect(store.get(selectionModeAtom)).toBe(true);
-        store.set(toggleTaskSelectionAtom, TEST_TASK_ID_1);
-        expect(store.get(selectionModeAtom)).toBe(false);
+        expect(store.get(lastSelectedTaskAtom)).toBe(null);
       });
     });
 
-    describe("addTaskToSelectionAtom", () => {
-      it("adds task to selection", () => {
-        store.set(addTaskToSelectionAtom, TEST_TASK_ID_1);
-        expect(store.get(selectedTasksAtom)).toContain(TEST_TASK_ID_1);
-      });
-
-      it("does not add duplicate", () => {
-        store.set(addTaskToSelectionAtom, TEST_TASK_ID_1);
-        store.set(addTaskToSelectionAtom, TEST_TASK_ID_1);
-        const selected = store.get(selectedTasksAtom);
-        expect(selected.filter((id) => id === TEST_TASK_ID_1)).toHaveLength(1);
-      });
-
-      it("updates lastSelectedTaskAtom", () => {
-        store.set(addTaskToSelectionAtom, TEST_TASK_ID_1);
-        expect(store.get(lastSelectedTaskAtom)).toBe(TEST_TASK_ID_1);
-      });
-
-      it("activates selection mode", () => {
-        store.set(addTaskToSelectionAtom, TEST_TASK_ID_1);
-        expect(store.get(selectionModeAtom)).toBe(true);
-      });
-    });
-
-    describe("removeTaskFromSelectionAtom", () => {
-      it("removes task from selection", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
-        store.set(removeTaskFromSelectionAtom, TEST_TASK_ID_1);
-        expect(store.get(selectedTasksAtom)).not.toContain(TEST_TASK_ID_1);
-        expect(store.get(selectedTasksAtom)).toContain(TEST_TASK_ID_2);
-      });
-
-      it("deactivates selection mode when last task removed", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1]);
-        store.set(removeTaskFromSelectionAtom, TEST_TASK_ID_1);
-        expect(store.get(selectionModeAtom)).toBe(false);
-      });
-    });
-
-    describe("enterSelectionModeAtom", () => {
-      it("adds initial task if provided", () => {
-        store.set(enterSelectionModeAtom, TEST_TASK_ID_1);
-        expect(store.get(selectedTasksAtom)).toContain(TEST_TASK_ID_1);
-      });
-
-      it("does not add task if already selected", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1]);
-        store.set(enterSelectionModeAtom, TEST_TASK_ID_1);
-        const selected = store.get(selectedTasksAtom);
-        expect(selected.filter((id) => id === TEST_TASK_ID_1)).toHaveLength(1);
-      });
-
-      it("works without initial task", () => {
-        store.set(enterSelectionModeAtom, undefined);
-        expect(store.get(selectedTasksAtom)).toEqual([]);
-      });
-    });
-
-    describe("exitSelectionModeAtom", () => {
+    describe("clearSelectedTasksAtom", () => {
       it("clears all selections", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
-        store.set(exitSelectionModeAtom);
+        store.set(selectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
+        store.set(clearSelectedTasksAtom);
         expect(store.get(selectedTasksAtom)).toEqual([]);
       });
 
-      it("deactivates selection mode", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1]);
-        store.set(exitSelectionModeAtom);
-        expect(store.get(selectionModeAtom)).toBe(false);
+      it("clears last selected task", () => {
+        store.set(selectedTasksAtom, [TEST_TASK_ID_1]);
+        store.set(lastSelectedTaskAtom, TEST_TASK_ID_1);
+        store.set(clearSelectedTasksAtom);
+        expect(store.get(lastSelectedTaskAtom)).toBe(null);
       });
     });
 
-    describe("clearSelectionAtom", () => {
-      it("clears all selections", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
-        store.set(clearSelectionAtom);
-        expect(store.get(selectedTasksAtom)).toEqual([]);
+    describe("selectRangeAtom", () => {
+      it("selects range between two tasks", () => {
+        const sortedTaskIds = [TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3];
+
+        store.set(selectRangeAtom, {
+          startTaskId: TEST_TASK_ID_1,
+          endTaskId: TEST_TASK_ID_3,
+          sortedTaskIds,
+        });
+
+        expect(store.get(selectedTasksAtom)).toEqual([
+          TEST_TASK_ID_1,
+          TEST_TASK_ID_2,
+          TEST_TASK_ID_3,
+        ]);
+        expect(store.get(lastSelectedTaskAtom)).toBe(TEST_TASK_ID_3);
       });
 
-      it("deactivates selection mode", () => {
-        store.set(baseSelectedTasksAtom, [TEST_TASK_ID_1]);
-        store.set(clearSelectionAtom);
-        expect(store.get(selectionModeAtom)).toBe(false);
+      it("merges range with existing selection", () => {
+        const sortedTaskIds = [TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3];
+        store.set(selectedTasksAtom, [TEST_TASK_ID_3]);
+
+        store.set(selectRangeAtom, {
+          startTaskId: TEST_TASK_ID_1,
+          endTaskId: TEST_TASK_ID_2,
+          sortedTaskIds,
+        });
+
+        const selected = store.get(selectedTasksAtom);
+        expect(selected).toContain(TEST_TASK_ID_1);
+        expect(selected).toContain(TEST_TASK_ID_2);
+        expect(selected).toContain(TEST_TASK_ID_3);
+        expect(selected).toHaveLength(3);
+      });
+
+      it("handles reverse range selection", () => {
+        const sortedTaskIds = [TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3];
+
+        store.set(selectRangeAtom, {
+          startTaskId: TEST_TASK_ID_3,
+          endTaskId: TEST_TASK_ID_1,
+          sortedTaskIds,
+        });
+
+        expect(store.get(selectedTasksAtom)).toEqual([
+          TEST_TASK_ID_1,
+          TEST_TASK_ID_2,
+          TEST_TASK_ID_3,
+        ]);
       });
     });
-
-    // Note: selectAllVisibleTasksAtom and selectTaskRangeAtom tests are skipped
-    // because they depend on filteredTasksAtom which is a derived atom.
-    // These atoms are tested indirectly through component tests where the full
-    // task filtering pipeline is set up.
   });
 
   describe("Integration Scenarios", () => {
     it("toggle selection workflow", () => {
       // Start with no selection
-      expect(store.get(selectionModeAtom)).toBe(false);
+      expect(store.get(selectedTasksAtom)).toEqual([]);
 
       // CMD+click task 1 → select it
       store.set(toggleTaskSelectionAtom, TEST_TASK_ID_1);
       expect(store.get(selectedTasksAtom)).toEqual([TEST_TASK_ID_1]);
-      expect(store.get(selectionModeAtom)).toBe(true);
+      expect(store.get(lastSelectedTaskAtom)).toBe(TEST_TASK_ID_1);
 
       // CMD+click task 2 → add to selection
       store.set(toggleTaskSelectionAtom, TEST_TASK_ID_2);
       let selected = store.get(selectedTasksAtom);
       expect(selected).toContain(TEST_TASK_ID_1);
       expect(selected).toContain(TEST_TASK_ID_2);
+      expect(store.get(lastSelectedTaskAtom)).toBe(TEST_TASK_ID_2);
 
       // CMD+click task 2 → deselect it
       store.set(toggleTaskSelectionAtom, TEST_TASK_ID_2);
       selected = store.get(selectedTasksAtom);
       expect(selected).not.toContain(TEST_TASK_ID_2);
       expect(selected).toContain(TEST_TASK_ID_1);
+      expect(store.get(lastSelectedTaskAtom)).toBe(null);
 
       // Clear selection
-      store.set(clearSelectionAtom);
+      store.set(clearSelectedTasksAtom);
       expect(store.get(selectedTasksAtom)).toEqual([]);
-      expect(store.get(selectionModeAtom)).toBe(false);
+      expect(store.get(lastSelectedTaskAtom)).toBe(null);
     });
 
-    it("panel task is always included in selection", () => {
-      // Open task 1 in panel
-      store.set(selectedTaskIdAtom, TEST_TASK_ID_1);
-      expect(store.get(selectedTasksAtom)).toContain(TEST_TASK_ID_1);
+    it("setSelectedTaskId clears bulk selection", () => {
+      // Start with some bulk selection
+      store.set(selectedTasksAtom, [TEST_TASK_ID_1, TEST_TASK_ID_2]);
+      store.set(lastSelectedTaskAtom, TEST_TASK_ID_2);
 
-      // Select task 2 manually
-      store.set(toggleTaskSelectionAtom, TEST_TASK_ID_2);
-      let selected = store.get(selectedTasksAtom);
-      expect(selected).toContain(TEST_TASK_ID_1); // Panel task still included
-      expect(selected).toContain(TEST_TASK_ID_2); // Manually selected
+      // Open task 3 in panel (should clear bulk selection)
+      store.set(setSelectedTaskIdAtom, TEST_TASK_ID_3);
 
-      // Close panel
-      store.set(selectedTaskIdAtom, null);
-      selected = store.get(selectedTasksAtom);
-      expect(selected).not.toContain(TEST_TASK_ID_1);
+      expect(store.get(selectedTaskIdAtom)).toBe(TEST_TASK_ID_3);
+      expect(store.get(selectedTasksAtom)).toEqual([]);
+      expect(store.get(lastSelectedTaskAtom)).toBe(null);
+
+      // Setting to null keeps bulk selection cleared
+      store.set(setSelectedTaskIdAtom, null);
+      expect(store.get(selectedTaskIdAtom)).toBe(null);
+      expect(store.get(selectedTasksAtom)).toEqual([]);
+    });
+
+    it("range selection with existing selection", () => {
+      const sortedTaskIds = [TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3];
+
+      // Start with task 3 selected
+      store.set(selectedTasksAtom, [TEST_TASK_ID_3]);
+      store.set(lastSelectedTaskAtom, TEST_TASK_ID_3);
+
+      // Range select from task 1 to task 2
+      store.set(selectRangeAtom, {
+        startTaskId: TEST_TASK_ID_1,
+        endTaskId: TEST_TASK_ID_2,
+        sortedTaskIds,
+      });
+
+      // Should merge: task 3 (existing) + tasks 1,2 (range)
+      const selected = store.get(selectedTasksAtom);
+      expect(selected).toContain(TEST_TASK_ID_1);
       expect(selected).toContain(TEST_TASK_ID_2);
-    });
-
-    it("selection mode only depends on manual selection", () => {
-      // Opening panel task does NOT activate selection mode
-      store.set(selectedTaskIdAtom, TEST_TASK_ID_1);
-      expect(store.get(selectionModeAtom)).toBe(false);
-      expect(store.get(selectedTasksAtom)).toContain(TEST_TASK_ID_1);
-
-      // Manually selecting activates selection mode
-      store.set(toggleTaskSelectionAtom, TEST_TASK_ID_2);
-      expect(store.get(selectionModeAtom)).toBe(true);
-
-      // Deselecting manual selection deactivates mode (panel task doesn't count)
-      store.set(toggleTaskSelectionAtom, TEST_TASK_ID_2);
-      expect(store.get(selectionModeAtom)).toBe(false);
-      expect(store.get(selectedTasksAtom)).toContain(TEST_TASK_ID_1); // Panel task still there
+      expect(selected).toContain(TEST_TASK_ID_3);
+      expect(selected).toHaveLength(3);
+      expect(store.get(lastSelectedTaskAtom)).toBe(TEST_TASK_ID_2);
     });
   });
 });

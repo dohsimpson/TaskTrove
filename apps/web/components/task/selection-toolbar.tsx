@@ -19,7 +19,6 @@ import {
   Flag,
   MoreHorizontal,
   X,
-  Square,
   MessageSquare,
   ListTodo,
   CheckCircle,
@@ -27,14 +26,7 @@ import {
   Plus,
   Folder,
 } from "lucide-react"
-import {
-  selectionModeAtom,
-  selectedTasksAtom,
-  exitSelectionModeAtom,
-  clearSelectionAtom,
-  selectAllVisibleTasksAtom,
-  allVisibleTasksSelectedAtom,
-} from "@/lib/atoms"
+import { selectedTasksAtom, clearSelectedTasksAtom } from "@/lib/atoms"
 import { tasksAtom, deleteTasksAtom } from "@/lib/atoms"
 import { DeleteConfirmDialog } from "@/components/dialogs/delete-confirm-dialog"
 import { PriorityPopover } from "@/components/task/priority-popover"
@@ -55,10 +47,8 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
   const [commentInput, setCommentInput] = React.useState("")
   const [subtaskInput, setSubtaskInput] = React.useState("")
 
-  // Selection state
-  const selectionMode = useAtomValue(selectionModeAtom)
+  // Selection state - simplified to use only selectedTasksAtom
   const selectedTaskIds = useAtomValue(selectedTasksAtom)
-  const allVisibleSelected = useAtomValue(allVisibleTasksSelectedAtom)
 
   // Get all tasks to map IDs to Task objects
   const allTasks = useAtomValue(tasksAtom)
@@ -67,46 +57,31 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
     [allTasks, selectedTaskIds],
   )
 
-  // Selection actions
-  const exitSelectionMode = useSetAtom(exitSelectionModeAtom)
-  const clearSelection = useSetAtom(clearSelectionAtom)
-  const selectAllVisible = useSetAtom(selectAllVisibleTasksAtom)
+  // Simplified selection state - show toolbar when there are selected tasks
+  const hasSelection = selectedTaskIds.length > 0
 
   // Bulk actions - use tasksAtom directly
   const updateTasks = useSetAtom(tasksAtom)
   const deleteTasks = useSetAtom(deleteTasksAtom)
 
-  // Handle Escape key to exit selection mode
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && selectionMode) {
-        exitSelectionMode()
-      }
-    }
+  // Selection actions
+  const clearSelection = useSetAtom(clearSelectedTasksAtom)
 
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [selectionMode, exitSelectionMode])
-
-  // Don't render if not in selection mode
-  if (!selectionMode) {
+  // Don't render if no tasks are selected
+  if (!hasSelection) {
     return null
   }
 
-  const handleSelectAll = () => {
-    if (allVisibleSelected) {
-      clearSelection()
-    } else {
-      selectAllVisible()
-    }
+  const handleClearSelection = () => {
+    clearSelection()
   }
 
   const handleBulkComplete = () => {
     // Complete all selected tasks
     const updates = selectedTaskIds.map((id) => ({ id, completed: true }))
     updateTasks(updates)
-    // Exit selection mode after completing
-    exitSelectionMode()
+    // Clear selection after completing
+    handleClearSelection()
   }
 
   const handleBulkDelete = () => {
@@ -118,8 +93,8 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
     // but we need to match the new DeleteConfirmDialog signature
     deleteTasks(selectedTaskIds)
     setShowDeleteConfirm(false)
-    // Exit selection mode after deleting
-    exitSelectionMode()
+    // Clear selection after deleting
+    handleClearSelection()
   }
 
   const handleClearComments = () => {
@@ -190,20 +165,10 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
     <>
       <div className={cn("flex items-center justify-between pb-3 mb-3 border-b", className)}>
         <div className="flex items-center gap-3">
-          {/* Selection count and select all toggle */}
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={handleSelectAll} className="h-8">
-              {allVisibleSelected ? (
-                <CheckSquare className="h-4 w-4 mr-1.5" />
-              ) : (
-                <Square className="h-4 w-4 mr-1.5" />
-              )}
-              {allVisibleSelected ? "Deselect All" : "Select All"}
-            </Button>
-            <span className="text-sm font-medium text-muted-foreground">
-              {selectedTasks.length} selected
-            </span>
-          </div>
+          {/* Selection count */}
+          <span className="text-sm font-medium text-muted-foreground">
+            {selectedTasks.length} selected
+          </span>
 
           {/* Quick actions */}
           {selectedTasks.length > 0 && (
@@ -287,7 +252,7 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
         </div>
 
         {/* Cancel button */}
-        <Button variant="ghost" size="sm" onClick={exitSelectionMode} className="h-8">
+        <Button variant="ghost" size="sm" onClick={handleClearSelection} className="h-8">
           <X className="h-4 w-4 mr-1.5" />
           Cancel
         </Button>

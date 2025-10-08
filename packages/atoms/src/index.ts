@@ -63,6 +63,7 @@ export {
   selectedTaskAtom,
   selectedTasksAtom,
   lastSelectedTaskAtom,
+  multiSelectDraggingAtom,
   toggleTaskSelectionAtom,
   clearSelectedTasksAtom,
   setSelectedTaskIdAtom,

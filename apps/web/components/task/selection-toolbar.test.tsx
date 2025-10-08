@@ -31,6 +31,11 @@ vi.mock("jotai", () => ({
       }
     return null
   }),
+  useAtom: vi.fn((atom: { toString: () => string }) => {
+    // useAtom returns [value, setter]
+    if (atom.toString().includes("multiSelectDragging")) return [false, vi.fn()]
+    return [null, vi.fn()]
+  }),
   atom: vi.fn((value) => ({ init: value, toString: () => "mockAtom" })),
   Provider: vi.fn(({ children }) => children),
 }))
@@ -42,6 +47,7 @@ vi.mock("@/lib/atoms", () => ({
   tasksAtom: { toString: () => "tasksAtom" },
   deleteTasksAtom: { toString: () => "deleteTasksAtom" },
   settingsAtom: { toString: () => "settingsAtom" },
+  multiSelectDraggingAtom: { toString: () => "multiSelectDraggingAtom" },
 }))
 
 const createMockTask = (id: string, overrides?: Partial<Task>): Task => ({

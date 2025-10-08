@@ -22,20 +22,31 @@ interface DropTargetElementProps {
     lineGap?: string // gap between items
   }
   testId?: string
+  onDrop?: (args: ElementDropTargetEventBasePayload) => void
 }
 
 function isOver({ location, self }: ElementDropTargetEventBasePayload): boolean {
   return location.current.dropTargets.some(({ element }) => element === self.element)
 }
 
+function isInnerMost({ location, self }: ElementDropTargetEventBasePayload): boolean {
+  const dropTargets = location.current.dropTargets
+  if (dropTargets.length === 0) return false
+
+  const innerMost = dropTargets[0]
+  return innerMost?.element === self.element
+}
+
 export function DropTargetElement({
   id,
   children,
   options,
+  onDrop: onDropCallback,
 }: {
   id: string
   children: React.ReactNode
   options: DropTargetElementProps
+  onDrop?: (args: ElementDropTargetEventBasePayload) => void
 }) {
   const { type, indicator, testId } = options
   const [currentInstruction, setCurrentInstruction] = useState<Instruction | null>(null)
@@ -54,13 +65,15 @@ export function DropTargetElement({
             id,
             type: type === "group" ? "group" : "item",
           }
+
+          const sourceIds = Array.isArray(source.data.ids) ? source.data.ids : undefined
           // this will 'attach' the closest edge to your `data` object
           return attachInstruction(data, {
             input,
             element,
             operations: {
-              "reorder-before": id === source.data.id ? "not-available" : "available",
-              "reorder-after": id === source.data.id ? "not-available" : "available",
+              "reorder-before": sourceIds && sourceIds.includes(id) ? "not-available" : "available",
+              "reorder-after": sourceIds && sourceIds.includes(id) ? "not-available" : "available",
               combine: "not-available",
             },
           })
@@ -74,14 +87,17 @@ export function DropTargetElement({
           setCurrentInstruction(null)
           setIsOverElement(false)
         },
-        onDrop: () => {
+        onDrop: (args: ElementDropTargetEventBasePayload) => {
           setCurrentInstruction(null)
           setIsOverElement(false)
+          if (isInnerMost(args)) {
+            onDropCallback?.(args)
+          }
         },
       }),
       autoScrollWhileDragging({ rootEl: element, gap: 120 }), // this works while auto-scroll package from pragmatic DND doesn't. Read doc for handling virtual list
     )
-  }, [id, type])
+  }, [id, type, onDropCallback])
 
   if (type === "group") {
     return (
@@ -115,7 +131,7 @@ export function DraggableElement({ id, children }: { id: string; children: React
     return draggable({
       element: ref.current,
       getInitialData: () => ({
-        id,
+        ids: [id],
       }),
       onDragStart: () => {
         setIsDragging(true)

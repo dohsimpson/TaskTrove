@@ -198,6 +198,9 @@ vi.mock("@/lib/atoms", () => ({
       renameSection: "mockRenameSection",
       removeSection: "mockRemoveSection",
     },
+    derived: {
+      projectById: vi.fn(() => new Map()),
+    },
   },
   projects: [mockProjectData],
   projectActions: {
@@ -222,6 +225,10 @@ vi.mock("@/lib/atoms", () => ({
   labelsAtom: "mockLabelsAtom",
   sidePanelWidthAtom: "mockSidePanelWidthAtom",
   updateGlobalViewOptionsAtom: "mockUpdateGlobalViewOptionsAtom",
+  updateProjectsAtom: "mockUpdateProjectsAtom",
+  updateTasksAtom: "mockUpdateTasksAtom",
+  selectedTasksAtom: "mockSelectedTasksAtom",
+  multiSelectDraggingAtom: "mockMultiSelectDraggingAtom",
 }))
 
 vi.mock("@/lib/atoms/ui/navigation", () => ({
@@ -239,6 +246,7 @@ vi.mock("@/lib/atoms/core/tasks", () => ({
   taskAtoms: {
     derived: {
       orderedTasksBySection: vi.fn(() => vi.fn(() => [])),
+      taskById: vi.fn(() => new Map()),
     },
   },
 }))
@@ -921,10 +929,10 @@ describe("ProjectSectionsView", () => {
     const droppables = screen.getAllByTestId(/^(droppable-|test-droppable-section-)/)
     expect(droppables.length).toBeGreaterThan(0)
 
-    // Check that tasks are wrapped in draggable components
-    expect(screen.getByTestId(`draggable-${TEST_TASK_ID_1}`)).toBeInTheDocument()
-    expect(screen.getByTestId(`draggable-${TEST_TASK_ID_2}`)).toBeInTheDocument()
-    expect(screen.getByTestId(`draggable-${TEST_TASK_ID_3}`)).toBeInTheDocument()
+    // Check that tasks are wrapped in draggable components (using new DraggableTaskElement)
+    expect(screen.getByTestId(`draggable-task-${TEST_TASK_ID_1}`)).toBeInTheDocument()
+    expect(screen.getByTestId(`draggable-task-${TEST_TASK_ID_2}`)).toBeInTheDocument()
+    expect(screen.getByTestId(`draggable-task-${TEST_TASK_ID_3}`)).toBeInTheDocument()
   })
 
   describe("when supportsSections is false", () => {
@@ -941,10 +949,10 @@ describe("ProjectSectionsView", () => {
       expect(screen.getByTestId(`task-item-${TEST_TASK_ID_2}`)).toBeInTheDocument()
       expect(screen.getByTestId(`task-item-${TEST_TASK_ID_3}`)).toBeInTheDocument()
 
-      // Should have droppable areas (main list + individual tasks)
-      expect(screen.getAllByTestId(/^(droppable-|test-droppable-section-)/).length).toBeGreaterThan(
-        0,
-      )
+      // Should have draggable tasks (using new DraggableTaskElement)
+      expect(screen.getByTestId(`draggable-task-${TEST_TASK_ID_1}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`draggable-task-${TEST_TASK_ID_2}`)).toBeInTheDocument()
+      expect(screen.getByTestId(`draggable-task-${TEST_TASK_ID_3}`)).toBeInTheDocument()
     })
 
     it("does not show add section dividers when sections are disabled", () => {

@@ -73,6 +73,13 @@ selectedTasksAtom.debugLabel = "selectedTasksAtom";
 export const lastSelectedTaskAtom = atom<TaskId | null>(null);
 lastSelectedTaskAtom.debugLabel = "lastSelectedTaskAtom";
 
+/**
+ * Multi-Select Dragging - Tracks whether a multi-selection drag is currently in progress
+ * Used to show/hide multi-select UI elements during drag operations
+ */
+export const multiSelectDraggingAtom = atom<boolean>(false);
+multiSelectDraggingAtom.debugLabel = "multiSelectDraggingAtom";
+
 // =============================================================================
 // SELECTION ACTION ATOMS
 // =============================================================================
@@ -192,5 +199,6 @@ export const selectionAtoms = {
   selectedTask: selectedTaskAtom,
   selectedTasks: selectedTasksAtom,
   lastSelectedTask: lastSelectedTaskAtom,
+  multiSelectDragging: multiSelectDraggingAtom,
   ...selectionActionAtoms,
 } as const;

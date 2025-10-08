@@ -20,6 +20,7 @@ import type {
   ProjectId,
   GroupId,
   ProjectSection,
+  UpdateProjectRequest,
 } from "@tasktrove/types";
 import {
   DEFAULT_INBOX_NAME,
@@ -181,6 +182,38 @@ export const updateProjectAtom = atom(
   },
 );
 updateProjectAtom.debugLabel = "updateProjectAtom";
+
+/**
+ * Batch updates multiple projects at once
+ * Takes an array of UpdateProjectRequest (partial project with required id)
+ * Uses server mutation for persistence
+ */
+export const updateProjectsAtom = namedAtom(
+  "updateProjectsAtom",
+  atom(null, async (get, set, updateRequests: UpdateProjectRequest[]) => {
+    try {
+      if (updateRequests.length === 0) return;
+
+      const projects = get(projectsAtom);
+
+      // Create a map of projectId to updates for efficient lookup
+      const updatesMap = new Map(updateRequests.map((req) => [req.id, req]));
+
+      // Apply all updates to the projects array
+      const updatedProjects = projects.map((project: Project) => {
+        const updates = updatesMap.get(project.id);
+        return updates ? { ...project, ...updates } : project;
+      });
+
+      // Use server mutation for persistence
+      const updateProjectsMutation = get(updateProjectsMutationAtom);
+      await updateProjectsMutation.mutateAsync(updatedProjects);
+    } catch (error) {
+      handleAtomError(error, "updateProjectsAtom");
+      throw error;
+    }
+  }),
+);
 
 /**
  * Removes a project
@@ -738,6 +771,7 @@ export const projectAtoms = {
   actions: {
     addProject: addProjectAtom,
     updateProject: updateProjectAtom,
+    updateProjects: updateProjectsAtom,
     deleteProject: deleteProjectAtom,
     deleteProjects: deleteProjectsAtom,
     addSection: addProjectSectionAtom,

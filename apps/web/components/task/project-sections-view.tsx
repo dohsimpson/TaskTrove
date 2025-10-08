@@ -1,29 +1,20 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
-import { useTranslation } from "@tasktrove/i18n"
-import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
-import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
-import {
-  extractClosestEdge,
-  attachClosestEdge,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
-import { getReorderDestinationIndex } from "@atlaskit/pragmatic-drag-and-drop-hitbox/util/get-reorder-destination-index"
-import type { Input as DragInputType } from "@atlaskit/pragmatic-drag-and-drop/types"
+import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
+import { type ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
 import { TaskItem } from "./task-item"
 // CompactTaskItem functionality is now integrated into TaskItem with variant="compact"
 import { TaskSidePanel } from "./task-side-panel"
 import { TaskShadow } from "@/components/ui/custom/task-shadow"
 import { AddSectionDivider } from "./add-section-divider"
-import { ViewEmptyState } from "./view-empty-state"
 import { SelectionToolbar } from "./selection-toolbar"
 import { ProjectViewToolbar } from "./project-view-toolbar"
 import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
 import {
   projectAtoms,
-  openQuickAddAtom,
   projectsAtom,
   filteredTasksAtom,
   currentViewStateAtom,
@@ -31,9 +22,10 @@ import {
   setViewOptionsAtom,
   collapsedSectionsAtom,
   toggleSectionCollapseAtom,
-  labelsAtom,
   sidePanelWidthAtom,
   updateGlobalViewOptionsAtom,
+  updateProjectsAtom,
+  updateTasksAtom,
 } from "@/lib/atoms"
 import { SIDE_PANEL_WIDTH_MIN, SIDE_PANEL_WIDTH_MAX } from "@tasktrove/constants"
 import {
@@ -41,13 +33,9 @@ import {
   editingSectionIdAtom,
   stopEditingSectionAtom,
 } from "@/lib/atoms/ui/navigation"
-import {
-  reorderTaskInViewAtom,
-  moveTaskBetweenSectionsAtom,
-  taskAtoms,
-} from "@/lib/atoms/core/tasks"
-import type { Task, Project, ProjectSection } from "@/lib/types"
-import { createGroupId, createTaskId, createProjectId } from "@/lib/types"
+import { taskAtoms } from "@/lib/atoms/core/tasks"
+import type { Task, Project, ProjectSection, TaskId, ProjectId } from "@/lib/types"
+import { createGroupId } from "@/lib/types"
 import { applyViewStateFilters, sortTasksByViewState } from "@tasktrove/atoms"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -64,7 +52,8 @@ import {
 import { log } from "@/lib/utils/logger"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { DEFAULT_UUID } from "@tasktrove/constants"
-import { DraggableElement, DropTargetElement } from "./project-sections-view-helper"
+import { DropTargetElement } from "./project-sections-view-helper"
+import { DraggableTaskElement } from "./draggable-task-element"
 
 // Constants - removed SIDE_PANEL_WIDTH since it's now handled by ResizablePanel
 
@@ -110,27 +99,17 @@ export function ProjectSectionsView({
   droppableId,
   supportsSections = true,
 }: ProjectSectionsViewProps) {
-  // Translation hooks
-  const { t } = useTranslation("task")
-
   // Get data from atoms
   const tasks = useAtomValue(filteredTasksAtom)
   const currentViewState = useAtomValue(currentViewStateAtom)
   const routeContext = useAtomValue(currentRouteContextAtom)
   const allProjects = useAtomValue(projectsAtom)
-  const allLabels = useAtomValue(labelsAtom)
   const selectedTask = useAtomValue(selectedTaskAtom)
 
   // Get project from route context
   const project =
     routeContext.routeType === "project"
       ? allProjects.find((p: Project) => p.id === routeContext.viewId)
-      : undefined
-
-  // Get label from route context
-  const label =
-    routeContext.routeType === "label"
-      ? allLabels.find((l) => l.id === routeContext.viewId)
       : undefined
 
   // Extract view state
@@ -163,7 +142,7 @@ export function ProjectSectionsView({
   }
 
   // Track drag state for shadow rendering per section
-  const [sectionDragStates, setSectionDragStates] = useState<
+  const [sectionDragStates] = useState<
     Map<
       string,
       {
@@ -193,10 +172,11 @@ export function ProjectSectionsView({
   // Jotai actions
   const addSection = useSetAtom(projectAtoms.actions.addSection)
   const renameSection = useSetAtom(projectAtoms.actions.renameSection)
-  const openQuickAddAction = useSetAtom(openQuickAddAtom)
+  const updateProjects = useSetAtom(updateProjectsAtom)
+  const updateTasks = useSetAtom(updateTasksAtom)
+  const taskById = useAtomValue(taskAtoms.derived.taskById)
+  const getProjectById = useAtomValue(projectAtoms.derived.projectById)
   const addTaskToSection = useAddTaskToSection()
-  const reorderTaskInView = useSetAtom(reorderTaskInViewAtom)
-  const moveTaskBetweenSections = useSetAtom(moveTaskBetweenSectionsAtom)
   const getOrderedTasksForSection = useAtomValue(taskAtoms.derived.orderedTasksBySection)
 
   const handleAddSection = () => {
@@ -301,143 +281,189 @@ export function ProjectSectionsView({
     setEditingSectionColor("")
   }
 
-  // Define type-safe interfaces for our drag-and-drop data
-  interface TaskDragData {
-    source: {
-      data: Record<string, unknown>
-    }
-    location: {
-      current: {
-        dropTargets: Array<{
-          data: Record<string, unknown>
-        }>
-      }
-    }
-  }
+  // Handler for dropping tasks onto a section (group drop target)
+  const handleDropTaskToSection = useCallback(
+    async (args: ElementDropTargetEventBasePayload) => {
+      if (!project) return
 
-  const handleTaskDrop = (data: TaskDragData) => {
-    try {
-      const sourceData = data.source.data
-      // Handle the case where location might not have current.dropTargets structure
-      // This happens because DropTargetWrapper uses a simplified location structure
-      const locationData = data.location.current.dropTargets
+      // Extract task IDs from drag source
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const taskIds = (Array.isArray(args.source.data.ids) ? args.source.data.ids : []) as TaskId[]
+      if (taskIds.length === 0) return
 
-      // Ensure we have valid source data and a task being dropped
-      if (sourceData.type !== "task" || !sourceData.taskId) {
-        log.warn({ sourceData }, "Invalid source data for task drop")
-        return
-      }
+      // Extract section ID from drop target ID (format: "droppableId-section-sectionId")
+      const targetSectionDroppableId = String(args.self.data.id ?? "")
+      const targetSectionId = targetSectionDroppableId.split("-section-")[1]
+      if (!targetSectionId) return
 
-      // Find the task list drop target
-      const taskListTarget = locationData.find((target) => target.data.type === "task-list")
-      if (!taskListTarget) {
-        log.warn({ locationData }, "No task list drop target found")
-        return
+      const tasksToMove = taskIds
+        .map((id) => taskById.get(id))
+        .filter((t): t is Task => t !== undefined)
+      const tasksNeedingProjectUpdate = tasksToMove.filter((t) => t.projectId !== project.id)
+      if (tasksNeedingProjectUpdate.length > 0) {
+        await updateTasks(
+          tasksNeedingProjectUpdate.map((task) => ({
+            id: task.id,
+            projectId: project.id,
+            sectionId: createGroupId(targetSectionId),
+          })),
+        )
       }
 
-      // Extract and validate task data with proper type checking
-      const rawTaskId = sourceData.taskId
-      if (typeof rawTaskId !== "string") {
-        log.warn({ sourceData }, "Invalid taskId type in source data")
-        return
+      // Get unique project IDs that need updating (source projects + target project)
+      const affectedProjectIds = new Set<ProjectId>([project.id])
+      for (const task of tasksToMove) {
+        if (task.projectId) {
+          affectedProjectIds.add(task.projectId)
+        }
       }
 
-      const sourceSectionId =
-        typeof sourceData.sectionId === "string" ? sourceData.sectionId : DEFAULT_UUID
-      const targetSectionId =
-        typeof taskListTarget.data.sectionId === "string"
-          ? taskListTarget.data.sectionId
-          : DEFAULT_UUID
-
-      const rawProjectId = taskListTarget.data.projectId
-      if (typeof rawProjectId !== "string") {
-        log.warn({ taskListTarget }, "Invalid projectId type in drop target")
-        return
-      }
-
-      if (!rawProjectId) {
-        log.warn({ taskListTarget }, "No project ID found in drop target")
-        return
-      }
-
-      // Convert string values to typed IDs
-      const taskId = createTaskId(rawTaskId)
-      const projectId = createProjectId(rawProjectId)
-      const viewId = projectId // ViewId can be a ProjectId
-
-      // Get current task positions
-      const sectionTasks = getOrderedTasksForSection(projectId, createGroupId(targetSectionId))
-      const sourceIndex = sectionTasks.findIndex((task: Task) => task.id === taskId)
-
-      // Calculate target index from drop position
-      let targetIndex = sectionTasks.length // Default to end of list
-
-      // Look for task drop target to determine insertion point
-      const taskDropTarget = locationData.find((target) => target.data.type === "task-drop-target")
-      if (taskDropTarget) {
-        const targetTaskId = taskDropTarget.data.taskId
-        const indexOfTarget = sectionTasks.findIndex((task: Task) => task.id === targetTaskId)
-
-        if (indexOfTarget !== -1) {
-          // Extract closest edge using Atlaskit utility
-          const closestEdgeOfTarget = extractClosestEdge(taskDropTarget.data)
-
-          // Calculate destination index using Atlaskit utility
-          targetIndex = getReorderDestinationIndex({
-            startIndex: sourceIndex,
-            closestEdgeOfTarget,
-            indexOfTarget,
-            axis: "vertical",
+      // Step 1: Remove taskIds from affected projects' sections only
+      const projectsMap = new Map<ProjectId, Project>()
+      for (const projectId of affectedProjectIds) {
+        const proj = getProjectById(projectId)
+        if (proj) {
+          projectsMap.set(projectId, {
+            ...proj,
+            sections: proj.sections.map((section) => ({
+              ...section,
+              items: section.items.filter((id) => !taskIds.includes(id)),
+            })),
           })
         }
       }
 
-      // Don't reorder if dropping in the same position
-      if (sourceSectionId === targetSectionId && sourceIndex === targetIndex) {
-        log.info(
-          { taskId, sourceIndex, targetIndex },
-          "Task dropped in same position, no reordering needed",
-        )
-        return
+      // Step 2: Add taskIds to the target section (at the end)
+      const targetProject = projectsMap.get(project.id)
+      if (!targetProject) return
+
+      const targetSectionIndex = targetProject.sections.findIndex((s) => s.id === targetSectionId)
+      if (targetSectionIndex < 0) return
+
+      const targetSection = targetProject.sections[targetSectionIndex]
+      if (!targetSection) return
+
+      targetProject.sections[targetSectionIndex] = {
+        ...targetSection,
+        items: [...targetSection.items, ...taskIds],
       }
 
-      // Handle cross-section moves vs same-section reordering
-      if (sourceSectionId !== targetSectionId) {
-        moveTaskBetweenSections({
-          taskId: taskId,
-          projectId: projectId,
-          newSectionId: createGroupId(targetSectionId),
-          position: targetIndex,
-        })
-        log.info(
-          {
-            taskId,
-            fromSectionId: sourceSectionId,
-            toSectionId: targetSectionId,
-            toIndex: targetIndex,
-            viewId,
-          },
-          "Task moved between sections",
-        )
-      } else {
-        reorderTaskInView({
-          taskId,
-          viewId: viewId,
-          fromIndex: sourceIndex,
-          toIndex: targetIndex,
-        })
-        log.info(
-          { sourceTaskId: taskId, insertionIndex: targetIndex, sectionId: targetSectionId, viewId },
-          "Task reordered successfully",
+      // Step 3: Batch update all projects
+      await updateProjects(
+        Array.from(projectsMap.values()).map((proj) => ({
+          id: proj.id,
+          sections: proj.sections,
+        })),
+      )
+    },
+    [project, updateProjects, updateTasks, taskById, getProjectById],
+  )
+
+  // Handler for dropping tasks onto a list item (task)
+  const handleDropTaskToListItem = useCallback(
+    async (args: ElementDropTargetEventBasePayload) => {
+      if (!project) return
+
+      // Extract task IDs from drag source
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const taskIds = (Array.isArray(args.source.data.ids) ? args.source.data.ids : []) as TaskId[]
+      if (taskIds.length === 0) return
+
+      // Extract instruction (reorder-before or reorder-after)
+      const instruction = extractInstruction(args.self.data)
+      if (!instruction) return
+
+      // Extract target task ID
+      const targetTaskId = args.self.data.id
+      if (!targetTaskId || typeof targetTaskId !== "string") return
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const targetTaskIdTyped = targetTaskId as TaskId
+
+      // Find which section contains the target task in the current project
+      let targetSectionIndex = -1
+      let targetSectionId = ""
+      for (let i = 0; i < project.sections.length; i++) {
+        const section = project.sections[i]
+        if (section) {
+          const taskIndex = section.items.indexOf(targetTaskIdTyped)
+          if (taskIndex >= 0) {
+            targetSectionIndex = i
+            targetSectionId = section.id
+            break
+          }
+        }
+      }
+
+      if (targetSectionIndex < 0) return
+
+      const tasksToMove = taskIds
+        .map((id) => taskById.get(id))
+        .filter((t): t is Task => t !== undefined)
+      const tasksNeedingProjectUpdate = tasksToMove.filter((t) => t.projectId !== project.id)
+      if (tasksNeedingProjectUpdate.length > 0) {
+        await updateTasks(
+          tasksNeedingProjectUpdate.map((task) => ({
+            id: task.id,
+            projectId: project.id,
+            sectionId: createGroupId(targetSectionId),
+          })),
         )
       }
-    } catch (error) {
-      log.error(
-        { error: error instanceof Error ? error.message : String(error) },
-        "Failed to handle task drop",
+
+      // Get unique project IDs that need updating (source projects + target project)
+      const affectedProjectIds = new Set<ProjectId>([project.id])
+      for (const task of tasksToMove) {
+        if (task.projectId) {
+          affectedProjectIds.add(task.projectId)
+        }
+      }
+
+      // Step 1: Remove taskIds from affected projects' sections only
+      const projectsMap = new Map<ProjectId, Project>()
+      for (const projectId of affectedProjectIds) {
+        const proj = getProjectById(projectId)
+        if (proj) {
+          projectsMap.set(projectId, {
+            ...proj,
+            sections: proj.sections.map((section) => ({
+              ...section,
+              items: section.items.filter((id) => !taskIds.includes(id)),
+            })),
+          })
+        }
+      }
+
+      // Step 2: Add taskIds to the target section at the correct position
+      const targetProject = projectsMap.get(project.id)
+      if (!targetProject) return
+
+      const targetSection = targetProject.sections[targetSectionIndex]
+      if (!targetSection) return
+
+      const insertIndex =
+        instruction.operation === "reorder-before"
+          ? targetSection.items.indexOf(targetTaskIdTyped)
+          : targetSection.items.indexOf(targetTaskIdTyped) + 1
+
+      targetProject.sections[targetSectionIndex] = {
+        ...targetSection,
+        items: [
+          ...targetSection.items.slice(0, insertIndex),
+          ...taskIds,
+          ...targetSection.items.slice(insertIndex),
+        ],
+      }
+
+      // Step 3: Batch update all projects
+      await updateProjects(
+        Array.from(projectsMap.values()).map((proj) => ({
+          id: proj.id,
+          sections: proj.sections,
+        })),
       )
-    }
-  }
+    },
+    [project, updateProjects, updateTasks, taskById, getProjectById],
+  )
 
   // Side panel view state is the single source of truth for panel visibility
   const isPanelOpen = showSidePanel && Boolean(selectedTask)
@@ -568,6 +594,7 @@ export function ProjectSectionsView({
           key={sectionDroppableId}
           id={sectionDroppableId}
           options={{ type: "group", indicator: {}, testId: sectionDroppableId }}
+          onDrop={handleDropTaskToSection}
         >
           <Collapsible
             open={!isCollapsed}
@@ -598,8 +625,9 @@ export function ProjectSectionsView({
                         key={task.id}
                         id={task.id}
                         options={{ type: "list-item", indicator: { lineGap: "8px" } }}
+                        onDrop={handleDropTaskToListItem}
                       >
-                        <DraggableElement key={task.id} id={task.id}>
+                        <DraggableTaskElement key={task.id} taskId={task.id}>
                           <TaskItem
                             taskId={task.id}
                             variant={compactView ? "compact" : "default"}
@@ -607,7 +635,7 @@ export function ProjectSectionsView({
                             showProjectBadge={true}
                             sortedTaskIds={sortedSectionTaskIds}
                           />
-                        </DraggableElement>
+                        </DraggableTaskElement>
                       </DropTargetElement>
                     ))}
                   </div>
@@ -637,76 +665,20 @@ export function ProjectSectionsView({
             <div className="w-full max-w-screen-2xl">
               {/* Flat Task List without sections */}
               <div className="space-y-0">
-                <DropTargetWrapper
-                  dropTargetId={droppableId}
-                  onDrop={handleTaskDrop}
-                  getData={() => ({
-                    type: "task-list",
-                    projectId: project?.id,
-                  })}
-                >
-                  <div>
-                    {tasks.map((task: Task, taskIndex: number) => (
-                      <DropTargetWrapper
+                <div>
+                  {tasks.map((task: Task) => (
+                    <DraggableTaskElement key={task.id} taskId={task.id}>
+                      <TaskItem
                         key={task.id}
-                        dropTargetId={`task-${task.id}`}
-                        onDrop={(data) => {
-                          handleTaskDrop(data)
-                          // Clean up drag state on drop
-                          setSectionDragStates(new Map())
-                        }}
-                        getData={(args?: { input?: DragInputType; element?: HTMLElement }) => {
-                          const baseData = {
-                            type: "task-drop-target",
-                            dropTargetId: `task-${task.id}`,
-                            taskId: task.id,
-                            sectionId: DEFAULT_UUID,
-                          }
-
-                          // Only use attachClosestEdge if we have proper input and element
-                          if (args && args.input && args.element) {
-                            return attachClosestEdge(baseData, {
-                              element: args.element,
-                              input: args.input,
-                              allowedEdges: ["top", "bottom"],
-                            })
-                          }
-
-                          return baseData
-                        }}
-                      >
-                        <DraggableWrapper
-                          dragId={task.id}
-                          index={taskIndex}
-                          getData={() => ({
-                            type: "task",
-                            taskId: task.id,
-                            projectId: task.projectId,
-                          })}
-                        >
-                          <TaskItem
-                            taskId={task.id}
-                            variant={compactView ? "compact" : "default"}
-                            className="cursor-pointer mb-2"
-                            showProjectBadge={true}
-                            sortedTaskIds={sortedFlatTaskIds}
-                          />
-                        </DraggableWrapper>
-                      </DropTargetWrapper>
-                    ))}
-                    {tasks.length === 0 && (
-                      <ViewEmptyState
-                        viewId={routeContext.viewId}
-                        projectName={project?.name}
-                        labelName={label?.name}
-                        action={{
-                          label: t("actions.addTask", "Add Task"),
-                          onClick: () => openQuickAddAction(),
-                        }}
+                        taskId={task.id}
+                        variant={compactView ? "compact" : "default"}
+                        className="cursor-pointer mb-2"
+                        showProjectBadge={true}
+                        sortedTaskIds={sortedFlatTaskIds}
                       />
-                    )}
-                  </div>
-                </DropTargetWrapper>
+                    </DraggableTaskElement>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

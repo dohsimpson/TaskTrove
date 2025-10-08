@@ -33,8 +33,10 @@ import { PriorityPopover } from "@/components/task/priority-popover"
 import { TaskSchedulePopover } from "@/components/task/task-schedule-popover"
 import { ProjectPopover } from "@/components/task/project-popover"
 import { cn } from "@/lib/utils"
-import { createCommentId, createSubtaskId } from "@/lib/types"
+import { createCommentId, createSubtaskId, createTaskId } from "@/lib/types"
 import type { TaskComment, Subtask } from "@/lib/types"
+import { DraggableTaskElement } from "./draggable-task-element"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 
 interface SelectionToolbarProps {
   className?: string
@@ -165,10 +167,14 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
     <>
       <div className={cn("flex items-center justify-between pb-3 mb-3 border-b", className)}>
         <div className="flex items-center gap-3">
-          {/* Selection count */}
-          <span className="text-sm font-medium text-muted-foreground">
-            {selectedTasks.length} selected
-          </span>
+          {/* Draggable selection count - reuses DraggableTaskElement for multi-select drag, passing a placeholder ID */}
+          <DraggableTaskElement taskId={createTaskId(DEFAULT_UUID)}>
+            <div className="flex items-center gap-2 px-2 py-1 rounded cursor-move hover:bg-muted/50 transition-colors border-1 bg-muted/5">
+              <span className="text-sm font-medium text-muted-foreground">
+                {selectedTasks.length} selected
+              </span>
+            </div>
+          </DraggableTaskElement>
 
           {/* Quick actions */}
           {selectedTasks.length > 0 && (

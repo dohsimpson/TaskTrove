@@ -427,6 +427,28 @@ import {
 } from "../data/tasks/filters";
 
 /**
+ * Task lookup map for O(1) access by ID
+ * Creates a Map from task IDs to tasks for efficient lookups
+ */
+export const taskByIdAtom = namedAtom(
+  "taskByIdAtom",
+  atom((get) =>
+    withErrorHandling(
+      () => {
+        const tasks = get(tasksAtom);
+        const taskMap = new Map<TaskId, Task>();
+        for (const task of tasks) {
+          taskMap.set(task.id, task);
+        }
+        return taskMap;
+      },
+      "taskByIdAtom",
+      new Map<TaskId, Task>(),
+    ),
+  ),
+);
+
+/**
  * Tasks due exactly today (strict date match)
  * Maintains the original "today only" logic for specific use cases
  */
@@ -1095,6 +1117,7 @@ export const taskAtoms = {
     upcomingTasks: upcomingTasksAtom,
     overdueTasks: overdueTasksAtom,
     calendarTasks: calendarTasksAtom,
+    taskById: taskByIdAtom,
     // Note: taskCountsAtom disabled (has UI dependencies, needs refactoring)
     completedTasksToday: completedTasksTodayAtom,
     baseFilteredTasksForView: baseFilteredTasksForViewAtom,

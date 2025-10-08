@@ -302,7 +302,7 @@ export function TaskItem({
     }
   }
 
-  // Subtask handlers for variant="subtask"
+  // Subtask handlers for isSubTask={true}
   const handleSubtaskToggle = () => {
     if (variant !== "subtask") return
 
@@ -612,7 +612,7 @@ export function TaskItem({
                     isVisible={actionsMenuVisible}
                     onDeleteClick={() => deleteTask(task.id)}
                     onSelectClick={() => toggleTaskSelection(taskId)}
-                    variant="compact"
+                    isSubTask={false}
                     open={actionsMenuOpen}
                     onOpenChange={handleActionsMenuChange}
                   />
@@ -748,7 +748,7 @@ export function TaskItem({
                     isVisible={actionsMenuVisible}
                     onDeleteClick={() => deleteTask(task.id)}
                     onSelectClick={() => toggleTaskSelection(taskId)}
-                    variant="compact"
+                    isSubTask={false}
                     open={actionsMenuOpen}
                     onOpenChange={handleActionsMenuChange}
                   />
@@ -860,7 +860,7 @@ export function TaskItem({
               isVisible={actionsMenuVisible}
               onDeleteClick={() => deleteTask(task.id)}
               onSelectClick={() => toggleTaskSelection(taskId)}
-              variant="kanban"
+              isSubTask={false}
               open={actionsMenuOpen}
               onOpenChange={handleActionsMenuChange}
             />
@@ -1087,7 +1087,7 @@ export function TaskItem({
             onSelectClick={() => toggleTaskSelection(taskId)}
             onEstimationClick={handleEstimationMenuClick}
             onConvertToTaskClick={handleConvertToTask}
-            variant="subtask"
+            isSubTask={true}
             open={actionsMenuOpen}
             onOpenChange={handleActionsMenuChange}
           />
@@ -1179,7 +1179,7 @@ export function TaskItem({
                 isVisible={actionsMenuVisible}
                 onDeleteClick={() => deleteTask(task.id)}
                 onSelectClick={() => toggleTaskSelection(taskId)}
-                variant="compact"
+                isSubTask={false}
                 open={actionsMenuOpen}
                 onOpenChange={handleActionsMenuChange}
               />

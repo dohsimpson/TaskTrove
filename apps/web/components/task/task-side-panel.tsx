@@ -357,7 +357,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
                 task={task}
                 isVisible={true}
                 onDeleteClick={() => deleteTask(task.id)}
-                variant="compact"
+                isSubTask={false}
                 open={actionsMenuOpen}
                 onOpenChange={setActionsMenuOpen}
               />
@@ -427,7 +427,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
               task={task}
               isVisible={true}
               onDeleteClick={() => deleteTask(task.id)}
-              variant="compact"
+              isSubTask={false}
               open={actionsMenuOpen}
               onOpenChange={setActionsMenuOpen}
             />

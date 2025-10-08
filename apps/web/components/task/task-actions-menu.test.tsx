@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@/test-utils/render-with-providers"
+import { render, screen } from "@/test-utils/render-with-providers"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { TaskActionsMenu } from "./task-actions-menu"
 import type { Task } from "@/lib/types"
@@ -38,106 +38,35 @@ describe("TaskActionsMenu", () => {
     vi.clearAllMocks()
   })
 
-  describe("Full variant (default)", () => {
-    it("renders delete button and more actions menu when visible", () => {
+  describe("Default variant", () => {
+    it("renders single dropdown menu when visible", () => {
       renderTaskActionsMenu()
 
-      // Should show both buttons (delete button + more actions dropdown)
+      // Should show single dropdown button
       const buttons = screen.getAllByRole("button")
-      expect(buttons).toHaveLength(2)
+      expect(buttons).toHaveLength(1)
     })
 
     it("hides menu when not visible", () => {
       const { container } = renderTaskActionsMenu({ isVisible: false })
 
-      // Should have hidden class for full variant
-      const menuContainer = container.querySelector("div")
-      expect(menuContainer).toHaveClass("hidden")
+      const button = container.querySelector("button")
+      expect(button).toHaveClass("hidden")
     })
 
-    it("shows delete confirmation dialog when delete button clicked", async () => {
-      renderTaskActionsMenu()
+    it("renders dropdown trigger button", () => {
+      const { container } = renderTaskActionsMenu()
 
-      const buttons = screen.getAllByRole("button")
-      const deleteButton = buttons[0] // First button is delete
-      if (!deleteButton) {
-        throw new Error("Expected to find delete button")
-      }
-      fireEvent.click(deleteButton)
-
-      // Should show confirmation dialog
-      await waitFor(() => {
-        expect(screen.getByText("Delete Task")).toBeInTheDocument()
-        expect(screen.getByText(/Are you sure you want to delete "Test Task"/)).toBeInTheDocument()
-      })
-    })
-
-    it("calls onDeleteClick when delete is confirmed", async () => {
-      const mockOnDelete = vi.fn()
-      renderTaskActionsMenu({ onDeleteClick: mockOnDelete })
-
-      // Click delete button
-      const buttons = screen.getAllByRole("button")
-      const deleteButton = buttons[0] // First button is delete
-      if (!deleteButton) {
-        throw new Error("Expected to find delete button")
-      }
-      fireEvent.click(deleteButton)
-
-      // Confirm deletion
-      await waitFor(() => {
-        const confirmButton = screen.getByRole("button", { name: "Delete" })
-        fireEvent.click(confirmButton)
-      })
-
-      expect(mockOnDelete).toHaveBeenCalledOnce()
-    })
-
-    it("cancels delete when cancel button clicked", async () => {
-      const mockOnDelete = vi.fn()
-      renderTaskActionsMenu({ onDeleteClick: mockOnDelete })
-
-      // Open delete dialog
-      const buttons = screen.getAllByRole("button")
-      const deleteButton = buttons[0] // First button is delete
-      if (!deleteButton) {
-        throw new Error("Expected to find delete button")
-      }
-      fireEvent.click(deleteButton)
-
-      // Cancel deletion
-      await waitFor(() => {
-        const cancelButton = screen.getByText("Cancel")
-        fireEvent.click(cancelButton)
-      })
-
-      expect(mockOnDelete).not.toHaveBeenCalled()
-    })
-
-    it("displays task title in confirmation message", async () => {
-      const taskWithTitle = { ...mockTask, title: "My Important Task" }
-      renderTaskActionsMenu({ task: taskWithTitle })
-
-      // Open delete dialog
-      const buttons = screen.getAllByRole("button")
-      const deleteButton = buttons[0] // First button is delete
-      if (!deleteButton) {
-        throw new Error("Expected to find delete button")
-      }
-      fireEvent.click(deleteButton)
-
-      // Should show task title in message
-      await waitFor(() => {
-        expect(
-          screen.getByText(/Are you sure you want to delete "My Important Task"/),
-        ).toBeInTheDocument()
-      })
+      // The trigger button should exist in the DOM
+      const trigger = container.querySelector("button")
+      expect(trigger).toBeInTheDocument()
+      expect(trigger).toHaveAttribute("data-action", "menu")
     })
   })
 
-  describe("Compact variant", () => {
+  describe("isSubTask prop", () => {
     it("renders single dropdown menu when visible", () => {
-      renderTaskActionsMenu({ variant: "compact" })
+      renderTaskActionsMenu({ isSubTask: false })
 
       // Should show single dropdown button
       const buttons = screen.getAllByRole("button")
@@ -146,7 +75,7 @@ describe("TaskActionsMenu", () => {
 
     it("hides menu when not visible", () => {
       const { container } = renderTaskActionsMenu({
-        variant: "compact",
+        isSubTask: false,
         isVisible: false,
       })
 
@@ -156,7 +85,7 @@ describe("TaskActionsMenu", () => {
 
     it("renders dropdown trigger button", () => {
       const { container } = renderTaskActionsMenu({
-        variant: "compact",
+        isSubTask: false,
       })
 
       // The trigger button should exist in the DOM
@@ -171,9 +100,15 @@ describe("TaskActionsMenu", () => {
       // Just test that the prop is accepted without errors
       expect(() => {
         renderTaskActionsMenu({
-          variant: "compact",
+          isSubTask: false,
           onEditClick: mockOnEdit,
         })
+      }).not.toThrow()
+    })
+
+    it("renders as subtask when isSubTask is true", () => {
+      expect(() => {
+        renderTaskActionsMenu({ isSubTask: true })
       }).not.toThrow()
     })
   })
@@ -182,7 +117,7 @@ describe("TaskActionsMenu", () => {
     it("accepts all expected props without errors", () => {
       expect(() => {
         renderTaskActionsMenu({
-          variant: "compact",
+          isSubTask: false,
           onEditClick: vi.fn(),
           open: false,
           onOpenChange: vi.fn(),
@@ -200,15 +135,15 @@ describe("TaskActionsMenu", () => {
       }).not.toThrow()
     })
 
-    it("handles both variant types", () => {
-      // Full variant
+    it("handles both isSubTask values", () => {
+      // Task (default)
       expect(() => {
-        renderTaskActionsMenu({ variant: "full" })
+        renderTaskActionsMenu({ isSubTask: false })
       }).not.toThrow()
 
-      // Compact variant
+      // Subtask
       expect(() => {
-        renderTaskActionsMenu({ variant: "compact" })
+        renderTaskActionsMenu({ isSubTask: true })
       }).not.toThrow()
     })
   })
@@ -219,24 +154,29 @@ describe("TaskActionsMenu", () => {
       expect(container.firstChild).toBeInTheDocument()
     })
 
-    it("renders compact variant without crashing", () => {
-      const { container } = renderTaskActionsMenu({ variant: "compact" })
+    it("renders task variant without crashing", () => {
+      const { container } = renderTaskActionsMenu({ isSubTask: false })
+      expect(container.firstChild).toBeInTheDocument()
+    })
+
+    it("renders subtask variant without crashing", () => {
+      const { container } = renderTaskActionsMenu({ isSubTask: true })
       expect(container.firstChild).toBeInTheDocument()
     })
 
     it("handles visibility toggle correctly", () => {
       const { rerender, container } = renderTaskActionsMenu({ isVisible: true })
 
-      // Should be visible - check the container div
-      let menuContainer = container.querySelector("div")
-      expect(menuContainer).not.toHaveClass("hidden")
+      // Should be visible - check the button
+      let button = container.querySelector("button")
+      expect(button).not.toHaveClass("hidden")
 
       // Rerender as not visible
       rerender(<TaskActionsMenu {...defaultProps} isVisible={false} />)
 
       // Should be hidden
-      menuContainer = container.querySelector("div")
-      expect(menuContainer).toHaveClass("hidden")
+      button = container.querySelector("button")
+      expect(button).toHaveClass("hidden")
     })
   })
 })

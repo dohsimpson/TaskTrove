@@ -32,11 +32,12 @@ import { DeleteConfirmDialog } from "@/components/dialogs/delete-confirm-dialog"
 import { PriorityPopover } from "@/components/task/priority-popover"
 import { TaskSchedulePopover } from "@/components/task/task-schedule-popover"
 import { ProjectPopover } from "@/components/task/project-popover"
+import { TaskSearchDialog } from "@/components/task/task-search-dialog"
 import { cn } from "@/lib/utils"
 import { createCommentId, createSubtaskId, createTaskId } from "@/lib/types"
-import type { TaskComment, Subtask } from "@/lib/types"
 import { DraggableTaskElement } from "./draggable-task-element"
 import { DEFAULT_UUID } from "@tasktrove/constants"
+import type { TaskComment, Subtask, TaskId } from "@/lib/types"
 
 interface SelectionToolbarProps {
   className?: string
@@ -46,6 +47,7 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false)
   const [showAddCommentDialog, setShowAddCommentDialog] = React.useState(false)
   const [showAddSubtaskDialog, setShowAddSubtaskDialog] = React.useState(false)
+  const [showConvertToSubtasks, setShowConvertToSubtasks] = React.useState(false)
   const [commentInput, setCommentInput] = React.useState("")
   const [subtaskInput, setSubtaskInput] = React.useState("")
 
@@ -163,6 +165,33 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
     setShowAddSubtaskDialog(false)
   }
 
+  const handleConvertToSubtasks = (parentTaskId: TaskId) => {
+    // Convert selected tasks to subtasks of the chosen parent task
+    const newSubtasks: Subtask[] = selectedTasks.map((task) => ({
+      id: createSubtaskId(uuidv4()),
+      title: task.title,
+      completed: task.completed,
+      order: task.subtasks.length, // Will be set properly when updating parent
+    }))
+
+    // Update parent task to add new subtasks
+    updateTasks([
+      {
+        id: parentTaskId,
+        subtasks: [
+          ...(allTasks.find((t) => t.id === parentTaskId)?.subtasks || []),
+          ...newSubtasks,
+        ],
+      },
+    ])
+
+    // Delete the original tasks (they're now subtasks)
+    deleteTasks(selectedTaskIds)
+
+    // Clear selection - dialog will close automatically via TaskSearchDialog
+    handleClearSelection()
+  }
+
   return (
     <>
       <div className={cn("flex items-center justify-between pb-3 mb-3 border-b", className)}>
@@ -224,6 +253,10 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
                   <DropdownMenuItem onClick={() => setShowAddSubtaskDialog(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Add subtask
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowConvertToSubtasks(true)}>
+                    <ListTodo className="h-4 w-4 mr-2" />
+                    Convert to subtasks
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleCompleteSubtasks}>
@@ -293,6 +326,16 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
         value={subtaskInput}
         onChange={setSubtaskInput}
         onSubmit={handleAddSubtask}
+      />
+
+      {/* Convert to subtasks dialog */}
+      <TaskSearchDialog
+        open={showConvertToSubtasks}
+        onOpenChange={setShowConvertToSubtasks}
+        title={`Convert ${selectedTasks.length} selected task${selectedTasks.length !== 1 ? "s" : ""} to subtasks`}
+        onTaskSelect={handleConvertToSubtasks}
+        excludeTaskIds={selectedTaskIds}
+        placeholder="Search for parent task..."
       />
     </>
   )

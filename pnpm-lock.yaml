@@ -7,8 +7,11 @@ settings:
 catalogs:
   default:
     '@atlaskit/pragmatic-drag-and-drop':
-      specifier: ^1.7.7
+      specifier: 1.7.7
       version: 1.7.7
+    '@atlaskit/pragmatic-drag-and-drop-auto-scroll':
+      specifier: ^2.1.2
+      version: 2.1.2
     '@atlaskit/pragmatic-drag-and-drop-hitbox':
       specifier: ^1.1.0
       version: 1.1.0
@@ -189,6 +192,9 @@ catalogs:
     async-mutex:
       specifier: ^0.5.0
       version: 0.5.0
+    auto-scroll-while-dragging:
+      specifier: ^1.0.1
+      version: 1.0.1
     bcryptjs:
       specifier: ^2.4.3
       version: 2.4.3
@@ -392,6 +398,9 @@ importers:
       '@atlaskit/pragmatic-drag-and-drop':
         specifier: 'catalog:'
         version: 1.7.7
+      '@atlaskit/pragmatic-drag-and-drop-auto-scroll':
+        specifier: 'catalog:'
+        version: 2.1.2
       '@atlaskit/pragmatic-drag-and-drop-hitbox':
         specifier: 'catalog:'
         version: 1.1.0
@@ -524,6 +533,9 @@ importers:
       async-mutex:
         specifier: 'catalog:'
         version: 0.5.0
+      auto-scroll-while-dragging:
+        specifier: 'catalog:'
+        version: 1.0.1
       class-variance-authority:
         specifier: 'catalog:'
         version: 0.7.1
@@ -1092,6 +1104,9 @@ packages:
 
   '@atlaskit/platform-feature-flags@1.1.2':
     resolution: {integrity: sha512-PM+fVkV4Yn4/0keiN6ioAap2Y+odTyw1Z4uf+TA0zMmg3/lp/rVNJEc4a24dvd8DfVs5m9bxa/hbO1qJarhCBw==}
+
+  '@atlaskit/pragmatic-drag-and-drop-auto-scroll@2.1.2':
+    resolution: {integrity: sha512-6BgAUxSNbQFiG3uqNxf53cDQADn5mSeh/JsQzCHo46GPQnVWIJk77zWC8yZ++0Mfg1ECy02zNrbniF7SgHAhXQ==}
 
   '@atlaskit/pragmatic-drag-and-drop-hitbox@1.1.0':
     resolution: {integrity: sha512-JWt6eVp6Br2FPHRM8s0dUIHQk/jFInGP1f3ti5CdtM1Ji5/pt8Akm44wDC063Gv2i5RGseixtbW0z/t6RYtbdg==}
@@ -3193,6 +3208,9 @@ packages:
     resolution: {integrity: sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==}
     engines: {node: '>=8.0.0'}
 
+  auto-scroll-while-dragging@1.0.1:
+    resolution: {integrity: sha512-UCbL/4i0fL8WRv0ihEAjAuLSVwNarpQGTXltlfAt1LkUc1Yx9HfltnVtK2BMiQ72dzvoxAj6udX26XWPP+oARw==}
+
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
@@ -4536,7 +4554,6 @@ packages:
     resolution: {integrity: sha512-Quz3MvAwHxVYNXsOByL7xI5EB2WYOeFswqaHIA3qOK3isRWTxiplBEocmmru6XmxDB2L7jDNYtYA4FyimoAFEw==}
     engines: {node: '>=8.17.0'}
     hasBin: true
-    bundledDependencies: []
 
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
@@ -6225,6 +6242,11 @@ snapshots:
       '@babel/runtime': 7.28.4
     transitivePeerDependencies:
       - react
+
+  '@atlaskit/pragmatic-drag-and-drop-auto-scroll@2.1.2':
+    dependencies:
+      '@atlaskit/pragmatic-drag-and-drop': 1.7.7
+      '@babel/runtime': 7.28.4
 
   '@atlaskit/pragmatic-drag-and-drop-hitbox@1.1.0':
     dependencies:
@@ -8336,6 +8358,8 @@ snapshots:
   async@3.2.6: {}
 
   atomic-sleep@1.0.0: {}
+
+  auto-scroll-while-dragging@1.0.1: {}
 
   available-typed-arrays@1.0.7:
     dependencies:

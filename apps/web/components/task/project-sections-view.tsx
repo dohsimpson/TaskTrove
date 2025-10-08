@@ -64,6 +64,7 @@ import {
 import { log } from "@/lib/utils/logger"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { DEFAULT_UUID } from "@tasktrove/constants"
+import { DraggableElement, DropTargetElement } from "./project-sections-view-helper"
 
 // Constants - removed SIDE_PANEL_WIDTH since it's now handled by ResizablePanel
 
@@ -494,51 +495,6 @@ export function ProjectSectionsView({
     const isCollapsed = collapsedSections.includes(sectionId)
     const isEditing = editingSectionId === section.id
 
-    // Common drop handlers
-    const handleSectionDrop = (data: {
-      source: { data: Record<string, unknown> }
-      location: { current: { dropTargets: Array<{ data: Record<string, unknown> }> } }
-    }) => {
-      handleTaskDrop(data)
-      setSectionDragStates(new Map())
-    }
-
-    const handleSectionDragEnter = ({
-      source,
-      location,
-    }: {
-      source: { data: Record<string, unknown> }
-      location: { current: { dropTargets: Array<{ data: Record<string, unknown> }> } }
-    }) => {
-      if (source.data.type === "task" && source.data.rect) {
-        const innerMost = location.current.dropTargets[0]
-        if (!innerMost) return
-        const isOverChildTask = Boolean(innerMost.data.type === "task-drop-target")
-
-        const rect = source.data.rect
-        if (typeof rect === "object" && "height" in rect && typeof rect.height === "number") {
-          const height = rect.height
-          setSectionDragStates((prev) => {
-            const newMap = new Map(prev)
-            newMap.set(section.id, {
-              isDraggingOver: true,
-              draggedTaskRect: { height },
-              isOverChildTask,
-            })
-            return newMap
-          })
-        }
-      }
-    }
-
-    const handleSectionDragLeave = () => {
-      setSectionDragStates((prev) => {
-        const newMap = new Map(prev)
-        newMap.delete(section.id)
-        return newMap
-      })
-    }
-
     // Render the section header (always visible)
     const sectionHeader = (
       <div className="flex items-center py-2 px-1 mb-3">
@@ -608,210 +564,58 @@ export function ProjectSectionsView({
 
     return (
       <div key={sectionId} className="mb-4">
-        <Collapsible
-          open={!isCollapsed}
-          onOpenChange={() => handleToggleSectionCollapse(sectionId)}
+        <DropTargetElement
+          key={sectionDroppableId}
+          id={sectionDroppableId}
+          options={{ type: "group", indicator: {}, testId: sectionDroppableId }}
         >
-          {/* When collapsed or when not collapsed but has no tasks, wrap the header in a drop target */}
-          {isCollapsed || sectionTasks.length === 0 ? (
-            <DropTargetWrapper
-              dropTargetId={sectionDroppableId}
-              onDrop={handleSectionDrop}
-              getData={() => ({
-                type: "task-list",
-                sectionId: section.id,
-                projectId: project?.id,
-              })}
-              onDragEnter={handleSectionDragEnter}
-              onDragLeave={handleSectionDragLeave}
-            >
-              {sectionHeader}
-              {/* Show shadow when dragging over section */}
-              {(() => {
-                const dragState = sectionDragStates.get(section.id)
-                return dragState && dragState.isDraggingOver && dragState.draggedTaskRect ? (
-                  <TaskShadow height={dragState.draggedTaskRect.height} className="mb-2" />
-                ) : null
-              })()}
-            </DropTargetWrapper>
-          ) : (
-            sectionHeader
-          )}
+          <Collapsible
+            open={!isCollapsed}
+            onOpenChange={() => handleToggleSectionCollapse(sectionId)}
+          >
+            {/* When collapsed or when not collapsed but has no tasks, wrap the header in a drop target */}
+            {isCollapsed || sectionTasks.length === 0 ? (
+              <>
+                {sectionHeader}
+                {/* Show shadow when dragging over section */}
+                {(() => {
+                  const dragState = sectionDragStates.get(section.id)
+                  return dragState && dragState.isDraggingOver && dragState.draggedTaskRect ? (
+                    <TaskShadow height={dragState.draggedTaskRect.height} className="mb-2" />
+                  ) : null
+                })()}
+              </>
+            ) : (
+              sectionHeader
+            )}
 
-          <CollapsibleContent>
-            <div className="space-y-0">
-              <DropTargetWrapper
-                dropTargetId={sectionDroppableId}
-                onDrop={handleSectionDrop}
-                getData={() => ({
-                  type: "task-list",
-                  sectionId: section.id,
-                  projectId: project?.id,
-                })}
-                onDragEnter={handleSectionDragEnter}
-                onDrag={({ source, location }) => {
-                  if (source.data.type === "task" && source.data.rect) {
-                    const innerMost = location.current.dropTargets[0]
-                    if (!innerMost) return
-                    const isOverChildTask = Boolean(innerMost.data.type === "task-drop-target")
-
-                    setSectionDragStates((prev) => {
-                      const newMap = new Map(prev)
-                      const current = newMap.get(section.id)
-                      if (current?.isDraggingOver) {
-                        newMap.set(section.id, {
-                          ...current,
-                          isOverChildTask,
-                        })
-                      }
-                      return newMap
-                    })
-                  }
-                }}
-                onDragLeave={handleSectionDragLeave}
-              >
-                <div>
-                  {sectionTasks.map((task: Task, taskIndex: number) => (
-                    <DropTargetWrapper
-                      key={task.id}
-                      dropTargetId={`task-${task.id}`}
-                      onDrop={(data) => {
-                        handleTaskDrop(data)
-                        // Clean up drag state on drop
-                        setSectionDragStates(new Map())
-                      }}
-                      getData={(args?: { input?: DragInputType; element?: HTMLElement }) => {
-                        const baseData = {
-                          type: "task-drop-target",
-                          dropTargetId: `task-${task.id}`,
-                          taskId: task.id,
-                          sectionId: section.id,
-                        }
-
-                        // Only use attachClosestEdge if we have proper input and element
-                        if (args && args.input && args.element) {
-                          return attachClosestEdge(baseData, {
-                            element: args.element,
-                            input: args.input,
-                            allowedEdges: ["top", "bottom"],
-                          })
-                        }
-
-                        return baseData
-                      }}
-                      onDragEnter={({ source, location }) => {
-                        if (source.data.type === "task" && source.data.taskId !== task.id) {
-                          const innerMost = location.current.dropTargets[0]
-                          if (!innerMost) return
-                          const closestEdge = extractClosestEdge(innerMost.data)
-
-                          const rect = source.data.rect
-                          if (typeof rect === "object" && rect !== null && "height" in rect) {
-                            const height = rect.height
-                            if (typeof height === "number") {
-                              setSectionDragStates((prev) => {
-                                const newMap = new Map(prev)
-                                newMap.set(section.id, {
-                                  isDraggingOver: true,
-                                  draggedTaskRect: { height },
-                                  closestEdge:
-                                    closestEdge === "top" || closestEdge === "bottom"
-                                      ? closestEdge
-                                      : undefined,
-                                  targetTaskId: task.id,
-                                  isOverChildTask: true,
-                                })
-                                return newMap
-                              })
-                            }
-                          }
-                        }
-                      }}
-                      onDrag={({ source, location }) => {
-                        if (source.data.type === "task" && source.data.taskId !== task.id) {
-                          const innerMost = location.current.dropTargets[0]
-                          if (!innerMost) return
-                          const closestEdge = extractClosestEdge(innerMost.data)
-
-                          setSectionDragStates((prev) => {
-                            const newMap = new Map(prev)
-                            const current = newMap.get(section.id)
-                            if (current) {
-                              newMap.set(section.id, {
-                                ...current,
-                                closestEdge:
-                                  closestEdge === "top" || closestEdge === "bottom"
-                                    ? closestEdge
-                                    : undefined,
-                                targetTaskId: task.id,
-                              })
-                            }
-                            return newMap
-                          })
-                        }
-                      }}
-                    >
-                      {/* Render shadow above task if dragging over this task and closest edge is top */}
-                      {(() => {
-                        const dragState = sectionDragStates.get(section.id)
-                        return dragState &&
-                          dragState.isDraggingOver &&
-                          dragState.targetTaskId === task.id &&
-                          dragState.closestEdge === "top" &&
-                          dragState.draggedTaskRect ? (
-                          <TaskShadow height={dragState.draggedTaskRect.height} className="mb-2" />
-                        ) : null
-                      })()}
-
-                      <DraggableWrapper
-                        dragId={task.id}
-                        index={taskIndex}
-                        getData={() => ({
-                          type: "task",
-                          taskId: task.id,
-                          sectionId: section.id,
-                          projectId: task.projectId,
-                        })}
+            <CollapsibleContent className="py-2">
+              <div className="space-y-0">
+                <>
+                  <div>
+                    {sectionTasks.map((task: Task) => (
+                      <DropTargetElement
+                        key={task.id}
+                        id={task.id}
+                        options={{ type: "list-item", indicator: { lineGap: "8px" } }}
                       >
-                        <TaskItem
-                          taskId={task.id}
-                          variant={compactView ? "compact" : "default"}
-                          className="cursor-pointer mb-2 mx-2"
-                          showProjectBadge={true}
-                          sortedTaskIds={sortedSectionTaskIds}
-                        />
-                      </DraggableWrapper>
-
-                      {/* Render shadow below task if dragging over this task and closest edge is bottom */}
-                      {(() => {
-                        const dragState = sectionDragStates.get(section.id)
-                        return dragState &&
-                          dragState.isDraggingOver &&
-                          dragState.targetTaskId === task.id &&
-                          dragState.closestEdge === "bottom" &&
-                          dragState.draggedTaskRect ? (
-                          <TaskShadow height={dragState.draggedTaskRect.height} className="mb-2" />
-                        ) : null
-                      })()}
-                    </DropTargetWrapper>
-                  ))}
-
-                  {/* Render shadow at bottom of section if dragging over section but not over any task (only if section has tasks) */}
-                  {(() => {
-                    const dragState = sectionDragStates.get(section.id)
-                    return dragState &&
-                      dragState.isDraggingOver &&
-                      !dragState.targetTaskId &&
-                      dragState.draggedTaskRect &&
-                      sectionTasks.length > 0 ? (
-                      <TaskShadow height={dragState.draggedTaskRect.height} className="mb-2" />
-                    ) : null
-                  })()}
-                </div>
-              </DropTargetWrapper>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+                        <DraggableElement key={task.id} id={task.id}>
+                          <TaskItem
+                            taskId={task.id}
+                            variant={compactView ? "compact" : "default"}
+                            className="cursor-pointer mb-2 mx-2"
+                            showProjectBadge={true}
+                            sortedTaskIds={sortedSectionTaskIds}
+                          />
+                        </DraggableElement>
+                      </DropTargetElement>
+                    ))}
+                  </div>
+                </>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </DropTargetElement>
       </div>
     )
   }

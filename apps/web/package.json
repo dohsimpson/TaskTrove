@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "catalog:",
+    "@atlaskit/pragmatic-drag-and-drop-auto-scroll": "catalog:",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "catalog:",
     "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "catalog:",
     "@hookform/resolvers": "catalog:",
@@ -74,6 +75,7 @@
     "accept-language": "catalog:",
     "archiver": "catalog:",
     "async-mutex": "catalog:",
+    "auto-scroll-while-dragging": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "cmdk": "catalog:",

@@ -5,7 +5,8 @@ packages:
   - modules.pro/packages/*
 
 catalog:
-  '@atlaskit/pragmatic-drag-and-drop': ^1.7.7
+  '@atlaskit/pragmatic-drag-and-drop': 1.7.7
+  '@atlaskit/pragmatic-drag-and-drop-auto-scroll': ^2.1.2
   '@atlaskit/pragmatic-drag-and-drop-hitbox': ^1.1.0
   '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator': ^3.2.7
   '@changesets/cli': ^2.29.7
@@ -66,6 +67,7 @@ catalog:
   animate.css: ^4.1.1
   archiver: ^7.0.1
   async-mutex: ^0.5.0
+  auto-scroll-while-dragging: ^1.0.1
   bcryptjs: ^2.4.3
   class-variance-authority: ^0.7.1
   clsx: ^2.1.1

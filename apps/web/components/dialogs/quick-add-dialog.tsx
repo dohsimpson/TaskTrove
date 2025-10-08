@@ -379,9 +379,11 @@ export function QuickAddDialog() {
         // Set initial task state to what it will be after updates
         const updatedTask = { ...newTask, ...updates }
         setInitialTask(updatedTask)
+        setInput(updatedTask.title || "")
       } else {
         // No updates needed, set initial task to current state
         setInitialTask({ ...newTask })
+        setInput(newTask.title)
       }
 
       hasInitializedRef.current = true

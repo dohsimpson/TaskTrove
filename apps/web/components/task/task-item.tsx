@@ -58,7 +58,7 @@ import {
   labelsFromIdsAtom,
 } from "@/lib/atoms/core/labels"
 import { projectsAtom } from "@/lib/atoms"
-import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
+import { quickAddTaskAtom, updateQuickAddTaskAtom, showQuickAddAtom } from "@/lib/atoms/ui/dialogs"
 import { selectedTaskIdAtom } from "@/lib/atoms"
 import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } from "@/lib/types"
 import { INBOX_PROJECT_ID, createTaskId } from "@/lib/types"
@@ -236,6 +236,7 @@ export function TaskItem({
   // Quick-add atoms for subtask handling in new tasks
   const quickAddTask = useAtomValue(quickAddTaskAtom)
   const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
+  const setShowQuickAdd = useSetAtom(showQuickAddAtom)
 
   // Find the task after getting all atoms
   let task = allTasks.find((t: Task) => t.id === taskId)
@@ -360,6 +361,32 @@ export function TaskItem({
 
   const handleEstimationMenuClick = () => {
     setShowEstimationPicker(true)
+  }
+
+  const handleConvertToTask = () => {
+    if (variant !== "subtask") return
+
+    // For subtasks, we need the parent task
+    const parent = parentTask
+    if (!parent) return
+
+    // Only use parent task data if it's a real Task (not CreateTaskRequest)
+    const realParentTask = "id" in parent ? parent : undefined
+
+    // Update the quick add task atom with subtask conversion data
+    const convertData: CreateTaskRequest = {
+      title: task.title,
+      priority: realParentTask?.priority,
+      dueDate: realParentTask?.dueDate,
+      dueTime: realParentTask?.dueTime,
+      projectId: realParentTask?.projectId,
+      labels: realParentTask?.labels ? [...realParentTask.labels] : [],
+      recurring: realParentTask?.recurring,
+      estimation: task.estimation, // Use subtask's estimation
+    }
+
+    updateQuickAddTask({ updateRequest: convertData })
+    setShowQuickAdd(true)
   }
 
   // Compact variant specific helpers
@@ -1059,6 +1086,7 @@ export function TaskItem({
             onDeleteClick={handleSubtaskDelete}
             onSelectClick={() => toggleTaskSelection(taskId)}
             onEstimationClick={handleEstimationMenuClick}
+            onConvertToTaskClick={handleConvertToTask}
             variant="subtask"
             open={actionsMenuOpen}
             onOpenChange={handleActionsMenuChange}

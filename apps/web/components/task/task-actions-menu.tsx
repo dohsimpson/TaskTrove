@@ -17,6 +17,7 @@ import {
   ClockFading,
   Copy,
   CheckSquare,
+  ArrowUpRight,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Task } from "@/lib/types"
@@ -31,6 +32,7 @@ interface TaskActionsMenuProps {
   onEditClick?: () => void
   onEstimationClick?: () => void
   onSelectClick?: () => void
+  onConvertToTaskClick?: () => void
   variant?: "full" | "compact" | "kanban" | "subtask"
   open?: boolean
   onOpenChange?: (open: boolean) => void
@@ -43,6 +45,7 @@ export function TaskActionsMenu({
   onEditClick,
   onEstimationClick,
   onSelectClick,
+  onConvertToTaskClick,
   variant = "full",
   open,
   onOpenChange,
@@ -119,6 +122,13 @@ export function TaskActionsMenu({
     setIsOpen(false)
   }
 
+  const handleConvertToTaskClick = (e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    e?.preventDefault()
+    onConvertToTaskClick?.()
+    setIsOpen(false)
+  }
+
   // const handleTimerClick = () => {
   //   openPomodoro(task)
   //   setIsOpen(false)
@@ -140,7 +150,7 @@ export function TaskActionsMenu({
               <MoreHorizontal className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className={cn("w-32", variant === "subtask" && "w-36")}>
+          <DropdownMenuContent align="end" className={cn("w-32", variant === "subtask" && "w-40")}>
             {onSelectClick && (
               <DropdownMenuItem onClick={handleSelectClick} className="cursor-pointer">
                 <CheckSquare className="h-3.5 w-3.5 mr-2" />
@@ -157,6 +167,12 @@ export function TaskActionsMenu({
               <Copy className="h-3.5 w-3.5 mr-2" />
               Duplicate
             </DropdownMenuItem>
+            {variant === "subtask" && onConvertToTaskClick && (
+              <DropdownMenuItem onClick={handleConvertToTaskClick} className="cursor-pointer">
+                <ArrowUpRight className="h-3.5 w-3.5 mr-2" />
+                Convert to Task
+              </DropdownMenuItem>
+            )}
             {variant === "subtask" && onEstimationClick && (
               <DropdownMenuItem onClick={handleEstimationClick} className="cursor-pointer">
                 <ClockFading className="h-3.5 w-3.5 mr-2" />

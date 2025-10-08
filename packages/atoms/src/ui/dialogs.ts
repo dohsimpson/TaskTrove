@@ -476,6 +476,8 @@ export const dialogActionAtoms = {
   updateQuickAddTask: updateQuickAddTaskAtom,
   resetQuickAddTask: resetQuickAddTaskAtom,
   toggleNlp: toggleNlpAtom,
+  openQuickAddWithCopy: openQuickAddWithCopyAtom,
+  resetCopyTask: resetCopyTaskAtom,
 } as const;
 
 /**

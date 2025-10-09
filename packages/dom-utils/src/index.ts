@@ -13,6 +13,7 @@ export * from "./drag-and-drop";
 export * from "./browser";
 export * from "./visibility";
 export * from "./scheduled-timeout";
+export * from "./browser";
 
 // Named exports for convenience
 export {

@@ -1202,43 +1202,49 @@ describe("TaskItem", () => {
   })
 
   describe("Description Editing", () => {
-    it("renders description as editable div with multiline support", () => {
+    it("renders description as editable div with multiline support", async () => {
+      const user = userEvent.setup()
+
       render(
         <Provider>
           <TaskItem taskId={mockTask.id} />
         </Provider>,
       )
 
-      const descriptionDiv = screen
-        .getAllByTestId("editable-div")
-        .find((el) => el.textContent === "Test description")
+      // Click description to enter edit mode
+      const descriptionText = screen.getByText("Test description")
+      await user.click(descriptionText)
+
+      const descriptionDiv = screen.getByTestId("editable-div")
       expect(descriptionDiv).toBeInTheDocument()
+      // The real EditableDiv uses "plaintext-only", but mocked version uses "true"
       expect(descriptionDiv).toHaveAttribute("contentEditable", "true")
-      expect(descriptionDiv).toHaveAttribute("data-multiline", "true")
     })
 
     it("updates description on content change", async () => {
+      const user = userEvent.setup()
+
       render(
         <Provider>
           <TaskItem taskId={mockTask.id} />
         </Provider>,
       )
 
-      const descriptionDiv = screen
-        .getAllByTestId("editable-div")
-        .find((el) => el.textContent === "Test description")
+      // Click description to enter edit mode
+      const descriptionText = screen.getByText("Test description")
+      await user.click(descriptionText)
+
+      const descriptionDiv = screen.getByTestId("editable-div")
       expect(descriptionDiv).toBeInTheDocument()
 
       // Simulate editing the content
-      if (descriptionDiv) {
-        descriptionDiv.textContent = "Updated description"
+      descriptionDiv.textContent = "Updated description"
 
-        // Trigger input event to simulate EditableDiv behavior
-        fireEvent.input(descriptionDiv, { target: { textContent: "Updated description" } })
+      // Trigger input event to simulate EditableDiv behavior
+      fireEvent.input(descriptionDiv, { target: { textContent: "Updated description" } })
 
-        // Trigger blur to save
-        fireEvent.blur(descriptionDiv)
-      }
+      // Trigger blur to save
+      fireEvent.blur(descriptionDiv)
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
@@ -1249,28 +1255,29 @@ describe("TaskItem", () => {
     })
 
     it("allows empty descriptions", async () => {
+      const user = userEvent.setup()
+
       render(
         <Provider>
           <TaskItem taskId={mockTask.id} />
         </Provider>,
       )
 
-      const descriptionDiv = screen
-        .getAllByTestId("editable-div")
-        .find((el) => el.textContent === "Test description")
+      // Click description to enter edit mode
+      const descriptionText = screen.getByText("Test description")
+      await user.click(descriptionText)
+
+      const descriptionDiv = screen.getByTestId("editable-div")
       expect(descriptionDiv).toBeInTheDocument()
-      expect(descriptionDiv).toHaveAttribute("data-allow-empty", "true")
 
       // Simulate clearing the content
-      if (descriptionDiv) {
-        descriptionDiv.textContent = ""
+      descriptionDiv.textContent = ""
 
-        // Trigger input event
-        fireEvent.input(descriptionDiv, { target: { textContent: "" } })
+      // Trigger input event
+      fireEvent.input(descriptionDiv, { target: { textContent: "" } })
 
-        // Trigger blur - should save empty description since allowEmpty=true
-        fireEvent.blur(descriptionDiv)
-      }
+      // Trigger blur - should save empty description since allowEmpty=true
+      fireEvent.blur(descriptionDiv)
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
@@ -1281,34 +1288,35 @@ describe("TaskItem", () => {
     })
 
     it("handles keyboard shortcuts for multiline descriptions", async () => {
+      const user = userEvent.setup()
+
       render(
         <Provider>
           <TaskItem taskId={mockTask.id} />
         </Provider>,
       )
 
-      const descriptionDiv = screen
-        .getAllByTestId("editable-div")
-        .find((el) => el.textContent === "Test description")
+      // Click description to enter edit mode
+      const descriptionText = screen.getByText("Test description")
+      await user.click(descriptionText)
+
+      const descriptionDiv = screen.getByTestId("editable-div")
       expect(descriptionDiv).toBeInTheDocument()
-      expect(descriptionDiv).toHaveAttribute("data-multiline", "true")
 
       // Test keyboard behavior by checking if the handlers are called correctly
       // The mock implementation should handle these key combinations properly
 
       // Test 1: Plain Enter should save (preventDefault and blur)
-      if (descriptionDiv) {
-        fireEvent.keyDown(descriptionDiv, { key: "Enter" })
+      fireEvent.keyDown(descriptionDiv, { key: "Enter" })
 
-        // Test 2: Shift+Enter should allow newline (no preventDefault) - universal
-        fireEvent.keyDown(descriptionDiv, { key: "Enter", shiftKey: true })
+      // Test 2: Shift+Enter should allow newline (no preventDefault) - universal
+      fireEvent.keyDown(descriptionDiv, { key: "Enter", shiftKey: true })
 
-        // Test 3: Ctrl+Enter should save (preventDefault and blur)
-        fireEvent.keyDown(descriptionDiv, { key: "Enter", ctrlKey: true })
+      // Test 3: Ctrl+Enter should save (preventDefault and blur)
+      fireEvent.keyDown(descriptionDiv, { key: "Enter", ctrlKey: true })
 
-        // Test 4: Cmd+Enter should save (preventDefault and blur) - macOS
-        fireEvent.keyDown(descriptionDiv, { key: "Enter", metaKey: true })
-      }
+      // Test 4: Cmd+Enter should save (preventDefault and blur) - macOS
+      fireEvent.keyDown(descriptionDiv, { key: "Enter", metaKey: true })
 
       // If we got here without errors, the keyboard handling is working
       expect(descriptionDiv).toBeInTheDocument()
@@ -1858,22 +1866,17 @@ describe("TaskItem", () => {
         </Provider>,
       )
 
-      // Find the description editable div
-      const descriptionDiv = screen
-        .getAllByTestId("editable-div")
-        .find((el) => el.getAttribute("data-placeholder") === "Add description...")
+      // Find placeholder in view mode
+      const placeholderText = screen.getByText("Add description...")
+      expect(placeholderText).toBeInTheDocument()
+      expect(placeholderText).toHaveClass("italic")
+
+      // Click to enter edit mode
+      await user.click(placeholderText)
+
+      // After entering edit mode, find the editable div
+      const descriptionDiv = screen.getByTestId("editable-div")
       expect(descriptionDiv).toBeInTheDocument()
-
-      // Initially should be invisible and have italic styling
-      expect(descriptionDiv).toHaveClass("invisible")
-      expect(descriptionDiv).toHaveClass("italic")
-
-      // Focus the description to start editing
-      if (descriptionDiv) {
-        await user.click(descriptionDiv)
-      }
-
-      // When editing starts, should not have italic styling anymore
       expect(descriptionDiv).not.toHaveClass("italic")
       expect(descriptionDiv).toHaveClass("text-muted-foreground")
     })
@@ -1889,22 +1892,17 @@ describe("TaskItem", () => {
         </Provider>,
       )
 
-      // Find the description editable div
-      const descriptionDiv = screen
-        .getAllByTestId("editable-div")
-        .find((el) => el.getAttribute("data-placeholder") === "Add description...")
+      // Find placeholder in view mode
+      const placeholderText = screen.getByText("Add description...")
+      expect(placeholderText).toBeInTheDocument()
+      expect(placeholderText).toHaveClass("italic")
+
+      // Click to enter edit mode
+      await user.click(placeholderText)
+
+      // After entering edit mode, find the editable div
+      const descriptionDiv = screen.getByTestId("editable-div")
       expect(descriptionDiv).toBeInTheDocument()
-
-      // Initially should be invisible and have italic styling
-      expect(descriptionDiv).toHaveClass("invisible")
-      expect(descriptionDiv).toHaveClass("italic")
-
-      // Focus the description to start editing
-      if (descriptionDiv) {
-        await user.click(descriptionDiv)
-      }
-
-      // When editing starts, should not have italic styling anymore
       expect(descriptionDiv).not.toHaveClass("italic")
       expect(descriptionDiv).toHaveClass("text-muted-foreground")
     })
@@ -1963,14 +1961,13 @@ describe("TaskItem", () => {
         </Provider>,
       )
 
-      const descriptionDiv = screen
-        .getAllByTestId("editable-div")
-        .find((el) => el.getAttribute("data-placeholder") === "Add description...")
-      expect(descriptionDiv).toBeInTheDocument()
+      // In view mode (not editing), placeholder is shown as regular text with italic styling
+      const placeholderText = screen.getByText("Add description...")
+      expect(placeholderText).toBeInTheDocument()
 
       // When not editing and empty, should have italic styling
-      expect(descriptionDiv).toHaveClass("italic")
-      expect(descriptionDiv).toHaveClass("text-muted-foreground/60")
+      expect(placeholderText).toHaveClass("italic")
+      expect(placeholderText).toHaveClass("text-muted-foreground/60")
     })
 
     it("does not show italic styling when description has content", () => {
@@ -2386,11 +2383,13 @@ describe("TaskItem", () => {
       expect(descriptionElement).toBeInTheDocument()
       expect(descriptionElement).toHaveClass("text-xs")
       expect(descriptionElement).toHaveClass("line-clamp-2")
-      expect(descriptionElement).toHaveAttribute("contenteditable", "true")
+      // In view mode (before clicking), it's not contenteditable
+      expect(descriptionElement).not.toHaveAttribute("contenteditable")
     })
 
-    it("has description placeholder when no description exists", () => {
+    it("has description placeholder when no description exists", async () => {
       const taskWithoutDescription = { ...kanbanTask, description: "" }
+      registerTask(taskWithoutDescription)
 
       render(
         <Provider>
@@ -2398,13 +2397,9 @@ describe("TaskItem", () => {
         </Provider>,
       )
 
-      // Description editable div should exist with placeholder
-      const editableDivs = screen.getAllByTestId("editable-div")
-      const descriptionElement = editableDivs.find(
-        (el) => el.getAttribute("data-placeholder") === "Add description...",
-      )
-      expect(descriptionElement).toBeInTheDocument()
-      expect(descriptionElement).toHaveAttribute("data-placeholder", "Add description...")
+      // Description placeholder exists (may be invisible until hovered)
+      const placeholder = screen.queryByText("Add description...")
+      expect(placeholder).toBeInTheDocument()
     })
 
     it("applies line-clamp-2 when description is not being edited in kanban variant", () => {
@@ -2431,17 +2426,17 @@ describe("TaskItem", () => {
 
       const descriptionElement = screen.getByText("Kanban task description")
 
-      // Initially should have line-clamp
+      // Initially should have line-clamp (in view mode)
       expect(descriptionElement).toHaveClass("line-clamp-2")
       expect(descriptionElement).not.toHaveClass("max-h-20")
 
-      // Focus the description to start editing
+      // Click the description to enter edit mode
       await user.click(descriptionElement)
 
-      // After focusing, should have max-height instead of line-clamp
-      expect(descriptionElement).not.toHaveClass("line-clamp-2")
-      expect(descriptionElement).toHaveClass("max-h-20")
-      expect(descriptionElement).toHaveClass("overflow-y-auto")
+      // After clicking, a new EditableDiv element appears
+      const editableDiv = screen.getByTestId("editable-div")
+      expect(editableDiv).toHaveClass("max-h-20")
+      expect(editableDiv).toHaveClass("overflow-y-auto")
     })
 
     it("restores line-clamp when description editing is finished in kanban variant", async () => {
@@ -2455,18 +2450,17 @@ describe("TaskItem", () => {
 
       const descriptionElement = screen.getByText("Kanban task description")
 
-      // Focus to start editing
+      // Click to start editing
       await user.click(descriptionElement)
-      expect(descriptionElement).toHaveClass("max-h-20")
-      expect(descriptionElement).not.toHaveClass("line-clamp-2")
+      const editableDiv = screen.getByTestId("editable-div")
+      expect(editableDiv).toHaveClass("max-h-20")
 
       // Blur to finish editing
-      fireEvent.blur(descriptionElement)
+      fireEvent.blur(editableDiv)
 
-      // Should restore line-clamp
-      expect(descriptionElement).toHaveClass("line-clamp-2")
-      expect(descriptionElement).not.toHaveClass("max-h-20")
-      expect(descriptionElement).not.toHaveClass("overflow-y-auto")
+      // Should switch back to view mode with line-clamp
+      const viewElement = screen.getByText("Kanban task description")
+      expect(viewElement).toHaveClass("line-clamp-2")
     })
 
     it("displays interactive priority flag in kanban variant", () => {

@@ -45,6 +45,39 @@ function moveCursorToEnd(element: EditableDivElement): void {
   }
 }
 
+/**
+ * Move the cursor to a specific character position in a contentEditable element
+ * @param element - The contentEditable element to modify
+ * @param position - The character position to place the cursor at
+ */
+function moveCursorToPosition(element: EditableDivElement, position: number): void {
+  try {
+    const range = document.createRange()
+    const selection = window.getSelection()
+
+    if (!selection) return
+
+    const textNode = element.firstChild
+    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+      // No text content, just focus
+      range.setStart(element, 0)
+      range.setEnd(element, 0)
+    } else {
+      // Clamp position to text length
+      const textLength = textNode.textContent?.length || 0
+      const clampedPosition = Math.min(Math.max(0, position), textLength)
+
+      range.setStart(textNode, clampedPosition)
+      range.setEnd(textNode, clampedPosition)
+    }
+
+    selection.removeAllRanges()
+    selection.addRange(range)
+  } catch (error) {
+    console.warn("Cursor positioning not supported:", error)
+  }
+}
+
 type EditableDivElement =
   | HTMLHeadingElement
   | HTMLParagraphElement
@@ -63,9 +96,12 @@ interface EditableDivProps extends Omit<React.HTMLAttributes<EditableDivElement>
   onEditingChange?: (isEditing: boolean) => void
   /**
    * Controls cursor position when autoFocus is enabled
+   * - "start": Position at beginning of text
+   * - "end": Position at end of text
+   * - number: Position at specific character index
    * @default "start"
    */
-  cursorPosition?: "start" | "end"
+  cursorPosition?: "start" | "end" | number
 }
 
 export function EditableDiv({
@@ -163,6 +199,12 @@ export function EditableDiv({
         requestAnimationFrame(() => {
           if (ref.current) {
             moveCursorToEnd(ref.current)
+          }
+        })
+      } else if (typeof cursorPosition === "number") {
+        requestAnimationFrame(() => {
+          if (ref.current) {
+            moveCursorToPosition(ref.current, cursorPosition)
           }
         })
       }

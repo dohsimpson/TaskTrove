@@ -2,10 +2,8 @@
 
 import React, { useState, useRef } from "react"
 import { EditableDiv } from "./editable-div"
-import { LinkifiedText } from "./linkified-text"
-import { cn } from "@/lib/utils"
 
-interface LinkifiedEditableDivProps {
+interface ClickToEditProps {
   as?: "h1" | "h2" | "h3" | "h4" | "p" | "div" | "span"
   value: string
   onChange: (newValue: string) => void
@@ -17,10 +15,20 @@ interface LinkifiedEditableDivProps {
   autoFocus?: boolean
   onEditingChange?: (isEditing: boolean) => void
   cursorPosition?: "start" | "end"
-  [key: string]: unknown // Allow other props to be passed through
+  /**
+   * Render function for the view mode (when not editing)
+   * Receives onClick handler to trigger edit mode
+   */
+  renderView: (onClick: (event: React.MouseEvent<HTMLElement>) => void) => React.ReactNode
+  [key: string]: unknown
 }
 
-export function LinkifiedEditableDiv({
+/**
+ * Generic wrapper component that manages click-to-edit behavior
+ * - View mode: renders custom component via renderView
+ * - Edit mode: renders EditableDiv with cursor position preservation
+ */
+export function ClickToEdit({
   as: Component = "div",
   value,
   onChange,
@@ -31,8 +39,9 @@ export function LinkifiedEditableDiv({
   allowEmpty = false,
   onEditingChange,
   cursorPosition = "start",
+  renderView,
   ...props
-}: LinkifiedEditableDivProps) {
+}: ClickToEditProps) {
   const [isEditing, setIsEditing] = useState(false)
   const clickPositionRef = useRef<"start" | "end" | number>(cursorPosition)
 
@@ -55,7 +64,7 @@ export function LinkifiedEditableDiv({
   }
 
   if (isEditing) {
-    // Filter out EditableDiv-specific props that shouldn't be spread
+    // Filter out ClickToEdit-specific props
     const editableProps = Object.fromEntries(
       Object.entries(props).filter(
         ([key]) =>
@@ -66,6 +75,7 @@ export function LinkifiedEditableDiv({
             "cursorPosition",
             "onCancel",
             "autoFocus",
+            "renderView",
           ].includes(key),
       ),
     )
@@ -88,30 +98,5 @@ export function LinkifiedEditableDiv({
     )
   }
 
-  // When not editing, display linkified text
-  // Filter out EditableDiv-specific props that shouldn't be passed to LinkifiedText
-  const linkifiedProps = Object.fromEntries(
-    Object.entries(props).filter(
-      ([key]) =>
-        ![
-          "multiline",
-          "allowEmpty",
-          "onEditingChange",
-          "cursorPosition",
-          "onCancel",
-          "autoFocus",
-        ].includes(key),
-    ),
-  )
-
-  return (
-    <LinkifiedText
-      as={Component}
-      className={cn("cursor-text hover:bg-accent px-1 py-0.5 rounded transition-colors", className)}
-      onClick={handleClick}
-      {...linkifiedProps}
-    >
-      {value || placeholder}
-    </LinkifiedText>
-  )
+  return <>{renderView(handleClick)}</>
 }

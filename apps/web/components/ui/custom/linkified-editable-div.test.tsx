@@ -1,3 +1,4 @@
+import React from "react"
 import { render, screen, fireEvent } from "@/test-utils"
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { LinkifiedEditableDiv } from "./linkified-editable-div"
@@ -15,6 +16,43 @@ vi.mock("jotai", async (importOriginal) => {
     useAtomValue: vi.fn(() => ({ general: { linkifyEnabled: true } })),
   }
 })
+
+// Mock ClickToEdit wrapper
+vi.mock("./click-to-edit", () => ({
+  ClickToEdit: ({
+    renderView,
+    onEditingChange,
+    value,
+    className,
+    placeholder,
+  }: {
+    renderView: (onClick: (event: React.MouseEvent<HTMLElement>) => void) => React.ReactNode
+    onEditingChange?: (isEditing: boolean) => void
+    value?: string
+    className?: string
+    placeholder?: string
+    [key: string]: unknown
+  }) => {
+    const [isEditing, setIsEditing] = React.useState(false)
+
+    const handleClick = () => {
+      setIsEditing(true)
+      onEditingChange?.(true)
+    }
+
+    if (isEditing) {
+      // Render EditableDiv in edit mode
+      return (
+        <div data-testid="editable-div" className={className} data-placeholder={placeholder}>
+          {value}
+        </div>
+      )
+    }
+
+    // Render view mode using renderView
+    return <>{renderView(handleClick)}</>
+  },
+}))
 
 // Mock the child components
 vi.mock("./editable-div", () => ({
@@ -37,7 +75,7 @@ vi.mock("./editable-div", () => ({
     multiline?: boolean
     allowEmpty?: boolean
     onEditingChange?: (isEditing: boolean) => void
-    cursorPosition?: string
+    cursorPosition?: string | number
     onCancel?: () => void
     onChange?: (value: string) => void
     [key: string]: unknown

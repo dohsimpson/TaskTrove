@@ -6,7 +6,7 @@ import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import { TaskDueDate } from "@/components/ui/custom/task-due-date"
 import { Badge } from "@/components/ui/badge"
-import { EditableDiv } from "@/components/ui/custom/editable-div"
+import { ClickToEditDiv } from "@/components/ui/custom/click-to-edit-div"
 import { LinkifiedText } from "@/components/ui/custom/linkified-text"
 import { LinkifiedEditableDiv } from "@/components/ui/custom/linkified-editable-div"
 import { TimeEstimationPopover } from "./time-estimation-popover"
@@ -869,10 +869,10 @@ export function TaskItem({
 
         {/* Description - editable */}
         <div className="mb-2">
-          <EditableDiv
+          <ClickToEditDiv
             as="p"
             value={task.description || ""}
-            onChange={(newDescription) => {
+            onChange={(newDescription: string) => {
               updateTask({ updateRequest: { id: task.id, description: newDescription } })
             }}
             placeholder={t("placeholders.addDescription", "Add description...")}
@@ -1188,10 +1188,10 @@ export function TaskItem({
 
           {/* Description - Responsive width, hide on very small screens when empty */}
           <div className={cn("mb-2", !task.description && !isHovered && "hidden sm:block")}>
-            <EditableDiv
+            <ClickToEditDiv
               as="p"
               value={task.description || ""}
-              onChange={(newDescription) => {
+              onChange={(newDescription: string) => {
                 updateTask({ updateRequest: { id: task.id, description: newDescription } })
               }}
               placeholder={t("placeholders.addDescription", "Add description...")}

@@ -101,6 +101,14 @@ if (typeof window !== "undefined") {
     writable: true,
     value: window.AudioContext,
   })
+
+  // Mock document.caretRangeFromPoint for click-to-edit components
+  if (typeof document.caretRangeFromPoint === "undefined") {
+    Object.defineProperty(document, "caretRangeFromPoint", {
+      value: () => null,
+      writable: true,
+    })
+  }
 }
 
 // Mock HTMLAudioElement globally (works in both browser and Node)

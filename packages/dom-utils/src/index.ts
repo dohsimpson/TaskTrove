@@ -8,6 +8,7 @@ export * from "./toast";
 export * from "./notifications";
 export * from "./keyboard";
 export * from "./type-safe-dom";
+export * from "./pwa";
 
 // Named exports for convenience
 export {
@@ -30,3 +31,4 @@ export {
   createTouchEventHandler,
   safeCast,
 } from "./type-safe-dom";
+export { showPWAInstallPrompt, isPWA } from "./pwa";

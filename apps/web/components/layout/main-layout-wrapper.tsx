@@ -59,6 +59,7 @@ import {
 } from "@/lib/atoms/ui/navigation"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useNotificationSystem } from "@/hooks/use-notification-system"
+import "@khmyznikov/pwa-install"
 
 interface MainLayoutWrapperProps {
   children: React.ReactNode
@@ -603,6 +604,10 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
         <SettingsDialog />
         <UserProfileDialog />
       </SidebarProvider>
+      {/* @ts-expect-error - web component */}
+      <pwa-install manifest-url="/manifest.webmanifest" use-local-storage="true">
+        {/* @ts-expect-error - web component */}
+      </pwa-install>
     </div>
     // </GestureHandler>
   )

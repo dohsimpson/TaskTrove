@@ -1,7 +1,17 @@
 "use client"
 
-import React, { useState } from "react"
-import { User, Info, Bug, ChevronsUpDown, LogOut, Settings, Keyboard } from "lucide-react"
+import React, { useState, useEffect } from "react"
+import {
+  User,
+  Info,
+  Bug,
+  ChevronsUpDown,
+  LogOut,
+  Settings,
+  Keyboard,
+  Download,
+  CheckCircle2,
+} from "lucide-react"
 import { SiGithub, SiDiscord } from "@icons-pack/react-simple-icons"
 import { signOut } from "next-auth/react"
 import { toast } from "sonner"
@@ -30,6 +40,7 @@ import { userAtom } from "@/lib/atoms"
 import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
 import { LogoutConfirmDialog } from "@/components/dialogs/logout-confirm-dialog"
 import { getAvatarApiUrl } from "@tasktrove/utils"
+import { showPWAInstallPrompt, isPWA } from "@tasktrove/dom-utils"
 
 interface ContextMenuItem {
   icon: React.ComponentType<{ className?: string }>
@@ -47,11 +58,17 @@ export function NavUser() {
   const { isMobile } = useSidebar()
   const [aboutModalOpen, setAboutModalOpen] = useState(false)
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
+  const [isRunningAsPWA, setIsRunningAsPWA] = useState(false)
   const openSettingsDialog = useSetAtom(openSettingsDialogAtom)
   const openUserProfileDialog = useSetAtom(openUserProfileDialogAtom)
 
   // Get user data from atom
   const user = useAtomValue(userAtom)
+
+  // Check if running as PWA
+  useEffect(() => {
+    setIsRunningAsPWA(isPWA())
+  }, [])
 
   const handleSignOut = () => {
     setLogoutDialogOpen(true)
@@ -83,6 +100,11 @@ export function NavUser() {
       icon: Keyboard,
       label: t("userMenu.shortcuts", "Shortcuts"),
       comingSoon: true,
+    },
+    {
+      icon: Download,
+      label: t("userMenu.installApp", "Install App"),
+      onClick: showPWAInstallPrompt,
     },
     {
       icon: Info,
@@ -176,29 +198,35 @@ export function NavUser() {
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                {contextMenuItems.map((item, index) => (
-                  <DropdownMenuItem
-                    key={index}
-                    onClick={item.comingSoon ? undefined : item.onClick}
-                    className="cursor-pointer"
-                  >
-                    {item.comingSoon ? (
-                      <ComingSoonWrapper
-                        disabled={true}
-                        featureName={item.label}
-                        className="flex items-center w-full"
-                      >
-                        <item.icon className="mr-4 h-4 w-4" />
-                        {item.label}
-                      </ComingSoonWrapper>
-                    ) : (
-                      <>
-                        <item.icon className="mr-2 h-4 w-4" />
-                        {item.label}
-                      </>
-                    )}
-                  </DropdownMenuItem>
-                ))}
+                {contextMenuItems.map((item, index) => {
+                  const isInstallAppItem = item.icon === Download
+                  return (
+                    <DropdownMenuItem
+                      key={index}
+                      onClick={item.comingSoon ? undefined : item.onClick}
+                      className="cursor-pointer"
+                    >
+                      {item.comingSoon ? (
+                        <ComingSoonWrapper
+                          disabled={true}
+                          featureName={item.label}
+                          className="flex items-center w-full"
+                        >
+                          <item.icon className="mr-4 h-4 w-4" />
+                          {item.label}
+                        </ComingSoonWrapper>
+                      ) : (
+                        <>
+                          <item.icon className="mr-2 h-4 w-4" />
+                          {item.label}
+                          {isInstallAppItem && isRunningAsPWA && (
+                            <CheckCircle2 className="ml-auto h-4 w-4 text-green-500" />
+                          )}
+                        </>
+                      )}
+                    </DropdownMenuItem>
+                  )
+                })}
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>

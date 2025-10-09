@@ -10,7 +10,6 @@ import { STANDARD_VIEW_METADATA } from "@tasktrove/constants"
 
 import { Button } from "@/components/ui/button"
 import { useSidebar } from "@/components/ui/sidebar"
-import {} from "@/components/ui/dropdown-menu"
 import {
   Search,
   ListCheck,

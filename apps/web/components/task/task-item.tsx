@@ -532,7 +532,7 @@ export function TaskItem({
               />
 
               {/* Title - constrained width to prevent overflow */}
-              <div className="flex-1 min-w-0 max-w-full">
+              <div className="flex-1 min-w-0 max-w-full truncate">
                 <LinkifiedEditableDiv
                   as="span"
                   value={task.title}
@@ -542,8 +542,8 @@ export function TaskItem({
                     }
                   }}
                   className={cn(
-                    "text-sm truncate block w-fit",
-                    "max-w-full md:max-w-[200px] lg:max-w-[300px]", // Responsive max-width
+                    "text-sm block w-fit",
+                    "max-w-full",
                     task.completed ? "line-through text-muted-foreground" : "text-foreground",
                   )}
                   data-action="edit"
@@ -1013,7 +1013,7 @@ export function TaskItem({
           className,
         )}
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseLeave={() => setIsHovered}
         onClick={handleTaskClick}
       >
         <LinkifiedText as="span" className="truncate text-xs">
@@ -1154,7 +1154,7 @@ export function TaskItem({
                 }}
                 className={cn(
                   "font-medium text-sm sm:text-[15px] leading-5 w-fit",
-                  "max-w-[200px] sm:max-w-[300px] md:max-w-[400px] lg:max-w-lg",
+                  "max-w-full",
                   task.completed ? "line-through text-muted-foreground" : "text-foreground",
                 )}
                 data-action="edit"
@@ -1198,7 +1198,7 @@ export function TaskItem({
               className={cn(
                 "text-xs sm:text-sm cursor-text hover:bg-accent px-1 py-0.5 rounded transition-colors max-h-20 overflow-y-auto",
                 "min-w-[150px] sm:min-w-[200px] md:min-w-64",
-                "max-w-[250px] sm:max-w-[350px] md:max-w-[450px] lg:max-w-lg",
+                "max-w-fit",
                 task.description
                   ? "text-muted-foreground"
                   : !isDefaultDescriptionEditing

@@ -341,7 +341,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
                 }
                 className="flex-shrink-0"
               />
-              <div className="flex-1 flex items-center gap-2 min-w-0">
+              <div className="flex-1 flex items-center gap-2 min-w-0 truncate">
                 <EditableDiv
                   value={task.title}
                   onChange={(value: string) => autoSave({ title: value })}
@@ -411,7 +411,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
               }
               className="flex-shrink-0"
             />
-            <div className="flex-1 flex items-center gap-2 min-w-0">
+            <div className="flex-1 flex items-center gap-2 min-w-0 truncate">
               <EditableDiv
                 value={task.title}
                 onChange={(value: string) => autoSave({ title: value })}

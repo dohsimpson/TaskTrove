@@ -10,6 +10,16 @@
 export const DEFAULT_UUID = "00000000-0000-0000-0000-000000000000";
 
 // =============================================================================
+// THEME DEFAULTS
+// =============================================================================
+
+/** Storage key for the selected theme in localStorage */
+export const SELECTED_THEME_KEY = "selected-theme";
+
+/** Default theme when no theme is selected */
+export const DEFAULT_SELECTED_THEME = "violet-bloom";
+
+// =============================================================================
 // TASK DEFAULTS
 // =============================================================================
 
@@ -446,3 +456,74 @@ export const SUPPORTED_IMPORT_SOURCES = [
 
 /** Type for supported import sources */
 export type SupportedImportSource = (typeof SUPPORTED_IMPORT_SOURCES)[number];
+
+/**
+ * Avatar validation constants for TaskTrove applications
+ */
+
+/**
+ * Supported image MIME types for avatars
+ */
+export const SUPPORTED_AVATAR_MIME_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/gif",
+  "image/webp",
+] as const;
+
+/**
+ * Regular expression to validate base64 encoded image data URLs
+ */
+export const AVATAR_DATA_URL_REGEX =
+  /^data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+/]+=*$/;
+
+/**
+ * Type for supported avatar MIME types
+ */
+export type SupportedAvatarMimeType =
+  (typeof SUPPORTED_AVATAR_MIME_TYPES)[number];
+
+// =============================================================================
+// THEME CONSTANTS
+// =============================================================================
+
+/**
+ * Base theme names for the application
+ */
+export const BASE_THEME_OPTIONS = [
+  "default",
+  "violet-bloom",
+  "amethyst-haze",
+  "catppuccin",
+  "bubblegum",
+  "clean-slate",
+  "modern-minimal",
+  "doom-64",
+] as const;
+
+/**
+ * Available theme options for the application
+ */
+export const THEME_OPTIONS = BASE_THEME_OPTIONS;
+
+export type Theme = (typeof THEME_OPTIONS)[number];
+
+/**
+ * Default theme values
+ */
+export const DEFAULT_THEME: Theme = "default";
+
+/**
+ * Theme display names for UI
+ */
+export const THEME_DISPLAY_NAMES = {
+  default: "Default",
+  "violet-bloom": "Violet Bloom",
+  "amethyst-haze": "Amethyst Haze",
+  catppuccin: "Catppuccin",
+  bubblegum: "Bubblegum",
+  "clean-slate": "Clean Slate",
+  "modern-minimal": "Modern Minimal",
+  "doom-64": "Doom 64",
+} as const satisfies Record<Theme, string>;

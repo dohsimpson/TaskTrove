@@ -5,16 +5,16 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Database, X, Bell, Settings, Menu } from "lucide-react"
+import { Database, X, Bell, Settings, Menu, Palette } from "lucide-react"
 // Future icons (not used yet):
-// import { Link, Palette, Target, Code } from "lucide-react"
+// import { Link, Target, Code } from "lucide-react"
 import { showSettingsDialogAtom, closeSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
 import { useTranslation } from "@tasktrove/i18n"
 import { DataForm } from "./settings-forms/data-form"
 import { NotificationsForm } from "./settings-forms/notifications-form"
 import { GeneralForm } from "./settings-forms/general-form"
+import { AppearanceForm } from "./settings-forms/appearance-form"
 // Future form imports (not used yet):
-// import { AppearanceForm } from "./settings-forms/appearance-form"
 // import { ProductivityForm } from "./settings-forms/productivity-form"
 // import { ApiForm } from "./settings-forms/api-form"
 
@@ -52,12 +52,27 @@ function SettingsContent() {
       icon: Database,
       description: t("settings.categories.data.description", "Import/export, backups"),
     },
+    {
+      id: "appearance",
+      title: t("settings.categories.appearance.title", "Appearance"),
+      icon: Palette,
+      description: t(
+        "settings.categories.appearance.description",
+        "Themes, colors, and visual preferences",
+      ),
+    },
     // Future settings categories (not implemented yet):
     // {
-    //   id: "appearance",
-    //   title: "Appearance",
-    //   icon: Palette,
-    //   description: "Themes, colors, and visual preferences",
+    //   id: "productivity",
+    //   title: "Productivity",
+    //   icon: Target,
+    //   description: "Pomodoro, goals, and analytics settings",
+    // },
+    // {
+    //   id: "api",
+    //   title: "API & Developers",
+    //   icon: Code,
+    //   description: "API keys, webhooks, and developer tools",
     // },
     // {
     //   id: "behavior",
@@ -90,9 +105,9 @@ function SettingsContent() {
         return <DataForm />
       case "notifications":
         return <NotificationsForm />
+      case "appearance":
+        return <AppearanceForm />
       // Future forms (not implemented yet):
-      // case "appearance":
-      //   return <AppearanceForm />
       // case "productivity":
       //   return <ProductivityForm />
       // case "api":

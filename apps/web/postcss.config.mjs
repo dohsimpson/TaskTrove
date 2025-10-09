@@ -2,6 +2,8 @@
 const config = {
   plugins: {
     "@tailwindcss/postcss": {},
+    "postcss-import-ext-glob": {},
+    "postcss-import": {},
   },
 }
 

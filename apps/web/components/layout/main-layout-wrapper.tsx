@@ -583,7 +583,7 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
           <AppSidebarFooter />
         </Sidebar>
         <SidebarInset className="overflow-auto">
-          <div className="flex h-screen flex-col dark:bg-black bg-gray-50">
+          <div className="flex h-screen flex-col">
             <PageHeader onAdvancedSearch={openSearch} />
 
             <div className="flex-1 overflow-y-auto">

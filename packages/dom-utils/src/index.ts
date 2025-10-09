@@ -10,6 +10,7 @@ export * from "./keyboard";
 export * from "./type-safe-dom";
 export * from "./pwa";
 export * from "./drag-and-drop";
+export * from "./browser";
 
 // Named exports for convenience
 export {

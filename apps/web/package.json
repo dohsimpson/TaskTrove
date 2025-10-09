@@ -28,6 +28,12 @@
     "i18n:extract:task": "i18next-parser --config i18next-parser-task.config.js",
     "i18n:extract:task:watch": "i18next-parser --config i18next-parser-task.config.js --watch"
   },
+  "exports": {
+    "./components/*": [
+      "./components/*.pro.tsx",
+      "./components/*.tsx"
+    ]
+  },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "catalog:",
     "@atlaskit/pragmatic-drag-and-drop-auto-scroll": "catalog:",
@@ -139,6 +145,8 @@
     "jsdom": "catalog:",
     "pino-pretty": "catalog:",
     "postcss": "catalog:",
+    "postcss-import": "catalog:",
+    "postcss-import-ext-glob": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
     "typescript": "catalog:",

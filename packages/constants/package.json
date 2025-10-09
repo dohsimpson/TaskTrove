@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "pro": "./src/defaults.pro.ts",
+      "default": "./src/defaults.ts"
+    }
   },
   "scripts": {
     "lint": "eslint .",

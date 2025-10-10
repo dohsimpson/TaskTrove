@@ -67,6 +67,23 @@ interface MockTaskItemProps {
 // Mock Jotai
 vi.mock("jotai", () => ({
   useSetAtom: vi.fn(() => mockUpdateTask),
+  useAtom: vi.fn((atom) => {
+    // Return settings object for settingsAtom, empty array for others
+    if (atom === "mockSettingsAtom") {
+      return {
+        general: {
+          startView: "all" as const,
+          soundEnabled: true,
+          linkifyEnabled: true,
+          popoverHoverOpen: false,
+        },
+      }
+    }
+    if (atom === "mockMultiSelectDraggingAtom") {
+      return [false, vi.fn()]
+    }
+    return [] // Return empty array for atoms that return lists
+  }),
   useAtomValue: vi.fn((atom) => {
     // Return settings object for settingsAtom, empty array for others
     if (atom === "mockSettingsAtom") {
@@ -93,9 +110,34 @@ vi.mock("@/lib/atoms", () => ({
   addCommentAtom: "mockAddCommentAtom",
   toggleTaskPanelAtom: "mockToggleTaskPanelAtom",
   toggleTaskSelectionAtom: "mockToggleTaskSelectionAtom",
+  selectedTasksAtom: "mockSelectedTasksAtom",
+  lastSelectedTaskAtom: "mockLastSelectedTaskAtom",
+  selectRangeAtom: "mockSelectRangeAtom",
+  selectionToggleTaskSelectionAtom: "mockSelectionToggleTaskSelectionAtom",
+  multiSelectDraggingAtom: "mockMultiSelectDraggingAtom",
   sortedProjectsAtom: "mockSortedProjectsAtom",
   tasksAtom: "mockTasksAtom",
   settingsAtom: "mockSettingsAtom", // Required by ContentPopover
+  // Focus timer atoms
+  focusTimerStateAtom: "mockFocusTimerStateAtom",
+  activeFocusTimerAtom: "mockActiveFocusTimerAtom",
+  isTaskTimerActiveAtom: () => () => false,
+  focusTimerStatusAtom: "stopped",
+  startFocusTimerAtom: () => {},
+  pauseFocusTimerAtom: () => {},
+  stopFocusTimerAtom: () => {},
+  activeFocusTaskAtom: "mockActiveFocusTaskAtom",
+  isAnyTimerRunningAtom: "mockIsAnyTimerRunningAtom",
+  currentFocusTimerElapsedAtom: "mockCurrentFocusTimerElapsedAtom",
+  focusTimerDisplayAtom: "mockFocusTimerDisplayAtom",
+  stopAllFocusTimersAtom: "mockStopAllFocusTimersAtom",
+  focusTimerAtoms: "mockFocusTimerAtoms",
+  formatElapsedTime: vi.fn((ms: number) => {
+    const seconds = Math.floor(ms / 1000)
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
+  }),
 }))
 
 vi.mock("@/lib/atoms/core/labels", () => ({

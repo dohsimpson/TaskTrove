@@ -12,7 +12,8 @@
     "./toast": "./src/toast.ts",
     "./notifications": "./src/notifications.ts",
     "./keyboard": "./src/keyboard.ts",
-    "./type-safe-dom": "./src/type-safe-dom.ts"
+    "./type-safe-dom": "./src/type-safe-dom.ts",
+    "./drag-and-drop": "./src/drag-and-drop.ts"
   },
   "scripts": {
     "lint": "eslint .",
@@ -22,6 +23,8 @@
     "test:watch": "vitest --watch"
   },
   "dependencies": {
+    "@atlaskit/pragmatic-drag-and-drop": "catalog:",
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": "catalog:",
     "@tasktrove/types": "workspace:*",
     "@tasktrove/constants": "workspace:*",
     "react": "catalog:",

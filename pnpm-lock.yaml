@@ -829,6 +829,12 @@ importers:
 
   packages/dom-utils:
     dependencies:
+      '@atlaskit/pragmatic-drag-and-drop':
+        specifier: 'catalog:'
+        version: 1.7.7
+      '@atlaskit/pragmatic-drag-and-drop-hitbox':
+        specifier: 'catalog:'
+        version: 1.1.0
       '@tasktrove/constants':
         specifier: workspace:*
         version: link:../constants
@@ -4588,6 +4594,7 @@ packages:
     resolution: {integrity: sha512-Quz3MvAwHxVYNXsOByL7xI5EB2WYOeFswqaHIA3qOK3isRWTxiplBEocmmru6XmxDB2L7jDNYtYA4FyimoAFEw==}
     engines: {node: '>=8.17.0'}
     hasBin: true
+    bundledDependencies: []
 
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}

@@ -127,6 +127,14 @@ interface MockSimpleComponentProps {
 // Mock Jotai with settings atom support
 vi.mock("jotai", () => ({
   useSetAtom: vi.fn(() => mockUpdateTask),
+  useAtom: vi.fn((atom: unknown) => {
+    const settingsResult = handleSettingsAtomInMock(atom)
+    if (settingsResult) return settingsResult
+    if (String(atom).includes("multiSelectDraggingAtom")) {
+      return [false, vi.fn()]
+    }
+    return [] // Return empty array for atoms that return lists
+  }),
   useAtomValue: vi.fn((atom: unknown) => {
     const settingsResult = handleSettingsAtomInMock(atom)
     if (settingsResult) return settingsResult
@@ -134,6 +142,44 @@ vi.mock("jotai", () => ({
   }),
   atom: vi.fn((value) => ({ init: value, toString: () => "mockAtom" })),
   Provider: ({ children }: MockProviderProps) => children,
+}))
+
+// Mock atoms for DraggableTaskElement
+vi.mock("@/lib/atoms", () => ({
+  updateTaskAtom: "mockUpdateTaskAtom",
+  toggleTaskAtom: "mockToggleTaskAtom",
+  deleteTaskAtom: "mockDeleteTaskAtom",
+  addCommentAtom: "mockAddCommentAtom",
+  toggleTaskPanelAtom: "mockToggleTaskPanelAtom",
+  toggleTaskSelectionAtom: "mockToggleTaskSelectionAtom",
+  selectedTasksAtom: "mockSelectedTasksAtom",
+  lastSelectedTaskAtom: "mockLastSelectedTaskAtom",
+  selectRangeAtom: "mockSelectRangeAtom",
+  selectionToggleTaskSelectionAtom: "mockSelectionToggleTaskSelectionAtom",
+  multiSelectDraggingAtom: "mockMultiSelectDraggingAtom",
+  sortedProjectsAtom: "mockSortedProjectsAtom",
+  tasksAtom: "mockTasksAtom",
+  settingsAtom: "mockSettingsAtom",
+  // Focus timer atoms
+  focusTimerStateAtom: "mockFocusTimerStateAtom",
+  activeFocusTimerAtom: "mockActiveFocusTimerAtom",
+  isTaskTimerActiveAtom: () => () => false,
+  focusTimerStatusAtom: "stopped",
+  startFocusTimerAtom: () => {},
+  pauseFocusTimerAtom: () => {},
+  stopFocusTimerAtom: () => {},
+  activeFocusTaskAtom: "mockActiveFocusTaskAtom",
+  isAnyTimerRunningAtom: "mockIsAnyTimerRunningAtom",
+  currentFocusTimerElapsedAtom: "mockCurrentFocusTimerElapsedAtom",
+  focusTimerDisplayAtom: "mockFocusTimerDisplayAtom",
+  stopAllFocusTimersAtom: "mockStopAllFocusTimersAtom",
+  focusTimerAtoms: "mockFocusTimerAtoms",
+  formatElapsedTime: vi.fn((ms: number) => {
+    const seconds = Math.floor(ms / 1000)
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
+  }),
 }))
 
 // Mock UI components

@@ -17,7 +17,7 @@ export function SubtaskPopover({
   taskId,
   task,
   children,
-  className,
+  className = "w-96",
   onOpenChange,
 }: SubtaskPopoverProps) {
   const [open, setOpen] = useState(false)

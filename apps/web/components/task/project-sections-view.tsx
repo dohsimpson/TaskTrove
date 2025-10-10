@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
-import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
 import { type ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
+import { extractDropPayload, calculateInsertIndex } from "@tasktrove/dom-utils"
 import { TaskItem } from "./task-item"
 // CompactTaskItem functionality is now integrated into TaskItem with variant="compact"
 import { TaskSidePanel } from "./task-side-panel"
@@ -35,7 +35,7 @@ import {
 } from "@/lib/atoms/ui/navigation"
 import { taskAtoms } from "@/lib/atoms/core/tasks"
 import type { Task, Project, ProjectSection, TaskId, ProjectId } from "@/lib/types"
-import { createGroupId } from "@/lib/types"
+import { createGroupId, createTaskId } from "@/lib/types"
 import { applyViewStateFilters, sortTasksByViewState } from "@tasktrove/atoms"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -364,20 +364,13 @@ export function ProjectSectionsView({
     async (args: ElementDropTargetEventBasePayload) => {
       if (!project) return
 
-      // Extract task IDs from drag source
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const taskIds = (Array.isArray(args.source.data.ids) ? args.source.data.ids : []) as TaskId[]
-      if (taskIds.length === 0) return
+      // Extract and validate drop payload
+      const payload = extractDropPayload(args)
+      if (!payload) return
 
-      // Extract instruction (reorder-before or reorder-after)
-      const instruction = extractInstruction(args.self.data)
-      if (!instruction) return
-
-      // Extract target task ID
-      const targetTaskId = args.self.data.id
-      if (!targetTaskId || typeof targetTaskId !== "string") return
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const targetTaskIdTyped = targetTaskId as TaskId
+      const taskIds = payload.draggedIds.map((id) => createTaskId(id))
+      const { instruction } = payload
+      const targetTaskId = createTaskId(payload.targetId)
 
       // Find which section contains the target task in the current project
       let targetSectionIndex = -1
@@ -385,7 +378,7 @@ export function ProjectSectionsView({
       for (let i = 0; i < project.sections.length; i++) {
         const section = project.sections[i]
         if (section) {
-          const taskIndex = section.items.indexOf(targetTaskIdTyped)
+          const taskIndex = section.items.indexOf(targetTaskId)
           if (taskIndex >= 0) {
             targetSectionIndex = i
             targetSectionId = section.id
@@ -440,10 +433,15 @@ export function ProjectSectionsView({
       const targetSection = targetProject.sections[targetSectionIndex]
       if (!targetSection) return
 
-      const insertIndex =
-        instruction.operation === "reorder-before"
-          ? targetSection.items.indexOf(targetTaskIdTyped)
-          : targetSection.items.indexOf(targetTaskIdTyped) + 1
+      // Calculate insert index using the utility function
+      const insertIndex = calculateInsertIndex(
+        targetSection.items,
+        targetTaskId,
+        instruction,
+        (id) => id,
+      )
+
+      if (insertIndex === -1) return
 
       targetProject.sections[targetSectionIndex] = {
         ...targetSection,

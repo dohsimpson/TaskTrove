@@ -9,6 +9,7 @@ export * from "./notifications";
 export * from "./keyboard";
 export * from "./type-safe-dom";
 export * from "./pwa";
+export * from "./drag-and-drop";
 
 // Named exports for convenience
 export {
@@ -32,3 +33,9 @@ export {
   safeCast,
 } from "./type-safe-dom";
 export { showPWAInstallPrompt, isPWA } from "./pwa";
+export {
+  extractDropPayload,
+  calculateInsertIndex,
+  reorderItems,
+} from "./drag-and-drop";
+export type { DropPayload } from "./drag-and-drop";

@@ -744,6 +744,26 @@ vi.mock("lucide-react", () => ({
       💡
     </span>
   ),
+  GripVertical: ({ className }: MockIconProps) => (
+    <span data-testid="grip-vertical-icon" className={className}>
+      ☰
+    </span>
+  ),
+  Play: ({ className }: MockIconProps) => (
+    <span data-testid="play-icon" className={className}>
+      ▶️
+    </span>
+  ),
+  Pause: ({ className }: MockIconProps) => (
+    <span data-testid="pause-icon" className={className}>
+      ⏸️
+    </span>
+  ),
+  Square: ({ className }: MockIconProps) => (
+    <span data-testid="square-icon" className={className}>
+      ⏹️
+    </span>
+  ),
 }))
 
 describe("TaskItem", () => {

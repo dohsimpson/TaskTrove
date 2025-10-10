@@ -46,7 +46,7 @@ function ViewOptionsPopoverComponent({ onAdvancedSearch, className }: ViewOption
   return (
     <ContentPopover
       content={<ViewOptionsContent onAdvancedSearch={onAdvancedSearch} />}
-      className="w-80"
+      className="w-80 p-3"
       align="end"
     >
       <Button variant="ghost" size="sm" className={cn("gap-2 cursor-pointer", className)}>

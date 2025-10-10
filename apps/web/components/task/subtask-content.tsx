@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { v4 as uuidv4 } from "uuid"
 import { TaskItem } from "./task-item"
+import { DraggableTaskElement } from "./draggable-task-element"
+import { DropTargetElement } from "./project-sections-view-helper"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,11 +13,13 @@ import { TimeEstimationPopover } from "./time-estimation-popover"
 import { CheckSquare, Plus, ClockFading } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatTime } from "@/lib/utils/time-estimation"
+import { extractDropPayload, reorderItems } from "@tasktrove/dom-utils"
 import { updateTaskAtom, tasksAtom } from "@/lib/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
 import { useTranslation } from "@tasktrove/i18n"
 import type { Task, Subtask, CreateTaskRequest } from "@/lib/types"
 import { createSubtaskId, createTaskId } from "@/lib/types"
+import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
 
 interface SubtaskContentProps {
   taskId?: string // Optional for quick-add mode
@@ -113,6 +117,44 @@ export function SubtaskContent({
     }
   }
 
+  // Handle subtask reordering
+  const handleSubtaskDrop = (args: ElementDropTargetEventBasePayload) => {
+    // Extract and validate drop payload
+    const payload = extractDropPayload(args)
+    if (!payload) return
+
+    const { draggedIds, instruction, targetId } = payload
+
+    // Get current subtasks
+    const currentSubtasks = task.subtasks || []
+
+    // Reorder subtasks using the utility function
+    const reorderedSubtasks = reorderItems(
+      currentSubtasks,
+      draggedIds,
+      targetId,
+      instruction,
+      (subtask) => String(subtask.id),
+    )
+
+    if (!reorderedSubtasks) return
+
+    // Update order values
+    const subtasksWithOrder = reorderedSubtasks.map((subtask, index) => ({
+      ...subtask,
+      order: index,
+    }))
+
+    // Update appropriate atom based on context
+    if (isNewTask) {
+      updateQuickAddTask({ updateRequest: { subtasks: subtasksWithOrder } })
+    } else if (legacyTask) {
+      updateTask({ updateRequest: { id: legacyTask.id, subtasks: subtasksWithOrder } })
+    } else if (taskId) {
+      updateTask({ updateRequest: { id: createTaskId(taskId), subtasks: subtasksWithOrder } })
+    }
+  }
+
   const completedSubtasks = task.subtasks?.filter((s) => s.completed).length || 0
   const totalSubtasks = task.subtasks?.length || 0
   const progressPercentage = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0
@@ -154,12 +196,26 @@ export function SubtaskContent({
           {task.subtasks
             ?.sort((a, b) => (a.order || 0) - (b.order || 0))
             .map((subtask) => (
-              <TaskItem
+              <DropTargetElement
                 key={subtask.id}
-                taskId={createTaskId(String(subtask.id))}
-                variant="subtask"
-                parentTask={isNewTask ? undefined : task} // Don't pass parentTask for new tasks (quick-add will use quickAddTaskAtom)
-              />
+                id={`${subtask.id}`}
+                options={{
+                  type: "list-item",
+                  indicator: { lineGap: "0.25rem" },
+                  testId: `subtask-drop-${subtask.id}`,
+                }}
+                onDrop={handleSubtaskDrop}
+              >
+                <div data-subtask-id={String(subtask.id)}>
+                  <DraggableTaskElement taskId={createTaskId(String(subtask.id))}>
+                    <TaskItem
+                      taskId={createTaskId(String(subtask.id))}
+                      variant="subtask"
+                      parentTask={isNewTask ? undefined : task} // Don't pass parentTask for new tasks (quick-add will use quickAddTaskAtom)
+                    />
+                  </DraggableTaskElement>
+                </div>
+              </DropTargetElement>
             ))}
         </div>
       )}

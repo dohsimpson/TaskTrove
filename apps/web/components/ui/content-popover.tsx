@@ -34,7 +34,7 @@ interface ContentPopoverProps {
 export function ContentPopover({
   children,
   content,
-  className = "w-80 p-0",
+  className,
   triggerClassName,
   align = "start",
   side = "bottom",
@@ -61,7 +61,7 @@ export function ContentPopover({
   // Enhanced className with viewport constraints
   const enhancedClassName = cn(
     // Viewport constraints using Radix CSS custom properties
-    "max-h-[var(--radix-popover-content-available-height)] max-w-[var(--radix-popover-content-available-width)] overflow-auto",
+    "max-h-[var(--radix-popover-content-available-height)] max-w-[var(--radix-popover-content-available-width)] overflow-auto w-80 p-0",
     className,
   )
 

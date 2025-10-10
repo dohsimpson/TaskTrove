@@ -19,7 +19,7 @@ export function CommentManagementPopover({
   task,
   onAddComment,
   children,
-  className,
+  className = "w-96",
   onOpenChange,
 }: CommentManagementPopoverProps) {
   const [open, setOpen] = useState(false)

@@ -23,6 +23,7 @@ import {
   Play,
   Pause,
   Square,
+  GripVertical,
 } from "lucide-react"
 import { cn, getContrastColor } from "@/lib/utils"
 import { formatTime, getEffectiveEstimation } from "@/lib/utils/time-estimation"
@@ -1040,6 +1041,10 @@ export function TaskItem({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
+        {/* Drag handle for subtasks */}
+        <div className="flex items-center mr-2 cursor-grab active:cursor-grabbing">
+          <GripVertical className="h-3 w-3 text-muted-foreground" />
+        </div>
         <TaskCheckbox
           checked={task.completed}
           onCheckedChange={() => handleSubtaskToggle()}

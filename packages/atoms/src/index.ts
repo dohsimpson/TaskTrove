@@ -24,6 +24,7 @@ export * from "./ui/focus-timer";
 export * from "./ui/dialogs";
 export * from "./ui/keyboard-context";
 export * from "./ui/pomodoro";
+export * from "./ui/app-refresh";
 // Export specific atoms from navigation to avoid conflicts with dialogs
 export {
   pathnameAtom,

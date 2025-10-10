@@ -210,6 +210,9 @@ catalogs:
     cmdk:
       specifier: ^1.1.1
       version: 1.1.1
+    date-fns:
+      specifier: ^4.1.0
+      version: 4.1.0
     embla-carousel-react:
       specifier: ^8.6.0
       version: 8.6.0
@@ -853,6 +856,9 @@ importers:
       '@tasktrove/types':
         specifier: workspace:*
         version: link:../types
+      date-fns:
+        specifier: 'catalog:'
+        version: 4.1.0
       react:
         specifier: 'catalog:'
         version: 19.1.1

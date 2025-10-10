@@ -13,7 +13,10 @@
     "./notifications": "./src/notifications.ts",
     "./keyboard": "./src/keyboard.ts",
     "./type-safe-dom": "./src/type-safe-dom.ts",
-    "./drag-and-drop": "./src/drag-and-drop.ts"
+    "./drag-and-drop": "./src/drag-and-drop.ts",
+    "./scheduled-timeout": "./src/scheduled-timeout.ts",
+    "./visibility": "./src/visibility.ts",
+    "./pwa": "./src/pwa.ts"
   },
   "scripts": {
     "lint": "eslint .",
@@ -27,6 +30,7 @@
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "catalog:",
     "@tasktrove/types": "workspace:*",
     "@tasktrove/constants": "workspace:*",
+    "date-fns": "catalog:",
     "react": "catalog:",
     "sonner": "catalog:"
   },

@@ -19,6 +19,7 @@ import { tasksAtom } from "../../data/base/atoms";
 import { currentRouteContextAtom } from "../../ui/navigation";
 import { allGroupsAtom } from "../../core/groups";
 import { projectIdsAtom } from "../../core/projects";
+import { appRefreshTriggerAtom } from "../../ui/app-refresh";
 
 // =============================================================================
 // ACTIVE TASKS
@@ -35,6 +36,7 @@ export const activeTasksAtom = namedAtom(
     withErrorHandling(
       () => {
         const tasks = get(tasksAtom);
+        get(appRefreshTriggerAtom); // Subscribe to refresh events
         return tasks; // status filtering removed
       },
       "activeTasksAtom",
@@ -78,6 +80,7 @@ export const todayTasksAtom = namedAtom(
     withErrorHandling(
       () => {
         const activeTasks = get(activeTasksAtom);
+        get(appRefreshTriggerAtom); // Subscribe to refresh events
 
         return activeTasks.filter((task: Task) => {
           if (!task.dueDate) return false;
@@ -111,6 +114,7 @@ export const upcomingTasksAtom = namedAtom(
     withErrorHandling(
       () => {
         const activeTasks = get(activeTasksAtom);
+        get(appRefreshTriggerAtom); // Subscribe to refresh events
         return activeTasks.filter((task: Task) => {
           if (!task.dueDate) return false;
           // Upcoming = future tasks that are not today (i.e. tomorrow onwards)

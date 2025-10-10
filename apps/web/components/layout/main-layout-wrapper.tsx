@@ -14,6 +14,8 @@ import {
   unregisterKeyboardHandlerAtom,
   type KeyboardHandler,
 } from "@/lib/atoms/ui/keyboard-context"
+import { registerRefreshHandler, scheduleAtTime } from "@tasktrove/dom-utils"
+import { addDays, startOfDay } from "date-fns"
 import { SidebarNav } from "@/components/navigation/sidebar-nav"
 import { AppSidebarFooter } from "@/components/navigation/sidebar-footer"
 import {
@@ -48,6 +50,8 @@ import {
   toggleTaskPanelAtom,
   closeTaskPanelAtom,
   // Project atoms
+  // UI atoms
+  appRefreshTriggerAtom,
 } from "@/lib/atoms"
 import { keyboardShortcutAtom } from "@/lib/atoms/core/history"
 // Import our new atoms
@@ -154,6 +158,49 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
   useEffect(() => {
     setCurrentView(routeContext.viewId)
   }, [routeContext.viewId, setCurrentView])
+
+  // App refresh trigger - triggers re-render when conditions are met (DO WE NEED THIS? DOES MIDNIGHT CHECK WORK RELIABLY?)
+  const setRefreshTrigger = useSetAtom(appRefreshTriggerAtom)
+  useEffect(() => {
+    const cleanup = registerRefreshHandler(
+      {
+        checkDayChange: true,
+        // Add more conditions in the future:
+        // customCheck: () => hasNewVersion() || hasSettingsChanged()
+      },
+      () => setRefreshTrigger(Date.now()),
+    )
+
+    return cleanup
+  }, [setRefreshTrigger])
+
+  // Midnight check - triggers refresh at midnight even if tab stays visible
+  useEffect(() => {
+    let cleanupSchedule: (() => void) | null = null
+
+    const scheduleNextMidnight = () => {
+      // Calculate next midnight
+      const tomorrow = startOfDay(addDays(new Date(), 1))
+
+      cleanupSchedule = scheduleAtTime({
+        targetTime: tomorrow,
+        handler: () => {
+          // Trigger refresh
+          setRefreshTrigger(Date.now())
+          // Schedule next midnight (recurring)
+          scheduleNextMidnight()
+        },
+      })
+    }
+
+    scheduleNextMidnight()
+
+    return () => {
+      if (cleanupSchedule) {
+        cleanupSchedule()
+      }
+    }
+  }, [setRefreshTrigger])
 
   // Keyboard shortcuts registration will be done after all functions are defined
 

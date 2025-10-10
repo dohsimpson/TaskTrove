@@ -111,7 +111,7 @@ catalog:
   globals: "^16.3.0"
 
   # Type definitions
-  "@types/node": "^22.15.3"
+  "@types/node": "^24.7.1"
   "@types/react": "^19.1.13"
   "@types/react-dom": "^19.1.1"
   "@types/archiver": "^6.0.3"

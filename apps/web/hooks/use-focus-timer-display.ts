@@ -9,7 +9,7 @@ import {
   focusTimerDisplayAtom,
   focusTimerTickAtom,
   stopFocusTimerAtom,
-} from "@/lib/atoms"
+} from "@tasktrove/atoms"
 
 export function useFocusTimerDisplay() {
   const activeTimer = useAtomValue(activeFocusTimerAtom)

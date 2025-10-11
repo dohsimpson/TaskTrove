@@ -11,8 +11,13 @@ import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
 import { ProjectContextMenu } from "./project-context-menu"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
-import { editingProjectIdAtom, stopEditingProjectAtom, pathnameAtom } from "@tasktrove/atoms"
-import { projectTaskCountsAtom, projectActions } from "@/lib/atoms"
+import {
+  editingProjectIdAtom,
+  stopEditingProjectAtom,
+  pathnameAtom,
+  projectTaskCountsAtom,
+  projectAtoms,
+} from "@tasktrove/atoms"
 import type { ProjectGroup, ProjectId } from "@/lib/types"
 
 interface ProjectGroupItemProps {
@@ -31,7 +36,7 @@ function GroupedProjectItem({ project }: GroupedProjectItemProps) {
   const projectTaskCounts = useAtomValue(projectTaskCountsAtom)
   const editingProjectId = useAtomValue(editingProjectIdAtom)
   const stopEditing = useSetAtom(stopEditingProjectAtom)
-  const updateProject = useSetAtom(projectActions.updateProject)
+  const updateProject = useSetAtom(projectAtoms.actions.updateProject)
 
   const isActive = pathname === `/projects/${project.slug}`
   const projectTaskCount = projectTaskCounts[project.id] || 0

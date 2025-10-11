@@ -3,7 +3,7 @@
 import { useCallback } from "react"
 import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder"
 import { useAtom } from "jotai"
-import { tasks, taskActions, projectDerived } from "@/lib/atoms"
+import { tasksAtom, taskAtoms, projectAtoms } from "@tasktrove/atoms"
 import { toast } from "sonner"
 import { Task, Project, createProjectId, createLabelId, TaskId } from "@/lib/types"
 
@@ -30,9 +30,9 @@ interface DragResult {
 }
 
 export function useDragAndDrop() {
-  const [tasksData] = useAtom(tasks)
-  const [projectsData] = useAtom(projectDerived.visibleProjects)
-  const updateTask = useAtom(taskActions.updateTask)[1]
+  const [tasksData] = useAtom(tasksAtom)
+  const [projectsData] = useAtom(projectAtoms.derived.visibleProjects)
+  const updateTask = useAtom(taskAtoms.actions.updateTask)[1]
 
   const handleTaskReorder = useCallback(
     (taskIds: TaskId[], startIndex: number, endIndex: number) => {

@@ -66,10 +66,15 @@ interface MockTaskItemProps {
 
 // Mock Jotai
 vi.mock("jotai", () => ({
-  useSetAtom: vi.fn(() => mockUpdateTask),
+  useSetAtom: vi.fn((atom) => {
+    const atomStr = atom.toString()
+    if (atomStr.includes("updateTask") || atomStr.includes("updateQuickAddTask"))
+      return mockUpdateTask
+    return vi.fn()
+  }),
   useAtom: vi.fn((atom) => {
     // Return settings object for settingsAtom, empty array for others
-    if (atom === "mockSettingsAtom") {
+    if (atom.toString().includes("settings")) {
       return {
         general: {
           startView: "all" as const,
@@ -79,14 +84,17 @@ vi.mock("jotai", () => ({
         },
       }
     }
-    if (atom === "mockMultiSelectDraggingAtom") {
+    if (atom.toString().includes("multiSelectDragging")) {
       return [false, vi.fn()]
     }
     return [] // Return empty array for atoms that return lists
   }),
   useAtomValue: vi.fn((atom) => {
-    // Return settings object for settingsAtom, empty array for others
-    if (atom === "mockSettingsAtom") {
+    const atomStr = atom.toString()
+    if (atomStr.includes("tasks")) return []
+    if (atomStr.includes("quickAddTask")) return undefined
+    if (atomStr.includes("selectedTasks")) return []
+    if (atomStr.includes("settings")) {
       return {
         general: {
           startView: "all" as const,
@@ -102,52 +110,43 @@ vi.mock("jotai", () => ({
   Provider: ({ children }: MockProviderProps) => children,
 }))
 
-// Mock atoms
-vi.mock("@/lib/atoms", () => ({
-  updateTaskAtom: "mockUpdateTaskAtom",
-  toggleTaskAtom: "mockToggleTaskAtom",
-  deleteTaskAtom: "mockDeleteTaskAtom",
-  addCommentAtom: "mockAddCommentAtom",
-  toggleTaskPanelAtom: "mockToggleTaskPanelAtom",
-  toggleTaskSelectionAtom: "mockToggleTaskSelectionAtom",
-  selectedTasksAtom: "mockSelectedTasksAtom",
-  lastSelectedTaskAtom: "mockLastSelectedTaskAtom",
-  selectRangeAtom: "mockSelectRangeAtom",
-  selectionToggleTaskSelectionAtom: "mockSelectionToggleTaskSelectionAtom",
-  multiSelectDraggingAtom: "mockMultiSelectDraggingAtom",
-  sortedProjectsAtom: "mockSortedProjectsAtom",
-  tasksAtom: "mockTasksAtom",
-  settingsAtom: "mockSettingsAtom", // Required by ContentPopover
-  // Label atoms
-  sortedLabelsAtom: vi.fn(),
-  addLabelAtom: vi.fn(),
-  labelsFromIdsAtom: vi.fn(),
-  // Focus timer atoms
-  focusTimerStateAtom: "mockFocusTimerStateAtom",
-  activeFocusTimerAtom: "mockActiveFocusTimerAtom",
-  isTaskTimerActiveAtom: () => () => false,
-  focusTimerStatusAtom: "stopped",
-  startFocusTimerAtom: () => {},
-  pauseFocusTimerAtom: () => {},
-  stopFocusTimerAtom: () => {},
-  activeFocusTaskAtom: "mockActiveFocusTaskAtom",
-  isAnyTimerRunningAtom: "mockIsAnyTimerRunningAtom",
-  currentFocusTimerElapsedAtom: "mockCurrentFocusTimerElapsedAtom",
-  focusTimerDisplayAtom: "mockFocusTimerDisplayAtom",
-  stopAllFocusTimersAtom: "mockStopAllFocusTimersAtom",
-  focusTimerAtoms: "mockFocusTimerAtoms",
-  formatElapsedTime: vi.fn((ms: number) => {
-    const seconds = Math.floor(ms / 1000)
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = seconds % 60
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
-  }),
-}))
-
 // Mock dialog atoms
 vi.mock("@tasktrove/atoms", () => ({
-  quickAddTaskAtom: vi.fn(),
-  updateQuickAddTaskAtom: vi.fn(),
+  quickAddTaskAtom: { toString: () => "quickAddTaskAtom" },
+  updateQuickAddTaskAtom: { toString: () => "updateQuickAddTaskAtom" },
+  updateTaskAtom: { toString: () => "updateTaskAtom" },
+  tasksAtom: { toString: () => "tasksAtom" },
+  taskAtoms: {
+    tasks: { toString: () => "tasksAtom" },
+    actions: {
+      updateTask: { toString: () => "updateTaskAtom" },
+    },
+    derived: {},
+  },
+  taskCountsAtom: { toString: () => "taskCountsAtom" },
+  projectAtoms: {
+    actions: {},
+    derived: {},
+  },
+  projectsAtom: { toString: () => "projectsAtom" },
+  labelsAtom: { toString: () => "labelsAtom" },
+  updateLabelAtom: { toString: () => "updateLabelAtom" },
+  deleteLabelAtom: { toString: () => "deleteLabelAtom" },
+  toggleTaskSelectionAtom: { toString: () => "toggleTaskSelectionAtom" },
+  settingsAtom: { toString: () => "settingsAtom" },
+  multiSelectDraggingAtom: { toString: () => "multiSelectDraggingAtom" },
+  selectedTasksAtom: { toString: () => "selectedTasksAtom" },
+  clearSelectedTasksAtom: { toString: () => "clearSelectedTasksAtom" },
+  deleteTasksAtom: { toString: () => "deleteTasksAtom" },
+}))
+
+// Mock @tasktrove/i18n
+vi.mock("@tasktrove/i18n", () => ({
+  useTranslation: vi.fn(() => ({
+    t: vi.fn((key: string, defaultValue: string) => defaultValue),
+  })),
+  LanguageProvider: ({ children }: { children: React.ReactNode }) => children,
+  useLanguage: vi.fn(() => ({ language: "en", setLanguage: vi.fn() })),
 }))
 
 // Mock UI components

@@ -2,9 +2,15 @@
 
 import { useAtom, useSetAtom, useAtomValue } from "jotai"
 import { EntityContextMenu } from "@/components/ui/custom/entity-context-menu"
-import { projects, projectActions, updateProjectAtom, tasks } from "@/lib/atoms"
+import {
+  projectsAtom,
+  projectAtoms,
+  updateProjectAtom,
+  tasksAtom,
+  deleteTasksAtom,
+  updateTasksAtom,
+} from "@tasktrove/atoms"
 import { startEditingProjectAtom, openProjectDialogAtom } from "@tasktrove/atoms"
-import { deleteTasksAtom, updateTasksAtom } from "@/lib/atoms"
 import type { Project, ProjectId, TaskId } from "@/lib/types"
 
 interface ProjectContextMenuProps {
@@ -23,9 +29,9 @@ export function ProjectContextMenu({
   onOpenChange,
 }: ProjectContextMenuProps) {
   // Get project data and actions from atoms
-  const [projectsData] = useAtom(projects)
-  const tasksData = useAtomValue(tasks)
-  const deleteProject = useSetAtom(projectActions.deleteProject)
+  const [projectsData] = useAtom(projectsAtom)
+  const tasksData = useAtomValue(tasksAtom)
+  const deleteProject = useSetAtom(projectAtoms.actions.deleteProject)
   const deleteTasks = useSetAtom(deleteTasksAtom)
   const updateTasks = useSetAtom(updateTasksAtom)
   const startEditing = useSetAtom(startEditingProjectAtom)

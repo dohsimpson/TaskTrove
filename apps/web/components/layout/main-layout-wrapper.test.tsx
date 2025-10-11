@@ -72,25 +72,42 @@ mockNextThemes()
 mockUseToast()
 
 // Mock all the imported atoms and components
-vi.mock("@/lib/atoms", () => ({
-  tasks: { init: [] },
-  taskActions: {
-    addTask: { init: null },
-    updateTask: { init: null },
-    toggleTask: { init: null },
-    deleteTask: { init: null },
+vi.mock("@tasktrove/atoms", () => ({
+  // Core atoms (from old lib/atoms)
+  tasksAtom: { init: [] },
+  taskAtoms: {
+    actions: {
+      addTask: { init: null },
+      updateTask: { init: null },
+      toggleTask: { init: null },
+      deleteTask: { init: null },
+    },
+    derived: {},
   },
-  taskCounts: { init: {} },
+  taskCountsAtom: { init: {} },
   moveTaskAtom: { init: null },
   reorderTaskInViewAtom: { init: null },
   moveTaskBetweenSectionsAtom: { init: null },
-  projects: { init: [] },
-  projectActions: { addProject: { init: null }, reorderProject: { init: null } },
+  projectsAtom: { init: [] },
+  projectAtoms: {
+    actions: {
+      addProject: { init: null },
+      reorderProject: { init: null },
+    },
+    derived: { init: [] },
+  },
   projectDerived: { init: [] },
   currentProjectId: { init: "" },
-  labels: { init: [] },
+  labelsAtom: { init: [] },
   sortedLabels: { init: [] },
-  labelAtoms: { reorderLabel: { init: null } },
+  updateLabelAtom: { init: null },
+  deleteLabelAtom: { init: null },
+  toggleTaskSelectionAtom: { init: null },
+  labelAtoms: {
+    reorderLabel: { init: null },
+    updateLabel: { init: null },
+    deleteLabel: { init: null },
+  },
   currentViewAtom: { init: "today" },
   currentViewStateAtom: {
     init: {

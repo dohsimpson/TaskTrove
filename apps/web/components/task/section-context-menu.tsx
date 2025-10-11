@@ -2,7 +2,7 @@
 
 import { useAtom, useSetAtom, useAtomValue } from "jotai"
 import { EntityContextMenu } from "@/components/ui/custom/entity-context-menu"
-import { projects, projectActions } from "@/lib/atoms"
+import { projectsAtom, projectAtoms } from "@tasktrove/atoms"
 import {
   startEditingSectionAtom,
   currentRouteContextAtom,
@@ -26,11 +26,11 @@ export function SectionContextMenu({
   onOpenChange,
 }: SectionContextMenuProps) {
   // Get project data and actions from atoms
-  const [projectsData] = useAtom(projects)
+  const [projectsData] = useAtom(projectsAtom)
   const routeContext = useAtomValue(currentRouteContextAtom)
-  const removeSection = useSetAtom(projectActions.removeSection)
-  const updateSectionColor = useSetAtom(projectActions.renameSection)
-  const moveSection = useSetAtom(projectActions.moveSection)
+  const removeSection = useSetAtom(projectAtoms.actions.removeSection)
+  const updateSectionColor = useSetAtom(projectAtoms.actions.renameSection)
+  const moveSection = useSetAtom(projectAtoms.actions.moveSection)
   const startEditing = useSetAtom(startEditingSectionAtom)
   const openSectionDialog = useSetAtom(openSectionDialogAtom)
 

@@ -35,15 +35,23 @@ vi.mock("jotai", () => ({
   Provider: vi.fn(({ children }) => children),
 }))
 
-// Mock atoms
-vi.mock("@/lib/atoms", () => ({
-  updateTaskAtom: { toString: () => "updateTaskAtom" },
-  tasksAtom: { toString: () => "tasksAtom" },
-}))
-
 vi.mock("@tasktrove/atoms", () => ({
   updateQuickAddTaskAtom: { toString: () => "updateQuickAddTaskAtom" },
   quickAddTaskAtom: { toString: () => "quickAddTaskAtom" },
+  tasksAtom: { toString: () => "tasksAtom" },
+  updateTaskAtom: { toString: () => "updateTaskAtom" },
+  taskAtoms: {
+    actions: {},
+    derived: {},
+  },
+  projectAtoms: {
+    actions: {},
+    derived: {},
+  },
+  labelsAtom: { toString: () => "labelsAtom" },
+  updateLabelAtom: { toString: () => "updateLabelAtom" },
+  deleteLabelAtom: { toString: () => "deleteLabelAtom" },
+  toggleTaskSelectionAtom: { toString: () => "toggleTaskSelectionAtom" },
 }))
 
 // Mock component interfaces

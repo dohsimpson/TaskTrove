@@ -44,20 +44,14 @@ vi.mock("jotai", () => ({
   }),
 }))
 
-// Mock the atoms module directly
-vi.mock("@/lib/atoms", () => ({
-  activeFocusTimerAtom: "activeFocusTimerAtom",
-  focusTimerStatusAtom: "focusTimerStatusAtom",
-  activeFocusTaskAtom: "activeFocusTaskAtom",
-  focusTimerDisplayAtom: "focusTimerDisplayAtom",
-  focusTimerTickAtom: "focusTimerTickAtom",
-  stopFocusTimerAtom: "stopFocusTimerAtom",
-  formatElapsedTime: vi.fn((ms: number) => {
-    const seconds = Math.floor(ms / 1000)
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = seconds % 60
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
-  }),
+// Mock @tasktrove/atoms
+vi.mock("@tasktrove/atoms", () => ({
+  activeFocusTimerAtom: { toString: () => "activeFocusTimerAtom" },
+  focusTimerStatusAtom: { toString: () => "focusTimerStatusAtom" },
+  activeFocusTaskAtom: { toString: () => "activeFocusTaskAtom" },
+  focusTimerDisplayAtom: { toString: () => "focusTimerDisplayAtom" },
+  focusTimerTickAtom: { toString: () => "focusTimerTickAtom" },
+  stopFocusTimerAtom: { toString: () => "stopFocusTimerAtom" },
 }))
 
 describe("useFocusTimerDisplay", () => {

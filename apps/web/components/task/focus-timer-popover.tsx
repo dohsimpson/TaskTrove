@@ -12,7 +12,7 @@ import {
   pauseFocusTimerAtom,
   stopFocusTimerAtom,
   tasksAtom,
-} from "@/lib/atoms"
+} from "@tasktrove/atoms"
 import { useFocusTimerDisplay } from "@/hooks/use-focus-timer-display"
 import type { TaskId } from "@/lib/types"
 

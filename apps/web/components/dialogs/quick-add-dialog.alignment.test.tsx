@@ -218,72 +218,6 @@ vi.mock("jotai", async (importOriginal) => {
   }
 })
 
-vi.mock("@/lib/atoms", () => ({
-  // Label atoms
-  sortedLabelsAtom: "mockSortedLabelsAtom",
-  addLabelAtom: "mockAddLabelAtom",
-  addLabelAndWaitForRealIdAtom: "mockAddLabelAndWaitForRealIdAtom",
-  labelsAtom: "mockLabelsAtom",
-  labelsFromIdsAtom: "mockLabelsFromIdsAtom",
-  updateLabelAtom: "mockUpdateLabelAtom",
-  deleteLabelAtom: "mockDeleteLabelAtom",
-  reorderLabelAtom: "mockReorderLabelAtom",
-  addLabel: "mockAddLabelAtom",
-  updateLabel: "mockUpdateLabelAtom",
-  deleteLabel: "mockDeleteLabelAtom",
-  reorderLabel: "mockReorderLabelAtom",
-  labelsFromIds: "mockLabelsFromIdsAtom",
-  labelAtoms: {
-    labels: "mockLabelsAtom",
-    sortedLabels: "mockSortedLabelsAtom",
-    labelsMap: "mockLabelsMapAtom",
-    labelById: "mockLabelByIdAtom",
-    labelByName: "mockLabelByNameAtom",
-    labelNamesFromIds: "mockLabelNamesFromIdsAtom",
-    labelsFromIds: "mockLabelsFromIdsAtom",
-    addLabel: "mockAddLabelAtom",
-    updateLabel: "mockUpdateLabelAtom",
-    deleteLabel: "mockDeleteLabelAtom",
-    reorderLabel: "mockReorderLabelAtom",
-  },
-  // Project atoms
-  projectsAtom: "mockProjectsAtom",
-  visibleProjectsAtom: "mockVisibleProjectsAtom",
-  projectIdsAtom: "mockProjectIdsAtom",
-  currentProjectIdAtom: "mockCurrentProjectIdAtom",
-  projectAtoms: {
-    projects: "mockProjectsAtom",
-    currentProjectId: "mockCurrentProjectIdAtom",
-    actions: {
-      addProject: "mockAddProjectAtom",
-      updateProject: "mockUpdateProjectAtom",
-      deleteProject: "mockDeleteProjectAtom",
-      reorderProject: "mockReorderProjectAtom",
-      addSection: "mockAddProjectSectionAtom",
-      removeSection: "mockRemoveProjectSectionAtom",
-      renameSection: "mockRenameProjectSectionAtom",
-      reorderSections: "mockReorderProjectSectionsAtom",
-      moveSection: "mockMoveProjectSectionAtom",
-    },
-    derived: {
-      visibleProjects: "mockVisibleProjectsAtom",
-      sortedProjects: "mockSortedProjectsAtom",
-      projectCounts: "mockProjectCountsAtom",
-      currentProject: "mockCurrentProjectAtom",
-      projectIds: "mockProjectIdsAtom",
-    },
-  },
-  // Task atoms
-  tasksAtom: "mockTasksAtom",
-  taskActions: {
-    updateTask: "mockUpdateTaskAtom",
-    toggleTask: "mockToggleTaskAtom",
-    deleteTask: "mockDeleteTaskAtom",
-  },
-  // Settings atoms
-  settingsAtoms: "mockSettingsAtoms",
-}))
-
 vi.mock("@/lib/types", () => ({
   INBOX_PROJECT_ID: "inbox",
   createProjectId: vi.fn((id) => id),
@@ -469,6 +403,7 @@ vi.mock("@tasktrove/atoms", () => ({
   projectsAtom: [],
   labelsAtom: [],
   labelsFromIdsAtom: "mockLabelsFromIdsAtom",
+  addLabelAndWaitForRealIdAtom: vi.fn(),
   allGroupsAtom: "mockAllGroupsAtom",
   projectIdsAtom: "mockProjectIdsAtom",
   visibleProjectsAtom: [],

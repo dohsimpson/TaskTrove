@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { HelpPopover } from "@/components/ui/help-popover"
 import { Badge } from "@/components/ui/badge"
-import { tasksAtom, updateTaskAtom } from "@/lib/atoms"
+import { taskAtoms } from "@tasktrove/atoms"
 import type { TaskId } from "@/lib/types"
 
 interface TimeEstimationPickerProps {
@@ -39,8 +39,8 @@ export function TimeEstimationPicker({
   const { t } = useTranslation("task")
 
   // Get task data and update function for existing tasks
-  const tasks = useAtomValue(tasksAtom)
-  const updateTask = useSetAtom(updateTaskAtom)
+  const tasks = useAtomValue(taskAtoms.tasks)
+  const updateTask = useSetAtom(taskAtoms.actions.updateTask)
 
   // For existing tasks: find the task
   const task = taskId ? tasks.find((t) => t.id === taskId) : null

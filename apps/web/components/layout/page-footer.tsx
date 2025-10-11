@@ -7,7 +7,7 @@ import {
   uiFilteredTasksForViewAtom,
   toggleTaskAtom,
   toggleTaskPanelWithViewStateAtom,
-} from "@/lib/atoms"
+} from "@tasktrove/atoms"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { Button } from "@/components/ui/button"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"

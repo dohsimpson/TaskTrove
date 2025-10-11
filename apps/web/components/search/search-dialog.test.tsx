@@ -2,7 +2,7 @@ import React from "react"
 import { describe, it, expect } from "vitest"
 import { render, screen } from "@/test-utils"
 import { SearchDialog } from "./search-dialog"
-import { taskAtoms, projectAtoms, labelAtoms } from "@/lib/atoms"
+import { taskAtoms, projectAtoms, labelAtoms } from "@tasktrove/atoms"
 import { showSearchDialogAtom } from "@tasktrove/atoms"
 
 describe("SearchDialog", () => {

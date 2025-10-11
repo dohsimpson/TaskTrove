@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from "vitest"
 import { LinkifiedText } from "./linkified-text"
 
 // Mock the settings atom specifically
-vi.mock("@/lib/atoms", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   settingsAtom: Symbol("settingsAtom"),
 }))
 

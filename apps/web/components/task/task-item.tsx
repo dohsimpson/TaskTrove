@@ -51,12 +51,14 @@ import {
   selectedTasksAtom,
   lastSelectedTaskAtom,
   selectRangeAtom,
-  selectionToggleTaskSelectionAtom,
-} from "@/lib/atoms"
-import { labelsAtom, addLabelAndWaitForRealIdAtom, labelsFromIdsAtom } from "@/lib/atoms"
-import { projectsAtom } from "@/lib/atoms"
+  toggleTaskSelectionAtom,
+  labelsAtom,
+  addLabelAndWaitForRealIdAtom,
+  labelsFromIdsAtom,
+  projectsAtom,
+} from "@tasktrove/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom, showQuickAddAtom } from "@tasktrove/atoms"
-import { selectedTaskIdAtom } from "@/lib/atoms"
+import { selectedTaskIdAtom } from "@tasktrove/atoms"
 import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } from "@/lib/types"
 import { INBOX_PROJECT_ID, createTaskId } from "@/lib/types"
 import { TimeEstimationPicker } from "../ui/custom/time-estimation-picker"
@@ -226,7 +228,7 @@ export function TaskItem({
   const updateTask = useSetAtom(updateTaskAtom)
   const addComment = useSetAtom(addCommentAtom)
   const toggleTaskPanel = useSetAtom(toggleTaskPanelWithViewStateAtom)
-  const toggleTaskSelection = useSetAtom(selectionToggleTaskSelectionAtom)
+  const toggleTaskSelection = useSetAtom(toggleTaskSelectionAtom)
   const selectRange = useSetAtom(selectRangeAtom)
   const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
 

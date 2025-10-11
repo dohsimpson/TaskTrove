@@ -104,9 +104,6 @@ vi.mock("@tasktrove/atoms", () => ({
   setShowCompletedAtom: { debugLabel: "setShowCompletedAtom" },
   setCompactViewAtom: { debugLabel: "setCompactViewAtom" },
   setViewOptionsAtom: { debugLabel: "setViewOptionsAtom" },
-}))
-
-vi.mock("@/lib/atoms", () => ({
   tasksAtom: { debugLabel: "tasksAtom" },
 }))
 

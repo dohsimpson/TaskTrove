@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { formatDistanceToNow, format } from "date-fns"
 import { useAtomValue, useSetAtom } from "jotai"
 import { v4 as uuidv4 } from "uuid"
-import { updateTaskAtom, tasksAtom } from "@/lib/atoms"
+import { updateTaskAtom, tasksAtom } from "@tasktrove/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@tasktrove/atoms"
 import type { Task, TaskComment, CreateTaskRequest } from "@/lib/types"
 import { createCommentId, createTaskId } from "@/lib/types"

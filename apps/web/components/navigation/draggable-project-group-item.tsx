@@ -15,7 +15,7 @@ import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { extractSidebarInstruction } from "@/hooks/use-sidebar-drag-state"
-import { projectTaskCountsAtom } from "@/lib/atoms"
+import { projectTaskCountsAtom } from "@tasktrove/atoms"
 import {
   reorderProjectWithinGroupAtom,
   moveProjectToGroupAtom,

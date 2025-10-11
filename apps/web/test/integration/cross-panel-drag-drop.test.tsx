@@ -24,31 +24,37 @@ vi.mock("jotai", () => ({
 }))
 
 // Mock atoms
-vi.mock("@/lib/atoms", () => ({
-  tasksAtom: { init: [] },
-  selectedTasksAtom: { init: [] },
-  selectionModeAtom: { init: false },
-  toggleTaskAtom: vi.fn(),
-  deleteTaskAtom: vi.fn(),
-  updateTaskAtom: vi.fn(),
-  addCommentAtom: vi.fn(),
-  toggleTaskPanelAtom: vi.fn(),
-  selectionToggleTaskSelectionAtom: vi.fn(),
-  sortedProjectsAtom: { init: [] },
-  tasks: [],
-  projectDerived: {
-    visibleProjects: [],
+vi.mock("@tasktrove/atoms", () => ({
+  taskAtoms: {
+    tasks: { init: [] },
+    selectedTasksAtom: { init: [] },
+    selectionModeAtom: { init: false },
+    toggleTaskAtom: vi.fn(),
+    deleteTaskAtom: vi.fn(),
+    updateTaskAtom: vi.fn(),
+    addCommentAtom: vi.fn(),
+    toggleTaskPanelAtom: vi.fn(),
+    selectionToggleTaskSelectionAtom: vi.fn(),
+    actions: {
+      updateTask: vi.fn(),
+    },
+    derived: {},
+    projectAtoms: {
+      projects: { init: [] },
+      derived: {
+        visibleProjects: [],
+      },
+    },
+    taskActions: {
+      updateTask: vi.fn(),
+    },
   },
-  taskActions: {
-    updateTask: vi.fn(),
+  labelAtoms: {
+    labels: { init: [] },
+    sortedLabelsAtom: { init: [] },
+    addLabelAtom: vi.fn(),
+    labelsFromIdsAtom: vi.fn(() => []),
   },
-}))
-
-// Mock label atoms
-vi.mock("@/lib/atoms", () => ({
-  sortedLabelsAtom: { init: [] },
-  addLabelAtom: vi.fn(),
-  labelsFromIdsAtom: vi.fn(() => []),
 }))
 
 // Mock toast hook

@@ -13,6 +13,7 @@ const mockUpdateFilters = vi.fn()
 const mockAllProjects: Project[] = []
 const mockAllLabels: Label[] = []
 
+// Mock @tasktrove/atoms with all required exports
 vi.mock("@tasktrove/atoms", () => ({
   activeFiltersAtom: {
     toString: () => "activeFiltersAtom",
@@ -23,25 +24,23 @@ vi.mock("@tasktrove/atoms", () => ({
   updateFiltersAtom: {
     toString: () => "updateFiltersAtom",
   },
-}))
-
-vi.mock("@/lib/atoms", () => ({
   projectAtoms: {
     derived: {
       allProjects: { toString: () => "allProjectsAtom" },
     },
   },
-  // Add other commonly used atoms
-  labelsAtom: { toString: () => "labelsAtom" },
-  sortedLabelsAtom: { toString: () => "sortedLabelsAtom" },
+  labelsAtom: {
+    toString: () => "labelsAtom",
+  },
 }))
 
-// Mock @tasktrove/atoms with all required exports
-vi.mock("@tasktrove/atoms", () => ({
-  activeFiltersAtom: { toString: () => "activeFiltersAtom" },
-  hasActiveFiltersAtom: { toString: () => "hasActiveFiltersAtom" },
-  updateFiltersAtom: { toString: () => "updateFiltersAtom" },
-  labelsAtom: { toString: () => "labelsAtom" },
+// Mock @tasktrove/i18n
+vi.mock("@tasktrove/i18n", () => ({
+  useTranslation: vi.fn(() => ({
+    t: vi.fn((key: string, defaultValue: string) => defaultValue),
+  })),
+  LanguageProvider: ({ children }: { children: React.ReactNode }) => children,
+  useLanguage: vi.fn(() => ({ language: "en", setLanguage: vi.fn() })),
 }))
 
 vi.mock("@/lib/utils/date-filter-utils", () => ({

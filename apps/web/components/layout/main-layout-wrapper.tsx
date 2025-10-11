@@ -41,7 +41,7 @@ import { useTheme } from "next-themes"
 import { toast } from "sonner"
 import {
   // Task atoms
-  taskActions,
+  taskAtoms,
   // Label atoms
   // View atoms
   currentViewAtom,
@@ -52,7 +52,7 @@ import {
   // Project atoms
   // UI atoms
   appRefreshTriggerAtom,
-} from "@/lib/atoms"
+} from "@tasktrove/atoms"
 import { keyboardShortcutAtom } from "@tasktrove/atoms"
 // Import our new atoms
 import {
@@ -138,8 +138,8 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
   const openQuickAddAction = useSetAtom(openQuickAddAtom)
 
   // Still need some existing atoms for functionality
-  const updateTask = useSetAtom(taskActions.updateTask)
-  const toggleTask = useSetAtom(taskActions.toggleTask)
+  const updateTask = useSetAtom(taskAtoms.actions.updateTask)
+  const toggleTask = useSetAtom(taskAtoms.actions.toggleTask)
   // const deleteTask = useSetAtom(taskActions.deleteTask) // DISABLED with gesture handler
   // Dialog state atoms
   const [selectedTask] = useAtom(selectedTaskAtom)

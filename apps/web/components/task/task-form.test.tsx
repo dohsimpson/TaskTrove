@@ -240,7 +240,7 @@ vi.mock("@/lib/utils", () => ({
 }))
 
 // Mock task atoms
-vi.mock("@/lib/atoms", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   taskAtoms: {
     actions: {
       addTask: { toString: () => "addTaskAtom" },
@@ -251,7 +251,7 @@ vi.mock("@/lib/atoms", () => ({
     projects: { toString: () => "projectsAtom" },
   },
   labelAtoms: {
-    sortedLabels: { toString: () => "sortedLabelsAtom" },
+    labels: { toString: () => "labelsAtom" },
   },
 }))
 
@@ -702,10 +702,11 @@ describe("TaskForm", () => {
       )
 
       // Priority labels should be visible in the select options
-      expect(screen.getByText(/urgent/i)).toBeInTheDocument()
-      expect(screen.getByText(/high/i)).toBeInTheDocument()
-      expect(screen.getByText(/medium/i)).toBeInTheDocument()
-      expect(screen.getByText(/low/i)).toBeInTheDocument()
+      // Use getAllByText since labels with the same text appear in both priority and labels sections
+      expect(screen.getAllByText(/urgent/i)).toHaveLength(2) // One in priority dropdown, one in labels
+      expect(screen.getAllByText(/high/i)).toHaveLength(1) // Only in priority dropdown
+      expect(screen.getAllByText(/medium/i)).toHaveLength(1) // Only in priority dropdown
+      expect(screen.getAllByText(/low/i)).toHaveLength(1) // Only in priority dropdown
     })
   })
 

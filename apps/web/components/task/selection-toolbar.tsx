@@ -26,8 +26,12 @@ import {
   Plus,
   Folder,
 } from "lucide-react"
-import { selectedTasksAtom, clearSelectedTasksAtom } from "@/lib/atoms"
-import { tasksAtom, deleteTasksAtom } from "@/lib/atoms"
+import {
+  selectedTasksAtom,
+  clearSelectedTasksAtom,
+  tasksAtom,
+  deleteTasksAtom,
+} from "@tasktrove/atoms"
 import { DeleteConfirmDialog } from "@/components/dialogs/delete-confirm-dialog"
 import { PriorityPopover } from "@/components/task/priority-popover"
 import { TaskSchedulePopover } from "@/components/task/task-schedule-popover"

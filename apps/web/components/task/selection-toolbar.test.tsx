@@ -11,6 +11,7 @@ let mockAllTasks: Task[]
 let mockClearSelection: Mock
 let mockUpdateTasks: Mock
 let mockDeleteTasks: Mock
+let mockUpdateTask: Mock
 
 // Mock Jotai
 vi.mock("jotai", () => ({
@@ -18,6 +19,7 @@ vi.mock("jotai", () => ({
     if (atom.toString().includes("clearSelectedTasks")) return mockClearSelection
     if (atom.toString().includes("tasksAtom")) return mockUpdateTasks
     if (atom.toString().includes("deleteTasksAtom")) return mockDeleteTasks
+    if (atom.toString().includes("updateTask")) return mockUpdateTask
     return vi.fn()
   }),
   useAtomValue: vi.fn((atom: { toString: () => string }) => {
@@ -41,13 +43,27 @@ vi.mock("jotai", () => ({
 }))
 
 // Mock atoms
-vi.mock("@/lib/atoms", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   selectedTasksAtom: { toString: () => "selectedTasksAtom" },
   clearSelectedTasksAtom: { toString: () => "clearSelectedTasksAtom" },
   tasksAtom: { toString: () => "tasksAtom" },
   deleteTasksAtom: { toString: () => "deleteTasksAtom" },
   settingsAtom: { toString: () => "settingsAtom" },
   multiSelectDraggingAtom: { toString: () => "multiSelectDraggingAtom" },
+  taskAtoms: {
+    actions: { updateTask: vi.fn() },
+    derived: {},
+  },
+  taskCountsAtom: { toString: () => "taskCountsAtom" },
+  projectAtoms: {
+    actions: {},
+    derived: {},
+  },
+  projectsAtom: { toString: () => "projectsAtom" },
+  labelsAtom: { toString: () => "labelsAtom" },
+  updateLabelAtom: { toString: () => "updateLabelAtom" },
+  deleteLabelAtom: { toString: () => "deleteLabelAtom" },
+  toggleTaskSelectionAtom: { toString: () => "toggleTaskSelectionAtom" },
 }))
 
 const createMockTask = (id: string, overrides?: Partial<Task>): Task => ({
@@ -79,6 +95,7 @@ describe("SelectionToolbar", () => {
     mockClearSelection = vi.fn()
     mockUpdateTasks = vi.fn()
     mockDeleteTasks = vi.fn()
+    mockUpdateTask = vi.fn()
   })
 
   it("does not render when no tasks are selected", () => {

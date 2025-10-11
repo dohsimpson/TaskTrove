@@ -10,10 +10,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Search, Flag, Calendar, FolderOpen, Hash, ArrowRight, Loader2, X } from "lucide-react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { taskAtoms, projectAtoms, labelAtoms } from "@/lib/atoms"
-import { showSearchDialogAtom } from "@tasktrove/atoms"
-import { toggleTaskPanelAtom } from "@/lib/atoms"
-import { closeSearchAtom } from "@tasktrove/atoms"
+import { taskAtoms, projectAtoms, labelAtoms } from "@tasktrove/atoms"
+import { showSearchDialogAtom, toggleTaskPanelAtom, closeSearchAtom } from "@tasktrove/atoms"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import { Task, Project } from "@/lib/types"
 

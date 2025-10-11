@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { render, screen, fireEvent } from "@/test-utils"
 import { TaskSectionPopover } from "./task-section-popover"
-import { projectsAtom } from "@/lib/atoms"
+import { projectAtoms } from "@tasktrove/atoms"
 import { createProjectId, createSectionId, createTaskId } from "@/lib/types"
 
 const mockProject = {
@@ -26,7 +26,7 @@ const mockProject = {
 describe("TaskSectionPopover", () => {
   const renderWithProvider = (ui: React.ReactElement, initialProjects = [mockProject]) => {
     return render(ui, {
-      initialAtomValues: [[projectsAtom, initialProjects]],
+      initialAtomValues: [[projectAtoms.projects, initialProjects]],
     })
   }
 

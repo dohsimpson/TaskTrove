@@ -2,7 +2,7 @@
 
 import { useAtom, useSetAtom } from "jotai"
 import { EntityContextMenu } from "@/components/ui/custom/entity-context-menu"
-import { labels, deleteLabel, updateLabelAtom } from "@/lib/atoms"
+import { labelsAtom, deleteLabelAtom, updateLabelAtom } from "@tasktrove/atoms"
 import { startEditingLabelAtom, openLabelDialogAtom } from "@tasktrove/atoms"
 import type { Label, LabelId } from "@/lib/types"
 
@@ -22,8 +22,8 @@ export function LabelContextMenu({
   onOpenChange,
 }: LabelContextMenuProps) {
   // Get label data and actions from atoms
-  const [labelsData] = useAtom(labels)
-  const deleteLabelAction = useSetAtom(deleteLabel)
+  const [labelsData] = useAtom(labelsAtom)
+  const deleteLabelAction = useSetAtom(deleteLabelAtom)
   const startEditing = useSetAtom(startEditingLabelAtom)
   const updateLabel = useSetAtom(updateLabelAtom)
   const openLabelDialog = useSetAtom(openLabelDialogAtom)

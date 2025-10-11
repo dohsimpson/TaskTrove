@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useAtom, useAtomValue } from "jotai"
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
-import { selectedTasksAtom, multiSelectDraggingAtom } from "@/lib/atoms"
+import { selectedTasksAtom, multiSelectDraggingAtom } from "@tasktrove/atoms"
 import type { TaskId } from "@/lib/types"
 
 interface DraggableTaskElementProps {

@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 import { notificationAtoms } from "@tasktrove/atoms"
-import { settingsAtoms } from "@/lib/atoms"
+import { settingsAtoms } from "@tasktrove/atoms"
 import type { NotificationSettings } from "@/lib/types"
 import { SettingsCard } from "@/components/ui/custom/settings-card"
 import { isSecureContext } from "@tasktrove/dom-utils/notifications"

@@ -42,12 +42,12 @@ import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { useSetAtom, useAtom, useAtomValue } from "jotai"
 import {
-  taskCounts,
-  visibleProjectsAtom,
+  taskCountsAtom,
+  projectsAtom,
   labelTaskCountsAtom,
-  updateLabel,
-  labelAtoms,
-} from "@/lib/atoms"
+  updateLabelAtom,
+  labelsAtom,
+} from "@tasktrove/atoms"
 import {
   allGroupsAtom,
   reorderProjectWithinGroupAtom,
@@ -74,9 +74,9 @@ export function SidebarNav() {
   const { t } = useTranslation("navigation")
 
   // Get data from atoms instead of props
-  const [projects] = useAtom(visibleProjectsAtom)
-  const [labels] = useAtom(labelAtoms.labels)
-  const [taskCountsData] = useAtom(taskCounts)
+  const [projects] = useAtom(projectsAtom)
+  const [labels] = useAtom(labelsAtom)
+  const [taskCountsData] = useAtom(taskCountsAtom)
   const pathname = useAtomValue(pathnameAtom)
   const groups = useAtomValue(allGroupsAtom)
 
@@ -505,7 +505,7 @@ function LabelMenuItem({ label }: { label: Label }) {
   const labelTaskCounts = useAtomValue(labelTaskCountsAtom)
   const editingLabelId = useAtomValue(editingLabelIdAtom)
   const stopEditing = useSetAtom(stopEditingLabelAtom)
-  const updateLabelAction = useSetAtom(updateLabel)
+  const updateLabelAction = useSetAtom(updateLabelAtom)
 
   const isActive = pathname === `/labels/${label.slug}`
   const taskCount = labelTaskCounts[label.id] || 0

@@ -47,7 +47,7 @@ vi.mock("@/hooks/use-context-menu-visibility", () => ({
   })),
 }))
 
-vi.mock("@/lib/atoms", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   updateTaskAtom: "mockUpdateTaskAtom",
   addCommentAtom: "mockAddCommentAtom",
   sortedProjectsAtom: "mockSortedProjectsAtom",
@@ -57,26 +57,24 @@ vi.mock("@/lib/atoms", () => ({
   deleteTaskAtom: "mockDeleteTaskAtom",
   // Add other commonly used atoms
   tasksAtom: "mockTasksAtom",
-  taskActions: {
-    updateTask: "mockUpdateTaskAtom",
-    toggleTask: "mockToggleTaskAtom",
-    deleteTask: "mockDeleteTaskAtom",
+  taskCountsAtom: "mockTaskCountsAtom",
+  taskAtoms: {
+    actions: {
+      updateTask: "mockUpdateTaskAtom",
+      toggleTask: "mockToggleTaskAtom",
+      deleteTask: "mockDeleteTaskAtom",
+    },
   },
   toggleTaskAtom: "mockToggleTaskAtom",
   addLabelAtom: "mockAddLabelAtom",
+  updateLabelAtom: "mockUpdateLabelAtom",
+  deleteLabelAtom: "mockDeleteLabelAtom",
+  toggleTaskSelectionAtom: "mockToggleTaskSelectionAtom",
   labelsAtom: "mockLabelsAtom",
   sortedLabelsAtom: "mockSortedLabelsAtom",
   labelsFromIdsAtom: "mockLabelsFromIdsAtom",
-}))
-
-vi.mock("@tasktrove/atoms", () => ({
-  sortedLabelsAtom: "mockSortedLabelsAtom",
-  addLabelAtom: "mockAddLabelAtom",
-  addLabelAndWaitForRealIdAtom: "mockAddLabelAndWaitForRealIdAtom",
-  labelsFromIdsAtom: "mockLabelsFromIdsAtom",
-  labelsAtom: "mockLabelsAtom",
   projectAtoms: "mockProjectAtoms",
-  projectsAtom: "mockProjectsAtom",
+  addLabelAndWaitForRealIdAtom: "mockAddLabelAndWaitForRealIdAtom",
 }))
 
 vi.mock("@/lib/utils", () => ({

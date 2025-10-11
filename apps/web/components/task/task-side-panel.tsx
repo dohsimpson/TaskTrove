@@ -33,7 +33,7 @@ import {
   projectsAtom,
   selectedTaskAtom,
   deleteTaskAtom,
-} from "@/lib/atoms"
+} from "@tasktrove/atoms"
 import { log } from "@/lib/utils/logger"
 import { labelsAtom, addLabelAndWaitForRealIdAtom } from "@tasktrove/atoms"
 import { Task, type LabelId } from "@/lib/types"

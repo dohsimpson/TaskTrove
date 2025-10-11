@@ -48,13 +48,27 @@ vi.mock("jotai", () => ({
 }))
 
 // Mock the atoms module
-vi.mock("@/lib/atoms", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   activeFocusTimerAtom: {},
   activeFocusTaskAtom: {},
   focusTimerDisplayAtom: {},
   focusTimerStatusAtom: {},
   focusTimerTickAtom: {},
   tasksAtom: {},
+  taskCountsAtom: {},
+  taskAtoms: {
+    actions: {},
+    derived: {},
+  },
+  projectAtoms: {
+    actions: {},
+    derived: {},
+  },
+  projectsAtom: {},
+  labelsAtom: {},
+  updateLabelAtom: {},
+  deleteLabelAtom: {},
+  toggleTaskSelectionAtom: {},
   pauseFocusTimerAtom: {},
   startFocusTimerAtom: {},
   stopFocusTimerAtom: {},

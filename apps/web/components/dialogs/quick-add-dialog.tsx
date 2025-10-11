@@ -24,8 +24,7 @@ import {
 import { cn } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { useAtomValue, useSetAtom } from "jotai"
-import { labelsAtom, addLabelAndWaitForRealIdAtom } from "@/lib/atoms"
-import { visibleProjectsAtom } from "@/lib/atoms"
+import { labelsAtom, addLabelAndWaitForRealIdAtom, visibleProjectsAtom } from "@tasktrove/atoms"
 import { addTaskAtom, tasksAtom } from "@tasktrove/atoms"
 import {
   showQuickAddAtom,

@@ -11,8 +11,13 @@ import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { ProjectContextMenu } from "./project-context-menu"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { extractSidebarInstruction } from "@/hooks/use-sidebar-drag-state"
-import { pathnameAtom, editingProjectIdAtom, stopEditingProjectAtom } from "@tasktrove/atoms"
-import { projectTaskCountsAtom, projectActions } from "@/lib/atoms"
+import {
+  pathnameAtom,
+  editingProjectIdAtom,
+  stopEditingProjectAtom,
+  projectTaskCountsAtom,
+  projectAtoms,
+} from "@tasktrove/atoms"
 import {
   reorderProjectWithinGroupAtom,
   moveProjectToGroupAtom,
@@ -57,7 +62,7 @@ export function DraggableProjectItem({
   const projectTaskCounts = useAtomValue(projectTaskCountsAtom)
   const editingProjectId = useAtomValue(editingProjectIdAtom)
   const stopEditing = useSetAtom(stopEditingProjectAtom)
-  const updateProject = useSetAtom(projectActions.updateProject)
+  const updateProject = useSetAtom(projectAtoms.actions.updateProject)
 
   // Drag and drop atom setters
   const reorderProjectWithinGroup = useSetAtom(reorderProjectWithinGroupAtom)

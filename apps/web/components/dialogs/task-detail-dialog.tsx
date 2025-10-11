@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { TaskForm } from "@/components/task/task-form"
 import { useAtomValue, useSetAtom } from "jotai"
 import { showTaskPanelAtom } from "@tasktrove/atoms"
-import { closeTaskPanelAtom, selectedTaskAtom } from "@/lib/atoms"
+import { closeTaskPanelAtom, selectedTaskAtom } from "@tasktrove/atoms"
 
 export function TaskDetailDialog() {
   // Dialog state atoms

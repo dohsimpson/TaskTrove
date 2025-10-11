@@ -3,7 +3,7 @@
 import React from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { activeFiltersAtom, hasActiveFiltersAtom, updateFiltersAtom } from "@tasktrove/atoms"
-import { projectAtoms } from "@/lib/atoms"
+import { projectAtoms } from "@tasktrove/atoms"
 import { labelsAtom } from "@tasktrove/atoms"
 import { type Project, type Label, type ProjectId } from "@/lib/types"
 import { getPresetLabel, getCustomRangeLabel } from "@/lib/utils/date-filter-utils"

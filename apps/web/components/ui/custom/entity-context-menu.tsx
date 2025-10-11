@@ -30,7 +30,7 @@ import {
   Move,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { projectsAtom } from "@/lib/atoms"
+import { projectAtoms } from "@tasktrove/atoms"
 import { currentRouteContextAtom } from "@tasktrove/atoms"
 import { isValidProjectId } from "@/lib/utils/routing"
 import { GroupId, LabelId, ProjectId, SectionId } from "@/lib/types"
@@ -78,7 +78,7 @@ export function EntityContextMenu({
   const contextMenuRef = useRef<HTMLDivElement>(null)
 
   // Get atoms for position detection
-  const projects = useAtomValue(projectsAtom)
+  const projects = useAtomValue(projectAtoms.projects)
   const routeContext = useAtomValue(currentRouteContextAtom)
 
   // Use controlled or uncontrolled state

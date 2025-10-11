@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { screen, fireEvent } from "@/test-utils"
 import { render } from "@/test-utils/render-with-providers"
 import { LabelContextMenu } from "./label-context-menu"
-import { labels } from "@/lib/atoms"
+import { labelAtoms } from "@tasktrove/atoms"
 import { startEditingLabelAtom } from "@tasktrove/atoms"
 import { TEST_LABEL_ID_1 } from "@/lib/utils/test-constants"
 import { createLabelId } from "@tasktrove/types"
@@ -136,7 +136,7 @@ describe("LabelContextMenu", () => {
   }
 
   const defaultAtomValues: Array<[unknown, unknown]> = [
-    [labels, [mockLabel]],
+    [labelAtoms.labels, [mockLabel]],
     [startEditingLabelAtom, vi.fn()],
   ]
 
@@ -204,7 +204,7 @@ describe("LabelContextMenu", () => {
     // Use a non-existent label ID that doesn't exist in test data
     const nonExistentLabelId = createLabelId("99999999-9999-4999-8999-999999999999")
     render(<LabelContextMenu labelId={nonExistentLabelId} isVisible={true} />, {
-      initialAtomValues: [[labels, []]],
+      initialAtomValues: [[labelAtoms.labels, []]],
     })
 
     expect(screen.queryByTestId("dropdown-trigger")).not.toBeInTheDocument()

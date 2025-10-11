@@ -30,14 +30,16 @@ import {
 import { TaskItem } from "@/components/task/task-item"
 import { SelectionToolbar } from "@/components/task/selection-toolbar"
 import { TaskSidePanel } from "@/components/task/task-side-panel"
-import { showTaskPanelAtom, updateQuickAddTaskAtom } from "@tasktrove/atoms"
-import { closeTaskPanelAtom, selectedTaskAtom } from "@/lib/atoms"
 import {
+  showTaskPanelAtom,
+  updateQuickAddTaskAtom,
+  closeTaskPanelAtom,
+  selectedTaskAtom,
   currentViewStateAtom,
-  taskActions,
+  taskAtoms,
   sidePanelWidthAtom,
   updateGlobalViewOptionsAtom,
-} from "@/lib/atoms"
+} from "@tasktrove/atoms"
 import { SIDE_PANEL_WIDTH_MIN, SIDE_PANEL_WIDTH_MAX } from "@tasktrove/constants"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
@@ -67,7 +69,7 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
   const [bottomPanelHeight, setBottomPanelHeight] = useState(30) // Default 30%
 
   // Task update action
-  const updateTask = useSetAtom(taskActions.updateTask)
+  const updateTask = useSetAtom(taskAtoms.actions.updateTask)
 
   // Add task functionality
   const addTaskToSection = useAddTaskToSection()

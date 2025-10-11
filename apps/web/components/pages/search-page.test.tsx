@@ -17,10 +17,10 @@ vi.mock("@/components/search/advanced-search", () => ({
   AdvancedSearch: () => <div data-testid="advanced-search" />,
 }))
 
-vi.mock("@/lib/atoms", () => ({
-  taskAtoms: { allTasks: {} },
-  projectAtoms: { allProjects: {} },
-  labelAtoms: { allLabels: {} },
+vi.mock("@tasktrove/atoms", () => ({
+  taskAtoms: { tasks: { toString: () => "tasksAtom" } },
+  projectAtoms: { projects: { toString: () => "projectsAtom" } },
+  labelAtoms: { labels: { toString: () => "labelsAtom" } },
 }))
 
 // Import after mocking

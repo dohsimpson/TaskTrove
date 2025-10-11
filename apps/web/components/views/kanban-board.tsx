@@ -6,11 +6,15 @@ import { Plus } from "lucide-react"
 import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
 import { useSetAtom, useAtomValue } from "jotai"
-import { reorderTaskInViewAtom, moveTaskBetweenSectionsAtom, taskAtoms } from "@tasktrove/atoms"
+import {
+  reorderTaskInViewAtom,
+  moveTaskBetweenSectionsAtom,
+  taskAtoms,
+  projectAtoms,
+} from "@tasktrove/atoms"
 import { stopEditingSectionAtom, currentRouteContextAtom } from "@tasktrove/atoms"
 import { currentViewStateAtom } from "@tasktrove/atoms"
 import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
-import { projectAtoms } from "@/lib/atoms"
 import type { Project, Task as TaskType } from "@/lib/types"
 import { TaskIdSchema, ProjectIdSchema, createGroupId } from "@/lib/types"
 import { TaskItem } from "@/components/task/task-item"

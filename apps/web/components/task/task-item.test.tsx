@@ -55,12 +55,14 @@ vi.mock("@/lib/utils", () => ({
 }))
 
 // Mock atoms
-vi.mock("@/lib/atoms", () => ({
+vi.mock("@tasktrove/atoms", () => ({
+  // Core atoms
   toggleTaskAtom: { toString: () => "toggleTaskAtom" },
   deleteTaskAtom: { toString: () => "deleteTaskAtom" },
   updateTaskAtom: { toString: () => "updateTaskAtom" },
   addCommentAtom: { toString: () => "addCommentAtom" },
   toggleTaskPanelWithViewStateAtom: { toString: () => "toggleTaskPanelWithViewStateAtom" },
+  tasksAtom: { toString: () => "tasksAtom" },
   selectedTaskIdAtom: { toString: () => "selectedTaskIdAtom" },
   selectedTaskAtom: { toString: () => "selectedTaskAtom" },
   selectedTasksAtom: { toString: () => "selectedTasksAtom" },
@@ -69,8 +71,20 @@ vi.mock("@/lib/atoms", () => ({
   clearSelectedTasksAtom: { toString: () => "clearSelectedTasksAtom" },
   setSelectedTaskIdAtom: { toString: () => "setSelectedTaskIdAtom" },
   selectRangeAtom: { toString: () => "selectRangeAtom" },
-  selectionToggleTaskSelectionAtom: { toString: () => "selectionToggleTaskSelectionAtom" },
-  tasksAtom: { toString: () => "tasksAtom" },
+  taskCountsAtom: { toString: () => "taskCountsAtom" },
+  // Grouped atoms
+  taskAtoms: {
+    actions: {
+      updateTask: { toString: () => "updateTask" },
+      toggleTask: { toString: () => "toggleTask" },
+      deleteTask: { toString: () => "deleteTask" },
+    },
+    derived: {},
+  },
+  projectAtoms: {
+    actions: {},
+    derived: {},
+  },
   sortedProjectsAtom: { toString: () => "sortedProjectsAtom" },
   projectsAtom: { toString: () => "projectsAtom" },
   // Label atoms
@@ -79,6 +93,8 @@ vi.mock("@/lib/atoms", () => ({
   addLabelAndWaitForRealIdAtom: { toString: () => "addLabelAndWaitForRealIdAtom" },
   labelsFromIdsAtom: { toString: () => "labelsFromIdsAtom" },
   labelsAtom: { toString: () => "labelsAtom" },
+  updateLabelAtom: { toString: () => "updateLabelAtom" },
+  deleteLabelAtom: { toString: () => "deleteLabelAtom" },
   // Focus timer atoms - use simple string identifiers since logic is handled in jotai mock
   focusTimerStateAtom: "focusTimerStateAtom",
   activeFocusTimerAtom: "activeFocusTimerAtom",
@@ -94,6 +110,10 @@ vi.mock("@/lib/atoms", () => ({
   stopAllFocusTimersAtom: "stopAllFocusTimersAtom",
   focusTimerAtoms: "focusTimerAtoms",
   settingsAtom: { toString: () => "settingsAtom" },
+  // Quick add atoms
+  quickAddTaskAtom: { toString: () => "quickAddTaskAtom" },
+  updateQuickAddTaskAtom: { toString: () => "updateQuickAddTaskAtom" },
+  showQuickAddAtom: { toString: () => "showQuickAddAtom" },
   formatElapsedTime: vi.fn((ms: number) => {
     const seconds = Math.floor(ms / 1000)
     const minutes = Math.floor(seconds / 60)

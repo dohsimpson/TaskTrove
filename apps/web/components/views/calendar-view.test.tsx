@@ -369,6 +369,22 @@ vi.mock("@/components/task/task-side-panel", () => ({
     ) : null,
 }))
 
+// Mock @tasktrove/atoms
+vi.mock("@tasktrove/atoms", () => ({
+  showTaskPanelAtom: { toString: () => "showTaskPanelAtom" },
+  closeTaskPanelAtom: { toString: () => "closeTaskPanelAtom" },
+  selectedTaskAtom: { toString: () => "selectedTaskAtom" },
+  currentViewStateAtom: { toString: () => "currentViewStateAtom" },
+  taskAtoms: {
+    actions: {
+      updateTask: { toString: () => "updateTaskAtom" },
+    },
+  },
+  sidePanelWidthAtom: { toString: () => "sidePanelAtomWidthAtom" },
+  updateGlobalViewOptionsAtom: { toString: () => "updateGlobalViewOptionsAtom" },
+  updateQuickAddTaskAtom: { toString: () => "updateQuickAddTaskAtom" },
+}))
+
 // Mock atom values
 vi.mock("jotai", async (importOriginal) => {
   const actual = await importOriginal<typeof import("jotai")>()
@@ -376,18 +392,15 @@ vi.mock("jotai", async (importOriginal) => {
     ...actual,
     useAtomValue: vi.fn((atom) => {
       // Mock showTaskPanelAtom to return false
-      if (atom.debugLabel === "showTaskPanelAtom" || atom.toString().includes("showTaskPanel")) {
+      if (atom.toString().includes("showTaskPanel")) {
         return false
       }
       // Mock selectedTaskAtom to return null
-      if (atom.debugLabel === "selectedTaskAtom" || atom.toString().includes("selectedTask")) {
+      if (atom.toString().includes("selectedTask")) {
         return null
       }
       // Mock currentViewStateAtom to return a valid view state
-      if (
-        atom.debugLabel === "currentViewStateAtom" ||
-        atom.toString().includes("currentViewState")
-      ) {
+      if (atom.toString().includes("currentViewState")) {
         return {
           showSidePanel: false,
           viewMode: "calendar",
@@ -400,7 +413,18 @@ vi.mock("jotai", async (importOriginal) => {
       }
       return undefined
     }),
-    useSetAtom: vi.fn(() => vi.fn()),
+    useSetAtom: vi.fn((atom) => {
+      if (atom.toString().includes("updateTask")) {
+        return vi.fn()
+      }
+      if (atom.toString().includes("updateQuickAddTask")) {
+        return vi.fn()
+      }
+      if (atom.toString().includes("updateGlobalViewOptions")) {
+        return vi.fn()
+      }
+      return vi.fn()
+    }),
   }
 })
 

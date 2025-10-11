@@ -20,10 +20,6 @@ vi.mock("@tasktrove/atoms", () => ({
   visibleProjectsAtom: vi.fn(),
 }))
 
-vi.mock("@/lib/atoms", () => ({
-  // Empty mock - moved to @tasktrove/atoms
-}))
-
 // Mock jotai
 vi.mock("jotai", async () => {
   const actual = await vi.importActual("jotai")

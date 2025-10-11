@@ -11,7 +11,7 @@ import {
   currentViewAtom,
   currentViewStateAtom,
   toggleTaskPanelAtom,
-} from "@/lib/atoms"
+} from "@tasktrove/atoms"
 import { currentRouteContextAtom } from "@tasktrove/atoms"
 import {
   INBOX_PROJECT_ID,

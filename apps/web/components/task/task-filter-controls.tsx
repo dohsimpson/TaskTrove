@@ -12,7 +12,7 @@ import {
   currentViewStateAtom,
   currentViewAtom,
 } from "@tasktrove/atoms"
-import { projectAtoms } from "@/lib/atoms"
+import { projectAtoms } from "@tasktrove/atoms"
 import { labelsAtom } from "@tasktrove/atoms"
 import { uiFilteredTasksForViewAtom } from "@tasktrove/atoms"
 import type { Task, Project, Label as LabelType } from "@/lib/types"

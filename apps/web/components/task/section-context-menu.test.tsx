@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { screen } from "@/test-utils"
 import { render } from "@/test-utils/render-with-providers"
 import { SectionContextMenu } from "./section-context-menu"
-import { projects } from "@/lib/atoms"
+import { projectAtoms } from "@tasktrove/atoms"
 import { pathnameAtom } from "@tasktrove/atoms"
 import { createGroupId } from "@/lib/types"
 import { TEST_PROJECT_ID_1 } from "@/lib/utils/test-constants"
@@ -135,7 +135,7 @@ describe("SectionContextMenu", () => {
   }
 
   const defaultAtomValues: Array<[unknown, unknown]> = [
-    [projects, [mockProject]],
+    [projectAtoms.projects, [mockProject]],
     [pathnameAtom, `/projects/${TEST_PROJECT_ID_1}`],
   ]
 

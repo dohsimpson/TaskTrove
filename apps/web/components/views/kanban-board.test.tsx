@@ -127,31 +127,59 @@ const mockJotai = vi.hoisted(() => ({
 vi.mock("jotai", () => mockJotai)
 
 // Mock atoms
-vi.mock("@/lib/atoms", () => ({
-  moveTaskAtom: vi.fn(),
-  selectionModeAtom: vi.fn(),
-  selectedTasksAtom: vi.fn(),
-  clearSelectionAtom: vi.fn(),
-  selectAllVisibleTasksAtom: vi.fn(),
-  allVisibleTasksSelectedAtom: vi.fn(),
-  bulkActionAtom: vi.fn(),
-  filteredTasksAtom: vi.fn(),
-  sortedProjectsAtom: vi.fn(),
-}))
-
-// Mock task atoms
 vi.mock("@tasktrove/atoms", () => ({
+  // Core atoms
+  tasksAtom: vi.fn(),
+  taskCountsAtom: vi.fn(),
+  projectsAtom: vi.fn(),
+  labelsAtom: vi.fn(),
+  updateLabelAtom: vi.fn(),
+  deleteLabelAtom: vi.fn(),
+  toggleTaskSelectionAtom: vi.fn(),
+  // Action atoms
+  updateTaskAtom: vi.fn(),
+  toggleTaskAtom: vi.fn(),
+  deleteTaskAtom: vi.fn(),
+  addCommentAtom: vi.fn(),
+  toggleTaskPanelWithViewStateAtom: vi.fn(),
+  // Selection atoms
+  selectedTasksAtom: vi.fn(),
+  lastSelectedTaskAtom: vi.fn(),
+  selectRangeAtom: vi.fn(),
+  selectedTaskIdAtom: vi.fn(),
+  // Kanban-specific atoms
   orderedTasksByProjectAtom: vi.fn(),
   reorderTaskInViewAtom: vi.fn(),
   moveTaskBetweenSectionsAtom: vi.fn(),
-  labelsAtom: [],
-  deleteLabelAtom: vi.fn(),
-  updateLabelAtom: vi.fn(),
+  // View state atoms
+  currentViewStateAtom: vi.fn(),
+  currentRouteContextAtom: vi.fn(),
+  stopEditingSectionAtom: vi.fn(),
+  // Grouped atoms
   taskAtoms: {
+    actions: {
+      updateTask: vi.fn(),
+      toggleTask: vi.fn(),
+      deleteTask: vi.fn(),
+    },
     derived: {
       orderedTasksBySection: vi.fn(),
     },
   },
+  projectAtoms: {
+    actions: {
+      renameSection: vi.fn(),
+    },
+    derived: {
+      visibleProjects: vi.fn(),
+    },
+  },
+  // Label atoms
+  addLabelAndWaitForRealIdAtom: vi.fn(),
+  labelsFromIdsAtom: vi.fn(),
+  // Utility atoms
+  applyViewStateFilters: vi.fn(),
+  sortTasksByViewState: vi.fn(),
 }))
 
 // Mock Atlaskit drag-and-drop utilities

@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 import { LinkifiedEditableDiv } from "./linkified-editable-div"
 
 // Mock the settings atom specifically
-vi.mock("@/lib/atoms", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   settingsAtom: Symbol("settingsAtom"),
 }))
 

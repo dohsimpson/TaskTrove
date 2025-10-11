@@ -4,7 +4,7 @@ import { screen, fireEvent } from "@/test-utils"
 import { render } from "@/test-utils/render-with-providers"
 import { LabelContextMenu } from "./label-context-menu"
 import { labels } from "@/lib/atoms"
-import { startEditingLabelAtom } from "@/lib/atoms/ui/navigation"
+import { startEditingLabelAtom } from "@tasktrove/atoms"
 import { TEST_LABEL_ID_1 } from "@/lib/utils/test-constants"
 import { createLabelId } from "@tasktrove/types"
 

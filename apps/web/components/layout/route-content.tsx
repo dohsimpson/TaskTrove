@@ -2,7 +2,7 @@
 
 import { useAtomValue } from "jotai"
 import { useTranslation } from "@tasktrove/i18n"
-import { pathnameAtom } from "@/lib/atoms/ui/navigation"
+import { pathnameAtom } from "@tasktrove/atoms"
 import { MainContent } from "@/components/layout/main-content"
 import { SearchPage } from "@/components/pages/search-page"
 import { Task, VoiceCommand } from "@/lib/types"

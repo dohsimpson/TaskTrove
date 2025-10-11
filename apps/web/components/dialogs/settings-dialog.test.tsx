@@ -27,7 +27,7 @@ vi.mock("./settings-forms/general-form", () => ({
 }))
 
 // Mock atoms
-vi.mock("@/lib/atoms/ui/dialogs", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   showSettingsDialogAtom: {},
   closeSettingsDialogAtom: {},
 }))

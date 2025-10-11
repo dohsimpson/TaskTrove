@@ -151,14 +151,20 @@ vi.mock("@/lib/atoms", () => ({
   projectsAtom: "mockProjectsAtom",
   updateTaskAtom: "mockUpdateTaskAtom",
   tasksAtom: "mockTasksAtom",
+  allGroupsAtom: "mockAllGroupsAtom",
 }))
 
-vi.mock("@/lib/atoms/core/projects", () => ({
+vi.mock("@/lib/atoms", () => ({
   projectIdsAtom: "mockProjectIdsAtom",
 }))
 
-vi.mock("@/lib/atoms/core/groups", () => ({
+// Mock @tasktrove/atoms properly since component imports from there directly
+vi.mock("@tasktrove/atoms", () => ({
+  projectsAtom: "mockProjectsAtom",
+  tasksAtom: "mockTasksAtom",
+  projectIdsAtom: "mockProjectIdsAtom",
   allGroupsAtom: "mockAllGroupsAtom",
+  updateTaskAtom: "mockUpdateTaskAtom",
 }))
 
 describe("ProjectContent", () => {

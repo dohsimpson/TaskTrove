@@ -3,7 +3,7 @@
 import type React from "react"
 import { useAtomValue } from "jotai"
 import dynamic from "next/dynamic"
-import { currentViewStateAtom } from "@/lib/atoms/ui/views"
+import { currentViewStateAtom } from "@tasktrove/atoms"
 
 import { Button } from "@/components/ui/button"
 import { Settings2 } from "lucide-react"

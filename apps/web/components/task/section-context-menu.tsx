@@ -7,7 +7,7 @@ import {
   startEditingSectionAtom,
   currentRouteContextAtom,
   openSectionDialogAtom,
-} from "@/lib/atoms/ui/navigation"
+} from "@tasktrove/atoms"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 import { isValidProjectId } from "@/lib/utils/routing"
 import type { Project, ProjectSection, GroupId } from "@/lib/types"

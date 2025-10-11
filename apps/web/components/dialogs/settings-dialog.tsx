@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator"
 import { Database, X, Bell, Settings, Menu, Palette } from "lucide-react"
 // Future icons (not used yet):
 // import { Link, Target, Code } from "lucide-react"
-import { showSettingsDialogAtom, closeSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
+import { showSettingsDialogAtom, closeSettingsDialogAtom } from "@tasktrove/atoms"
 import { useTranslation } from "@tasktrove/i18n"
 import { DataForm } from "./settings-forms/data-form"
 import { NotificationsForm } from "./settings-forms/notifications-form"

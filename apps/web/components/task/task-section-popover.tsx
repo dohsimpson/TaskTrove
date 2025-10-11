@@ -6,7 +6,7 @@ import { Square, SquareX } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { projectsAtom } from "@/lib/atoms"
-import { updateTaskAtom } from "@/lib/atoms/core/tasks"
+import { updateTaskAtom } from "@tasktrove/atoms"
 import type { TaskId, ProjectSection, GroupId, ProjectId } from "@/lib/types"
 import { createGroupId, createTaskId } from "@/lib/types"
 

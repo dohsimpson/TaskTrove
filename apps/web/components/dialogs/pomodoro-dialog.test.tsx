@@ -35,7 +35,7 @@ let mockSelectedTask: Task | null = null
 const mockClosePomodoro = vi.fn()
 
 // Mock atoms for testing
-vi.mock("@/lib/atoms/ui/dialogs", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   showPomodoroAtom: "showPomodoroAtom",
   selectedTaskAtom: "selectedTaskAtom",
   closePomodoroAtom: "closePomodoroAtom",

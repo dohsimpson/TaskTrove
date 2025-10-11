@@ -3,9 +3,9 @@
 import type React from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { VIEW_CONFIG_OPTIONS } from "@tasktrove/constants"
-import { currentViewAtom, currentViewStateAtom, setViewOptionsAtom } from "@/lib/atoms/ui/views"
-import { currentRouteContextAtom } from "@/lib/atoms/ui/navigation"
-import { showTaskPanelAtom } from "@/lib/atoms/ui/dialogs"
+import { currentViewAtom, currentViewStateAtom, setViewOptionsAtom } from "@tasktrove/atoms"
+import { currentRouteContextAtom } from "@tasktrove/atoms"
+import { showTaskPanelAtom } from "@tasktrove/atoms"
 
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"

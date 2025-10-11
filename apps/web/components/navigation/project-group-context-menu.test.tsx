@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { screen, fireEvent } from "@/test-utils"
 import { render } from "@/test-utils/render-with-providers"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
-import { groupsQueryAtom } from "@/lib/atoms/core/base"
+import { groupsQueryAtom } from "@tasktrove/atoms"
 import { createGroupId, createProjectId } from "@/lib/types"
 import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types"
 

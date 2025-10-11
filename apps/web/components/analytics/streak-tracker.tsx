@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Flame, Calendar, Trophy, Target } from "lucide-react"
 import { format, subDays, isToday, startOfDay, endOfDay } from "date-fns"
 import { useAtomValue } from "jotai"
-import { tasksAtom } from "@/lib/atoms"
+import { tasksAtom } from "@tasktrove/atoms"
 import type { Task } from "@/lib/types"
 
 interface StreakTrackerProps {

@@ -38,7 +38,7 @@ import {
 } from "@/lib/utils/recurring-task-processor"
 import { useAtomValue, useSetAtom } from "jotai"
 import { tasksAtom } from "@/lib/atoms"
-import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
+import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@tasktrove/atoms"
 import { HelpPopover } from "@/components/ui/help-popover"
 import {
   parseEnhancedNaturalLanguage,

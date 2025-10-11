@@ -25,7 +25,7 @@ const mockJotai = vi.hoisted(() => ({
 vi.mock("jotai", () => mockJotai)
 
 // Mock the keyboard context atoms
-vi.mock("@/lib/atoms/ui/keyboard-context", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   registerKeyboardHandlerAtom: "mockRegisterKeyboardHandlerAtom",
   unregisterKeyboardHandlerAtom: "mockUnregisterKeyboardHandlerAtom",
   setActiveComponentAtom: "mockSetActiveComponentAtom",

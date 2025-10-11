@@ -11,11 +11,7 @@ import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
 import { ProjectContextMenu } from "./project-context-menu"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
-import {
-  editingProjectIdAtom,
-  stopEditingProjectAtom,
-  pathnameAtom,
-} from "@/lib/atoms/ui/navigation"
+import { editingProjectIdAtom, stopEditingProjectAtom, pathnameAtom } from "@tasktrove/atoms"
 import { projectTaskCountsAtom, projectActions } from "@/lib/atoms"
 import type { ProjectGroup, ProjectId } from "@/lib/types"
 

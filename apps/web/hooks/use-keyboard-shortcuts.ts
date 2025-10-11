@@ -22,7 +22,7 @@ import {
   setActiveComponentAtom,
   type KeyboardHandler,
   type KeyboardHandlerContext,
-} from "@/lib/atoms/ui/keyboard-context"
+} from "@tasktrove/atoms"
 import { matchesShortcut } from "@/hooks/use-global-keyboard-manager"
 
 interface ShortcutOptions extends Omit<KeyboardHandlerContext, "priority"> {

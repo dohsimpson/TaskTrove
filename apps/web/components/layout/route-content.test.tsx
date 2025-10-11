@@ -6,7 +6,7 @@ import { TEST_VOICE_COMMAND_ID_1, TEST_TASK_ID_3 } from "@/lib/utils/test-consta
 import { createMockTask } from "@tasktrove/atoms"
 
 // Mock the pathnameAtom
-vi.mock("@/lib/atoms/ui/navigation", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   pathnameAtom: { read: vi.fn().mockReturnValue("/today") },
 }))
 

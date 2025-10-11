@@ -12,7 +12,7 @@
 
 import React, { useEffect } from "react"
 import { useSetAtom } from "jotai"
-import { keyboardShortcutAtom } from "../lib/atoms/core/history"
+import { keyboardShortcutAtom } from "@tasktrove/atoms"
 
 /**
  * Hook that enables global keyboard shortcuts for undo/redo functionality

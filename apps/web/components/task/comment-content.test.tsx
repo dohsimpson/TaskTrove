@@ -41,7 +41,7 @@ vi.mock("@/lib/atoms", () => ({
   tasksAtom: { toString: () => "tasksAtom" },
 }))
 
-vi.mock("@/lib/atoms/ui/dialogs", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   updateQuickAddTaskAtom: { toString: () => "updateQuickAddTaskAtom" },
   quickAddTaskAtom: { toString: () => "quickAddTaskAtom" },
 }))

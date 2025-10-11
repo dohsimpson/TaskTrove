@@ -3,9 +3,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import React from "react"
 import { Provider } from "jotai"
 import { useDebouncedParse } from "./use-debounced-parse"
-import { nlpEnabledAtom } from "@/lib/atoms/ui/dialogs"
-import { labelsAtom } from "@/lib/atoms/core/labels"
-import { visibleProjectsAtom } from "@/lib/atoms/core/projects"
+import { nlpEnabledAtom } from "@tasktrove/atoms"
+import { labelsAtom } from "@tasktrove/atoms"
+import { visibleProjectsAtom } from "@tasktrove/atoms"
 import { useAtomValue } from "jotai"
 
 // Mock the natural language parser
@@ -13,17 +13,15 @@ vi.mock("@/lib/utils/enhanced-natural-language-parser", () => ({
   parseEnhancedNaturalLanguage: vi.fn(),
 }))
 
-// Mock atoms
-vi.mock("@/lib/atoms/ui/dialogs", () => ({
+// Mock all atoms in a single comprehensive mock
+vi.mock("@tasktrove/atoms", () => ({
   nlpEnabledAtom: vi.fn(),
-}))
-
-vi.mock("@/lib/atoms/core/labels", () => ({
   labelsAtom: vi.fn(),
+  visibleProjectsAtom: vi.fn(),
 }))
 
-vi.mock("@/lib/atoms/core/projects", () => ({
-  visibleProjectsAtom: vi.fn(),
+vi.mock("@/lib/atoms", () => ({
+  // Empty mock - moved to @tasktrove/atoms
 }))
 
 // Mock jotai

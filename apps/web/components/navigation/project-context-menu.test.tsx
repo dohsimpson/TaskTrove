@@ -171,7 +171,7 @@ vi.mock("@/lib/atoms", () => ({
   updateProjectAtom: Symbol("updateProjectAtom"),
 }))
 
-vi.mock("@/lib/atoms/ui/navigation", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   startEditingProjectAtom: Symbol("startEditingProjectAtom"),
   openProjectDialogAtom: Symbol("openProjectDialogAtom"),
 }))

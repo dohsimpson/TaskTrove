@@ -86,15 +86,17 @@ vi.mock("jotai", () => ({
 }))
 
 // Mock all atom modules
-vi.mock("@/lib/atoms/ui/navigation", () => ({
+// Consolidated atoms mock
+vi.mock("@tasktrove/atoms", () => ({
+  // Page header specific atoms
   dynamicPageInfoAtom: { debugLabel: "dynamicPageInfoAtom" },
   currentRouteContextAtom: { debugLabel: "currentRouteContextAtom" },
   openQuickAddAtom: { debugLabel: "openQuickAddAtom" },
   openSearchAtom: { debugLabel: "openSearchAtom" },
   openProjectDialogAtom: { debugLabel: "openProjectDialogAtom" },
-}))
+  openSettingsDialogAtom: { debugLabel: "openSettingsDialogAtom" },
 
-vi.mock("@/lib/atoms/ui/views", () => ({
+  // View state atoms
   currentViewStateAtom: { debugLabel: "currentViewStateAtom" },
   setViewModeAtom: { debugLabel: "setViewModeAtom" },
   setSortingAtom: { debugLabel: "setSortingAtom" },

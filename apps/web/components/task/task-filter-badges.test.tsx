@@ -13,7 +13,7 @@ const mockUpdateFilters = vi.fn()
 const mockAllProjects: Project[] = []
 const mockAllLabels: Label[] = []
 
-vi.mock("@/lib/atoms/ui/views", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   activeFiltersAtom: {
     toString: () => "activeFiltersAtom",
   },
@@ -31,9 +31,16 @@ vi.mock("@/lib/atoms", () => ({
       allProjects: { toString: () => "allProjectsAtom" },
     },
   },
+  // Add other commonly used atoms
+  labelsAtom: { toString: () => "labelsAtom" },
+  sortedLabelsAtom: { toString: () => "sortedLabelsAtom" },
 }))
 
-vi.mock("@/lib/atoms/core/labels", () => ({
+// Mock @tasktrove/atoms with all required exports
+vi.mock("@tasktrove/atoms", () => ({
+  activeFiltersAtom: { toString: () => "activeFiltersAtom" },
+  hasActiveFiltersAtom: { toString: () => "hasActiveFiltersAtom" },
+  updateFiltersAtom: { toString: () => "updateFiltersAtom" },
   labelsAtom: { toString: () => "labelsAtom" },
 }))
 

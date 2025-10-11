@@ -77,7 +77,7 @@ vi.mock("jotai/utils", () => ({
 }))
 
 // Mock keyboard context atoms
-vi.mock("@/lib/atoms/ui/keyboard-context", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   keyboardHandlersAtom: "mockKeyboardHandlersAtom",
   registerKeyboardHandlerAtom: "mockRegisterKeyboardHandlerAtom",
 }))

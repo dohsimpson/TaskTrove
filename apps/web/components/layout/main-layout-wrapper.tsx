@@ -13,7 +13,7 @@ import {
   registerKeyboardHandlerAtom,
   unregisterKeyboardHandlerAtom,
   type KeyboardHandler,
-} from "@/lib/atoms/ui/keyboard-context"
+} from "@tasktrove/atoms"
 import { registerRefreshHandler, scheduleAtTime } from "@tasktrove/dom-utils"
 import { addDays, startOfDay } from "date-fns"
 import { SidebarNav } from "@/components/navigation/sidebar-nav"
@@ -53,14 +53,14 @@ import {
   // UI atoms
   appRefreshTriggerAtom,
 } from "@/lib/atoms"
-import { keyboardShortcutAtom } from "@/lib/atoms/core/history"
+import { keyboardShortcutAtom } from "@tasktrove/atoms"
 // Import our new atoms
 import {
   setPathnameAtom,
   currentRouteContextAtom,
   openSearchAtom,
   openQuickAddAtom,
-} from "@/lib/atoms/ui/navigation"
+} from "@tasktrove/atoms"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useNotificationSystem } from "@/hooks/use-notification-system"
 import "@khmyznikov/pwa-install"

@@ -19,7 +19,7 @@ import {
   keyboardHandlersAtom,
   type KeyboardContext,
   type KeyboardHandler,
-} from "@/lib/atoms/ui/keyboard-context"
+} from "@tasktrove/atoms"
 import { shouldIgnoreNativeKeyboardEvent } from "@/lib/utils/keyboard"
 import { log } from "@/lib/utils/logger"
 

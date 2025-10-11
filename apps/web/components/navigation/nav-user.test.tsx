@@ -17,7 +17,7 @@ vi.mock("sonner", () => ({
 }))
 
 // Mock settings dialog atom
-vi.mock("@/lib/atoms/ui/dialogs", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   openSettingsDialogAtom: vi.fn(),
   openUserProfileDialogAtom: vi.fn(),
 }))

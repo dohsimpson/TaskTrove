@@ -3,7 +3,7 @@
 import { useAtom, useSetAtom, useAtomValue } from "jotai"
 import { EntityContextMenu } from "@/components/ui/custom/entity-context-menu"
 import { projects, projectActions, updateProjectAtom, tasks } from "@/lib/atoms"
-import { startEditingProjectAtom, openProjectDialogAtom } from "@/lib/atoms/ui/navigation"
+import { startEditingProjectAtom, openProjectDialogAtom } from "@tasktrove/atoms"
 import { deleteTasksAtom, updateTasksAtom } from "@/lib/atoms"
 import type { Project, ProjectId, TaskId } from "@/lib/types"
 

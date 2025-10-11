@@ -55,14 +55,28 @@ vi.mock("@/lib/atoms", () => ({
   projectsAtom: "mockProjectsAtom",
   settingsAtom: "mockSettingsAtom",
   deleteTaskAtom: "mockDeleteTaskAtom",
+  // Add other commonly used atoms
+  tasksAtom: "mockTasksAtom",
+  taskActions: {
+    updateTask: "mockUpdateTaskAtom",
+    toggleTask: "mockToggleTaskAtom",
+    deleteTask: "mockDeleteTaskAtom",
+  },
+  toggleTaskAtom: "mockToggleTaskAtom",
+  addLabelAtom: "mockAddLabelAtom",
+  labelsAtom: "mockLabelsAtom",
+  sortedLabelsAtom: "mockSortedLabelsAtom",
+  labelsFromIdsAtom: "mockLabelsFromIdsAtom",
 }))
 
-vi.mock("@/lib/atoms/core/labels", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   sortedLabelsAtom: "mockSortedLabelsAtom",
   addLabelAtom: "mockAddLabelAtom",
   addLabelAndWaitForRealIdAtom: "mockAddLabelAndWaitForRealIdAtom",
   labelsFromIdsAtom: "mockLabelsFromIdsAtom",
   labelsAtom: "mockLabelsAtom",
+  projectAtoms: "mockProjectAtoms",
+  projectsAtom: "mockProjectsAtom",
 }))
 
 vi.mock("@/lib/utils", () => ({

@@ -18,7 +18,7 @@ import {
   keyboardHandlersAtom,
   registerKeyboardHandlerAtom,
   type KeyboardHandler,
-} from "@/lib/atoms/ui/keyboard-context"
+} from "@tasktrove/atoms"
 import { validateHandlerRegistration } from "./conflict-detector"
 
 // Create a store instance for updating atoms

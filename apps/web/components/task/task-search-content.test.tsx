@@ -25,7 +25,7 @@ vi.mock("jotai", async () => {
 })
 
 // Mock atoms - needed to specify which atoms we're using
-vi.mock("@/lib/atoms/core/tasks", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   tasksAtom: { toString: () => "tasksAtom" },
 }))
 

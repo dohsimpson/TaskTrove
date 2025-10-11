@@ -12,7 +12,7 @@ import {
   currentViewStateAtom,
   toggleTaskPanelAtom,
 } from "@/lib/atoms"
-import { currentRouteContextAtom } from "@/lib/atoms/ui/navigation"
+import { currentRouteContextAtom } from "@tasktrove/atoms"
 import {
   INBOX_PROJECT_ID,
   type Task,

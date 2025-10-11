@@ -73,6 +73,12 @@ vi.mock("@/lib/atoms", () => ({
   tasksAtom: { toString: () => "tasksAtom" },
   sortedProjectsAtom: { toString: () => "sortedProjectsAtom" },
   projectsAtom: { toString: () => "projectsAtom" },
+  // Label atoms
+  sortedLabelsAtom: { toString: () => "sortedLabelsAtom" },
+  addLabelAtom: { toString: () => "addLabelAtom" },
+  addLabelAndWaitForRealIdAtom: { toString: () => "addLabelAndWaitForRealIdAtom" },
+  labelsFromIdsAtom: { toString: () => "labelsFromIdsAtom" },
+  labelsAtom: { toString: () => "labelsAtom" },
   // Focus timer atoms - use simple string identifiers since logic is handled in jotai mock
   focusTimerStateAtom: "focusTimerStateAtom",
   activeFocusTimerAtom: "activeFocusTimerAtom",
@@ -94,14 +100,6 @@ vi.mock("@/lib/atoms", () => ({
     const remainingSeconds = seconds % 60
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
   }),
-}))
-
-vi.mock("@/lib/atoms/core/labels", () => ({
-  sortedLabelsAtom: { toString: () => "sortedLabelsAtom" },
-  addLabelAtom: { toString: () => "addLabelAtom" },
-  addLabelAndWaitForRealIdAtom: { toString: () => "addLabelAndWaitForRealIdAtom" },
-  labelsFromIdsAtom: { toString: () => "labelsFromIdsAtom" },
-  labelsAtom: { toString: () => "labelsAtom" },
 }))
 
 // Mock FocusTimerPopover component

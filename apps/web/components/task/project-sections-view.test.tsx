@@ -56,48 +56,43 @@ vi.mock("@/lib/atoms/core/base", () => ({
   updateOrderingMutationAtom: { debugLabel: "updateOrderingMutationAtom" },
 }))
 
-vi.mock("@/lib/atoms/ui/dialogs", () => ({
-  showQuickAddAtom: { debugLabel: "showQuickAddAtom" },
-  showTaskPanelAtom: { debugLabel: "showTaskPanelAtom" },
-  selectedTaskIdAtom: { debugLabel: "selectedTaskIdAtom" },
-  taskFormDataAtom: { debugLabel: "taskFormDataAtom" },
-  resetTaskFormAtom: { debugLabel: "resetTaskFormAtom" },
-  openQuickAddAtom: { debugLabel: "openQuickAddAtom" },
-  updateQuickAddTaskAtom: { debugLabel: "updateQuickAddTaskAtom" },
-  resetQuickAddTaskAtom: { debugLabel: "resetQuickAddTaskAtom" },
-}))
+// Removed duplicate @tasktrove/atoms mock - consolidated into single comprehensive mock below
 
-vi.mock("@/lib/atoms/ui/views", () => ({
-  viewStatesAtom: { debugLabel: "viewStatesAtom" },
-  currentViewStateAtom: { debugLabel: "currentViewStateAtom" },
-  setViewOptionsAtom: { debugLabel: "setViewOptionsAtom" },
-  setSearchQueryAtom: { debugLabel: "setSearchQueryAtom" },
-}))
+// Disabled - consolidated into first mock above
+// vi.mock("@tasktrove/atoms", () => ({
+//   viewStatesAtom: { debugLabel: "viewStatesAtom" },
+//   currentViewStateAtom: { debugLabel: "currentViewStateAtom" },
+//   setViewOptionsAtom: { debugLabel: "setViewOptionsAtom" },
+//   setSearchQueryAtom: { debugLabel: "setSearchQueryAtom" },
+// }))
 
-vi.mock("@/lib/atoms/core/tasks", () => ({
-  orderedTasksByProjectAtom: { debugLabel: "orderedTasksByProjectAtom" },
-  reorderTaskInViewAtom: { debugLabel: "reorderTaskInViewAtom" },
-  moveTaskBetweenSectionsAtom: { debugLabel: "moveTaskBetweenSectionsAtom" },
-  taskAtoms: {
-    derived: {
-      orderedTasksBySection: { debugLabel: "orderedTasksBySection" },
-    },
-  },
-}))
+// Disabled - consolidated into first mock above
+// vi.mock("@tasktrove/atoms", () => ({
+//   orderedTasksByProjectAtom: { debugLabel: "orderedTasksByProjectAtom" },
+//   reorderTaskInViewAtom: { debugLabel: "reorderTaskInViewAtom" },
+//   moveTaskBetweenSectionsAtom: { debugLabel: "moveTaskBetweenSectionsAtom" },
+//   taskAtoms: {
+//     derived: {
+//       orderedTasksBySection: { debugLabel: "orderedTasksBySection" },
+//     },
+//   },
+// }))
 
 // Mock view state utilities to prevent atom loading issues
-vi.mock("@tasktrove/atoms", () => ({
-  applyViewStateFilters: vi.fn((tasks) => tasks),
-  sortTasksByViewState: vi.fn((tasks) => tasks),
-}))
+// Disabled - consolidated into first mock above
+// vi.mock("@tasktrove/atoms", () => ({
+//   applyViewStateFilters: vi.fn((tasks) => tasks),
+//   sortTasksByViewState: vi.fn((tasks) => tasks),
+// }))
 
-vi.mock("@/lib/atoms/ui/navigation", () => ({
-  currentRouteContextAtom: { debugLabel: "currentRouteContextAtom" },
-  editingSectionIdAtom: { debugLabel: "editingSectionIdAtom" },
-  stopEditingSectionAtom: { debugLabel: "stopEditingSectionAtom" },
-  collapsedSectionsAtom: { debugLabel: "collapsedSectionsAtom" },
-  toggleSectionCollapseAtom: { debugLabel: "toggleSectionCollapseAtom" },
-}))
+// Disabled - consolidated into first mock above
+// vi.mock("@tasktrove/atoms", () => ({
+//   currentRouteContextAtom: { debugLabel: "currentRouteContextAtom" },
+//   editingSectionIdAtom: { debugLabel: "editingSectionIdAtom" },
+//   stopEditingSectionAtom: { debugLabel: "stopEditingSectionAtom" },
+//   collapsedSectionsAtom: { debugLabel: "collapsedSectionsAtom" },
+//   toggleSectionCollapseAtom: { debugLabel: "toggleSectionCollapseAtom" },
+// }))
 
 vi.mock("@/hooks/use-add-task-to-section", () => ({
   useAddTaskToSection: vi.fn(() => vi.fn()),
@@ -190,66 +185,99 @@ vi.mock("@/hooks/use-drag-and-drop", () => ({
   }),
 }))
 
-// Mock all the atoms used by the component
-vi.mock("@/lib/atoms", () => ({
-  projectAtoms: {
-    actions: {
-      addSection: "mockAddSection",
-      renameSection: "mockRenameSection",
-      removeSection: "mockRemoveSection",
+// Mock all the atoms used by component - moved to @tasktrove/atoms to avoid circular dependency
+vi.mock("@tasktrove/atoms", () => {
+  return {
+    projectAtoms: {
+      actions: {
+        addSection: { debugLabel: "addSection" },
+        renameSection: { debugLabel: "renameSection" },
+        removeSection: { debugLabel: "removeSection" },
+        moveSection: { debugLabel: "moveSection" },
+      },
+      derived: {
+        projectById: { debugLabel: "projectById" },
+      },
     },
-    derived: {
-      projectById: vi.fn(() => new Map()),
+    projectActions: {
+      addSection: { debugLabel: "addSection" },
+      renameSection: { debugLabel: "renameSection" },
+      removeSection: { debugLabel: "removeSection" },
+      moveSection: { debugLabel: "moveSection" },
     },
-  },
-  projects: [mockProjectData],
-  projectActions: {
-    addSection: vi.fn(),
-    renameSection: vi.fn(),
-    removeSection: vi.fn(),
-  },
-  taskAtoms: {
-    actions: {
-      updateTask: "mockUpdateTask",
+    projectsAtom: { debugLabel: "projectsAtom" },
+    taskAtoms: {
+      actions: {
+        updateTask: "mockUpdateTask",
+        toggleTask: "mockToggleTask",
+        addTask: "mockAddTask",
+        deleteTask: "mockDeleteTask",
+      },
+      derived: {
+        taskCounts: "mockTaskCounts",
+        searchResults: "mockSearchResults",
+        filteredTasks: "mockFilteredTasks",
+        groupedTasks: "mockGroupedTasks",
+        visibleTasks: "mockVisibleTasks",
+        tasksByProject: "mockTasksByProject",
+        orderedTasksBySection: { debugLabel: "orderedTasksBySection" },
+        taskById: { debugLabel: "taskById" },
+      },
     },
-    tasks: "mockTasks",
-  },
-  openQuickAddAtom: "mockOpenQuickAddAtom",
-  projectsAtom: "mockProjectsAtom",
-  filteredTasksAtom: "mockFilteredTasksAtom",
-  currentViewStateAtom: "mockCurrentViewStateAtom",
-  selectedTaskAtom: "mockSelectedTaskAtom",
-  setViewOptionsAtom: "mockSetViewOptionsAtom",
-  collapsedSectionsAtom: "mockCollapsedSectionsAtom",
-  toggleSectionCollapseAtom: "mockToggleSectionCollapseAtom",
-  labelsAtom: "mockLabelsAtom",
-  sidePanelWidthAtom: "mockSidePanelWidthAtom",
-  updateGlobalViewOptionsAtom: "mockUpdateGlobalViewOptionsAtom",
-  updateProjectsAtom: "mockUpdateProjectsAtom",
-  updateTasksAtom: "mockUpdateTasksAtom",
-  selectedTasksAtom: "mockSelectedTasksAtom",
-  multiSelectDraggingAtom: "mockMultiSelectDraggingAtom",
-}))
+    tasksAtom: { debugLabel: "tasksAtom" },
+    taskCountsAtom: { debugLabel: "taskCountsAtom" },
+    updateLabelAtom: { debugLabel: "updateLabelAtom" },
+    deleteLabelAtom: { debugLabel: "deleteLabelAtom" },
+    toggleTaskSelectionAtom: { debugLabel: "toggleTaskSelectionAtom" },
+    currentRouteContextAtom: { debugLabel: "currentRouteContextAtom" },
+    editingSectionIdAtom: { debugLabel: "editingSectionIdAtom" },
+    stopEditingSectionAtom: { debugLabel: "stopEditingSectionAtom" },
+    startEditingSectionAtom: { debugLabel: "startEditingSectionAtom" },
+    openSectionDialogAtom: { debugLabel: "openSectionDialogAtom" },
+    applyViewStateFilters: vi.fn((tasks) => tasks),
+    sortTasksByViewState: vi.fn((tasks) => tasks),
+    setSearchQueryAtom: { debugLabel: "setSearchQueryAtom" },
+    currentViewStateAtom: { debugLabel: "currentViewStateAtom" },
+    filteredTasksAtom: { debugLabel: "filteredTasksAtom" },
+    selectedTaskAtom: { debugLabel: "selectedTaskAtom" },
+    setViewOptionsAtom: { debugLabel: "setViewOptionsAtom" },
+    collapsedSectionsAtom: { debugLabel: "collapsedSectionsAtom" },
+    toggleSectionCollapseAtom: { debugLabel: "toggleSectionCollapseAtom" },
+    labelsAtom: { debugLabel: "labelsAtom" },
+    sidePanelWidthAtom: { debugLabel: "sidePanelWidthAtom" },
+    updateGlobalViewOptionsAtom: { debugLabel: "updateGlobalViewOptionsAtom" },
+    updateProjectsAtom: { debugLabel: "updateProjectsAtom" },
+    updateTasksAtom: { debugLabel: "updateTasksAtom" },
+    selectedTasksAtom: { debugLabel: "selectedTasksAtom" },
+    multiSelectDraggingAtom: { debugLabel: "multiSelectDraggingAtom" },
+    openQuickAddAtom: { debugLabel: "openQuickAddAtom" },
+    allGroupsAtom: { debugLabel: "allGroupsAtom" },
+  }
+})
 
-vi.mock("@/lib/atoms/ui/navigation", () => ({
-  currentRouteContextAtom: "mockCurrentRouteContextAtom",
-  editingSectionIdAtom: "mockEditingSectionIdAtom",
-  stopEditingSectionAtom: "mockStopEditingSectionAtom",
-  startEditingSectionAtom: "mockStartEditingSectionAtom",
-  openSectionDialogAtom: "mockOpenSectionDialogAtom",
-}))
+// Disabled - consolidated into first mock above
+// vi.mock("@tasktrove/atoms", () => ({
+//   currentRouteContextAtom: "mockCurrentRouteContextAtom",
+//   editingSectionIdAtom: "mockEditingSectionIdAtom",
+//   stopEditingSectionAtom: "mockStopEditingSectionAtom",
+//   startEditingSectionAtom: "mockStartEditingSectionAtom",
+//   openSectionDialogAtom: "mockOpenSectionDialogAtom",
+// }))
 
-vi.mock("@/lib/atoms/core/tasks", () => ({
-  orderedTasksByProjectAtom: "mockOrderedTasksByProjectAtom",
-  reorderTaskInViewAtom: "mockReorderTaskInViewAtom",
-  moveTaskBetweenSectionsAtom: "mockMoveTaskBetweenSectionsAtom",
-  taskAtoms: {
-    derived: {
-      orderedTasksBySection: vi.fn(() => vi.fn(() => [])),
-      taskById: vi.fn(() => new Map()),
-    },
-  },
-}))
+// Disabled - consolidated into first mock above
+// vi.mock("@tasktrove/atoms", () => ({
+//   orderedTasksByProjectAtom: "mockOrderedTasksByProjectAtom",
+//   reorderTaskInViewAtom: "mockReorderTaskInViewAtom",
+//   moveTaskBetweenSectionsAtom: "mockMoveTaskBetweenSectionsAtom",
+//   applyViewStateFilters: vi.fn((tasks) => tasks),
+//   sortTasksByViewState: vi.fn((tasks) => tasks),
+//   taskAtoms: {
+//     derived: {
+//       orderedTasksBySection: vi.fn(() => vi.fn(() => [])),
+//       taskById: vi.fn(() => new Map()),
+//     },
+//   },
+// }))
 
 vi.mock("@/lib/utils", () => ({
   cn: vi.fn((...classes) => classes.filter(Boolean).join(" ")),
@@ -367,9 +395,11 @@ interface MockTask {
 
 vi.mock("./task-item", () => ({
   TaskItem: ({ taskId, variant, className }: MockTaskItemProps) => {
-    // Use the mock to get task data
-    const mockTasks = mockJotai.useAtomValue("mockTasks") || []
-    const task = mockTasks.find((t: MockTask) => t.id === taskId)
+    // Access the mock tasks from the atom using the tasksAtom debug label
+    const atom = { debugLabel: "tasksAtom" }
+    const tasks = mockJotai.useAtomValue(atom) || []
+    const task = tasks.find((t: MockTask) => t.id === taskId)
+
     return (
       <div
         data-testid={`task-item-${taskId}`}
@@ -641,44 +671,80 @@ describe("ProjectSectionsView", () => {
     },
   ]
 
-  beforeEach(() => {
-    vi.clearAllMocks()
-    mockJotai.useSetAtom.mockImplementation((atom) => {
-      if (atom === "mockAddSection") return mockAddSection
-      if (atom === "mockRenameSection") return mockRenameSection
-      if (atom === "mockRemoveSection") return mockRemoveSection
-      if (atom === "mockUpdateTask") return mockUpdateTask
-      if (atom === "mockOpenQuickAddAtom") return mockOpenQuickAdd
-      if (atom === "mockCloseTaskPanelAtom") return vi.fn()
-      if (atom === "mockReorderTaskInViewAtom") return vi.fn()
-      if (atom === "mockMoveTaskBetweenSectionsAtom") return vi.fn()
-      if (atom === "mockUpdateGlobalViewOptionsAtom") return vi.fn()
-      return vi.fn()
-    })
-    mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
-      if (atom === "mockTasks") return mockTasks
-      if (atom === "mockFilteredTasksAtom") return mockTasks
-      if (atom === "mockProjectsAtom") return [mockProject]
-      if (atom === "mockCurrentViewStateAtom")
-        return {
-          showSidePanel: false,
-          compactView: false,
-          viewMode: "list",
-          sortBy: "dueDate",
-          showCompleted: false,
+  // Helper function to create useAtomValue mock with custom overrides
+  const createMockUseAtomValue = (overrides: Record<string, unknown> = {}) => {
+    return (atom: unknown) => {
+      // Handle atoms using debugLabel pattern
+      if (typeof atom === "object" && atom && "debugLabel" in atom) {
+        // Type guard confirmed atom has debugLabel, safe to access
+        const atomWithLabel: { debugLabel?: unknown } = atom
+        const label = String(atomWithLabel.debugLabel ?? "")
+
+        // Check for override first
+        if (label in overrides) {
+          return overrides[label]
         }
-      if (atom === "mockCurrentRouteContextAtom")
-        return {
-          pathname: `/projects/${TEST_PROJECT_ID_1}`,
-          viewId: TEST_PROJECT_ID_1, // Direct project ID as viewId
-          routeType: "project",
+
+        // Default values
+        switch (label) {
+          case "projectsAtom":
+            return [mockProject]
+          case "filteredTasksAtom":
+            return mockTasks
+          case "tasksAtom":
+            return mockTasks
+          case "currentViewStateAtom":
+            return {
+              showSidePanel: false,
+              compactView: false,
+              viewMode: "list",
+              sortBy: "dueDate",
+              showCompleted: false,
+            }
+          case "currentRouteContextAtom":
+            return {
+              pathname: `/projects/${TEST_PROJECT_ID_1}`,
+              viewId: TEST_PROJECT_ID_1,
+              routeType: "project",
+            }
+          case "collapsedSectionsAtom":
+            return []
+          case "selectedTaskAtom":
+            return null
+          case "sidePanelWidthAtom":
+            return 25
+          case "orderedTasksBySection":
+            // Return a function that filters tasks by section
+            return (projectId: string, sectionId: string | null) => {
+              const project = mockProject
+              if (!project || project.id !== projectId) return []
+
+              // Find the section and return tasks from its items array
+              const section = project.sections.find((s) => s.id === sectionId)
+              if (!section) return []
+
+              return mockTasks.filter((task) => section.items.includes(task.id))
+            }
+          case "taskById":
+            // Return a Map of tasks by ID
+            return new Map(mockTasks.map((task) => [task.id, task]))
+          case "projectById":
+            // Return a function that gets a project by ID
+            return (projectId: string) => {
+              return projectId === TEST_PROJECT_ID_1 ? mockProject : undefined
+            }
+          case "editingSectionIdAtom":
+            return null
+          case "selectedTasksAtom":
+            return []
+          default:
+            // Return sensible defaults for unhandled atoms
+            return undefined
         }
-      if (atom === "mockCollapsedSectionsAtom") return []
-      if (atom === "mockShowTaskPanelAtom") return false
-      if (atom === "mockSelectedTaskAtom") return null
-      if (atom === "mockSidePanelWidthAtom") return 25
+      }
+
+      // Legacy string-based checks for backward compatibility
       if (atom === "mockOrderedTasksByProjectAtom") {
-        // Return a Map that mimics the orderedTasksByProjectAtom structure
         const orderedTasksMap = new Map()
         orderedTasksMap.set(
           TEST_PROJECT_ID_1,
@@ -690,22 +756,46 @@ describe("ProjectSectionsView", () => {
         )
         return orderedTasksMap
       }
-      // Handle orderedTasksBySection atom - it comes as a spy function
-      if (atom && vi.isMockFunction(atom)) {
-        // This is the orderedTasksBySection atom (spy function)
-        return (projectId: string, sectionId: string | null) => {
-          const project = mockProject
-          if (!project || project.id !== projectId) return []
 
-          // Find the section and return tasks from its items array
-          const section = project.sections.find((s) => s.id === sectionId)
-          if (!section) return []
+      // Return undefined for unknown atoms
+      return undefined
+    }
+  }
 
-          return mockTasks.filter((task) => section.items.includes(task.id))
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockJotai.useSetAtom.mockImplementation((atom) => {
+      // Handle debugLabel-based atoms
+      if (typeof atom === "object" && atom && "debugLabel" in atom) {
+        // Type guard confirmed atom has debugLabel, safe to access
+        const atomWithLabel: { debugLabel?: unknown } = atom
+        const label = String(atomWithLabel.debugLabel ?? "")
+        switch (label) {
+          case "addSection":
+            return mockAddSection
+          case "renameSection":
+            return mockRenameSection
+          case "removeSection":
+            return mockRemoveSection
+          case "openQuickAddAtom":
+            return mockOpenQuickAdd
+          case "setViewOptionsAtom":
+            return vi.fn()
+          case "updateGlobalViewOptionsAtom":
+            return vi.fn()
+          default:
+            return vi.fn()
         }
       }
-      return []
+
+      // Legacy string-based checks
+      if (atom === "mockAddSection") return mockAddSection
+      if (atom === "mockRenameSection") return mockRenameSection
+      if (atom === "mockRemoveSection") return mockRemoveSection
+      if (atom === "mockUpdateTask") return mockUpdateTask
+      return vi.fn()
     })
+    mockJotai.useAtomValue.mockImplementation(createMockUseAtomValue())
   })
 
   it("renders project sections with tasks", () => {
@@ -748,67 +838,18 @@ describe("ProjectSectionsView", () => {
 
   it("shows side panel when task is selected and showSidePanel is true", () => {
     // Mock the atom to return showSidePanel: true
-    mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
-      if (atom === "mockTasks") return mockTasks
-      if (atom === "mockFilteredTasksAtom") return mockTasks
-      if (atom === "mockProjectsAtom") return [mockProject]
-      if (atom === "mockCurrentViewStateAtom")
-        return {
+    mockJotai.useAtomValue.mockImplementation(
+      createMockUseAtomValue({
+        currentViewStateAtom: {
           showSidePanel: true, // Side panel view option is enabled
           compactView: false,
-        }
-      if (atom === "mockCurrentRouteContextAtom")
-        return {
-          pathname: `/projects/${TEST_PROJECT_ID_1}`,
-          viewId: TEST_PROJECT_ID_1, // Direct project ID as viewId
-          routeType: "project",
-        }
-      if (atom === "mockCollapsedSectionsAtom") return []
-      if (atom === "mockSelectedTaskAtom") return mockTasks[0] // Task is selected
-      if (atom === "mockSidePanelWidthAtom") return 25
-      if (atom === "mockOrderedTasksByProjectAtom") {
-        const orderedTasksMap = new Map()
-        orderedTasksMap.set(
-          TEST_PROJECT_ID_1,
-          mockTasks.filter((t) => t.projectId === TEST_PROJECT_ID_1),
-        )
-        return orderedTasksMap
-      }
-      // Handle orderedTasksBySection atom
-      if (
-        atom &&
-        typeof atom === "object" &&
-        "debugLabel" in atom &&
-        atom.debugLabel === "orderedTasksBySection"
-      ) {
-        return (projectId: string, sectionId: string | null) => {
-          void sectionId // Mark as intentionally unused
-          return mockTasks.filter((task) => {
-            const matchesProject =
-              projectId === "inbox"
-                ? !task.projectId || task.projectId === "inbox"
-                : task.projectId === projectId
-            const matchesSection = true // Section filtering not needed in new architecture
-            return matchesProject && matchesSection
-          })
-        }
-      }
-      // Handle orderedTasksBySection atom - it comes as a spy function
-      if (atom && vi.isMockFunction(atom)) {
-        return (projectId: string, sectionId: string | null) => {
-          void sectionId // Mark as intentionally unused
-          return mockTasks.filter((task) => {
-            const matchesProject =
-              projectId === "inbox"
-                ? !task.projectId || task.projectId === "inbox"
-                : task.projectId === projectId
-            const matchesSection = true // Section filtering not needed in new architecture
-            return matchesProject && matchesSection
-          })
-        }
-      }
-      return []
-    })
+          viewMode: "list",
+          sortBy: "dueDate",
+          showCompleted: false,
+        },
+        selectedTaskAtom: mockTasks[0], // Task is selected
+      }),
+    )
 
     render(<ProjectSectionsView droppableId="test-droppable" />)
 
@@ -821,49 +862,29 @@ describe("ProjectSectionsView", () => {
   it("closes side panel when close button is clicked", async () => {
     const mockSetViewOptions = vi.fn()
     mockJotai.useSetAtom.mockImplementation((atom) => {
+      if (typeof atom === "object" && atom && "debugLabel" in atom) {
+        // Type guard confirmed atom has debugLabel, safe to access
+        const atomWithLabel: { debugLabel?: unknown } = atom
+        const label = String(atomWithLabel.debugLabel ?? "")
+        if (label === "setViewOptionsAtom") return mockSetViewOptions
+      }
       if (atom === "mockSetViewOptionsAtom") return mockSetViewOptions
       return vi.fn()
     })
 
     // Mock the atoms to show panel is open
-    mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
-      if (atom === "mockTasks") return mockTasks
-      if (atom === "mockFilteredTasksAtom") return mockTasks
-      if (atom === "mockProjectsAtom") return [mockProject]
-      if (atom === "mockCurrentViewStateAtom") return { showSidePanel: true, compactView: false } // Panel is open
-      if (atom === "mockCurrentRouteContextAtom")
-        return {
-          pathname: `/projects/${TEST_PROJECT_ID_1}`,
-          viewId: TEST_PROJECT_ID_1,
-          routeType: "project",
-        }
-      if (atom === "mockCollapsedSectionsAtom") return []
-      if (atom === "mockSelectedTaskAtom") return mockTasks[0]
-      if (atom === "mockSidePanelWidthAtom") return 25
-      if (atom === "mockOrderedTasksByProjectAtom") {
-        const orderedTasksMap = new Map()
-        orderedTasksMap.set(
-          TEST_PROJECT_ID_1,
-          mockTasks.filter((t) => t.projectId === TEST_PROJECT_ID_1),
-        )
-        return orderedTasksMap
-      }
-      // Handle orderedTasksBySection atom - it comes as a spy function
-      if (atom && vi.isMockFunction(atom)) {
-        return (projectId: string, sectionId: string | null) => {
-          void sectionId // Mark as intentionally unused
-          return mockTasks.filter((task) => {
-            const matchesProject =
-              projectId === "inbox"
-                ? !task.projectId || task.projectId === "inbox"
-                : task.projectId === projectId
-            const matchesSection = true // Section filtering not needed in new architecture
-            return matchesProject && matchesSection
-          })
-        }
-      }
-      return []
-    })
+    mockJotai.useAtomValue.mockImplementation(
+      createMockUseAtomValue({
+        currentViewStateAtom: {
+          showSidePanel: true,
+          compactView: false,
+          viewMode: "list",
+          sortBy: "dueDate",
+          showCompleted: false,
+        },
+        selectedTaskAtom: mockTasks[0],
+      }),
+    )
 
     render(<ProjectSectionsView droppableId="test-droppable" />)
 
@@ -1000,47 +1021,11 @@ describe("ProjectSectionsView", () => {
   describe("collapsed sections", () => {
     it("makes collapsed sections drop targets", () => {
       // Mock collapsed sections atom to include the first section
-      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
-        if (atom === "mockTasks") return mockTasks
-        if (atom === "mockFilteredTasksAtom") return mockTasks
-        if (atom === "mockProjectsAtom") return [mockProject]
-        if (atom === "mockCurrentViewStateAtom")
-          return {
-            showSidePanel: false,
-            compactView: false,
-            viewMode: "list",
-            sortBy: "dueDate",
-            showCompleted: false,
-          }
-        if (atom === "mockCurrentRouteContextAtom")
-          return {
-            pathname: `/projects/${TEST_PROJECT_ID_1}`,
-            viewId: TEST_PROJECT_ID_1,
-            routeType: "project",
-          }
-        if (atom === "mockCollapsedSectionsAtom") return [TEST_GROUP_ID_1] // First section is collapsed
-        if (atom === "mockShowTaskPanelAtom") return false
-        if (atom === "mockSelectedTaskAtom") return null
-        if (atom === "mockOrderedTasksByProjectAtom") {
-          const orderedTasksMap = new Map()
-          orderedTasksMap.set(
-            TEST_PROJECT_ID_1,
-            mockTasks.filter((t) => t.projectId === TEST_PROJECT_ID_1),
-          )
-          return orderedTasksMap
-        }
-        // Handle orderedTasksBySection atom - it comes as a spy function
-        if (atom && vi.isMockFunction(atom)) {
-          return (projectId: string, sectionId: string | null) => {
-            const project = mockProject
-            if (!project || project.id !== projectId) return []
-            const section = project.sections.find((s) => s.id === sectionId)
-            if (!section) return []
-            return mockTasks.filter((task) => section.items.includes(task.id))
-          }
-        }
-        return []
-      })
+      mockJotai.useAtomValue.mockImplementation(
+        createMockUseAtomValue({
+          collapsedSectionsAtom: [TEST_GROUP_ID_1], // First section is collapsed
+        }),
+      )
 
       render(<ProjectSectionsView droppableId="test-droppable" />)
 
@@ -1066,47 +1051,11 @@ describe("ProjectSectionsView", () => {
 
     it("renders drop targets for both collapsed and expanded sections", () => {
       // Mock mixed collapsed/expanded state
-      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
-        if (atom === "mockTasks") return mockTasks
-        if (atom === "mockFilteredTasksAtom") return mockTasks
-        if (atom === "mockProjectsAtom") return [mockProject]
-        if (atom === "mockCurrentViewStateAtom")
-          return {
-            showSidePanel: false,
-            compactView: false,
-            viewMode: "list",
-            sortBy: "dueDate",
-            showCompleted: false,
-          }
-        if (atom === "mockCurrentRouteContextAtom")
-          return {
-            pathname: `/projects/${TEST_PROJECT_ID_1}`,
-            viewId: TEST_PROJECT_ID_1,
-            routeType: "project",
-          }
-        if (atom === "mockCollapsedSectionsAtom") return [TEST_GROUP_ID_1, TEST_GROUP_ID_3] // First and third sections collapsed
-        if (atom === "mockShowTaskPanelAtom") return false
-        if (atom === "mockSelectedTaskAtom") return null
-        if (atom === "mockOrderedTasksByProjectAtom") {
-          const orderedTasksMap = new Map()
-          orderedTasksMap.set(
-            TEST_PROJECT_ID_1,
-            mockTasks.filter((t) => t.projectId === TEST_PROJECT_ID_1),
-          )
-          return orderedTasksMap
-        }
-        // Handle orderedTasksBySection atom - it comes as a spy function
-        if (atom && vi.isMockFunction(atom)) {
-          return (projectId: string, sectionId: string | null) => {
-            const project = mockProject
-            if (!project || project.id !== projectId) return []
-            const section = project.sections.find((s) => s.id === sectionId)
-            if (!section) return []
-            return mockTasks.filter((task) => section.items.includes(task.id))
-          }
-        }
-        return []
-      })
+      mockJotai.useAtomValue.mockImplementation(
+        createMockUseAtomValue({
+          collapsedSectionsAtom: [TEST_GROUP_ID_1, TEST_GROUP_ID_3], // First and third sections collapsed
+        }),
+      )
 
       render(<ProjectSectionsView droppableId="test-droppable" />)
 
@@ -1126,47 +1075,11 @@ describe("ProjectSectionsView", () => {
 
     it("shows TaskShadow when dragging over collapsed section", () => {
       // Mock collapsed sections atom to include the first section
-      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
-        if (atom === "mockTasks") return mockTasks
-        if (atom === "mockFilteredTasksAtom") return mockTasks
-        if (atom === "mockProjectsAtom") return [mockProject]
-        if (atom === "mockCurrentViewStateAtom")
-          return {
-            showSidePanel: false,
-            compactView: false,
-            viewMode: "list",
-            sortBy: "dueDate",
-            showCompleted: false,
-          }
-        if (atom === "mockCurrentRouteContextAtom")
-          return {
-            pathname: `/projects/${TEST_PROJECT_ID_1}`,
-            viewId: TEST_PROJECT_ID_1,
-            routeType: "project",
-          }
-        if (atom === "mockCollapsedSectionsAtom") return [TEST_GROUP_ID_1] // First section is collapsed
-        if (atom === "mockShowTaskPanelAtom") return false
-        if (atom === "mockSelectedTaskAtom") return null
-        if (atom === "mockOrderedTasksByProjectAtom") {
-          const orderedTasksMap = new Map()
-          orderedTasksMap.set(
-            TEST_PROJECT_ID_1,
-            mockTasks.filter((t) => t.projectId === TEST_PROJECT_ID_1),
-          )
-          return orderedTasksMap
-        }
-        // Handle orderedTasksBySection atom - it comes as a spy function
-        if (atom && vi.isMockFunction(atom)) {
-          return (projectId: string, sectionId: string | null) => {
-            const project = mockProject
-            if (!project || project.id !== projectId) return []
-            const section = project.sections.find((s) => s.id === sectionId)
-            if (!section) return []
-            return mockTasks.filter((task) => section.items.includes(task.id))
-          }
-        }
-        return []
-      })
+      mockJotai.useAtomValue.mockImplementation(
+        createMockUseAtomValue({
+          collapsedSectionsAtom: [TEST_GROUP_ID_1], // First section is collapsed
+        }),
+      )
 
       render(<ProjectSectionsView droppableId="test-droppable" />)
 
@@ -1203,51 +1116,13 @@ describe("ProjectSectionsView", () => {
         // No tasks for Review section (TEST_GROUP_ID_3)
       ]
 
-      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
-        if (atom === "mockTasks") return mockTasksEmptySection
-        if (atom === "mockFilteredTasksAtom") return mockTasksEmptySection
-        if (atom === "mockProjectsAtom") return [mockProject]
-        if (atom === "mockCurrentViewStateAtom")
-          return {
-            showSidePanel: false,
-            compactView: false,
-            viewMode: "list",
-            sortBy: "dueDate",
-            showCompleted: false,
-          }
-        if (atom === "mockCurrentRouteContextAtom")
-          return {
-            pathname: `/projects/${TEST_PROJECT_ID_1}`,
-            viewId: TEST_PROJECT_ID_1,
-            routeType: "project",
-          }
-        if (atom === "mockCollapsedSectionsAtom") return [] // No collapsed sections
-        if (atom === "mockShowTaskPanelAtom") return false
-        if (atom === "mockSelectedTaskAtom") return null
-        if (atom === "mockOrderedTasksByProjectAtom") {
-          const orderedTasksMap = new Map()
-          orderedTasksMap.set(
-            TEST_PROJECT_ID_1,
-            mockTasksEmptySection.filter((t) => t.projectId === TEST_PROJECT_ID_1),
-          )
-          return orderedTasksMap
-        }
-        // Handle orderedTasksBySection atom - return empty array for Review section
-        if (atom && vi.isMockFunction(atom)) {
-          return (projectId: string, sectionId: string | null) => {
-            void sectionId // Mark as intentionally unused
-            return mockTasksEmptySection.filter((task) => {
-              const matchesProject =
-                projectId === "inbox"
-                  ? !task.projectId || task.projectId === "inbox"
-                  : task.projectId === projectId
-              const matchesSection = true // Section filtering not needed in new architecture
-              return matchesProject && matchesSection
-            })
-          }
-        }
-        return []
-      })
+      mockJotai.useAtomValue.mockImplementation(
+        createMockUseAtomValue({
+          filteredTasksAtom: mockTasksEmptySection,
+          tasksAtom: mockTasksEmptySection,
+          collapsedSectionsAtom: [], // No collapsed sections
+        }),
+      )
 
       render(<ProjectSectionsView droppableId="test-droppable" />)
 
@@ -1356,90 +1231,33 @@ describe("ProjectSectionsView", () => {
 
     beforeEach(() => {
       // Mock atoms with test data for sorting
-      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
-        if (atom === "mockTasks") return mockTasksWithVariedProperties
-        if (atom === "mockFilteredTasksAtom") return mockTasksWithVariedProperties
-        if (atom === "mockProjectsAtom") return [mockProjectForSorting]
-        if (atom === "mockCurrentRouteContextAtom")
-          return {
-            pathname: `/projects/${TEST_PROJECT_ID_1}`,
-            viewId: TEST_PROJECT_ID_1,
-            routeType: "project",
-          }
-        if (atom === "mockCollapsedSectionsAtom") return []
-        if (atom === "mockSelectedTaskAtom") return null
-        if (atom === "mockOrderedTasksByProjectAtom") {
-          const orderedTasksMap = new Map()
-          orderedTasksMap.set(
-            TEST_PROJECT_ID_1,
-            mockTasksWithVariedProperties.filter((t) => t.projectId === TEST_PROJECT_ID_1),
-          )
-          return orderedTasksMap
-        }
-        // Handle orderedTasksBySection atom - it comes as a spy function
-        if (atom && vi.isMockFunction(atom)) {
-          return (projectId: string, sectionId: string | null) => {
-            void sectionId // Mark as intentionally unused
-            return mockTasksWithVariedProperties.filter((task) => {
-              const matchesProject =
-                projectId === "inbox"
-                  ? !task.projectId || task.projectId === "inbox"
-                  : task.projectId === projectId
-              const matchesSection = true // Section filtering not needed in new architecture
-              return matchesProject && matchesSection
-            })
-          }
-        }
-        return []
-      })
+      mockJotai.useAtomValue.mockImplementation(
+        createMockUseAtomValue({
+          filteredTasksAtom: mockTasksWithVariedProperties,
+          tasksAtom: mockTasksWithVariedProperties,
+          projectsAtom: [mockProjectForSorting],
+        }),
+      )
     })
 
     it("respects priority sorting in project sections view", () => {
       // Mock currentViewStateAtom to return priority sorting
-      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
-        if (atom === "mockTasks") return mockTasksWithVariedProperties
-        if (atom === "mockFilteredTasksAtom") {
-          // Simulate what filteredTasksAtom does for priority sorting
-          return [...mockTasksWithVariedProperties].sort((a, b) => a.priority - b.priority)
-        }
-        if (atom === "mockProjectsAtom") return [mockProjectForSorting]
-        if (atom === "mockCurrentViewStateAtom")
-          return {
+      const sortedTasks = [...mockTasksWithVariedProperties].sort((a, b) => a.priority - b.priority)
+      mockJotai.useAtomValue.mockImplementation(
+        createMockUseAtomValue({
+          filteredTasksAtom: sortedTasks,
+          tasksAtom: sortedTasks, // Mock TaskItem needs this to get task titles
+          projectsAtom: [mockProjectForSorting],
+          currentViewStateAtom: {
             showSidePanel: false,
             compactView: false,
             viewMode: "list",
             sortBy: "priority", // Priority sorting selected
             sortDirection: "asc",
             showCompleted: true, // Show completed tasks to test full sorting
-          }
-        if (atom === "mockCurrentRouteContextAtom")
-          return {
-            pathname: `/projects/${TEST_PROJECT_ID_1}`,
-            viewId: TEST_PROJECT_ID_1,
-            routeType: "project",
-          }
-        if (atom === "mockCollapsedSectionsAtom") return []
-        if (atom === "mockSelectedTaskAtom") return null
-        if (atom === "mockOrderedTasksByProjectAtom") {
-          const orderedTasksMap = new Map()
-          orderedTasksMap.set(
-            TEST_PROJECT_ID_1,
-            mockTasksWithVariedProperties.filter((t) => t.projectId === TEST_PROJECT_ID_1),
-          )
-          return orderedTasksMap
-        }
-        // Handle orderedTasksBySection atom - it comes as a spy function
-        if (atom && vi.isMockFunction(atom)) {
-          return (projectId: string, sectionId: string | null) => {
-            const project = mockProjectForSorting
-            if (!project || project.id !== projectId) return []
-            const section = project.sections.find((s) => s.id === sectionId)
-            if (!section) return []
-            return mockTasksWithVariedProperties.filter((task) => section.items.includes(task.id))
-          }
-        }
-        return []
-      })
+          },
+        }),
+      )
 
       render(<ProjectSectionsView droppableId="test-droppable" />)
 
@@ -1462,50 +1280,24 @@ describe("ProjectSectionsView", () => {
 
     it("respects title sorting in project sections view", () => {
       // Mock currentViewStateAtom to return title sorting
-      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
-        if (atom === "mockTasks") return mockTasksWithVariedProperties
-        if (atom === "mockFilteredTasksAtom") {
-          // Simulate what filteredTasksAtom does for title sorting
-          return [...mockTasksWithVariedProperties].sort((a, b) => a.title.localeCompare(b.title))
-        }
-        if (atom === "mockProjectsAtom") return [mockProjectForSorting]
-        if (atom === "mockCurrentViewStateAtom")
-          return {
+      const sortedTasks = [...mockTasksWithVariedProperties].sort((a, b) =>
+        a.title.localeCompare(b.title),
+      )
+      mockJotai.useAtomValue.mockImplementation(
+        createMockUseAtomValue({
+          filteredTasksAtom: sortedTasks,
+          tasksAtom: sortedTasks, // Mock TaskItem needs this to get task titles
+          projectsAtom: [mockProjectForSorting],
+          currentViewStateAtom: {
             showSidePanel: false,
             compactView: false,
             viewMode: "list",
             sortBy: "title", // Title sorting selected
             sortDirection: "asc",
             showCompleted: true,
-          }
-        if (atom === "mockCurrentRouteContextAtom")
-          return {
-            pathname: `/projects/${TEST_PROJECT_ID_1}`,
-            viewId: TEST_PROJECT_ID_1,
-            routeType: "project",
-          }
-        if (atom === "mockCollapsedSectionsAtom") return []
-        if (atom === "mockSelectedTaskAtom") return null
-        if (atom === "mockOrderedTasksByProjectAtom") {
-          const orderedTasksMap = new Map()
-          orderedTasksMap.set(
-            TEST_PROJECT_ID_1,
-            mockTasksWithVariedProperties.filter((t) => t.projectId === TEST_PROJECT_ID_1),
-          )
-          return orderedTasksMap
-        }
-        // Handle orderedTasksBySection atom - it comes as a spy function
-        if (atom && vi.isMockFunction(atom)) {
-          return (projectId: string, sectionId: string | null) => {
-            const project = mockProject
-            if (!project || project.id !== projectId) return []
-            const section = project.sections.find((s) => s.id === sectionId)
-            if (!section) return []
-            return mockTasks.filter((task) => section.items.includes(task.id))
-          }
-        }
-        return []
-      })
+          },
+        }),
+      )
 
       render(<ProjectSectionsView droppableId="test-droppable" />)
 
@@ -1517,60 +1309,26 @@ describe("ProjectSectionsView", () => {
 
     it("uses default project ordering when sortBy is 'default'", () => {
       // Mock currentViewStateAtom to return default sorting
-      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
-        if (atom === "mockTasks") return mockTasksWithVariedProperties
-        if (atom === "mockFilteredTasksAtom") {
-          // For default sorting, filteredTasksAtom doesn't apply additional sorting
-          // except for completed tasks at bottom
-          return [...mockTasksWithVariedProperties].sort((a, b) => {
-            if (a.completed && !b.completed) return 1
-            if (!a.completed && b.completed) return -1
-            return 0 // No additional sorting for same completion status
-          })
-        }
-        if (atom === "mockProjectsAtom") return [mockProjectForSorting]
-        if (atom === "mockCurrentViewStateAtom")
-          return {
+      const sortedTasks = [...mockTasksWithVariedProperties].sort((a, b) => {
+        if (a.completed && !b.completed) return 1
+        if (!a.completed && b.completed) return -1
+        return 0
+      })
+      mockJotai.useAtomValue.mockImplementation(
+        createMockUseAtomValue({
+          filteredTasksAtom: sortedTasks,
+          tasksAtom: sortedTasks, // Mock TaskItem needs this to get task titles
+          projectsAtom: [mockProjectForSorting],
+          currentViewStateAtom: {
             showSidePanel: false,
             compactView: false,
             viewMode: "list",
             sortBy: "default", // Default sorting selected
             sortDirection: "asc",
             showCompleted: true,
-          }
-        if (atom === "mockCurrentRouteContextAtom")
-          return {
-            pathname: `/projects/${TEST_PROJECT_ID_1}`,
-            viewId: TEST_PROJECT_ID_1,
-            routeType: "project",
-          }
-        if (atom === "mockCollapsedSectionsAtom") return []
-        if (atom === "mockSelectedTaskAtom") return null
-        if (atom === "mockOrderedTasksByProjectAtom") {
-          // Mock the project's task order (this should be used for default sorting)
-          const orderedTasksMap = new Map()
-          orderedTasksMap.set(
-            TEST_PROJECT_ID_1,
-            [
-              mockTasksWithVariedProperties[1],
-              mockTasksWithVariedProperties[0],
-              mockTasksWithVariedProperties[2],
-            ], // Specific order for testing
-          )
-          return orderedTasksMap
-        }
-        // Handle orderedTasksBySection atom - it comes as a spy function
-        if (atom && vi.isMockFunction(atom)) {
-          return (projectId: string, sectionId: string | null) => {
-            const project = mockProject
-            if (!project || project.id !== projectId) return []
-            const section = project.sections.find((s) => s.id === sectionId)
-            if (!section) return []
-            return mockTasks.filter((task) => section.items.includes(task.id))
-          }
-        }
-        return []
-      })
+          },
+        }),
+      )
 
       render(<ProjectSectionsView droppableId="test-droppable" />)
 
@@ -1585,40 +1343,22 @@ describe("ProjectSectionsView", () => {
 
     it("works correctly in flat list mode (supportsSections=false)", () => {
       // Mock currentViewStateAtom to return priority sorting
-      mockJotai.useAtomValue.mockImplementation((atom: unknown) => {
-        if (atom === "mockTasks") return mockTasksWithVariedProperties
-        if (atom === "mockFilteredTasksAtom") {
-          // Simulate priority sorting
-          return [...mockTasksWithVariedProperties].sort((a, b) => a.priority - b.priority)
-        }
-        if (atom === "mockProjectsAtom") return [mockProjectForSorting]
-        if (atom === "mockCurrentViewStateAtom")
-          return {
+      const sortedTasks = [...mockTasksWithVariedProperties].sort((a, b) => a.priority - b.priority)
+      mockJotai.useAtomValue.mockImplementation(
+        createMockUseAtomValue({
+          filteredTasksAtom: sortedTasks,
+          tasksAtom: sortedTasks, // Mock TaskItem needs this to get task titles
+          projectsAtom: [mockProjectForSorting],
+          currentViewStateAtom: {
             showSidePanel: false,
             compactView: false,
             viewMode: "list",
             sortBy: "priority", // Priority sorting
             sortDirection: "asc",
             showCompleted: true,
-          }
-        if (atom === "mockCurrentRouteContextAtom")
-          return {
-            pathname: `/projects/${TEST_PROJECT_ID_1}`,
-            viewId: TEST_PROJECT_ID_1,
-            routeType: "project",
-          }
-        if (atom === "mockCollapsedSectionsAtom") return []
-        if (atom === "mockSelectedTaskAtom") return null
-        if (atom === "mockOrderedTasksByProjectAtom") {
-          const orderedTasksMap = new Map()
-          orderedTasksMap.set(
-            TEST_PROJECT_ID_1,
-            mockTasksWithVariedProperties.filter((t) => t.projectId === TEST_PROJECT_ID_1),
-          )
-          return orderedTasksMap
-        }
-        return []
-      })
+          },
+        }),
+      )
 
       render(<ProjectSectionsView droppableId="test-droppable" supportsSections={false} />)
 

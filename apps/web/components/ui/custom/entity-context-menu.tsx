@@ -31,7 +31,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { projectsAtom } from "@/lib/atoms"
-import { currentRouteContextAtom } from "@/lib/atoms/ui/navigation"
+import { currentRouteContextAtom } from "@tasktrove/atoms"
 import { isValidProjectId } from "@/lib/utils/routing"
 import { GroupId, LabelId, ProjectId, SectionId } from "@/lib/types"
 

@@ -17,7 +17,7 @@ import {
   keyboardHandlersAtom,
   type KeyboardHandler,
   type KeyboardHandlerContext,
-} from "@/lib/atoms/ui/keyboard-context"
+} from "@tasktrove/atoms"
 
 /**
  * Interface for representing a shortcut conflict

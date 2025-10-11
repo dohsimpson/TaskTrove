@@ -120,8 +120,8 @@ vi.mock("@/lib/atoms", () => ({
   updateLabelAtom: vi.fn(),
   taskCounts: vi.fn(),
   sortedLabels: vi.fn(),
-  visibleProjectsAtom: vi.fn(),
-  projectTaskCountsAtom: vi.fn(),
+  visibleProjectsAtom: { debugLabel: "visibleProjectsAtom" },
+  projectTaskCountsAtom: { debugLabel: "projectTaskCountsAtom" },
   labelTaskCountsAtom: vi.fn(),
   tasks: vi.fn(),
   taskActions: {
@@ -136,41 +136,39 @@ vi.mock("@/lib/atoms", () => ({
   labelAtoms: {
     labels: vi.fn(),
   },
-}))
-
-vi.mock("@/lib/atoms/core/projects", () => ({
-  visibleProjectsAtom: { debugLabel: "visibleProjectsAtom" },
-  projectTaskCountsAtom: { debugLabel: "projectTaskCountsAtom" },
   projectIdsAtom: { debugLabel: "projectIdsAtom" },
 }))
 
 // Mock DialogsAtom needed by the component
-vi.mock("@/lib/atoms/ui/dialogs", () => ({
+// Consolidated atoms mock
+vi.mock("@tasktrove/atoms", () => ({
+  // Dialog atoms
   openSettingsDialogAtom: { debugLabel: "openSettingsDialogAtom" },
-}))
-
-vi.mock("@/lib/atoms/ui/navigation", () => ({
   openSearchAtom: { debugLabel: "openSearchAtom" },
   openQuickAddAtom: { debugLabel: "openQuickAddAtom" },
   openProjectDialogAtom: { debugLabel: "openProjectDialogAtom" },
   openLabelDialogAtom: { debugLabel: "openLabelDialogAtom" },
   openProjectGroupDialogAtom: { debugLabel: "openProjectGroupDialogAtom" },
+
+  // Navigation and editing atoms
   pathnameAtom: { debugLabel: "pathnameAtom" },
   editingProjectIdAtom: { debugLabel: "editingProjectIdAtom" },
   stopEditingProjectAtom: { debugLabel: "stopEditingProjectAtom" },
   editingLabelIdAtom: { debugLabel: "editingLabelIdAtom" },
   stopEditingLabelAtom: { debugLabel: "stopEditingLabelAtom" },
-}))
 
-vi.mock("@/lib/atoms/core/groups", () => ({
+  // Project group atoms
   allGroupsAtom: { debugLabel: "allGroupsAtom" },
-  updateProjectGroupAtom: { debugLabel: "updateProjectGroupAtom" },
-  deleteProjectGroupAtom: { debugLabel: "deleteProjectGroupAtom" },
   reorderProjectWithinGroupAtom: { debugLabel: "reorderProjectWithinGroupAtom" },
-  reorderProjectWithinRootAtom: { debugLabel: "reorderProjectWithinRootAtom" },
   moveProjectToGroupAtom: { debugLabel: "moveProjectToGroupAtom" },
   removeProjectFromGroupWithIndexAtom: { debugLabel: "removeProjectFromGroupWithIndexAtom" },
   reorderGroupAtom: { debugLabel: "reorderGroupAtom" },
+  reorderProjectWithinRootAtom: { debugLabel: "reorderProjectWithinRootAtom" },
+  updateProjectGroupAtom: { debugLabel: "updateProjectGroupAtom" },
+}))
+
+vi.mock("@/lib/atoms/core/groups", () => ({
+  // Empty mock - moved to @tasktrove/atoms
 }))
 
 vi.mock("@/lib/atoms/core/ordering", () => ({

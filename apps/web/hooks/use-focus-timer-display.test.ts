@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { renderHook, act } from "@/test-utils"
 import { useFocusTimerDisplay } from "./use-focus-timer-display"
 import type { Task } from "@/lib/types"
-import type { FocusTimer } from "@/lib/atoms/ui/focus-timer"
+import type { FocusTimer } from "@tasktrove/atoms"
 import { createTaskId } from "@/lib/types"
 import { v4 as uuidv4 } from "uuid"
 

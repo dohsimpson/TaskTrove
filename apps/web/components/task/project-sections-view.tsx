@@ -26,14 +26,14 @@ import {
   updateGlobalViewOptionsAtom,
   updateProjectsAtom,
   updateTasksAtom,
-} from "@/lib/atoms"
+} from "@tasktrove/atoms"
 import { SIDE_PANEL_WIDTH_MIN, SIDE_PANEL_WIDTH_MAX } from "@tasktrove/constants"
 import {
   currentRouteContextAtom,
   editingSectionIdAtom,
   stopEditingSectionAtom,
-} from "@/lib/atoms/ui/navigation"
-import { taskAtoms } from "@/lib/atoms/core/tasks"
+} from "@tasktrove/atoms"
+import { taskAtoms } from "@tasktrove/atoms"
 import type { Task, Project, ProjectSection, TaskId, ProjectId } from "@/lib/types"
 import { createGroupId, createTaskId } from "@/lib/types"
 import { applyViewStateFilters, sortTasksByViewState } from "@tasktrove/atoms"

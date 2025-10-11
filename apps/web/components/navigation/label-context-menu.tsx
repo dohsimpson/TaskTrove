@@ -3,7 +3,7 @@
 import { useAtom, useSetAtom } from "jotai"
 import { EntityContextMenu } from "@/components/ui/custom/entity-context-menu"
 import { labels, deleteLabel, updateLabelAtom } from "@/lib/atoms"
-import { startEditingLabelAtom, openLabelDialogAtom } from "@/lib/atoms/ui/navigation"
+import { startEditingLabelAtom, openLabelDialogAtom } from "@tasktrove/atoms"
 import type { Label, LabelId } from "@/lib/types"
 
 interface LabelContextMenuProps {

@@ -42,8 +42,12 @@ vi.mock("./task-search-input", () => ({
 }))
 
 // Mock atoms
-vi.mock("@/lib/atoms", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   openQuickAddAtom: "mockOpenQuickAddAtom",
+}))
+
+vi.mock("@/lib/atoms", () => ({
+  // Empty mock - openQuickAddAtom moved to @tasktrove/atoms
 }))
 
 // Mock UI components

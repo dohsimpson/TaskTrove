@@ -11,11 +11,7 @@ import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { ProjectContextMenu } from "./project-context-menu"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { extractSidebarInstruction } from "@/hooks/use-sidebar-drag-state"
-import {
-  pathnameAtom,
-  editingProjectIdAtom,
-  stopEditingProjectAtom,
-} from "@/lib/atoms/ui/navigation"
+import { pathnameAtom, editingProjectIdAtom, stopEditingProjectAtom } from "@tasktrove/atoms"
 import { projectTaskCountsAtom, projectActions } from "@/lib/atoms"
 import {
   reorderProjectWithinGroupAtom,
@@ -23,7 +19,7 @@ import {
   removeProjectFromGroupWithIndexAtom,
   reorderGroupAtom,
   reorderProjectWithinRootAtom,
-} from "@/lib/atoms/core/groups"
+} from "@tasktrove/atoms"
 import {
   attachInstruction,
   extractInstruction,

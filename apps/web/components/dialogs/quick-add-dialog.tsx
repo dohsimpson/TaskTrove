@@ -24,9 +24,9 @@ import {
 import { cn } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { useAtomValue, useSetAtom } from "jotai"
-import { labelsAtom, addLabelAndWaitForRealIdAtom } from "@/lib/atoms/core/labels"
-import { visibleProjectsAtom } from "@/lib/atoms/core/projects"
-import { addTaskAtom, tasksAtom } from "@/lib/atoms/core/tasks"
+import { labelsAtom, addLabelAndWaitForRealIdAtom } from "@/lib/atoms"
+import { visibleProjectsAtom } from "@/lib/atoms"
+import { addTaskAtom, tasksAtom } from "@tasktrove/atoms"
 import {
   showQuickAddAtom,
   closeQuickAddAtom,
@@ -36,8 +36,8 @@ import {
   copyTaskAtom,
   resetCopyTaskAtom,
   nlpEnabledAtom,
-} from "@/lib/atoms/ui/dialogs"
-import { currentRouteContextAtom } from "@/lib/atoms/ui/navigation"
+} from "@tasktrove/atoms"
+import { currentRouteContextAtom } from "@tasktrove/atoms"
 import { TaskSchedulePopover } from "@/components/task/task-schedule-popover"
 import { LabelManagementPopover } from "@/components/task/label-management-popover"
 import { ProjectPopover } from "@/components/task/project-popover"

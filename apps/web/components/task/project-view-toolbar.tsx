@@ -7,7 +7,7 @@ import { useTranslation } from "@tasktrove/i18n"
 import { TaskFilterControls } from "./task-filter-controls"
 import { TaskFilterBadges } from "./task-filter-badges"
 import { TaskSearchInput } from "./task-search-input"
-import { openQuickAddAtom } from "@/lib/atoms"
+import { openQuickAddAtom } from "@tasktrove/atoms"
 
 interface ProjectViewToolbarProps {
   className?: string

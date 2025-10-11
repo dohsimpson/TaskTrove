@@ -11,9 +11,9 @@ import {
   clearActiveFiltersAtom,
   currentViewStateAtom,
   currentViewAtom,
-} from "@/lib/atoms/ui/views"
+} from "@tasktrove/atoms"
 import { projectAtoms } from "@/lib/atoms"
-import { labelsAtom } from "@/lib/atoms/core/labels"
+import { labelsAtom } from "@tasktrove/atoms"
 import { uiFilteredTasksForViewAtom } from "@tasktrove/atoms"
 import type { Task, Project, Label as LabelType } from "@/lib/types"
 import { type ProjectId } from "@/lib/types"

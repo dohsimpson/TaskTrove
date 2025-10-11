@@ -140,10 +140,13 @@ vi.mock("@/lib/atoms", () => ({
 }))
 
 // Mock task atoms
-vi.mock("@/lib/atoms/core/tasks", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   orderedTasksByProjectAtom: vi.fn(),
   reorderTaskInViewAtom: vi.fn(),
   moveTaskBetweenSectionsAtom: vi.fn(),
+  labelsAtom: [],
+  deleteLabelAtom: vi.fn(),
+  updateLabelAtom: vi.fn(),
   taskAtoms: {
     derived: {
       orderedTasksBySection: vi.fn(),

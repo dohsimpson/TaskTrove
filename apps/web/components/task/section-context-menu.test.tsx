@@ -4,7 +4,7 @@ import { screen } from "@/test-utils"
 import { render } from "@/test-utils/render-with-providers"
 import { SectionContextMenu } from "./section-context-menu"
 import { projects } from "@/lib/atoms"
-import { pathnameAtom } from "@/lib/atoms/ui/navigation"
+import { pathnameAtom } from "@tasktrove/atoms"
 import { createGroupId } from "@/lib/types"
 import { TEST_PROJECT_ID_1 } from "@/lib/utils/test-constants"
 

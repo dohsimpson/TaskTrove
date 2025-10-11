@@ -218,12 +218,21 @@ vi.mock("jotai", async (importOriginal) => {
   }
 })
 
-vi.mock("@/lib/atoms/core/labels", () => ({
+vi.mock("@/lib/atoms", () => ({
+  // Label atoms
   sortedLabelsAtom: "mockSortedLabelsAtom",
   addLabelAtom: "mockAddLabelAtom",
   addLabelAndWaitForRealIdAtom: "mockAddLabelAndWaitForRealIdAtom",
   labelsAtom: "mockLabelsAtom",
   labelsFromIdsAtom: "mockLabelsFromIdsAtom",
+  updateLabelAtom: "mockUpdateLabelAtom",
+  deleteLabelAtom: "mockDeleteLabelAtom",
+  reorderLabelAtom: "mockReorderLabelAtom",
+  addLabel: "mockAddLabelAtom",
+  updateLabel: "mockUpdateLabelAtom",
+  deleteLabel: "mockDeleteLabelAtom",
+  reorderLabel: "mockReorderLabelAtom",
+  labelsFromIds: "mockLabelsFromIdsAtom",
   labelAtoms: {
     labels: "mockLabelsAtom",
     sortedLabels: "mockSortedLabelsAtom",
@@ -237,12 +246,11 @@ vi.mock("@/lib/atoms/core/labels", () => ({
     deleteLabel: "mockDeleteLabelAtom",
     reorderLabel: "mockReorderLabelAtom",
   },
-}))
-
-vi.mock("@/lib/atoms/core/projects", () => ({
+  // Project atoms
   projectsAtom: "mockProjectsAtom",
   visibleProjectsAtom: "mockVisibleProjectsAtom",
   projectIdsAtom: "mockProjectIdsAtom",
+  currentProjectIdAtom: "mockCurrentProjectIdAtom",
   projectAtoms: {
     projects: "mockProjectsAtom",
     currentProjectId: "mockCurrentProjectIdAtom",
@@ -265,38 +273,15 @@ vi.mock("@/lib/atoms/core/projects", () => ({
       projectIds: "mockProjectIdsAtom",
     },
   },
-}))
-
-vi.mock("@/lib/atoms/core/tasks", () => ({
-  tasksAtom: [],
-  addTaskAtom: "mockAddTaskAtom",
-  updateTaskAtom: "mockUpdateTaskAtom",
-  taskAtoms: {
-    tasks: "mockTasksAtom",
-    actions: {
-      addTask: "mockAddTaskAtom",
-      updateTask: "mockUpdateTaskAtom",
-      deleteTask: "mockDeleteTaskAtom",
-      toggleTask: "mockToggleTaskAtom",
-      addComment: "mockAddCommentAtom",
-      bulkActions: "mockBulkActionsAtom",
-      moveTask: "mockMoveTaskAtom",
-      moveTaskBetweenSections: "mockMoveTaskBetweenSectionsAtom",
-      reorderTaskInView: "mockReorderTaskInViewAtom",
-      addTaskToView: "mockAddTaskToViewAtom",
-      removeTaskFromView: "mockRemoveTaskFromViewAtom",
-      createTaskMutation: "mockCreateTaskMutationAtom",
-      deleteTaskMutation: "mockDeleteTaskMutationAtom",
-    },
-    derived: {
-      taskCounts: "mockTaskCountsAtom",
-      searchResults: "mockSearchResultsAtom",
-      filteredTasks: "mockFilteredTasksAtom",
-      groupedTasks: "mockGroupedTasksAtom",
-      visibleTasks: "mockVisibleTasksAtom",
-      tasksByProject: "mockTasksByProjectAtom",
-    },
+  // Task atoms
+  tasksAtom: "mockTasksAtom",
+  taskActions: {
+    updateTask: "mockUpdateTaskAtom",
+    toggleTask: "mockToggleTaskAtom",
+    deleteTask: "mockDeleteTaskAtom",
   },
+  // Settings atoms
+  settingsAtoms: "mockSettingsAtoms",
 }))
 
 vi.mock("@/lib/types", () => ({
@@ -464,7 +449,9 @@ vi.mock("@/lib/types", () => ({
   },
 }))
 
-vi.mock("@/lib/atoms/ui/dialogs", () => ({
+// Comprehensive atoms mock combining all required atoms
+vi.mock("@tasktrove/atoms", () => ({
+  // Dialog and UI atoms
   showQuickAddAtom: true,
   closeQuickAddAtom: vi.fn(),
   copyTaskAtom: null,
@@ -472,7 +459,57 @@ vi.mock("@/lib/atoms/ui/dialogs", () => ({
   quickAddTaskAtom: {},
   updateQuickAddTaskAtom: vi.fn(),
   resetQuickAddTaskAtom: vi.fn(),
+  currentRouteContextAtom: { routeType: "inbox", projectId: null, labelId: null },
+
+  // Task atoms
+  tasksAtom: [],
+  addTaskAtom: "mockAddTaskAtom",
+  updateTaskAtom: "mockUpdateTaskAtom",
+  taskCountsAtom: "mockTaskCountsAtom",
+  projectsAtom: [],
+  labelsAtom: [],
+  labelsFromIdsAtom: "mockLabelsFromIdsAtom",
+  allGroupsAtom: "mockAllGroupsAtom",
+  projectIdsAtom: "mockProjectIdsAtom",
+  visibleProjectsAtom: [],
+  updateLabelAtom: vi.fn(),
+  deleteLabelAtom: vi.fn(),
+  toggleTaskSelectionAtom: vi.fn(),
   nlpEnabledAtom: true,
+
+  // Project atoms
+  projectAtoms: {
+    actions: {},
+    derived: {},
+  },
+
+  // Task atoms nested structure
+  taskAtoms: {
+    tasks: "mockTasksAtom",
+    actions: {
+      addTask: "mockAddTaskAtom",
+      updateTask: "mockUpdateTaskAtom",
+      deleteTask: "mockDeleteTaskAtom",
+      toggleTask: "mockToggleTaskAtom",
+      addComment: "mockAddCommentAtom",
+      bulkActions: "mockBulkActionsAtom",
+      moveTask: "mockMoveTaskAtom",
+      moveTaskBetweenSections: "mockMoveTaskBetweenSectionsAtom",
+      reorderTaskInView: "mockReorderTaskInViewAtom",
+      addTaskToView: "mockAddTaskToViewAtom",
+      removeTaskFromView: "mockRemoveTaskFromViewAtom",
+      createTaskMutation: "mockCreateTaskMutationAtom",
+      deleteTaskMutation: "mockDeleteTaskMutationAtom",
+    },
+    derived: {
+      taskCounts: "mockTaskCountsAtom",
+      searchResults: "mockSearchResultsAtom",
+      filteredTasks: "mockFilteredTasksAtom",
+      groupedTasks: "mockGroupedTasksAtom",
+      visibleTasks: "mockVisibleTasksAtom",
+      tasksByProject: "mockTasksByProjectAtom",
+    },
+  },
 }))
 
 vi.mock("@/lib/utils/logger", () => ({

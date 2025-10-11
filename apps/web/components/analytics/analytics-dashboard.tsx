@@ -25,7 +25,7 @@ import { ProductivityHeatmap } from "./productivity-heatmap"
 import { StreakTracker } from "./streak-tracker"
 import { GoalTracker } from "./goal-tracker"
 import { useAtomValue, useSetAtom } from "jotai"
-import { analyticsAtoms } from "@/lib/atoms"
+import { analyticsAtoms } from "@tasktrove/atoms"
 import { log } from "@/lib/utils/logger"
 import type { TimePeriod } from "@/lib/types"
 

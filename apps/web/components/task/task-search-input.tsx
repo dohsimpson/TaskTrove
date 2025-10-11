@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { currentViewStateAtom, setSearchQueryAtom } from "@/lib/atoms/ui/views"
+import { currentViewStateAtom, setSearchQueryAtom } from "@tasktrove/atoms"
 import { Input } from "@/components/ui/input"
 import { Search, X } from "lucide-react"
 import { cn } from "@/lib/utils"

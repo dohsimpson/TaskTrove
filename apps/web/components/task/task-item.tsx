@@ -53,13 +53,9 @@ import {
   selectRangeAtom,
   selectionToggleTaskSelectionAtom,
 } from "@/lib/atoms"
-import {
-  labelsAtom,
-  addLabelAndWaitForRealIdAtom,
-  labelsFromIdsAtom,
-} from "@/lib/atoms/core/labels"
+import { labelsAtom, addLabelAndWaitForRealIdAtom, labelsFromIdsAtom } from "@/lib/atoms"
 import { projectsAtom } from "@/lib/atoms"
-import { quickAddTaskAtom, updateQuickAddTaskAtom, showQuickAddAtom } from "@/lib/atoms/ui/dialogs"
+import { quickAddTaskAtom, updateQuickAddTaskAtom, showQuickAddAtom } from "@tasktrove/atoms"
 import { selectedTaskIdAtom } from "@/lib/atoms"
 import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } from "@/lib/types"
 import { INBOX_PROJECT_ID, createTaskId } from "@/lib/types"

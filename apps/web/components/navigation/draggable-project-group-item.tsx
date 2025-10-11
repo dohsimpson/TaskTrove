@@ -23,8 +23,8 @@ import {
   reorderGroupAtom,
   reorderProjectWithinRootAtom,
   updateProjectGroupAtom,
-} from "@/lib/atoms/core/groups"
-import { editingGroupIdAtom, stopEditingGroupAtom, pathnameAtom } from "@/lib/atoms/ui/navigation"
+} from "@tasktrove/atoms"
+import { editingGroupIdAtom, stopEditingGroupAtom, pathnameAtom } from "@tasktrove/atoms"
 import {
   attachInstruction,
   extractInstruction,

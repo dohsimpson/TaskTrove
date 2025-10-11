@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/sidebar"
 import { AboutModal } from "@/components/dialogs/about-modal"
 import { useTranslation } from "@tasktrove/i18n"
-import { openSettingsDialogAtom, openUserProfileDialogAtom } from "@/lib/atoms/ui/dialogs"
+import { openSettingsDialogAtom, openUserProfileDialogAtom } from "@tasktrove/atoms"
 import { userAtom } from "@/lib/atoms"
 import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
 import { LogoutConfirmDialog } from "@/components/dialogs/logout-confirm-dialog"

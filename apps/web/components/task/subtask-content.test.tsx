@@ -118,6 +118,10 @@ vi.mock("@/lib/atoms", () => ({
   sortedProjectsAtom: "mockSortedProjectsAtom",
   tasksAtom: "mockTasksAtom",
   settingsAtom: "mockSettingsAtom", // Required by ContentPopover
+  // Label atoms
+  sortedLabelsAtom: vi.fn(),
+  addLabelAtom: vi.fn(),
+  labelsFromIdsAtom: vi.fn(),
   // Focus timer atoms
   focusTimerStateAtom: "mockFocusTimerStateAtom",
   activeFocusTimerAtom: "mockActiveFocusTimerAtom",
@@ -140,14 +144,8 @@ vi.mock("@/lib/atoms", () => ({
   }),
 }))
 
-vi.mock("@/lib/atoms/core/labels", () => ({
-  sortedLabelsAtom: vi.fn(),
-  addLabelAtom: vi.fn(),
-  labelsFromIdsAtom: vi.fn(),
-}))
-
 // Mock dialog atoms
-vi.mock("@/lib/atoms/ui/dialogs", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   quickAddTaskAtom: vi.fn(),
   updateQuickAddTaskAtom: vi.fn(),
 }))

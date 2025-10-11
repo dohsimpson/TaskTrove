@@ -55,7 +55,7 @@ import {
   removeProjectFromGroupWithIndexAtom,
   reorderGroupAtom,
   reorderProjectWithinRootAtom,
-} from "@/lib/atoms/core/groups"
+} from "@tasktrove/atoms"
 import type { Project, Label, ProjectGroup } from "@/lib/types"
 import { isGroup } from "@/lib/types"
 import {
@@ -66,7 +66,7 @@ import {
   pathnameAtom,
   editingLabelIdAtom,
   stopEditingLabelAtom,
-} from "@/lib/atoms/ui/navigation"
+} from "@tasktrove/atoms"
 import { ROOT_PROJECT_GROUP_ID } from "@/lib/types"
 import { useTranslation } from "@tasktrove/i18n"
 export function SidebarNav() {

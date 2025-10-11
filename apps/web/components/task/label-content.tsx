@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
-import { labelsFromIdsAtom, labelsAtom } from "@/lib/atoms/core/labels"
+import { labelsFromIdsAtom, labelsAtom } from "@tasktrove/atoms"
 import { useTranslation } from "@tasktrove/i18n"
 import type { Task, LabelId, Label } from "@/lib/types"
 

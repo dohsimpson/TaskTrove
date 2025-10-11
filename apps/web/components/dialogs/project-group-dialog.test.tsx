@@ -42,18 +42,16 @@ const { useAtomValue, useSetAtom } = vi.hoisted(() => ({
 }))
 
 // Mock the atoms directly
-vi.mock("@/lib/atoms/ui/dialogs", () => ({
+vi.mock("@tasktrove/atoms", () => ({
   showProjectGroupDialogAtom: { debugLabel: "showProjectGroupDialogAtom" },
   projectGroupDialogContextAtom: { debugLabel: "projectGroupDialogContextAtom" },
-}))
-
-vi.mock("@/lib/atoms/ui/navigation", () => ({
   closeProjectGroupDialogAtom: { debugLabel: "closeProjectGroupDialogAtom" },
+  addProjectGroupAtom: { debugLabel: "addProjectGroupAtom" },
+  flattenProjectGroupsAtom: { debugLabel: "flattenProjectGroupsAtom" },
 }))
 
 vi.mock("@/lib/atoms/core/groups", () => ({
-  addProjectGroupAtom: { debugLabel: "addProjectGroupAtom" },
-  flattenProjectGroupsAtom: { debugLabel: "flattenProjectGroupsAtom" },
+  // Empty mock - moved to @tasktrove/atoms
 }))
 
 // Mock Jotai hooks

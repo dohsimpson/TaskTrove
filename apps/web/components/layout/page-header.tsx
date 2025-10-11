@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { dynamicPageInfoAtom, currentRouteContextAtom } from "@/lib/atoms/ui/navigation"
+import { dynamicPageInfoAtom, currentRouteContextAtom } from "@tasktrove/atoms"
 import { tasksAtom } from "@/lib/atoms"
-import { openQuickAddAtom, openProjectDialogAtom } from "@/lib/atoms/ui/navigation"
-import { openSettingsDialogAtom } from "@/lib/atoms/ui/dialogs"
+import { openQuickAddAtom, openProjectDialogAtom } from "@tasktrove/atoms"
+import { openSettingsDialogAtom } from "@tasktrove/atoms"
 import { STANDARD_VIEW_METADATA } from "@tasktrove/constants"
 
 import { Button } from "@/components/ui/button"

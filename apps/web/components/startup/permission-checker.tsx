@@ -5,7 +5,7 @@ import { AlertTriangle, FileText, DatabaseBackup } from "lucide-react"
 import { StartupAlert } from "./startup-alert"
 import { API_ROUTES } from "@/lib/types"
 import { useAtomValue } from "jotai"
-import { queryClientAtom } from "@/lib/atoms/core/base"
+import { queryClientAtom } from "@tasktrove/atoms"
 
 interface HealthCheckResponse {
   status: "healthy" | "error" | "needs_initialization" | "needs_migration"

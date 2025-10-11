@@ -27,8 +27,13 @@ vi.mock("jotai", () => ({
   Provider: vi.fn(({ children }) => children),
 }))
 
-// Mock atoms
-vi.mock("@/lib/atoms/core/labels", () => ({
+// Mock @/lib/atoms (legacy)
+vi.mock("@/lib/atoms", () => ({
+  // Empty mock - moved to @tasktrove/atoms
+}))
+
+// Mock @tasktrove/atoms with all required exports
+vi.mock("@tasktrove/atoms", () => ({
   labelsFromIdsAtom: { toString: () => "labelsFromIdsAtom" },
   sortedLabelsAtom: { toString: () => "sortedLabelsAtom" },
   labelsAtom: { toString: () => "labelsAtom" },

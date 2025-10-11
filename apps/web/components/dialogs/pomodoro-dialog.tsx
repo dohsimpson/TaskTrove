@@ -4,8 +4,8 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { PomodoroTimer } from "@/components/productivity/pomodoro-timer"
-import { showPomodoroAtom } from "@/lib/atoms/ui/dialogs"
-import { closePomodoroAtom, selectedTaskAtom } from "@/lib/atoms"
+import { showPomodoroAtom } from "@tasktrove/atoms"
+import { closePomodoroAtom, selectedTaskAtom } from "@tasktrove/atoms"
 
 export function PomodoroDialog() {
   // Dialog state atoms

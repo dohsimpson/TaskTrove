@@ -7,7 +7,7 @@ import {
   currentViewStateAtom,
   updateViewStateAtom,
   viewStatesAtom,
-} from "@/lib/atoms/ui/views"
+} from "@tasktrove/atoms"
 import type { ViewId } from "@/lib/types"
 import { mockUseToast, mockNextThemes } from "@/test-utils"
 

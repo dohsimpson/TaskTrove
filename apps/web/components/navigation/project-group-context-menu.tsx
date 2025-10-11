@@ -2,13 +2,9 @@
 
 import { useAtomValue, useSetAtom } from "jotai"
 import { EntityContextMenu } from "@/components/ui/custom/entity-context-menu"
-import {
-  projectGroupsAtom,
-  updateProjectGroupAtom,
-  deleteProjectGroupAtom,
-} from "@/lib/atoms/core/groups"
-import { deleteProjectsAtom } from "@/lib/atoms/core/projects"
-import { startEditingGroupAtom } from "@/lib/atoms/ui/navigation"
+import { projectGroupsAtom, updateProjectGroupAtom, deleteProjectGroupAtom } from "@tasktrove/atoms"
+import { deleteProjectsAtom } from "@tasktrove/atoms"
+import { startEditingGroupAtom } from "@tasktrove/atoms"
 import { createProjectId, type GroupId, type ProjectId } from "@/lib/types"
 
 interface ProjectGroupContextMenuProps {

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
-import { tasksAtom } from "@/lib/atoms/core/tasks"
+import { tasksAtom } from "@tasktrove/atoms"
 import { useTranslation } from "@tasktrove/i18n"
 import type { TaskId } from "@/lib/types"
 

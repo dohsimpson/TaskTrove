@@ -198,7 +198,7 @@ vi.mock("@/lib/types", async (importOriginal) => {
 })
 
 // Mock the nlpEnabledAtom with reactive approach using React state
-vi.mock("@/lib/atoms/ui/dialogs", async (importOriginal) => {
+vi.mock("@tasktrove/atoms", async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>()
   // Create state object that will be managed by React in the component
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any

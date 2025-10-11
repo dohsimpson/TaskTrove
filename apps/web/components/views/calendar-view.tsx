@@ -30,7 +30,7 @@ import {
 import { TaskItem } from "@/components/task/task-item"
 import { SelectionToolbar } from "@/components/task/selection-toolbar"
 import { TaskSidePanel } from "@/components/task/task-side-panel"
-import { showTaskPanelAtom, updateQuickAddTaskAtom } from "@/lib/atoms/ui/dialogs"
+import { showTaskPanelAtom, updateQuickAddTaskAtom } from "@tasktrove/atoms"
 import { closeTaskPanelAtom, selectedTaskAtom } from "@/lib/atoms"
 import {
   currentViewStateAtom,

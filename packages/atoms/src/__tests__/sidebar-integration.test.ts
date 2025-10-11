@@ -23,7 +23,8 @@ const TEST_PROJECT_ID_1 = createProjectId(
 // Import the REAL atoms
 import { visibleProjectsAtom, projectAtoms } from "../core/projects";
 import { projectTaskCountsAtom, taskCountsAtom } from "../ui/task-counts";
-import { taskAtoms, baseFilteredTasksForViewAtom } from "../core/tasks";
+import { taskAtoms } from "../core/tasks";
+import { baseFilteredTasksForViewAtom } from "../data/tasks/filters";
 
 describe("Sidebar Integration", () => {
   let store: ReturnType<typeof createStore>;

@@ -16,7 +16,8 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createStore } from "jotai";
-import { updateTasksMutationAtom, queryClientAtom } from "../core/base";
+import { updateTasksMutationAtom } from "../mutations/tasks";
+import { queryClientAtom } from "../data/base/query";
 import type { Task } from "@tasktrove/types";
 import { createTaskId, INBOX_PROJECT_ID } from "@tasktrove/types";
 import { TASKS_QUERY_KEY } from "@tasktrove/constants";

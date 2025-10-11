@@ -2,17 +2,32 @@
 export * from "./core/tasks";
 export * from "./core/projects";
 export * from "./core/labels";
-export * from "./core/base";
-// Export specific atoms from core/settings to avoid conflicts
+// Export base atoms directly since core/base no longer re-exports them
 export {
+  tasksAtom,
+  projectsAtom,
+  labelsAtom,
   settingsAtom,
+  userAtom,
+} from "./data/base/atoms";
+// Export query atoms directly since core/base no longer re-exports them
+export {
+  queryClientAtom,
+  tasksQueryAtom,
+  projectsQueryAtom,
+  labelsQueryAtom,
+  groupsQueryAtom,
+  settingsQueryAtom,
+  userQueryAtom,
+} from "./data/base/query";
+export {
   updateSettingsAtom,
   dataSettingsAtom,
   updateDataSettingsAtom,
   settingsAtoms,
-  settingsQueryAtom,
-  updateSettingsMutationAtom,
 } from "./core/settings";
+import { updateSettingsMutationAtom } from "./mutations/settings";
+export { updateSettingsMutationAtom };
 export * from "./core/notifications";
 export * from "./core/history";
 export * from "./core/groups";
@@ -56,6 +71,19 @@ export {
   openGroupColorPickerAtom,
   closeGroupColorPickerAtom,
   navigationAtoms,
+  // Dialog management atoms
+  openSearchAtom,
+  closeSearchAtom,
+  openProjectDialogAtom,
+  closeProjectDialogAtom,
+  openLabelDialogAtom,
+  closeLabelDialogAtom,
+  openSectionDialogAtom,
+  closeSectionDialogAtom,
+  openProjectGroupDialogAtom,
+  closeProjectGroupDialogAtom,
+  openQuickAddAtom,
+  type RouteContext,
 } from "./ui/navigation";
 
 // Selection exports (avoiding conflicts with dialogs)
@@ -100,3 +128,27 @@ export {
   type CountConfig,
   type ViewCounts,
 } from "./utils/counts";
+
+// Task ordering utilities
+export {
+  getOrderedTasksForSection,
+  getOrderedTasksForProject,
+  moveTaskWithinSection,
+  addTaskToSection,
+  removeTaskFromSection,
+} from "./data/tasks/ordering";
+
+// Test helpers
+export {
+  createMockTask,
+  createMockTaskSet,
+  TEST_TASK_ID_1,
+  TEST_TASK_ID_2,
+  TEST_TASK_ID_3,
+  TEST_PROJECT_ID_1,
+  TEST_PROJECT_ID_2,
+  TEST_LABEL_ID_1,
+  TEST_LABEL_ID_2,
+  TEST_SECTION_ID_1,
+  TEST_SECTION_ID_2,
+} from "./utils/test-helpers";

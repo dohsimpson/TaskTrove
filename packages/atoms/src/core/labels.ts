@@ -5,12 +5,12 @@ import {
   withErrorHandling,
 } from "../utils/atom-helpers";
 import { Label, LabelId, CreateLabelRequest } from "@tasktrove/types";
+import { labelsAtom } from "../data/base/atoms";
 import {
   createLabelMutationAtom,
   createLabelWithoutOptimisticUpdateAtom,
-  labelsAtom,
   deleteLabelMutationAtom,
-} from "./base";
+} from "../mutations/labels";
 import { recordOperationAtom } from "./history";
 
 /**
@@ -249,5 +249,4 @@ export const labelAtoms = {
   deleteLabel: deleteLabelAtom,
 } as const;
 
-// Individual exports for backward compatibility
-export { labelsAtom } from "./base";
+// Note: labelsAtom is imported from "../data/base/atoms"

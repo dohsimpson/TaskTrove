@@ -2,7 +2,7 @@ import React from "react"
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@/test-utils"
 import type { Task, Project } from "@/lib/types"
-import { createMockTask } from "@/lib/atoms/tests/test-helpers"
+import { createMockTask } from "@tasktrove/atoms"
 import { TEST_TASK_ID_1, TEST_TASK_ID_2 } from "@/lib/utils/test-constants"
 import { mockNextNavigation, mockNavigation, mockUseToast, mockNextThemes } from "@/test-utils"
 
@@ -120,11 +120,15 @@ vi.mock("@/lib/atoms", () => ({
 }))
 
 // Mock jotai hooks
-vi.mock("jotai", () => ({
-  useAtom: vi.fn((atom) => [atom.init, vi.fn()]),
-  useSetAtom: vi.fn(() => vi.fn()),
-  Provider: vi.fn(({ children }) => children),
-}))
+vi.mock("jotai", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("jotai")>()
+  return {
+    ...actual,
+    useAtom: vi.fn((atom) => [atom.init, vi.fn()]),
+    useSetAtom: vi.fn(() => vi.fn()),
+    Provider: vi.fn(({ children }) => children),
+  }
+})
 
 // Mock all the imported components
 vi.mock("@/components/ui/button", () => ({

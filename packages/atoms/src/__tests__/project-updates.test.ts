@@ -15,7 +15,8 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createStore } from "jotai";
-import { updateProjectsMutationAtom, projectsAtom } from "../core/base";
+import { projectsAtom } from "../data/base/atoms";
+import { updateProjectsMutationAtom } from "../mutations/projects";
 import { deleteProjectAtom } from "../core/projects";
 import { DEFAULT_UUID } from "@tasktrove/constants";
 import type { Project } from "@tasktrove/types";

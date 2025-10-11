@@ -20,7 +20,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { createStore } from "jotai";
 import { taskAtoms } from "../core/tasks";
-import { deleteTaskMutationAtom } from "../core/base";
+import { deleteTaskMutationAtom } from "../mutations/tasks";
 import { createTaskId } from "@tasktrove/types";
 import {
   createMockTask,
@@ -29,7 +29,7 @@ import {
 } from "../utils/test-helpers";
 
 // Mock the atoms package logger to avoid console noise in tests
-vi.mock("@tasktrove/atoms/utils", () => ({
+vi.mock("../utils/atom-helpers", () => ({
   log: {
     info: vi.fn(),
     warn: vi.fn(),
@@ -386,7 +386,7 @@ describe("Delete Task Mutation Tests", () => {
         }
 
         // Verify error logging (mocked)
-        const { log } = await import("@tasktrove/atoms/utils");
+        const { log } = await import("../utils/atom-helpers");
         expect(log.error).toHaveBeenCalled();
       } finally {
         setMockedNodeEnv(originalEnv);

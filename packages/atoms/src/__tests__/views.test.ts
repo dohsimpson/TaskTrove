@@ -20,7 +20,7 @@ import { DEFAULT_VIEW_STATE } from "@tasktrove/types/defaults";
 import { migrateViewStates, getViewStateOrDefault } from "../ui/views";
 
 // Mock the atoms package logger to avoid console output during tests
-vi.mock("@tasktrove/atoms/utils", () => ({
+vi.mock("../utils/atom-helpers", () => ({
   log: {
     warn: vi.fn(),
     info: vi.fn(),
@@ -320,7 +320,7 @@ describe("migrateViewStates", () => {
       migrateViewStates(partialData);
 
       // Get the mocked log for testing
-      const { log } = await import("@tasktrove/atoms/utils");
+      const { log } = await import("../utils/atom-helpers");
 
       expect(log.info).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -336,7 +336,7 @@ describe("migrateViewStates", () => {
       migrateViewStates("invalid");
 
       // Get the mocked log for testing
-      const { log } = await import("@tasktrove/atoms/utils");
+      const { log } = await import("../utils/atom-helpers");
 
       expect(log.warn).toHaveBeenCalledWith(
         { module: "views" },

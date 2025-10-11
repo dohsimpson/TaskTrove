@@ -40,16 +40,14 @@ import {
   removeTaskFromSection,
 } from "../data/tasks/ordering";
 
-// Re-export for backwards compatibility
-export { moveTaskWithinSection } from "../data/tasks/ordering";
+// Note: moveTaskWithinSection is imported directly from "../data/tasks/ordering" for internal use
+import { tasksAtom, projectsAtom } from "../data/base/atoms";
 import {
-  tasksAtom,
   createTaskMutationAtom,
   updateTasksMutationAtom,
   deleteTaskMutationAtom,
-  projectsAtom,
-  updateProjectsMutationAtom,
-} from "./base";
+} from "../mutations/tasks";
+import { updateProjectsMutationAtom } from "../mutations/projects";
 import { recordOperationAtom } from "./history";
 import { log } from "../utils/atom-helpers";
 
@@ -1127,18 +1125,3 @@ export const taskAtoms = {
     orderedTasksBySection: orderedTasksBySectionAtom,
   },
 };
-
-export { tasksAtom } from "./base";
-
-// Re-export filtering atoms for backward compatibility
-export {
-  activeTasksAtom,
-  inboxTasksAtom,
-  todayTasksAtom,
-  upcomingTasksAtom,
-  calendarTasksAtom,
-  overdueTasksAtom,
-  completedTasksAtom,
-  projectGroupTasksAtom,
-  baseFilteredTasksForViewAtom,
-} from "../data/tasks/filters";

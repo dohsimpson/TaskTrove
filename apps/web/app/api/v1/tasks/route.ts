@@ -40,7 +40,7 @@ import {
 } from "@tasktrove/constants"
 import { DEFAULT_SECTION_ID } from "@tasktrove/types/defaults"
 import { processRecurringTaskCompletion } from "@/lib/utils/recurring-task-processor"
-import { addTaskToSection, removeTaskFromSection } from "@tasktrove/atoms/data/tasks/ordering"
+import { addTaskToSection, removeTaskFromSection } from "@tasktrove/atoms"
 
 /**
  * GET /api/v1/tasks

@@ -1,2 +1,2 @@
 // Re-export from @tasktrove/atoms package
-export * from "@tasktrove/atoms/settings"
+export * from "@tasktrove/atoms"

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@/test-utils"
 import type { Task, VoiceCommand } from "@/lib/types"
 import { TEST_VOICE_COMMAND_ID_1, TEST_TASK_ID_3 } from "@/lib/utils/test-constants"
-import { createMockTask } from "@/lib/atoms/tests/test-helpers"
+import { createMockTask } from "@tasktrove/atoms"
 
 // Mock the pathnameAtom
 vi.mock("@/lib/atoms/ui/navigation", () => ({

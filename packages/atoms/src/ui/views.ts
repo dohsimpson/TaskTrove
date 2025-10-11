@@ -20,7 +20,7 @@ import {
 import { createAtomWithStorage, log, namedAtom } from "../utils/atom-helpers";
 import { showTaskPanelAtom } from "./dialogs";
 import { selectedTaskIdAtom, setSelectedTaskIdAtom } from "./selection";
-import { tasksAtom } from "../core/tasks";
+import { tasksAtom } from "../data/base/atoms";
 
 /**
  * UI view state atoms for TaskTrove's Jotai migration

@@ -10,7 +10,7 @@ import type {
   Task,
 } from "@tasktrove/types";
 import { createTaskId } from "@tasktrove/types";
-import { settingsAtom } from "./settings";
+import { settingsAtom } from "../data/base/atoms";
 import { safeSetTimeout } from "@tasktrove/utils";
 import {
   log,

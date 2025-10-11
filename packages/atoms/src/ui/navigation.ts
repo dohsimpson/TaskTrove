@@ -42,8 +42,7 @@ import {
   createGroupId,
 } from "@tasktrove/types";
 import { DEFAULT_GROUP_COLOR, DEFAULT_ROUTE } from "@tasktrove/constants";
-import { projectsAtom } from "../core/projects";
-import { labelsAtom } from "../core/labels";
+import { projectsAtom, labelsAtom } from "../data/base/atoms";
 import { allGroupsAtom } from "../core/groups";
 import {
   resolveProject,

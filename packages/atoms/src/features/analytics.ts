@@ -8,9 +8,7 @@ import {
   endOfWeek,
 } from "date-fns";
 import { createAtomWithStorage, handleAtomError } from "../utils/atom-helpers";
-import { tasksAtom } from "../core/tasks";
-import { projectsAtom } from "../core/projects";
-import { labelsAtom } from "../core/labels";
+import { tasksAtom, projectsAtom, labelsAtom } from "../data/base/atoms";
 import {
   ProductivityMetrics,
   TrendData,

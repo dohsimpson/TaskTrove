@@ -10,14 +10,13 @@
 
 import { atom } from "jotai";
 import type { ProjectId, LabelId, Task } from "@tasktrove/types";
-import { projectsAtom } from "../core/projects";
-import { labelsAtom } from "../core/labels";
+import { projectsAtom, labelsAtom } from "../data/base/atoms";
 import {
   activeTasksAtom,
   completedTasksAtom,
   calendarTasksAtom,
   overdueTasksAtom,
-} from "../core/tasks";
+} from "../data/tasks/filters";
 import { viewStatesAtom, getViewStateOrDefault } from "./views";
 import { uiFilteredTasksForViewAtom } from "./filtered-tasks";
 import { applyViewStateFilters } from "../utils/view-filters";

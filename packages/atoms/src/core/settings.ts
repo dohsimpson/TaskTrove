@@ -9,11 +9,9 @@
 import { atom } from "jotai";
 import { handleAtomError, playSoundAtom, log } from "../utils/atom-helpers";
 import { recordOperationAtom } from "./history";
-import {
-  settingsAtom,
-  updateSettingsMutationAtom,
-  settingsQueryAtom,
-} from "./base";
+import { settingsAtom } from "../data/base/atoms";
+import { settingsQueryAtom } from "../data/base/query";
+import { updateSettingsMutationAtom } from "../mutations/settings";
 import type { UserSettings, PartialUserSettings } from "@tasktrove/types";
 import {
   DEFAULT_AUTO_BACKUP_ENABLED,
@@ -149,9 +147,4 @@ export const settingsAtoms = {
   },
 };
 
-// Individual exports for backward compatibility
-export {
-  settingsAtom,
-  settingsQueryAtom,
-  updateSettingsMutationAtom,
-} from "./base";
+// Note: settingsAtom, settingsQueryAtom, and updateSettingsMutationAtom are imported from their respective source files

@@ -15,8 +15,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createStore } from "jotai";
 import { v4 as uuidv4 } from "uuid";
-import { overdueTasksAtom } from "../core/tasks";
-import { queryClientAtom } from "../core/base";
+import { overdueTasksAtom } from "../data/tasks/filters";
+import { queryClientAtom } from "../data/base/query";
 import type { Task } from "@tasktrove/types";
 import { createTaskId, INBOX_PROJECT_ID } from "@tasktrove/types";
 import { TASKS_QUERY_KEY } from "@tasktrove/constants";

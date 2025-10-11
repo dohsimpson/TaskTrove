@@ -14,7 +14,7 @@ import {
 } from "@/lib/atoms/ui/views"
 import { projectAtoms } from "@/lib/atoms"
 import { labelsAtom } from "@/lib/atoms/core/labels"
-import { baseFilteredTasksForViewAtom } from "@/lib/atoms/core/tasks"
+import { uiFilteredTasksForViewAtom } from "@tasktrove/atoms"
 import type { Task, Project, Label as LabelType } from "@/lib/types"
 import { type ProjectId } from "@/lib/types"
 import { cn } from "@/lib/utils"
@@ -46,7 +46,7 @@ const tasksForCountsAtom = atom((get) => {
   const searchQuery = viewState.searchQuery
 
   // Start with base filtered tasks (already includes view filtering + per-view showCompleted/showOverdue)
-  let result = get(baseFilteredTasksForViewAtom(currentView))
+  let result = get(uiFilteredTasksForViewAtom(currentView))
 
   // Apply search query filter
   if (searchQuery) {

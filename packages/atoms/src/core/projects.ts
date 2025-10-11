@@ -34,12 +34,12 @@ import {
   createGroupId,
   ProjectIdSchema,
 } from "@tasktrove/types";
+import { projectsAtom } from "../data/base/atoms";
 import {
-  projectsAtom,
   updateProjectsMutationAtom,
   createProjectMutationAtom,
   deleteProjectMutationAtom,
-} from "./base";
+} from "../mutations/projects";
 import { recordOperationAtom } from "./history";
 import { log } from "../utils/atom-helpers";
 
@@ -794,5 +794,4 @@ export const projectAtoms = {
   },
 } as const;
 
-// Individual exports for backward compatibility
-export { projectsAtom } from "./base";
+// Note: projectsAtom is imported from "../data/base/atoms"

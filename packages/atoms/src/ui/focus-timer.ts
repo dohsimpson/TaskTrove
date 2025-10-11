@@ -1,7 +1,7 @@
 import { atom } from "jotai";
 import type { Task, TaskId } from "@tasktrove/types";
 import { createAtomWithStorage } from "../utils/atom-helpers";
-import { tasksAtom } from "../core/base";
+import { tasksAtom } from "../data/base/atoms";
 
 /**
  * Focus timer state atoms for TaskTrove

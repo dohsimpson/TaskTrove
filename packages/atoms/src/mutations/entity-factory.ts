@@ -92,7 +92,7 @@ import { API_ROUTES } from "@tasktrove/types";
 /**
  * Get default API route for an entity based on conventions
  */
-function getDefaultEntityRoute(entity: string): string {
+export function getDefaultEntityRoute(entity: string): string {
   switch (entity) {
     case "task":
       return API_ROUTES.V1_TASKS;
@@ -211,7 +211,7 @@ function capitalize(str: string): string {
  * @example getEntityQueryKey("task") → ["data", "tasks"]
  * @example getEntityQueryKey("project") → ["data", "projects"]
  */
-function getEntityQueryKey(entity: EntityType): QueryKey {
+export function getEntityQueryKey(entity: EntityType): QueryKey {
   switch (entity) {
     case "task":
       return TASKS_QUERY_KEY;
@@ -491,3 +491,6 @@ export function createEntityMutation<TEntity, TRequest, TResponse>(
 
   return createMutation<TResponse, TRequest, TEntity[], TEntity>(fullConfig);
 }
+
+// Export types for external use
+export type { EntityType, OperationType, EntityMutationConfig };

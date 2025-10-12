@@ -26,7 +26,8 @@
     "i18n:extract:navigation": "i18next-parser --config i18next-parser-navigation.config.js",
     "i18n:extract:navigation:watch": "i18next-parser --config i18next-parser-navigation.config.js --watch",
     "i18n:extract:task": "i18next-parser --config i18next-parser-task.config.js",
-    "i18n:extract:task:watch": "i18next-parser --config i18next-parser-task.config.js --watch"
+    "i18n:extract:task:watch": "i18next-parser --config i18next-parser-task.config.js --watch",
+    "generate-data": "tsx scripts/generate-data-cli.ts"
   },
   "exports": {
     "./components/*": [
@@ -72,6 +73,7 @@
     "@radix-ui/react-visually-hidden": "catalog:",
     "@tanstack/query-core": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "@tanstack/react-virtual": "catalog:",
     "@tasktrove/atoms": "workspace:*",
     "@tasktrove/constants": "workspace:*",
     "@tasktrove/dom-utils": "workspace:*",
@@ -138,6 +140,7 @@
     "@typescript/native-preview": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "animate.css": "catalog:",
+    "commander": "catalog:",
     "eslint": "catalog:",
     "happy-dom": "catalog:",
     "i18next-parser": "catalog:",
@@ -148,6 +151,7 @@
     "postcss-import": "catalog:",
     "postcss-import-ext-glob": "catalog:",
     "tailwindcss": "catalog:",
+    "tsx": "catalog:",
     "tw-animate-css": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

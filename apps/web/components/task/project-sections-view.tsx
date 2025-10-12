@@ -5,7 +5,7 @@ import { useSetAtom, useAtomValue } from "jotai"
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
 import { type ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
 import { extractDropPayload, calculateInsertIndex } from "@tasktrove/dom-utils"
-import { TaskItem } from "./task-item"
+// TaskItem is now used internally by VirtualizedTaskList
 // CompactTaskItem functionality is now integrated into TaskItem with variant="compact"
 import { TaskSidePanel } from "./task-side-panel"
 import { TaskShadow } from "@/components/ui/custom/task-shadow"
@@ -53,7 +53,7 @@ import { log } from "@/lib/utils/logger"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 import { DropTargetElement } from "./project-sections-view-helper"
-import { DraggableTaskElement } from "./draggable-task-element"
+import { VirtualizedTaskList } from "./virtualized-task-list"
 
 // Constants - removed SIDE_PANEL_WIDTH since it's now handled by ResizablePanel
 
@@ -615,30 +615,12 @@ export function ProjectSectionsView({
             )}
 
             <CollapsibleContent className="py-2">
-              <div className="space-y-0">
-                <>
-                  <div>
-                    {sectionTasks.map((task: Task) => (
-                      <DropTargetElement
-                        key={task.id}
-                        id={task.id}
-                        options={{ type: "list-item", indicator: { lineGap: "8px" } }}
-                        onDrop={handleDropTaskToListItem}
-                      >
-                        <DraggableTaskElement key={task.id} taskId={task.id}>
-                          <TaskItem
-                            taskId={task.id}
-                            variant={compactView ? "compact" : "default"}
-                            className="cursor-pointer mb-2 mx-2"
-                            showProjectBadge={true}
-                            sortedTaskIds={sortedSectionTaskIds}
-                          />
-                        </DraggableTaskElement>
-                      </DropTargetElement>
-                    ))}
-                  </div>
-                </>
-              </div>
+              <VirtualizedTaskList
+                tasks={sectionTasks}
+                compactView={compactView}
+                sortedTaskIds={sortedSectionTaskIds}
+                onDropTaskToListItem={handleDropTaskToListItem}
+              />
             </CollapsibleContent>
           </Collapsible>
         </DropTargetElement>
@@ -662,22 +644,12 @@ export function ProjectSectionsView({
           <div className="flex justify-center">
             <div className="w-full max-w-screen-2xl">
               {/* Flat Task List without sections */}
-              <div className="space-y-0">
-                <div>
-                  {tasks.map((task: Task) => (
-                    <DraggableTaskElement key={task.id} taskId={task.id}>
-                      <TaskItem
-                        key={task.id}
-                        taskId={task.id}
-                        variant={compactView ? "compact" : "default"}
-                        className="cursor-pointer mb-2"
-                        showProjectBadge={true}
-                        sortedTaskIds={sortedFlatTaskIds}
-                      />
-                    </DraggableTaskElement>
-                  ))}
-                </div>
-              </div>
+              <VirtualizedTaskList
+                tasks={tasks}
+                compactView={compactView}
+                sortedTaskIds={sortedFlatTaskIds}
+                enableDropTargets={false}
+              />
             </div>
           </div>
         </div>

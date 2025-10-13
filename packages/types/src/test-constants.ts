@@ -12,10 +12,8 @@ import {
   createSubtaskId,
   createCommentId,
   createGroupId,
-} from "./index";
+} from "./id";
 import type {
-  DataFileSerialization,
-  ProjectGroup,
   TaskId,
   ProjectId,
   LabelId,
@@ -24,7 +22,9 @@ import type {
   SubtaskId,
   CommentId,
   GroupId,
-} from "./index";
+} from "./id";
+import type { ProjectGroup } from "./group";
+import type { DataFileSerialization } from "./data-file";
 import {
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_GENERAL_SETTINGS,

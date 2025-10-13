@@ -1,16 +1,10 @@
-import type {
-  DataFile,
-  ProjectGroup,
-  LabelGroup,
-  ViewState,
-  GlobalViewOptions,
-  GroupId,
-  User,
-  ProjectSection,
-  UserData,
-} from "./index";
+import type { ViewState, GlobalViewOptions } from "./index";
+import type { GroupId } from "./id";
+import type { User, ProjectSection } from "./core";
+import type { ProjectGroup, LabelGroup } from "./group";
+import type { DataFile, UserData } from "./data-file";
 import { SIDE_PANEL_WIDTH_DEFAULT } from "@tasktrove/constants";
-import { createGroupId } from "./index";
+import { createGroupId } from "./id";
 import {
   DEFAULT_UUID,
   DEFAULT_AUTO_BACKUP_ENABLED,
@@ -130,7 +124,7 @@ export const DEFAULT_USER_SETTINGS = {
  * Default user for initial setup
  */
 export const DEFAULT_USER: User = {
-  username: "admin",
+  username: "",
   password: "",
 };
 

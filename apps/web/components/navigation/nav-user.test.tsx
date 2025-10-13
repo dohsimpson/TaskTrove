@@ -202,8 +202,9 @@ describe("NavUser", () => {
       </TestWrapper>,
     )
 
-    // Check that user icon SVG is present using its CSS class
-    expect(document.querySelector(".lucide-user")).toBeInTheDocument()
+    // Check that initials are shown in avatar fallback (first letter of username)
+    const initials = screen.getAllByText("J")
+    expect(initials.length).toBeGreaterThan(0)
   })
 
   it("truncates long names", async () => {

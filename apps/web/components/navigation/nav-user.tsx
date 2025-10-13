@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react"
 import {
-  User,
   Info,
   Bug,
   ChevronsUpDown,
@@ -16,8 +15,6 @@ import { SiGithub, SiDiscord } from "@icons-pack/react-simple-icons"
 import { signOut } from "next-auth/react"
 import { toast } from "sonner"
 import { useAtomValue, useSetAtom } from "jotai"
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,8 +35,8 @@ import { useTranslation } from "@tasktrove/i18n"
 import { openSettingsDialogAtom, openUserProfileDialogAtom, userAtom } from "@tasktrove/atoms"
 import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
 import { LogoutConfirmDialog } from "@/components/dialogs/logout-confirm-dialog"
-import { getAvatarApiUrl } from "@tasktrove/utils"
 import { showPWAInstallPrompt, isPWA } from "@tasktrove/dom-utils"
+import { UserAvatar } from "@/components/ui/custom/user-avatar"
 
 interface ContextMenuItem {
   icon: React.ComponentType<{ className?: string }>
@@ -122,12 +119,13 @@ export function NavUser() {
                 size="lg"
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={getAvatarApiUrl(user.avatar)} alt={user.username} />
-                  <AvatarFallback className="rounded-lg">
-                    <User className="h-4 w-4" />
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  username={user.username}
+                  avatar={user.avatar}
+                  size="sm"
+                  showInitials={true}
+                  className="ring-2 ring-background"
+                />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{user.username}</span>
                 </div>
@@ -147,12 +145,13 @@ export function NavUser() {
                     onClick={openUserProfileDialog}
                     title="Edit Profile"
                   >
-                    <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src={getAvatarApiUrl(user.avatar)} alt={user.username} />
-                      <AvatarFallback className="rounded-lg">
-                        <User className="h-4 w-4" />
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar
+                      username={user.username}
+                      avatar={user.avatar}
+                      size="sm"
+                      showInitials={true}
+                      className="ring-2 ring-background"
+                    />
                     <div className="grid text-left text-sm leading-tight">
                       <span className="truncate font-semibold">{user.username}</span>
                     </div>

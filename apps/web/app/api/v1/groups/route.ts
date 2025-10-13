@@ -1,25 +1,27 @@
 import { NextResponse } from "next/server"
 import {
-  Group,
-  ProjectGroup,
-  LabelGroup,
   DeleteGroupRequestSchema,
   CreateGroupRequestSchema,
+  DataFileSerializationSchema,
+  GroupUpdateUnionSchema,
+  BulkGroupUpdateSchema,
+  createGroupId,
+  ApiErrorCode,
+} from "@tasktrove/types"
+import type {
+  ProjectGroup,
+  LabelGroup,
   CreateGroupResponse,
   UpdateGroupResponse,
   DeleteGroupResponse,
-  DataFileSerializationSchema,
-  createGroupId,
-  createProjectId,
   ErrorResponse,
-  ApiErrorCode,
-  GroupUpdateUnionSchema,
   GroupUpdateUnion,
-  BulkGroupUpdateSchema,
   BulkGroupUpdate,
   GroupId,
   GetGroupsResponse,
-} from "@/lib/types"
+  Group,
+  ProjectId,
+} from "@tasktrove/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { v4 as uuidv4 } from "uuid"
@@ -607,11 +609,11 @@ function removeGroupFromRootGroup(rootGroup: Group, groupId: GroupId): boolean {
       // Remove from ROOT group's items with proper type narrowing
       if (rootGroup.type === "project") {
         rootGroup.items = rootGroup.items.filter(
-          (item) => typeof item === "string" || item.id !== groupId,
+          (item: string | Group) => typeof item === "string" || item.id !== groupId,
         )
       } else {
         rootGroup.items = rootGroup.items.filter(
-          (item) => typeof item === "string" || item.id !== groupId,
+          (item: string | Group) => typeof item === "string" || item.id !== groupId,
         )
       }
       return true
@@ -663,14 +665,14 @@ async function deleteGroup(
   const groupResult = findGroupInTrees(fileData.projectGroups, fileData.labelGroups, groupId)
 
   if (groupResult && groupResult.group.type === "project") {
-    // Extract any contained projects (string items) from the group being deleted
-    const containedProjects: string[] = groupResult.group.items.filter(
-      (item) => typeof item === "string",
+    // Extract any contained projects (ProjectId items) from the group being deleted
+    const containedProjects = groupResult.group.items.filter(
+      (item): item is ProjectId => typeof item === "string",
     )
 
     // Move contained projects to the root project group
     if (containedProjects.length > 0) {
-      fileData.projectGroups.items.push(...containedProjects.map((id) => createProjectId(id)))
+      fileData.projectGroups.items.push(...containedProjects)
     }
   }
 

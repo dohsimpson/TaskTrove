@@ -6,6 +6,8 @@
  */
 
 export { SoundTester } from "./sound-tester"
+export { StubIndicator } from "./stub-indicator"
+export { VirtualizationDebugBadge } from "./virtualization-debug-badge"
 
 // Helper function to check if we're in development mode
 export const isDevelopment = () => process.env.NODE_ENV === "development"

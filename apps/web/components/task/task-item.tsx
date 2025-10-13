@@ -34,6 +34,7 @@ import { SubtaskPopover } from "./subtask-popover"
 import { PriorityPopover } from "./priority-popover"
 import { ProjectPopover } from "./project-popover"
 import { TaskActionsMenu } from "./task-actions-menu"
+import { AssigneeManagementPopover } from "@/components/task/assignee-management-popover"
 import {
   toggleTaskAtom,
   deleteTaskAtom,
@@ -63,8 +64,7 @@ import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } 
 import { INBOX_PROJECT_ID, createTaskId } from "@/lib/types"
 import { TimeEstimationPicker } from "../ui/custom/time-estimation-picker"
 import { useTranslation } from "@tasktrove/i18n"
-import { AssigneeBadges } from "./assignee-badges"
-import { OwnerIndicator } from "./owner-indicator"
+import { AssigneeBadges } from "@/components/task/assignee-badges"
 // Responsive width for metadata columns to ensure consistent alignment
 const METADATA_COLUMN_WIDTH = "w-auto sm:w-20 md:w-24"
 
@@ -656,9 +656,6 @@ export function TaskItem({
 
               {/* Right side - Labels and project info */}
               <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                <AssigneeBadges task={task} maxDisplay={2} />
-                <OwnerIndicator task={task} className="text-[10px]" />
-
                 {/* Labels - Show if present, limited on smaller screens */}
                 {task.labels.length > 0 && (
                   <LabelManagementPopover
@@ -736,6 +733,10 @@ export function TaskItem({
                     </span>
                   </ProjectPopover>
                 )}
+
+                <AssigneeManagementPopover task={task}>
+                  <AssigneeBadges task={task} />
+                </AssigneeManagementPopover>
 
                 {/* Timer and Actions Menu - second row on larger viewport */}
                 <div className="hidden lg:flex lg:items-center gap-1">
@@ -902,7 +903,7 @@ export function TaskItem({
 
         {/* Bottom row with labels on left and metadata on right */}
         <div className="flex items-center justify-between">
-          {/* Left side - Labels and Pro indicators */}
+          {/* Left side - Labels and assignees */}
           <div className="flex flex-wrap gap-1 flex-1 min-w-0 items-center">
             {taskLabels.length > 0 ? (
               <>
@@ -955,8 +956,9 @@ export function TaskItem({
                 </span>
               </LabelManagementPopover>
             )}
-            <AssigneeBadges task={task} maxDisplay={2} className="ml-1" />
-            <OwnerIndicator task={task} className="ml-1 text-[10px]" />
+            <AssigneeManagementPopover task={task}>
+              <AssigneeBadges task={task} className="ml-1" />
+            </AssigneeManagementPopover>
           </div>
 
           {/* Right side - Metadata icons with nice spacing */}
@@ -1374,9 +1376,6 @@ export function TaskItem({
             }
 
             // Right side - Flexible width items
-            rightMetadataItems.push(<AssigneeBadges key="assignees" task={task} maxDisplay={3} />)
-            rightMetadataItems.push(<OwnerIndicator key="owner" task={task} />)
-
             // Labels - Now clickable with popover for editing
             if (task.labels.length > 0) {
               const taskLabels = getLabelsFromIds(task.labels)
@@ -1472,6 +1471,12 @@ export function TaskItem({
                 )
               }
             }
+
+            rightMetadataItems.push(
+              <AssigneeManagementPopover key="assignees" task={task}>
+                <AssigneeBadges task={task} />
+              </AssigneeManagementPopover>,
+            )
 
             // Attachments feature removed
 

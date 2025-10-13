@@ -2,6 +2,24 @@
  * Color utilities for task-related UI elements
  */
 
+import { COLOR_OPTIONS } from "@tasktrove/constants";
+
+/**
+ * Get a consistent color from COLOR_OPTIONS based on a string hash
+ * @param str - Any string (username, ID, etc.)
+ * @returns Hex color value from COLOR_OPTIONS
+ * @example
+ * ```ts
+ * const color = getConsistentColor("alice.wonder"); // Returns consistent color like "#3b82f6"
+ * const bgClass = `bg-[${color}]`; // Use in Tailwind arbitrary values
+ * ```
+ */
+export function getConsistentColor(str: string): string {
+  const hash = str.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const index = hash % COLOR_OPTIONS.length;
+  return COLOR_OPTIONS[index]?.value ?? "#6b7280"; // Fallback to gray
+}
+
 /**
  * Get priority color class for flags and text
  * @param priority - Priority level (1-4, where 4 is no priority)

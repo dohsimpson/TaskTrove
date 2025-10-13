@@ -37,6 +37,7 @@ import {
   DataFileSchema,
   DataFileSerializationSchema,
 } from "@tasktrove/types"
+import { DEFAULT_EMPTY_DATA_FILE } from "@tasktrove/types/defaults"
 
 // =============================================================================
 // 2. UTILITY FUNCTIONS (Functional & Pure)
@@ -178,39 +179,7 @@ const generateTestData = (config: GenerateConfig, existingData?: DataFile): Data
   const { numTasks, numProjects, numLabels } = config
 
   // Use existing data as base if provided, otherwise create from scratch
-  const baseData: DataFile = existingData || {
-    tasks: [],
-    projects: [],
-    labels: [],
-    projectGroups: {
-      type: "project",
-      id: createGroupId(uuidv4()),
-      name: "All Projects",
-      slug: "all-projects",
-      items: [],
-    },
-    labelGroups: {
-      type: "label",
-      id: createGroupId(uuidv4()),
-      name: "All Labels",
-      slug: "all-labels",
-      items: [],
-    },
-    settings: {
-      data: {
-        autoBackup: { enabled: true, backupTime: "02:00", maxBackups: 7 },
-      },
-      notifications: { enabled: true, requireInteraction: true },
-      general: {
-        startView: "all",
-        soundEnabled: false,
-        linkifyEnabled: true,
-        popoverHoverOpen: false,
-      },
-    },
-    user: { username: "testuser", password: "" },
-    version: createVersionString("v1.0.0"),
-  }
+  const baseData: DataFile = existingData || DEFAULT_EMPTY_DATA_FILE
 
   // Generate new labels if specified
   const labels: Label[] =

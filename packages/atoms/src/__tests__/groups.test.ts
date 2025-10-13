@@ -41,13 +41,8 @@ import {
   moveProjectBetweenGroupsAtom,
 } from "../core/groups";
 // import { groupsQueryAtom } from "../core/base"; // Not used in tests
-import {
-  DEFAULT_PROJECT_GROUP,
-  DEFAULT_LABEL_GROUP,
-  DEFAULT_NOTIFICATION_SETTINGS,
-  DEFAULT_GENERAL_SETTINGS,
-  DEFAULT_USER,
-} from "@tasktrove/types/defaults";
+import { DEFAULT_PROJECT_GROUP } from "@tasktrove/types/defaults";
+import { TEST_GROUPS_DATA } from "@tasktrove/types/test-constants";
 
 // Mock fetch for API calls
 const mockFetch = vi.fn();
@@ -90,24 +85,10 @@ const mockParentProjectGroup: ProjectGroup = {
   items: [mockProjectGroup, mockNestedProjectGroup],
 };
 
+// Use shared test constant and override projectGroups with test-specific structure
 const mockGroupsData: DataFileSerialization = {
+  ...TEST_GROUPS_DATA,
   projectGroups: { ...DEFAULT_PROJECT_GROUP, items: [mockParentProjectGroup] },
-  labelGroups: DEFAULT_LABEL_GROUP,
-  tasks: [],
-  projects: [],
-  labels: [],
-  settings: {
-    data: {
-      autoBackup: {
-        enabled: true,
-        backupTime: "09:00",
-        maxBackups: 7,
-      },
-    },
-    notifications: DEFAULT_NOTIFICATION_SETTINGS,
-    general: DEFAULT_GENERAL_SETTINGS,
-  },
-  user: DEFAULT_USER,
 };
 
 describe("Groups Atoms", () => {
@@ -351,7 +332,7 @@ describe("Groups Atoms", () => {
         ok: true,
         json: async () => ({
           projectGroups: DEFAULT_PROJECT_GROUP,
-          labelGroups: DEFAULT_LABEL_GROUP,
+          labelGroups: TEST_GROUPS_DATA.labelGroups,
           tasks: [],
           projects: [],
           labels: [],

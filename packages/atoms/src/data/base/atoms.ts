@@ -26,6 +26,7 @@ import type {
   UpdateTaskRequest,
   PartialUserSettings,
   UpdateUserRequest,
+  User,
 } from "@tasktrove/types";
 import {
   DEFAULT_AUTO_BACKUP_ENABLED,
@@ -207,7 +208,7 @@ settingsAtom.debugLabel = "settingsAtom";
  * @write Accepts user update request and updates via API
  */
 export const userAtom = atom(
-  (get) => {
+  (get): User => {
     const query = get(userQueryAtom);
     return query.data ?? DEFAULT_USER;
   },

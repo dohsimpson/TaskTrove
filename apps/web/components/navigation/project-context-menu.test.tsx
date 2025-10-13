@@ -8,7 +8,7 @@ import {
   TEST_PROJECT_ID_2,
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
-} from "@/lib/utils/test-constants"
+} from "@tasktrove/types/test-constants"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { TaskUpdateSerializationSchema, TaskUpdateArraySerializationSchema } from "@/lib/types"
 

@@ -12,7 +12,7 @@ import {
   TEST_GROUP_ID_1,
   TEST_GROUP_ID_2,
   TEST_GROUP_ID_3,
-} from "@/lib/utils/test-constants"
+} from "@tasktrove/types/test-constants"
 import { DEFAULT_SECTION_COLORS } from "@tasktrove/constants"
 
 // Create hoisted mocks and data

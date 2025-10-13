@@ -14,7 +14,7 @@ import {
   TEST_PROJECT_ID_1,
   TEST_LABEL_ID_1,
   TEST_GROUP_ID_1,
-} from "@/lib/utils/test-constants"
+} from "@tasktrove/types/test-constants"
 import {
   DEFAULT_PROJECT_GROUP,
   DEFAULT_LABEL_GROUP,

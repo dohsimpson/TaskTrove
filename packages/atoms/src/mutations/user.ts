@@ -20,6 +20,7 @@ import {
 } from "@tasktrove/types";
 import { DEFAULT_USER } from "@tasktrove/types/defaults";
 import { USER_QUERY_KEY } from "@tasktrove/constants";
+import { clearNullValues } from "@tasktrove/utils";
 import { createMutation } from "./factory";
 
 // =============================================================================
@@ -62,8 +63,8 @@ export const updateUserMutationAtom = createMutation<
     }
 
     const testUser: User = {
-      username: variables.username ?? DEFAULT_USER.username,
-      password: variables.password ?? DEFAULT_USER.password,
+      ...DEFAULT_USER,
+      ...clearNullValues(variables),
       avatar: simulatedAvatarPath,
     };
     return {
@@ -75,9 +76,9 @@ export const updateUserMutationAtom = createMutation<
   optimisticUpdateFn: (variables: UpdateUserRequest, oldUser: User): User => {
     // Merge partial user updates with current user data
     const updatedUser: User = {
-      username: variables.username ?? oldUser.username,
-      password: variables.password ?? oldUser.password,
-      avatar: oldUser.avatar,
+      ...oldUser,
+      ...clearNullValues(variables),
+      avatar: oldUser.avatar, // avatar type is complex, and we don't want to update in optimistic update
     };
 
     return updatedUser;

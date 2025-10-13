@@ -13,7 +13,7 @@ import {
   TEST_SUBTASK_ID_2,
   TEST_SUBTASK_ID_3,
   TEST_SUBTASK_ID_4,
-} from "@/lib/utils/test-constants"
+} from "@tasktrove/types/test-constants"
 
 // Mock atom functions
 const mockUpdateTask = vi.fn()

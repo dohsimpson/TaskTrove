@@ -1,7 +1,7 @@
 import { render, act } from "@/test-utils"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { FocusTimerDisplay } from "./focus-timer-display"
-import { TEST_TASK_ID_1 } from "@/lib/utils/test-constants"
+import { TEST_TASK_ID_1 } from "@tasktrove/types/test-constants"
 
 // Mock functions for atom setters
 const mockPauseTimer = vi.fn()

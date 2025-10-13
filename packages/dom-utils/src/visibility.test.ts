@@ -13,10 +13,16 @@ describe("visibility utilities", () => {
     });
 
     it("returns current date", () => {
-      const now = new Date();
-      const expected = now.toISOString().split("T")[0];
+      // Use fake timers to ensure consistent date
+      vi.useFakeTimers();
+      const testDate = new Date("2025-01-15T12:00:00Z");
+      vi.setSystemTime(testDate);
+
+      const expected = testDate.toISOString().split("T")[0];
       const result = getCurrentDateString();
       expect(result).toBe(expected);
+
+      vi.useRealTimers();
     });
   });
 

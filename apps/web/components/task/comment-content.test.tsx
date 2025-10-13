@@ -11,7 +11,7 @@ import {
   TEST_COMMENT_ID_1,
   TEST_COMMENT_ID_2,
   TEST_COMMENT_ID_3,
-} from "@/lib/utils/test-constants"
+} from "@tasktrove/types/test-constants"
 
 // Mock atoms
 let mockUpdateTask: Mock

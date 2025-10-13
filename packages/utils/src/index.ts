@@ -46,6 +46,9 @@ export * from "./date-filter-utils";
 // Task date formatter utilities
 export * from "./task-date-formatter";
 
+// Object manipulation utilities
+export * from "./object-utils";
+
 // Re-export commonly used utilities for convenience
 export { cn } from "./styling";
 export {
@@ -119,3 +122,4 @@ export type {
   TaskDateFormat,
   TaskDateFormatOptions,
 } from "./task-date-formatter";
+export { clearNullValues } from "./object-utils";

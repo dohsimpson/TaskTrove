@@ -1279,6 +1279,7 @@ export const DataFileSerializationSchema = z.object({
 export type Subtask = z.infer<typeof SubtaskSchema>;
 export type TaskComment = z.infer<typeof TaskCommentSchema>;
 export type User = z.infer<typeof UserSchema>;
+export type UserData = z.infer<typeof DataFileSchema.shape.user>;
 export type ViewState = z.infer<typeof ViewStateSchema>;
 export type Task = z.infer<typeof TaskSchema>;
 export type Project = z.infer<typeof ProjectSchema>;

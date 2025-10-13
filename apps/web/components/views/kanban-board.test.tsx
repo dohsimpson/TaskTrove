@@ -15,7 +15,7 @@ import {
   TEST_GROUP_ID_2,
   TEST_LABEL_ID_1,
   TEST_LABEL_ID_2,
-} from "@/lib/utils/test-constants"
+} from "@tasktrove/types/test-constants"
 
 // Define additional constants for this test file
 const TASK_ID_3 = createTaskId("12345678-1234-4234-8234-123456789014")

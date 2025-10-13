@@ -6,16 +6,11 @@ import {
   UpdateUserResponse,
   ErrorResponse,
   ApiErrorCode,
-  createAvatarFilePath,
   GetUserResponse,
   DataFileSerializationSchema,
 } from "@/lib/types"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
-import {
-  safeReadDataFile,
-  safeWriteDataFile,
-  saveBase64ToAvatarFile,
-} from "@/lib/utils/safe-file-operations"
+import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import {
   withApiLogging,
   logBusinessEvent,
@@ -26,7 +21,11 @@ import {
 import { withMutexProtection } from "@/lib/utils/api-mutex"
 import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
-import { saltAndHashPassword, parseAvatarDataUrl } from "@tasktrove/utils"
+import {
+  processAvatarUpdate,
+  processPasswordUpdate,
+  processApiTokenUpdate,
+} from "@/lib/utils/user-update-helpers"
 
 /**
  * GET /api/user
@@ -131,59 +130,30 @@ async function updateUser(
 
   const partialUser = validation.data
 
-  // Process avatar if provided (base64 data URL)
-  let avatarPath: string | undefined | null = undefined
-  if (partialUser.avatar !== undefined) {
-    if (partialUser.avatar === null) {
-      // User wants to remove avatar
-      avatarPath = null
-    } else {
-      try {
-        // Parse data URL to extract MIME type and base64 data using utility function
-        const parsed = parseAvatarDataUrl(partialUser.avatar)
-        if (!parsed) {
-          return createErrorResponse(
-            "Invalid avatar format",
-            "Avatar must be a valid data URL",
-            400,
-          )
-        }
-
-        const { mimeType, base64Data } = parsed
-
-        // Save base64 data to file
-        avatarPath = await saveBase64ToAvatarFile(base64Data, mimeType)
-        if (!avatarPath) {
-          return createErrorResponse(
-            "Failed to save avatar",
-            "Avatar processing failed",
-            500,
-            ApiErrorCode.DATA_FILE_WRITE_ERROR,
-          )
-        }
-      } catch {
-        return createErrorResponse(
-          "Failed to process avatar",
-          "Avatar processing failed",
-          500,
-          ApiErrorCode.INTERNAL_SERVER_ERROR,
-        )
-      }
-    }
+  // Process avatar update
+  const avatarResult = await processAvatarUpdate(partialUser.avatar)
+  if (!avatarResult.success) {
+    return createErrorResponse(
+      avatarResult.error,
+      avatarResult.error,
+      avatarResult.code || 500,
+      ApiErrorCode.DATA_FILE_WRITE_ERROR,
+    )
   }
+  const avatarPath = avatarResult.avatarPath
 
-  // Hash password if provided
-  if (partialUser.password && partialUser.password.length > 0) {
-    try {
-      partialUser.password = saltAndHashPassword(partialUser.password)
-    } catch {
-      return createErrorResponse(
-        "Failed to hash password",
-        "Password hashing failed",
-        500,
-        ApiErrorCode.INTERNAL_SERVER_ERROR,
-      )
-    }
+  // Process password update
+  const passwordResult = processPasswordUpdate(partialUser.password)
+  if (!passwordResult.success) {
+    return createErrorResponse(
+      passwordResult.error,
+      passwordResult.error,
+      500,
+      ApiErrorCode.INTERNAL_SERVER_ERROR,
+    )
+  }
+  if (passwordResult.hashedPassword) {
+    partialUser.password = passwordResult.hashedPassword
   }
 
   // Read current data file
@@ -213,20 +183,13 @@ async function updateUser(
 
   // Handle avatar update separately
   if (avatarPath !== undefined) {
-    if (avatarPath === null) {
-      updatedUser.avatar = undefined // Remove avatar
-    } else {
-      updatedUser.avatar = createAvatarFilePath(avatarPath) // Set new avatar path
-    }
+    updatedUser.avatar = avatarPath === null ? undefined : avatarPath
   }
 
   // Handle apiToken update separately
-  if ("apiToken" in partialUser) {
-    if (partialUser.apiToken === null) {
-      updatedUser.apiToken = undefined // Remove apiToken
-    } else {
-      updatedUser.apiToken = partialUser.apiToken // Set new apiToken
-    }
+  const processedApiToken = processApiTokenUpdate(partialUser.apiToken, "apiToken" in partialUser)
+  if (processedApiToken !== undefined) {
+    updatedUser.apiToken = processedApiToken === null ? undefined : processedApiToken
   }
 
   // Clean null values and ensure required fields are present

@@ -16,7 +16,7 @@ import {
   TEST_COMMENT_ID_1,
   TEST_SUBTASK_ID_1,
   TEST_SUBTASK_ID_2,
-} from "@/lib/utils/test-constants"
+} from "@tasktrove/types/test-constants"
 import { DEFAULT_USER_SETTINGS } from "@/lib/types"
 
 // Mock focus timer functions (simplified since we mock the component)

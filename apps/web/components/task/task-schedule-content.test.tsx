@@ -11,7 +11,7 @@ import { vi, describe, it, expect, beforeEach } from "vitest"
 import { TaskScheduleContent } from "./task-schedule-content"
 import type { Task } from "@/lib/types"
 import { INBOX_PROJECT_ID } from "@/lib/types"
-import { TEST_TASK_ID_1 } from "@/lib/utils/test-constants"
+import { TEST_TASK_ID_1 } from "@tasktrove/types/test-constants"
 import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
 import userEvent from "@testing-library/user-event"
 

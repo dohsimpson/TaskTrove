@@ -12,7 +12,7 @@ import {
   TEST_TASK_ID_3,
   TEST_LABEL_ID_1,
   TEST_LABEL_ID_2,
-} from "@/lib/utils/test-constants"
+} from "@tasktrove/types/test-constants"
 
 // Mock date-fns
 vi.mock("date-fns", async (importOriginal) => {

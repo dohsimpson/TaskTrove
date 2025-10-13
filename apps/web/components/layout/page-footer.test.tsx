@@ -32,7 +32,7 @@ vi.mock("@/lib/atoms", () => ({
   }),
 }))
 import type { Task } from "@/lib/types"
-import { TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3 } from "@/lib/utils/test-constants"
+import { TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3 } from "@tasktrove/types/test-constants"
 
 // Mock the ContentPopover component
 vi.mock("@/components/ui/content-popover", () => ({

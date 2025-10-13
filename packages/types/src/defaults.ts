@@ -7,6 +7,7 @@ import type {
   GroupId,
   User,
   ProjectSection,
+  UserData,
 } from "./index";
 import { SIDE_PANEL_WIDTH_DEFAULT } from "@tasktrove/constants";
 import { createGroupId } from "./index";
@@ -132,6 +133,8 @@ export const DEFAULT_USER: User = {
   username: "admin",
   password: "",
 };
+
+export const DEFAULT_USER_DATA: UserData = DEFAULT_USER;
 
 /**
  * Default empty data structure for initializing a new TaskTrove data file

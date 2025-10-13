@@ -17,7 +17,7 @@ import {
 import { QuickAddDialog } from "./quick-add-dialog"
 import type { Project, LabelId, TaskPriority } from "@/lib/types"
 import { createLabelId } from "@/lib/types"
-import { TEST_PROJECT_ID_1, TEST_PROJECT_ID_2 } from "@/lib/utils/test-constants"
+import { TEST_PROJECT_ID_1, TEST_PROJECT_ID_2 } from "@tasktrove/types/test-constants"
 
 // Mock component props interface
 interface MockComponentProps {

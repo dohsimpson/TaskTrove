@@ -11,6 +11,14 @@
     "./defaults": {
       "pro": "./src/defaults.pro.ts",
       "default": "./src/defaults.ts"
+    },
+    "./utils": {
+      "pro": "./src/utils.pro.ts",
+      "default": "./src/utils.ts"
+    },
+    "./test-constants": {
+      "pro": "./src/test-constants.pro.ts",
+      "default": "./src/test-constants.ts"
     }
   },
   "scripts": {

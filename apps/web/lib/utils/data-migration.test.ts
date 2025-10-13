@@ -24,7 +24,7 @@ import {
   TEST_LABEL_ID_1,
   TEST_SECTION_ID_1,
   TEST_SECTION_ID_2,
-} from "./test-constants"
+} from "@tasktrove/types/test-constants"
 
 // Don't mock package.json - let it use the real version
 // This prevents issues where schema expectations don't match mocked version during development

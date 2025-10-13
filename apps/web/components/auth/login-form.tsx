@@ -16,11 +16,17 @@ export interface LoginFormProps {
   needsPasswordSetup: boolean
   onSuccess?: () => void
   onCancel?: () => void
+  username?: string
+  onUsernameChange?: (value: string) => void
+  isUsernameRequired?: boolean
 }
 
 export function LoginForm({
   needsPasswordSetup: initialNeedsPasswordSetup,
   onSuccess,
+  username = "",
+  onUsernameChange,
+  isUsernameRequired = false,
 }: LoginFormProps) {
   // Translation hooks
   const { t } = useTranslation("auth")
@@ -39,6 +45,11 @@ export function LoginForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+
+    if (isUsernameRequired && !username) {
+      setError(t("errors.usernameRequired", "Username is required"))
+      return
+    }
 
     if (!password) {
       setError(t("errors.passwordRequired", "Password is required"))
@@ -62,6 +73,7 @@ export function LoginForm({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            ...(isUsernameRequired && { username }),
             password: password,
           }),
         })
@@ -94,17 +106,21 @@ export function LoginForm({
       }
       return
     }
-
     // Normal login flow
     setIsLoading(true)
     try {
       const result = await signIn("credentials", {
+        ...(isUsernameRequired && { username }),
         password,
         redirect: false,
       })
 
       if (result.error) {
-        setError(t("errors.invalidPassword", "Invalid password. Please try again."))
+        setError(
+          isUsernameRequired
+            ? t("errors.invalidCredentials", "Invalid username or password. Please try again.")
+            : t("errors.invalidPassword", "Invalid password. Please try again."),
+        )
         setIsLoading(false)
         setPassword("")
       } else {
@@ -143,6 +159,20 @@ export function LoginForm({
                   </p>
                 </div>
                 <div className="space-y-4">
+                  {isUsernameRequired && onUsernameChange && (
+                    <div className="space-y-2">
+                      <Input
+                        id="username"
+                        type="text"
+                        placeholder={t("setup.usernamePlaceholder", "Username")}
+                        value={username}
+                        onChange={(e) => onUsernameChange(e.target.value)}
+                        disabled={isLoading}
+                        className={error ? "border-red-500" : ""}
+                        autoFocus={true}
+                      />
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <div className="relative">
                       <Input
@@ -159,7 +189,7 @@ export function LoginForm({
                               ? "pr-10"
                               : ""
                         }
-                        autoFocus={true}
+                        autoFocus={!isUsernameRequired}
                       />
                       {password.length > 0 && (
                         <Button
@@ -199,47 +229,63 @@ export function LoginForm({
               </>
             ) : (
               // Normal Login Mode
-              <div className="space-y-2">
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder={t("login.passwordPlaceholder", "Password")}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
-                    className={
-                      error
-                        ? "border-red-500" + (password.length > 0 ? " pr-10" : "")
-                        : password.length > 0
-                          ? "pr-10"
-                          : ""
-                    }
-                    autoFocus={true}
-                  />
-                  {password.length > 0 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                      aria-label={
-                        showPassword
-                          ? t("accessibility.hidePassword", "Hide password")
-                          : t("accessibility.showPassword", "Show password")
+              <>
+                {isUsernameRequired && onUsernameChange && (
+                  <div className="space-y-2">
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder={t("login.usernamePlaceholder", "Username")}
+                      value={username}
+                      onChange={(e) => onUsernameChange(e.target.value)}
+                      disabled={isLoading}
+                      className={error ? "border-red-500" : ""}
+                      autoFocus={true}
+                    />
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder={t("login.passwordPlaceholder", "Password")}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={isLoading}
+                      className={
+                        error
+                          ? "border-red-500" + (password.length > 0 ? " pr-10" : "")
+                          : password.length > 0
+                            ? "pr-10"
+                            : ""
                       }
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </Button>
-                  )}
+                      autoFocus={!isUsernameRequired}
+                    />
+                    {password.length > 0 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={
+                          showPassword
+                            ? t("accessibility.hidePassword", "Hide password")
+                            : t("accessibility.showPassword", "Show password")
+                        }
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 {error && <p className="text-sm text-red-500">{error}</p>}
-              </div>
+              </>
             )}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading

@@ -10,7 +10,7 @@ import {
   TEST_LABEL_ID_1,
   TEST_LABEL_ID_2,
   TEST_LABEL_ID_3,
-} from "@/lib/utils/test-constants"
+} from "@tasktrove/types/test-constants"
 
 // Mock atoms
 let mockLabelsFromIds: Mock

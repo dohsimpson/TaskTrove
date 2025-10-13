@@ -12,7 +12,7 @@ import {
   TEST_PROJECT_ID_2,
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
-} from "@/lib/utils/test-constants"
+} from "@tasktrove/types/test-constants"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types"
 

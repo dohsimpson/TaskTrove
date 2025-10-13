@@ -7,7 +7,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { NextRequest } from "next/server"
 import { POST, PATCH, DELETE } from "./route"
-import { TEST_LABEL_ID_1, TEST_LABEL_ID_2 } from "@/lib/utils/test-constants"
+import { TEST_LABEL_ID_1, TEST_LABEL_ID_2 } from "@tasktrove/types/test-constants"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types"
 

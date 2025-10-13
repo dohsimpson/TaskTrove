@@ -5,7 +5,7 @@ import { render } from "@/test-utils/render-with-providers"
 import { LabelContextMenu } from "./label-context-menu"
 import { labelAtoms } from "@tasktrove/atoms"
 import { startEditingLabelAtom } from "@tasktrove/atoms"
-import { TEST_LABEL_ID_1 } from "@/lib/utils/test-constants"
+import { TEST_LABEL_ID_1 } from "@tasktrove/types/test-constants"
 import { createLabelId } from "@tasktrove/types"
 
 // Mock component interfaces

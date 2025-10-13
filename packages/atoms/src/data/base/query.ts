@@ -47,6 +47,12 @@ import {
   DEFAULT_AUTO_BACKUP_ENABLED,
   DEFAULT_BACKUP_TIME,
   DEFAULT_MAX_BACKUPS,
+  TASKS_QUERY_KEY,
+  PROJECTS_QUERY_KEY,
+  LABELS_QUERY_KEY,
+  GROUPS_QUERY_KEY,
+  SETTINGS_QUERY_KEY,
+  USER_QUERY_KEY,
 } from "@tasktrove/constants";
 import {
   DEFAULT_NOTIFICATION_SETTINGS,
@@ -147,7 +153,7 @@ const TEST_USER: User = DEFAULT_USER;
 /**
  * Generic fetch helper with Zod validation (DRY principle)
  */
-async function fetchAndValidate<T>(
+export async function fetchAndValidate<T>(
   url: string,
   schema: {
     safeParse: (data: unknown) => {
@@ -292,7 +298,7 @@ async function fetchUser(): Promise<User> {
 // Query Configuration (DRY - shared config)
 // =============================================================================
 
-const QUERY_CONFIG = {
+export const QUERY_CONFIG = {
   staleTime: 1000, // Consider data fresh for 1 second
   refetchOnMount: false, // Don't refetch on component mount
   refetchOnWindowFocus: false, // Don't refetch when window regains focus
@@ -305,11 +311,11 @@ const QUERY_CONFIG = {
 
 /**
  * Tasks query atom
- * Query key: ["data", "tasks"]
- * Invalidate: queryClient.invalidateQueries({ queryKey: ["data", "tasks"] })
+ * Query key: TASKS_QUERY_KEY (["data", "tasks"])
+ * Invalidate: queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY })
  */
 export const tasksQueryAtom = atomWithQuery(() => ({
-  queryKey: ["data", "tasks"],
+  queryKey: TASKS_QUERY_KEY,
   queryFn: fetchTasks,
   ...QUERY_CONFIG,
 }));
@@ -317,11 +323,11 @@ tasksQueryAtom.debugLabel = "tasksQueryAtom";
 
 /**
  * Projects query atom
- * Query key: ["data", "projects"]
- * Invalidate: queryClient.invalidateQueries({ queryKey: ["data", "projects"] })
+ * Query key: PROJECTS_QUERY_KEY (["data", "projects"])
+ * Invalidate: queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY })
  */
 export const projectsQueryAtom = atomWithQuery(() => ({
-  queryKey: ["data", "projects"],
+  queryKey: PROJECTS_QUERY_KEY,
   queryFn: fetchProjects,
   ...QUERY_CONFIG,
 }));
@@ -329,11 +335,11 @@ projectsQueryAtom.debugLabel = "projectsQueryAtom";
 
 /**
  * Labels query atom
- * Query key: ["data", "labels"]
- * Invalidate: queryClient.invalidateQueries({ queryKey: ["data", "labels"] })
+ * Query key: LABELS_QUERY_KEY (["data", "labels"])
+ * Invalidate: queryClient.invalidateQueries({ queryKey: LABELS_QUERY_KEY })
  */
 export const labelsQueryAtom = atomWithQuery(() => ({
-  queryKey: ["data", "labels"],
+  queryKey: LABELS_QUERY_KEY,
   queryFn: fetchLabels,
   ...QUERY_CONFIG,
 }));
@@ -341,11 +347,11 @@ labelsQueryAtom.debugLabel = "labelsQueryAtom";
 
 /**
  * Groups query atom (both project and label groups)
- * Query key: ["data", "groups"]
- * Invalidate: queryClient.invalidateQueries({ queryKey: ["data", "groups"] })
+ * Query key: GROUPS_QUERY_KEY (["data", "groups"])
+ * Invalidate: queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY })
  */
 export const groupsQueryAtom = atomWithQuery(() => ({
-  queryKey: ["data", "groups"],
+  queryKey: GROUPS_QUERY_KEY,
   queryFn: fetchGroups,
   ...QUERY_CONFIG,
 }));
@@ -353,11 +359,11 @@ groupsQueryAtom.debugLabel = "groupsQueryAtom";
 
 /**
  * Settings query atom
- * Query key: ["data", "settings"]
- * Invalidate: queryClient.invalidateQueries({ queryKey: ["data", "settings"] })
+ * Query key: SETTINGS_QUERY_KEY (["data", "settings"])
+ * Invalidate: queryClient.invalidateQueries({ queryKey: SETTINGS_QUERY_KEY })
  */
 export const settingsQueryAtom = atomWithQuery(() => ({
-  queryKey: ["data", "settings"],
+  queryKey: SETTINGS_QUERY_KEY,
   queryFn: fetchSettings,
   ...QUERY_CONFIG,
 }));
@@ -365,11 +371,11 @@ settingsQueryAtom.debugLabel = "settingsQueryAtom";
 
 /**
  * User query atom
- * Query key: ["data", "user"]
- * Invalidate: queryClient.invalidateQueries({ queryKey: ["data", "user"] })
+ * Query key: USER_QUERY_KEY (["data", "user"])
+ * Invalidate: queryClient.invalidateQueries({ queryKey: USER_QUERY_KEY })
  */
 export const userQueryAtom = atomWithQuery(() => ({
-  queryKey: ["data", "user"],
+  queryKey: USER_QUERY_KEY,
   queryFn: fetchUser,
   ...QUERY_CONFIG,
 }));

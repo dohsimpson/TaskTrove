@@ -10,7 +10,7 @@ import {
   TEST_PROJECT_ID_2,
   TEST_LABEL_ID_1,
   TEST_LABEL_ID_2,
-} from "@/lib/utils/test-constants"
+} from "@tasktrove/types/test-constants"
 
 // Mock component interfaces
 interface MockJotaiProviderProps {

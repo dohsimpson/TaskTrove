@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@/test-utils"
 import type { Task, Project } from "@/lib/types"
 import { createMockTask } from "@tasktrove/atoms"
-import { TEST_TASK_ID_1, TEST_TASK_ID_2 } from "@/lib/utils/test-constants"
+import { TEST_TASK_ID_1, TEST_TASK_ID_2 } from "@tasktrove/types/test-constants"
 import { mockNextNavigation, mockNavigation, mockUseToast, mockNextThemes } from "@/test-utils"
 
 // Mock component interfaces

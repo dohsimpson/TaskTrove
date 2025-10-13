@@ -17,7 +17,7 @@ import {
   TEST_SUBTASK_ID_1,
   TEST_SUBTASK_ID_2,
   TEST_SUBTASK_ID_3,
-} from "@/lib/utils/test-constants"
+} from "@tasktrove/types/test-constants"
 
 // Mock UI components that use ContentPopover
 vi.mock("@/components/ui/content-popover", () => ({

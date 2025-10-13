@@ -2,7 +2,7 @@ import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@/test-utils"
 import type { Task, VoiceCommand } from "@/lib/types"
-import { TEST_VOICE_COMMAND_ID_1, TEST_TASK_ID_3 } from "@/lib/utils/test-constants"
+import { TEST_VOICE_COMMAND_ID_1, TEST_TASK_ID_3 } from "@tasktrove/types/test-constants"
 import { createMockTask } from "@tasktrove/atoms"
 
 // Mock the pathnameAtom

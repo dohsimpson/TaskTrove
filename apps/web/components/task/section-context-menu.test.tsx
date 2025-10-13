@@ -6,7 +6,7 @@ import { SectionContextMenu } from "./section-context-menu"
 import { projectAtoms } from "@tasktrove/atoms"
 import { pathnameAtom } from "@tasktrove/atoms"
 import { createGroupId } from "@/lib/types"
-import { TEST_PROJECT_ID_1 } from "@/lib/utils/test-constants"
+import { TEST_PROJECT_ID_1 } from "@tasktrove/types/test-constants"
 
 // Mock component interfaces
 interface MockButtonProps {

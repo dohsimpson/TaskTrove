@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, type Mock } from "vitest"
 import { render, screen, fireEvent } from "@/test-utils"
 import { SelectionToolbar } from "./selection-toolbar"
 import type { Task } from "@/lib/types"
-import { TEST_COMMENT_ID_1, TEST_SUBTASK_ID_1 } from "@/lib/utils/test-constants"
+import { TEST_COMMENT_ID_1, TEST_SUBTASK_ID_1 } from "@tasktrove/types/test-constants"
 import { createTaskId } from "@/lib/types"
 
 // Mock state

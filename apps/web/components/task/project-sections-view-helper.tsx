@@ -101,9 +101,9 @@ export function DropTargetElement({
 
   if (type === "group") {
     return (
-      <div data-testid={testId}>
-        <GroupDropIndicator isActive={isOverElement} ref={ref}>
-          <div>{children}</div>
+      <div data-testid={testId} className="flex-1 flex">
+        <GroupDropIndicator isActive={isOverElement} ref={ref} className="flex flex-1">
+          <>{children}</>
         </GroupDropIndicator>
       </div>
     )

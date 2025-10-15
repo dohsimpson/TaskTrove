@@ -29,6 +29,8 @@ interface EditableSectionHeaderProps {
   nameElement?: "h1" | "h2" | "h3" | "h4" | "p" | "div" | "span"
   /** Additional content to render on the right side */
   rightContent?: React.ReactNode
+  /** Additional content to render on the left side */
+  leftContent?: React.ReactNode
   /** Handler for when editing is saved */
   onSaveEdit: (newName: string) => void
   /** Handler for when editing is cancelled */
@@ -63,6 +65,7 @@ export function EditableSectionHeader({
   nameClassName = "font-medium text-foreground",
   nameElement = "h3",
   rightContent,
+  leftContent,
   onSaveEdit,
   onCancelEdit,
   onMouseEnter,
@@ -81,10 +84,13 @@ export function EditableSectionHeader({
       onClick={onClick}
     >
       <div className="flex items-center gap-3">
+        {/* Custom left content (e.g., collapse/expand arrow) */}
+        {leftContent}
+
         {/* Color indicator */}
         <div className="h-3 w-3 rounded-full" style={{ backgroundColor: sectionColor }} />
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 cursor-default">
           {/* Editable section name */}
           {isEditing ? (
             <EditableDiv

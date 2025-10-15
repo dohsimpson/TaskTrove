@@ -10,7 +10,6 @@ import {
   filteredTasksAtom,
   currentViewAtom,
   currentViewStateAtom,
-  toggleTaskPanelAtom,
 } from "@tasktrove/atoms"
 import { currentRouteContextAtom } from "@tasktrove/atoms"
 import {
@@ -42,7 +41,6 @@ export function MainContent({ onVoiceCommand }: MainContentProps): React.ReactEl
   const currentViewState = useAtomValue(currentViewStateAtom)
   const routeContext = useAtomValue(currentRouteContextAtom)
   const filteredTasks = useAtomValue(filteredTasksAtom)
-  const toggleTaskPanel = useSetAtom(toggleTaskPanelAtom)
 
   // Extract values from atoms
   const { viewMode } = currentViewState
@@ -146,7 +144,7 @@ export function MainContent({ onVoiceCommand }: MainContentProps): React.ReactEl
 
         switch (viewMode) {
           case "kanban":
-            return <KanbanBoard project={projectForView} onTaskClick={toggleTaskPanel} />
+            return <KanbanBoard project={projectForView} />
 
           case "calendar":
             return (

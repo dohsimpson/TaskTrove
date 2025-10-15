@@ -388,6 +388,11 @@ catalogs:
       specifier: ^4.1.11
       version: 4.1.11
 
+patchedDependencies:
+  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator':
+    hash: 8cd82489931f636e1beb1e52b922649267b39fe79e6214be62da5d19adb607eb
+    path: patches/@atlaskit__pragmatic-drag-and-drop-react-drop-indicator.patch
+
 importers:
 
   .:
@@ -427,7 +432,7 @@ importers:
         version: 1.1.0
       '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator':
         specifier: 'catalog:'
-        version: 3.2.7(@types/react@19.1.13)(react@19.1.1)
+        version: 3.2.7(patch_hash=8cd82489931f636e1beb1e52b922649267b39fe79e6214be62da5d19adb607eb)(@types/react@19.1.13)(react@19.1.1)
       '@hookform/resolvers':
         specifier: 'catalog:'
         version: 5.2.2(react-hook-form@7.63.0(react@19.1.1))
@@ -4642,6 +4647,7 @@ packages:
     resolution: {integrity: sha512-Quz3MvAwHxVYNXsOByL7xI5EB2WYOeFswqaHIA3qOK3isRWTxiplBEocmmru6XmxDB2L7jDNYtYA4FyimoAFEw==}
     engines: {node: '>=8.17.0'}
     hasBin: true
+    bundledDependencies: []
 
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
@@ -6376,7 +6382,7 @@ snapshots:
       '@atlaskit/pragmatic-drag-and-drop': 1.7.7
       '@babel/runtime': 7.28.4
 
-  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator@3.2.7(@types/react@19.1.13)(react@19.1.1)':
+  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator@3.2.7(patch_hash=8cd82489931f636e1beb1e52b922649267b39fe79e6214be62da5d19adb607eb)(@types/react@19.1.13)(react@19.1.1)':
     dependencies:
       '@atlaskit/pragmatic-drag-and-drop': 1.7.7
       '@atlaskit/pragmatic-drag-and-drop-hitbox': 1.1.0

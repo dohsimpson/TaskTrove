@@ -9,6 +9,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:changed": "turbo run test:changed",
+    "test:file": "turbo run test:file",
     "test:coverage": "turbo run test:coverage",
     "check": "turbo run check --output-logs errors-only && echo 'All checks passed!'",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",

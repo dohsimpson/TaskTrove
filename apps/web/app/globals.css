@@ -247,3 +247,9 @@
     cursor: pointer;
   }
 }
+
+/* Override Atlassian drag and drop background color for better dark theme support
+* (NOTE: we also need to patch the library, here is just a reference so that --color-muted is not tree shaked) */
+._bfhk33gi {
+  background-color: var(--color-muted);
+}

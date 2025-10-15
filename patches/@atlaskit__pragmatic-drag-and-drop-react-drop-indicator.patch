@@ -1,0 +1,114 @@
+diff --git a/dist/cjs/group.compiled.css b/dist/cjs/group.compiled.css
+index 3a8e069ce3f4ce003e71768b3d480c073885e84c..99721e50c571c979d82179efeb366313011699d3 100644
+--- a/dist/cjs/group.compiled.css
++++ b/dist/cjs/group.compiled.css
+@@ -3,4 +3,4 @@
+ ._12y31dm9{outline-width:var(--ds-border-width-selected,2px)}
+ ._1cwg12x7{outline-offset:var(--ds-space-075,6px)}
+ ._1qu2nqa1{outline-style:solid}
+-._bfhk33gi{background-color:var(--ds-background-information,#e9f2ff)}
+\ No newline at end of file
++._bfhk33gi{background-color:var(--color-muted,#e9f2ff)}
+\ No newline at end of file
+diff --git a/dist/cjs/group.js b/dist/cjs/group.js
+index d338df6bed3031ef4fadb4220e215ff39e164400..c7e80d6986dcaa122638dae79ed2c56609a38a3c 100644
+--- a/dist/cjs/group.js
++++ b/dist/cjs/group.js
+@@ -18,10 +18,11 @@ var activeStyles = null;
+ var GroupDropIndicator = exports.GroupDropIndicator = /*#__PURE__*/(0, _react.forwardRef)(function GroupDropIndicator(_ref, forwardedRef) {
+   var children = _ref.children,
+     isActive = _ref.isActive,
+-    testId = _ref.testId;
++    testId = _ref.testId,
++    className = _ref.className;
+   return /*#__PURE__*/React.createElement("div", {
+     ref: forwardedRef,
+     "data-testid": testId,
+-    className: (0, _runtime.ax)([isActive && "_2rkolb4i _bfhk33gi _1cwg12x7 _12y31dm9 _1qu2nqa1 _12ji1yqz"])
++    className: (0, _runtime.ax)([isActive && "_2rkolb4i _bfhk33gi _1cwg12x7 _12y31dm9 _1qu2nqa1 _12ji1yqz", className])
+   }, children);
+ });
+\ No newline at end of file
+diff --git a/dist/es2019/group.compiled.css b/dist/es2019/group.compiled.css
+index 3a8e069ce3f4ce003e71768b3d480c073885e84c..99721e50c571c979d82179efeb366313011699d3 100644
+--- a/dist/es2019/group.compiled.css
++++ b/dist/es2019/group.compiled.css
+@@ -3,4 +3,4 @@
+ ._12y31dm9{outline-width:var(--ds-border-width-selected,2px)}
+ ._1cwg12x7{outline-offset:var(--ds-space-075,6px)}
+ ._1qu2nqa1{outline-style:solid}
+-._bfhk33gi{background-color:var(--ds-background-information,#e9f2ff)}
+\ No newline at end of file
++._bfhk33gi{background-color:var(--color-muted,#e9f2ff)}
+\ No newline at end of file
+diff --git a/dist/es2019/group.js b/dist/es2019/group.js
+index e47b359b6d53313a84a7484f32a3e13f4680857c..90edd17487fd3b7a5ce111d6ace28c7ef87ad8ee 100644
+--- a/dist/es2019/group.js
++++ b/dist/es2019/group.js
+@@ -10,11 +10,12 @@ const activeStyles = null;
+ export const GroupDropIndicator = /*#__PURE__*/forwardRef(function GroupDropIndicator({
+   children,
+   isActive,
+-  testId
++  testId,
++  className
+ }, forwardedRef) {
+   return /*#__PURE__*/React.createElement("div", {
+     ref: forwardedRef,
+     "data-testid": testId,
+-    className: ax([isActive && "_2rkolb4i _bfhk33gi _1cwg12x7 _12y31dm9 _1qu2nqa1 _12ji1yqz"])
++    className: ax([isActive && "_2rkolb4i _bfhk33gi _1cwg12x7 _12y31dm9 _1qu2nqa1 _12ji1yqz", className])
+   }, children);
+ });
+\ No newline at end of file
+diff --git a/dist/esm/group.compiled.css b/dist/esm/group.compiled.css
+index 3a8e069ce3f4ce003e71768b3d480c073885e84c..62133bb3180256fbd29f5b68eec329f2ecb30279 100644
+--- a/dist/esm/group.compiled.css
++++ b/dist/esm/group.compiled.css
+@@ -3,4 +3,4 @@
+ ._12y31dm9{outline-width:var(--ds-border-width-selected,2px)}
+ ._1cwg12x7{outline-offset:var(--ds-space-075,6px)}
+ ._1qu2nqa1{outline-style:solid}
+-._bfhk33gi{background-color:var(--ds-background-information,#e9f2ff)}
+\ No newline at end of file
++._bfhk33gi{background-color:var(--color-muted)}
+\ No newline at end of file
+diff --git a/dist/esm/group.js b/dist/esm/group.js
+index 945a2fa71af1d9a22ad419d8be6d08366f31f909..7345011197b18843cf38d449b865c23cb98c0409 100644
+--- a/dist/esm/group.js
++++ b/dist/esm/group.js
+@@ -10,10 +10,11 @@ var activeStyles = null;
+ export var GroupDropIndicator = /*#__PURE__*/forwardRef(function GroupDropIndicator(_ref, forwardedRef) {
+   var children = _ref.children,
+     isActive = _ref.isActive,
+-    testId = _ref.testId;
++    testId = _ref.testId,
++    className = _ref.className;
+   return /*#__PURE__*/React.createElement("div", {
+     ref: forwardedRef,
+     "data-testid": testId,
+-    className: ax([isActive && "_2rkolb4i _bfhk33gi _1cwg12x7 _12y31dm9 _1qu2nqa1 _12ji1yqz"])
++    className: ax([isActive && "_2rkolb4i _bfhk33gi _1cwg12x7 _12y31dm9 _1qu2nqa1 _12ji1yqz", className])
+   }, children);
+ });
+\ No newline at end of file
+diff --git a/dist/types/group.d.ts b/dist/types/group.d.ts
+index ee65e35322e091907b3a0f5e05f6eea588878411..2843386569b3d44ccd27eb059c820485d21629c0 100644
+--- a/dist/types/group.d.ts
++++ b/dist/types/group.d.ts
+@@ -10,4 +10,5 @@ export declare const GroupDropIndicator: import("react").ForwardRefExoticCompone
+     children: ReactNode;
+     isActive: boolean;
+     testId?: string;
++    className?: string;
+ } & import("react").RefAttributes<HTMLDivElement>>;
+diff --git a/dist/types-ts4.5/group.d.ts b/dist/types-ts4.5/group.d.ts
+index ee65e35322e091907b3a0f5e05f6eea588878411..2843386569b3d44ccd27eb059c820485d21629c0 100644
+--- a/dist/types-ts4.5/group.d.ts
++++ b/dist/types-ts4.5/group.d.ts
+@@ -10,4 +10,5 @@ export declare const GroupDropIndicator: import("react").ForwardRefExoticCompone
+     children: ReactNode;
+     isActive: boolean;
+     testId?: string;
++    className?: string;
+ } & import("react").RefAttributes<HTMLDivElement>>;

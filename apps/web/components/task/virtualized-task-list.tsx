@@ -9,7 +9,7 @@ import { VirtualizationDebugBadge } from "@/components/debug/virtualization-debu
 
 interface VirtualizedTaskListProps {
   tasks: Task[]
-  compactView: boolean
+  variant: "default" | "compact" | "kanban" | "calendar" | "subtask"
   sortedTaskIds: TaskId[]
   onDropTaskToListItem?: (args: ElementDropTargetEventBasePayload) => void
   enableDropTargets?: boolean
@@ -33,7 +33,7 @@ interface VirtualizedTaskListProps {
  * ```tsx
  * <VirtualizedTaskList
  *   tasks={tasks}
- *   compactView={false}
+ *   variant="default"
  *   sortedTaskIds={taskIds}
  *   enableDropTargets={true}
  *   onDropTaskToListItem={handleDrop}
@@ -42,7 +42,7 @@ interface VirtualizedTaskListProps {
  */
 export function VirtualizedTaskList({
   tasks,
-  compactView,
+  variant,
   sortedTaskIds,
   onDropTaskToListItem,
   enableDropTargets = true,
@@ -75,8 +75,11 @@ export function VirtualizedTaskList({
     return null
   }, [])
 
+  // Get tasks in sorted order for virtualization
+  const sortedTasks = sortedTaskIds.map((id) => tasks.find((t) => t.id === id)).filter(Boolean)
+
   const virtualizer = useVirtualizer({
-    count: tasks.length,
+    count: sortedTasks.length,
     getScrollElement,
     estimateSize: () => 50,
     overscan: 5,
@@ -84,10 +87,10 @@ export function VirtualizedTaskList({
 
   // In test environment, render all items to make them available for queries
   const itemsToRender = isTest
-    ? tasks.map((task, index) => ({ task, index, start: index * 50 }))
+    ? sortedTasks.map((task, index) => ({ task, index, start: index * 50 }))
     : virtualizer
         .getVirtualItems()
-        .map((vi) => ({ task: tasks[vi.index], index: vi.index, start: vi.start }))
+        .map((vi) => ({ task: sortedTasks[vi.index], index: vi.index, start: vi.start }))
 
   return (
     <div
@@ -97,7 +100,10 @@ export function VirtualizedTaskList({
         width: "100%",
       }}
     >
-      <VirtualizationDebugBadge totalItems={tasks.length} renderedItems={itemsToRender.length} />
+      <VirtualizationDebugBadge
+        totalItems={sortedTasks.length}
+        renderedItems={itemsToRender.length}
+      />
       <div
         style={{
           height: isTest ? "auto" : `${virtualizer.getTotalSize()}px`,
@@ -112,7 +118,7 @@ export function VirtualizedTaskList({
             <DraggableTaskElement key={task.id} taskId={task.id}>
               <TaskItem
                 taskId={task.id}
-                variant={compactView ? "compact" : "default"}
+                variant={variant}
                 className="cursor-pointer mb-2 mx-2"
                 showProjectBadge={true}
                 sortedTaskIds={sortedTaskIds}
@@ -120,9 +126,11 @@ export function VirtualizedTaskList({
             </DraggableTaskElement>
           )
 
+          // Use task ID + index as key to force remount when tasks reorder
+          // This triggers virtualizer.measureElement for moved items
           return (
             <div
-              key={task.id}
+              key={`${task.id}-${index}`}
               data-index={index}
               ref={isTest ? undefined : virtualizer.measureElement}
               style={{

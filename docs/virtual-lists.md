@@ -379,6 +379,90 @@ const items = isTest
   : virtualizer.getVirtualItems();
 ```
 
+### ❌ Using Stable Keys for Reorderable Lists
+
+**Problem:**
+
+When items can be reordered (e.g., drag-and-drop), using only the item ID as the key prevents React from remounting elements at new positions. This means `measureElement` doesn't get called, and the virtualizer doesn't recalculate offsets.
+
+**Wrong:**
+
+```tsx
+return (
+  <div
+    key={task.id} // Same key when task moves to different position
+    ref={virtualizer.measureElement}
+    style={{ transform: `translateY(${start}px)` }}
+  >
+    {item}
+  </div>
+);
+```
+
+**What happens:**
+
+1. Task moves from index 0 to index 2
+2. React sees same key (`task-123`) at new position
+3. React reuses existing DOM element (no unmount/remount)
+4. `measureElement` ref callback doesn't fire
+5. Virtualizer doesn't recalculate → incorrect positions
+
+**Right:**
+
+```tsx
+return (
+  <div
+    key={`${task.id}-${index}`} // Key includes position
+    ref={virtualizer.measureElement}
+    style={{ transform: `translateY(${start}px)` }}
+  >
+    {item}
+  </div>
+);
+```
+
+**What happens:**
+
+1. Task moves from index 0 to index 2
+2. React sees different keys (`task-123-0` → `task-123-2`)
+3. React unmounts old element and mounts new one
+4. `measureElement` ref callback fires during mount
+5. Virtualizer recalculates → correct positions
+
+**Trade-offs:**
+
+- ✅ **Items that move get remounted** → measurements update correctly
+- ✅ **Items that don't move keep same key** → no unnecessary remounts
+- ⚠️ **Remounting loses component state** → usually not an issue for list items
+
+**Testing:**
+
+```tsx
+it("invalidates keys when order changes to force remount", () => {
+  const { container, rerender } = render(
+    <VirtualList items={items} sortedIds={[id1, id2, id3]} />,
+  );
+
+  const initialDivs = container.querySelectorAll("[data-index]");
+
+  // Reorder: swap first two items
+  rerender(<VirtualList items={items} sortedIds={[id2, id1, id3]} />);
+
+  const newDivs = container.querySelectorAll("[data-index]");
+
+  // Verify React created NEW elements (not reused)
+  expect(newDivs[0]).not.toBe(initialDivs[0]);
+  expect(newDivs[1]).not.toBe(initialDivs[1]);
+});
+```
+
+**When to use this pattern:**
+
+- ✅ Lists with drag-and-drop reordering
+- ✅ Lists with sort/filter that changes order
+- ✅ Lists where item positions affect layout
+- ❌ Static lists that never reorder (use `item.id` only)
+
 ## Performance Tips
 
 1. **Memoize expensive items**: Use `React.memo()` for complex list items

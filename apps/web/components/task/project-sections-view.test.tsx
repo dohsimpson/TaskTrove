@@ -13,7 +13,8 @@ import {
   TEST_GROUP_ID_2,
   TEST_GROUP_ID_3,
 } from "@tasktrove/types/test-constants"
-import { DEFAULT_SECTION_COLORS } from "@tasktrove/constants"
+import { DEFAULT_SECTION_COLORS, DEFAULT_UUID } from "@tasktrove/constants"
+import { createGroupId } from "@/lib/types"
 
 // Create hoisted mocks and data
 const mockJotai = vi.hoisted(() => ({
@@ -602,6 +603,14 @@ describe("ProjectSectionsView", () => {
     slug: "test-project",
     color: "#3B82F6",
     sections: [
+      {
+        id: createGroupId(DEFAULT_UUID),
+        name: "(no section)",
+        slug: "",
+        type: "section",
+        items: [],
+        color: "#6b7280",
+      },
       {
         id: TEST_GROUP_ID_1,
         name: "Planning",

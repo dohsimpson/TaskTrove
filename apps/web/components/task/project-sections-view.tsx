@@ -1,18 +1,15 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
-import { type ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
-import { extractDropPayload, calculateInsertIndex } from "@tasktrove/dom-utils"
 // TaskItem is now used internally by VirtualizedTaskList
 // CompactTaskItem functionality is now integrated into TaskItem with variant="compact"
 import { TaskSidePanel } from "./task-side-panel"
-import { TaskShadow } from "@/components/ui/custom/task-shadow"
 import { AddSectionDivider } from "./add-section-divider"
 import { SelectionToolbar } from "./selection-toolbar"
 import { ProjectViewToolbar } from "./project-view-toolbar"
-import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
+import { Section } from "./section"
 import {
   projectAtoms,
   projectsAtom,
@@ -20,39 +17,20 @@ import {
   currentViewStateAtom,
   selectedTaskAtom,
   setViewOptionsAtom,
-  collapsedSectionsAtom,
-  toggleSectionCollapseAtom,
   sidePanelWidthAtom,
   updateGlobalViewOptionsAtom,
-  updateProjectsAtom,
-  updateTasksAtom,
 } from "@tasktrove/atoms"
 import { SIDE_PANEL_WIDTH_MIN, SIDE_PANEL_WIDTH_MAX } from "@tasktrove/constants"
-import {
-  currentRouteContextAtom,
-  editingSectionIdAtom,
-  stopEditingSectionAtom,
-} from "@tasktrove/atoms"
-import { taskAtoms } from "@tasktrove/atoms"
-import type { Task, Project, ProjectSection, TaskId, ProjectId } from "@/lib/types"
-import { createGroupId, createTaskId } from "@/lib/types"
-import { applyViewStateFilters, sortTasksByViewState } from "@tasktrove/atoms"
-import { Badge } from "@/components/ui/badge"
+import { currentRouteContextAtom } from "@tasktrove/atoms"
+import type { Task, Project, ProjectSection } from "@/lib/types"
+import { createGroupId } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { ColorPicker } from "@/components/ui/custom/color-picker"
-import { SectionContextMenu } from "./section-context-menu"
-import { ChevronDown, ChevronRight, X, Plus } from "lucide-react"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/custom/animated-collapsible"
+import { X } from "lucide-react"
 import { log } from "@/lib/utils/logger"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { DEFAULT_UUID } from "@tasktrove/constants"
-import { DropTargetElement } from "./project-sections-view-helper"
 import { VirtualizedTaskList } from "./virtualized-task-list"
 import { ProjectSectionDebugBadge } from "@/components/debug"
 
@@ -122,14 +100,10 @@ export function ProjectSectionsView({
 
   // Atom actions
   const setViewOptions = useSetAtom(setViewOptionsAtom)
-  const toggleSectionCollapse = useSetAtom(toggleSectionCollapseAtom)
-  const collapsedSections = useAtomValue(collapsedSectionsAtom)
   const [isAddingSection, setIsAddingSection] = useState(false)
   const [addingSectionPosition, setAddingSectionPosition] = useState<number | undefined>(undefined)
   const [newSectionName, setNewSectionName] = useState("")
   const [newSectionColor, setNewSectionColor] = useState("#3b82f6")
-  const [editingSectionColor, setEditingSectionColor] = useState("")
-
   // Panel width state (global, persisted in localStorage)
   const sidePanelWidth = useAtomValue(sidePanelWidthAtom)
   const updateGlobalViewOptions = useSetAtom(updateGlobalViewOptionsAtom)
@@ -142,43 +116,8 @@ export function ProjectSectionsView({
     }
   }
 
-  // Track drag state for shadow rendering per section
-  const [sectionDragStates] = useState<
-    Map<
-      string,
-      {
-        isDraggingOver: boolean
-        draggedTaskRect?: { height: number }
-        closestEdge?: "top" | "bottom"
-        targetTaskId?: string
-        isOverChildTask?: boolean
-      }
-    >
-  >(new Map())
-
-  // Get section state from atoms
-  const editingSectionId = useAtomValue(editingSectionIdAtom)
-  const stopEditingSection = useSetAtom(stopEditingSectionAtom)
-
-  // Initialize editing state when section editing starts
-  useEffect(() => {
-    if (editingSectionId && project) {
-      const section = project.sections.find((s: ProjectSection) => s.id === editingSectionId)
-      if (section) {
-        setEditingSectionColor(section.color || "#808080")
-      }
-    }
-  }, [editingSectionId, project])
-
   // Jotai actions
   const addSection = useSetAtom(projectAtoms.actions.addSection)
-  const renameSection = useSetAtom(projectAtoms.actions.renameSection)
-  const updateProjects = useSetAtom(updateProjectsAtom)
-  const updateTasks = useSetAtom(updateTasksAtom)
-  const taskById = useAtomValue(taskAtoms.derived.taskById)
-  const getProjectById = useAtomValue(projectAtoms.derived.projectById)
-  const addTaskToSection = useAddTaskToSection()
-  const getOrderedTasksForSection = useAtomValue(taskAtoms.derived.orderedTasksBySection)
 
   const handleAddSection = () => {
     if (newSectionName.trim() && project && supportsSections) {
@@ -232,238 +171,6 @@ export function ProjectSectionsView({
     setAddingSectionPosition(position)
   }
 
-  const handleSaveEditSection = (newName: string) => {
-    if (editingSectionId !== null && project) {
-      const trimmedName = newName.trim()
-      const sectionId = editingSectionId
-
-      // Find the current section being edited
-      const currentSection = project.sections.find((s: ProjectSection) => s.id === sectionId)
-      if (!currentSection) {
-        return
-      }
-
-      // Only proceed with rename if name is valid and different
-      if (trimmedName && trimmedName !== currentSection.name) {
-        // Check if the new name already exists
-        if (project.sections.some((s: ProjectSection) => s.name === trimmedName)) {
-          return
-        }
-
-        try {
-          // Update the section in the project (name and color)
-          renameSection({
-            projectId: project.id,
-            sectionId: sectionId,
-            newSectionName: trimmedName,
-            newSectionColor: editingSectionColor,
-          })
-        } catch (error) {
-          log.error(
-            {
-              module: "projects",
-              projectId: project.id,
-              sectionId,
-              newName: trimmedName,
-              error: error instanceof Error ? error.message : String(error),
-            },
-            "Failed to rename section",
-          )
-        }
-      }
-    }
-
-    // Always exit edit mode after processing
-    stopEditingSection()
-  }
-
-  const handleCancelEditSection = () => {
-    stopEditingSection()
-    setEditingSectionColor("")
-  }
-
-  // Handler for dropping tasks onto a section (group drop target)
-  const handleDropTaskToSection = useCallback(
-    async (args: ElementDropTargetEventBasePayload) => {
-      if (!project) return
-
-      // Extract task IDs from drag source
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const taskIds = (Array.isArray(args.source.data.ids) ? args.source.data.ids : []) as TaskId[]
-      if (taskIds.length === 0) return
-
-      // Extract section ID from drop target ID (format: "droppableId-section-sectionId")
-      const targetSectionDroppableId = String(args.self.data.id ?? "")
-      const targetSectionId = targetSectionDroppableId.split("-section-")[1]
-      if (!targetSectionId) return
-
-      const tasksToMove = taskIds
-        .map((id) => taskById.get(id))
-        .filter((t): t is Task => t !== undefined)
-      const tasksNeedingProjectUpdate = tasksToMove.filter((t) => t.projectId !== project.id)
-      if (tasksNeedingProjectUpdate.length > 0) {
-        await updateTasks(
-          tasksNeedingProjectUpdate.map((task) => ({
-            id: task.id,
-            projectId: project.id,
-            sectionId: createGroupId(targetSectionId),
-          })),
-        )
-      }
-
-      // Get unique project IDs that need updating (source projects + target project)
-      const affectedProjectIds = new Set<ProjectId>([project.id])
-      for (const task of tasksToMove) {
-        if (task.projectId) {
-          affectedProjectIds.add(task.projectId)
-        }
-      }
-
-      // Step 1: Remove taskIds from affected projects' sections only
-      const projectsMap = new Map<ProjectId, Project>()
-      for (const projectId of affectedProjectIds) {
-        const proj = getProjectById(projectId)
-        if (proj) {
-          projectsMap.set(projectId, {
-            ...proj,
-            sections: proj.sections.map((section) => ({
-              ...section,
-              items: section.items.filter((id) => !taskIds.includes(id)),
-            })),
-          })
-        }
-      }
-
-      // Step 2: Add taskIds to the target section (at the end)
-      const targetProject = projectsMap.get(project.id)
-      if (!targetProject) return
-
-      const targetSectionIndex = targetProject.sections.findIndex((s) => s.id === targetSectionId)
-      if (targetSectionIndex < 0) return
-
-      const targetSection = targetProject.sections[targetSectionIndex]
-      if (!targetSection) return
-
-      targetProject.sections[targetSectionIndex] = {
-        ...targetSection,
-        items: [...targetSection.items, ...taskIds],
-      }
-
-      // Step 3: Batch update all projects
-      await updateProjects(
-        Array.from(projectsMap.values()).map((proj) => ({
-          id: proj.id,
-          sections: proj.sections,
-        })),
-      )
-    },
-    [project, updateProjects, updateTasks, taskById, getProjectById],
-  )
-
-  // Handler for dropping tasks onto a list item (task)
-  const handleDropTaskToListItem = useCallback(
-    async (args: ElementDropTargetEventBasePayload) => {
-      if (!project) return
-
-      // Extract and validate drop payload
-      const payload = extractDropPayload(args)
-      if (!payload) return
-
-      const taskIds = payload.draggedIds.map((id) => createTaskId(id))
-      const { instruction } = payload
-      const targetTaskId = createTaskId(payload.targetId)
-
-      // Find which section contains the target task in the current project
-      let targetSectionIndex = -1
-      let targetSectionId = ""
-      for (let i = 0; i < project.sections.length; i++) {
-        const section = project.sections[i]
-        if (section) {
-          const taskIndex = section.items.indexOf(targetTaskId)
-          if (taskIndex >= 0) {
-            targetSectionIndex = i
-            targetSectionId = section.id
-            break
-          }
-        }
-      }
-
-      if (targetSectionIndex < 0) return
-
-      const tasksToMove = taskIds
-        .map((id) => taskById.get(id))
-        .filter((t): t is Task => t !== undefined)
-      const tasksNeedingProjectUpdate = tasksToMove.filter((t) => t.projectId !== project.id)
-      if (tasksNeedingProjectUpdate.length > 0) {
-        await updateTasks(
-          tasksNeedingProjectUpdate.map((task) => ({
-            id: task.id,
-            projectId: project.id,
-            sectionId: createGroupId(targetSectionId),
-          })),
-        )
-      }
-
-      // Get unique project IDs that need updating (source projects + target project)
-      const affectedProjectIds = new Set<ProjectId>([project.id])
-      for (const task of tasksToMove) {
-        if (task.projectId) {
-          affectedProjectIds.add(task.projectId)
-        }
-      }
-
-      // Step 1: Remove taskIds from affected projects' sections only
-      const projectsMap = new Map<ProjectId, Project>()
-      for (const projectId of affectedProjectIds) {
-        const proj = getProjectById(projectId)
-        if (proj) {
-          projectsMap.set(projectId, {
-            ...proj,
-            sections: proj.sections.map((section) => ({
-              ...section,
-              items: section.items.filter((id) => !taskIds.includes(id)),
-            })),
-          })
-        }
-      }
-
-      // Step 2: Add taskIds to the target section at the correct position
-      const targetProject = projectsMap.get(project.id)
-      if (!targetProject) return
-
-      const targetSection = targetProject.sections[targetSectionIndex]
-      if (!targetSection) return
-
-      // Calculate insert index using the utility function
-      const insertIndex = calculateInsertIndex(
-        targetSection.items,
-        targetTaskId,
-        instruction,
-        (id) => id,
-      )
-
-      if (insertIndex === -1) return
-
-      targetProject.sections[targetSectionIndex] = {
-        ...targetSection,
-        items: [
-          ...targetSection.items.slice(0, insertIndex),
-          ...taskIds,
-          ...targetSection.items.slice(insertIndex),
-        ],
-      }
-
-      // Step 3: Batch update all projects
-      await updateProjects(
-        Array.from(projectsMap.values()).map((proj) => ({
-          id: proj.id,
-          sections: proj.sections,
-        })),
-      )
-    },
-    [project, updateProjects, updateTasks, taskById, getProjectById],
-  )
-
   // Side panel view state is the single source of truth for panel visibility
   const isPanelOpen = showSidePanel && Boolean(selectedTask)
 
@@ -472,10 +179,6 @@ export function ProjectSectionsView({
   const handleClosePanel = () => {
     // Simply disable the side panel view option - this will sync everything
     setViewOptions({ showSidePanel: false })
-  }
-
-  const handleToggleSectionCollapse = (sectionId: string) => {
-    toggleSectionCollapse(sectionId)
   }
 
   // Get sections from project and ensure default section is always present
@@ -497,138 +200,6 @@ export function ProjectSectionsView({
     sectionsToShow.unshift(defaultSection)
   }
 
-  const renderSection = (section: { id: string; name: string; color?: string }) => {
-    const displayName = section.name
-    const sectionId = section.id
-    const baseSectionTasks = getOrderedTasksForSection(
-      project?.id || "inbox",
-      createGroupId(section.id),
-    )
-
-    // Apply view state filters and sorting to sectioned tasks
-    const filteredSectionTasks = applyViewStateFilters(
-      baseSectionTasks,
-      currentViewState,
-      routeContext.viewId,
-    )
-    const sectionTasks = sortTasksByViewState([...filteredSectionTasks], currentViewState)
-
-    // Get sorted task IDs for range selection
-    const sortedSectionTaskIds = sectionTasks.map((task: Task) => task.id)
-
-    const sectionDroppableId = `${droppableId}-section-${sectionId}`
-    const isCollapsed = collapsedSections.includes(sectionId)
-    const isEditing = editingSectionId === section.id
-
-    // Render the section header (always visible)
-    const sectionHeader = (
-      <div className="flex items-center py-2 px-1 mb-3">
-        <CollapsibleTrigger asChild>
-          <Button
-            variant="ghost"
-            className="flex items-center gap-2 p-0 h-auto hover:bg-transparent cursor-pointer"
-            onClick={(e) => {
-              if (isEditing) {
-                e.preventDefault()
-                e.stopPropagation()
-              }
-            }}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            )}
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: section.color }} />
-            <div className="flex items-center gap-2">
-              {isEditing ? (
-                <EditableDiv
-                  as="h2"
-                  value={section.name}
-                  onChange={handleSaveEditSection}
-                  onCancel={handleCancelEditSection}
-                  className="text-base font-medium text-foreground"
-                  autoFocus={true}
-                  cursorPosition="end"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              ) : (
-                <h2 className="text-base font-medium text-foreground">{displayName}</h2>
-              )}
-
-              {/* Task count badge */}
-              <Badge
-                variant="secondary"
-                className="text-xs px-1.5 py-0.5 h-auto bg-transparent border-none text-muted-foreground font-medium"
-              >
-                {sectionTasks.length}
-              </Badge>
-            </div>
-          </Button>
-        </CollapsibleTrigger>
-
-        <div className="flex items-center gap-2 ml-auto">
-          {/* Add Task Button - always show (remove hidden class) */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 flex items-center justify-center"
-            onClick={() => addTaskToSection(project?.id, sectionId)}
-            title="Add task to this section"
-          >
-            <Plus className="h-3 w-3" />
-          </Button>
-
-          {/* Section context menu for non-unsectioned sections - only show if sections are supported */}
-          {section.name !== "Unsectioned" && supportsSections && project?.id && (
-            <SectionContextMenu sectionId={createGroupId(section.id)} isVisible={true} />
-          )}
-        </div>
-      </div>
-    )
-
-    return (
-      <div key={sectionId} className="mb-4">
-        <DropTargetElement
-          key={sectionDroppableId}
-          id={sectionDroppableId}
-          options={{ type: "group", indicator: {}, testId: sectionDroppableId }}
-          onDrop={handleDropTaskToSection}
-        >
-          <Collapsible
-            open={!isCollapsed}
-            onOpenChange={() => handleToggleSectionCollapse(sectionId)}
-          >
-            {/* When collapsed or when not collapsed but has no tasks, wrap the header in a drop target */}
-            {isCollapsed || sectionTasks.length === 0 ? (
-              <>
-                {sectionHeader}
-                {/* Show shadow when dragging over section */}
-                {(() => {
-                  const dragState = sectionDragStates.get(section.id)
-                  return dragState && dragState.isDraggingOver && dragState.draggedTaskRect ? (
-                    <TaskShadow height={dragState.draggedTaskRect.height} className="mb-2" />
-                  ) : null
-                })()}
-              </>
-            ) : (
-              sectionHeader
-            )}
-
-            <CollapsibleContent className="py-2">
-              <VirtualizedTaskList
-                tasks={sectionTasks}
-                compactView={compactView}
-                sortedTaskIds={sortedSectionTaskIds}
-                onDropTaskToListItem={handleDropTaskToListItem}
-              />
-            </CollapsibleContent>
-          </Collapsible>
-        </DropTargetElement>
-      </div>
-    )
-  }
-
   // Render content component for both sectioned and non-sectioned views
   const renderContent = () => {
     // When supportsSections is false, always render as a flat list
@@ -647,7 +218,7 @@ export function ProjectSectionsView({
               {/* Flat Task List without sections */}
               <VirtualizedTaskList
                 tasks={tasks}
-                compactView={compactView}
+                variant={compactView ? "compact" : "default"}
                 sortedTaskIds={sortedFlatTaskIds}
                 enableDropTargets={false}
               />
@@ -724,7 +295,13 @@ export function ProjectSectionsView({
                   </div>
                 )}
 
-                {renderSection(section)}
+                {project && (
+                  <Section
+                    sectionId={createGroupId(section.id)}
+                    projectId={project.id}
+                    droppableId={droppableId}
+                  />
+                )}
 
                 {/* Add section divider after each section */}
                 {/* {supportsSections && ( */}

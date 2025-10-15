@@ -434,7 +434,6 @@ describe.skip("KanbanBoard", () => {
   const defaultProps = {
     tasks: mockTasks,
     project: mockProject,
-    onTaskClick: vi.fn(),
   }
 
   beforeEach(() => {
@@ -656,7 +655,7 @@ describe.skip("KanbanBoard", () => {
   it("renders empty state when no project is provided", () => {
     render(
       <Provider>
-        <KanbanBoard onTaskClick={vi.fn()} />
+        <KanbanBoard />
       </Provider>,
     )
 
@@ -670,7 +669,7 @@ describe.skip("KanbanBoard", () => {
   it("handles tasks with non-existent sections", () => {
     render(
       <Provider>
-        <KanbanBoard project={mockProject} onTaskClick={vi.fn()} />
+        <KanbanBoard project={mockProject} />
       </Provider>,
     )
 
@@ -691,7 +690,7 @@ describe.skip("KanbanBoard", () => {
 
     render(
       <Provider>
-        <KanbanBoard project={projectWithNoSections} onTaskClick={vi.fn()} />
+        <KanbanBoard project={projectWithNoSections} />
       </Provider>,
     )
 
@@ -714,7 +713,7 @@ describe.skip("KanbanBoard", () => {
 
     rerender(
       <Provider>
-        <KanbanBoard project={mockProject} onTaskClick={defaultProps.onTaskClick} />
+        <KanbanBoard project={mockProject} />
       </Provider>,
     )
 
@@ -725,7 +724,7 @@ describe.skip("KanbanBoard", () => {
   it("sorts tasks by order within columns", () => {
     render(
       <Provider>
-        <KanbanBoard project={mockProject} onTaskClick={defaultProps.onTaskClick} />
+        <KanbanBoard project={mockProject} />
       </Provider>,
     )
 
@@ -737,7 +736,7 @@ describe.skip("KanbanBoard", () => {
   it("handles empty task lists", () => {
     render(
       <Provider>
-        <KanbanBoard project={mockProject} onTaskClick={defaultProps.onTaskClick} />
+        <KanbanBoard project={mockProject} />
       </Provider>,
     )
 
@@ -769,7 +768,7 @@ describe.skip("KanbanBoard", () => {
     it("handles all priority levels correctly", () => {
       render(
         <Provider>
-          <KanbanBoard project={mockProject} onTaskClick={defaultProps.onTaskClick} />
+          <KanbanBoard project={mockProject} />
         </Provider>,
       )
 

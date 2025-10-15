@@ -135,3 +135,6 @@ catalog:
   zod: ^4.1.11
 
 catalogMode: strict
+
+patchedDependencies:
+  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator': patches/@atlaskit__pragmatic-drag-and-drop-react-drop-indicator.patch

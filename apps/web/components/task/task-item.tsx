@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { ClickToEditDiv } from "@/components/ui/custom/click-to-edit-div"
 import { LinkifiedText } from "@/components/ui/custom/linkified-text"
 import { LinkifiedEditableDiv } from "@/components/ui/custom/linkified-editable-div"
+import { MaterialCard } from "@/components/ui/custom/material-card"
 import { TimeEstimationPopover } from "./time-estimation-popover"
 import { FocusTimerPopover } from "./focus-timer-popover"
 import { LabelManagementPopover } from "./label-management-popover"
@@ -503,21 +504,15 @@ export function TaskItem({
   // Compact variant render
   if (variant === "compact") {
     return (
-      <div
-        className={cn(
-          "group/task relative rounded border border-border border-l-3 transition-all duration-200",
-          "hover:shadow-md dark:hover:shadow-gray-300/30",
-          task.completed && "opacity-60",
-          isSelected || isInSelection
-            ? "bg-accent text-accent-foreground border-accent-foreground/20"
-            : "bg-card",
-          "cursor-pointer",
-          getPriorityColor(task.priority, variant),
-          className,
-        )}
+      <MaterialCard
+        variant="compact"
+        selected={isSelected || isInSelection}
+        completed={task.completed}
+        leftBorderColor={getPriorityColor(task.priority, variant)}
+        onClick={handleTaskClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={handleTaskClick}
+        className={cn("group/task", className)}
         data-task-focused={isSelected}
       >
         {/* Main content area - responsive layout */}
@@ -767,7 +762,7 @@ export function TaskItem({
             </div>
           </div>
         </div>
-      </div>
+      </MaterialCard>
     )
   }
 
@@ -776,19 +771,15 @@ export function TaskItem({
     const taskLabels = getLabelsFromIds(task.labels)
 
     return (
-      <div
-        className={cn(
-          "group/task relative p-3 border border-border border-l-3 rounded-lg shadow-xs cursor-pointer hover:shadow-md dark:hover:shadow-gray-300/30 transition-all duration-200",
-          task.completed && "opacity-60",
-          isSelected || isInSelection
-            ? "bg-accent text-accent-foreground border-accent-foreground/20"
-            : "bg-card",
-          getPriorityColor(task.priority, variant),
-          className,
-        )}
+      <MaterialCard
+        variant="kanban"
+        selected={isSelected || isInSelection}
+        completed={task.completed}
+        leftBorderColor={getPriorityColor(task.priority, variant)}
+        onClick={handleTaskClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={handleTaskClick}
+        className={cn("group/task", className)}
         data-task-focused={isSelected}
       >
         {/* Header with title, priority, and key metadata */}
@@ -1021,30 +1012,26 @@ export function TaskItem({
             {/* Attachments feature removed */}
           </div>
         </div>
-      </div>
+      </MaterialCard>
     )
   }
 
   // Calendar variant render - minimal layout for calendar days
   if (variant === "calendar") {
     return (
-      <div
-        className={cn(
-          "group/task text-xs p-0.5 lg:p-1 rounded cursor-pointer transition-all duration-200 border border-border border-l-3",
-          task.completed
-            ? "bg-muted text-muted-foreground line-through"
-            : "bg-card hover:bg-accent",
-          getPriorityColor(task.priority, "calendar"),
-          className,
-        )}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered}
+      <MaterialCard
+        variant="calendar"
+        completed={task.completed}
+        leftBorderColor={getPriorityColor(task.priority, "calendar")}
         onClick={handleTaskClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={cn("group/task text-xs", className)}
       >
         <LinkifiedText as="span" className="truncate text-xs">
           {task.title}
         </LinkifiedText>
-      </div>
+      </MaterialCard>
     )
   }
 
@@ -1056,14 +1043,12 @@ export function TaskItem({
     const currentEstimation = currentSubtask?.estimation || 0
 
     return (
-      <div
-        className={cn(
-          "group/task flex items-center rounded-md transition-colors p-2 bg-muted/50 hover:bg-muted/70",
-          task.completed && "opacity-60",
-          className,
-        )}
+      <MaterialCard
+        variant="subtask"
+        completed={task.completed}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        className={cn("group/task flex items-center", className)}
       >
         {/* Drag handle for subtasks */}
         <div className="flex items-center mr-2 cursor-grab active:cursor-grabbing">
@@ -1132,27 +1117,21 @@ export function TaskItem({
           triggerMode="click"
           disableOutsideInteraction={actionsMenuOpen}
         />
-      </div>
+      </MaterialCard>
     )
   }
 
   // Default variant render
   return (
-    <div
-      className={cn(
-        "group relative p-2 sm:p-3 md:p-4 rounded-lg border border-border border-l-3 transition-all duration-200",
-        "hover:shadow-md dark:hover:shadow-gray-300/30",
-        task.completed && "opacity-60",
-        isSelected || isInSelection
-          ? "bg-accent text-accent-foreground border-accent-foreground/20"
-          : "bg-card",
-        "cursor-pointer",
-        getPriorityColor(task.priority, variant),
-        className,
-      )}
+    <MaterialCard
+      variant="default"
+      selected={isSelected || isInSelection}
+      completed={task.completed}
+      leftBorderColor={getPriorityColor(task.priority, variant)}
+      onClick={handleTaskClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={handleTaskClick}
+      className={className}
       data-task-focused={isSelected}
     >
       {/* Main Layout - Flex with proper alignment */}
@@ -1543,6 +1522,6 @@ export function TaskItem({
           })()}
         </div>
       </div>
-    </div>
+    </MaterialCard>
   )
 }

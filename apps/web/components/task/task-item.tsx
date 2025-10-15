@@ -24,10 +24,12 @@ import {
   Pause,
   Square,
   GripVertical,
+  Users,
 } from "lucide-react"
 import { cn, getContrastColor } from "@/lib/utils"
 import { formatTime, getEffectiveEstimation } from "@/lib/utils/time-estimation"
 import { getPriorityColor, getPriorityTextColor } from "@/lib/color-utils"
+import { isPro } from "@/lib/utils/env"
 import { TaskSchedulePopover } from "./task-schedule-popover"
 import { CommentManagementPopover } from "./comment-management-popover"
 import { SubtaskPopover } from "./subtask-popover"
@@ -64,7 +66,6 @@ import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } 
 import { INBOX_PROJECT_ID, createTaskId } from "@/lib/types"
 import { TimeEstimationPicker } from "../ui/custom/time-estimation-picker"
 import { useTranslation } from "@tasktrove/i18n"
-import { AssigneeBadges } from "@/components/task/assignee-badges"
 // Responsive width for metadata columns to ensure consistent alignment
 const METADATA_COLUMN_WIDTH = "w-auto sm:w-20 md:w-24"
 
@@ -734,9 +735,13 @@ export function TaskItem({
                   </ProjectPopover>
                 )}
 
-                <AssigneeManagementPopover task={task}>
-                  <AssigneeBadges task={task} />
-                </AssigneeManagementPopover>
+                {isPro() && (
+                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors opacity-70 hover:opacity-100">
+                    <AssigneeManagementPopover task={task}>
+                      <Users className="h-3 w-3" />
+                    </AssigneeManagementPopover>
+                  </span>
+                )}
 
                 {/* Timer and Actions Menu - second row on larger viewport */}
                 <div className="hidden lg:flex lg:items-center gap-1">
@@ -913,18 +918,19 @@ export function TaskItem({
                     task={task}
                     onAddLabel={handleAddLabel}
                     onRemoveLabel={handleRemoveLabel}
+                    className="flex items-center"
                   >
-                    <Badge
-                      variant="outline"
-                      className="text-xs px-1.5 py-0.5 cursor-pointer hover:opacity-100"
+                    <span
+                      key={label.id}
+                      className="px-1.5 py-0.5 rounded text-xs flex items-center gap-1 hover:opacity-100"
                       style={{
                         backgroundColor: label.color,
-                        borderColor: label.color,
                         color: getContrastColor(label.color),
                       }}
                     >
+                      <Tag className="h-3 w-3" />
                       {label.name}
-                    </Badge>
+                    </span>
                   </LabelManagementPopover>
                 ))}
                 {taskLabels.length > 2 && (
@@ -932,6 +938,7 @@ export function TaskItem({
                     task={task}
                     onAddLabel={handleAddLabel}
                     onRemoveLabel={handleRemoveLabel}
+                    className="flex items-center"
                   >
                     <Badge
                       variant="outline"
@@ -947,6 +954,7 @@ export function TaskItem({
                 task={task}
                 onAddLabel={handleAddLabel}
                 onRemoveLabel={handleRemoveLabel}
+                className="flex items-center"
               >
                 <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
                   <Tag className="h-3 w-3" />
@@ -956,9 +964,18 @@ export function TaskItem({
                 </span>
               </LabelManagementPopover>
             )}
-            <AssigneeManagementPopover task={task}>
-              <AssigneeBadges task={task} className="ml-1" />
-            </AssigneeManagementPopover>
+            {isPro() && (
+              <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
+                <AssigneeManagementPopover task={task}>
+                  <span className="flex items-center gap-1">
+                    <Users className="h-3 w-3" />
+                    <span className="text-xs hidden group-hover:inline">
+                      {t("actions.addAssignees", "Add assignees")}
+                    </span>
+                  </span>
+                </AssigneeManagementPopover>
+              </span>
+            )}
           </div>
 
           {/* Right side - Metadata icons with nice spacing */}
@@ -1472,11 +1489,25 @@ export function TaskItem({
               }
             }
 
-            rightMetadataItems.push(
-              <AssigneeManagementPopover key="assignees" task={task}>
-                <AssigneeBadges task={task} />
-              </AssigneeManagementPopover>,
-            )
+            if (isPro()) {
+              rightMetadataItems.push(
+                <span
+                  className={cn(
+                    "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
+                    METADATA_COLUMN_WIDTH,
+                  )}
+                >
+                  <AssigneeManagementPopover key="assignees" task={task}>
+                    <span className="flex items-center gap-1">
+                      <Users className="h-3 w-3" />
+                      <span className="text-xs truncate hidden group-hover:inline">
+                        {t("actions.addAssignees", "Add assignees")}
+                      </span>
+                    </span>
+                  </AssigneeManagementPopover>
+                </span>,
+              )
+            }
 
             // Attachments feature removed
 

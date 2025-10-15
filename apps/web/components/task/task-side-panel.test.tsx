@@ -676,7 +676,8 @@ describe("TaskSidePanel", () => {
     render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
     const titleEditableDiv = screen.getAllByTestId("editable-div")[0]
-    expect(titleEditableDiv).toHaveClass("line-through", "text-muted-foreground")
+    expect(titleEditableDiv).toHaveClass("text-muted-foreground")
+    expect(titleEditableDiv).not.toHaveClass("line-through")
   })
 
   it("handles description editing with EditableDiv", async () => {
@@ -1267,7 +1268,7 @@ describe("TaskSidePanel", () => {
         const { rerender } = render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
         // Check that mobile elements are present
-        screen.getByText("Due Date")
+        screen.getByText("Scheduling")
         screen.getByText("Category")
         screen.getByText("Description")
         screen.getAllByText("Subtasks")
@@ -1280,7 +1281,7 @@ describe("TaskSidePanel", () => {
         rerender(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
         // Same sections should exist
-        expect(screen.getByText("Due Date")).toBeInTheDocument()
+        expect(screen.getByText("Scheduling")).toBeInTheDocument()
         expect(screen.getByText("Category")).toBeInTheDocument()
         expect(screen.getByText("Description")).toBeInTheDocument()
         expect(screen.getAllByText("Comments")[0]).toBeInTheDocument()
@@ -1791,8 +1792,8 @@ describe("TaskSidePanel", () => {
 
       render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-      // Should show "Add due date" since no dueDate, even with dueTime
-      expect(screen.getByText("Add due date")).toBeInTheDocument()
+      // Should show "Due Date" placeholder since no dueDate, even with dueTime
+      expect(screen.getByText("Due Date")).toBeInTheDocument()
     })
 
     it("should work correctly on mobile mode too", () => {

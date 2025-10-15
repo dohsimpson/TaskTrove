@@ -6,8 +6,9 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { GET, PATCH } from "./route"
-import { DataFile, DataFileSchema, User, createAvatarFilePath } from "@/lib/types"
+import { DataFile, DataFileSchema, User, createAvatarFilePath, createUserId } from "@/lib/types"
 import { DEFAULT_EMPTY_DATA_FILE, DEFAULT_USER } from "@/lib/types"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 import {
   safeReadDataFile,
   safeWriteDataFile,
@@ -35,6 +36,7 @@ function getWrittenData(): DataFile {
 
 // Mock data structure
 const mockUser: User = {
+  id: createUserId(DEFAULT_UUID),
   username: "testuser",
   password: "testpassword",
   avatar: createAvatarFilePath("assets/avatar/test-avatar.jpg"),

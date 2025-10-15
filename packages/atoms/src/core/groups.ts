@@ -13,13 +13,13 @@ import {
   ROOT_LABEL_GROUP_ID,
   ROOT_PROJECT_GROUP_ID,
 } from "@tasktrove/types/defaults";
-import { log } from "../utils/atom-helpers";
-import { groupsQueryAtom } from "../data/base/query";
+import { log } from "#utils/atom-helpers";
+import { groupsQueryAtom } from "#data/base/query";
 import {
   createProjectGroupMutationAtom,
   updateProjectGroupMutationAtom,
   deleteProjectGroupMutationAtom,
-} from "../mutations/groups";
+} from "#mutations/groups";
 
 // Derived atoms for each group type
 /**

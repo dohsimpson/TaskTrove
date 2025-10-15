@@ -21,9 +21,12 @@ interface UserAvatarProps {
  * Get initial from username
  * e.g., "john.doe" -> "J", "alice" -> "A"
  */
-function getUserInitials(username: string): string {
-  const firstChar = username[0]
-  return firstChar ? firstChar.toUpperCase() : "?"
+function getUserInitials(str: string | undefined): string {
+  // Handle empty, undefined, or null strings
+  if (!str || str.length === 0) {
+    return "?"
+  }
+  return str[0]?.toUpperCase() ?? "?"
 }
 
 const sizeClasses = {

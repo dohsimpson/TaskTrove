@@ -45,7 +45,7 @@ export const TaskSerializationSchema = z.object({
   dueTime: flexibleTimeSerializationSchema.optional(),
   createdAt: flexibleDateTimeSerializationSchema,
   completedAt: flexibleDateTimeSerializationSchema.optional(),
-  comments: z.array(TaskCommentSerializationSchema).default([]),
+  comments: z.array(TaskCommentSerializationSchema),
 });
 
 /**

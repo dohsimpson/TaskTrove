@@ -32,11 +32,12 @@ export function UserProfileDialog() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [uploadedAvatarDataUrl, setUploadedAvatarDataUrl] = useState<string | null>(null)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarRemoved, setAvatarRemoved] = useState(false)
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Get the avatar to display (prioritize uploaded avatar, fall back to current user avatar)
-  const displayAvatar = uploadedAvatarDataUrl || currentUser.avatar
+  // Get the avatar to display (prioritize uploaded avatar, fall back to current user avatar, unless removed)
+  const displayAvatar = avatarRemoved ? undefined : uploadedAvatarDataUrl || currentUser.avatar
 
   // Initialize form with current user data
   useEffect(() => {
@@ -47,6 +48,7 @@ export function UserProfileDialog() {
       setConfirmPassword("")
       setUploadedAvatarDataUrl(null) // Reset any uploaded avatar
       setAvatarFile(null) // Reset file selection
+      setAvatarRemoved(false) // Reset avatar removal flag
       setError("")
     }
   }, [open, currentUser])
@@ -73,6 +75,7 @@ export function UserProfileDialog() {
       }
 
       setAvatarFile(file)
+      setAvatarRemoved(false) // Clear removed flag when uploading new avatar
 
       // Create data URL for preview and upload
       const dataUrl = `data:${file.type};base64,${base64Data}`
@@ -111,11 +114,15 @@ export function UserProfileDialog() {
         updateRequest.password = password
       }
 
-      // Only include avatar if it was changed (user uploaded a new file)
-      if (avatarFile && uploadedAvatarDataUrl) {
-        // Send the base64 data URL to the server
+      // Handle avatar update
+      if (avatarRemoved) {
+        // User explicitly removed avatar
+        updateRequest.avatar = null
+      } else if (avatarFile && uploadedAvatarDataUrl) {
+        // User uploaded a new avatar
         updateRequest.avatar = createAvatarBase64(uploadedAvatarDataUrl)
       }
+      // else: avatar remains undefined (don't change avatar)
 
       // Update user via atom
       await updateUser(updateRequest)
@@ -140,6 +147,7 @@ export function UserProfileDialog() {
     setConfirmPassword("")
     setUploadedAvatarDataUrl(null) // Reset any uploaded avatar
     setAvatarFile(null)
+    setAvatarRemoved(false) // Reset avatar removal flag
     setError("")
     closeDialog()
   }
@@ -193,11 +201,27 @@ export function UserProfileDialog() {
                 <Button type="button" variant="outline" size="sm" asChild>
                   <span>
                     <Upload className="h-4 w-4 mr-2" />
-                    {t("userProfile.changeAvatar", "Change Avatar")}
+                    {displayAvatar
+                      ? t("userProfile.changeAvatar", "Change Avatar")
+                      : t("userProfile.uploadAvatar", "Upload Avatar")}
                   </span>
                 </Button>
               </Label>
               {avatarFile && <p className="text-xs text-muted-foreground">{avatarFile.name}</p>}
+              {displayAvatar && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setAvatarFile(null)
+                    setUploadedAvatarDataUrl(null)
+                    setAvatarRemoved(true)
+                  }}
+                >
+                  {t("userProfile.removeAvatar", "Remove Avatar")}
+                </Button>
+              )}
             </div>
           </div>
 

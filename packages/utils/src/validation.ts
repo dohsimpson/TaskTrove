@@ -6,6 +6,7 @@ import type {
   UpdateTaskRequest,
 } from "@tasktrove/types";
 import { INBOX_PROJECT_ID } from "@tasktrove/types";
+import { clearNullValues } from "./object-utils";
 
 /**
  * Check if a task should be displayed in the inbox (includes orphaned tasks)
@@ -41,16 +42,11 @@ export function formatZodErrors(error: z.ZodError): string {
 
 /**
  * Normalizes null values to undefined for API consistency
- * This function converts null values for specific task fields to undefined
+ * This function converts null values to undefined
  * to match the backend API behavior and ensure optimistic updates align with server responses
  */
 export function normalizeTaskUpdate<
   T extends Task | CreateTaskRequest | UpdateTaskRequest,
 >(task: T): T {
-  return {
-    ...task,
-    dueDate: task.dueDate === null ? undefined : task.dueDate,
-    dueTime: task.dueTime === null ? undefined : task.dueTime,
-    recurring: task.recurring === null ? undefined : task.recurring,
-  };
+  return clearNullValues(task);
 }

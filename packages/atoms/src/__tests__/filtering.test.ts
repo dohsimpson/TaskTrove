@@ -77,7 +77,6 @@ describe("No Labels Filtering", () => {
         priorities: undefined,
         completed: undefined,
         dueDateFilter: undefined,
-        assignedTo: undefined,
       };
 
       // Test logic: should return false for empty filters
@@ -91,7 +90,6 @@ describe("No Labels Filtering", () => {
         priorities: undefined,
         completed: undefined,
         dueDateFilter: undefined,
-        assignedTo: undefined,
       };
 
       // Test the logic that should be in hasActiveFiltersAtom
@@ -106,11 +104,13 @@ describe("No Labels Filtering", () => {
     it("should return true when labels has items", () => {
       const activeFiltersWithLabels: ActiveFilters = {
         projectIds: undefined,
-        labels: ["work", "urgent"],
+        labels: [
+          createLabelId("abcdefab-abcd-4bcd-8bcd-abcdefabcdef"),
+          createLabelId("abcdefab-abcd-4bcd-8bcd-abcdefabcde1"),
+        ],
         priorities: undefined,
         completed: undefined,
         dueDateFilter: undefined,
-        assignedTo: undefined,
       };
 
       // Test the logic that should be in hasActiveFiltersAtom
@@ -129,7 +129,6 @@ describe("No Labels Filtering", () => {
         priorities: undefined,
         completed: undefined,
         dueDateFilter: undefined,
-        assignedTo: undefined,
       };
 
       // Test the logic that should be in hasActiveFiltersAtom
@@ -150,7 +149,6 @@ describe("No Labels Filtering", () => {
         priorities: undefined,
         completed: undefined,
         dueDateFilter: undefined,
-        assignedTo: undefined,
       };
 
       // Test the logic that should be in activeFilterCountAtom
@@ -183,11 +181,14 @@ describe("No Labels Filtering", () => {
     it("should count label array length", () => {
       const activeFiltersWithLabels: ActiveFilters = {
         projectIds: undefined,
-        labels: ["work", "urgent", "personal"],
+        labels: [
+          createLabelId("abcdefab-abcd-4bcd-8bcd-abcdefabcdef"),
+          createLabelId("abcdefab-abcd-4bcd-8bcd-abcdefabcde1"),
+          createLabelId("abcdefab-abcd-4bcd-8bcd-abcdefabcde2"),
+        ],
         priorities: undefined,
         completed: undefined,
         dueDateFilter: undefined,
-        assignedTo: undefined,
       };
 
       // Test the logic that should be in activeFilterCountAtom
@@ -224,7 +225,6 @@ describe("No Labels Filtering", () => {
         priorities: undefined,
         completed: undefined,
         dueDateFilter: undefined,
-        assignedTo: undefined,
       };
 
       // Test the logic that should be in activeFilterCountAtom
@@ -264,7 +264,6 @@ describe("No Labels Filtering", () => {
         priorities: [1, 2],
         completed: true,
         dueDateFilter: { preset: "today" as const },
-        assignedTo: undefined,
       };
 
       // Test the logic that should be in activeFilterCountAtom
@@ -304,7 +303,6 @@ describe("No Labels Filtering", () => {
         priorities: undefined,
         completed: undefined,
         dueDateFilter: undefined,
-        assignedTo: undefined,
       };
 
       // Test the filtering logic
@@ -335,7 +333,6 @@ describe("No Labels Filtering", () => {
         priorities: undefined,
         completed: undefined,
         dueDateFilter: undefined,
-        assignedTo: undefined,
       };
 
       // Test the filtering logic
@@ -364,7 +361,6 @@ describe("No Labels Filtering", () => {
         priorities: undefined,
         completed: undefined,
         dueDateFilter: undefined,
-        assignedTo: undefined,
       };
 
       // Test the filtering logic

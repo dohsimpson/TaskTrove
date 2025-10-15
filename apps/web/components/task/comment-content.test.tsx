@@ -4,7 +4,7 @@ import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { CommentContent } from "./comment-content"
 import type { Task, TaskComment, CreateTaskRequest } from "@/lib/types"
-import { createTaskId, createCommentId } from "@/lib/types"
+import { createTaskId, createCommentId, createUserId } from "@/lib/types"
 import {
   TEST_TASK_ID_1,
   TEST_PROJECT_ID_1,
@@ -12,6 +12,7 @@ import {
   TEST_COMMENT_ID_2,
   TEST_COMMENT_ID_3,
 } from "@tasktrove/types/test-constants"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 
 // Mock atoms
 let mockUpdateTask: Mock
@@ -29,6 +30,12 @@ vi.mock("jotai", () => ({
   useAtomValue: vi.fn((atom: { toString: () => string }) => {
     if (atom.toString().includes("tasksAtom")) return mockAllTasks
     if (atom.toString().includes("quickAddTaskAtom")) return mockNewTask
+    if (atom.toString().includes("userAtom"))
+      return {
+        id: createUserId(DEFAULT_UUID),
+        username: "testuser",
+        password: "testpassword",
+      }
     return []
   }),
   atom: vi.fn((value) => ({ init: value, toString: () => "mockAtom" })),
@@ -40,6 +47,7 @@ vi.mock("@tasktrove/atoms", () => ({
   quickAddTaskAtom: { toString: () => "quickAddTaskAtom" },
   tasksAtom: { toString: () => "tasksAtom" },
   updateTaskAtom: { toString: () => "updateTaskAtom" },
+  userAtom: { toString: () => "userAtom" },
   taskAtoms: {
     actions: {},
     derived: {},
@@ -211,6 +219,7 @@ describe("CommentContent", () => {
 
   const createMockComment = (overrides: Partial<TaskComment> = {}): TaskComment => ({
     id: TEST_COMMENT_ID_1,
+    userId: createUserId(DEFAULT_UUID),
     content: "Test comment",
     createdAt: new Date("2024-01-01T10:00:00Z"),
     ...overrides,
@@ -485,6 +494,7 @@ describe("CommentContent", () => {
           comments: [
             {
               id: expect.any(String),
+              userId: expect.any(String),
               content: "New comment",
               createdAt: expect.any(Date),
             },
@@ -510,6 +520,7 @@ describe("CommentContent", () => {
           comments: [
             {
               id: expect.any(String),
+              userId: expect.any(String),
               content: "New comment",
               createdAt: expect.any(Date),
             },
@@ -573,6 +584,7 @@ describe("CommentContent", () => {
           comments: [
             {
               id: expect.any(String),
+              userId: expect.any(String),
               content: "New comment via button",
               createdAt: expect.any(Date),
             },
@@ -597,6 +609,7 @@ describe("CommentContent", () => {
           comments: [
             {
               id: expect.any(String),
+              userId: expect.any(String),
               content: "New comment",
               createdAt: expect.any(Date),
             },
@@ -647,6 +660,7 @@ describe("CommentContent", () => {
           comments: [
             {
               id: expect.any(String),
+              userId: expect.any(String),
               content: "New comment",
               createdAt: expect.any(Date),
             },

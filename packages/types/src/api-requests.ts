@@ -5,21 +5,27 @@
  */
 
 import { z } from "zod";
-import { TaskSchema, ProjectSchema, LabelSchema, UserSchema } from "#core";
+import {
+  TaskSchema,
+  ProjectSchema,
+  LabelSchema,
+  UserSchema,
+  TaskCommentSchema,
+} from "./core";
 import {
   TaskSerializationSchema,
   ProjectSerializationSchema,
   LabelSerializationSchema,
-} from "#serialization";
+} from "./serialization";
 import {
   TaskIdSchema,
   ProjectIdSchema,
   LabelIdSchema,
   GroupIdSchema,
-} from "#id";
-import { AvatarBase64Schema } from "#constants";
-import { ProjectGroupSchema, LabelGroupSchema } from "#group";
-import { PartialUserSettingsSchema } from "#settings";
+} from "./id";
+import { AvatarBase64Schema } from "./constants";
+import { ProjectGroupSchema, LabelGroupSchema } from "./group";
+import { PartialUserSettingsSchema } from "./settings";
 
 // =============================================================================
 // CREATE REQUEST SCHEMAS
@@ -239,6 +245,17 @@ export const UpdateSettingsRequestSchema = z.object({
   settings: PartialUserSettingsSchema,
 });
 
+/**
+ * Schema for adding or updating a comment on a task
+ * Can be used for both creating new comments and updating existing ones
+ */
+export const CommentUpdateRequestSchema = TaskCommentSchema.partial().extend({
+  /** ID of the task this comment belongs to */
+  taskId: TaskIdSchema,
+  /** Comment content/text */
+  content: z.string(),
+});
+
 // =============================================================================
 // DELETE REQUEST SCHEMAS
 // =============================================================================
@@ -410,6 +427,7 @@ export type LabelUpdateUnion = z.infer<typeof LabelUpdateUnionSchema>;
 export type UpdateUserRequest = z.infer<typeof UpdateUserRequestSchema>;
 export type UpdateSettingsRequest = z.infer<typeof UpdateSettingsRequestSchema>;
 export type InitialSetupRequest = z.infer<typeof InitialSetupRequestSchema>;
+export type CommentUpdateRequest = z.infer<typeof CommentUpdateRequestSchema>;
 
 // Group update types
 export type UpdateProjectGroupRequest = z.infer<

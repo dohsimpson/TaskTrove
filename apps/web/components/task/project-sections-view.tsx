@@ -54,6 +54,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 import { DropTargetElement } from "./project-sections-view-helper"
 import { VirtualizedTaskList } from "./virtualized-task-list"
+import { ProjectSectionDebugBadge } from "@/components/debug"
 
 // Constants - removed SIDE_PANEL_WIDTH since it's now handled by ResizablePanel
 
@@ -664,6 +665,9 @@ export function ProjectSectionsView({
 
         {/* Filter Controls, Search Input and Add Task Button - Full Width */}
         <ProjectViewToolbar className="mb-3" />
+
+        {/* Debug Badge */}
+        {project && <ProjectSectionDebugBadge project={project} />}
 
         {/* Centered Task Content */}
         <div className="flex justify-center">

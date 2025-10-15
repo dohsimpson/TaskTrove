@@ -10,17 +10,17 @@
 
 import { atom } from "jotai";
 import type { ProjectId, LabelId, Task } from "@tasktrove/types";
-import { projectsAtom, labelsAtom } from "../data/base/atoms";
+import { projectsAtom, labelsAtom } from "#data/base/atoms";
 import {
   activeTasksAtom,
   completedTasksAtom,
   calendarTasksAtom,
   overdueTasksAtom,
-} from "../data/tasks/filters";
-import { viewStatesAtom, getViewStateOrDefault } from "./views";
-import { uiFilteredTasksForViewAtom } from "./filtered-tasks";
-import { applyViewStateFilters } from "../utils/view-filters";
-import { handleAtomError } from "../utils/atom-helpers";
+} from "#data/tasks/filters";
+import { viewStatesAtom, getViewStateOrDefault } from "#ui/views";
+import { uiFilteredTasksForViewAtom } from "#ui/filtered-tasks";
+import { applyViewStateFilters } from "#utils/view-filters";
+import { handleAtomError } from "#utils/atom-helpers";
 
 /**
  * UI-specific atom for project task counts

@@ -35,6 +35,7 @@ import {
   TASKS_QUERY_KEY,
   PROJECTS_QUERY_KEY,
 } from "@tasktrove/constants";
+import { clearNullValues } from "@tasktrove/utils";
 import { createMutation } from "./factory";
 import { createEntityMutation } from "./entity-factory";
 
@@ -160,27 +161,7 @@ export const updateTasksMutationAtom = createEntityMutation<
 
       // Predict null-to-undefined conversion that the API will do
       // This ensures the optimistic update matches what the API will return
-      const cleanedTask: Task = {
-        ...optimisticTask,
-        dueDate:
-          optimisticTask.dueDate === null ? undefined : optimisticTask.dueDate,
-        dueTime:
-          optimisticTask.dueTime === null ? undefined : optimisticTask.dueTime,
-        recurring:
-          optimisticTask.recurring === null
-            ? undefined
-            : optimisticTask.recurring,
-        estimation:
-          optimisticTask.estimation === null
-            ? undefined
-            : optimisticTask.estimation,
-        projectId:
-          optimisticTask.projectId === null
-            ? undefined
-            : optimisticTask.projectId,
-      };
-
-      return cleanedTask;
+      return clearNullValues(optimisticTask);
     });
 
     return updatedTasks;

@@ -31,6 +31,7 @@
       "comments": [
         {
           "id": "f47ac110-58cc-4372-a567-0e02b2c3d47e",
+          "userId": "00000000-0000-0000-0000-000000000000",
           "content": "🎯 TaskTrove is a Task List Management Tool. It is built with self-hosting and privacy in mind.",
           "createdAt": "2024-01-01T09:00:00.000Z"
         }
@@ -65,6 +66,7 @@
       "comments": [
         {
           "id": "f47ac116-58cc-4372-a567-0e02b2c3d484",
+          "userId": "00000000-0000-0000-0000-000000000000",
           "content": "🚀 TaskTrove automatically creates projects, labels, sets priorities, due dates, times, and even recurring patterns - all from natural language!",
           "createdAt": "2024-01-01T09:15:00.000Z"
         }
@@ -117,6 +119,7 @@
       "comments": [
         {
           "id": "f47ac11c-58cc-4372-a567-0e02b2c3d48a",
+          "userId": "00000000-0000-0000-0000-000000000000",
           "content": "🔥 Each project can have custom sections with colors, and switch between list/kanban views. Each view remembers its own settings!",
           "createdAt": "2024-01-01T09:30:00.000Z"
         }
@@ -163,6 +166,7 @@
       "comments": [
         {
           "id": "f47ac123-58cc-4372-a567-0e02b2c3d491",
+          "userId": "00000000-0000-0000-0000-000000000000",
           "content": "🎉 You're all set! TaskTrove has many more features to discover, explore around. And if you want to get excited, check out our roadmap (on TaskTrove github repo -> Projects -> TaskTrove Roadmap) and see what's coming next! Welcome aboard!",
           "createdAt": "2024-01-01T10:01:00.000Z"
         }
@@ -298,8 +302,9 @@
     }
   },
   "user": {
+    "id": "00000000-0000-0000-0000-000000000000",
     "username": "admin",
     "password": ""
   },
-  "version": "v0.7.0"
+  "version": "v0.8.0"
 }

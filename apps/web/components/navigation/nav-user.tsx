@@ -37,6 +37,8 @@ import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
 import { LogoutConfirmDialog } from "@/components/dialogs/logout-confirm-dialog"
 import { showPWAInstallPrompt, isPWA } from "@tasktrove/dom-utils"
 import { UserAvatar } from "@/components/ui/custom/user-avatar"
+import { RoleBadge } from "@/components/navigation/role-badge"
+import { isPro } from "@/lib/utils/env"
 
 interface ContextMenuItem {
   icon: React.ComponentType<{ className?: string }>
@@ -126,8 +128,9 @@ export function NavUser() {
                   showInitials={true}
                   className="ring-2 ring-background"
                 />
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="flex flex-1 items-center gap-1.5 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{user.username}</span>
+                  <RoleBadge user={user} />
                 </div>
                 <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
               </SidebarMenuButton>
@@ -175,26 +178,32 @@ export function NavUser() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem
-                  onClick={() => window.open("https://tasktrove.io/#pricing", "_blank")}
-                  className="px-1 cursor-pointer"
-                >
-                  {/* material design icon "Stars": https://github.com/google/material-design-icons */}
-                  <svg
-                    className="mr-1 h-6 w-6 text-yellow-500 font-bold fill-current shrink-0 min-h-[24px] min-w-[24px]"
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="24px"
-                    viewBox="0 -960 960 960"
-                    width="24px"
-                    fill="#1f1f1f"
-                  >
-                    <path d="m320-240 160-122 160 122-60-198 160-114H544l-64-208-64 208H220l160 114-60 198ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
-                  </svg>
-                  <span className="font-bold">{t("userMenu.upgradeToPro", "Upgrade to Pro")}</span>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
+              {!isPro() && (
+                <>
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem
+                      onClick={() => window.open("https://tasktrove.io/#pricing", "_blank")}
+                      className="px-1 cursor-pointer"
+                    >
+                      {/* material design icon "Stars": https://github.com/google/material-design-icons */}
+                      <svg
+                        className="mr-1 h-6 w-6 text-yellow-500 font-bold fill-current shrink-0 min-h-[24px] min-w-[24px]"
+                        xmlns="http://www.w3.org/2000/svg"
+                        height="24px"
+                        viewBox="0 -960 960 960"
+                        width="24px"
+                        fill="#1f1f1f"
+                      >
+                        <path d="m320-240 160-122 160 122-60-198 160-114H544l-64-208-64 208H220l160 114-60 198ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+                      </svg>
+                      <span className="font-bold">
+                        {t("userMenu.upgradeToPro", "Upgrade to Pro")}
+                      </span>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuGroup>
                 {contextMenuItems.map((item, index) => {
                   const isInstallAppItem = item.icon === Download

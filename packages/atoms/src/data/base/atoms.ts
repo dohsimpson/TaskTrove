@@ -18,7 +18,7 @@ import {
   labelsQueryAtom,
   settingsQueryAtom,
   userQueryAtom,
-} from "./query";
+} from "#data/base/query";
 import type {
   Project,
   Label,
@@ -38,14 +38,14 @@ import {
   DEFAULT_GENERAL_SETTINGS,
   DEFAULT_USER,
 } from "@tasktrove/types/defaults";
-import { log, namedAtom } from "../../utils/atom-helpers";
+import { log, namedAtom } from "#utils/atom-helpers";
 
 // Import mutation atoms that are referenced in write functions
-import { updateTasksMutationAtom } from "../../mutations/tasks";
-import { updateProjectsMutationAtom } from "../../mutations/projects";
-import { updateLabelsMutationAtom } from "../../mutations/labels";
-import { updateSettingsMutationAtom } from "../../mutations/settings";
-import { updateUserMutationAtom } from "../../mutations/user";
+import { updateTasksMutationAtom } from "#mutations/tasks";
+import { updateProjectsMutationAtom } from "#mutations/projects";
+import { updateLabelsMutationAtom } from "#mutations/labels";
+import { updateSettingsMutationAtom } from "#mutations/settings";
+import { updateUserMutationAtom } from "#mutations/user";
 
 // =============================================================================
 // BASE TASKS ATOM

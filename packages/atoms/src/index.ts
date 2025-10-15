@@ -1,7 +1,7 @@
 // Re-export all atoms for convenience
-export * from "./core/tasks";
-export * from "./core/projects";
-export * from "./core/labels";
+export * from "#core/tasks";
+export * from "#core/projects";
+export * from "#core/labels";
 // Export base atoms directly since core/base no longer re-exports them
 export {
   tasksAtom,
@@ -9,7 +9,7 @@ export {
   labelsAtom,
   settingsAtom,
   userAtom,
-} from "./data/base/atoms";
+} from "#data/base/atoms";
 // Export query atoms directly since core/base no longer re-exports them
 export {
   queryClientAtom,
@@ -19,27 +19,27 @@ export {
   groupsQueryAtom,
   settingsQueryAtom,
   userQueryAtom,
-} from "./data/base/query";
+} from "#data/base/query";
 export {
   updateSettingsAtom,
   dataSettingsAtom,
   updateDataSettingsAtom,
   settingsAtoms,
-} from "./core/settings";
-import { updateSettingsMutationAtom } from "./mutations/settings";
+} from "#core/settings";
+import { updateSettingsMutationAtom } from "#mutations/settings";
 export { updateSettingsMutationAtom };
-export * from "./core/notifications";
-export * from "./core/history";
-export * from "./core/groups";
-export * from "./ui/views";
-export * from "./ui/task-counts";
-export * from "./ui/filtered-tasks";
-export * from "./ui/user-settings-atom";
-export * from "./ui/focus-timer";
-export * from "./ui/dialogs";
-export * from "./ui/keyboard-context";
-export * from "./ui/pomodoro";
-export * from "./ui/app-refresh";
+export * from "#core/notifications";
+export * from "#core/history";
+export * from "#core/groups";
+export * from "#ui/views";
+export * from "#ui/task-counts";
+export * from "#ui/filtered-tasks";
+export * from "#ui/user-settings-atom";
+export * from "#ui/focus-timer";
+export * from "#ui/dialogs";
+export * from "#ui/keyboard-context";
+export * from "#ui/pomodoro";
+export * from "#ui/app-refresh";
 // Export specific atoms from navigation to avoid conflicts with dialogs
 export {
   pathnameAtom,
@@ -84,7 +84,7 @@ export {
   closeProjectGroupDialogAtom,
   openQuickAddAtom,
   type RouteContext,
-} from "./ui/navigation";
+} from "#ui/navigation";
 
 // Selection exports (avoiding conflicts with dialogs)
 export {
@@ -99,12 +99,12 @@ export {
   selectRangeAtom,
   selectionActionAtoms,
   selectionAtoms,
-} from "./ui/selection";
+} from "#ui/selection";
 
-export * from "./features/analytics";
+export * from "#features/analytics";
 
 // Export utils including audio functionality
-export { playSoundAtom } from "./utils/atom-helpers";
+export { playSoundAtom } from "#ui/audio";
 export type { SoundType } from "@tasktrove/dom-utils/audio";
 
 // Filter utilities
@@ -114,11 +114,11 @@ export {
   filterTasks,
   type FilterConfig,
   viewStateToFilterConfig,
-} from "./utils/filters";
+} from "#utils/filters";
 
 // View state utilities
-export { applyViewStateFilters } from "./utils/view-filters";
-export { sortTasksByViewState } from "./utils/view-sorting";
+export { applyViewStateFilters } from "#utils/view-filters";
+export { sortTasksByViewState } from "#utils/view-sorting";
 
 // Count utilities
 export {
@@ -127,7 +127,7 @@ export {
   calculateViewCounts,
   type CountConfig,
   type ViewCounts,
-} from "./utils/counts";
+} from "#utils/counts";
 
 // Task ordering utilities
 export {
@@ -136,7 +136,7 @@ export {
   moveTaskWithinSection,
   addTaskToSection,
   removeTaskFromSection,
-} from "./data/tasks/ordering";
+} from "#data/tasks/ordering";
 
 // Test helpers
 export {
@@ -151,4 +151,4 @@ export {
   TEST_LABEL_ID_2,
   TEST_SECTION_ID_1,
   TEST_SECTION_ID_2,
-} from "./utils/test-helpers";
+} from "#utils/test-helpers";

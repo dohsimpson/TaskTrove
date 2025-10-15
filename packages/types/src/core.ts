@@ -5,7 +5,6 @@
  */
 
 import { z } from "zod";
-import { v4 as uuidv4 } from "uuid";
 import {
   TaskIdSchema,
   SubtaskIdSchema,
@@ -54,12 +53,16 @@ export const TaskCommentSchema = z.object({
   content: z.string(),
   /** When the comment was created */
   createdAt: flexibleDateTimeSchema,
+  /** User ID of the comment author */
+  userId: UserIdSchema,
 });
 
 /**
  * Schema for a user account
  */
 export const UserSchema = z.object({
+  /** Unique identifier for the user */
+  id: UserIdSchema,
   /** Username for the user */
   username: z.string(),
   /** Password for authentication */
@@ -105,7 +108,7 @@ export const ViewStateSchema = z.object({
       /** Filter by project IDs */
       projectIds: z.array(ProjectIdSchema).optional(),
       /** Filter by label names */
-      labels: z.array(z.string()).nullable().optional(),
+      labels: z.array(LabelIdSchema).nullable().optional(),
       /** Filter by priority levels */
       priorities: z
         .array(
@@ -137,10 +140,6 @@ export const ViewStateSchema = z.object({
             .optional(),
         })
         .optional(),
-      /** Filter by assigned team members */
-      assignedTo: z.array(UserIdSchema).optional(),
-      /** Filter by task status */
-      status: z.array(z.string()).optional(),
     })
     .optional(),
 });
@@ -155,6 +154,10 @@ export const ViewStatesSchema = z.record(z.string(), ViewStateSchema);
  */
 export const GlobalViewOptionsSchema = z.object({
   sidePanelWidth: z.number().min(20).max(80),
+  /** People panel owner section collapse state */
+  peopleOwnerCollapsed: z.boolean(),
+  /** People panel assignees section collapse state */
+  peopleAssigneesCollapsed: z.boolean(),
 });
 
 /**
@@ -162,7 +165,7 @@ export const GlobalViewOptionsSchema = z.object({
  */
 export const TaskSchema = z.object({
   /** Unique identifier for the task */
-  id: TaskIdSchema.default(() => TaskIdSchema.parse(uuidv4())),
+  id: TaskIdSchema,
   /** Task title */
   title: z.string(),
   /** Optional task description */
@@ -184,7 +187,7 @@ export const TaskSchema = z.object({
   /** Comments on this task */
   comments: z.array(TaskCommentSchema),
   /** When the task was created */
-  createdAt: flexibleDateTimeSchema.default(new Date()),
+  createdAt: flexibleDateTimeSchema,
   /** When the task was completed (if completed) */
   completedAt: flexibleDateTimeSchema.optional(),
   /** Recurring pattern using RRULE format (RFC 5545) */

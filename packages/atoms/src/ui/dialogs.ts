@@ -9,6 +9,7 @@ import type {
   CreateTaskRequest,
   UpdateTaskRequest,
 } from "@tasktrove/types";
+import { clearNullValues } from "@tasktrove/utils";
 import { selectedTaskIdAtom, setSelectedTaskIdAtom } from "./selection";
 
 /**
@@ -390,22 +391,8 @@ export const updateQuickAddTaskAtom = atom(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { completed, ...rawUpdates } = updateRequest;
 
-    // Build cleanedUpdates object, handling null-to-undefined conversions only for present fields
-    const cleanedUpdates: Partial<CreateTaskRequest> = {};
-
-    // Copy all fields from rawUpdates, handling null conversions
-    for (const [key, value] of Object.entries(rawUpdates)) {
-      // Special handling for fields that need null-to-undefined conversion
-      if (key === "dueDate" || key === "dueTime" || key === "recurring") {
-        // Convert null to undefined for these fields
-        Object.assign(cleanedUpdates, {
-          [key]: value === null ? undefined : value,
-        });
-      } else {
-        // For all other fields, copy as-is
-        Object.assign(cleanedUpdates, { [key]: value });
-      }
-    }
+    // Clean null values to undefined for consistency with API
+    const cleanedUpdates = clearNullValues(rawUpdates);
 
     set(quickAddTaskAtom, { ...current, ...cleanedUpdates });
   },

@@ -17,10 +17,10 @@ import {
   DEFAULT_ACTIVE_FILTERS,
   STANDARD_VIEW_IDS,
 } from "@tasktrove/constants";
-import { createAtomWithStorage, log, namedAtom } from "../utils/atom-helpers";
-import { showTaskPanelAtom } from "./dialogs";
-import { selectedTaskIdAtom, setSelectedTaskIdAtom } from "./selection";
-import { tasksAtom } from "../data/base/atoms";
+import { createAtomWithStorage, log, namedAtom } from "#utils/atom-helpers";
+import { showTaskPanelAtom } from "#ui/dialogs";
+import { selectedTaskIdAtom, setSelectedTaskIdAtom } from "#ui/selection";
+import { tasksAtom } from "#data/base/atoms";
 
 /**
  * UI view state atoms for TaskTrove's Jotai migration
@@ -602,9 +602,6 @@ export const activeFilterCountAtom = atom<number>((get) => {
     (filters.dueDateFilter.preset || filters.dueDateFilter.customRange)
   )
     count++;
-  // TODO: Add count for assignedTo and status when implemented
-  // if (filters.assignedTo?.length) count += filters.assignedTo.length;
-  // if (filters.status?.length) count += filters.status.length;
 
   return count;
 });
@@ -618,6 +615,30 @@ export const sidePanelWidthAtom = atom<number>((get) => {
   return get(globalViewOptionsAtom).sidePanelWidth;
 });
 sidePanelWidthAtom.debugLabel = "sidePanelWidthAtom";
+
+/**
+ * People panel owner section collapse state
+ * Used for PeopleContent component owner section
+ */
+export const peopleOwnerCollapsedAtom = atom(
+  (get) => get(globalViewOptionsAtom).peopleOwnerCollapsed,
+  (get, set, newValue: boolean) => {
+    set(updateGlobalViewOptionsAtom, { peopleOwnerCollapsed: newValue });
+  },
+);
+peopleOwnerCollapsedAtom.debugLabel = "peopleOwnerCollapsedAtom";
+
+/**
+ * People panel assignees section collapse state
+ * Used for PeopleContent component assignees section
+ */
+export const peopleAssigneesCollapsedAtom = atom(
+  (get) => get(globalViewOptionsAtom).peopleAssigneesCollapsed,
+  (get, set, newValue: boolean) => {
+    set(updateGlobalViewOptionsAtom, { peopleAssigneesCollapsed: newValue });
+  },
+);
+peopleAssigneesCollapsedAtom.debugLabel = "peopleAssigneesCollapsedAtom";
 
 // =============================================================================
 // UTILITY ATOMS
@@ -761,6 +782,8 @@ export const viewAtoms = {
   compactView: compactViewAtom,
   collapsedSections: collapsedSectionsAtom,
   sidePanelWidth: sidePanelWidthAtom,
+  peopleOwnerCollapsed: peopleOwnerCollapsedAtom,
+  peopleAssigneesCollapsed: peopleAssigneesCollapsedAtom,
   // Filter state
   activeFilters: activeFiltersAtom,
   hasActiveFilters: hasActiveFiltersAtom,

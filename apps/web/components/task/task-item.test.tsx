@@ -5,7 +5,8 @@ import userEvent from "@testing-library/user-event"
 import { Provider, useSetAtom } from "jotai"
 import { TaskItem } from "./task-item"
 import type { Task, ProjectId, LabelId } from "@/lib/types"
-import { createLabelId, createTaskId, INBOX_PROJECT_ID } from "@/lib/types"
+import { createLabelId, createTaskId, createUserId, INBOX_PROJECT_ID } from "@/lib/types"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
@@ -794,7 +795,14 @@ describe("TaskItem", () => {
     dueDate: new Date("2024-01-15"),
     projectId: TEST_PROJECT_ID_1,
     labels: [TEST_LABEL_ID_1, TEST_LABEL_ID_2], // Use label IDs instead of names
-    comments: [{ id: TEST_COMMENT_ID_1, content: "Test comment", createdAt: new Date() }],
+    comments: [
+      {
+        id: TEST_COMMENT_ID_1,
+        userId: createUserId(DEFAULT_UUID),
+        content: "Test comment",
+        createdAt: new Date(),
+      },
+    ],
     subtasks: [
       { id: TEST_SUBTASK_ID_1, title: "Subtask 1", completed: true },
       { id: TEST_SUBTASK_ID_2, title: "Subtask 2", completed: false },
@@ -2256,7 +2264,14 @@ describe("TaskItem", () => {
               completed: false,
             },
           ],
-          comments: [{ id: TEST_COMMENT_ID_1, content: "Test comment", createdAt: new Date() }],
+          comments: [
+            {
+              id: TEST_COMMENT_ID_1,
+              userId: createUserId(DEFAULT_UUID),
+              content: "Test comment",
+              createdAt: new Date(),
+            },
+          ],
         }
         registerTask(taskWithMetadata)
 
@@ -2362,7 +2377,14 @@ describe("TaskItem", () => {
         { id: TEST_SUBTASK_ID_1, title: "Subtask 1", completed: true, order: 0 },
         { id: TEST_SUBTASK_ID_2, title: "Subtask 2", completed: false, order: 1 },
       ],
-      comments: [{ id: TEST_COMMENT_ID_1, content: "Test comment", createdAt: new Date() }],
+      comments: [
+        {
+          id: TEST_COMMENT_ID_1,
+          userId: createUserId(DEFAULT_UUID),
+          content: "Test comment",
+          createdAt: new Date(),
+        },
+      ],
     }
 
     beforeEach(() => {

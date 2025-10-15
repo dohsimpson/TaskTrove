@@ -10,6 +10,7 @@ import {
   v050Migration,
   v060Migration,
   v070Migration,
+  v080Migration,
 } from "./data-migration"
 import type { Json } from "@/lib/types"
 import { createVersionString, createProjectId, createLabelId, DataFileSchema } from "@/lib/types"
@@ -1151,6 +1152,298 @@ describe("Data Migration Utility", () => {
       tasks.forEach((task: any) => {
         expect(task).not.toHaveProperty("sectionId")
       })
+    })
+  })
+
+  describe("v0.8.0 Migration Function", () => {
+    it("should add userId to all task comments", () => {
+      const taskId1 = TEST_TASK_ID_1
+      const taskId2 = TEST_TASK_ID_2
+
+      const v070Data = createJsonData({
+        tasks: [
+          {
+            id: taskId1,
+            title: "Task with comments",
+            projectId: TEST_PROJECT_ID_1,
+            completed: false,
+            priority: 1,
+            labels: [],
+            subtasks: [],
+            comments: [
+              {
+                id: "comment-1",
+                content: "First comment",
+                createdAt: new Date().toISOString(),
+                // No userId - should be added
+              },
+              {
+                id: "comment-2",
+                content: "Second comment",
+                createdAt: new Date().toISOString(),
+                // No userId - should be added
+              },
+            ],
+            createdAt: new Date().toISOString(),
+            recurringMode: "dueDate",
+          },
+          {
+            id: taskId2,
+            title: "Task without comments",
+            projectId: TEST_PROJECT_ID_1,
+            completed: false,
+            priority: 2,
+            labels: [],
+            subtasks: [],
+            comments: [],
+            createdAt: new Date().toISOString(),
+            recurringMode: "dueDate",
+          },
+        ],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: DEFAULT_UUID,
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: DEFAULT_UUID,
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: DEFAULT_USER_SETTINGS,
+        user: {
+          username: "admin",
+          password: "",
+          // No id field - should be added
+        },
+        version: "v0.7.0",
+      })
+
+      const result = v080Migration(v070Data)
+
+      // Verify userId was added to all comments
+      const tasks = (result as any).tasks
+      expect(tasks).toHaveLength(2)
+
+      const task1 = tasks[0]
+      expect(task1.comments).toHaveLength(2)
+      expect(task1.comments[0]).toHaveProperty("userId", DEFAULT_UUID)
+      expect(task1.comments[1]).toHaveProperty("userId", DEFAULT_UUID)
+
+      // Verify id was added to user object
+      expect(result).toHaveProperty("user")
+      const user = (result as any).user
+      expect(user).toHaveProperty("id", DEFAULT_UUID)
+      expect(user).toHaveProperty("username", "admin")
+    })
+
+    it("should preserve existing userId in comments", () => {
+      const existingUserId = "existing-user-id"
+      const v070Data = createJsonData({
+        tasks: [
+          {
+            id: TEST_TASK_ID_1,
+            title: "Task with existing userId in comments",
+            projectId: TEST_PROJECT_ID_1,
+            completed: false,
+            priority: 1,
+            labels: [],
+            subtasks: [],
+            comments: [
+              {
+                id: "comment-1",
+                userId: existingUserId, // Already has userId
+                content: "Comment with existing userId",
+                createdAt: new Date().toISOString(),
+              },
+            ],
+            createdAt: new Date().toISOString(),
+            recurringMode: "dueDate",
+          },
+        ],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: DEFAULT_UUID,
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: DEFAULT_UUID,
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: DEFAULT_USER_SETTINGS,
+        user: DEFAULT_USER,
+        version: "v0.7.0",
+      })
+
+      const result = v080Migration(v070Data)
+
+      // Verify existing userId is preserved
+      const tasks = (result as any).tasks
+      expect(tasks[0].comments[0]).toHaveProperty("userId", existingUserId)
+    })
+
+    it("should add id to user object when missing", () => {
+      const v070Data = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: DEFAULT_UUID,
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: DEFAULT_UUID,
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: DEFAULT_USER_SETTINGS,
+        user: {
+          username: "testuser",
+          password: "hashedpassword",
+          // No id field
+        },
+        version: "v0.7.0",
+      })
+
+      const result = v080Migration(v070Data)
+
+      // Verify id was added to user
+      const user = (result as any).user
+      expect(user).toHaveProperty("id", DEFAULT_UUID)
+      expect(user).toHaveProperty("username", "testuser")
+      expect(user).toHaveProperty("password", "hashedpassword")
+    })
+
+    it("should preserve existing id in user object", () => {
+      const existingUserId = "existing-user-id-123"
+      const v070Data = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: DEFAULT_UUID,
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: DEFAULT_UUID,
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: DEFAULT_USER_SETTINGS,
+        user: {
+          id: existingUserId, // Already has id
+          username: "testuser",
+          password: "hashedpassword",
+        },
+        version: "v0.7.0",
+      })
+
+      const result = v080Migration(v070Data)
+
+      // Verify existing id is preserved
+      const user = (result as any).user
+      expect(user).toHaveProperty("id", existingUserId)
+    })
+
+    it("should create user object with id when missing entirely", () => {
+      const v070Data = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: DEFAULT_UUID,
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: DEFAULT_UUID,
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: DEFAULT_USER_SETTINGS,
+        // No user field at all (shouldn't happen after v0.7.0 but handle gracefully)
+        version: "v0.7.0",
+      })
+
+      const result = v080Migration(v070Data)
+
+      // Verify user was created with id
+      const user = (result as any).user
+      expect(user).toHaveProperty("id", DEFAULT_UUID)
+      expect(user).toHaveProperty("username")
+      expect(user).toHaveProperty("password")
+    })
+
+    it("should handle tasks without comments gracefully", () => {
+      const v070Data = createJsonData({
+        tasks: [
+          {
+            id: TEST_TASK_ID_1,
+            title: "Task without comments array",
+            projectId: TEST_PROJECT_ID_1,
+            completed: false,
+            priority: 1,
+            labels: [],
+            subtasks: [],
+            // No comments field at all
+            createdAt: new Date().toISOString(),
+            recurringMode: "dueDate",
+          },
+        ],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: DEFAULT_UUID,
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: DEFAULT_UUID,
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: DEFAULT_USER_SETTINGS,
+        user: DEFAULT_USER,
+        version: "v0.7.0",
+      })
+
+      const result = v080Migration(v070Data)
+
+      // Should not crash and task should remain unchanged
+      const tasks = (result as any).tasks
+      expect(tasks).toHaveLength(1)
+      expect(tasks[0]).not.toHaveProperty("comments")
     })
   })
 

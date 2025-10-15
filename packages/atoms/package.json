@@ -3,6 +3,68 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "imports": {
+    "#index": {
+      "pro": "./src/index.pro.ts",
+      "default": "./src/index.ts"
+    },
+    "#data/base/atoms": {
+      "pro": "./src/data/base/atoms.pro.ts",
+      "default": "./src/data/base/atoms.ts"
+    },
+    "#data/base/query": {
+      "pro": "./src/data/base/query.pro.ts",
+      "default": "./src/data/base/query.ts"
+    },
+    "#mutations/entity-factory": {
+      "pro": "./src/mutations/entity-factory.pro.ts",
+      "default": "./src/mutations/entity-factory.ts"
+    },
+    "#mutations/tasks": {
+      "pro": "./src/mutations/tasks.pro.ts",
+      "default": "./src/mutations/tasks.ts"
+    },
+    "#utils/atom-helpers": {
+      "pro": "./src/utils/atom-helpers.pro.ts",
+      "default": "./src/utils/atom-helpers.ts"
+    },
+    "#utils/filters": {
+      "pro": "./src/utils/filters.pro.ts",
+      "default": "./src/utils/filters.ts"
+    },
+    "#core/tasks": "./src/core/tasks.ts",
+    "#core/projects": "./src/core/projects.ts",
+    "#core/labels": "./src/core/labels.ts",
+    "#core/settings": "./src/core/settings.ts",
+    "#core/notifications": "./src/core/notifications.ts",
+    "#core/history": "./src/core/history.ts",
+    "#core/groups": "./src/core/groups.ts",
+    "#mutations/settings": "./src/mutations/settings.ts",
+    "#mutations/factory": "./src/mutations/factory.ts",
+    "#mutations/groups": "./src/mutations/groups.ts",
+    "#mutations/labels": "./src/mutations/labels.ts",
+    "#mutations/projects": "./src/mutations/projects.ts",
+    "#mutations/user": "./src/mutations/user.ts",
+    "#ui/views": "./src/ui/views.ts",
+    "#ui/task-counts": "./src/ui/task-counts.ts",
+    "#ui/filtered-tasks": "./src/ui/filtered-tasks.ts",
+    "#ui/user-settings-atom": "./src/ui/user-settings-atom.ts",
+    "#ui/focus-timer": "./src/ui/focus-timer.ts",
+    "#ui/dialogs": "./src/ui/dialogs.ts",
+    "#ui/keyboard-context": "./src/ui/keyboard-context.ts",
+    "#ui/pomodoro": "./src/ui/pomodoro.ts",
+    "#ui/app-refresh": "./src/ui/app-refresh.ts",
+    "#ui/navigation": "./src/ui/navigation.ts",
+    "#ui/selection": "./src/ui/selection.ts",
+    "#ui/audio": "./src/ui/audio.ts",
+    "#features/analytics": "./src/features/analytics.ts",
+    "#utils/counts": "./src/utils/counts.ts",
+    "#utils/view-filters": "./src/utils/view-filters.ts",
+    "#utils/view-sorting": "./src/utils/view-sorting.ts",
+    "#utils/test-helpers": "./src/utils/test-helpers.ts",
+    "#data/tasks/ordering": "./src/data/tasks/ordering.ts",
+    "#data/tasks/filters": "./src/data/tasks/filters.ts"
+  },
   "exports": {
     ".": {
       "pro": "./src/index.pro.ts",

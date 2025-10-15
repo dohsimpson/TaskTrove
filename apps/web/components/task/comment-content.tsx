@@ -1,20 +1,18 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from "react"
-import { MessageSquare, User, Plus, X, Pencil } from "lucide-react"
+import { MessageSquare, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { formatDistanceToNow, format } from "date-fns"
 import { useAtomValue, useSetAtom } from "jotai"
 import { v4 as uuidv4 } from "uuid"
-import { updateTaskAtom, tasksAtom } from "@tasktrove/atoms"
+import { updateTaskAtom, tasksAtom, userAtom } from "@tasktrove/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@tasktrove/atoms"
-import type { Task, TaskComment, CreateTaskRequest } from "@/lib/types"
+import type { Task, CreateTaskRequest } from "@/lib/types"
 import { createCommentId, createTaskId } from "@/lib/types"
 import { useTranslation } from "@tasktrove/i18n"
-import { EditableDiv } from "@/components/ui/custom/editable-div"
+import { CommentItem } from "./comment-item"
 
 interface CommentContentProps {
   taskId?: string // Optional for quick-add mode
@@ -24,102 +22,6 @@ interface CommentContentProps {
   mode?: "inline" | "popover"
   className?: string
   scrollToBottomKey?: number // When this changes, triggers scroll to bottom
-}
-
-function CommentItem({
-  comment,
-  mode = "inline",
-  onDelete,
-  onUpdate,
-}: {
-  comment: TaskComment
-  mode?: "inline" | "popover"
-  onDelete?: (commentId: string) => void
-  onUpdate?: (commentId: string, newContent: string) => void
-}) {
-  const [isEditing, setIsEditing] = useState(false)
-
-  const handleSave = (newContent: string) => {
-    if (newContent.trim() && newContent !== comment.content) {
-      onUpdate?.(comment.id, newContent)
-    }
-    setIsEditing(false)
-  }
-
-  const handleCancel = () => {
-    setIsEditing(false)
-  }
-
-  return (
-    <TooltipProvider delayDuration={0}>
-      <div
-        className={cn(
-          "group flex gap-2 mb-3 last:mb-0 hover:bg-accent/20 rounded-lg p-2 -mx-2 transition-colors",
-          mode === "popover" && "bg-muted/20 rounded-lg p-1 mx-0",
-        )}
-      >
-        <div className="size-6 bg-gray-200 dark:bg-gray-700 rounded-full flex-shrink-0 flex items-center justify-center">
-          <User className="h-3 w-3 text-gray-500" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">admin</span>
-            <Tooltip>
-              <TooltipTrigger className="text-xs text-gray-400 cursor-pointer">
-                {formatDistanceToNow(comment.createdAt, {
-                  addSuffix: true,
-                  includeSeconds: true,
-                })}
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs">{format(comment.createdAt, "PPpp")}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          {isEditing ? (
-            <EditableDiv
-              as="p"
-              value={comment.content}
-              onChange={handleSave}
-              onCancel={handleCancel}
-              className="text-sm text-gray-600 dark:text-gray-300 break-words leading-relaxed"
-              multiline
-              autoFocus
-              cursorPosition="end"
-            />
-          ) : (
-            <p className="text-sm text-gray-600 dark:text-gray-300 break-words leading-relaxed">
-              {comment.content}
-            </p>
-          )}
-        </div>
-        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          {onUpdate && !isEditing && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsEditing(true)}
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
-              data-testid={`comment-edit-button-${comment.id}`}
-            >
-              <Pencil className="h-3 w-3" />
-            </Button>
-          )}
-          {onDelete && !isEditing && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(comment.id)}
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-              data-testid={`comment-delete-button-${comment.id}`}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          )}
-        </div>
-      </div>
-    </TooltipProvider>
-  )
 }
 
 export function CommentContent({
@@ -134,6 +36,7 @@ export function CommentContent({
   const { t } = useTranslation("task")
 
   const allTasks = useAtomValue(tasksAtom)
+  const currentUser = useAtomValue(userAtom)
   const updateTask = useSetAtom(updateTaskAtom)
   const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
   const newTask = useAtomValue(quickAddTaskAtom)
@@ -198,10 +101,11 @@ export function CommentContent({
       onAddComment(newComment.trim())
     } else {
       // Otherwise, handle the update directly
-      const newTaskComment: TaskComment = {
+      const newTaskComment = {
         id: createCommentId(uuidv4()),
         content: newComment.trim(),
         createdAt: new Date(),
+        userId: currentUser.id,
       }
 
       const updatedComments = [...(task.comments || []), newTaskComment]

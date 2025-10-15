@@ -1,13 +1,6 @@
-import type { Task } from "@/lib/types"
 import { StubIndicator } from "@/components/debug"
 
-export interface AssigneeBadgesProps {
-  task: Task
-  maxDisplay?: number
-  className?: string
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function AssigneeBadges(_props: AssigneeBadgesProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+export function AssigneeBadges(_props: any) {
   return <StubIndicator />
 }

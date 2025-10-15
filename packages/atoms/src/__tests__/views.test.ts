@@ -110,7 +110,7 @@ describe("migrateViewStates", () => {
           compactView: true,
           collapsedSections: [],
           activeFilters: {
-            labels: ["urgent"],
+            labels: [createLabelId("abcdefab-abcd-4bcd-8bcd-abcdefabcdef")],
             priorities: [4],
           },
         },
@@ -358,7 +358,9 @@ describe("getViewStateOrDefault", () => {
       showSidePanel: true,
       compactView: false,
       collapsedSections: ["section1"],
-      activeFilters: { labels: ["urgent"] },
+      activeFilters: {
+        labels: [createLabelId("abcdefab-abcd-4bcd-8bcd-abcdefabcdef")],
+      },
     },
     inbox: {
       viewMode: "list",

@@ -144,6 +144,11 @@ vi.mock("lucide-react", () => ({
   ChevronRightIcon: () => <span data-testid="chevron-right-icon">→</span>,
   ChevronDownIcon: () => <span data-testid="chevron-down-icon">↓</span>,
   Inbox: () => <span data-testid="inbox-icon">📥</span>,
+  LoaderCircle: ({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) => (
+    <span data-testid="loader-circle-icon" className={className} {...props}>
+      ⏳
+    </span>
+  ),
 }))
 
 vi.mock("@radix-ui/react-visually-hidden", () => ({

@@ -15,8 +15,8 @@ import {
 import { projectAtoms } from "@tasktrove/atoms"
 import { labelsAtom } from "@tasktrove/atoms"
 import { uiFilteredTasksForViewAtom } from "@tasktrove/atoms"
-import type { Task, Project, Label as LabelType } from "@/lib/types"
-import { type ProjectId } from "@/lib/types"
+import type { Task, Project, Label as LabelType, LabelId } from "@/lib/types"
+import { createLabelId, type ProjectId } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { getPriorityTextColor } from "@/lib/color-utils"
 import { DueDatePreset, getPresetLabel, getPresetTaskCounts } from "@/lib/utils/date-filter-utils"
@@ -38,6 +38,8 @@ import {
   Circle,
   Clock,
 } from "lucide-react"
+import { AssigneeFilterSection } from "@/components/task/assignee-filter-section"
+import { OwnerFilterSection } from "@/components/task/owner-filter-section"
 
 // Derived atom to get tasks filtered by everything EXCEPT due date filter for accurate preset counts
 const tasksForCountsAtom = atom((get) => {
@@ -75,7 +77,7 @@ const tasksForCountsAtom = atom((get) => {
       // Show tasks with specific labels
       const labelFilter = activeFilters.labels
       result = result.filter((task: Task) =>
-        task.labels.some((label: string) => labelFilter.includes(label)),
+        task.labels.some((label: LabelId) => labelFilter.includes(label)),
       )
     }
     // If activeFilters.labels is [], show all tasks (no filtering)
@@ -158,11 +160,11 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
     }
   }
 
-  const handleLabelChange = (labelName: string, checked: boolean) => {
+  const handleLabelChange = (labelId: string, checked: boolean) => {
     const currentLabels = Array.isArray(activeFilters.labels) ? activeFilters.labels : []
-    const newLabels = checked
-      ? [...currentLabels, labelName]
-      : currentLabels.filter((l) => l !== labelName)
+    const newLabels: LabelId[] = checked
+      ? [...currentLabels, createLabelId(labelId)]
+      : currentLabels.filter((l) => l !== labelId)
 
     updateFilters({
       labels: newLabels.length > 0 ? newLabels : [],
@@ -570,7 +572,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                     {allLabels.map((label: LabelType) => {
                       const isSelected =
                         Array.isArray(activeFilters.labels) &&
-                        activeFilters.labels.includes(label.name)
+                        activeFilters.labels.includes(label.id)
                       return (
                         <div
                           key={label.id}
@@ -578,7 +580,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                             "flex items-center gap-3 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 p-2.5",
                             isSelected && "bg-accent",
                           )}
-                          onClick={() => handleLabelChange(label.name, !isSelected)}
+                          onClick={() => handleLabelChange(label.id, !isSelected)}
                         >
                           <div
                             className="w-3 h-3 rounded-full"
@@ -592,9 +594,9 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                 </div>
               )}
 
-              {/* TODO: Add due date range filter when needed */}
-              {/* TODO: Add task status filter when status field is more widely used */}
-              {/* TODO: Add assigned team members filter when team features are implemented */}
+              <AssigneeFilterSection />
+
+              <OwnerFilterSection />
             </div>
           </ScrollArea>
         </div>

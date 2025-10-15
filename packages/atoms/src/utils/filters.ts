@@ -12,7 +12,7 @@ import type {
   ViewState,
   ProjectId,
   TaskPriority,
-  UserId,
+  LabelId,
 } from "@tasktrove/types";
 
 // =============================================================================
@@ -32,8 +32,8 @@ export interface FilterConfig {
   searchQuery?: string;
   /** Filter by specific project IDs */
   projectIds?: ProjectId[];
-  /** Filter by specific label names (null = tasks with no labels) */
-  labels?: string[] | null;
+  /** Filter by specific label IDs (null = tasks with no labels) */
+  labels?: LabelId[] | null;
   /** Filter by priority levels */
   priorities?: TaskPriority[];
   /** Filter by completion status */
@@ -52,8 +52,6 @@ export interface FilterConfig {
       end?: Date;
     };
   };
-  /** Filter by assigned users */
-  assignedTo?: UserId[];
   /** Filter by task status */
   status?: string[];
 }
@@ -147,16 +145,16 @@ export function filterTasksByProjects(
 }
 
 /**
- * Filters tasks by label names
+ * Filters tasks by label IDs
  * Special handling: null means "tasks with no labels", array means "tasks with any of these labels"
  *
  * @param tasks - Array of tasks to filter
- * @param labels - Array of label names to include, or null for tasks without labels
+ * @param labels - Array of label IDs to include, or null for tasks without labels
  * @returns Filtered array of tasks
  */
 export function filterTasksByLabels(
   tasks: Task[],
-  labels: string[] | null | undefined,
+  labels: LabelId[] | null | undefined,
 ): Task[] {
   // No filter
   if (labels === undefined) return tasks;
@@ -169,11 +167,8 @@ export function filterTasksByLabels(
   // Empty array = no tasks match
   if (labels.length === 0) return tasks;
 
-  // Filter for tasks that have at least one of the specified labels
+  // Filter for tasks that have at least one of the specified label IDs
   return tasks.filter((task) => {
-    // Note: task.labels contains label IDs, but the filter uses label names
-    // This assumes the label names are being passed in, which matches the ViewState schema
-    // The calling code should map label IDs to names before calling this function
     return task.labels.some((labelId) => labels.includes(labelId));
   });
 }
@@ -329,25 +324,6 @@ export function filterTasksByDueDate(
   return tasks;
 }
 
-/**
- * Filters tasks by assigned users
- *
- * @param tasks - Array of tasks to filter
- * @param assignedTo - Array of user IDs to filter by
- * @returns Filtered array of tasks
- */
-export function filterTasksByAssignedTo(
-  tasks: Task[],
-  assignedTo: UserId[] | undefined,
-): Task[] {
-  if (!assignedTo || assignedTo.length === 0) return tasks;
-
-  // Note: Task type doesn't currently have assignedTo field
-  // This is a placeholder for future implementation
-  // For now, return all tasks
-  return tasks;
-}
-
 // =============================================================================
 // COMPREHENSIVE FILTER FUNCTION
 // =============================================================================
@@ -403,13 +379,6 @@ export function filterTasks(tasks: Task[], config: FilterConfig): Task[] {
     filtered = filterTasksByDueDate(filtered, config.dueDateFilter);
   }
 
-  // Apply assignedTo filter
-  if (config.assignedTo) {
-    filtered = filterTasksByAssignedTo(filtered, config.assignedTo);
-  }
-
-  // Status filtering removed
-
   return filtered;
 }
 
@@ -434,6 +403,5 @@ export function viewStateToFilterConfig(viewState: ViewState): FilterConfig {
     priorities: viewState.activeFilters?.priorities,
     completed: viewState.activeFilters?.completed,
     dueDateFilter: viewState.activeFilters?.dueDateFilter,
-    assignedTo: viewState.activeFilters?.assignedTo,
   };
 }

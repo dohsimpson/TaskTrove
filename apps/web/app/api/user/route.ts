@@ -26,6 +26,7 @@ import {
   processPasswordUpdate,
   processApiTokenUpdate,
 } from "@/lib/utils/user-update-helpers"
+import { clearNullValues } from "@tasktrove/utils"
 
 /**
  * GET /api/user
@@ -181,12 +182,12 @@ async function updateUser(
     ),
   }
 
-  // Handle avatar update separately
+  // Handle avatar update separately (convert null to undefined)
   if (avatarPath !== undefined) {
     updatedUser.avatar = avatarPath === null ? undefined : avatarPath
   }
 
-  // Handle apiToken update separately
+  // Handle apiToken update separately (convert null to undefined)
   const processedApiToken = processApiTokenUpdate(partialUser.apiToken, "apiToken" in partialUser)
   if (processedApiToken !== undefined) {
     updatedUser.apiToken = processedApiToken === null ? undefined : processedApiToken
@@ -194,10 +195,10 @@ async function updateUser(
 
   // Clean null values and ensure required fields are present
   // For password: if not provided, preserve existing password (password is required)
-  const cleanedUser: User = {
+  const cleanedUser: User = clearNullValues({
     ...updatedUser,
     password: updatedUser.password || fileData.user.password,
-  }
+  })
 
   // Update the data file with new user data
   const updatedFileData = {

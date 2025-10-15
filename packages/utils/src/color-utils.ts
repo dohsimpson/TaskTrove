@@ -14,7 +14,12 @@ import { COLOR_OPTIONS } from "@tasktrove/constants";
  * const bgClass = `bg-[${color}]`; // Use in Tailwind arbitrary values
  * ```
  */
-export function getConsistentColor(str: string): string {
+export function getConsistentColor(str: string | undefined): string {
+  // Handle empty, undefined, or null strings
+  if (!str || str.length === 0) {
+    return "#6b7280"; // Gray fallback for empty strings
+  }
+
   const hash = str.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const index = hash % COLOR_OPTIONS.length;
   return COLOR_OPTIONS[index]?.value ?? "#6b7280"; // Fallback to gray

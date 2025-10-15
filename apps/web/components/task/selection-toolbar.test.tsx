@@ -3,7 +3,8 @@ import { render, screen, fireEvent } from "@/test-utils"
 import { SelectionToolbar } from "./selection-toolbar"
 import type { Task } from "@/lib/types"
 import { TEST_COMMENT_ID_1, TEST_SUBTASK_ID_1 } from "@tasktrove/types/test-constants"
-import { createTaskId } from "@/lib/types"
+import { createTaskId, createUserId } from "@/lib/types"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 
 // Mock state
 let mockSelectedTaskIds: string[]
@@ -25,6 +26,12 @@ vi.mock("jotai", () => ({
   useAtomValue: vi.fn((atom: { toString: () => string }) => {
     if (atom.toString().includes("selectedTasks")) return mockSelectedTaskIds
     if (atom.toString().includes("tasksAtom")) return mockAllTasks
+    if (atom.toString().includes("userAtom"))
+      return {
+        id: createUserId(DEFAULT_UUID),
+        username: "testuser",
+        password: "testpassword",
+      }
     if (atom.toString().includes("settingsAtom"))
       return {
         general: { popoverHoverOpen: false },
@@ -49,6 +56,7 @@ vi.mock("@tasktrove/atoms", () => ({
   tasksAtom: { toString: () => "tasksAtom" },
   deleteTasksAtom: { toString: () => "deleteTasksAtom" },
   settingsAtom: { toString: () => "settingsAtom" },
+  userAtom: { toString: () => "userAtom" },
   multiSelectDraggingAtom: { toString: () => "multiSelectDraggingAtom" },
   taskAtoms: {
     actions: { updateTask: vi.fn() },
@@ -266,7 +274,14 @@ describe("SelectionToolbar", () => {
 
     it("renders properly with tasks that have subtasks and comments", () => {
       const taskWithContent = createMockTask("87654321-4321-4321-8321-210987654321", {
-        comments: [{ id: TEST_COMMENT_ID_1, content: "Test comment", createdAt: new Date() }],
+        comments: [
+          {
+            id: TEST_COMMENT_ID_1,
+            userId: createUserId(DEFAULT_UUID),
+            content: "Test comment",
+            createdAt: new Date(),
+          },
+        ],
         subtasks: [{ id: TEST_SUBTASK_ID_1, title: "Test subtask", completed: false }],
       })
 

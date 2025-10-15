@@ -6,7 +6,13 @@ import { Provider } from "jotai"
 import { KanbanBoard } from "./kanban-board"
 import { DEFAULT_SECTION_COLORS, DEFAULT_UUID } from "@tasktrove/constants"
 import type { Task, TaskPriority } from "@/lib/types"
-import { createTaskId, createCommentId, createLabelId, createGroupId } from "@/lib/types"
+import {
+  createTaskId,
+  createCommentId,
+  createLabelId,
+  createGroupId,
+  createUserId,
+} from "@/lib/types"
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
@@ -355,8 +361,18 @@ describe.skip("KanbanBoard", () => {
       dueDate: new Date("2024-01-01"),
       labels: [TEST_LABEL_ID_1, TEST_LABEL_ID_2],
       comments: [
-        { id: COMMENT_ID_1, content: "Comment 1", createdAt: new Date() },
-        { id: COMMENT_ID_2, content: "Comment 2", createdAt: new Date() },
+        {
+          id: COMMENT_ID_1,
+          userId: createUserId(DEFAULT_UUID),
+          content: "Comment 1",
+          createdAt: new Date(),
+        },
+        {
+          id: COMMENT_ID_2,
+          userId: createUserId(DEFAULT_UUID),
+          content: "Comment 2",
+          createdAt: new Date(),
+        },
       ],
     }),
     createTask({
@@ -374,11 +390,36 @@ describe.skip("KanbanBoard", () => {
       priority: 3 satisfies TaskPriority,
       labels: [LABEL_ID_3, LABEL_ID_4, LABEL_ID_5],
       comments: [
-        { id: COMMENT_ID_3, content: "Comment 3", createdAt: new Date() },
-        { id: COMMENT_ID_4, content: "Comment 4", createdAt: new Date() },
-        { id: COMMENT_ID_5, content: "Comment 5", createdAt: new Date() },
-        { id: COMMENT_ID_6, content: "Comment 6", createdAt: new Date() },
-        { id: COMMENT_ID_7, content: "Comment 7", createdAt: new Date() },
+        {
+          id: COMMENT_ID_3,
+          userId: createUserId(DEFAULT_UUID),
+          content: "Comment 3",
+          createdAt: new Date(),
+        },
+        {
+          id: COMMENT_ID_4,
+          userId: createUserId(DEFAULT_UUID),
+          content: "Comment 4",
+          createdAt: new Date(),
+        },
+        {
+          id: COMMENT_ID_5,
+          userId: createUserId(DEFAULT_UUID),
+          content: "Comment 5",
+          createdAt: new Date(),
+        },
+        {
+          id: COMMENT_ID_6,
+          userId: createUserId(DEFAULT_UUID),
+          content: "Comment 6",
+          createdAt: new Date(),
+        },
+        {
+          id: COMMENT_ID_7,
+          userId: createUserId(DEFAULT_UUID),
+          content: "Comment 7",
+          createdAt: new Date(),
+        },
       ],
     }),
     createTask({

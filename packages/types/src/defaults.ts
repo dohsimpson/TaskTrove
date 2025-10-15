@@ -4,7 +4,7 @@ import type { User, ProjectSection } from "./core";
 import type { ProjectGroup, LabelGroup } from "./group";
 import type { DataFile, UserData } from "./data-file";
 import { SIDE_PANEL_WIDTH_DEFAULT } from "@tasktrove/constants";
-import { createGroupId } from "./id";
+import { createGroupId, createUserId } from "./id";
 import {
   DEFAULT_UUID,
   DEFAULT_AUTO_BACKUP_ENABLED,
@@ -103,6 +103,8 @@ export const DEFAULT_VIEW_STATE: ViewState = {
  */
 export const DEFAULT_GLOBAL_VIEW_OPTIONS: GlobalViewOptions = {
   sidePanelWidth: SIDE_PANEL_WIDTH_DEFAULT,
+  peopleOwnerCollapsed: false,
+  peopleAssigneesCollapsed: false,
 };
 
 /**
@@ -120,10 +122,8 @@ export const DEFAULT_USER_SETTINGS = {
   general: DEFAULT_GENERAL_SETTINGS,
 };
 
-/**
- * Default user for initial setup
- */
 export const DEFAULT_USER: User = {
+  id: createUserId(DEFAULT_UUID),
   username: "",
   password: "",
 };

@@ -7,11 +7,12 @@
  */
 
 import { atom } from "jotai";
-import { handleAtomError, playSoundAtom, log } from "../utils/atom-helpers";
-import { recordOperationAtom } from "./history";
-import { settingsAtom } from "../data/base/atoms";
-import { settingsQueryAtom } from "../data/base/query";
-import { updateSettingsMutationAtom } from "../mutations/settings";
+import { handleAtomError, log } from "#utils/atom-helpers";
+import { playSoundAtom } from "#ui/audio";
+import { recordOperationAtom } from "#core/history";
+import { settingsAtom } from "#data/base/atoms";
+import { settingsQueryAtom } from "#data/base/query";
+import { updateSettingsMutationAtom } from "#mutations/settings";
 import type { UserSettings, PartialUserSettings } from "@tasktrove/types";
 import {
   DEFAULT_AUTO_BACKUP_ENABLED,

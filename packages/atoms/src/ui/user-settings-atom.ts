@@ -9,8 +9,8 @@ import type {
   // ProductivitySettings,
   // TaskPriority,
 } from "@tasktrove/types";
-import { settingsAtom } from "../data/base/atoms";
-import { updateSettingsAtom } from "../core/settings";
+import { settingsAtom } from "#data/base/atoms";
+import { updateSettingsAtom } from "#core/settings";
 
 // =============================================================================
 // DERIVED SETTINGS ATOMS

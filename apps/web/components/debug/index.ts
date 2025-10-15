@@ -5,6 +5,7 @@
  * be included in production builds.
  */
 
+export { ProjectSectionDebugBadge } from "./project-section-debug-badge"
 export { SoundTester } from "./sound-tester"
 export { StubIndicator } from "./stub-indicator"
 export { VirtualizationDebugBadge } from "./virtualization-debug-badge"

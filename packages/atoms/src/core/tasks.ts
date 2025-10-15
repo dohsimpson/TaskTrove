@@ -15,6 +15,8 @@ import {
   createCommentId,
   UpdateTaskRequest,
   CreateTaskRequest,
+  CommentUpdateRequest,
+  User,
 } from "@tasktrove/types";
 import { DEFAULT_SECTION_ID } from "@tasktrove/types/defaults";
 import {
@@ -27,29 +29,29 @@ import {
 } from "@tasktrove/constants";
 import {
   handleAtomError,
-  playSoundAtom,
   namedAtom,
   withErrorHandling,
-} from "../utils/atom-helpers";
-import { notificationAtoms } from "./notifications";
+} from "#utils/atom-helpers";
+import { playSoundAtom } from "#ui/audio";
+import { notificationAtoms } from "#core/notifications";
 import {
   getOrderedTasksForProject,
   getOrderedTasksForSection,
   moveTaskWithinSection,
   addTaskToSection,
   removeTaskFromSection,
-} from "../data/tasks/ordering";
+} from "#data/tasks/ordering";
 
-// Note: moveTaskWithinSection is imported directly from "../data/tasks/ordering" for internal use
-import { tasksAtom, projectsAtom } from "../data/base/atoms";
+// Note: moveTaskWithinSection is imported directly from "#data/tasks/ordering" for internal use
+import { tasksAtom, projectsAtom, userAtom } from "#data/base/atoms";
 import {
   createTaskMutationAtom,
   updateTasksMutationAtom,
   deleteTaskMutationAtom,
-} from "../mutations/tasks";
-import { updateProjectsMutationAtom } from "../mutations/projects";
-import { recordOperationAtom } from "./history";
-import { log } from "../utils/atom-helpers";
+} from "#mutations/tasks";
+import { updateProjectsMutationAtom } from "#mutations/projects";
+import { recordOperationAtom } from "#core/history";
+import { log } from "#utils/atom-helpers";
 
 /**
  * Core task management atoms for TaskTrove's Jotai migration
@@ -319,31 +321,59 @@ export const toggleTaskAtom = atom(null, (get, set, taskId: TaskId) => {
 toggleTaskAtom.debugLabel = "toggleTaskAtom";
 
 /**
- * Adds a comment to a specific task
- * Creates a new comment with current user data and timestamp
+ * Adds or updates a comment on a specific task
+ * Creates a new comment with current user data and timestamp if id is not provided
+ * Updates existing comment if id is provided
  */
 export const addCommentAtom = atom(
   null,
-  (get, set, { taskId, content }: { taskId: TaskId; content: string }) => {
+  (get, set, request: CommentUpdateRequest) => {
     try {
+      const currentUser: User = get(userAtom);
       const tasks = get(tasksAtom);
-      const newComment: TaskComment = {
-        id: createCommentId(uuidv4()),
-        content,
-        createdAt: new Date(),
-      };
+      const { taskId, id, content } = request;
 
-      const updatedTasks = tasks.map((task: Task) =>
-        task.id === taskId
-          ? { ...task, comments: [...task.comments, newComment] }
-          : task,
-      );
+      const updatedTasks = tasks.map((task: Task) => {
+        if (task.id !== taskId) return task;
+
+        if (id) {
+          // Update existing comment
+          const updatedComments = task.comments.map((comment) =>
+            comment.id === id ? { ...comment, content } : comment,
+          );
+          return { ...task, comments: updatedComments };
+        } else {
+          // Create new comment
+          const newComment: TaskComment = {
+            id: createCommentId(uuidv4()),
+            content,
+            createdAt: new Date(),
+            userId: currentUser.id,
+          };
+          return { ...task, comments: [...task.comments, newComment] };
+        }
+      });
 
       set(tasksAtom, updatedTasks);
-      log.info(
-        { taskId, commentId: newComment.id, module: "tasks" },
-        "Comment added to task",
-      );
+
+      if (id) {
+        log.info(
+          { taskId, commentId: id, userId: currentUser.id, module: "tasks" },
+          "Comment updated on task",
+        );
+      } else {
+        const task = updatedTasks.find((t) => t.id === taskId);
+        const newCommentId = task?.comments[task.comments.length - 1]?.id;
+        log.info(
+          {
+            taskId,
+            commentId: newCommentId,
+            userId: currentUser.id,
+            module: "tasks",
+          },
+          "Comment added to task",
+        );
+      }
     } catch (error) {
       handleAtomError(error, "addCommentAtom");
     }
@@ -411,7 +441,7 @@ bulkActionsAtom.debugLabel = "bulkActionsAtom";
 // DERIVED READ ATOMS
 // =============================================================================
 
-// Filtering atoms moved to ../data/tasks/filters.ts
+// Filtering atoms moved to #data/tasks/filters
 // Re-exported below for backward compatibility
 import {
   activeTasksAtom,
@@ -422,7 +452,7 @@ import {
   overdueTasksAtom,
   completedTasksAtom,
   baseFilteredTasksForViewAtom,
-} from "../data/tasks/filters";
+} from "#data/tasks/filters";
 
 /**
  * Task lookup map for O(1) access by ID

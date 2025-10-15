@@ -4,10 +4,8 @@
 
 import { atom, type Atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { playSound, type SoundType } from "@tasktrove/dom-utils/audio";
 import { toast } from "@tasktrove/dom-utils/toast";
 import { showServiceWorkerNotification } from "@tasktrove/dom-utils/notifications";
-import { settingsAtom } from "../data/base/atoms";
 
 // Storage key prefix for the app
 export const STORAGE_PREFIX = "tasktrove-";
@@ -29,6 +27,22 @@ export function namedAtom<AtomType extends Atom<unknown>>(
 ): AtomType {
   atomValue.debugLabel = name;
   return atomValue;
+}
+
+/**
+ * Prepends "base" to an atom's debug label and capitalizes the first letter
+ *
+ * @param name - The original atom name (e.g., "tasksAtom")
+ * @returns The prefixed name (e.g., "baseTasksAtom")
+ *
+ * @example
+ * import { tasksAtom as baseTasksAtom } from "./atoms";
+ * baseTasksAtom.debugLabel = prependBase(baseTasksAtom.debugLabel);
+ * // Result: "baseTasksAtom"
+ */
+export function prependBase(name: string | undefined): string {
+  if (!name) return "base";
+  return `base${name.charAt(0).toUpperCase()}${name.slice(1)}`;
 }
 
 /**
@@ -112,39 +126,6 @@ export function matchesDueDateFilter(): boolean {
 export function handleAtomError(error: unknown, context?: string) {
   console.error(`Atom error${context ? ` in ${context}` : ""}:`, error);
 }
-
-/**
- * Atom for playing sounds with DOM environment support
- * Automatically handles browser compatibility and Web Audio API
- */
-export const playSoundAtom = namedAtom(
-  "playSoundAtom",
-  atom(
-    null,
-    async (
-      get,
-      _set,
-      { soundType, volume = 1.0 }: { soundType: SoundType; volume?: number },
-    ) => {
-      try {
-        // Check if we're in a DOM environment
-        if (typeof window === "undefined") {
-          // Server-side rendering or non-DOM environment
-          return;
-        }
-
-        // Check if sound is enabled in settings
-        const settings = get(settingsAtom);
-        const generalSettings = settings.general;
-        if (!generalSettings.soundEnabled) return;
-
-        await playSound(soundType, volume);
-      } catch (error) {
-        console.warn(`Failed to play ${soundType} sound:`, error);
-      }
-    },
-  ),
-);
 
 // Re-export toast from dom-utils with DOM environment support
 export { toast };

@@ -10,14 +10,14 @@ import type {
   Task,
 } from "@tasktrove/types";
 import { createTaskId } from "@tasktrove/types";
-import { settingsAtom } from "../data/base/atoms";
+import { settingsAtom } from "#data/base/atoms";
 import { safeSetTimeout } from "@tasktrove/utils";
 import {
   log,
   handleAtomError,
-  playSoundAtom,
   showServiceWorkerNotification,
-} from "../utils/atom-helpers";
+} from "#utils/atom-helpers";
+import { playSoundAtom } from "#ui/audio";
 import { DEFAULT_UUID } from "@tasktrove/constants";
 import { DEFAULT_NOTIFICATION_SETTINGS } from "@tasktrove/types/defaults";
 
@@ -133,7 +133,7 @@ export const notificationSettingsAtom = atom(
   },
   async (get, set, updates: Partial<NotificationSettings>) => {
     // Use the core updateSettingsAtom to persist changes
-    const { updateSettingsAtom } = await import("./settings");
+    const { updateSettingsAtom } = await import("#core/settings");
     await set(updateSettingsAtom, { notifications: updates });
   },
 );

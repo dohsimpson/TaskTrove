@@ -38,8 +38,9 @@ import { TaskSchedulePopover } from "@/components/task/task-schedule-popover"
 import { ProjectPopover } from "@/components/task/project-popover"
 import { TaskSearchDialog } from "@/components/task/task-search-dialog"
 import { cn } from "@/lib/utils"
-import { createCommentId, createSubtaskId, createTaskId } from "@/lib/types"
+import { createCommentId, createSubtaskId, createTaskId, createUserId } from "@/lib/types"
 import { DraggableTaskElement } from "./draggable-task-element"
+import { BulkAssigneeButton } from "@/components/task/bulk-assignee-button"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 import type { TaskComment, Subtask, TaskId } from "@/lib/types"
 
@@ -60,6 +61,8 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
 
   // Get all tasks to map IDs to Task objects
   const allTasks = useAtomValue(tasksAtom)
+
+  // Note: currentUser can be obtained from userAtom if needed for future features
   const selectedTasks = React.useMemo(
     () => allTasks.filter((task) => selectedTaskIds.includes(task.id)),
     [allTasks, selectedTaskIds],
@@ -136,6 +139,7 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
 
     const newComment: TaskComment = {
       id: createCommentId(uuidv4()),
+      userId: createUserId(DEFAULT_UUID),
       content: commentInput.trim(),
       createdAt: new Date(),
     }
@@ -241,6 +245,9 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
                   Project
                 </Button>
               </ProjectPopover>
+
+              {/* Bulk Assignee Button */}
+              <BulkAssigneeButton taskIds={selectedTaskIds} />
 
               {/* More actions dropdown */}
               <DropdownMenu>

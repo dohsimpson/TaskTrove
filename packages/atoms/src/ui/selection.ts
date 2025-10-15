@@ -1,6 +1,6 @@
 import { atom } from "jotai";
-import { tasksAtom } from "../data/base/atoms";
-import { resetSidePanelStateAtom } from "./views";
+import { tasksAtom } from "#data/base/atoms";
+import { resetSidePanelStateAtom } from "#ui/views";
 import { type TaskId, type Task } from "@tasktrove/types";
 
 /**

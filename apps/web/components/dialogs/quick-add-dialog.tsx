@@ -20,6 +20,7 @@ import {
   MessageSquare,
   Square,
   Clock,
+  Users,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
@@ -45,6 +46,7 @@ import { TaskSectionPopover } from "@/components/task/task-section-popover"
 import { SubtaskPopover } from "@/components/task/subtask-popover"
 import { CommentManagementPopover } from "@/components/task/comment-management-popover"
 import { HelpPopover } from "@/components/ui/help-popover"
+import { SubmitButton } from "@/components/ui/custom/submit-button"
 import {
   INBOX_PROJECT_ID,
   CreateTaskRequest,
@@ -57,6 +59,7 @@ import {
   isValidPriority,
   createSubtaskId,
   createCommentId,
+  taskToCreateTaskRequest,
 } from "@/lib/types"
 import { PLACEHOLDER_TASK_INPUT } from "@tasktrove/constants"
 import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
@@ -68,6 +71,8 @@ import { useDebouncedParse } from "@/hooks/use-debounced-parse"
 import { useTranslation } from "@tasktrove/i18n"
 import { generateEstimationSuggestions } from "@/lib/utils/shared-patterns"
 import { UnsavedConfirmationDialog } from "./unsaved-confirmation-dialog"
+import { PeopleManagementPopover } from "@/components/task/people-management-popover"
+import { AssigneeBadges } from "@/components/task/assignee-badges"
 
 // Enhanced autocomplete interface
 type AutocompleteType = "project" | "label" | "date" | "estimation"
@@ -131,6 +136,9 @@ export function QuickAddDialog() {
   const newTask: CreateTaskRequest = useAtomValue(quickAddTaskAtom)
   const updateNewTask = useSetAtom(updateQuickAddTaskAtom)
   const resetNewTask = useSetAtom(resetQuickAddTaskAtom)
+
+  // Ref for programmatic access to the submit button
+  const submitButtonRef = useRef<HTMLButtonElement>(null)
 
   // Get data from atoms
   const labels = useAtomValue(labelsAtom)
@@ -346,20 +354,15 @@ export function QuickAddDialog() {
           id: createCommentId(uuidv4()),
         }))
 
-        // When copying, we have all required fields, so we can type it as CreateTaskRequest
-        const copyData: CreateTaskRequest = {
-          title: taskToCopy.title,
-          description: taskToCopy.description,
-          priority: taskToCopy.priority,
-          dueDate: taskToCopy.dueDate,
-          dueTime: taskToCopy.dueTime,
-          projectId: taskToCopy.projectId,
-          labels: [...taskToCopy.labels],
+        // Create a modified task with new IDs for subtasks and comments
+        const taskWithNewIds = {
+          ...taskToCopy,
           subtasks: subtasksWithNewIds,
           comments: commentsWithNewIds,
-          recurring: taskToCopy.recurring,
-          estimation: taskToCopy.estimation,
         }
+
+        // Safely convert Task to CreateTaskRequest by filtering out invalid fields
+        const copyData = taskToCreateTaskRequest(taskWithNewIds)
 
         updates = copyData
         setInput(taskToCopy.title) // Also set the input field
@@ -445,42 +448,38 @@ export function QuickAddDialog() {
     const finalTitle = parsed?.title || input.trim()
     if (!finalTitle) return
 
-    try {
-      // Create final task data from atom + any final overrides
-      const taskData: CreateTaskRequest = {
-        ...newTask,
-        title: finalTitle,
-        // Set defaults for required/expected fields if not set
-        priority: newTask.priority ?? 4,
-        labels: newTask.labels,
-        projectId: newTask.projectId,
-      }
-
-      await addTask(taskData)
-
-      log.info(
-        {
-          task: taskData,
-          parsedTime: parsed?.time,
-          parsedDuration: parsed?.duration,
-          newTask: newTask,
-          module: "quick-add",
-        },
-        "Task created via enhanced quick add",
-      )
-
-      setInput("")
-      resetNewTask()
-      performCloseDialog()
-    } catch (error) {
-      log.error({ error, module: "quick-add" }, "Failed to create task")
+    // Create final task data from atom + any final overrides
+    const taskData: CreateTaskRequest = {
+      ...newTask,
+      title: finalTitle,
+      // Set defaults for required/expected fields if not set
+      priority: newTask.priority ?? 4,
+      labels: newTask.labels,
+      projectId: newTask.projectId,
     }
+
+    await addTask(taskData)
+
+    log.info(
+      {
+        task: taskData,
+        parsedTime: parsed?.time,
+        parsedDuration: parsed?.duration,
+        newTask: newTask,
+        module: "quick-add",
+      },
+      "Task created via enhanced quick add",
+    )
+
+    setInput("")
+    resetNewTask()
+    performCloseDialog()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey && e.target === e.currentTarget) {
       e.preventDefault()
-      handleSubmit()
+      submitButtonRef.current?.click()
     }
   }
 
@@ -637,7 +636,6 @@ export function QuickAddDialog() {
                     variant="ghost"
                     size="sm"
                     className="h-8 px-2 gap-1 text-xs sm:text-sm min-w-0"
-                    asChild
                   >
                     {newTask.dueDate || newTask.recurring ? (
                       <TaskDueDate
@@ -844,6 +842,18 @@ export function QuickAddDialog() {
                   </Button>
                 </CommentManagementPopover>
 
+                {/* People */}
+                <PeopleManagementPopover onOpenChange={() => {}}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 gap-1 text-muted-foreground text-xs sm:text-sm min-w-0"
+                  >
+                    <Users className="h-3 w-3 flex-shrink-0" />
+                    <AssigneeBadges />
+                  </Button>
+                </PeopleManagementPopover>
+
                 {/* Section - Only show if a project is selected */}
                 {newTask.projectId !== INBOX_PROJECT_ID && (
                   <TaskSectionPopover
@@ -932,13 +942,15 @@ export function QuickAddDialog() {
               <Button variant="ghost" onClick={handleCloseDialog} className="text-xs sm:text-sm">
                 {t("common.cancel", "Cancel")}
               </Button>
-              <Button
-                onClick={handleSubmit}
+              <SubmitButton
+                onSubmit={handleSubmit}
                 disabled={!parsed?.title && !input.trim()}
+                submittingText={t("quickAdd.addingTask", "Adding")}
                 className="text-xs sm:text-sm"
+                ref={submitButtonRef}
               >
                 {t("quickAdd.addTask", "Add task")}
-              </Button>
+              </SubmitButton>
             </div>
           </div>
         </DialogContentWithoutOverlay>

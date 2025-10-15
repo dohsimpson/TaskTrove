@@ -4,7 +4,7 @@
 import { useState, useCallback, useEffect } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
 import { useTranslation } from "@tasktrove/i18n"
-import { X, Calendar, Flag, Folder, AlertTriangle } from "lucide-react"
+import { X, Calendar, Flag, Folder, AlertTriangle, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
@@ -19,9 +19,11 @@ import { cn } from "@/lib/utils"
 import { format, isToday, isTomorrow } from "date-fns"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { formatTaskDateTime } from "@/lib/utils/task-date-formatter"
+import { isPro } from "@/lib/utils/env"
 import { TaskSchedulePopover } from "./task-schedule-popover"
 import { PriorityPopover } from "./priority-popover"
 import { ProjectPopover } from "./project-popover"
+import { AssigneeManagementPopover } from "@/components/task/assignee-management-popover"
 import { SubtaskContent } from "./subtask-content"
 import { LabelContent } from "./label-content"
 import { CommentContent } from "./comment-content"
@@ -36,8 +38,9 @@ import {
 } from "@tasktrove/atoms"
 import { log } from "@/lib/utils/logger"
 import { labelsAtom, addLabelAndWaitForRealIdAtom } from "@tasktrove/atoms"
-import { Task, type LabelId } from "@/lib/types"
+import { type LabelId, Task } from "@/lib/types"
 import { getDueDateTextColor, getPriorityTextColor } from "@/lib/color-utils"
+import { DEFAULT_COLOR_PALETTE } from "@tasktrove/constants"
 
 // Constants
 const SIDE_PANEL_WIDTH = 320 // 320px = w-80 in Tailwind
@@ -117,47 +120,53 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
 
   const TaskPanelContent = ({ task, className = "" }: TaskPanelContentProps) => (
     <div className={cn("space-y-4", className)}>
-      {/* Due Date Section - Prominent */}
+      {/* Due Date & Assignment Section */}
       <div className="space-y-3">
         <h3 className="text-sm text-foreground font-bold">
-          {t("sidePanel.dueDate.title", "Due Date")}
+          {t("sidePanel.scheduling.title", "Scheduling")}
         </h3>
-        <TaskSchedulePopover taskId={task.id}>
-          <div
-            className={cn(
-              "flex items-center gap-3 p-3.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 border-l-2",
-              task.dueDate
-                ? getDueDateTextColor(task.dueDate, task.completed)
-                : "text-muted-foreground",
-              task.dueDate && isOverdue(task.dueDate) && !isToday(task.dueDate) && !task.completed
-                ? "border-l-red-500 bg-red-500/10 border border-red-200/50 dark:border-red-800/50"
-                : task.dueDate && isToday(task.dueDate)
-                  ? "border-l-orange-500 bg-orange-500/10 border border-orange-200/50 dark:border-orange-800/50"
-                  : task.dueDate
-                    ? "border-l-border bg-muted/20"
-                    : "border-l-border bg-muted/20",
-            )}
-          >
-            {task.dueDate &&
-            isOverdue(task.dueDate) &&
-            !isToday(task.dueDate) &&
-            !task.completed ? (
-              <AlertTriangle className="h-4 w-4 text-red-500" />
-            ) : (
-              <Calendar className="h-4 w-4" />
-            )}
-            <span className="font-medium">
-              {task.dueDate
-                ? formatTaskDateTime(task, { format: "full" }) ||
-                  (isToday(task.dueDate)
-                    ? t("sidePanel.dueDate.today", "Today")
-                    : isTomorrow(task.dueDate)
-                      ? t("sidePanel.dueDate.tomorrow", "Tomorrow")
-                      : format(task.dueDate, "MMM d, yyyy"))
-                : t("sidePanel.dueDate.placeholder", "Add due date")}
-            </span>
-          </div>
-        </TaskSchedulePopover>
+        <div className={cn(isPro() && "grid grid-cols-2 gap-2.5")}>
+          {/* Due Date */}
+          <TaskSchedulePopover taskId={task.id}>
+            <div
+              className={cn(
+                "flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/20 border border-transparent hover:border-border/50",
+                task.dueDate
+                  ? getDueDateTextColor(task.dueDate, task.completed)
+                  : "text-muted-foreground",
+              )}
+            >
+              {task.dueDate &&
+              isOverdue(task.dueDate) &&
+              !isToday(task.dueDate) &&
+              !task.completed ? (
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+              ) : (
+                <Calendar className="h-4 w-4" />
+              )}
+              <span className="text-sm font-medium truncate">
+                {task.dueDate
+                  ? formatTaskDateTime(task, { format: "full" }) ||
+                    (isToday(task.dueDate)
+                      ? t("sidePanel.dueDate.today", "Today")
+                      : isTomorrow(task.dueDate)
+                        ? t("sidePanel.dueDate.tomorrow", "Tomorrow")
+                        : format(task.dueDate, "MMM d, yyyy"))
+                  : t("sidePanel.dueDate.placeholder", "Due Date")}
+              </span>
+            </div>
+          </TaskSchedulePopover>
+
+          {/* Assignment */}
+          {isPro() && (
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/20 border border-transparent hover:border-border/50 text-muted-foreground">
+              <Users className="h-4 w-4" />
+              <AssigneeManagementPopover task={task}>
+                <span className="text-sm font-medium truncate">No Assignee</span>
+              </AssigneeManagementPopover>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Organization Section - Priority & Project */}
@@ -245,19 +254,8 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
 
               let labelId: LabelId | undefined
               if (!existingLabel) {
-                const colors = [
-                  "#ef4444",
-                  "#f59e0b",
-                  "#3b82f6",
-                  "#8b5cf6",
-                  "#10b981",
-                  "#f97316",
-                  "#06b6d4",
-                  "#84cc16",
-                  "#ec4899",
-                  "#6366f1",
-                ]
-                const randomColor = colors[Math.floor(Math.random() * colors.length)]
+                const randomColor =
+                  DEFAULT_COLOR_PALETTE[Math.floor(Math.random() * DEFAULT_COLOR_PALETTE.length)]
 
                 // Wait for the real label ID from the server
                 labelId = await addLabelAndWaitForRealId({
@@ -347,7 +345,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
                   onChange={(value: string) => autoSave({ title: value })}
                   className={cn(
                     "text-lg font-medium w-fit max-w-xs hover:bg-accent px-2 py-1 rounded min-w-0",
-                    task.completed ? "line-through text-muted-foreground" : "text-foreground",
+                    task.completed ? "text-muted-foreground" : "text-foreground",
                   )}
                   placeholder={t("sidePanel.taskTitle.placeholder", "Task title...")}
                 />
@@ -417,7 +415,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
                 onChange={(value: string) => autoSave({ title: value })}
                 className={cn(
                   "text-lg font-medium w-fit max-w-xs hover:bg-accent px-2 py-1 rounded min-w-0",
-                  task.completed ? "line-through text-muted-foreground" : "text-foreground",
+                  task.completed ? "text-muted-foreground" : "text-foreground",
                 )}
                 placeholder="Task title..."
               />

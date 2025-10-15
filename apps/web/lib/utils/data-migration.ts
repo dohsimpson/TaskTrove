@@ -528,6 +528,88 @@ export function v070Migration(dataFile: Json): Json {
   return JSON.parse(JSON.stringify(result))
 }
 
+export function v080Migration(dataFile: Json): Json {
+  console.log("Migrating data file from v0.7.0 to v0.8.0...")
+  console.log("Adding userId to task comments and id to user object")
+
+  // Safely handle Json object type
+  if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
+    throw new Error("Migration input must be a JSON object")
+  }
+
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(dataFile)) {
+    result[key] = value
+  }
+
+  // 1. Add userId to all comments in tasks
+  if (Array.isArray(result.tasks)) {
+    result.tasks = result.tasks.map((task) => {
+      if (typeof task !== "object" || task === null || Array.isArray(task)) {
+        return task
+      }
+
+      const taskObj: Record<string, unknown> = {}
+      for (const [key, value] of Object.entries(task)) {
+        taskObj[key] = value
+      }
+
+      // Process comments array
+      if (Array.isArray(taskObj.comments)) {
+        taskObj.comments = taskObj.comments.map((comment) => {
+          if (typeof comment !== "object" || comment === null || Array.isArray(comment)) {
+            return comment
+          }
+
+          const commentObj: Record<string, unknown> = {}
+          for (const [key, value] of Object.entries(comment)) {
+            commentObj[key] = value
+          }
+
+          // Add userId if not already present
+          if (!("userId" in commentObj)) {
+            commentObj.userId = DEFAULT_UUID
+          }
+
+          return commentObj
+        })
+      }
+
+      return taskObj
+    })
+
+    console.log("✓ Added userId to task comments")
+  }
+
+  // 2. Add id to user object
+  if (typeof result.user === "object" && result.user !== null && !Array.isArray(result.user)) {
+    const user: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(result.user)) {
+      user[key] = value
+    }
+
+    // Add id if not already present
+    if (!("id" in user)) {
+      console.log("✓ Adding id field to user object")
+      user.id = DEFAULT_UUID
+    }
+
+    result.user = user
+  } else {
+    // If no user exists at all, create one with default values (shouldn't happen after v0.7.0)
+    console.log("✓ Creating user object with id field")
+    result.user = {
+      ...DEFAULT_USER,
+      id: DEFAULT_UUID,
+    }
+  }
+
+  console.log("✓ userId and user id migration completed")
+
+  // Return as Json by serializing/deserializing
+  return JSON.parse(JSON.stringify(result))
+}
+
 /**
  * Migration functions for each version upgrade
  * Only define functions for versions that actually require data structure changes
@@ -555,6 +637,10 @@ const migrationFunctions: MigrationStep[] = [
   {
     version: createVersionString("v0.7.0"),
     migrate: v070Migration,
+  },
+  {
+    version: createVersionString("v0.8.0"),
+    migrate: v080Migration,
   },
 ]
 

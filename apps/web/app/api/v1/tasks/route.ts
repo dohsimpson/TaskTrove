@@ -41,6 +41,7 @@ import {
 import { DEFAULT_SECTION_ID } from "@tasktrove/types/defaults"
 import { processRecurringTaskCompletion } from "@/lib/utils/recurring-task-processor"
 import { addTaskToSection, removeTaskFromSection } from "@tasktrove/atoms"
+import { clearNullValues } from "@tasktrove/utils"
 
 /**
  * GET /api/v1/tasks
@@ -286,13 +287,8 @@ async function updateTasks(
       }
     }
 
-    // Convert null values to undefined for date/time/recurring/estimation/projectId fields
-    const cleanedUpdate = { ...update, completedAt }
-    if (cleanedUpdate.dueDate === null) cleanedUpdate.dueDate = undefined
-    if (cleanedUpdate.dueTime === null) cleanedUpdate.dueTime = undefined
-    if (cleanedUpdate.recurring === null) cleanedUpdate.recurring = undefined
-    if (cleanedUpdate.estimation === null) cleanedUpdate.estimation = undefined
-    if (cleanedUpdate.projectId === null) cleanedUpdate.projectId = undefined
+    // Convert null values to undefined for optional fields
+    const cleanedUpdate = clearNullValues({ ...update, completedAt })
 
     updateMap.set(update.id, cleanedUpdate)
   }
@@ -342,17 +338,8 @@ async function updateTasks(
     // Create the updated task and ensure null values are converted to undefined
     const updatedTask = { ...task, ...update }
 
-    // Clean null values - TypeScript needs explicit assignment to understand type narrowing
-    const cleanedTask: Task = {
-      ...updatedTask,
-      dueDate: updatedTask.dueDate === null ? undefined : updatedTask.dueDate,
-      dueTime: updatedTask.dueTime === null ? undefined : updatedTask.dueTime,
-      recurring: updatedTask.recurring === null ? undefined : updatedTask.recurring,
-      estimation: updatedTask.estimation === null ? undefined : updatedTask.estimation,
-      projectId: updatedTask.projectId === null ? undefined : updatedTask.projectId,
-    }
-
-    return cleanedTask
+    // Clean null values using utility function
+    return clearNullValues(updatedTask)
   })
 
   // Process recurring tasks - generate next instances for completed recurring tasks

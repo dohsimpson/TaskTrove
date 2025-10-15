@@ -26,7 +26,7 @@ import {
   DEFAULT_BACKUP_TIME,
   DEFAULT_MAX_BACKUPS,
 } from "@tasktrove/constants";
-import { playSoundAtom } from "../utils/atom-helpers";
+import { playSoundAtom } from "../ui/audio";
 import { settingsAtom } from "../data/base/atoms";
 import { playSound } from "@tasktrove/dom-utils/audio";
 

@@ -34,6 +34,7 @@ import { withMutexProtection } from "@/lib/utils/api-mutex"
 import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
+import { clearNullValues } from "@tasktrove/utils"
 
 /**
  * GET /api/v1/projects
@@ -257,15 +258,18 @@ async function updateProjects(
     const update = updateMap.get(project.id)
     if (!update) return project
 
-    // If name is being updated but slug is not explicitly provided, regenerate slug
+    // Merge update into project
     const updatedProject = { ...project, ...update }
+
+    // If name is being updated but slug is not explicitly provided, regenerate slug
     if (update.name && update.name !== project.name && !update.slug) {
       // Filter out current project from slug generation to avoid self-collision
       const otherProjects = fileData.projects.filter((p) => p.id !== project.id)
       updatedProject.slug = createSafeProjectNameSlug(update.name, otherProjects)
     }
 
-    return updatedProject
+    // Clean null values using utility function
+    return clearNullValues(updatedProject)
   })
 
   // Update the file data with new projects

@@ -14,7 +14,6 @@ import {
   filterTasksByPriorities,
   filterTasksByCompletionStatus,
   filterTasksByDueDate,
-  filterTasksByAssignedTo,
   filterTasks,
   viewStateToFilterConfig,
   type FilterConfig,
@@ -829,32 +828,6 @@ describe("filterTasksByDueDate", () => {
 
   it("should handle empty array", () => {
     const result = filterTasksByDueDate([], { preset: "today" });
-    expect(result).toHaveLength(0);
-  });
-});
-
-// =============================================================================
-// FILTER BY ASSIGNED TO
-// =============================================================================
-
-describe("filterTasksByAssignedTo", () => {
-  it("should return all tasks (placeholder implementation)", () => {
-    const tasks: Task[] = [createTestTask(), createTestTask()];
-
-    // Note: Task type doesn't have assignedTo field yet
-    // This is a placeholder for future implementation
-    const result = filterTasksByAssignedTo(tasks, []);
-    expect(result).toHaveLength(2);
-  });
-
-  it("should handle undefined assignedTo", () => {
-    const tasks: Task[] = [createTestTask()];
-    const result = filterTasksByAssignedTo(tasks, undefined);
-    expect(result).toHaveLength(1);
-  });
-
-  it("should handle empty array", () => {
-    const result = filterTasksByAssignedTo([], []);
     expect(result).toHaveLength(0);
   });
 });

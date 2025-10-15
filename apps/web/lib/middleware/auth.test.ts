@@ -7,7 +7,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { withAuthentication } from "./auth"
 import { NextResponse } from "next/server"
-import { ApiErrorCode, ErrorResponse, createGroupId } from "@/lib/types"
+import { ApiErrorCode, ErrorResponse, createGroupId, createUserId } from "@/lib/types"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 import type { EnhancedRequest } from "./api-logger"
 import { createMockEnhancedRequest } from "@/lib/utils/test-helpers"
 import type { Session } from "next-auth"
@@ -437,6 +438,7 @@ describe("withAuthentication", () => {
       // Mock safeReadDataFile to return data file with matching API token
       mockSafeReadDataFile.mockResolvedValue({
         user: {
+          id: createUserId(DEFAULT_UUID),
           username: "admin",
           password: "hashed-password",
           apiToken: validToken,
@@ -501,6 +503,7 @@ describe("withAuthentication", () => {
       // Mock safeReadDataFile to return data file with different API token
       mockSafeReadDataFile.mockResolvedValue({
         user: {
+          id: createUserId(DEFAULT_UUID),
           username: "admin",
           password: "hashed-password",
           apiToken: "different-token-456",
@@ -567,6 +570,7 @@ describe("withAuthentication", () => {
       // Mock safeReadDataFile to return data file without API token
       mockSafeReadDataFile.mockResolvedValue({
         user: {
+          id: createUserId(DEFAULT_UUID),
           username: "admin",
           password: "hashed-password",
           // No apiToken field
@@ -669,6 +673,7 @@ describe("withAuthentication", () => {
       // Mock safeReadDataFile to return data file with matching API token
       mockSafeReadDataFile.mockResolvedValue({
         user: {
+          id: createUserId(DEFAULT_UUID),
           username: "admin",
           password: "hashed-password",
           apiToken: validToken,

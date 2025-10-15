@@ -4,11 +4,13 @@ import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { CommentManagementPopover } from "./comment-management-popover"
 import type { Task, TaskComment } from "@/lib/types"
+import { createUserId } from "@/lib/types"
 import {
   TEST_TASK_ID_1,
   TEST_PROJECT_ID_1,
   TEST_COMMENT_ID_1,
 } from "@tasktrove/types/test-constants"
+import { DEFAULT_UUID } from "@tasktrove/constants"
 
 // Mock ContentPopover
 interface MockContentPopoverProps {
@@ -105,6 +107,7 @@ describe("CommentManagementPopover", () => {
 
   const createMockComment = (overrides: Partial<TaskComment> = {}): TaskComment => ({
     id: TEST_COMMENT_ID_1,
+    userId: createUserId(DEFAULT_UUID),
     content: "Test comment",
     createdAt: new Date("2024-01-01T10:00:00Z"),
     ...overrides,

@@ -14,7 +14,7 @@ import {
   createAtomWithStorage,
   namedAtom,
   withErrorHandling,
-} from "../utils/atom-helpers";
+} from "#utils/atom-helpers";
 import type {
   Project,
   ProjectId,
@@ -34,14 +34,15 @@ import {
   createGroupId,
   ProjectIdSchema,
 } from "@tasktrove/types";
-import { projectsAtom } from "../data/base/atoms";
+import { projectsAtom } from "#data/base/atoms";
 import {
   updateProjectsMutationAtom,
   createProjectMutationAtom,
   deleteProjectMutationAtom,
-} from "../mutations/projects";
-import { recordOperationAtom } from "./history";
-import { log } from "../utils/atom-helpers";
+} from "#mutations/projects";
+import { recordOperationAtom } from "#core/history";
+import { log } from "#utils/atom-helpers";
+import { clearNullValues } from "@tasktrove/utils";
 
 // =============================================================================
 // BASE ATOMS
@@ -200,9 +201,12 @@ export const updateProjectsAtom = namedAtom(
       const updatesMap = new Map(updateRequests.map((req) => [req.id, req]));
 
       // Apply all updates to the projects array
-      const updatedProjects = projects.map((project: Project) => {
+      const updatedProjects: Project[] = projects.map((project: Project) => {
         const updates = updatesMap.get(project.id);
-        return updates ? { ...project, ...updates } : project;
+        if (!updates) return project;
+
+        // Merge and clean null values to match Project schema
+        return clearNullValues({ ...project, ...updates });
       });
 
       // Use server mutation for persistence

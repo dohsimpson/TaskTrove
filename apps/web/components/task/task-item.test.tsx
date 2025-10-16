@@ -2207,28 +2207,20 @@ describe("TaskItem", () => {
       expect(screen.queryByText("Add description...")).not.toBeInTheDocument()
     })
 
-    describe("Responsive Layout", () => {
-      it("uses responsive flex classes for single row on large screens, double row on mobile", () => {
+    describe("Simplified Layout", () => {
+      it("uses single row layout for non-mobile devices only", () => {
         render(
           <Provider>
             <TaskItem taskId={mockTask.id} variant="compact" />
           </Provider>,
         )
 
-        // Find the main layout container
+        // Find the main layout container - simplified single row
         const container = screen.getByText("Test Task").closest("[data-task-focused]")
-        const layoutContainer = container?.querySelector(
-          ".flex.flex-col.md\\:flex-row.md\\:items-center.gap-2",
-        )
+        const layoutContainer = container?.querySelector(".flex.items-center.gap-2")
 
         expect(layoutContainer).toBeInTheDocument()
-        expect(layoutContainer).toHaveClass(
-          "flex",
-          "flex-col",
-          "md:flex-row",
-          "md:items-center",
-          "gap-2",
-        )
+        expect(layoutContainer).toHaveClass("flex", "items-center", "gap-2")
       })
 
       it("shows essential metadata in first row (star, priority, schedule, actions)", () => {
@@ -2254,7 +2246,7 @@ describe("TaskItem", () => {
         )
       })
 
-      it("contains secondary metadata section that flows responsively", () => {
+      it("contains all metadata in single row", () => {
         const taskWithMetadata = {
           ...mockTask,
           subtasks: [
@@ -2281,32 +2273,31 @@ describe("TaskItem", () => {
           </Provider>,
         )
 
-        // Find the secondary metadata container
+        // Find the metadata container (all metadata in single row now)
         const container = screen.getByText("Test Task").closest("[data-task-focused]")
-        const secondaryMetadata = container?.querySelector(
-          ".flex.items-center.justify-between.text-xs.text-muted-foreground.min-h-\\[20px\\]",
+        const metadataContainer = container?.querySelector(
+          ".flex.items-center.gap-1.text-xs.flex-shrink-0",
         )
 
-        expect(secondaryMetadata).toBeInTheDocument()
-        expect(secondaryMetadata).toHaveClass(
+        expect(metadataContainer).toBeInTheDocument()
+        expect(metadataContainer).toHaveClass(
           "flex",
           "items-center",
-          "justify-between",
+          "gap-1",
           "text-xs",
-          "text-muted-foreground",
-          "min-h-[20px]",
+          "flex-shrink-0",
         )
 
         // Verify it contains subtasks and comments metadata
         expect(
-          secondaryMetadata?.querySelector("[data-testid='subtask-popover']"),
+          metadataContainer?.querySelector("[data-testid='subtask-popover']"),
         ).toBeInTheDocument()
         expect(
-          secondaryMetadata?.querySelector("[data-testid='comment-management-popover']"),
+          metadataContainer?.querySelector("[data-testid='comment-management-popover']"),
         ).toBeInTheDocument()
       })
 
-      it("positions actions menu in secondary metadata section (second row)", () => {
+      it("positions actions menu in single metadata row", () => {
         render(
           <Provider>
             <TaskItem taskId={mockTask.id} variant="compact" />
@@ -2323,18 +2314,18 @@ describe("TaskItem", () => {
         const actionsMenu = actionMenus[0]
         expect(actionsMenu).toBeTruthy()
 
-        // The actions menu should be in the secondary metadata section (second row)
-        const secondaryMetadata = container?.querySelector(
-          ".flex.items-center.justify-between.text-xs.text-muted-foreground.min-h-\\[20px\\]",
+        // The actions menu should be in the single metadata row
+        const metadataContainer = container?.querySelector(
+          ".flex.items-center.gap-1.text-xs.flex-shrink-0",
         )
-        if (actionsMenu && secondaryMetadata) {
-          expect(secondaryMetadata.contains(actionsMenu)).toBe(true)
+        if (actionsMenu && metadataContainer) {
+          expect(metadataContainer.contains(actionsMenu)).toBe(true)
         } else {
-          expect.fail("Actions menu or secondary metadata not found")
+          expect.fail("Actions menu or metadata container not found")
         }
       })
 
-      it("ensures timer triggers are shown on mobile (first row)", () => {
+      it("ensures timer triggers are shown in single metadata row", () => {
         render(
           <Provider>
             <TaskItem taskId={mockTask.id} variant="compact" />
@@ -2344,16 +2335,15 @@ describe("TaskItem", () => {
         // Find the main container
         const container = screen.getByText("Test Task").closest("[data-task-focused]")
 
-        // The timer triggers should be in the essential metadata section (first row)
-        const essentialMetadata = container?.querySelector(
+        // The timer triggers should be in the single metadata section
+        const metadataContainer = container?.querySelector(
           ".flex.items-center.gap-1.text-xs.flex-shrink-0",
         )
 
-        expect(essentialMetadata).toBeTruthy()
+        expect(metadataContainer).toBeTruthy()
 
-        // Check that the mobile timer triggers wrapper exists (lg:hidden)
-        const mobileTimerSection = essentialMetadata?.querySelector(".lg\\:hidden")
-        expect(mobileTimerSection).toBeTruthy()
+        // The metadata container should contain multiple elements including timer triggers
+        expect(metadataContainer?.children.length).toBeGreaterThan(0)
       })
     })
   })

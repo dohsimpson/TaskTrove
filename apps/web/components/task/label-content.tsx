@@ -41,6 +41,7 @@ export function LabelContent({
   const [newLabel, setNewLabel] = useState("")
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const commandRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const getLabelsFromIds = useAtomValue(labelsFromIdsAtom)
   const allLabels = useAtomValue(labelsAtom)
@@ -124,8 +125,22 @@ export function LabelContent({
       e.preventDefault()
       setSelectedIndex((prev) => Math.max(prev - 1, -1))
     } else if (e.key === "Escape") {
+      e.preventDefault()
       handleCancelAdding()
     }
+  }
+
+  const handleInputBlur = (e: React.FocusEvent) => {
+    // Check if this blur is due to escape key or clicking outside
+    // If there's no relatedTarget, it's likely due to escape key or tabbing away
+    if (!e.relatedTarget) {
+      handleCancelAdding()
+    }
+
+    // Always close the popover on blur
+    setTimeout(() => {
+      setInputFocus(false)
+    }, 0)
   }
 
   // The Popover component handles click outside automatically
@@ -165,13 +180,14 @@ export function LabelContent({
           <PopoverTrigger asChild>
             <div className="flex-1">
               <Input
+                ref={inputRef}
                 placeholder={t("labels.searchPlaceholder", "Search or create labels...")}
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
                 onKeyDown={handleKeyDown}
                 className="text-sm h-9"
                 data-testid="label-input"
-                onBlur={() => setInputFocus(false)}
+                onBlur={handleInputBlur}
                 onFocus={() => setInputFocus(true)}
                 autoFocus={inputFocus}
               />

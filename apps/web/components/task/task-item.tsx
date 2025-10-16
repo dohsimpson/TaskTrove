@@ -274,11 +274,8 @@ export function TaskItem({
   const isInSelection = selectedTasks.includes(taskId)
 
   // Context menu visibility with flicker prevention
-  const {
-    isVisible: actionsMenuVisible,
-    isMenuOpen: actionsMenuOpen,
-    handleMenuOpenChange: handleActionsMenuChange,
-  } = useContextMenuVisibility(isHovered, isSelected)
+  const { isMenuOpen: actionsMenuOpen, handleMenuOpenChange: handleActionsMenuChange } =
+    useContextMenuVisibility(isHovered, isSelected)
 
   // Early return if task not found - AFTER all hooks are called
   if (!task) {
@@ -606,7 +603,7 @@ export function TaskItem({
                   )}
                   <TaskActionsMenu
                     task={task}
-                    isVisible={actionsMenuVisible}
+                    isVisible={true}
                     onDeleteClick={() => deleteTask(task.id)}
                     onSelectClick={() => toggleTaskSelection(taskId)}
                     isSubTask={false}
@@ -750,7 +747,7 @@ export function TaskItem({
                   )}
                   <TaskActionsMenu
                     task={task}
-                    isVisible={actionsMenuVisible}
+                    isVisible={true}
                     onDeleteClick={() => deleteTask(task.id)}
                     onSelectClick={() => toggleTaskSelection(taskId)}
                     isSubTask={false}
@@ -808,45 +805,8 @@ export function TaskItem({
             />
           </div>
 
-          {/* Right side metadata - due date and priority only */}
+          {/* Right side metadata - timer and actions only */}
           <div className="flex items-center gap-2 flex-shrink-0 text-xs text-muted-foreground">
-            {/* Due date/recurring - show if present */}
-            {task.dueDate || task.recurring ? (
-              <TaskSchedulePopover taskId={task.id}>
-                <TaskDueDate
-                  dueDate={task.dueDate}
-                  dueTime={task.dueTime}
-                  recurring={task.recurring}
-                  completed={task.completed}
-                  className="cursor-pointer hover:opacity-100"
-                />
-              </TaskSchedulePopover>
-            ) : (
-              <TaskSchedulePopover taskId={task.id}>
-                <span className="flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
-                  <Calendar className="h-3 w-3" />
-                </span>
-              </TaskSchedulePopover>
-            )}
-
-            {/* Priority flag */}
-            {task.priority < 4 ? (
-              <PriorityPopover task={task}>
-                <Flag
-                  className={cn(
-                    "h-3 w-3 cursor-pointer hover:opacity-100",
-                    getPriorityColor(task.priority),
-                  )}
-                />
-              </PriorityPopover>
-            ) : (
-              <PriorityPopover task={task}>
-                <span className="flex items-center opacity-70 hover:opacity-100">
-                  <Flag className="h-3 w-3 cursor-pointer text-muted-foreground hover:text-foreground" />
-                </span>
-              </PriorityPopover>
-            )}
-
             {/* Timer and Actions */}
             <TimeEstimationPopover taskId={task.id}>
               <TimeEstimationTrigger task={task} />
@@ -858,7 +818,7 @@ export function TaskItem({
             )}
             <TaskActionsMenu
               task={task}
-              isVisible={actionsMenuVisible}
+              isVisible={true}
               onDeleteClick={() => deleteTask(task.id)}
               onSelectClick={() => toggleTaskSelection(taskId)}
               isSubTask={false}
@@ -899,8 +859,45 @@ export function TaskItem({
 
         {/* Bottom row with labels on left and metadata on right */}
         <div className="flex items-center justify-between">
-          {/* Left side - Labels and assignees */}
-          <div className="flex flex-wrap gap-1 flex-1 min-w-0 items-center">
+          {/* Left side - Schedule, priority, labels and assignees */}
+          <div className="flex flex-wrap gap-3 flex-1 min-w-0 items-center">
+            {/* Due date/recurring - show if present */}
+            {task.dueDate || task.recurring ? (
+              <TaskSchedulePopover taskId={task.id}>
+                <TaskDueDate
+                  dueDate={task.dueDate}
+                  dueTime={task.dueTime}
+                  recurring={task.recurring}
+                  completed={task.completed}
+                  className="cursor-pointer hover:opacity-100"
+                />
+              </TaskSchedulePopover>
+            ) : (
+              <TaskSchedulePopover taskId={task.id}>
+                <span className="flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
+                  <Calendar className="h-3 w-3" />
+                </span>
+              </TaskSchedulePopover>
+            )}
+
+            {/* Priority flag */}
+            {task.priority < 4 ? (
+              <PriorityPopover task={task}>
+                <Flag
+                  className={cn(
+                    "h-3 w-3 cursor-pointer hover:opacity-100",
+                    getPriorityColor(task.priority),
+                  )}
+                />
+              </PriorityPopover>
+            ) : (
+              <PriorityPopover task={task}>
+                <span className="flex items-center opacity-70 hover:opacity-100">
+                  <Flag className="h-3 w-3 cursor-pointer text-muted-foreground hover:text-foreground" />
+                </span>
+              </PriorityPopover>
+            )}
+
             {taskLabels.length > 0 ? (
               <>
                 {taskLabels.slice(0, 2).map((label) => (
@@ -949,9 +946,6 @@ export function TaskItem({
               >
                 <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
                   <Tag className="h-3 w-3" />
-                  <span className="text-xs hidden group-hover:inline">
-                    {t("actions.addLabels", "Add labels")}
-                  </span>
                 </span>
               </LabelManagementPopover>
             )}
@@ -1096,7 +1090,7 @@ export function TaskItem({
           )}
           <TaskActionsMenu
             task={task}
-            isVisible={actionsMenuVisible}
+            isVisible={true}
             onDeleteClick={handleSubtaskDelete}
             onSelectClick={() => toggleTaskSelection(taskId)}
             onEstimationClick={handleEstimationMenuClick}
@@ -1184,7 +1178,7 @@ export function TaskItem({
               )}
               <TaskActionsMenu
                 task={task}
-                isVisible={actionsMenuVisible}
+                isVisible={true}
                 onDeleteClick={() => deleteTask(task.id)}
                 onSelectClick={() => toggleTaskSelection(taskId)}
                 isSubTask={false}

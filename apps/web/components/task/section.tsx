@@ -338,7 +338,7 @@ export function Section({
       taskCount={tasks.length}
       onSaveEdit={handleSaveEdit}
       onCancelEdit={handleCancelEdit}
-      className="px-2 py-2 border-b-2"
+      className={cn("px-2 py-2", variant === "kanban" ? "border-b-2" : "border-t-2")}
       nameClassName="font-medium text-foreground"
       nameElement="h3"
       leftContent={

@@ -391,7 +391,7 @@ catalogs:
 patchedDependencies:
   '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator':
     hash: 8cd82489931f636e1beb1e52b922649267b39fe79e6214be62da5d19adb607eb
-    path: patches/@atlaskit__pragmatic-drag-and-drop-react-drop-indicator.patch
+    path: apps/web/patches/@atlaskit__pragmatic-drag-and-drop-react-drop-indicator.patch
 
 importers:
 

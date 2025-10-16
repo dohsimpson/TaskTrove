@@ -20,11 +20,7 @@ import { createTaskId } from "@/lib/types"
 import { EditableSectionHeader } from "./editable-section-header"
 import { VirtualizedTaskList } from "./virtualized-task-list"
 import { DropTargetElement } from "./project-sections-view-helper"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/custom/animated-collapsible"
+import { Collapsible, CollapsibleContent } from "@/components/ui/custom/animated-collapsible"
 import { ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
@@ -345,12 +341,19 @@ export function Section({
         <div className="flex items-center gap-2">
           {/* Collapse/expand chevron - only show when collapsible */}
           {isCollapsible && (
-            <ChevronRight
-              className={cn(
-                "h-4 w-4 transition-transform duration-200",
-                isCollapsed ? "rotate-0" : "rotate-90",
-              )}
-            />
+            <button
+              type="button"
+              onClick={handleToggleCollapse}
+              className="flex items-center justify-center p-1 rounded hover:bg-muted-foreground/10 transition-colors"
+              aria-label={isCollapsed ? "Expand section" : "Collapse section"}
+            >
+              <ChevronRight
+                className={cn(
+                  "h-4 w-4 transition-transform duration-200",
+                  isCollapsed ? "rotate-0" : "rotate-90",
+                )}
+              />
+            </button>
           )}
         </div>
       }
@@ -402,8 +405,10 @@ export function Section({
             onOpenChange={handleToggleCollapse}
             className="flex flex-col flex-1"
           >
-            <CollapsibleTrigger asChild>{headerContent}</CollapsibleTrigger>
-            <CollapsibleContent>{taskListContent}</CollapsibleContent>
+            <div className="flex flex-col">
+              {headerContent}
+              <CollapsibleContent>{taskListContent}</CollapsibleContent>
+            </div>
           </Collapsible>
         ) : (
           <div className="flex flex-col flex-1">

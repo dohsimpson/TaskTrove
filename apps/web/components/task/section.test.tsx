@@ -86,9 +86,9 @@ vi.mock("./editable-section-header", () => ({
     leftContent?: React.ReactNode
   }) => (
     <div data-testid="editable-section-header">
-      {leftContent}
+      <div data-testid="section-left-content">{leftContent}</div>
       {sectionName}
-      {rightContent}
+      <div data-testid="section-right-content">{rightContent}</div>
     </div>
   ),
 }))
@@ -348,8 +348,8 @@ describe("Section", () => {
       />,
     )
 
-    // Find the add button (the button in the rightContent)
-    const addButton = container.querySelector("button")
+    // Find the add button in the right content area (the button with Plus icon)
+    const addButton = container.querySelector('[data-testid="section-right-content"] button')
     expect(addButton).toBeInTheDocument()
     expect(addButton).toHaveClass("text-muted-foreground", "hover:text-foreground")
   })
@@ -432,16 +432,15 @@ describe("Section", () => {
       />,
     )
 
-    // When collapsible, should have chevron icon in the left content
-    // Look for the first SVG in the editable section header (which should be the chevron)
+    // When collapsible, should have chevron icon in the left content area
     const chevronInCollapsible = collapsibleContainer.querySelector(
-      '[data-testid="editable-section-header"] div svg',
+      '[data-testid="section-left-content"] button svg',
     )
     expect(chevronInCollapsible).toBeInTheDocument()
 
     // When not collapsible, chevron should not be present in the left content area
     const chevronInNonCollapsible = nonCollapsibleContainer.querySelector(
-      '[data-testid="editable-section-header"] div svg',
+      '[data-testid="section-left-content"] button svg',
     )
     expect(chevronInNonCollapsible).not.toBeInTheDocument()
   })

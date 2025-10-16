@@ -18,7 +18,7 @@ import {
   CommentUpdateRequest,
   User,
 } from "@tasktrove/types";
-import { DEFAULT_SECTION_ID } from "@tasktrove/types/defaults";
+import { getDefaultSectionId } from "@tasktrove/types/defaults";
 import {
   DEFAULT_TASK_PRIORITY,
   DEFAULT_TASK_TITLE,
@@ -81,8 +81,6 @@ export const addTaskAtom = namedAtom(
   "addTaskAtom",
   atom(null, async (get, set, taskData: CreateTaskRequest) => {
     try {
-      // Extract sectionId (use default section if not provided)
-      const targetSectionId = taskData.sectionId ?? DEFAULT_SECTION_ID;
       const projectId = taskData.projectId ?? INBOX_PROJECT_ID;
 
       // Get the create task mutation
@@ -105,31 +103,38 @@ export const addTaskAtom = namedAtom(
       const project = projects.find((p) => p.id === projectId);
 
       if (project) {
-        const updatedSections = addTaskToSection(
-          createdTaskId,
-          targetSectionId,
-          undefined, // Append to end
-          project.sections,
-        );
+        // Extract sectionId (use default section if not provided)
+        const defaultSectionId = getDefaultSectionId(project);
+        const targetSectionId: GroupId | null =
+          taskData.sectionId ?? defaultSectionId;
 
-        // Update the project with the new sections (expects array for bulk updates)
-        const updateProjectsMutation = get(updateProjectsMutationAtom);
-        await updateProjectsMutation.mutateAsync([
-          {
-            id: projectId,
-            sections: updatedSections,
-          },
-        ]);
+        if (targetSectionId) {
+          const updatedSections = addTaskToSection(
+            createdTaskId,
+            targetSectionId,
+            undefined, // Append to end
+            project.sections,
+          );
 
-        log.info(
-          {
-            taskId: createdTaskId,
-            sectionId: targetSectionId,
-            projectId,
-            module: "tasks",
-          },
-          "Task added to section",
-        );
+          // Update the project with the new sections (expects array for bulk updates)
+          const updateProjectsMutation = get(updateProjectsMutationAtom);
+          await updateProjectsMutation.mutateAsync([
+            {
+              id: projectId,
+              sections: updatedSections,
+            },
+          ]);
+
+          log.info(
+            {
+              taskId: createdTaskId,
+              sectionId: targetSectionId,
+              projectId,
+              module: "tasks",
+            },
+            "Task added to section",
+          );
+        }
       }
 
       // Record the operation for undo/redo feedback using the title from taskData
@@ -894,15 +899,23 @@ export const addTaskToViewAtom = atom(
 
       // Add to section.items instead of project.taskOrder
       // Always add to default section - UI can move tasks between sections later
-      const sectionId = DEFAULT_SECTION_ID;
       const projects = get(projectsAtom);
       const projectId = newTask.projectId || INBOX_PROJECT_ID;
       const project = projects.find((p) => p.id === projectId);
 
       if (project) {
+        const defaultSectionId = getDefaultSectionId(project);
+        if (!defaultSectionId) {
+          log.warn(
+            { projectId, module: "tasks" },
+            "No default section found for project in addTaskToViewAtom",
+          );
+          return;
+        }
+
         const updatedSections = addTaskToSection(
           newTask.id,
-          sectionId,
+          defaultSectionId,
           params.position,
           project.sections,
         );
@@ -911,18 +924,18 @@ export const addTaskToViewAtom = atom(
           p.id === projectId ? { ...p, sections: updatedSections } : p,
         );
         set(projectsAtom, updatedProjects);
-      }
 
-      log.info(
-        {
-          taskId: newTask.id,
-          taskTitle: newTask.title,
-          projectId,
-          sectionId,
-          module: "tasks",
-        },
-        "Task added to project",
-      );
+        log.info(
+          {
+            taskId: newTask.id,
+            taskTitle: newTask.title,
+            projectId,
+            sectionId: defaultSectionId,
+            module: "tasks",
+          },
+          "Task added to project",
+        );
+      }
     } catch (error) {
       handleAtomError(error, "addTaskToViewAtom");
     }
@@ -1085,8 +1098,12 @@ export const orderedTasksBySectionAtom = namedAtom(
             return [];
           }
 
-          // Find section by ID
-          const targetSectionId = sectionId || DEFAULT_SECTION_ID;
+          // Find section by ID, using default section if none provided
+          const targetSectionId = sectionId || getDefaultSectionId(project);
+          if (!targetSectionId) {
+            return [];
+          }
+
           const section = project.sections.find(
             (s) => s.id === targetSectionId,
           );

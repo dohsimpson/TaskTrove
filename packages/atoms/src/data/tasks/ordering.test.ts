@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
 import { describe, it, expect } from "vitest";
 import {
   getOrderedTasksForProject,
@@ -42,7 +43,7 @@ function createTestProject(overrides: Partial<Project> = {}): Project {
     id: createProjectId(uuidv4()),
     name: "Test Project",
     slug: "test-project",
-    sections: [],
+    sections: [DEFAULT_PROJECT_SECTION],
     color: "#000000",
     ...overrides,
   };
@@ -229,7 +230,7 @@ describe("getOrderedTasksForProject", () => {
     const projects = [
       createTestProject({
         id: projectId,
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       }),
     ];
 

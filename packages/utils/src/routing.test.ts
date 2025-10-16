@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
 import { describe, it, expect } from "vitest";
 import {
   createSafeProjectNameSlug,
@@ -36,28 +37,28 @@ describe("routing utilities", () => {
         name: "Existing Project",
         slug: "existing-project",
         color: "#3b82f6",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       },
       {
         id: createProjectId("550e8400-e29b-41d4-a716-446655440002"),
         name: "Another Project",
         slug: "another-project",
         color: "#ef4444",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       },
       {
         id: createProjectId("550e8400-e29b-41d4-a716-446655440003"),
         name: "Test Project",
         slug: "test-project",
         color: "#10b981",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       },
       {
         id: createProjectId("550e8400-e29b-41d4-a716-446655440004"),
         name: "Test Project Copy",
         slug: "test-project-1",
         color: "#f59e0b",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       },
     ];
 
@@ -100,7 +101,7 @@ describe("routing utilities", () => {
           name: "Test Project 2",
           slug: "test-project-2",
           color: "#8b5cf6",
-          sections: [],
+          sections: [DEFAULT_PROJECT_SECTION],
         },
       ];
 
@@ -125,7 +126,7 @@ describe("routing utilities", () => {
         name: `Test Project ${i}`,
         slug: i === 0 ? "test-project" : `test-project-${i}`,
         color: "#3b82f6",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       }));
 
       const result = createSafeProjectNameSlug("Test Project", manyCollisions);
@@ -352,14 +353,14 @@ describe("routing utilities", () => {
         name: "First Project",
         slug: "first-project",
         color: "#ff0000",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       },
       {
         id: TEST_PROJECT_ID_2,
         name: "Second Project",
         slug: "second-project",
         color: "#00ff00",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       },
     ];
 
@@ -382,14 +383,14 @@ describe("routing utilities", () => {
           name: "First Project",
           slug: "first-project",
           color: "#ff0000",
-          sections: [],
+          sections: [DEFAULT_PROJECT_SECTION],
         },
         {
           id: TEST_PROJECT_ID_2,
           name: "Second Project",
           slug: TEST_PROJECT_ID_1, // slug same as first project's ID
           color: "#00ff00",
-          sections: [],
+          sections: [DEFAULT_PROJECT_SECTION],
         },
       ];
 

@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@/lib/types"
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@/test-utils"
@@ -37,7 +38,7 @@ const mockProjects: Project[] = [
     name: "Personal Project",
     slug: "personal-project",
     color: "#10b981",
-    sections: [],
+    sections: [DEFAULT_PROJECT_SECTION],
   },
   {
     id: createProjectId("550e8400-e29b-41d4-a716-446655440003"),

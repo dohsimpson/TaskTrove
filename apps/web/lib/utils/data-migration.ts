@@ -2,6 +2,7 @@ import type { DataFile, VersionString, Json } from "@/lib/types"
 import { createVersionString, DataFileSchema } from "@/lib/types"
 import { DEFAULT_UUID, DEFAULT_SECTION_NAME, DEFAULT_SECTION_COLOR } from "@tasktrove/constants"
 import { DEFAULT_USER_SETTINGS, DEFAULT_USER } from "@/lib/types"
+import { cleanupAllDanglingTasks } from "@tasktrove/types/utils"
 import packageJson from "@/package.json"
 
 /**
@@ -530,7 +531,9 @@ export function v070Migration(dataFile: Json): Json {
 
 export function v080Migration(dataFile: Json): Json {
   console.log("Migrating data file from v0.7.0 to v0.8.0...")
-  console.log("Adding userId to task comments and id to user object")
+  console.log(
+    "Adding userId to task comments, id to user object, and ensuring projects have sections",
+  )
 
   // Safely handle Json object type
   if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
@@ -604,7 +607,62 @@ export function v080Migration(dataFile: Json): Json {
     }
   }
 
-  console.log("✓ userId and user id migration completed")
+  // 3. Ensure all projects have at least one section (sections.min(1) requirement)
+  if (Array.isArray(result.projects)) {
+    let projectsFixed = 0
+    result.projects = result.projects.map((project) => {
+      if (typeof project !== "object" || project === null || Array.isArray(project)) {
+        return project
+      }
+
+      const projectObj: Record<string, unknown> = {}
+      for (const [key, value] of Object.entries(project)) {
+        projectObj[key] = value
+      }
+
+      // Check if project has no sections or empty sections array
+      if (!Array.isArray(projectObj.sections) || projectObj.sections.length === 0) {
+        console.log(`✓ Adding default section to project ${projectObj.id}`)
+        projectObj.sections = [
+          {
+            id: DEFAULT_UUID,
+            name: DEFAULT_SECTION_NAME,
+            slug: "",
+            color: DEFAULT_SECTION_COLOR,
+            type: "section",
+            items: [],
+            isDefault: true,
+          },
+        ]
+        projectsFixed++
+      }
+
+      return projectObj
+    })
+
+    if (projectsFixed > 0) {
+      console.log(`✓ Added default sections to ${projectsFixed} project(s)`)
+    }
+  }
+
+  // 4. Clean up dangling tasks (tasks belonging to projects but not in any section.items)
+  // This needs to happen after projects have been fixed with default sections
+  try {
+    if (Array.isArray(result.tasks) && Array.isArray(result.projects)) {
+      // Parse to proper types for the cleanup function
+      const parsedData = DataFileSchema.parse(result)
+      const cleanedProjects = cleanupAllDanglingTasks(parsedData.tasks, parsedData.projects)
+
+      // Convert back to Json format
+      result.projects = JSON.parse(JSON.stringify(cleanedProjects))
+      console.log("✓ Cleaned up dangling task section assignments")
+    }
+  } catch (error) {
+    console.warn("⚠ Could not clean up dangling tasks:", error)
+    // Non-fatal - continue with migration
+  }
+
+  console.log("✓ v0.8.0 migration completed")
 
   // Return as Json by serializing/deserializing
   return JSON.parse(JSON.stringify(result))

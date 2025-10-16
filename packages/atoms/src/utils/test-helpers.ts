@@ -17,6 +17,7 @@ import {
   createLabelId,
   createProjectId,
 } from "@tasktrove/types";
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
 
 // =============================================================================
 // SHARED TEST CONSTANTS
@@ -98,7 +99,7 @@ export function createMockProject(
     name: `Mock Project ${Date.now()}`,
     slug: `mock-project-${Date.now()}`,
     color: "#3b82f6",
-    sections: [],
+    sections: [DEFAULT_PROJECT_SECTION],
   };
 
   return { ...defaults, ...overrides };

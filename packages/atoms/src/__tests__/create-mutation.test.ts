@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
 /**
  * ⚠️  WEB API DEPENDENT - Create Mutation Tests
  *
@@ -141,7 +142,7 @@ describe("createMutation Function", () => {
             name: "My Project",
             slug: "my-project",
             color: "#3b82f6",
-            sections: [],
+            sections: [DEFAULT_PROJECT_SECTION],
           },
         ];
 

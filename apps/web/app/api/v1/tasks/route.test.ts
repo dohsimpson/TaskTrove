@@ -14,7 +14,7 @@ import {
   createLabelId,
   createGroupId,
 } from "@/lib/types"
-import { DEFAULT_EMPTY_DATA_FILE, DEFAULT_SECTION_ID } from "@/lib/types"
+import { DEFAULT_EMPTY_DATA_FILE, DEFAULT_PROJECT_SECTION, getDefaultSectionId } from "@/lib/types"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { createMockEnhancedRequest } from "@/lib/utils/test-helpers"
 
@@ -82,14 +82,14 @@ const mockDataFile: DataFile = {
       name: "Test Project 1",
       slug: "test-project-1",
       color: "#3b82f6",
-      sections: [],
+      sections: [DEFAULT_PROJECT_SECTION],
     },
     {
       id: createProjectId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"),
       name: "Test Project 2",
       slug: "test-project-2",
       color: "#ef4444",
-      sections: [],
+      sections: [DEFAULT_PROJECT_SECTION],
     },
   ],
   labels: [
@@ -395,7 +395,6 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
     const PROJECT_ID_2 = createProjectId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")
     const SECTION_ID_1 = createGroupId("11111111-1111-4111-8111-111111111111")
     const SECTION_ID_2 = createGroupId("22222222-2222-4222-8222-222222222222")
-    // DEFAULT_SECTION_ID is imported from @/lib/types
 
     beforeEach(() => {
       vi.clearAllMocks()
@@ -439,11 +438,12 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
             color: "#3b82f6",
             sections: [
               {
-                id: DEFAULT_SECTION_ID,
+                id: createGroupId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"),
                 name: "Default",
                 slug: "",
                 type: "section",
-                items: [TASK_ID_1], // Task 1 is in default section
+                items: [TASK_ID_1], // Task 1 is in default section (first section)
+                isDefault: true,
               },
               {
                 id: SECTION_ID_1,
@@ -461,11 +461,12 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
             color: "#ef4444",
             sections: [
               {
-                id: DEFAULT_SECTION_ID,
+                id: createGroupId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"),
                 name: "Default",
                 slug: "",
                 type: "section",
-                items: [TASK_ID_2], // Task 2 is in default section
+                items: [TASK_ID_2], // Task 2 is in default section (first section)
+                isDefault: true,
               },
               {
                 id: SECTION_ID_2,
@@ -502,12 +503,18 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
 
       // Task should be removed from Project 1's default section
       const project1 = writtenData.projects.find((p) => p.id === PROJECT_ID_1)
-      const project1DefaultSection = project1?.sections.find((s) => s.id === DEFAULT_SECTION_ID)
+      const project1DefaultSectionId = project1 ? getDefaultSectionId(project1) : null
+      const project1DefaultSection = project1?.sections.find(
+        (s) => s.id === project1DefaultSectionId,
+      )
       expect(project1DefaultSection?.items).not.toContain(TASK_ID_1)
 
       // Task should be added to Project 2's default section
       const project2 = writtenData.projects.find((p) => p.id === PROJECT_ID_2)
-      const project2DefaultSection = project2?.sections.find((s) => s.id === DEFAULT_SECTION_ID)
+      const project2DefaultSectionId = project2 ? getDefaultSectionId(project2) : null
+      const project2DefaultSection = project2?.sections.find(
+        (s) => s.id === project2DefaultSectionId,
+      )
       expect(project2DefaultSection?.items).toContain(TASK_ID_1)
 
       // Task's projectId should be updated
@@ -534,7 +541,8 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
 
       // Task should be removed from default section
       const project1 = writtenData.projects.find((p) => p.id === PROJECT_ID_1)
-      const defaultSection = project1?.sections.find((s) => s.id === DEFAULT_SECTION_ID)
+      const defaultSectionId = project1 ? getDefaultSectionId(project1) : null
+      const defaultSection = project1?.sections.find((s) => s.id === defaultSectionId)
       expect(defaultSection?.items).not.toContain(TASK_ID_1)
 
       // Task should be added to Section 1
@@ -566,12 +574,18 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
 
       // Task should be removed from Project 1's default section
       const project1 = writtenData.projects.find((p) => p.id === PROJECT_ID_1)
-      const project1DefaultSection = project1?.sections.find((s) => s.id === DEFAULT_SECTION_ID)
+      const project1DefaultSectionId = project1 ? getDefaultSectionId(project1) : null
+      const project1DefaultSection = project1?.sections.find(
+        (s) => s.id === project1DefaultSectionId,
+      )
       expect(project1DefaultSection?.items).not.toContain(TASK_ID_1)
 
       // Task should NOT be in Project 2's default section
       const project2 = writtenData.projects.find((p) => p.id === PROJECT_ID_2)
-      const project2DefaultSection = project2?.sections.find((s) => s.id === DEFAULT_SECTION_ID)
+      const project2DefaultSectionId = project2 ? getDefaultSectionId(project2) : null
+      const project2DefaultSection = project2?.sections.find(
+        (s) => s.id === project2DefaultSectionId,
+      )
       expect(project2DefaultSection?.items).not.toContain(TASK_ID_1)
 
       // Task should be added to Project 2's Section 2
@@ -603,7 +617,8 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
 
       // Task should remain in Project 1's default section
       const project1 = writtenData.projects.find((p) => p.id === PROJECT_ID_1)
-      const defaultSection = project1?.sections.find((s) => s.id === DEFAULT_SECTION_ID)
+      const defaultSectionId = project1 ? getDefaultSectionId(project1) : null
+      const defaultSection = project1?.sections.find((s) => s.id === defaultSectionId)
       expect(defaultSection?.items).toContain(TASK_ID_1)
 
       // Task's projectId should remain unchanged
@@ -638,7 +653,10 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
 
       // Task 1 should be in Project 2's default section
       const project2 = writtenData.projects.find((p) => p.id === PROJECT_ID_2)
-      const project2DefaultSection = project2?.sections.find((s) => s.id === DEFAULT_SECTION_ID)
+      const project2DefaultSectionId = project2 ? getDefaultSectionId(project2) : null
+      const project2DefaultSection = project2?.sections.find(
+        (s) => s.id === project2DefaultSectionId,
+      )
       expect(project2DefaultSection?.items).toContain(TASK_ID_1)
 
       // Task 2 should be in Project 2's Section 2

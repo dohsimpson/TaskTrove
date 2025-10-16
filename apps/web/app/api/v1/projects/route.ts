@@ -157,6 +157,7 @@ async function createProject(
         color: DEFAULT_SECTION_COLOR,
         type: "section" as const,
         items: [],
+        isDefault: true,
       },
     ],
   }

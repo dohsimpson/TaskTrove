@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@/lib/types"
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@/test-utils"
@@ -124,7 +125,7 @@ describe("DraggableProjectItem", () => {
     name: "Test Project",
     slug: "test-project",
     color: "#3498DB",
-    sections: [],
+    sections: [DEFAULT_PROJECT_SECTION],
   }
 
   beforeEach(() => {

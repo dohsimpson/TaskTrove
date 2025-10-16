@@ -211,7 +211,7 @@ export const ProjectSchema = z.object({
   /** Project color (hex code) */
   color: z.string(),
   /** Array of sections within this project */
-  sections: z.array(ProjectSectionSchema),
+  sections: z.array(ProjectSectionSchema).min(1),
 });
 
 /**

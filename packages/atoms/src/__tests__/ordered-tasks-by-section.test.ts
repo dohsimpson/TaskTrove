@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
 /**
  * Tests for orderedTasksBySectionAtom logic
  * Tests section.items filtering and task ordering
@@ -288,7 +289,7 @@ describe("Ordered Tasks By Section Atom", () => {
         name: "Project No Sections",
         slug: "project-no-sections",
         color: "#ef4444",
-        sections: [], // No sections
+        sections: [DEFAULT_PROJECT_SECTION], // No sections
       };
 
       store.set(mockProjectsAtom, [testProject, projectWithNoSections]);

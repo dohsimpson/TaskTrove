@@ -1,6 +1,6 @@
 import type { ViewState, GlobalViewOptions } from "./index";
 import type { GroupId } from "./id";
-import type { User, ProjectSection } from "./core";
+import type { User, ProjectSection, Project } from "./core";
 import type { ProjectGroup, LabelGroup } from "./group";
 import type { DataFile, UserData } from "./data-file";
 import { SIDE_PANEL_WIDTH_DEFAULT } from "@tasktrove/constants";
@@ -19,6 +19,8 @@ import {
   DEFAULT_SHOW_SIDE_PANEL,
   DEFAULT_COMPACT_VIEW,
   DEFAULT_ACTIVE_FILTERS,
+  DEFAULT_SECTION_NAME,
+  DEFAULT_SECTION_COLOR,
 } from "@tasktrove/constants";
 
 /**
@@ -32,20 +34,19 @@ export const ROOT_PROJECT_GROUP_ID: GroupId = createGroupId(DEFAULT_UUID);
 export const ROOT_LABEL_GROUP_ID: GroupId = createGroupId(DEFAULT_UUID);
 
 /**
- * Default section ID for unsectioned tasks
- */
-export const DEFAULT_SECTION_ID: GroupId = createGroupId(DEFAULT_UUID);
-
-/**
- * Default project section
+ * Default project section template.
+ * Note: The specific ID value doesn't matter - sections are identified as default
+ * by the isDefault flag or by being the first section in the array.
+ * Use getDefaultSectionId(project) to dynamically get the default section ID.
  */
 export const DEFAULT_PROJECT_SECTION: ProjectSection = {
-  id: DEFAULT_SECTION_ID,
-  name: "Tasks",
+  id: createGroupId(DEFAULT_UUID),
+  name: DEFAULT_SECTION_NAME,
   slug: "",
-  color: "#808080",
+  color: DEFAULT_SECTION_COLOR,
   type: "section",
   items: [],
+  isDefault: true,
 };
 
 export const DEFAULT_PROJECT_GROUP: ProjectGroup = {
@@ -66,6 +67,41 @@ export const DEFAULT_LABEL_GROUP: LabelGroup = {
   slug: "all-labels",
   items: [],
 };
+
+/**
+ * Helper Functions for Default Sections
+ */
+
+/**
+ * Get the default section from a project
+ * Priority: 1) Section with isDefault flag, 2) First section, 3) Section with DEFAULT_UUID
+ * @param project - The project to get the default section from
+ * @returns The default section or null if no sections exist
+ */
+export function getDefaultSection(project: Project): ProjectSection | null {
+  if (project.sections.length === 0) {
+    return null;
+  }
+
+  // Priority 1: Section explicitly marked as default
+  const markedDefault = project.sections.find((s) => s.isDefault === true);
+  if (markedDefault) {
+    return markedDefault;
+  }
+
+  // Priority 2: First section in array
+  return project.sections[0] ?? null;
+}
+
+/**
+ * Get the default section ID from a project
+ * @param project - The project to get the default section ID from
+ * @returns The default section ID or null if no sections exist
+ */
+export function getDefaultSectionId(project: Project): GroupId | null {
+  const defaultSection = getDefaultSection(project);
+  return defaultSection?.id ?? null;
+}
 
 /**
  * Default notification settings

@@ -1,10 +1,13 @@
 /**
  * Add Task Section Assignment Test Suite
  *
- * Tests the section assignment logic used by addTaskAtom:
- * 1. Tasks are added to the correct section's items array
- * 2. Tasks without sectionId use DEFAULT_SECTION_ID
- * 3. Tasks with sectionId=DEFAULT_UUID also use DEFAULT_SECTION_ID
+ * Tests the low-level section assignment function addTaskToSection:
+ * 1. Tasks are added to the correct section's items array by section ID
+ * 2. Tasks can be appended to the end or inserted at a specific position
+ * 3. Duplicate tasks are not added to sections
+ *
+ * Note: Default section logic (which section to use when none specified)
+ * is handled at a higher level by getDefaultSectionId() helper.
  */
 
 import { describe, it, expect } from "vitest";

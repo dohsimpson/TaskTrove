@@ -1,30 +1,41 @@
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
 import { describe, it, expect } from "vitest"
 import { render, screen, fireEvent } from "@/test-utils"
 import { TaskSectionPopover } from "./task-section-popover"
 import { projectAtoms } from "@tasktrove/atoms"
-import { createProjectId, createSectionId, createTaskId } from "@/lib/types"
+import { createProjectId, createGroupId, createTaskId } from "@/lib/types"
+import type { Project } from "@/lib/types"
 
-const mockProject = {
+const mockProject: Project = {
   id: createProjectId("123e4567-e89b-12d3-a456-426614174000"),
   name: "Test Project",
   slug: "test-project",
   color: "#3b82f6",
   sections: [
     {
-      id: createSectionId("123e4567-e89b-12d3-a456-426614174001"),
+      id: createGroupId("123e4567-e89b-12d3-a456-426614174001"),
       name: "Test Section",
       color: "#ef4444",
+      slug: "test-section",
+      type: "section",
+      items: [],
     },
     {
-      id: createSectionId("123e4567-e89b-12d3-a456-426614174002"),
+      id: createGroupId("123e4567-e89b-12d3-a456-426614174002"),
       name: "Another Section",
       color: "#10b981",
+      slug: "another-section",
+      type: "section",
+      items: [],
     },
   ],
 }
 
 describe("TaskSectionPopover", () => {
-  const renderWithProvider = (ui: React.ReactElement, initialProjects = [mockProject]) => {
+  const renderWithProvider = (
+    ui: React.ReactElement,
+    initialProjects: Project[] = [mockProject],
+  ) => {
     return render(ui, {
       initialAtomValues: [[projectAtoms.projects, initialProjects]],
     })
@@ -142,7 +153,7 @@ describe("TaskSectionPopover", () => {
     it("handles project with no sections", () => {
       const projectWithNoSections = {
         ...mockProject,
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       }
 
       renderWithProvider(

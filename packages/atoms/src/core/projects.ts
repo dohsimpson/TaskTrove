@@ -64,6 +64,7 @@ const createDefaultInboxProject = (): Project => ({
       color: DEFAULT_SECTION_COLOR,
       type: "section" as const,
       items: [],
+      isDefault: true,
     },
   ],
 });
@@ -520,8 +521,18 @@ export const removeProjectSectionAtom = atom(
 
       const updatedProjects = projects.map((project: Project) => {
         if (project.id === data.projectId) {
+          // Don't allow removing the last section (projects must have at least 1 section)
+          if (project.sections.length === 1) {
+            throw new Error(
+              "Cannot remove the last section. Projects must have at least one section.",
+            );
+          }
+
           // Don't allow removing the default section
-          if (data.sectionId === DEFAULT_UUID) {
+          const sectionToRemove = project.sections.find(
+            (s) => s.id === data.sectionId,
+          );
+          if (sectionToRemove?.isDefault) {
             throw new Error("Cannot remove the default section");
           }
 

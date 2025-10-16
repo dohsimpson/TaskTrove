@@ -34,6 +34,8 @@ interface IBaseGroup {
 export interface ProjectSection extends IBaseGroup {
   type: "section";
   items: TaskId[];
+  /** Flag to indicate if this is the default section for tasks without explicit section assignment */
+  isDefault?: boolean;
 }
 
 /**
@@ -74,6 +76,8 @@ export const ProjectSectionSchema: z.ZodType<ProjectSection> = z.object({
   type: z.literal("section"),
   /** Array of task IDs in display order for this section */
   items: z.array(TaskIdSchema),
+  /** Flag to indicate if this is the default section for tasks without explicit section assignment */
+  isDefault: z.boolean().optional(),
 });
 
 /**

@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@/lib/types"
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@/test-utils"
@@ -685,7 +686,7 @@ describe.skip("KanbanBoard", () => {
   it("shows empty board when project has no sections", () => {
     const projectWithNoSections = {
       ...mockProject,
-      sections: [],
+      sections: [DEFAULT_PROJECT_SECTION],
     }
 
     render(

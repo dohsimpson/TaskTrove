@@ -38,7 +38,7 @@ import {
   DEFAULT_TASK_COMMENTS,
   DEFAULT_RECURRING_MODE,
 } from "@tasktrove/constants"
-import { DEFAULT_SECTION_ID } from "@tasktrove/types/defaults"
+import { getDefaultSectionId } from "@tasktrove/types/defaults"
 import { processRecurringTaskCompletion } from "@/lib/utils/recurring-task-processor"
 import { addTaskToSection, removeTaskFromSection } from "@tasktrove/atoms"
 import { clearNullValues } from "@tasktrove/utils"
@@ -166,19 +166,22 @@ async function createTask(
 
   fileData.tasks.push(newTask)
 
-  // Determine target section (default section if not specified)
-  const targetSectionId: GroupId = validation.data.sectionId ?? DEFAULT_SECTION_ID
-  const projectId = newTask.projectId
-
   // Find the project and add task to section
+  const projectId = newTask.projectId
   const project = fileData.projects.find((p) => p.id === projectId)
   if (project) {
-    project.sections = addTaskToSection(
-      newTask.id,
-      targetSectionId,
-      undefined, // append to end
-      project.sections,
-    )
+    // Determine target section (default section if not specified)
+    const defaultSectionId = getDefaultSectionId(project)
+    const targetSectionId: GroupId | null = validation.data.sectionId ?? defaultSectionId
+
+    if (targetSectionId) {
+      project.sections = addTaskToSection(
+        newTask.id,
+        targetSectionId,
+        undefined, // append to end
+        project.sections,
+      )
+    }
   }
 
   const writeSuccess = await withPerformanceLogging(
@@ -305,10 +308,6 @@ async function updateTasks(
     const oldProjectId = originalTask.projectId
     const newProjectId = update.projectId !== undefined ? update.projectId : oldProjectId
 
-    // Determine target section
-    // If sectionId is specified, use it; otherwise use default section (for project changes)
-    const targetSectionId: GroupId = update.sectionId ?? DEFAULT_SECTION_ID
-
     // Remove from old project's section
     const oldProject = fileData.projects.find((p) => p.id === oldProjectId)
     if (oldProject) {
@@ -321,12 +320,19 @@ async function updateTasks(
     // Add to new project's section
     const newProject = fileData.projects.find((p) => p.id === newProjectId)
     if (newProject) {
-      newProject.sections = addTaskToSection(
-        taskId,
-        targetSectionId,
-        undefined,
-        newProject.sections,
-      )
+      // Determine target section
+      // If sectionId is specified, use it; otherwise use default section (for project changes)
+      const defaultSectionId = getDefaultSectionId(newProject)
+      const targetSectionId: GroupId | null = update.sectionId ?? defaultSectionId
+
+      if (targetSectionId) {
+        newProject.sections = addTaskToSection(
+          taskId,
+          targetSectionId,
+          undefined,
+          newProject.sections,
+        )
+      }
     }
   }
 

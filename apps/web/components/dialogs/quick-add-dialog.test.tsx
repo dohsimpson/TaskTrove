@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@/lib/types"
 import React from "react"
 import { flushSync } from "react-dom"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
@@ -247,14 +248,14 @@ const mockProjects: Project[] = [
     name: "Work",
     slug: "work",
     color: "#3b82f6",
-    sections: [],
+    sections: [DEFAULT_PROJECT_SECTION],
   },
   {
     id: TEST_PROJECT_ID_2,
     name: "Personal",
     slug: "personal",
     color: "#ef4444",
-    sections: [],
+    sections: [DEFAULT_PROJECT_SECTION],
   },
 ]
 

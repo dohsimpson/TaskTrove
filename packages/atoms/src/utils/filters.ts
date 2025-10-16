@@ -89,15 +89,18 @@ export function filterTasksByOverdue(
 ): Task[] {
   if (showOverdue) return tasks;
 
-  // Filter out overdue tasks (tasks with dueDate in the past that are not completed)
+  // Filter out overdue tasks (tasks with dueDate before today that are not completed)
+  // Note: Tasks due TODAY are not considered overdue
   const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
   return tasks.filter((t) => {
     // Keep tasks without due dates
     if (!t.dueDate) return true;
     // Keep completed tasks regardless of due date
     if (t.completed) return true;
-    // Keep tasks that are not yet overdue
-    return t.dueDate >= now;
+    // Keep tasks that are due today or in the future (not overdue)
+    return t.dueDate >= todayStart;
   });
 }
 

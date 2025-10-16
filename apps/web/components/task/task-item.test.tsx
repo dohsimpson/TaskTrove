@@ -2039,6 +2039,94 @@ describe("TaskItem", () => {
     })
   })
 
+  describe("Description Layout Stability", () => {
+    it("maintains consistent height by always reserving space for description on desktop", () => {
+      const taskWithoutDescription = { ...mockTask, description: "", id: TEST_TASK_ID_2 }
+      registerTask(taskWithoutDescription)
+
+      render(
+        <Provider>
+          <TaskItem taskId={taskWithoutDescription.id} />
+        </Provider>,
+      )
+
+      // Find the description container div
+      // The outer div should always be in the layout (sm:block), never conditionally hidden (sm:hidden)
+      const placeholder = screen.getByText("Add description...")
+      const descriptionContainer = placeholder.closest('div[class*="mb-2"]')
+
+      expect(descriptionContainer).toBeInTheDocument()
+
+      // The outer container should have sm:block (visible on desktop) but not conditional sm:hidden
+      // This ensures it always reserves space and doesn't cause layout shift
+      const containerClasses = descriptionContainer?.className || ""
+      expect(containerClasses).toContain("sm:block")
+      expect(containerClasses).toContain("hidden") // Hidden on mobile
+
+      // The inner content uses 'invisible' class to hide/show without affecting layout
+      expect(placeholder).toHaveClass("invisible")
+    })
+
+    it("shows description content on hover without layout shift", async () => {
+      const taskWithoutDescription = { ...mockTask, description: "", id: TEST_TASK_ID_2 }
+      registerTask(taskWithoutDescription)
+
+      const { container } = render(
+        <Provider>
+          <TaskItem taskId={taskWithoutDescription.id} />
+        </Provider>,
+      )
+
+      // Find the task container
+      const taskCard = container.querySelector("[data-task-focused]")
+      expect(taskCard).toBeInTheDocument()
+
+      // Get initial height of the task item
+      const initialHeight = taskCard?.getBoundingClientRect().height || 0
+
+      // Simulate hover by triggering mouseenter
+      if (taskCard) {
+        fireEvent.mouseEnter(taskCard)
+      }
+
+      // Wait for any state updates
+      await waitFor(() => {
+        const placeholder = screen.getByText("Add description...")
+        // After hover, the invisible class should be removed (content becomes visible)
+        // but the layout should not shift
+        expect(placeholder).not.toHaveClass("invisible")
+      })
+
+      // Verify height hasn't changed (no layout shift)
+      const finalHeight = taskCard?.getBoundingClientRect().height || 0
+      expect(finalHeight).toBe(initialHeight)
+    })
+
+    it("description area is always present in DOM on desktop to prevent layout shift", () => {
+      const taskWithoutDescription = { ...mockTask, description: "", id: TEST_TASK_ID_2 }
+      registerTask(taskWithoutDescription)
+
+      render(
+        <Provider>
+          <TaskItem taskId={taskWithoutDescription.id} />
+        </Provider>,
+      )
+
+      // The description placeholder should always be in the DOM (not conditionally rendered)
+      const placeholder = screen.getByText("Add description...")
+      expect(placeholder).toBeInTheDocument()
+
+      // The outer container should never be removed from layout (no conditional sm:hidden)
+      const descriptionContainer = placeholder.closest('div[class*="mb-2"]')
+      expect(descriptionContainer).toBeInTheDocument()
+
+      // Verify the container maintains its place in the layout
+      // by checking it has bottom margin which reserves vertical space
+      const containerClasses = descriptionContainer?.className || ""
+      expect(containerClasses).toMatch(/mb-2/)
+    })
+  })
+
   describe("Accessibility", () => {
     it("provides proper data attributes for testing", () => {
       registerTask(mockTask)

@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@/lib/types"
 /**
  * Tests for the /api/projects endpoint
  *
@@ -64,7 +65,7 @@ describe("PATCH /api/projects", () => {
           slug: "test-project",
           color: "#3b82f6",
           taskOrder: [],
-          sections: [],
+          sections: [DEFAULT_PROJECT_SECTION],
         },
         {
           id: TEST_PROJECT_ID_2,
@@ -72,7 +73,7 @@ describe("PATCH /api/projects", () => {
           slug: "another-project",
           color: "#ef4444",
           taskOrder: [],
-          sections: [],
+          sections: [DEFAULT_PROJECT_SECTION],
         },
       ],
     }
@@ -326,7 +327,7 @@ describe("POST /api/projects", () => {
           slug: "existing-project",
           color: "#3b82f6",
           taskOrder: [TEST_TASK_ID_1],
-          sections: [],
+          sections: [DEFAULT_PROJECT_SECTION],
         },
       ],
     }
@@ -506,7 +507,7 @@ describe("DELETE /api/projects", () => {
           slug: "test-project",
           color: "#3b82f6",
           taskOrder: [TEST_TASK_ID_1, TEST_TASK_ID_2],
-          sections: [],
+          sections: [DEFAULT_PROJECT_SECTION],
         },
         {
           id: TEST_PROJECT_ID_2,
@@ -514,7 +515,7 @@ describe("DELETE /api/projects", () => {
           slug: "another-project",
           color: "#ef4444",
           taskOrder: [],
-          sections: [],
+          sections: [DEFAULT_PROJECT_SECTION],
         },
       ],
     }

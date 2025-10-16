@@ -1156,9 +1156,7 @@ export function TaskItem({
           </div>
 
           {/* Description - Hide on mobile in default variant to save space */}
-          <div
-            className={cn("mb-2 hidden sm:block", !task.description && !isHovered && "sm:hidden")}
-          >
+          <div className={cn("mb-2 hidden sm:block")}>
             <div className="flex gap-2 sm:gap-3">
               <ClickToEditDiv
                 as="p"

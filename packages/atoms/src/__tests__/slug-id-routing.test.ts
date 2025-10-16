@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
 /**
  * ⚠️  WEB API DEPENDENT - Slug/ID Routing Test Suite
  *
@@ -166,14 +167,14 @@ describe("Slug/ID Routing", () => {
         name: "Test Project",
         slug: "test-project",
         color: "#ff0000",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       },
       {
         id: TEST_PROJECT_ID_2,
         name: "Another Project",
         slug: "another-project",
         color: "#00ff00",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       },
     ];
 
@@ -358,14 +359,14 @@ describe("Slug/ID Routing", () => {
           name: "First Project",
           slug: "first-project",
           color: "#ff0000",
-          sections: [],
+          sections: [DEFAULT_PROJECT_SECTION],
         },
         {
           id: TEST_PROJECT_ID_2,
           name: "Second Project",
           slug: TEST_PROJECT_ID_1, // slug same as first project's ID
           color: "#00ff00",
-          sections: [],
+          sections: [DEFAULT_PROJECT_SECTION],
         },
       ];
 

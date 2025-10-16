@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
 import { Command } from "commander"
 import { v4 as uuidv4 } from "uuid"
 import * as fs from "fs"

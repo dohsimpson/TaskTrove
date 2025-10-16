@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, waitFor } from "@/test-utils"
@@ -283,14 +284,14 @@ describe("TaskForm", () => {
       id: TEST_PROJECT_ID_1,
       name: "Project 1",
       color: "#ff0000",
-      sections: [],
+      sections: [DEFAULT_PROJECT_SECTION],
       slug: "project-1",
     },
     {
       id: TEST_PROJECT_ID_2,
       name: "Project 2",
       color: "#00ff00",
-      sections: [],
+      sections: [DEFAULT_PROJECT_SECTION],
       slug: "project-2",
     },
   ]

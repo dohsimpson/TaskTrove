@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@/lib/types"
 import React from "react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen } from "@/test-utils"
@@ -196,14 +197,14 @@ describe("TaskFilterBadges", () => {
         name: "Work Project",
         color: "#3b82f6",
         slug: "work",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       },
       {
         id: projectId2,
         name: "Personal Project",
         color: "#10b981",
         slug: "personal",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       },
     )
 
@@ -384,7 +385,7 @@ describe("TaskFilterBadges", () => {
         name: "Work Project",
         color: "#3b82f6",
         slug: "work",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       })
 
       mockHasActiveFilters.mockReturnValue(true)
@@ -467,7 +468,7 @@ describe("TaskFilterBadges", () => {
         name: "Work Project",
         color: "#3b82f6",
         slug: "work",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       })
 
       mockHasActiveFilters.mockReturnValue(true)

@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
 /**
  * Data query atoms for TaskTrove
  *
@@ -73,14 +74,14 @@ const TEST_PROJECTS: Project[] = [
     name: "Test Project 1",
     slug: "test-project-1",
     color: "#ef4444",
-    sections: [],
+    sections: [DEFAULT_PROJECT_SECTION],
   },
   {
     id: createProjectId("12345678-1234-4234-8234-123456789abd"),
     name: "Test Project 2",
     slug: "test-project-2",
     color: "#10b981",
-    sections: [],
+    sections: [DEFAULT_PROJECT_SECTION],
   },
 ];
 

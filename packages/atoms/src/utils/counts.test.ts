@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
 import { describe, it, expect } from "vitest";
 import {
   calculateProjectTaskCounts,
@@ -52,7 +53,7 @@ const createProject = (overrides: Partial<Project> = {}): Project => ({
   name: "Test Project",
   slug: "test-project",
   color: "#3b82f6",
-  sections: [],
+  sections: [DEFAULT_PROJECT_SECTION],
   ...overrides,
 });
 

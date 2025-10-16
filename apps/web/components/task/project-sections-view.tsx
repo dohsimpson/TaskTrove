@@ -30,7 +30,6 @@ import { ColorPicker } from "@/components/ui/custom/color-picker"
 import { X } from "lucide-react"
 import { log } from "@/lib/utils/logger"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { DEFAULT_UUID } from "@tasktrove/constants"
 import { VirtualizedTaskList } from "./virtualized-task-list"
 import { ProjectSectionDebugBadge } from "@/components/debug"
 
@@ -181,24 +180,9 @@ export function ProjectSectionsView({
     setViewOptions({ showSidePanel: false })
   }
 
-  // Get sections from project and ensure default section is always present
+  // Get sections from project
+  // Projects are guaranteed to have at least one section after v0.8.0 migration
   const sectionsToShow = project ? [...project.sections] : []
-
-  // Always ensure default section is present
-  const hasDefaultSection = sectionsToShow.some((section) => section.id === DEFAULT_UUID)
-  if (!hasDefaultSection) {
-    // Create default section if it doesn't exist
-    const defaultSection: ProjectSection = {
-      id: createGroupId(DEFAULT_UUID),
-      name: "(no section)",
-      slug: "",
-      type: "section",
-      color: "#6b7280", // Gray color for default section
-      items: [],
-    }
-    // Add default section at the beginning
-    sectionsToShow.unshift(defaultSection)
-  }
 
   // Render content component for both sectioned and non-sectioned views
   const renderContent = () => {

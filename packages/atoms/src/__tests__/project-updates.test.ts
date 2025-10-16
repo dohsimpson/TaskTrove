@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
 /**
  * ⚠️  WEB API DEPENDENT - Project Updates Test Suite
  *
@@ -70,7 +71,7 @@ describe("Project Updates and Task Reordering", () => {
             showSidePanel: false,
             compactView: false,
           },
-          sections: [],
+          sections: [DEFAULT_PROJECT_SECTION],
         },
       ],
       count: 1,
@@ -91,7 +92,7 @@ describe("Project Updates and Task Reordering", () => {
         name: "Test Project",
         slug: "test-project",
         color: "#3b82f6",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       },
     ];
 
@@ -140,7 +141,7 @@ describe("Project Updates and Task Reordering", () => {
         name: "Test Project",
         slug: "test-project",
         color: "#3b82f6",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       },
     ];
 
@@ -198,14 +199,14 @@ describe("Project Updates and Task Reordering", () => {
         name: "Project To Keep",
         slug: "project-to-keep",
         color: "#3b82f6",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       },
       {
         id: TEST_PROJECT_ID_2,
         name: "Project To Delete",
         slug: "project-to-delete",
         color: "#ef4444",
-        sections: [],
+        sections: [DEFAULT_PROJECT_SECTION],
       },
     ];
 

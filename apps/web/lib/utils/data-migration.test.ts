@@ -1,3 +1,4 @@
+import { DEFAULT_PROJECT_SECTION } from "@/lib/types"
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/consistent-type-assertions */
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import {
@@ -364,7 +365,7 @@ describe("Data Migration Utility", () => {
             name: "Project 1",
             slug: "project-1",
             color: "#ff0000",
-            sections: [],
+            sections: [DEFAULT_PROJECT_SECTION],
             defaultView: "list",
           },
           {
@@ -372,7 +373,7 @@ describe("Data Migration Utility", () => {
             name: "Project 2",
             slug: "project-2",
             color: "#00ff00",
-            sections: [],
+            sections: [DEFAULT_PROJECT_SECTION],
             defaultView: "list",
           },
         ],
@@ -514,7 +515,7 @@ describe("Data Migration Utility", () => {
             name: "Sample Project",
             slug: "sample-project",
             color: "#ff0000",
-            sections: [],
+            sections: [DEFAULT_PROJECT_SECTION],
           },
         ],
         labels: [
@@ -681,7 +682,7 @@ describe("Data Migration Utility", () => {
             name: "Sample Project",
             slug: "sample-project",
             color: "#ff0000",
-            sections: [],
+            sections: [DEFAULT_PROJECT_SECTION],
           },
         ],
         labels: [

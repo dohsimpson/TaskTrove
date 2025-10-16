@@ -192,7 +192,7 @@ export function SubtaskContent({
 
       {/* Subtasks List */}
       {totalSubtasks > 0 && (
-        <div ref={subtasksContainerRef} className="space-y-1 max-h-64 overflow-y-auto">
+        <div ref={subtasksContainerRef} className="space-y-1 max-h-64 overflow-y-auto py-1.5">
           {task.subtasks
             ?.sort((a, b) => (a.order || 0) - (b.order || 0))
             .map((subtask) => (

@@ -150,7 +150,7 @@ export function TaskActionsMenu({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className={cn("w-32", isSubTask && "w-40")}>
-          {onSelectClick && (
+          {!isSubTask && onSelectClick && (
             <DropdownMenuItem onClick={handleSelectClick} className="cursor-pointer">
               <CheckSquare className="h-3.5 w-3.5 mr-2" />
               Select
@@ -162,10 +162,12 @@ export function TaskActionsMenu({
               Edit
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem onClick={handleCopyClick} className="cursor-pointer">
-            <Copy className="h-3.5 w-3.5 mr-2" />
-            Duplicate
-          </DropdownMenuItem>
+          {!isSubTask && (
+            <DropdownMenuItem onClick={handleCopyClick} className="cursor-pointer">
+              <Copy className="h-3.5 w-3.5 mr-2" />
+              Duplicate
+            </DropdownMenuItem>
+          )}
           {isSubTask && onConvertToTaskClick && (
             <DropdownMenuItem onClick={handleConvertToTaskClick} className="cursor-pointer">
               <ArrowUpRight className="h-3.5 w-3.5 mr-2" />

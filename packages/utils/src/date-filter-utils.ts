@@ -178,11 +178,17 @@ export function getPresetLabel(
  * Get human-readable label for custom date range
  */
 export function getCustomRangeLabel(
-  range: { start?: Date; end?: Date },
+  range: { start?: Date | string; end?: Date | string },
   t?: (key: string, fallback: string) => string,
 ): string {
-  const { start, end } = range;
+  let { start, end } = range;
 
+  if (typeof start === "string") {
+    start = new Date(start);
+  }
+  if (typeof end === "string") {
+    end = new Date(end);
+  }
   if (start && end) {
     return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
   }

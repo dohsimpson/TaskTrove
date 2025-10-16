@@ -26,17 +26,17 @@ interface FilterBadgeProps {
 function FilterBadge({ icon, label, onRemove }: FilterBadgeProps) {
   return (
     <Badge
-      variant="outline"
-      className="inline-flex items-center gap-1.5 h-6 px-2 text-xs transition-colors group"
+      variant="secondary"
+      className="inline-flex items-center gap-1.5 h-7 px-3 text-xs font-medium transition-all duration-200 group hover:bg-primary/10 hover:border-primary/30 hover:text-primary cursor-pointer shadow-sm"
     >
       {icon}
-      <span>{label}</span>
+      <span className="max-w-[120px] truncate">{label}</span>
       <button
         type="button"
         onClick={onRemove}
-        className="ml-0.5 hover:bg-accent rounded-full p-0.5"
+        className="ml-1 hover:bg-muted rounded-full p-0.5 transition-colors opacity-70 hover:opacity-100"
       >
-        <X className="w-2.5 h-2.5" />
+        <X className="w-3 h-3" />
       </button>
     </Badge>
   )
@@ -110,7 +110,7 @@ export function TaskFilterBadges({ className }: TaskFilterBadgesProps) {
   }
 
   return (
-    <div className={`flex flex-wrap gap-2 ${className}`}>
+    <div className={cn("flex flex-wrap gap-2 items-center", className)}>
       {/* Priority filters */}
       {activeFilters.priorities?.map((priority) => (
         <FilterBadge

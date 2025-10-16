@@ -591,7 +591,7 @@ export function TaskItem({
                   </PriorityPopover>
                 )}
 
-                {/* Timer and Actions Menu - first row on smaller viewport */}
+                {/* Timer triggers - shown on smaller viewports (menu moved to second row) */}
                 <div className="lg:hidden flex items-center gap-1">
                   <TimeEstimationPopover taskId={task.id}>
                     <TimeEstimationTrigger task={task} />
@@ -601,15 +601,6 @@ export function TaskItem({
                       <FocusTimerTrigger taskId={task.id} />
                     </FocusTimerPopover>
                   )}
-                  <TaskActionsMenu
-                    task={task}
-                    isVisible={true}
-                    onDeleteClick={() => deleteTask(task.id)}
-                    onSelectClick={() => toggleTaskSelection(taskId)}
-                    isSubTask={false}
-                    open={actionsMenuOpen}
-                    onOpenChange={handleActionsMenuChange}
-                  />
                 </div>
               </div>
             </div>
@@ -735,8 +726,8 @@ export function TaskItem({
                   </span>
                 )}
 
-                {/* Timer and Actions Menu - second row on larger viewport */}
-                <div className="hidden lg:flex lg:items-center gap-1">
+                {/* Timer and Actions Menu - always visible */}
+                <div className="flex items-center gap-1">
                   <TimeEstimationPopover taskId={task.id}>
                     <TimeEstimationTrigger task={task} />
                   </TimeEstimationPopover>

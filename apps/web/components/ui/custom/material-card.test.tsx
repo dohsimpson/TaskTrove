@@ -41,7 +41,7 @@ describe("MaterialCard", () => {
     const { container } = render(<MaterialCard variant="subtask">Content</MaterialCard>)
     const card = container.firstChild
     if (!(card instanceof HTMLElement)) throw new Error("Expected HTMLElement")
-    expect(card).toHaveClass("p-2", "rounded-lg", "border-l-[3px]", "bg-muted/50")
+    expect(card).toHaveClass("p-2", "rounded-lg", "border-l-[3px]")
   })
 
   it("applies selected state styles", () => {

@@ -12,7 +12,6 @@ import {
   TEST_SUBTASK_ID_1,
   TEST_SUBTASK_ID_2,
   TEST_SUBTASK_ID_3,
-  TEST_SUBTASK_ID_4,
 } from "@tasktrove/types/test-constants"
 
 // Mock atom functions
@@ -27,12 +26,6 @@ interface MockCheckboxProps {
   checked?: boolean
   onCheckedChange?: (checked: boolean) => void
   children?: React.ReactNode
-  className?: string
-  [key: string]: unknown
-}
-
-interface MockProgressProps {
-  value?: number
   className?: string
   [key: string]: unknown
 }
@@ -163,12 +156,6 @@ vi.mock("@/components/ui/checkbox", () => ({
   ),
 }))
 
-vi.mock("@/components/ui/progress", () => ({
-  Progress: ({ value, className, ...props }: MockProgressProps) => (
-    <div data-testid="progress-bar" data-value={value} className={className} {...props} />
-  ),
-}))
-
 vi.mock("@/components/ui/button", () => ({
   Button: ({
     children,
@@ -284,7 +271,7 @@ describe("SubtaskContent", () => {
       const task = createMockTask()
       render(<SubtaskContent task={task} mode="popover" />)
 
-      expect(screen.getByText("Add Subtask")).toBeInTheDocument()
+      expect(screen.getByText("Subtasks")).toBeInTheDocument()
     })
 
     it("applies custom className", () => {
@@ -305,21 +292,7 @@ describe("SubtaskContent", () => {
   })
 
   describe("Subtasks Display", () => {
-    it("shows progress bar when subtasks exist", () => {
-      const subtasks = [
-        createMockSubtask({ id: TEST_SUBTASK_ID_1, completed: true }),
-        createMockSubtask({ id: TEST_SUBTASK_ID_2, completed: false }),
-      ]
-      const task = createMockTask({ subtasks })
-
-      render(<SubtaskContent task={task} />)
-
-      expect(screen.getByTestId("progress-bar")).toBeInTheDocument()
-      expect(screen.getByTestId("progress-bar")).toHaveAttribute("data-value", "50")
-      expect(screen.getByText("50% complete")).toBeInTheDocument()
-    })
-
-    it("shows completion count when subtasks exist in popover mode", () => {
+    it("shows header when subtasks exist in popover mode", () => {
       const subtasks = [
         createMockSubtask({ id: TEST_SUBTASK_ID_1, completed: true }),
         createMockSubtask({ id: TEST_SUBTASK_ID_2, completed: false }),
@@ -329,7 +302,7 @@ describe("SubtaskContent", () => {
 
       render(<SubtaskContent task={task} mode="popover" />)
 
-      expect(screen.getByText("2/3 completed")).toBeInTheDocument()
+      expect(screen.getByText("Subtasks")).toBeInTheDocument()
     })
 
     it("renders subtasks sorted by order", () => {
@@ -365,7 +338,6 @@ describe("SubtaskContent", () => {
       render(<SubtaskContent task={task} />)
 
       expect(screen.queryByTestId("progress-bar")).not.toBeInTheDocument()
-      expect(screen.queryByText(/completed/)).not.toBeInTheDocument()
       expect(screen.getByTestId("subtask-input")).toBeInTheDocument()
     })
   })
@@ -580,71 +552,6 @@ describe("SubtaskContent", () => {
       // Input should still be visible but cleared
       expect(screen.getByTestId("subtask-input")).toBeInTheDocument()
       expect(input).toHaveValue("")
-    })
-  })
-
-  describe("Progress Calculation", () => {
-    it("calculates 0% progress when no subtasks", () => {
-      const task = createMockTask({ subtasks: [] })
-
-      render(<SubtaskContent task={task} />)
-
-      expect(screen.queryByTestId("progress-bar")).not.toBeInTheDocument()
-    })
-
-    it("calculates 0% progress when no subtasks completed", () => {
-      const subtasks = [
-        createMockSubtask({ id: TEST_SUBTASK_ID_1, completed: false }),
-        createMockSubtask({ id: TEST_SUBTASK_ID_2, completed: false }),
-      ]
-      const task = createMockTask({ subtasks })
-
-      render(<SubtaskContent task={task} />)
-
-      expect(screen.getByTestId("progress-bar")).toHaveAttribute("data-value", "0")
-      expect(screen.getByText("0% complete")).toBeInTheDocument()
-    })
-
-    it("calculates 100% progress when all subtasks completed", () => {
-      const subtasks = [
-        createMockSubtask({ id: TEST_SUBTASK_ID_1, completed: true }),
-        createMockSubtask({ id: TEST_SUBTASK_ID_2, completed: true }),
-      ]
-      const task = createMockTask({ subtasks })
-
-      render(<SubtaskContent task={task} />)
-
-      expect(screen.getByTestId("progress-bar")).toHaveAttribute("data-value", "100")
-      expect(screen.getByText("100% complete")).toBeInTheDocument()
-    })
-
-    it("calculates partial progress correctly", () => {
-      const subtasks = [
-        createMockSubtask({ id: TEST_SUBTASK_ID_1, completed: true }),
-        createMockSubtask({ id: TEST_SUBTASK_ID_2, completed: false }),
-        createMockSubtask({ id: TEST_SUBTASK_ID_3, completed: true }),
-        createMockSubtask({ id: TEST_SUBTASK_ID_4, completed: false }),
-      ]
-      const task = createMockTask({ subtasks })
-
-      render(<SubtaskContent task={task} />)
-
-      expect(screen.getByTestId("progress-bar")).toHaveAttribute("data-value", "50")
-      expect(screen.getByText("50% complete")).toBeInTheDocument()
-    })
-
-    it("rounds progress percentage correctly", () => {
-      const subtasks = [
-        createMockSubtask({ id: TEST_SUBTASK_ID_1, completed: true }),
-        createMockSubtask({ id: TEST_SUBTASK_ID_2, completed: false }),
-        createMockSubtask({ id: TEST_SUBTASK_ID_3, completed: false }),
-      ]
-      const task = createMockTask({ subtasks })
-
-      render(<SubtaskContent task={task} />)
-
-      // 1/3 = 33.333... should round to 33%
-      expect(screen.getByText("33% complete")).toBeInTheDocument()
     })
   })
 

@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from "react"
-import { MessageSquare, Plus } from "lucide-react"
+import { MessageSquare, Plus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
@@ -59,32 +59,37 @@ export function CommentContent({
   // Scroll to bottom when a new comment is added
   useEffect(() => {
     if (shouldScrollToBottom && commentsContainerRef.current) {
-      // Use longer timeout to ensure DOM is fully updated on slower devices
-      setTimeout(() => {
+      // Use requestAnimationFrame for smoother scrolling
+      const scrollWithAnimation = () => {
         if (commentsContainerRef.current) {
-          // Smooth animated scroll to bottom
           commentsContainerRef.current.scrollTo({
             top: commentsContainerRef.current.scrollHeight,
             behavior: "smooth",
           })
         }
         setShouldScrollToBottom(false)
-      }, 100)
+      }
+
+      // Use requestAnimationFrame to ensure the next paint cycle
+      requestAnimationFrame(scrollWithAnimation)
     }
   }, [displayComments.length, shouldScrollToBottom])
 
   // Scroll to bottom when popover opens (triggered by scrollToBottomKey change)
   useEffect(() => {
     if (scrollToBottomKey !== undefined && scrollToBottomKey > 0 && commentsContainerRef.current) {
-      // Brief timeout to ensure DOM is rendered
-      setTimeout(() => {
+      // Use requestAnimationFrame for immediate popover opening scroll
+      const scrollWithAnimation = () => {
         if (commentsContainerRef.current) {
           commentsContainerRef.current.scrollTo({
             top: commentsContainerRef.current.scrollHeight,
             behavior: "smooth",
           })
         }
-      }, 100)
+      }
+
+      // Use requestAnimationFrame to ensure immediate smooth animation
+      requestAnimationFrame(scrollWithAnimation)
     }
   }, [scrollToBottomKey])
 
@@ -162,9 +167,30 @@ export function CommentContent({
   const commentsLength = task.comments?.length || 0
 
   return (
-    <div className={cn("space-y-3", mode === "popover" && "p-2", className)}>
-      {/* Header - Show title for popover header only */}
-      {mode !== "inline" && (
+    <div className={cn("space-y-3", mode === "popover" && "p-3", className)}>
+      {/* Header - only show in popover mode */}
+      {mode === "popover" && (
+        <div className="flex items-center justify-between border-b pb-2 mb-3">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            <span className="font-medium text-sm">{t("comments.title", "Comments")}</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+            onClick={() => {
+              /* Close handled by ContentPopover */
+            }}
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* Header - Show title for inline mode only */}
+      {mode !== "popover" && (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4 text-muted-foreground" />

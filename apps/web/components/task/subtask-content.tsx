@@ -6,11 +6,10 @@ import { v4 as uuidv4 } from "uuid"
 import { TaskItem } from "./task-item"
 import { DraggableTaskElement } from "./draggable-task-element"
 import { DropTargetElement } from "./project-sections-view-helper"
-import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { TimeEstimationPopover } from "./time-estimation-popover"
-import { CheckSquare, Plus, ClockFading } from "lucide-react"
+import { CheckSquare, Plus, ClockFading, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatTime } from "@/lib/utils/time-estimation"
 import { extractDropPayload, reorderItems } from "@tasktrove/dom-utils"
@@ -27,6 +26,7 @@ interface SubtaskContentProps {
   mode?: "inline" | "popover"
   className?: string
   persistEstimationOnAdd?: boolean // If true, keeps the estimation value after adding a subtask
+  scrollToBottomKey?: number // When this changes, triggers scroll to bottom
 }
 
 export function SubtaskContent({
@@ -35,6 +35,7 @@ export function SubtaskContent({
   mode = "inline",
   className,
   persistEstimationOnAdd = true,
+  scrollToBottomKey,
 }: SubtaskContentProps) {
   // Translation setup
   const { t } = useTranslation("task")
@@ -60,21 +61,39 @@ export function SubtaskContent({
   // Scroll to bottom when a new subtask is added
   useEffect(() => {
     if (shouldScrollToBottom && subtasksContainerRef.current) {
-      // Use longer timeout to ensure DOM is fully updated on slower devices
-      const timeoutId = setTimeout(() => {
+      // Use requestAnimationFrame for smoother scrolling
+      const scrollWithAnimation = () => {
         if (subtasksContainerRef.current) {
-          // Smooth animated scroll to bottom
           subtasksContainerRef.current.scrollTo({
             top: subtasksContainerRef.current.scrollHeight,
             behavior: "smooth",
           })
         }
         setShouldScrollToBottom(false)
-      }, 100)
+      }
 
-      return () => clearTimeout(timeoutId)
+      // Use requestAnimationFrame to ensure the next paint cycle
+      requestAnimationFrame(scrollWithAnimation)
     }
   }, [task?.subtasks?.length, shouldScrollToBottom])
+
+  // Scroll to bottom when popover opens (triggered by scrollToBottomKey change)
+  useEffect(() => {
+    if (scrollToBottomKey !== undefined && scrollToBottomKey > 0 && subtasksContainerRef.current) {
+      // Use requestAnimationFrame for immediate popover opening scroll
+      const scrollWithAnimation = () => {
+        if (subtasksContainerRef.current) {
+          subtasksContainerRef.current.scrollTo({
+            top: subtasksContainerRef.current.scrollHeight,
+            behavior: "smooth",
+          })
+        }
+      }
+
+      // Use requestAnimationFrame to ensure immediate smooth animation
+      requestAnimationFrame(scrollWithAnimation)
+    }
+  }, [scrollToBottomKey])
 
   if (!task) {
     console.warn("Task not found", taskId)
@@ -157,12 +176,32 @@ export function SubtaskContent({
 
   const completedSubtasks = task.subtasks?.filter((s) => s.completed).length || 0
   const totalSubtasks = task.subtasks?.length || 0
-  const progressPercentage = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0
 
   return (
-    <div className={cn("space-y-3", mode === "popover" && "p-2", className)}>
-      {/* Header - Show title for popover header only */}
-      {mode !== "inline" && (
+    <div className={cn("space-y-3", mode === "popover" && "p-3", className)}>
+      {/* Header - only show in popover mode */}
+      {mode === "popover" && (
+        <div className="flex items-center justify-between border-b pb-2 mb-3">
+          <div className="flex items-center gap-2">
+            <CheckSquare className="h-4 w-4" />
+            <span className="font-medium text-sm">{t("subtasks.title", "Subtasks")}</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+            onClick={() => {
+              /* Close handled by ContentPopover */
+            }}
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* Header - Show title for inline mode only */}
+      {mode !== "popover" && (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CheckSquare className="h-4 w-4 text-muted-foreground" />
@@ -177,16 +216,6 @@ export function SubtaskContent({
               {completedSubtasks}/{totalSubtasks} completed
             </span>
           )}
-        </div>
-      )}
-
-      {/* Progress Bar - Only show if there are subtasks */}
-      {totalSubtasks > 0 && (
-        <div className="space-y-1">
-          <Progress value={progressPercentage} className="h-2" />
-          <p className="text-xs text-muted-foreground">
-            {Math.round(progressPercentage)}% complete
-          </p>
         </div>
       )}
 

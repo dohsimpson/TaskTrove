@@ -48,11 +48,6 @@ interface MockCheckboxProps {
   [key: string]: unknown
 }
 
-interface MockProgressProps {
-  value?: number
-  className?: string
-}
-
 interface MockButtonProps {
   children: React.ReactNode
   onClick?: () => void
@@ -206,12 +201,6 @@ vi.mock("@/components/ui/custom/task-checkbox", () => ({
       data-testid="checkbox"
       {...props}
     />
-  ),
-}))
-
-vi.mock("@/components/ui/progress", () => ({
-  Progress: ({ value, className }: MockProgressProps) => (
-    <div className={className} data-testid="progress" data-value={value} />
   ),
 }))
 
@@ -454,30 +443,20 @@ describe("SubtaskPopover", () => {
       expect(screen.getAllByTestId("popover")).toHaveLength(2) // Subtask popover + time estimation popover in add section
     })
 
-    it("displays correct subtask count in header when subtasks exist", () => {
+    it("displays correct subtask header in popover mode", () => {
       renderSubtaskPopover()
       expect(screen.getByText("Subtasks")).toBeInTheDocument()
-      expect(screen.getByText(/1\/3 completed/)).toBeInTheDocument() // 1 completed out of 3
+      // Note: Completion count is not displayed in popover header
     })
 
-    it('displays "Add Subtask" header when no subtasks exist', () => {
+    it('displays "Subtasks" header when no subtasks exist in popover mode', () => {
       renderSubtaskPopover(mockTaskWithoutSubtasks)
-      expect(screen.getByText("Add Subtask")).toBeInTheDocument()
-      expect(screen.queryByText(/1\/3 completed/)).not.toBeInTheDocument()
+      expect(screen.getByText("Subtasks")).toBeInTheDocument()
+      expect(screen.queryByText(/completed/)).not.toBeInTheDocument()
     })
 
-    it("displays progress bar with correct percentage when subtasks exist", () => {
+    it("does not display progress bar (removed feature)", () => {
       renderSubtaskPopover()
-      const progress = screen.getByTestId("progress")
-      const progressValue = progress.getAttribute("data-value")
-      if (progressValue) {
-        expect(parseFloat(progressValue)).toBeCloseTo(33.33, 2) // 1/3 * 100
-      }
-      expect(screen.getByText("33% complete")).toBeInTheDocument()
-    })
-
-    it("does not display progress bar when no subtasks exist", () => {
-      renderSubtaskPopover(mockTaskWithoutSubtasks)
       expect(screen.queryByTestId("progress")).not.toBeInTheDocument()
       expect(screen.queryByText("complete")).not.toBeInTheDocument()
     })
@@ -544,34 +523,6 @@ describe("SubtaskPopover", () => {
       expect(screen.getByTestId(`delete-button-${TEST_SUBTASK_ID_1}`)).toBeInTheDocument()
       expect(screen.getByTestId(`delete-button-${TEST_SUBTASK_ID_2}`)).toBeInTheDocument()
       expect(screen.getByTestId(`delete-button-${TEST_SUBTASK_ID_3}`)).toBeInTheDocument()
-    })
-  })
-
-  describe("Progress Calculation", () => {
-    it("shows 100% when all subtasks are completed", () => {
-      const allCompletedTask = {
-        ...mockTaskWithSubtasks,
-        subtasks: mockTaskWithSubtasks.subtasks.map((s) => ({ ...s, completed: true })),
-      }
-      renderSubtaskPopover(allCompletedTask)
-
-      const progress = screen.getByTestId("progress")
-      expect(progress).toHaveAttribute("data-value", "100")
-      expect(screen.getByText("100% complete")).toBeInTheDocument()
-      expect(screen.getByText(/3\/3 completed/)).toBeInTheDocument()
-    })
-
-    it("shows 0% when no subtasks are completed", () => {
-      const noneCompletedTask = {
-        ...mockTaskWithSubtasks,
-        subtasks: mockTaskWithSubtasks.subtasks.map((s) => ({ ...s, completed: false })),
-      }
-      renderSubtaskPopover(noneCompletedTask)
-
-      const progress = screen.getByTestId("progress")
-      expect(progress).toHaveAttribute("data-value", "0")
-      expect(screen.getByText("0% complete")).toBeInTheDocument()
-      expect(screen.getByText(/0\/3 completed/)).toBeInTheDocument()
     })
   })
 

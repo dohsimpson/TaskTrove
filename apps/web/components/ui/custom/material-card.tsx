@@ -77,12 +77,7 @@ export function MaterialCard({
         ? "bg-muted text-muted-foreground line-through border-muted-foreground/30"
         : "hover:bg-accent/50",
     ),
-    subtask: cn(
-      baseStyles,
-      "duration-200",
-      "p-2 rounded-lg border-muted-foreground/20",
-      "bg-muted/50 hover:bg-muted/70",
-    ),
+    subtask: cn(baseStyles, "duration-200", "p-2 rounded-lg"),
   }
 
   return (

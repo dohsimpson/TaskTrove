@@ -325,7 +325,7 @@ describe("CommentContent", () => {
       const task = createMockTask()
       render(<CommentContent task={task} mode="popover" />)
 
-      expect(screen.getByText("Add Comment")).toBeInTheDocument()
+      expect(screen.getByText("Comments")).toBeInTheDocument()
     })
 
     it("applies custom className", () => {

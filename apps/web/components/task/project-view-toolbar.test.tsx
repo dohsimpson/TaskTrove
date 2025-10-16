@@ -4,6 +4,7 @@ import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { Provider } from "jotai"
 import { ProjectViewToolbar } from "./project-view-toolbar"
+import { isValidProjectId } from "@/lib/utils/routing"
 
 // Create hoisted mocks
 const mockJotai = vi.hoisted(() => ({
@@ -44,6 +45,8 @@ vi.mock("./task-search-input", () => ({
 // Mock atoms
 vi.mock("@tasktrove/atoms", () => ({
   openQuickAddAtom: "mockOpenQuickAddAtom",
+  openSectionDialogAtom: "mockOpenSectionDialogAtom",
+  currentRouteContextAtom: "mockCurrentRouteContextAtom",
 }))
 
 vi.mock("@/lib/atoms", () => ({
@@ -82,6 +85,17 @@ vi.mock("@/components/ui/button", () => ({
 // Mock lucide-react
 vi.mock("lucide-react", () => ({
   Plus: () => <svg data-testid="plus-icon">Plus Icon</svg>,
+  FolderPlus: () => <svg data-testid="folder-plus-icon">FolderPlus Icon</svg>,
+}))
+
+// Mock routing utils
+vi.mock("@/lib/utils/routing", () => ({
+  isValidProjectId: vi.fn(),
+}))
+
+// Mock types
+vi.mock("@/lib/types", () => ({
+  createProjectId: vi.fn((id) => id),
 }))
 
 // Test wrapper component
@@ -89,12 +103,24 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => <Provider>{
 
 describe("ProjectViewToolbar", () => {
   const mockOpenQuickAdd = vi.fn()
+  const mockOpenSectionDialog = vi.fn()
+  const mockRouteContext = { viewId: "project-123", routeType: "project" }
 
   beforeEach(() => {
     vi.clearAllMocks()
+
+    // Default: non-project context
+    vi.mocked(isValidProjectId).mockReturnValue(false)
+
     mockJotai.useSetAtom.mockImplementation((atom) => {
       if (atom === "mockOpenQuickAddAtom") return mockOpenQuickAdd
+      if (atom === "mockOpenSectionDialogAtom") return mockOpenSectionDialog
       return vi.fn()
+    })
+
+    mockJotai.useAtomValue.mockImplementation((atom) => {
+      if (atom === "mockCurrentRouteContextAtom") return mockRouteContext
+      return undefined
     })
   })
 
@@ -127,7 +153,7 @@ describe("ProjectViewToolbar", () => {
       expect(toolbar).toHaveClass("custom-class")
     })
 
-    it("renders Add Task button with correct props", () => {
+    it("renders Add Task button with correct props in non-project context", () => {
       render(
         <TestWrapper>
           <ProjectViewToolbar />
@@ -138,6 +164,44 @@ describe("ProjectViewToolbar", () => {
       expect(addTaskButton).toHaveAttribute("data-variant", "default")
       expect(addTaskButton).toHaveAttribute("data-size", "sm")
       expect(addTaskButton).toHaveClass("shadow-sm", "shrink-0", "ml-auto")
+    })
+
+    it("does not show Add Section button in non-project context", () => {
+      render(
+        <TestWrapper>
+          <ProjectViewToolbar />
+        </TestWrapper>,
+      )
+
+      expect(screen.queryByText("Add Section")).not.toBeInTheDocument()
+    })
+
+    it("shows Add Section button in project context", () => {
+      vi.mocked(isValidProjectId).mockReturnValue(true)
+
+      render(
+        <TestWrapper>
+          <ProjectViewToolbar />
+        </TestWrapper>,
+      )
+
+      expect(screen.getByText("Add Section")).toBeInTheDocument()
+      expect(screen.getByTestId("folder-plus-icon")).toBeInTheDocument()
+    })
+
+    it("renders Add Section button with correct props in project context", () => {
+      vi.mocked(isValidProjectId).mockReturnValue(true)
+
+      render(
+        <TestWrapper>
+          <ProjectViewToolbar />
+        </TestWrapper>,
+      )
+
+      const addSectionButton = screen.getByText("Add Section")
+      expect(addSectionButton).toHaveAttribute("data-variant", "outline")
+      expect(addSectionButton).toHaveAttribute("data-size", "sm")
+      expect(addSectionButton).toHaveClass("shadow-sm", "shrink-0", "ml-auto")
     })
   })
 
@@ -339,7 +403,7 @@ describe("ProjectViewToolbar", () => {
       expect(flexContainer).toHaveClass("flex", "items-center", "gap-2")
     })
 
-    it("applies correct classes to Add Task button", () => {
+    it("applies correct classes to Add Task button in non-project context", () => {
       render(
         <TestWrapper>
           <ProjectViewToolbar />
@@ -348,6 +412,67 @@ describe("ProjectViewToolbar", () => {
 
       const addTaskButton = screen.getByText("Add Task")
       expect(addTaskButton).toHaveClass("shadow-sm", "shrink-0", "ml-auto")
+    })
+
+    it("applies correct classes to Add Task button in project context", () => {
+      vi.mocked(isValidProjectId).mockReturnValue(true)
+
+      render(
+        <TestWrapper>
+          <ProjectViewToolbar />
+        </TestWrapper>,
+      )
+
+      const addTaskButton = screen.getByText("Add Task")
+      expect(addTaskButton).toHaveClass("shadow-sm", "shrink-0")
+      expect(addTaskButton).not.toHaveClass("ml-auto")
+    })
+  })
+
+  describe("Add Section Functionality", () => {
+    it("calls openSectionDialog when Add Section button is clicked", async () => {
+      vi.mocked(isValidProjectId).mockReturnValue(true)
+      const user = userEvent.setup()
+
+      render(
+        <TestWrapper>
+          <ProjectViewToolbar />
+        </TestWrapper>,
+      )
+
+      const addSectionButton = screen.getByText("Add Section")
+      await user.click(addSectionButton)
+
+      expect(mockOpenSectionDialog).toHaveBeenCalledTimes(1)
+      expect(mockOpenSectionDialog).toHaveBeenCalledWith({ projectId: "project-123" })
+    })
+
+    it("displays FolderPlus icon in Add Section button", () => {
+      vi.mocked(isValidProjectId).mockReturnValue(true)
+
+      render(
+        <TestWrapper>
+          <ProjectViewToolbar />
+        </TestWrapper>,
+      )
+
+      const addSectionButton = screen.getByText("Add Section")
+      const folderPlusIcon = screen.getByTestId("folder-plus-icon")
+
+      expect(addSectionButton).toContainElement(folderPlusIcon)
+    })
+
+    it("does not render Add Section button outside project context", () => {
+      vi.mocked(isValidProjectId).mockReturnValue(false)
+
+      render(
+        <TestWrapper>
+          <ProjectViewToolbar />
+        </TestWrapper>,
+      )
+
+      expect(screen.queryByText("Add Section")).not.toBeInTheDocument()
+      expect(screen.queryByTestId("folder-plus-icon")).not.toBeInTheDocument()
     })
   })
 

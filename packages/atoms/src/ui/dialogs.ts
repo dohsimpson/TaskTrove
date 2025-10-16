@@ -55,8 +55,8 @@ showProjectDialogAtom.debugLabel = "showProjectDialogAtom";
 type EntityDialogContext<T = LabelId | ProjectId | GroupId> = {
   mode: "create" | "edit";
   insertPosition?: {
-    id: T;
-    placement: "above" | "below";
+    id?: T;
+    placement?: "above" | "below";
     // Additional context for sections (which need project context)
     projectId?: ProjectId;
   };

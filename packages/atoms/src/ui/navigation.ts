@@ -262,7 +262,8 @@ export const openSectionDialogAtom = atom(
     },
   ) => {
     // Set the dialog context
-    if (options?.id && options.placement) {
+    if (options?.projectId) {
+      // Has projectId - may or may not have position
       set(sectionDialogContextAtom, {
         mode: "create",
         insertPosition: {
@@ -272,6 +273,7 @@ export const openSectionDialogAtom = atom(
         },
       });
     } else {
+      // Fallback for legacy behavior
       set(sectionDialogContextAtom, { mode: "create" });
     }
 

@@ -45,7 +45,6 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
 import type { Task, Project } from "@/lib/types"
 import { TaskIdSchema } from "@/lib/types"
-import { DEFAULT_UUID } from "@tasktrove/constants"
 import { log } from "@/lib/utils/logger"
 
 // No longer needed - using ResizablePanel components for layout
@@ -83,7 +82,7 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
     const defaultSectionId = project?.sections[0]?.id
 
     // Open quick add with project/section prefilled
-    addTaskToSection(project?.id, defaultSectionId ?? DEFAULT_UUID)
+    addTaskToSection(project?.id, defaultSectionId)
 
     // Immediately update with the selected date as due date
     updateQuickAddTask({

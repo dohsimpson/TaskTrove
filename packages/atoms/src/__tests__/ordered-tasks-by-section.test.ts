@@ -18,6 +18,7 @@ import {
   createGroupId,
 } from "@tasktrove/types";
 import { DEFAULT_UUID } from "@tasktrove/constants";
+import { getDefaultSectionId } from "@tasktrove/types/defaults";
 
 // Mock atoms for testing - allows direct control of test data
 const mockTasksAtom = atom<Task[]>([]);
@@ -48,8 +49,8 @@ const mockOrderedTasksBySectionAtom = atom((get) => {
       return [];
     }
 
-    // Find section by ID
-    const targetSectionId = sectionId || createGroupId(DEFAULT_UUID);
+    // Find section by ID - use default section if no ID provided
+    const targetSectionId = sectionId || getDefaultSectionId(project);
     const section = project.sections.find((s) => s.id === targetSectionId);
 
     if (!section) {

@@ -2,7 +2,6 @@ import { useSetAtom } from "jotai"
 import { openQuickAddAtom, updateQuickAddTaskAtom, resetQuickAddTaskAtom } from "@tasktrove/atoms"
 import { ProjectIdSchema, createGroupId, GroupIdSchema } from "@/lib/types"
 import type { ProjectId, GroupId } from "@/lib/types"
-import { DEFAULT_UUID } from "@tasktrove/constants"
 
 /**
  * Hook that provides a function to add a task to a specific section.
@@ -13,13 +12,13 @@ export function useAddTaskToSection() {
   const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
   const resetQuickAddTask = useSetAtom(resetQuickAddTaskAtom)
 
-  return (projectId: ProjectId | undefined, sectionId: string | GroupId) => {
+  return (projectId: ProjectId | undefined, sectionId: string | GroupId | undefined) => {
     // Reset the quick add task form first
     resetQuickAddTask()
 
-    // Parse and validate section ID
+    // Parse and validate section ID if provided
     let parsedSectionId: GroupId | undefined
-    if (sectionId && sectionId !== DEFAULT_UUID) {
+    if (sectionId) {
       try {
         parsedSectionId =
           typeof sectionId === "string" ? createGroupId(sectionId) : GroupIdSchema.parse(sectionId)

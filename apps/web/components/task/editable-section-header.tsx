@@ -7,7 +7,6 @@ import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { SectionContextMenu } from "./section-context-menu"
 import { editingSectionIdAtom } from "@tasktrove/atoms"
 import { createGroupId } from "@/lib/types"
-import { DEFAULT_UUID } from "@tasktrove/constants"
 import { cn } from "@/lib/utils"
 
 interface EditableSectionHeaderProps {
@@ -19,7 +18,7 @@ interface EditableSectionHeaderProps {
   sectionColor: string
   /** Number of tasks in section */
   taskCount: number
-  /** Whether to show the context menu (only for non-default sections) */
+  /** Whether to show the context menu */
   showContextMenu?: boolean
   /** Custom className for the container */
   className?: string
@@ -74,7 +73,6 @@ export function EditableSectionHeader({
 }: EditableSectionHeaderProps) {
   const editingSectionId = useAtomValue(editingSectionIdAtom)
   const isEditing = editingSectionId === sectionId
-  const isDefaultSection = sectionId === DEFAULT_UUID
 
   return (
     <div
@@ -127,8 +125,8 @@ export function EditableSectionHeader({
         {/* Custom right content (e.g., add button) */}
         {rightContent}
 
-        {/* Section context menu - only show for non-default sections */}
-        {showContextMenu && !isDefaultSection && (
+        {/* Section context menu */}
+        {showContextMenu && (
           <SectionContextMenu sectionId={createGroupId(sectionId)} isVisible={true} />
         )}
       </div>

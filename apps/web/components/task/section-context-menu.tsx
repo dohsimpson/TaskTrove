@@ -8,9 +8,9 @@ import {
   currentRouteContextAtom,
   openSectionDialogAtom,
 } from "@tasktrove/atoms"
-import { DEFAULT_UUID } from "@tasktrove/constants"
 import { isValidProjectId } from "@/lib/utils/routing"
 import type { Project, ProjectSection, GroupId } from "@/lib/types"
+import { getDefaultSectionId } from "@tasktrove/types/defaults"
 
 interface SectionContextMenuProps {
   sectionId: GroupId
@@ -47,7 +47,8 @@ export function SectionContextMenu({
   if (!section) return null
 
   // Check if this is the default section (not deletable)
-  const showDeleteOption = sectionId !== DEFAULT_UUID
+  const defaultSectionId = project ? getDefaultSectionId(project) : null
+  const showDeleteOption = sectionId !== defaultSectionId
 
   const handleEdit = () => {
     startEditing(sectionId)

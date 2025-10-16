@@ -3117,7 +3117,7 @@ describe("TaskItem", () => {
 
       // Should have minimal styling (flex layout, items-center, padding)
       expect(container).toHaveClass("group/task", "flex", "items-center", "p-2")
-      expect(container).toHaveClass("rounded-md", "transition-colors")
+      expect(container).toHaveClass("rounded-lg", "transition-all")
       expect(container).toHaveClass("bg-muted/50", "hover:bg-muted/70")
     })
 

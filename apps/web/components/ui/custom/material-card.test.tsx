@@ -13,35 +13,35 @@ describe("MaterialCard", () => {
     const { container } = render(<MaterialCard>Content</MaterialCard>)
     const card = container.firstChild
     if (!(card instanceof HTMLElement)) throw new Error("Expected HTMLElement")
-    expect(card).toHaveClass("p-3", "sm:p-4", "md:p-5", "rounded-xl")
+    expect(card).toHaveClass("p-3", "sm:p-4", "rounded-lg", "border-l-[3px]")
   })
 
   it("applies compact variant styles", () => {
     const { container } = render(<MaterialCard variant="compact">Content</MaterialCard>)
     const card = container.firstChild
     if (!(card instanceof HTMLElement)) throw new Error("Expected HTMLElement")
-    expect(card).toHaveClass("p-2", "rounded", "border-l-3")
+    expect(card).toHaveClass("p-2.5", "rounded-lg", "border-l-[3px]")
   })
 
   it("applies kanban variant styles", () => {
     const { container } = render(<MaterialCard variant="kanban">Content</MaterialCard>)
     const card = container.firstChild
     if (!(card instanceof HTMLElement)) throw new Error("Expected HTMLElement")
-    expect(card).toHaveClass("p-3", "rounded-lg", "border-l-3")
+    expect(card).toHaveClass("p-3", "rounded-lg", "border-l-[3px]")
   })
 
   it("applies calendar variant styles", () => {
     const { container } = render(<MaterialCard variant="calendar">Content</MaterialCard>)
     const card = container.firstChild
     if (!(card instanceof HTMLElement)) throw new Error("Expected HTMLElement")
-    expect(card).toHaveClass("p-0.5", "lg:p-1", "rounded", "border-l-3")
+    expect(card).toHaveClass("p-1", "rounded", "border-l-[3px]")
   })
 
   it("applies subtask variant styles", () => {
     const { container } = render(<MaterialCard variant="subtask">Content</MaterialCard>)
     const card = container.firstChild
     if (!(card instanceof HTMLElement)) throw new Error("Expected HTMLElement")
-    expect(card).toHaveClass("rounded-md", "p-2", "bg-muted/50")
+    expect(card).toHaveClass("p-2", "rounded-lg", "border-l-[3px]", "bg-muted/50")
   })
 
   it("applies selected state styles", () => {

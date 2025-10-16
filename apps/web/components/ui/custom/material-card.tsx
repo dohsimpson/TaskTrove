@@ -38,33 +38,51 @@ export function MaterialCard({
   variant = "default",
   ...props
 }: MaterialCardProps) {
-  // Different styling based on variant
+  // Shared base styles across all variants
+  const baseStyles = "border-l-[3px] hover:border-opacity-90 transition-all dark:shadow-gray-300/10"
+
+  // Common selected state for card variants
+  const selectedStyles = "bg-accent text-accent-foreground border-accent-foreground"
+
+  // Unified Material Design styling system with consistent elevation hierarchy
   const variantStyles = {
     default: cn(
-      "p-3 sm:p-4 md:p-5 rounded-xl border border-l-4 transition-all duration-300",
-      // Material Design elevation with subtle default shadow
-      "shadow-sm hover:shadow-lg dark:shadow-none dark:hover:shadow-lg dark:hover:shadow-gray-300/20",
-      // Hover effects for material feel
-      "hover:-translate-y-0.5 hover:border-opacity-80",
-      selected
-        ? "bg-accent text-accent-foreground border-accent-foreground/20 shadow-md"
-        : "bg-card border-border/50",
+      baseStyles,
+      "duration-300",
+      "p-3 sm:p-4 rounded-lg",
+      "shadow-sm hover:shadow-lg dark:hover:shadow-lg dark:hover:shadow-gray-300/20",
+      "hover:-translate-y-0.5",
+      selected && cn(selectedStyles, "shadow-md"),
     ),
     compact: cn(
-      "p-2 rounded border border-t-0 border-l-3 transition-all duration-200",
-      "hover:shadow-md dark:hover:shadow-gray-300/30",
-      selected ? "bg-accent text-accent-foreground border-accent-foreground/20" : "bg-card",
+      baseStyles,
+      "duration-200",
+      "p-2.5 rounded-lg",
+      "shadow-xs hover:shadow-sm dark:hover:shadow-gray-300/20",
+      selected && selectedStyles,
     ),
     kanban: cn(
-      "p-3 border border-t-1 border-l-3 rounded-lg shadow-xs transition-all duration-200",
-      "hover:shadow-md dark:hover:shadow-gray-300/30",
-      selected ? "bg-accent text-accent-foreground border-accent-foreground/20" : "bg-card",
+      baseStyles,
+      "duration-200",
+      "p-3 rounded-lg",
+      "shadow-sm hover:shadow-md dark:hover:shadow-gray-300/30",
+      selected && selectedStyles,
     ),
     calendar: cn(
-      "p-0.5 lg:p-1 rounded transition-all duration-200 border border-t-0 border-l-3",
-      completed ? "bg-muted text-muted-foreground line-through" : "bg-card hover:bg-accent",
+      baseStyles,
+      "duration-200",
+      "p-1 rounded",
+      "hover:shadow-xs dark:hover:shadow-gray-300/10",
+      completed
+        ? "bg-muted text-muted-foreground line-through border-muted-foreground/30"
+        : "hover:bg-accent/50",
     ),
-    subtask: cn("rounded-md transition-colors p-2 bg-muted/50 hover:bg-muted/70"),
+    subtask: cn(
+      baseStyles,
+      "duration-200",
+      "p-2 rounded-lg border-muted-foreground/20",
+      "bg-muted/50 hover:bg-muted/70",
+    ),
   }
 
   return (

@@ -1190,30 +1190,34 @@ export function TaskItem({
 
           {/* Description - Responsive width, hide on very small screens when empty */}
           <div className={cn("mb-2", !task.description && !isHovered && "hidden sm:block")}>
-            <ClickToEditDiv
-              as="p"
-              value={task.description || ""}
-              onChange={(newDescription: string) => {
-                updateTask({ updateRequest: { id: task.id, description: newDescription } })
-              }}
-              placeholder={t("placeholders.addDescription", "Add description...")}
-              className={cn(
-                "text-xs sm:text-sm cursor-text hover:bg-accent px-1 py-0.5 rounded transition-colors max-h-20 overflow-y-auto",
-                "min-w-[150px] sm:min-w-[200px] md:min-w-64",
-                "max-w-fit",
-                task.description
-                  ? "text-muted-foreground"
-                  : !isDefaultDescriptionEditing
-                    ? "text-muted-foreground/60 italic"
-                    : "text-muted-foreground",
-                // Only show when there's content or when hovering
-                !task.description && !isHovered && "invisible",
-              )}
-              data-action="edit"
-              multiline={true}
-              allowEmpty={true}
-              onEditingChange={setIsDefaultDescriptionEditing}
-            />
+            <div className="flex gap-2 sm:gap-3">
+              <ClickToEditDiv
+                as="p"
+                value={task.description || ""}
+                onChange={(newDescription: string) => {
+                  updateTask({ updateRequest: { id: task.id, description: newDescription } })
+                }}
+                placeholder={t("placeholders.addDescription", "Add description...")}
+                className={cn(
+                  "text-xs sm:text-sm cursor-text hover:bg-accent px-1 py-0.5 rounded transition-colors max-h-20 overflow-y-auto",
+                  "min-w-[150px] sm:min-w-[200px] md:min-w-64",
+                  "max-w-fit",
+                  task.description
+                    ? "text-muted-foreground"
+                    : !isDefaultDescriptionEditing
+                      ? "text-muted-foreground/60 italic"
+                      : "text-muted-foreground",
+                  // Only show when there's content or when hovering
+                  !task.description && !isHovered && "invisible",
+                )}
+                data-action="edit"
+                multiline={true}
+                allowEmpty={true}
+                onEditingChange={setIsDefaultDescriptionEditing}
+              />
+              {/* Invisible placeholder to balance the checkbox on the left */}
+              <div className="flex-shrink-0 w-5" aria-hidden="true" />
+            </div>
           </div>
 
           {/* Task Metadata - Clean Single Line with Icons */}

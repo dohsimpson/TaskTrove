@@ -99,7 +99,7 @@ export function DropTargetItem({
 
     return dropTargetForElements({
       element,
-      getIsSticky: () => true,
+      getIsSticky: () => false,
       getData: ({ input, element: el }) => {
         const baseData = {
           type: mode,

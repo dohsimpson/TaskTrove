@@ -91,23 +91,38 @@ multiSelectDraggingAtom.debugLabel = "multiSelectDraggingAtom";
 export const toggleTaskSelectionAtom = atom(
   null,
   (get, set, taskId: TaskId) => {
-    // First, reset side panel state (closes panel and disables showSidePanel)
+    // BEFORE resetting side panel, preserve the currently selected task
+    const currentSelectedTaskId = get(selectedTaskIdAtom);
+    const currentSelection = get(selectedTasksAtom);
+
+    // If there's a task selected in side panel and it's not already in multi-select,
+    // add it to preserve the selection when transitioning to multi-select mode
+    if (
+      currentSelectedTaskId &&
+      !currentSelection.includes(currentSelectedTaskId)
+    ) {
+      set(selectedTasksAtom, [...currentSelection, currentSelectedTaskId]);
+      // Also set as last selected so SHIFT+click range selection can use it as anchor
+      set(lastSelectedTaskAtom, currentSelectedTaskId);
+    }
+
+    // Then reset side panel state (closes panel and disables showSidePanel)
     set(resetSidePanelStateAtom);
 
     // Then toggle taskId in selectedTasksAtom set
-    const currentSelection = get(selectedTasksAtom);
-    const isSelected = currentSelection.includes(taskId);
+    const updatedSelection = get(selectedTasksAtom); // Re-read after preservation
+    const isSelected = updatedSelection.includes(taskId);
 
     if (isSelected) {
       // Remove taskId from selection
-      const newSelection = currentSelection.filter((id) => id !== taskId);
+      const newSelection = updatedSelection.filter((id) => id !== taskId);
       set(selectedTasksAtom, newSelection);
 
       // Clear last selected task when removing from selection
       set(lastSelectedTaskAtom, null);
     } else {
       // Add taskId to selection
-      set(selectedTasksAtom, [...currentSelection, taskId]);
+      set(selectedTasksAtom, [...updatedSelection, taskId]);
 
       // Track last selected task when adding to selection
       set(lastSelectedTaskAtom, taskId);

@@ -316,5 +316,59 @@ describe("Selection Atoms", () => {
       expect(selected).toHaveLength(3);
       expect(store.get(lastSelectedTaskAtom)).toBe(TEST_TASK_ID_2);
     });
+
+    it("preserves side panel task when transitioning to multi-select", () => {
+      // Start with task 1 selected in side panel
+      store.set(selectedTaskIdAtom, TEST_TASK_ID_1);
+      expect(store.get(selectedTaskIdAtom)).toBe(TEST_TASK_ID_1);
+      expect(store.get(selectedTasksAtom)).toEqual([]);
+
+      // CMD+click task 2 to enter multi-select mode
+      store.set(toggleTaskSelectionAtom, TEST_TASK_ID_2);
+
+      // Should preserve task 1 and add task 2 to multi-select
+      const selected = store.get(selectedTasksAtom);
+      expect(selected).toContain(TEST_TASK_ID_1);
+      expect(selected).toContain(TEST_TASK_ID_2);
+      expect(selected).toHaveLength(2);
+
+      // Side panel should be cleared
+      expect(store.get(selectedTaskIdAtom)).toBe(null);
+
+      // Last selected should be task 2
+      expect(store.get(lastSelectedTaskAtom)).toBe(TEST_TASK_ID_2);
+    });
+
+    it("preserves side panel task when SHIFT+clicking for range selection", () => {
+      const sortedTaskIds = [TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3];
+
+      // Start with task 1 selected in side panel
+      store.set(selectedTaskIdAtom, TEST_TASK_ID_1);
+      expect(store.get(selectedTaskIdAtom)).toBe(TEST_TASK_ID_1);
+      expect(store.get(selectedTasksAtom)).toEqual([]);
+
+      // Simulate CMD+click on task 2 first (establishes anchor)
+      store.set(toggleTaskSelectionAtom, TEST_TASK_ID_2);
+
+      // Task 1 should now be preserved in multi-select along with task 2
+      let selected = store.get(selectedTasksAtom);
+      expect(selected).toContain(TEST_TASK_ID_1);
+      expect(selected).toContain(TEST_TASK_ID_2);
+      expect(store.get(lastSelectedTaskAtom)).toBe(TEST_TASK_ID_2);
+
+      // Now SHIFT+click task 3 for range selection from task 2 to task 3
+      store.set(selectRangeAtom, {
+        startTaskId: TEST_TASK_ID_2,
+        endTaskId: TEST_TASK_ID_3,
+        sortedTaskIds,
+      });
+
+      // Should have all three tasks: task 1 (preserved), task 2-3 (range)
+      selected = store.get(selectedTasksAtom);
+      expect(selected).toContain(TEST_TASK_ID_1);
+      expect(selected).toContain(TEST_TASK_ID_2);
+      expect(selected).toContain(TEST_TASK_ID_3);
+      expect(selected).toHaveLength(3);
+    });
   });
 });

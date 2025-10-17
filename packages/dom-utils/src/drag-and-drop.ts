@@ -160,3 +160,29 @@ export function reorderItems<T>(
 
   return result;
 }
+
+/**
+ * Calculates the adjusted index when reordering an item within the same list.
+ * Accounts for the removal of the source item before insertion.
+ *
+ * @param sourceIndex - Current index of the item being moved
+ * @param targetIndex - Index of the item being used as the drop target
+ * @param insertBefore - Whether to insert before (true) or after (false) the target
+ * @returns The adjusted index for the final position
+ *
+ * @example
+ * ```ts
+ * // Moving item from index 2 to position before index 5
+ * const newIndex = calculateReorderIndex(2, 5, true)
+ * // Result: 4 (accounting for removal of item at index 2)
+ * ```
+ */
+export function calculateReorderIndex(
+  sourceIndex: number,
+  targetIndex: number,
+  insertBefore: boolean,
+): number {
+  const insertIndex = insertBefore ? targetIndex : targetIndex + 1;
+  // If source is before target, the removal shifts indices down by 1
+  return sourceIndex < insertIndex ? insertIndex - 1 : insertIndex;
+}

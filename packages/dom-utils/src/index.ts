@@ -41,5 +41,6 @@ export {
   extractDropPayload,
   calculateInsertIndex,
   reorderItems,
+  calculateReorderIndex,
 } from "./drag-and-drop";
 export type { DropPayload } from "./drag-and-drop";

@@ -36,8 +36,8 @@ import { ProjectContextMenu } from "./project-context-menu"
 import { LabelContextMenu } from "./label-context-menu"
 import { DraggableProjectGroupItem } from "./draggable-project-group-item"
 import { DraggableProjectItem } from "./draggable-project-item"
-import { useSidebarDragState, extractSidebarInstruction } from "@/hooks/use-sidebar-drag-state"
-import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
+import { useSidebarDragDrop } from "@/hooks/use-sidebar-drag-drop"
+import { DropTargetItem } from "@/components/ui/drag-drop"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { useSetAtom, useAtom, useAtomValue } from "jotai"
@@ -48,14 +48,7 @@ import {
   updateLabelAtom,
   labelsAtom,
 } from "@tasktrove/atoms"
-import {
-  allGroupsAtom,
-  reorderProjectWithinGroupAtom,
-  moveProjectToGroupAtom,
-  removeProjectFromGroupWithIndexAtom,
-  reorderGroupAtom,
-  reorderProjectWithinRootAtom,
-} from "@tasktrove/atoms"
+import { allGroupsAtom } from "@tasktrove/atoms"
 import type { Project, Label, ProjectGroup } from "@/lib/types"
 import { isGroup } from "@/lib/types"
 import {
@@ -67,7 +60,6 @@ import {
   editingLabelIdAtom,
   stopEditingLabelAtom,
 } from "@tasktrove/atoms"
-import { ROOT_PROJECT_GROUP_ID } from "@/lib/types"
 import { useTranslation } from "@tasktrove/i18n"
 export function SidebarNav() {
   // Translation setup
@@ -80,114 +72,14 @@ export function SidebarNav() {
   const pathname = useAtomValue(pathnameAtom)
   const groups = useAtomValue(allGroupsAtom)
 
-  // Drag state management for sidebar
-  const { updateDragState, clearDragState, clearAllDragStates } = useSidebarDragState()
-
-  // Drag and drop atom setters
-  const reorderProjectWithinGroup = useSetAtom(reorderProjectWithinGroupAtom)
-  const reorderProjectWithinRoot = useSetAtom(reorderProjectWithinRootAtom)
-  const moveProjectToGroup = useSetAtom(moveProjectToGroupAtom)
-  const removeProjectFromGroupWithIndex = useSetAtom(removeProjectFromGroupWithIndexAtom)
-  const reorderGroup = useSetAtom(reorderGroupAtom)
+  // Drag and drop - consolidated hook
+  const { handleDrop } = useSidebarDragDrop()
 
   // Get action atoms
   const openSearch = useSetAtom(openSearchAtom)
   const openQuickAdd = useSetAtom(openQuickAddAtom)
   const openProjectDialog = useSetAtom(openProjectDialogAtom)
   const openLabelDialog = useSetAtom(openLabelDialogAtom)
-
-  // Root drop target handlers for ungrouped projects
-  const handleRootDrop = async ({
-    source,
-    location,
-  }: {
-    source: { data: Record<string, unknown> }
-    location: { current: { dropTargets: Array<{ data: Record<string, unknown> }> } }
-  }) => {
-    // don't trigger if not on root
-    if (location.current.dropTargets[0]?.data.type !== "sidebar-root-drop-target") {
-      return
-    }
-    console.log("🎯 Drop on root:", { source: source.data })
-
-    const sourceData = source.data
-    const dropTargetData = { type: "sidebar-root-drop-target" } // Root doesn't have complex target data
-
-    // Extract instruction following official pattern
-    const instruction = extractSidebarInstruction(sourceData, dropTargetData)
-
-    console.log("📍 Extracted root instruction:", instruction)
-
-    // Execute the instruction with actual atoms
-    if (instruction) {
-      try {
-        switch (instruction.type) {
-          case "reorder-project":
-            if (instruction.withinGroupId) {
-              // Reorder within a group
-              await reorderProjectWithinGroup({
-                groupId: instruction.withinGroupId,
-                projectId: instruction.projectId,
-                newIndex: instruction.toIndex,
-              })
-            } else {
-              await reorderProjectWithinRoot({
-                groupId: ROOT_PROJECT_GROUP_ID,
-                projectId: instruction.projectId,
-                newIndex: instruction.toIndex,
-              })
-            }
-            break
-
-          case "move-project-to-group":
-            await moveProjectToGroup({
-              projectId: instruction.projectId,
-              fromGroupId: instruction.fromGroupId,
-              toGroupId: instruction.toGroupId,
-              insertIndex: instruction.insertIndex,
-            })
-            break
-
-          case "remove-project-from-group":
-            await removeProjectFromGroupWithIndex({
-              projectId: instruction.projectId,
-              _insertIndex: instruction.insertIndex,
-            })
-            break
-
-          case "reorder-group":
-            await reorderGroup({
-              groupId: instruction.groupId,
-              fromIndex: instruction.fromIndex,
-              toIndex: instruction.toIndex,
-            })
-            break
-
-          default:
-            console.log("❓ Unknown instruction:", instruction)
-        }
-      } catch (error) {
-        console.error("🚨 Error executing drag and drop instruction:", error)
-      }
-    }
-
-    clearAllDragStates()
-  }
-
-  const handleRootDragEnter = ({ source }: { source: { data: Record<string, unknown> } }) => {
-    const sourceData = source.data
-    if (sourceData.type === "sidebar-project" && sourceData.isInGroup) {
-      updateDragState("root", {
-        isDraggingOver: true,
-        draggedItemType: "project",
-        targetType: "root",
-      })
-    }
-  }
-
-  const handleRootDragLeave = () => {
-    clearDragState("root")
-  }
 
   // Card button styles for quick actions
   const CARD_BUTTON_STYLES =
@@ -319,13 +211,16 @@ export function SidebarNav() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {/* Drop zone for root group items with drag and drop support */}
-                <DropTargetWrapper
-                  onDrop={handleRootDrop}
-                  onDragEnter={handleRootDragEnter}
-                  onDragLeave={handleRootDragLeave}
+                <DropTargetItem
+                  id="sidebar-root"
+                  index={-1}
+                  mode="tree-item"
+                  currentLevel={0}
+                  indentPerLevel={24}
                   getData={() => ({
                     type: "sidebar-root-drop-target",
                   })}
+                  onDrop={handleDrop}
                 >
                   {/* Render root group items in order (projects and groups) */}
                   {groups.projectGroups.items.map((item, index) => {
@@ -353,7 +248,7 @@ export function SidebarNav() {
                       )
                     }
                   })}
-                </DropTargetWrapper>
+                </DropTargetItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </CollapsibleContent>

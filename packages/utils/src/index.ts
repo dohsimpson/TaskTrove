@@ -49,6 +49,9 @@ export * from "./task-date-formatter";
 // Object manipulation utilities
 export * from "./object-utils";
 
+// Array operation utilities
+export * from "./array-operations";
+
 // Re-export commonly used utilities for convenience
 export { cn } from "./styling";
 export {
@@ -123,3 +126,10 @@ export type {
   TaskDateFormatOptions,
 } from "./task-date-formatter";
 export { clearNullValues } from "./object-utils";
+export {
+  reorderInArray,
+  removeFromArray,
+  insertAtIndex,
+  moveItemBetweenArrays,
+  moveItemToIndex,
+} from "./array-operations";

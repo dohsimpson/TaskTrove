@@ -1,38 +1,25 @@
 "use client"
 
-import React from "react"
 import { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { useRouter } from "next/navigation"
 import { ChevronDown, ChevronRight, FolderOpen, Folders } from "lucide-react"
 import { SidebarMenuItem, SidebarMenuButton, SidebarMenuBadge } from "@/components/ui/sidebar"
-import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
-import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
-import { SidebarDropIndicator } from "./sidebar-drop-indicator"
-import { DraggableProjectItem } from "./draggable-project-item"
-import { cn } from "@/lib/utils"
-import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
-import { ProjectGroupContextMenu } from "./project-group-context-menu"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
-import { extractSidebarInstruction } from "@/hooks/use-sidebar-drag-state"
+import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
+import { useSidebarDragDrop } from "@/hooks/use-sidebar-drag-drop"
+import { ProjectGroupContextMenu } from "./project-group-context-menu"
+import { DraggableProjectItem } from "./draggable-project-item"
+import { DraggableSidebarGroup, DropTargetSidebarGroup } from "./drag-drop"
 import { projectTaskCountsAtom } from "@tasktrove/atoms"
 import {
-  reorderProjectWithinGroupAtom,
-  moveProjectToGroupAtom,
-  removeProjectFromGroupWithIndexAtom,
-  reorderGroupAtom,
-  reorderProjectWithinRootAtom,
   updateProjectGroupAtom,
+  editingGroupIdAtom,
+  stopEditingGroupAtom,
+  pathnameAtom,
 } from "@tasktrove/atoms"
-import { editingGroupIdAtom, stopEditingGroupAtom, pathnameAtom } from "@tasktrove/atoms"
-import {
-  attachInstruction,
-  extractInstruction,
-  type Instruction,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item"
-import type { Input as DragInputType } from "@atlaskit/pragmatic-drag-and-drop/types"
 import type { ProjectGroup, ProjectId, Project } from "@/lib/types"
-import { ROOT_PROJECT_GROUP_ID } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
 interface DraggableProjectGroupItemProps {
   group: ProjectGroup
@@ -40,6 +27,10 @@ interface DraggableProjectGroupItemProps {
   index: number
 }
 
+/**
+ * Draggable project group item for sidebar navigation.
+ * Follows the golden path: uses shared drag-drop components with specialized wrappers.
+ */
 export function DraggableProjectGroupItem({
   group,
   projects,
@@ -48,61 +39,42 @@ export function DraggableProjectGroupItem({
   const [isExpanded, setIsExpanded] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
   const router = useRouter()
+
+  // State
   const pathname = useAtomValue(pathnameAtom)
   const projectTaskCounts = useAtomValue(projectTaskCountsAtom)
-
-  // Editing state
   const editingGroupId = useAtomValue(editingGroupIdAtom)
   const stopEditing = useSetAtom(stopEditingGroupAtom)
   const updateProjectGroup = useSetAtom(updateProjectGroupAtom)
-  const isEditing = editingGroupId === group.id
 
-  // Handle saving group name
-  const handleSave = (newName: string) => {
-    if (newName.trim() && newName !== group.name) {
-      updateProjectGroup({ id: group.id, name: newName.trim() })
-    }
-    stopEditing()
-  }
+  // Drag and drop
+  const { handleDrop } = useSidebarDragDrop()
 
-  // Drag and drop atom setters
-  const reorderProjectWithinGroup = useSetAtom(reorderProjectWithinGroupAtom)
-  const reorderProjectWithinRoot = useSetAtom(reorderProjectWithinRootAtom)
-  const moveProjectToGroup = useSetAtom(moveProjectToGroupAtom)
-  const removeProjectFromGroupWithIndex = useSetAtom(removeProjectFromGroupWithIndexAtom)
-  const reorderGroup = useSetAtom(reorderGroupAtom)
-
-  // Local drag state for this group
-  const [groupDragState, setGroupDragState] = useState<{
-    isDraggingOver: boolean
-    draggedItemRect?: { height: number }
-    draggedItemType?: "project" | "group"
-    instruction?: Instruction | null
-  } | null>(null)
-
-  // Context menu visibility with flicker prevention
+  // Context menu visibility
   const {
     isVisible: contextMenuVisible,
     isMenuOpen,
     handleMenuOpenChange,
   } = useContextMenuVisibility(isHovered)
 
-  // Calculate total task count for projects in this group (simplified - no nested groups)
+  // Computed values
+  const isEditing = editingGroupId === group.id
+  const isActive = pathname === `/projectgroups/${group.slug}`
+
+  // Calculate total task count for projects in this group
   const calculateGroupTaskCount = (groupItems: ProjectGroup["items"]): number => {
     let count = 0
     for (const item of groupItems) {
       if (typeof item === "string") {
-        // It's a project ID
         count += projectTaskCounts[item] || 0
       }
-      // Note: We skip nested groups since we want single-layer groups only
     }
     return count
   }
 
   const taskCount = calculateGroupTaskCount(group.items)
 
-  // Get only project IDs from items (ignore nested groups for simplicity)
+  // Get only project IDs from items (ignore nested groups)
   const projectIds = group.items.filter((item): item is ProjectId => typeof item === "string")
 
   // Find actual project objects for this group's direct projects
@@ -110,232 +82,47 @@ export function DraggableProjectGroupItem({
     .map((projectId) => projects.find((p) => p.id === projectId))
     .filter((p): p is Project => !!p)
 
-  // Check if this group is currently active (being viewed)
-  const isActive = pathname === `/projectgroups/${group.slug}`
+  const handleSave = (newName: string) => {
+    if (newName.trim() && newName !== group.name) {
+      updateProjectGroup({ id: group.id, name: newName.trim() })
+    }
+    stopEditing()
+  }
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded)
   }
 
   const handleGroupClick = (e: React.MouseEvent) => {
-    // Check if click was on the chevron specifically
     const target = e.target
     const isChevronClick = target instanceof Element && target.closest("[data-chevron]") !== null
 
     if (isChevronClick) {
-      // Toggle expansion if chevron was clicked
       toggleExpanded()
     } else if (!isEditing) {
-      // Navigate to group view if not editing and not chevron click
       router.push(`/projectgroups/${group.slug}`)
-    }
-  }
-
-  // Drag and drop handlers for group header
-  const handleGroupDrop = async ({
-    source,
-    location,
-  }: {
-    source: { data: Record<string, unknown> }
-    location: { current: { dropTargets: Array<{ data: Record<string, unknown> }> } }
-  }) => {
-    console.log("🎯 Drop on group:", { source: source.data, location })
-
-    const sourceData = source.data
-    const dropTargetData = location.current.dropTargets[0]?.data
-
-    // Extract instruction using Atlassian's instruction system
-    if (!dropTargetData) return
-    const instruction = extractSidebarInstruction(sourceData, dropTargetData)
-
-    console.log("📍 Extracted instruction:", instruction)
-
-    // Execute the instruction with actual atoms
-    if (instruction) {
-      try {
-        switch (instruction.type) {
-          case "reorder-project":
-            if (instruction.withinGroupId) {
-              // Reorder within a group
-              await reorderProjectWithinGroup({
-                groupId: instruction.withinGroupId,
-                projectId: instruction.projectId,
-                newIndex: instruction.toIndex,
-              })
-            } else {
-              await reorderProjectWithinRoot({
-                groupId: ROOT_PROJECT_GROUP_ID,
-                projectId: instruction.projectId,
-                newIndex: instruction.toIndex,
-              })
-            }
-            break
-
-          case "move-project-to-group":
-            await moveProjectToGroup({
-              projectId: instruction.projectId,
-              fromGroupId: instruction.fromGroupId,
-              toGroupId: instruction.toGroupId,
-              insertIndex: instruction.insertIndex,
-            })
-            break
-
-          case "remove-project-from-group":
-            await removeProjectFromGroupWithIndex({
-              projectId: instruction.projectId,
-              _insertIndex: instruction.insertIndex,
-            })
-            break
-
-          case "reorder-group":
-            await reorderGroup({
-              groupId: instruction.groupId,
-              fromIndex: instruction.fromIndex,
-              toIndex: instruction.toIndex,
-            })
-            break
-
-          default:
-            console.log("❓ Unknown instruction:", instruction)
-        }
-      } catch (error) {
-        console.error("🚨 Error executing drag and drop instruction:", error)
-      }
-    }
-
-    // Auto-expand group when project is added to it
-    if (
-      instruction?.type === "move-project-to-group" &&
-      instruction.toGroupId === group.id &&
-      !isExpanded
-    ) {
-      setIsExpanded(true)
-    }
-
-    setGroupDragState(null)
-  }
-
-  const handleGroupDragEnter = ({ source }: { source: { data: Record<string, unknown> } }) => {
-    const sourceData = source.data
-    if (
-      (sourceData.type === "sidebar-group" && sourceData.groupId !== group.id) ||
-      sourceData.type === "sidebar-project"
-    ) {
-      const rect = sourceData.rect
-      if (rect && typeof rect === "object" && "height" in rect && typeof rect.height === "number") {
-        setGroupDragState({
-          isDraggingOver: true,
-          draggedItemRect: { height: rect.height },
-          draggedItemType: sourceData.type === "sidebar-group" ? "group" : "project",
-        })
-      }
-    }
-  }
-
-  const handleGroupDragLeave = () => {
-    setGroupDragState(null)
-  }
-
-  const handleGroupDrag = ({
-    source,
-    location,
-  }: {
-    source: { data: Record<string, unknown> }
-    location: { current: { dropTargets: Array<{ data: Record<string, unknown> }> } }
-  }) => {
-    const sourceData = source.data
-    if (
-      (sourceData.type === "sidebar-group" && sourceData.groupId !== group.id) ||
-      sourceData.type === "sidebar-project"
-    ) {
-      // Only show indicator if THIS element is the innermost target (following official pattern)
-      const innerMost = location.current.dropTargets[0]
-      if (!innerMost) return
-
-      const isInnermostTarget =
-        innerMost.data.type === "sidebar-group-drop-target" && innerMost.data.groupId === group.id
-
-      if (isInnermostTarget) {
-        const instruction = extractInstruction(innerMost.data)
-        setGroupDragState((prev) =>
-          prev
-            ? {
-                ...prev,
-                instruction,
-              }
-            : null,
-        )
-      } else {
-        // Clear indicator if not innermost target
-        setGroupDragState((prev) => (prev ? { ...prev, instruction: null } : null))
-      }
     }
   }
 
   return (
     <>
       {/* Group header with drag and drop */}
-      <DropTargetWrapper
-        onDrop={handleGroupDrop}
-        onDragEnter={handleGroupDragEnter}
-        onDragLeave={handleGroupDragLeave}
-        onDrag={handleGroupDrag}
-        getData={(args?: { input?: DragInputType; element?: HTMLElement }) => {
-          const baseData = {
-            type: "sidebar-group-drop-target",
-            groupId: group.id,
-            index,
-          }
-          // Use attachInstruction for proper zone detection
-          if (args?.input && args.element) {
-            return attachInstruction(baseData, {
-              element: args.element,
-              input: args.input,
-              currentLevel: 0, // Groups are at level 0
-              indentPerLevel: 0, // Not using indentation for sidebar
-              mode: "standard",
-            })
-          }
-          return baseData
-        }}
-      >
-        <DraggableWrapper
-          dragId={group.id}
-          index={index}
-          getData={() => ({
-            type: "sidebar-group",
-            groupId: group.id,
-            groupName: group.name,
-            index,
-            projectCount: groupProjects.length,
-          })}
-        >
+      <DropTargetSidebarGroup groupId={group.id} index={index} onDrop={handleDrop}>
+        <DraggableSidebarGroup groupId={group.id} index={index} projectCount={groupProjects.length}>
           <SidebarMenuItem>
             <div
               className="relative group w-full"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
-              {/* Drop indicator above - show when reorder-above instruction */}
-              {groupDragState?.isDraggingOver &&
-                groupDragState.instruction?.type === "reorder-above" &&
-                groupDragState.draggedItemRect && (
-                  <SidebarDropIndicator level={0} className="-top-1" />
-                )}
               <SidebarMenuButton
                 asChild={false}
                 isActive={isActive}
                 onClick={handleGroupClick}
-                className={cn(
-                  "w-full cursor-pointer transition-colors",
-                  // Subtle highlighting when make-child instruction (dropping INTO group)
-                  groupDragState?.isDraggingOver &&
-                    groupDragState.instruction?.type === "make-child" &&
-                    "bg-primary/10 border border-primary/20",
-                )}
+                className="w-full cursor-pointer transition-colors"
               >
                 <div className="flex items-center gap-2 w-full">
-                  {/* Chevron for expand/collapse - always show for visual consistency */}
+                  {/* Chevron for expand/collapse */}
                   <span className="flex-shrink-0" data-chevron>
                     {isExpanded ? (
                       <ChevronDown className="h-3 w-3" />
@@ -383,22 +170,14 @@ export function DraggableProjectGroupItem({
                   onOpenChange={handleMenuOpenChange}
                 />
               </div>
-
-              {/* Drop indicator below group - show when reorder-below instruction */}
-              {groupDragState?.isDraggingOver &&
-                groupDragState.instruction?.type === "reorder-below" &&
-                groupDragState.draggedItemRect && (
-                  <SidebarDropIndicator level={0} className="-bottom-1" />
-                )}
             </div>
           </SidebarMenuItem>
-        </DraggableWrapper>
-      </DropTargetWrapper>
+        </DraggableSidebarGroup>
+      </DropTargetSidebarGroup>
 
       {/* Group contents (when expanded) */}
       {isExpanded && (
         <>
-          {/* Direct projects in this group */}
           {groupProjects.map((project, projectIndex) => (
             <DraggableProjectItem
               key={project.id}

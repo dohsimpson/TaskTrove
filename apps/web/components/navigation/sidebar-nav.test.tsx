@@ -119,6 +119,7 @@ vi.mock("@tasktrove/atoms", () => ({
   deleteLabel: vi.fn(),
   updateProjectAtom: vi.fn(),
   updateLabelAtom: vi.fn(),
+  updateTasksAtom: { debugLabel: "updateTasksAtom" },
   taskCounts: vi.fn(),
   taskCountsAtom: vi.fn(),
   sortedLabels: vi.fn(),

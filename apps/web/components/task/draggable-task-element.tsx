@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { useAtom, useAtomValue } from "jotai"
-import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
 import { selectedTasksAtom, multiSelectDraggingAtom } from "@tasktrove/atoms"
+import { DraggableItem } from "@/components/ui/drag-drop"
 import type { TaskId } from "@/lib/types"
 
 interface DraggableTaskElementProps {
@@ -21,7 +21,6 @@ interface DraggableTaskElementProps {
  * dragging multiple tasks.
  */
 export function DraggableTaskElement({ taskId, children }: DraggableTaskElementProps) {
-  const ref = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
   // Access selection state directly from atom - no props needed!
@@ -36,34 +35,31 @@ export function DraggableTaskElement({ taskId, children }: DraggableTaskElementP
     }
   }, [isMulti, isDragging, setMultiSelectDragging])
 
-  useEffect(() => {
-    if (!ref.current) return
-
-    return draggable({
-      element: ref.current,
-      getInitialData: () => ({
-        ids: isMulti ? selectedTasks : [taskId],
-      }),
-      onDragStart: () => setIsDragging(true),
-      onDrop: () => setIsDragging(false),
-    })
-  }, [taskId, selectedTasks, isMulti])
-
   return (
-    <div
-      ref={ref}
-      style={{ opacity: isDragging || multiSelectDragging ? 0.5 : 1 }}
-      data-testid={`draggable-task-${taskId}`}
+    <DraggableItem
+      id={taskId}
+      index={0} // Index managed by parent list
+      mode="list"
+      getData={() => ({
+        ids: isMulti ? selectedTasks : [taskId],
+        taskId,
+      })}
+      onDragStart={() => setIsDragging(true)}
+      onDrop={() => setIsDragging(false)}
+      className="relative"
+      dragClassName={isDragging || multiSelectDragging ? "opacity-50" : ""}
     >
-      {children}
-      {isDragging && isMulti && (
-        <div
-          className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-medium shadow-lg z-10"
-          style={{ pointerEvents: "none" }}
-        >
-          {selectedTasks.length}
-        </div>
-      )}
-    </div>
+      <div data-testid={`draggable-task-${taskId}`}>
+        {children}
+        {isDragging && isMulti && (
+          <div
+            className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-medium shadow-lg z-10"
+            style={{ pointerEvents: "none" }}
+          >
+            {selectedTasks.length}
+          </div>
+        )}
+      </div>
+    </DraggableItem>
   )
 }

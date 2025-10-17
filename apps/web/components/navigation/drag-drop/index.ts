@@ -6,3 +6,7 @@
 export { DraggableSidebarProject, DraggableSidebarGroup } from "./draggable-sidebar-item"
 
 export { DropTargetSidebarProject, DropTargetSidebarGroup } from "./drop-target-sidebar-item"
+
+export { DraggableLabelItem } from "./draggable-label-item"
+
+export { DropTargetLabelItem } from "./drop-target-label-item"

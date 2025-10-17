@@ -224,6 +224,59 @@ export const deleteLabelAtom = atom(
 );
 deleteLabelAtom.debugLabel = "deleteLabelAtom";
 
+/**
+ * Reorders labels within the labels array.
+ * This atom handles drag-and-drop reordering of labels.
+ */
+export const reorderLabelsAtom = atom(
+  null,
+  async (get, set, reorder: { fromIndex: number; toIndex: number }) => {
+    try {
+      const { fromIndex, toIndex } = reorder;
+
+      // Validate indices
+      if (fromIndex < 0 || toIndex < 0) {
+        throw new Error(
+          "Invalid reorder indices: indices must be non-negative",
+        );
+      }
+
+      const labels = get(labelsAtom);
+
+      // Additional validation against current labels array
+      if (fromIndex >= labels.length || toIndex > labels.length) {
+        throw new Error(
+          `Invalid reorder indices: fromIndex=${fromIndex}, toIndex=${toIndex}, labels.length=${labels.length}`,
+        );
+      }
+
+      // No-op if indices are the same
+      if (fromIndex === toIndex) {
+        return;
+      }
+
+      // Reorder the labels array using existing labelsAtom write functionality
+      // This will trigger the mutation and update server state
+      const reorderedLabels = [...labels];
+      const [movedLabel] = reorderedLabels.splice(fromIndex, 1);
+
+      // TypeScript safety: movedLabel should exist since we validated fromIndex
+      if (!movedLabel) {
+        throw new Error(`Label not found at source index ${fromIndex}`);
+      }
+
+      reorderedLabels.splice(toIndex, 0, movedLabel);
+
+      // Use the existing labelsAtom write functionality to persist changes
+      await set(labelsAtom, reorderedLabels);
+    } catch (error) {
+      handleAtomError(error, "reorderLabelsAtom");
+      throw error;
+    }
+  },
+);
+reorderLabelsAtom.debugLabel = "reorderLabelsAtom";
+
 // =============================================================================
 // EXPORTS
 // =============================================================================
@@ -247,6 +300,7 @@ export const labelAtoms = {
   addLabel: addLabelAtom,
   updateLabel: updateLabelAtom,
   deleteLabel: deleteLabelAtom,
+  reorderLabels: reorderLabelsAtom,
 } as const;
 
 // Note: labelsAtom is imported from "../data/base/atoms"

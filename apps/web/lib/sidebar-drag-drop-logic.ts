@@ -6,20 +6,19 @@
  */
 
 import type { Instruction as TreeInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item"
-import type { Instruction as ListInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
+import type { Instruction as UnionInstruction } from "@/components/ui/drag-drop"
 import type { ProjectId, GroupId, ProjectGroup } from "@/lib/types"
 import { ROOT_PROJECT_GROUP_ID, isGroup, createGroupId } from "@/lib/types"
 import { reorderInArray, moveItemBetweenArrays } from "@tasktrove/utils"
 
+// Export type alias for test compatibility
+export type DragInstruction = TreeInstruction
+// Type alias matching DropTargetItem's union type
+export type Instruction = UnionInstruction
+
 // =============================================================================
 // TYPES
 // =============================================================================
-
-/**
- * Unified instruction type that supports both tree-item and list-item instructions.
- * This allows validation logic to work with both drag-and-drop modes.
- */
-export type DragInstruction = TreeInstruction | ListInstruction
 
 /**
  * Represents a location in the group hierarchy
@@ -313,15 +312,17 @@ export function calculateMove(
  *
  * @param sourceData - Data from the dragged item
  * @param targetData - Data from the drop target
- * @param instruction - Tree-item or list-item instruction (can be null)
+ * @param instruction - Union instruction type from DropTargetItem (can be null)
  * @returns true if valid, false if invalid
  */
 export function isValidSidebarOperation(
   sourceData: Record<string, unknown>,
   targetData: Record<string, unknown>,
-  instruction: DragInstruction | null,
+  instruction: Instruction | null,
 ): boolean {
   // Helper to check instruction type (handles both tree-item and list-item)
+  // For tree-item: has "type" property (reorder-above, reorder-below, make-child)
+  // For list-item: has "operation" property (reorder-before, reorder-after, combine)
   const instructionType = instruction && "type" in instruction ? instruction.type : null
 
   // Block project nesting (make-child on project)
@@ -360,7 +361,7 @@ export function isValidSidebarOperation(
  */
 function extractInstructionForValidation(
   targetData: Record<string, unknown>,
-): DragInstruction | null {
+): TreeInstruction | null {
   const instructionSymbol = Object.getOwnPropertySymbols(targetData).find((symbol) =>
     symbol.toString().includes("tree-item-instruction"),
   )
@@ -377,8 +378,8 @@ function extractInstructionForValidation(
     instructionValue !== null &&
     "type" in instructionValue
   ) {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Type guard ensures this is DragInstruction
-    return instructionValue as DragInstruction
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Type guard ensures this is TreeInstruction
+    return instructionValue as TreeInstruction
   }
   return null
 }

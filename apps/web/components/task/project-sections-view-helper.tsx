@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react"
 import { autoScrollWhileDragging } from "auto-scroll-while-dragging"
 import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
-import { DropTargetItem } from "@/components/ui/drag-drop"
+import { DraggableItem, DropTargetItem } from "@/components/ui/drag-drop"
 
 interface DropTargetElementProps {
   type: "list-item" | "group"
@@ -66,5 +66,17 @@ export function DropTargetElement({
         {children}
       </DropTargetItem>
     </div>
+  )
+}
+
+/**
+ * Simple draggable element wrapper.
+ * Use DraggableTaskElement for task-specific features like multi-select.
+ */
+export function DraggableElement({ id, children }: { id: string; children: React.ReactNode }) {
+  return (
+    <DraggableItem id={id} index={0} mode="list" getData={() => ({ ids: [id] })}>
+      <div data-testid={`draggable-${id}`}>{children}</div>
+    </DraggableItem>
   )
 }

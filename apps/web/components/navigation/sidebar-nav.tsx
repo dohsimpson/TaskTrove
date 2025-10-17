@@ -19,6 +19,7 @@ import {
   SidebarMenuButton,
   SidebarMenuBadge,
 } from "@/components/ui/sidebar"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
   Inbox,
@@ -36,8 +37,11 @@ import { ProjectContextMenu } from "./project-context-menu"
 import { LabelContextMenu } from "./label-context-menu"
 import { DraggableProjectGroupItem } from "./draggable-project-group-item"
 import { DraggableProjectItem } from "./draggable-project-item"
+import { DraggableLabelItem, DropTargetLabelItem } from "./drag-drop"
 import { useSidebarDragDrop } from "@/hooks/use-sidebar-drag-drop"
+import { useLabelDragDrop } from "@/hooks/use-label-drag-drop"
 import { DropTargetItem } from "@/components/ui/drag-drop"
+import { isValidLabelOperation } from "@/lib/label-drag-drop-logic"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { useSetAtom, useAtom, useAtomValue } from "jotai"
@@ -72,8 +76,9 @@ export function SidebarNav() {
   const pathname = useAtomValue(pathnameAtom)
   const groups = useAtomValue(allGroupsAtom)
 
-  // Drag and drop - consolidated hook
-  const { handleDrop } = useSidebarDragDrop()
+  // Drag and drop - consolidated hooks
+  const { handleDrop: handleProjectDrop } = useSidebarDragDrop()
+  const { handleDrop: handleLabelDrop } = useLabelDragDrop()
 
   // Get action atoms
   const openSearch = useSetAtom(openSearchAtom)
@@ -220,7 +225,7 @@ export function SidebarNav() {
                   getData={() => ({
                     type: "sidebar-root-drop-target",
                   })}
-                  onDrop={handleDrop}
+                  onDrop={handleProjectDrop}
                 >
                   {/* Render root group items in order (projects and groups) */}
                   {groups.projectGroups.items.map((item, index) => {
@@ -274,9 +279,37 @@ export function SidebarNav() {
           <CollapsibleContent>
             <SidebarGroupContent>
               <SidebarMenu>
-                {labels.map((label) => (
-                  <LabelMenuItem key={label.id} label={label} />
-                ))}
+                {/* Add root drop target for empty labels area - uses tree-item mode (golden path) */}
+                <DropTargetItem
+                  id="labels-root"
+                  index={-1}
+                  mode="tree-item"
+                  currentLevel={0}
+                  indentPerLevel={24}
+                  getData={() => ({
+                    type: "sidebar-labels-root-drop-target",
+                  })}
+                  validateInstruction={isValidLabelOperation}
+                  onDrop={handleLabelDrop}
+                >
+                  {labels.map((label, index) => (
+                    <DropTargetLabelItem
+                      key={label.id}
+                      labelId={label.id}
+                      index={index}
+                      onDrop={handleLabelDrop}
+                    >
+                      <DraggableLabelItem
+                        labelId={label.id}
+                        index={index}
+                        name={label.name}
+                        color={label.color}
+                      >
+                        <LabelMenuItem label={label} />
+                      </DraggableLabelItem>
+                    </DropTargetLabelItem>
+                  ))}
+                </DropTargetItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </CollapsibleContent>
@@ -334,6 +367,7 @@ function SidebarMenuItemWithContext({
   onNameChange,
   onCancelEdit,
 }: ProjectMenuItemProps | LabelMenuItemProps) {
+  const router = useRouter()
   const [isHovered, setIsHovered] = useState(false)
 
   // Context menu visibility with flicker prevention
@@ -350,8 +384,17 @@ function SidebarMenuItemWithContext({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <SidebarMenuButton asChild isActive={isActive}>
-          <Link href={href} className="w-full">
+        <SidebarMenuButton
+          asChild={false}
+          isActive={isActive}
+          onClick={(e) => {
+            if (!isEditing && !e.defaultPrevented) {
+              router.push(href)
+            }
+          }}
+          className="cursor-pointer"
+        >
+          <div className="flex items-center gap-2 w-full">
             {icon}
             {isEditing ? (
               <EditableDiv
@@ -361,14 +404,15 @@ function SidebarMenuItemWithContext({
                 onCancel={onCancelEdit}
                 autoFocus
                 className="flex-1"
+                onClick={(e) => e.stopPropagation()}
               />
             ) : (
-              <span>{name}</span>
+              <span className="flex-1 truncate mr-6">{name}</span>
             )}
             <SidebarMenuBadge className={contextMenuVisible ? "opacity-0" : ""}>
               {taskCount}
             </SidebarMenuBadge>
-          </Link>
+          </div>
         </SidebarMenuButton>
         <div className="absolute right-2 top-1/2 -translate-y-1/2">
           {contextMenuType === "project" ? (

@@ -17,4 +17,4 @@
 export { DraggableItem } from "./draggable-item"
 export { DropTargetItem } from "./drop-target-item"
 export type { DraggableMode } from "./draggable-item"
-export type { DropTargetMode, Instruction, DragInstruction } from "./drop-target-item"
+export type { DropTargetMode, Instruction } from "./drop-target-item"

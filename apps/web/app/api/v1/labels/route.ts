@@ -231,41 +231,65 @@ async function updateLabels(
     )
   }
 
-  // Update existing labels with the provided data (partial updates)
-  const labelMap: Map<LabelId, Label> = new Map(
-    fileData.labels.map((label: Label) => [label.id, label]),
-  )
-  const updatedLabels: Label[] = []
-  const updatedLabelIds: LabelId[] = []
+  // Detect if this is a full array replacement (reordering) vs partial updates
+  // Full replacement: all labels present with all fields (name, slug, color)
+  const isFullReplacement =
+    updates.length === fileData.labels.length &&
+    updates.every((u) => u.name !== undefined && u.slug !== undefined && u.color !== undefined)
 
-  for (const update of updates) {
-    const existingLabel = labelMap.get(update.id)
-    if (existingLabel) {
-      // Merge update with existing label (partial update)
+  let finalLabels: Label[]
+
+  if (isFullReplacement) {
+    // Full replacement - validate all IDs exist and use the new order
+    const existingIds = new Set(fileData.labels.map((l) => l.id))
+    const allIdsValid = updates.every((u) => existingIds.has(u.id))
+
+    if (!allIdsValid) {
+      return createErrorResponse(
+        "Invalid label IDs in update",
+        "Some label IDs do not exist",
+        400,
+        ApiErrorCode.VALIDATION_ERROR,
+      )
+    }
+
+    // Use the order from updates (for reordering operations)
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Validated above: all fields present
+    finalLabels = updates as Label[]
+  } else {
+    // Partial updates - create maps for efficient O(1) lookups (same pattern as projects)
+    const updateMap: Map<LabelId, (typeof updates)[0]> = new Map(
+      updates.map((update) => [update.id, update]),
+    )
+
+    // Update labels using merge logic (preserves original order)
+    finalLabels = fileData.labels.map((label: Label) => {
+      const update = updateMap.get(label.id)
+      if (!update) return label
+
+      // Merge update into label (partial update)
       const updatedLabel: Label = {
-        ...existingLabel,
+        ...label,
         ...(update.name !== undefined && { name: update.name }),
         ...(update.color !== undefined && { color: update.color }),
         ...(update.slug !== undefined && { slug: update.slug }),
       }
 
       // If name is being updated but slug is not explicitly provided, regenerate slug
-      if (update.name && update.name !== existingLabel.name && update.slug === undefined) {
+      if (update.name && update.name !== label.name && update.slug === undefined) {
         // Filter out current label from slug generation to avoid self-collision
-        const otherLabels = fileData.labels.filter((l) => l.id !== update.id)
+        const otherLabels = fileData.labels.filter((l) => l.id !== label.id)
         updatedLabel.slug = createSafeLabelNameSlug(update.name, otherLabels)
       }
 
-      updatedLabels.push(updatedLabel)
-      updatedLabelIds.push(update.id)
-      labelMap.set(update.id, updatedLabel)
-    }
+      return updatedLabel
+    })
   }
 
-  // Update the file data with merged labels
+  // Update the file data with final labels
   const updatedFileData = {
     ...fileData,
-    labels: Array.from(labelMap.values()),
+    labels: finalLabels,
   }
 
   const writeSuccess = await withPerformanceLogging(
@@ -284,12 +308,17 @@ async function updateLabels(
     )
   }
 
+  // Get the actual updated labels from finalLabels (same pattern as projects)
+  const updatedLabels = finalLabels.filter((label: Label) =>
+    updates.some((update) => update.id === label.id),
+  )
+
   logBusinessEvent(
     "labels_updated",
     {
-      labelCount: updatedLabels.length,
-      updatedLabels: updatedLabels.map((label) => ({ id: label.id, name: label.name })),
-      totalLabels: updatedFileData.labels.length,
+      labelCount: updates.length,
+      updatedLabels: updates.map((u) => ({ id: u.id })),
+      totalLabels: finalLabels.length,
     },
     request.context,
   )
@@ -297,8 +326,8 @@ async function updateLabels(
   const response: UpdateLabelResponse = {
     success: true,
     labels: updatedLabels,
-    count: updatedLabels.length,
-    message: `${updatedLabels.length} label(s) updated successfully`,
+    count: updates.length,
+    message: `${updates.length} label(s) updated successfully`,
   }
 
   return NextResponse.json<UpdateLabelResponse>(response)

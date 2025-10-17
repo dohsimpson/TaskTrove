@@ -23,12 +23,6 @@ import { cn } from "@/lib/utils"
 export type DropTargetMode = "list-item" | "group" | "tree-item"
 export type Instruction = ListInstruction | TreeInstruction
 
-/**
- * Unified instruction type that supports both tree-item and list-item instructions.
- * This is re-exported from the shared drag-drop logic.
- */
-export type DragInstruction = Instruction
-
 interface DropTargetItemProps {
   id: string
   index?: number
@@ -232,8 +226,8 @@ export function DropTargetItem({
   return (
     <div ref={ref} className={cn(className, "relative")} data-testid={`drop-target-${id}`}>
       {children}
-      {instruction && "type" in instruction && (
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Type guard ensures this is TreeInstruction
+      {instruction && (
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- In tree-item mode, instruction is TreeInstruction
         <TreeDropIndicator instruction={instruction as TreeInstruction} />
       )}
     </div>

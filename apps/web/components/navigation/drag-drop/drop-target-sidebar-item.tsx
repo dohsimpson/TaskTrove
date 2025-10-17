@@ -21,6 +21,8 @@ interface DropTargetSidebarProjectProps {
  * Prevents invalid nesting:
  * - Projects cannot be nested under other projects (make-child blocked)
  * - Groups can only exist at ROOT level
+ *
+ * Hides invalid indicators using validateInstruction (golden path).
  */
 export function DropTargetSidebarProject({
   projectId,
@@ -76,6 +78,8 @@ interface DropTargetSidebarGroupProps {
  *
  * Prevents invalid nesting:
  * - Groups cannot be nested under other groups (make-child blocked)
+ *
+ * Hides invalid indicators using validateInstruction (golden path).
  */
 export function DropTargetSidebarGroup({
   groupId,

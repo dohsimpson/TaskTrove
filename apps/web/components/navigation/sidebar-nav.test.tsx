@@ -177,6 +177,7 @@ vi.mock("@tasktrove/atoms", () => ({
   // Ordering atoms
   orderingAtom: vi.fn(),
   reorderProjectAtom: { debugLabel: "reorderProjectAtom" },
+  reorderLabelsAtom: { debugLabel: "reorderLabelsAtom" },
 }))
 
 // Mock ProjectGroupItem component

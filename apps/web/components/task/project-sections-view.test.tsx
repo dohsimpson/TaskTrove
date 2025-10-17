@@ -825,14 +825,14 @@ describe("ProjectSectionsView", () => {
     render(<ProjectSectionsView droppableId="test-droppable" />)
 
     const badges = screen.getAllByTestId("badge")
-    expect(badges).toHaveLength(4) // 4 sections (3 original + 1 default)
+    expect(badges).toHaveLength(5) // 4 task count badges + 1 "Default" badge
 
     // Check badge content shows task count
     const badgeTexts = badges.map((badge) => badge.textContent)
     expect(badgeTexts).toContain("0") // Default section has 0 tasks
     expect(badgeTexts).toContain("2") // Planning has 2 tasks (TEST_TASK_ID_1 and TEST_TASK_ID_3 both have sectionId: TEST_GROUP_ID_1)
     expect(badgeTexts).toContain("1") // In Progress has 1 task (TEST_TASK_ID_2 has sectionId: TEST_GROUP_ID_2)
-    expect(badgeTexts).toContain("0") // Review has 0 tasks (there will be two sections with 0 tasks)
+    expect(badgeTexts).toContain("Default") // Default section indicator badge
   })
 
   it("handles task click to open side panel", async () => {

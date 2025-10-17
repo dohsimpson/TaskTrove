@@ -39,7 +39,8 @@ export function MaterialCard({
   ...props
 }: MaterialCardProps) {
   // Shared base styles across all variants
-  const baseStyles = "border-l-[3px] hover:border-opacity-90 transition-all dark:shadow-gray-300/10"
+  const baseStyles =
+    "border-l-[3px] hover:border-opacity-90 transition-all dark:shadow-gray-300/10 bg-background"
 
   // Common selected state for card variants
   const selectedStyles = "bg-accent text-accent-foreground border-accent-foreground"

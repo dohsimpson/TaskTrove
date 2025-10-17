@@ -18,6 +18,7 @@ import {
 import type { ProjectId, GroupId, Task, TaskId, Project } from "@/lib/types"
 import { createTaskId } from "@/lib/types"
 import { EditableSectionHeader } from "./editable-section-header"
+import { getDefaultSectionId } from "@tasktrove/types/defaults"
 import { VirtualizedTaskList } from "./virtualized-task-list"
 import { DropTargetElement } from "./project-sections-view-helper"
 import { Collapsible, CollapsibleContent } from "@/components/ui/custom/animated-collapsible"
@@ -326,12 +327,17 @@ export function Section({
     toggleSectionCollapse(sectionId)
   }
 
+  // Determine if this is the default section
+  const defaultSectionId = project ? getDefaultSectionId(project) : null
+  const isDefaultSection = defaultSectionId === sectionId
+
   const headerContent = (
     <EditableSectionHeader
       sectionId={sectionId}
       sectionName={section.name}
       sectionColor={section.color || "#808080"}
       taskCount={tasks.length}
+      isDefaultSection={isDefaultSection}
       onSaveEdit={handleSaveEdit}
       onCancelEdit={handleCancelEdit}
       className={cn("px-2 py-2", variant === "kanban" ? "border-b-2" : "border-t-2")}

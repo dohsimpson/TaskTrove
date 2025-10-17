@@ -28,6 +28,7 @@ import {
   ArrowDown,
   Plus,
   Move,
+  Star,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { projectAtoms } from "@tasktrove/atoms"
@@ -42,6 +43,7 @@ interface EntityContextMenuProps {
   entityColor: string
   isVisible: boolean
   showDeleteOption?: boolean
+  showSetAsDefaultOption?: boolean
   onEdit: () => void
   onDelete: (deleteContainedResources?: boolean) => void
   onColorChange: (color: string) => void
@@ -50,6 +52,7 @@ interface EntityContextMenuProps {
   onMoveDown?: () => void
   onAddAbove?: () => void
   onAddBelow?: () => void
+  onSetAsDefault?: () => void
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }
@@ -61,6 +64,7 @@ export function EntityContextMenu({
   entityColor,
   isVisible,
   showDeleteOption = true,
+  showSetAsDefaultOption = false,
   onEdit,
   onDelete,
   onColorChange,
@@ -69,6 +73,7 @@ export function EntityContextMenu({
   onMoveDown,
   onAddAbove,
   onAddBelow,
+  onSetAsDefault,
   open,
   onOpenChange,
 }: EntityContextMenuProps) {
@@ -217,6 +222,11 @@ export function EntityContextMenu({
     setIsOpen(false)
   }
 
+  const handleSetAsDefault = () => {
+    onSetAsDefault?.()
+    setIsOpen(false)
+  }
+
   const getMenuWidth = () => {
     return entityType === "label" ? "w-36" : "w-40"
   }
@@ -265,6 +275,12 @@ export function EntityContextMenu({
               <DropdownMenuItem onClick={handleDuplicate}>
                 {getDuplicateIcon()({ className: "h-3 w-3 mr-2" })}
                 Duplicate
+              </DropdownMenuItem>
+            )}
+            {showSetAsDefaultOption && onSetAsDefault && (
+              <DropdownMenuItem onClick={handleSetAsDefault}>
+                <Star className="h-3 w-3 mr-2" />
+                Set as Default
               </DropdownMenuItem>
             )}
 
@@ -335,6 +351,7 @@ export function EntityContextMenu({
               <>
                 {/* Only show separator if we have items before the delete option */}
                 {(onDuplicate ||
+                  (showSetAsDefaultOption && onSetAsDefault) ||
                   (hasReorderingFeatures &&
                     (((onMoveUp || onMoveDown) &&
                       (positionInfo.canMoveUp || positionInfo.canMoveDown)) ||

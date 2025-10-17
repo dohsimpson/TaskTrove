@@ -621,6 +621,41 @@ export const renameProjectSectionAtom = atom(
 renameProjectSectionAtom.debugLabel = "renameProjectSectionAtom";
 
 /**
+ * Sets a section as the default section for a project
+ * Clears isDefault flag from all other sections
+ * Uses server mutation for persistence
+ */
+export const setDefaultProjectSectionAtom = atom(
+  null,
+  async (get, set, data: { projectId: ProjectId; sectionId: GroupId }) => {
+    try {
+      const projects = get(projectsAtom);
+
+      const updatedProjects = projects.map((project: Project) => {
+        if (project.id === data.projectId) {
+          return {
+            ...project,
+            sections: project.sections.map((section: ProjectSection) => ({
+              ...section,
+              isDefault: section.id === data.sectionId,
+            })),
+          };
+        }
+        return project;
+      });
+
+      // Use server mutation for persistence
+      const updateProjectsMutation = get(updateProjectsMutationAtom);
+      await updateProjectsMutation.mutateAsync(updatedProjects);
+    } catch (error) {
+      handleAtomError(error, "setDefaultProjectSection");
+      throw error;
+    }
+  },
+);
+setDefaultProjectSectionAtom.debugLabel = "setDefaultProjectSectionAtom";
+
+/**
  * Reorders sections within a project
  * Uses server mutation for persistence
  */
@@ -792,6 +827,7 @@ export const projectAtoms = {
     addSection: addProjectSectionAtom,
     removeSection: removeProjectSectionAtom,
     renameSection: renameProjectSectionAtom,
+    setDefaultSection: setDefaultProjectSectionAtom,
     reorderSections: reorderProjectSectionsAtom,
     moveSection: moveProjectSectionAtom,
     addSectionAtPosition: addProjectSectionAtPositionAtom,

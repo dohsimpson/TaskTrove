@@ -31,6 +31,7 @@ export function SectionContextMenu({
   const removeSection = useSetAtom(projectAtoms.actions.removeSection)
   const updateSectionColor = useSetAtom(projectAtoms.actions.renameSection)
   const moveSection = useSetAtom(projectAtoms.actions.moveSection)
+  const setDefaultSection = useSetAtom(projectAtoms.actions.setDefaultSection)
   const startEditing = useSetAtom(startEditingSectionAtom)
   const openSectionDialog = useSetAtom(openSectionDialogAtom)
 
@@ -46,9 +47,11 @@ export function SectionContextMenu({
   const section = project?.sections.find((s: ProjectSection) => s.id === sectionId)
   if (!section) return null
 
-  // Check if this is the default section (not deletable)
+  // Check if this is the default section (not deletable, can't be set as default again)
   const defaultSectionId = project ? getDefaultSectionId(project) : null
-  const showDeleteOption = sectionId !== defaultSectionId
+  const isDefaultSection = sectionId === defaultSectionId
+  const showDeleteOption = !isDefaultSection
+  const showSetAsDefaultOption = !isDefaultSection
 
   const handleEdit = () => {
     startEditing(sectionId)
@@ -93,6 +96,10 @@ export function SectionContextMenu({
     })
   }
 
+  const handleSetAsDefault = () => {
+    setDefaultSection({ projectId, sectionId })
+  }
+
   return (
     <EntityContextMenu
       id={sectionId}
@@ -101,6 +108,7 @@ export function SectionContextMenu({
       entityColor={section.color || "#808080"}
       isVisible={isVisible}
       showDeleteOption={showDeleteOption}
+      showSetAsDefaultOption={showSetAsDefaultOption}
       onEdit={handleEdit}
       onDelete={handleDelete}
       onColorChange={handleColorChange}
@@ -108,6 +116,7 @@ export function SectionContextMenu({
       onMoveDown={handleMoveDown}
       onAddAbove={handleAddAbove}
       onAddBelow={handleAddBelow}
+      onSetAsDefault={handleSetAsDefault}
       open={open}
       onOpenChange={onOpenChange}
     />

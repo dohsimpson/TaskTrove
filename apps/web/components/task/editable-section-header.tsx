@@ -18,6 +18,8 @@ interface EditableSectionHeaderProps {
   sectionColor: string
   /** Number of tasks in section */
   taskCount: number
+  /** Whether this is the default section */
+  isDefaultSection?: boolean
   /** Whether to show the context menu */
   showContextMenu?: boolean
   /** Custom className for the container */
@@ -59,6 +61,7 @@ export function EditableSectionHeader({
   sectionName,
   sectionColor,
   taskCount,
+  isDefaultSection = false,
   showContextMenu = true,
   className,
   nameClassName = "font-medium text-foreground",
@@ -118,6 +121,16 @@ export function EditableSectionHeader({
           >
             {taskCount}
           </Badge>
+
+          {/* Default section indicator */}
+          {isDefaultSection && (
+            <Badge
+              variant="outline"
+              className="text-xs px-1.5 py-0.5 h-auto text-muted-foreground font-normal"
+            >
+              Default
+            </Badge>
+          )}
         </div>
       </div>
 

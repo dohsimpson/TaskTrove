@@ -62,7 +62,7 @@ catalog:
   "@types/uuid": ^10.0.0
   "@typescript-eslint/eslint-plugin": ^8.38.0
   "@typescript-eslint/parser": ^8.38.0
-  "@typescript/native-preview": 7.0.0-dev.20250723.1
+  "@typescript/native-preview": 7.0.0-dev.20251018.1
   "@uidotdev/usehooks": ^2.4.1
   "@vitest/coverage-v8": ^3.2.4
   accept-language: ^3.0.20

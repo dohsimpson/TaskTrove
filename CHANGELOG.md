@@ -1,5 +1,37 @@
 # tasktrove
 
+## 0.8.0
+
+### Features
+
+🎉 Feature - Add task multi-select support and bulk operations.
+🎉 Feature - Drag and drop improvements and bug fixes.
+🎉 Feature - Add PWA install prompt.
+🎉 Feature - Implement virtual scrolling for task lists performance optimization.
+
+### Minor Changes
+
+🎉 Feature - Add convert subtask to task functionality.
+🎉 Feature - Add convert to subtasks functionality for selected tasks.
+🎉 Feature - Add drag-and-drop reordering for subtasks with reusable utilities.
+🎉 Feature - Add reliable midnight refresh with scheduled timeout utility.
+🎉 Feature - Enforce minimum section requirement and fix related issues.
+🎉 Feature - Add button to create sections in a project.
+🎉 Feature - Add set-as-default functionality for sections with UI indicator.
+🎉 Feature - Implement drag-drop reordering for labels.
+🎉 Feature - Enhance popover headers, scrolling, and card consistency.
+
+### Patch Changes
+
+🐛 Bug - Fix playSoundAtom to respect soundEnabled setting.
+🐛 Bug - Show selection toolbar in non-project views.
+🐛 Bug - Remove rich text paste in editable div to prevent UI display issues.
+🐛 Bug - Restrict section collapse trigger to chevron button only.
+🐛 Bug - Balance task description layout with right-side placeholder.
+🐛 Bug - Resolve context menu closing immediately in compact variant.
+🐛 Bug - Improve subtask UX with proper spacing and context menu.
+🐛 Bug - Add backups directory symlink mapping in Docker.
+
 ## 0.7.0
 
 ### Features

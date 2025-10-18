@@ -825,7 +825,7 @@ export function TaskItem({
         {/* Bottom row with labels on left and metadata on right */}
         <div className="flex items-center justify-between">
           {/* Left side - Schedule, priority, labels and assignees */}
-          <div className="flex flex-wrap gap-3 flex-1 min-w-0 items-center">
+          <div className="flex flex-wrap gap-3 flex-1 min-w-0 items-center text-xs">
             {/* Due date/recurring - show if present */}
             {task.dueDate || task.recurring ? (
               <TaskSchedulePopover taskId={task.id}>

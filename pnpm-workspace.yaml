@@ -101,7 +101,7 @@ catalog:
   linkify-react: ^4.3.2
   linkifyjs: ^4.3.2
   lint-staged: ^16.2.0
-  lucide-react: ^0.544.0
+  lucide-react: ^0.546.0
   motion: ^12.23.18
   next: latest
   next-logger: ^5.0.1

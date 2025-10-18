@@ -393,6 +393,7 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
     const TASK_ID_2 = createTaskId("22222222-2222-4222-8222-222222222222")
     const PROJECT_ID_1 = createProjectId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
     const PROJECT_ID_2 = createProjectId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")
+    const SECTION_ID_0 = createGroupId("00000000-0000-4000-8000-000000000000")
     const SECTION_ID_1 = createGroupId("11111111-1111-4111-8111-111111111111")
     const SECTION_ID_2 = createGroupId("22222222-2222-4222-8222-222222222222")
 
@@ -626,6 +627,124 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
       expect(updatedTask?.projectId).toBe(PROJECT_ID_1)
       expect(updatedTask?.title).toBe("Updated title only")
       expect(updatedTask?.priority).toBe(2)
+    })
+
+    it("should NOT modify sections when projectId is same but sectionId is not provided", async () => {
+      // Setup: Move task to a custom section first
+      vi.clearAllMocks()
+
+      const mockDataWithCustomSection: DataFile = {
+        ...mockDataFile,
+        tasks: [
+          {
+            ...mockDataFile.tasks[0],
+            id: TASK_ID_1,
+            title: mockDataFile.tasks[0]?.title || "Test Task 1",
+            completed: mockDataFile.tasks[0]?.completed ?? false,
+            priority: mockDataFile.tasks[0]?.priority ?? 4,
+            labels: mockDataFile.tasks[0]?.labels ?? [],
+            subtasks: mockDataFile.tasks[0]?.subtasks ?? [],
+            comments: mockDataFile.tasks[0]?.comments ?? [],
+            recurringMode: mockDataFile.tasks[0]?.recurringMode ?? "dueDate",
+            createdAt: mockDataFile.tasks[0]?.createdAt ?? new Date(),
+            projectId: PROJECT_ID_1,
+          },
+          {
+            ...mockDataFile.tasks[1],
+            id: TASK_ID_2,
+            title: mockDataFile.tasks[1]?.title || "Test Task 2",
+            completed: mockDataFile.tasks[1]?.completed ?? false,
+            priority: mockDataFile.tasks[1]?.priority ?? 4,
+            labels: mockDataFile.tasks[1]?.labels ?? [],
+            subtasks: mockDataFile.tasks[1]?.subtasks ?? [],
+            comments: mockDataFile.tasks[1]?.comments ?? [],
+            recurringMode: mockDataFile.tasks[1]?.recurringMode ?? "dueDate",
+            createdAt: mockDataFile.tasks[1]?.createdAt ?? new Date(),
+            projectId: PROJECT_ID_2,
+          },
+        ],
+        projects: [
+          {
+            id: PROJECT_ID_1,
+            name: "Test Project 1",
+            slug: "test-project-1",
+            color: "#3b82f6",
+            sections: [
+              {
+                id: SECTION_ID_0,
+                name: "Default",
+                slug: "",
+                type: "section",
+                items: [], // Task is NOT in default section
+              },
+              {
+                id: SECTION_ID_1,
+                name: "Section 1",
+                slug: "",
+                type: "section",
+                items: [TASK_ID_1], // Task 1 is in Section 1
+              },
+            ],
+          },
+          {
+            id: PROJECT_ID_2,
+            name: "Test Project 2",
+            slug: "test-project-2",
+            color: "#ef4444",
+            sections: [
+              {
+                id: SECTION_ID_0,
+                name: "Default",
+                slug: "",
+                type: "section",
+                items: [TASK_ID_2],
+              },
+              {
+                id: SECTION_ID_2,
+                name: "Section 2",
+                slug: "",
+                type: "section",
+                items: [],
+              },
+            ],
+          },
+        ],
+      }
+
+      mockSafeReadDataFile.mockResolvedValue(mockDataWithCustomSection)
+      mockSafeWriteDataFile.mockResolvedValue(true)
+
+      // Update task with same projectId but no sectionId
+      const taskUpdate = {
+        id: TASK_ID_1,
+        projectId: PROJECT_ID_1, // Same as current project
+        title: "Updated title",
+      }
+
+      const request = new Request("http://localhost:3000/api/tasks", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(taskUpdate),
+      })
+
+      const response = await PATCH(createMockEnhancedRequest(request))
+      expect(response.ok).toBe(true)
+
+      const writtenData = getWrittenData()
+
+      // Task should REMAIN in Section 1 (not move to default section)
+      const project1 = writtenData.projects.find((p) => p.id === PROJECT_ID_1)
+      const section1 = project1?.sections.find((s) => s.id === SECTION_ID_1)
+      expect(section1?.items).toContain(TASK_ID_1)
+
+      // Task should NOT be in default section
+      const defaultSection = project1?.sections.find((s) => s.id === SECTION_ID_0)
+      expect(defaultSection?.items).not.toContain(TASK_ID_1)
+
+      // Task's projectId should remain unchanged and title updated
+      const updatedTask = writtenData.tasks.find((t) => t.id === TASK_ID_1)
+      expect(updatedTask?.projectId).toBe(PROJECT_ID_1)
+      expect(updatedTask?.title).toBe("Updated title")
     })
 
     it("should handle multiple task updates with different project/section changes", async () => {

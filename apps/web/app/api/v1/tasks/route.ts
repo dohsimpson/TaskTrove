@@ -301,8 +301,14 @@ async function updateTasks(
     const originalTask = taskMap.get(update.id)
     if (!originalTask) continue
 
+    // Check if projectId is actually changing (not just provided with same value)
+    const isProjectChanging =
+      update.projectId !== undefined && update.projectId !== originalTask.projectId
+
     // Skip if neither project nor section is changing
+    // Also skip if projectId is provided but unchanged AND sectionId is not provided
     if (update.projectId === undefined && update.sectionId === undefined) continue
+    if (!isProjectChanging && update.sectionId === undefined) continue
 
     const taskId = createTaskId(update.id)
     const oldProjectId = originalTask.projectId

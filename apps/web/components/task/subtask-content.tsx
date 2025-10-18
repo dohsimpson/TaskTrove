@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect, useMemo } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { v4 as uuidv4 } from "uuid"
 import { TaskItem } from "./task-item"
@@ -12,7 +12,7 @@ import { TimeEstimationPopover } from "./time-estimation-popover"
 import { CheckSquare, Plus, ClockFading, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatTime } from "@/lib/utils/time-estimation"
-import { extractDropPayload, reorderItems } from "@tasktrove/dom-utils"
+import { extractDropPayload, reorderItems, createScrollToBottom } from "@tasktrove/dom-utils"
 import { updateTaskAtom, tasksAtom } from "@tasktrove/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@tasktrove/atoms"
 import { useTranslation } from "@tasktrove/i18n"
@@ -58,42 +58,23 @@ export function SubtaskContent({
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false)
   const subtasksContainerRef = useRef<HTMLDivElement>(null)
 
+  // Shared scroll-to-bottom function with double RAF for reliable DOM painting
+  const scrollToBottom = useMemo(() => createScrollToBottom(subtasksContainerRef), [])
+
   // Scroll to bottom when a new subtask is added
   useEffect(() => {
-    if (shouldScrollToBottom && subtasksContainerRef.current) {
-      // Use requestAnimationFrame for smoother scrolling
-      const scrollWithAnimation = () => {
-        if (subtasksContainerRef.current) {
-          subtasksContainerRef.current.scrollTo({
-            top: subtasksContainerRef.current.scrollHeight,
-            behavior: "smooth",
-          })
-        }
-        setShouldScrollToBottom(false)
-      }
-
-      // Use requestAnimationFrame to ensure the next paint cycle
-      requestAnimationFrame(scrollWithAnimation)
+    if (shouldScrollToBottom) {
+      scrollToBottom()
+      setShouldScrollToBottom(false)
     }
-  }, [task?.subtasks?.length, shouldScrollToBottom])
+  }, [task?.subtasks?.length, shouldScrollToBottom, scrollToBottom])
 
   // Scroll to bottom when popover opens (triggered by scrollToBottomKey change)
   useEffect(() => {
-    if (scrollToBottomKey !== undefined && scrollToBottomKey > 0 && subtasksContainerRef.current) {
-      // Use requestAnimationFrame for immediate popover opening scroll
-      const scrollWithAnimation = () => {
-        if (subtasksContainerRef.current) {
-          subtasksContainerRef.current.scrollTo({
-            top: subtasksContainerRef.current.scrollHeight,
-            behavior: "smooth",
-          })
-        }
-      }
-
-      // Use requestAnimationFrame to ensure immediate smooth animation
-      requestAnimationFrame(scrollWithAnimation)
+    if (scrollToBottomKey !== undefined && scrollToBottomKey > 0) {
+      scrollToBottom()
     }
-  }, [scrollToBottomKey])
+  }, [scrollToBottomKey, scrollToBottom])
 
   if (!task) {
     console.warn("Task not found", taskId)

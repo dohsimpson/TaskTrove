@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect, useMemo } from "react"
 import { MessageSquare, Plus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,6 +12,7 @@ import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@tasktrove/atoms"
 import type { Task, CreateTaskRequest } from "@/lib/types"
 import { createCommentId, createTaskId } from "@/lib/types"
 import { useTranslation } from "@tasktrove/i18n"
+import { createScrollToBottom } from "@tasktrove/dom-utils"
 import { CommentItem } from "./comment-item"
 
 interface CommentContentProps {
@@ -56,42 +57,23 @@ export function CommentContent({
   // Get comments for display in chronological order (oldest first)
   const displayComments = task?.comments?.slice() || [] // Show all comments for both modes
 
+  // Shared scroll-to-bottom function with double RAF for reliable DOM painting
+  const scrollToBottom = useMemo(() => createScrollToBottom(commentsContainerRef), [])
+
   // Scroll to bottom when a new comment is added
   useEffect(() => {
-    if (shouldScrollToBottom && commentsContainerRef.current) {
-      // Use requestAnimationFrame for smoother scrolling
-      const scrollWithAnimation = () => {
-        if (commentsContainerRef.current) {
-          commentsContainerRef.current.scrollTo({
-            top: commentsContainerRef.current.scrollHeight,
-            behavior: "smooth",
-          })
-        }
-        setShouldScrollToBottom(false)
-      }
-
-      // Use requestAnimationFrame to ensure the next paint cycle
-      requestAnimationFrame(scrollWithAnimation)
+    if (shouldScrollToBottom) {
+      scrollToBottom()
+      setShouldScrollToBottom(false)
     }
-  }, [displayComments.length, shouldScrollToBottom])
+  }, [displayComments.length, shouldScrollToBottom, scrollToBottom])
 
   // Scroll to bottom when popover opens (triggered by scrollToBottomKey change)
   useEffect(() => {
-    if (scrollToBottomKey !== undefined && scrollToBottomKey > 0 && commentsContainerRef.current) {
-      // Use requestAnimationFrame for immediate popover opening scroll
-      const scrollWithAnimation = () => {
-        if (commentsContainerRef.current) {
-          commentsContainerRef.current.scrollTo({
-            top: commentsContainerRef.current.scrollHeight,
-            behavior: "smooth",
-          })
-        }
-      }
-
-      // Use requestAnimationFrame to ensure immediate smooth animation
-      requestAnimationFrame(scrollWithAnimation)
+    if (scrollToBottomKey !== undefined && scrollToBottomKey > 0) {
+      scrollToBottom()
     }
-  }, [scrollToBottomKey])
+  }, [scrollToBottomKey, scrollToBottom])
 
   if (!task) {
     console.warn("Task not found", taskId)

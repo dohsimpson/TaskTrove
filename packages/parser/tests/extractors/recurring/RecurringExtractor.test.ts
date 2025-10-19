@@ -317,4 +317,60 @@ describe("RecurringExtractor", () => {
       match: "every monday, wednesday, friday",
     });
   });
+
+  // Phase 3.1: Ordinal Weekday Patterns
+  it('should extract "every 2nd Monday" as ordinal weekday pattern', () => {
+    const results = extractor.extract("Team review every 2nd Monday", context);
+
+    expect(results).toHaveLength(1);
+
+    const recurringResult = results.find((r) => r.type === "recurring");
+    expect(recurringResult).toMatchObject({
+      type: "recurring",
+      value: "RRULE:FREQ=MONTHLY;BYDAY=2MO",
+      match: "every 2nd Monday",
+    });
+  });
+
+  it('should extract "every 3rd friday" with lowercase', () => {
+    const results = extractor.extract("Cleanup every 3rd friday", context);
+
+    expect(results).toHaveLength(1);
+
+    const recurringResult = results.find((r) => r.type === "recurring");
+    expect(recurringResult).toMatchObject({
+      type: "recurring",
+      value: "RRULE:FREQ=MONTHLY;BYDAY=3FR",
+      match: "every 3rd friday",
+    });
+  });
+
+  it('should extract "every 1st Tuesday"', () => {
+    const results = extractor.extract(
+      "Board meeting every 1st Tuesday",
+      context,
+    );
+
+    expect(results).toHaveLength(1);
+
+    const recurringResult = results.find((r) => r.type === "recurring");
+    expect(recurringResult).toMatchObject({
+      type: "recurring",
+      value: "RRULE:FREQ=MONTHLY;BYDAY=1TU",
+      match: "every 1st Tuesday",
+    });
+  });
+
+  it('should extract "every 4th Wednesday"', () => {
+    const results = extractor.extract("Report every 4th Wednesday", context);
+
+    expect(results).toHaveLength(1);
+
+    const recurringResult = results.find((r) => r.type === "recurring");
+    expect(recurringResult).toMatchObject({
+      type: "recurring",
+      value: "RRULE:FREQ=MONTHLY;BYDAY=4WE",
+      match: "every 4th Wednesday",
+    });
+  });
 });

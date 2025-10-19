@@ -332,6 +332,57 @@ const WEEKDAY_PATTERNS: RecurringPattern[] = [
   },
 ];
 
+// Ordinal weekday patterns (every 2nd Monday, every 3rd Friday, etc.)
+const ORDINAL_WEEKDAY_PATTERNS: RecurringPattern[] = [
+  {
+    pattern: new RegExp(
+      `${WORD_BOUNDARY_START}(every (1st|2nd|3rd|4th|5th) (monday|mon|tuesday|tue|wednesday|wed|thursday|thu|friday|fri|saturday|sat|sunday|sun))${WORD_BOUNDARY_END}`,
+      "gi",
+    ),
+    getValue: (match) => {
+      const ordinal = match[2]; // "1st", "2nd", "3rd", "4th"
+      const weekdayStr = match[3]; // "monday", "mon", etc.
+
+      if (!ordinal || !weekdayStr) return "weekly";
+
+      // Convert ordinal to number
+      const ordinalMap: { [key: string]: string } = {
+        "1st": "1",
+        "2nd": "2",
+        "3rd": "3",
+        "4th": "4",
+        "5th": "5",
+      };
+      const ordinalNum = ordinalMap[ordinal.toLowerCase()];
+
+      // Convert weekday to RRULE format
+      const weekday = weekdayStr.toLowerCase();
+      const weekdayMap: { [key: string]: string } = {
+        mon: "MO",
+        monday: "MO",
+        tue: "TU",
+        tuesday: "TU",
+        wed: "WE",
+        wednesday: "WE",
+        thu: "TH",
+        thursday: "TH",
+        fri: "FR",
+        friday: "FR",
+        sat: "SA",
+        saturday: "SA",
+        sun: "SU",
+        sunday: "SU",
+      };
+
+      const rruleDay = weekdayMap[weekday];
+      if (!rruleDay || !ordinalNum) return "weekly";
+
+      // RRULE format: FREQ=MONTHLY;BYDAY=2MO (2nd Monday of month)
+      return `RRULE:FREQ=MONTHLY;BYDAY=${ordinalNum}${rruleDay}`;
+    },
+  },
+];
+
 const INTERVAL_PATTERNS: RecurringPattern[] = [
   {
     pattern: new RegExp(
@@ -535,6 +586,32 @@ export class RecurringExtractor implements Extractor {
           type: "recurring",
           value: convertToRRule(rawValue),
           match: captured.trim(),
+          startIndex,
+          endIndex: startIndex + (match[0]?.length || captured.length),
+        });
+      }
+    }
+
+    // Extract ordinal weekday patterns (every 2nd Monday, etc.)
+    for (const { pattern, getValue } of ORDINAL_WEEKDAY_PATTERNS) {
+      const matches = [...text.matchAll(pattern)];
+
+      for (const match of matches) {
+        const captured = match[1];
+        if (!captured) continue;
+
+        if (context.disabledSections?.has(captured.toLowerCase())) {
+          continue;
+        }
+
+        const startIndex = match.index || 0;
+
+        const rruleValue = getValue(match);
+
+        results.push({
+          type: "recurring",
+          value: rruleValue,
+          match: captured,
           startIndex,
           endIndex: startIndex + (match[0]?.length || captured.length),
         });

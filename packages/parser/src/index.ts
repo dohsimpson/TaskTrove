@@ -29,6 +29,7 @@ export type { Processor } from "./processors/base/Processor";
 
 // Locales
 export { EnglishLocaleConfig } from "./locales/en/config";
+export { ChineseLocaleConfig } from "./locales/zh/config";
 export type {
   LocaleConfig,
   LocaleConfigOptions,

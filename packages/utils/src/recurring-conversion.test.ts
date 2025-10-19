@@ -11,7 +11,7 @@ describe("Enhanced Natural Language Parser with RRULE conversion", () => {
       const result = parseEnhancedNaturalLanguage("task daily");
       expect(result.recurring).toBe("RRULE:FREQ=DAILY");
       expect(result.title).toBe("task");
-      expect(result.dueDate).toBeUndefined(); // No due date when no time pattern
+      expect(result.dueDate).toBeInstanceOf(Date); // Auto-enriched with anchor date
     });
 
     it("should convert weekly to RRULE", () => {

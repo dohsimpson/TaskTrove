@@ -42,4 +42,43 @@ describe("extractRecurringAnchor", () => {
     expect(result?.dueDate.getDate()).toBe(17);
     expect(result?.dueDate.getMonth()).toBe(0); // January
   });
+
+  it("should extract first occurrence for monthly pattern with BYMONTHDAY", () => {
+    // Reference: Jan 15, 2025
+    const result = extractRecurringAnchor(
+      "RRULE:FREQ=MONTHLY;BYMONTHDAY=3",
+      referenceDate,
+    );
+
+    expect(result).not.toBeNull();
+    // Should find next 3rd (Feb 3, 2025 since Jan 3 has passed)
+    expect(result?.dueDate.getDate()).toBe(3);
+    expect(result?.dueDate.getMonth()).toBe(1); // February
+    expect(result?.time).toBeUndefined();
+  });
+
+  it("should extract current month if BYMONTHDAY hasn't passed", () => {
+    // Reference: Jan 15, 2025 - 20th hasn't happened yet
+    const result = extractRecurringAnchor(
+      "RRULE:FREQ=MONTHLY;BYMONTHDAY=20",
+      referenceDate,
+    );
+
+    expect(result).not.toBeNull();
+    // Should find Jan 20, 2025 (current month)
+    expect(result?.dueDate.getDate()).toBe(20);
+    expect(result?.dueDate.getMonth()).toBe(0); // January
+  });
+
+  it("should handle last day of month (BYMONTHDAY=-1)", () => {
+    const result = extractRecurringAnchor(
+      "RRULE:FREQ=MONTHLY;BYMONTHDAY=-1",
+      referenceDate,
+    );
+
+    expect(result).not.toBeNull();
+    // Should find last day of January (Jan 31, 2025)
+    expect(result?.dueDate.getDate()).toBe(31);
+    expect(result?.dueDate.getMonth()).toBe(0); // January
+  });
 });

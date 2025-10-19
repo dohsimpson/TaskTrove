@@ -65,3 +65,48 @@ describe("parser-adapter backwards compatibility", () => {
     expect(result.dueDate?.toDateString()).toBe(today.toDateString());
   });
 });
+
+describe("parser-adapter recurring pattern auto-enrichment", () => {
+  it("should auto-enrich simple daily recurring with dueDate", () => {
+    const result = parseEnhancedNaturalLanguage("Standup every day");
+
+    expect(result.title).toBe("Standup");
+    expect(result.recurring).toBe("RRULE:FREQ=DAILY");
+    // Should automatically add dueDate as anchor (today)
+    expect(result.dueDate).toBeInstanceOf(Date);
+    expect(result.time).toBeUndefined(); // No time in pattern
+  });
+
+  it("should auto-enrich weekly recurring with dueDate", () => {
+    const result = parseEnhancedNaturalLanguage("Team meeting every monday");
+
+    expect(result.title).toBe("Team meeting");
+    expect(result.recurring).toBe("RRULE:FREQ=WEEKLY;BYDAY=MO");
+    // Should automatically add dueDate (next Monday)
+    expect(result.dueDate).toBeInstanceOf(Date);
+    expect(result.dueDate?.getDay()).toBe(1); // Monday
+    expect(result.time).toBeUndefined(); // No time in pattern
+  });
+
+  it("should not override existing dueDate if present", () => {
+    const result = parseEnhancedNaturalLanguage("Meeting tomorrow every week");
+
+    expect(result.title).toBe("Meeting");
+    expect(result.recurring).toBe("RRULE:FREQ=WEEKLY");
+    expect(result.dueDate).toBeInstanceOf(Date);
+    // Should keep the explicitly parsed dueDate (tomorrow), not auto-generated anchor
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    expect(result.dueDate?.toDateString()).toBe(tomorrow.toDateString());
+  });
+
+  it("should not affect non-recurring patterns", () => {
+    const result = parseEnhancedNaturalLanguage("Regular task");
+
+    expect(result.title).toBe("Regular task");
+    expect(result.recurring).toBeUndefined();
+    expect(result.dueDate).toBeUndefined();
+    expect(result.time).toBeUndefined();
+  });
+});

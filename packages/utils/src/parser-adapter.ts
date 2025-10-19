@@ -1,4 +1,4 @@
-import { TaskParser } from "@tasktrove/parser";
+import { TaskParser, extractRecurringAnchor } from "@tasktrove/parser";
 import type { ParsedTask, ParserContext } from "@tasktrove/parser";
 
 interface DynamicPatternsConfig {
@@ -26,7 +26,23 @@ export function parseEnhancedNaturalLanguage(
   };
 
   const result = defaultParser.parse(text, context);
-  return result.parsed;
+  const parsed = result.parsed;
+
+  // Auto-enrich recurring patterns with anchor date/time if not already present
+  if (parsed.recurring && !parsed.dueDate) {
+    const anchor = extractRecurringAnchor(
+      parsed.recurring,
+      context.referenceDate,
+    );
+    if (anchor) {
+      parsed.dueDate = anchor.dueDate;
+      if (anchor.time && !parsed.time) {
+        parsed.time = anchor.time;
+      }
+    }
+  }
+
+  return parsed;
 }
 
 // Compatibility exports for functions that were in the old enhanced-natural-language-parser

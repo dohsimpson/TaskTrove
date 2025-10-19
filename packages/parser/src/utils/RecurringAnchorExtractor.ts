@@ -41,6 +41,17 @@ function extractFreq(rrule: string): string | undefined {
 }
 
 /**
+ * Parse RRULE to extract BYMONTHDAY
+ */
+function extractByMonthDay(rrule: string): number[] | undefined {
+  const match = rrule.match(/BYMONTHDAY=(-?\d+(?:,-?\d+)*)/);
+  if (match && match[1]) {
+    return match[1].split(",").map((d) => parseInt(d, 10));
+  }
+  return undefined;
+}
+
+/**
  * Find next occurrence of a weekday
  */
 function findNextWeekday(referenceDate: Date, targetDay: string): Date {
@@ -69,6 +80,47 @@ function findNextWeekday(referenceDate: Date, targetDay: string): Date {
   const nextDate = new Date(referenceDate);
   nextDate.setDate(nextDate.getDate() + daysToAdd);
   return nextDate;
+}
+
+/**
+ * Find next occurrence of a BYMONTHDAY
+ */
+function findNextMonthDay(referenceDate: Date, targetDay: number): Date {
+  const year = referenceDate.getFullYear();
+  const month = referenceDate.getMonth();
+  const currentDay = referenceDate.getDate();
+
+  // Handle -1 for last day of month
+  let actualDay: number;
+  if (targetDay === -1) {
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    actualDay = lastDay;
+  } else {
+    actualDay = targetDay;
+  }
+
+  // If target day hasn't passed this month, use current month
+  if (actualDay > currentDay) {
+    const nextDate = new Date(year, month, actualDay);
+    return nextDate;
+  }
+
+  // Otherwise, move to next month
+  const nextMonth = month + 1;
+  const nextYear = nextMonth > 11 ? year + 1 : year;
+  const finalMonth = nextMonth > 11 ? 0 : nextMonth;
+
+  // Handle -1 for last day of next month
+  if (targetDay === -1) {
+    const lastDay = new Date(nextYear, finalMonth + 1, 0).getDate();
+    return new Date(nextYear, finalMonth, lastDay);
+  }
+
+  // Clamp to last day of month if needed
+  const lastDayOfMonth = new Date(nextYear, finalMonth + 1, 0).getDate();
+  const finalDay = Math.min(actualDay, lastDayOfMonth);
+
+  return new Date(nextYear, finalMonth, finalDay);
 }
 
 /**
@@ -113,8 +165,17 @@ export function extractRecurringAnchor(
       // Simple weekly without BYDAY
       dueDate = new Date(referenceDate);
     }
+  } else if (freq === "MONTHLY") {
+    const byMonthDay = extractByMonthDay(recurring);
+    if (byMonthDay && byMonthDay.length > 0 && byMonthDay[0] !== undefined) {
+      // Find next occurrence of the target month day
+      dueDate = findNextMonthDay(referenceDate, byMonthDay[0]);
+    } else {
+      // Simple monthly without BYMONTHDAY - use reference date day
+      dueDate = new Date(referenceDate);
+    }
   } else {
-    // For other frequencies, use reference date as anchor
+    // For other frequencies (YEARLY, etc.), use reference date as anchor
     dueDate = new Date(referenceDate);
   }
 

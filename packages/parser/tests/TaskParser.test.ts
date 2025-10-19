@@ -27,7 +27,7 @@ describe("TaskParser", () => {
 
     const result = parser.parse("Meeting !!! today", context);
 
-    expect(result.parsed.title).toBe("Meeting today");
+    expect(result.parsed.title).toBe("Meeting");
     expect(result.parsed.priority).toBe(1);
   });
 
@@ -68,7 +68,7 @@ describe("TaskParser", () => {
 
     const result = parser.parse("Meeting @urgent #work tomorrow", context);
 
-    expect(result.parsed.title).toBe("Meeting tomorrow");
+    expect(result.parsed.title).toBe("Meeting");
     expect(result.parsed.project).toBe("work");
     expect(result.parsed.labels).toContain("urgent");
   });
@@ -132,6 +132,48 @@ describe("TaskParser", () => {
     expect(result.parsed.recurring).toBe("RRULE:FREQ=WEEKLY");
     expect(result.parsed.estimation).toBe(60 * 60); // 1 hour = 3600 seconds
     expect(result.parsed.dueDate).toBeDefined();
-    expect(result.parsed.title).toBe("Important presentation tomorrow"); // dates remain
+    expect(result.parsed.title).toBe("Important presentation"); // dates removed
+  });
+
+  it("should handle 'today in 5min' patterns", () => {
+    const parser = new TaskParser();
+    const referenceDate = new Date(2025, 0, 15, 10, 30, 0); // Jan 15, 2025 10:30 AM
+    const context: ParserContext = {
+      locale: "en",
+      referenceDate,
+    };
+
+    const result = parser.parse("Meeting today in 5min", context);
+
+    console.log(
+      "Parser result for 'today in 5min':",
+      JSON.stringify(result.parsed, null, 2),
+    );
+
+    expect(result.parsed.title).toBe("Meeting"); // Both "today" and "in 5min" removed
+    expect(result.parsed.dueDate).toBeDefined(); // From "today"
+    expect(result.parsed.time).toBe("10:35"); // 10:30 + 5min = 10:35
+    expect(result.parsed.dueDate).toEqual(new Date(2025, 0, 15)); // Today's date
+  });
+
+  it("should handle 'tomorrow in 5min' patterns", () => {
+    const parser = new TaskParser();
+    const referenceDate = new Date(2025, 0, 15, 10, 30, 0); // Jan 15, 2025 10:30 AM
+    const context: ParserContext = {
+      locale: "en",
+      referenceDate,
+    };
+
+    const result = parser.parse("Call tomorrow in 5min", context);
+
+    console.log(
+      "Parser result for 'tomorrow in 5min':",
+      JSON.stringify(result.parsed, null, 2),
+    );
+
+    expect(result.parsed.title).toBe("Call"); // Both "tomorrow" and "in 5min" removed
+    expect(result.parsed.dueDate).toBeDefined(); // From "in 5min" (last occurrence wins)
+    expect(result.parsed.time).toBe("10:35"); // 10:30 + 5min = 10:35
+    expect(result.parsed.dueDate).toEqual(new Date(2025, 0, 15)); // "in 5min" wins (last occurrence)
   });
 });

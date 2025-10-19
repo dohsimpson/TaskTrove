@@ -12,7 +12,7 @@ describe("Date Integration", () => {
 
     const result = parser.parse("Meeting tomorrow p1", context);
 
-    expect(result.parsed.title).toBe("Meeting tomorrow");
+    expect(result.parsed.title).toBe("Meeting");
     expect(result.parsed.priority).toBe(1);
     expect(result.parsed.dueDate).toEqual(new Date(2025, 0, 16));
   });

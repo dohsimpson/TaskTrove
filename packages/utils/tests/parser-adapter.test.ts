@@ -33,7 +33,7 @@ describe("parser-adapter backwards compatibility", () => {
   it("should parse date and time", () => {
     const result = parseEnhancedNaturalLanguage("Meeting tomorrow at 3PM");
 
-    expect(result.title).toBe("Meeting tomorrow"); // dates remain for readability
+    expect(result.title).toBe("Meeting"); // dates removed from title
     expect(result.time).toBe("15:00"); // converted to 24h format
     expect(result.dueDate).toBeInstanceOf(Date);
   });
@@ -50,5 +50,18 @@ describe("parser-adapter backwards compatibility", () => {
 
     // Estimation now returns seconds, not minutes
     expect(result.estimation).toBe(30 * 60); // 30 minutes = 1800 seconds
+  });
+
+  it("should parse time-only without date", () => {
+    const result = parseEnhancedNaturalLanguage("Meeting at 3PM");
+
+    expect(result.title).toBe("Meeting"); // time should be removed from title
+    expect(result.time).toBe("15:00"); // converted to 24h format
+    // Should create today's date for time-only parsing
+    expect(result.dueDate).toBeInstanceOf(Date);
+    // Should be today's date (start of day)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Start of today in local timezone
+    expect(result.dueDate?.toDateString()).toBe(today.toDateString());
   });
 });

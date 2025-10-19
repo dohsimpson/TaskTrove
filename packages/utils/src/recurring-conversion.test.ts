@@ -11,7 +11,7 @@ describe("Enhanced Natural Language Parser with RRULE conversion", () => {
       const result = parseEnhancedNaturalLanguage("task daily");
       expect(result.recurring).toBe("RRULE:FREQ=DAILY");
       expect(result.title).toBe("task");
-      expect(result.dueDate).toBeUndefined(); // No due date when recurring
+      expect(result.dueDate).toBeUndefined(); // No due date when no time pattern
     });
 
     it("should convert weekly to RRULE", () => {
@@ -71,7 +71,7 @@ describe("Enhanced Natural Language Parser with RRULE conversion", () => {
       expect(result.priority).toBe(1);
       expect(result.time).toBe("09:00");
       expect(result.recurring).toBe("RRULE:FREQ=WEEKLY;BYDAY=MO");
-      expect(result.dueDate).toBeUndefined(); // No due date when recurring
+      expect(result.dueDate).toBeDefined(); // Due date when time-only pattern
     });
 
     it("should take last recurring pattern and convert to RRULE", () => {
@@ -106,7 +106,7 @@ describe("Enhanced Natural Language Parser with RRULE conversion", () => {
       expect(result.time).toBe("09:00");
       expect(result.duration).toBe("1h");
       expect(result.recurring).toBe("RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR");
-      expect(result.dueDate).toBeUndefined(); // No due date when recurring
+      expect(result.dueDate).toBeDefined(); // Due date when time-only pattern
     });
 
     it("should preserve existing behavior for non-recurring tasks", () => {
@@ -114,7 +114,7 @@ describe("Enhanced Natural Language Parser with RRULE conversion", () => {
         "task #work @urgent p1 tomorrow 2PM",
       );
 
-      expect(result.title).toBe("task tomorrow"); // Dates preserved for readability
+      expect(result.title).toBe("task"); // Dates removed from title
       expect(result.project).toBe("work");
       expect(result.labels).toEqual(["urgent"]);
       expect(result.priority).toBe(1);

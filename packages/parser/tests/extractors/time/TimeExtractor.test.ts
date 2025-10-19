@@ -114,4 +114,68 @@ describe("TimeExtractor", () => {
 
     expect(results).toEqual([]);
   });
+
+  it("should extract 'in 4h30min' pattern", () => {
+    const results = extractor.extract("Complete in 4h30min", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.type).toBe("date");
+    expect(results[0]?.value).toBeInstanceOf(Date);
+    expect(results[0]?.match).toBe("in 4h30min");
+  });
+
+  it("should extract 'in 5min' pattern", () => {
+    const results = extractor.extract("Complete in 5min", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.type).toBe("date");
+    expect(results[0]?.value).toBeInstanceOf(Date);
+    expect(results[0]?.match).toBe("in 5min");
+  });
+
+  it("should extract 'in 5 min' pattern (with space)", () => {
+    const results = extractor.extract("Complete in 5 min", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.type).toBe("date");
+    expect(results[0]?.value).toBeInstanceOf(Date);
+    expect(results[0]?.match).toBe("in 5 min");
+  });
+
+  it("should extract 'in 5m' pattern (short form)", () => {
+    const results = extractor.extract("Complete in 5m", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.type).toBe("date");
+    expect(results[0]?.value).toBeInstanceOf(Date);
+    expect(results[0]?.match).toBe("in 5m");
+  });
+
+  it("should extract 'in 30sec' pattern", () => {
+    const results = extractor.extract("Complete in 30sec", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.type).toBe("date");
+    expect(results[0]?.value).toBeInstanceOf(Date);
+    expect(results[0]?.match).toBe("in 30sec");
+  });
+
+  it("should extract 'in 2h 15m' pattern", () => {
+    const results = extractor.extract("Meeting in 2h 15m", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.type).toBe("date");
+    expect(results[0]?.value).toBeInstanceOf(Date);
+    expect(results[0]?.match).toBe("in 2h 15m");
+  });
+
+  it("should extract 'today in 5min' pattern", () => {
+    // The time extractor should only find "in 5min"
+    const timeResults = extractor.extract("Meeting today in 5min", context);
+
+    expect(timeResults).toHaveLength(1);
+    expect(timeResults[0]?.type).toBe("date");
+    expect(timeResults[0]?.value).toBeInstanceOf(Date);
+    expect(timeResults[0]?.match).toBe("in 5min");
+  });
 });

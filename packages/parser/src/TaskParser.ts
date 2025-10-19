@@ -4,12 +4,15 @@ import { ProjectExtractor } from "./extractors/tags/ProjectExtractor";
 import { LabelExtractor } from "./extractors/tags/LabelExtractor";
 import { DateExtractor } from "./extractors/date/DateExtractor";
 import { WeekdayExtractor } from "./extractors/date/WeekdayExtractor";
+import { DurationDateExtractor } from "./extractors/date/DurationDateExtractor";
 import { TimeExtractor } from "./extractors/time/TimeExtractor";
 import { RecurringExtractor } from "./extractors/recurring/RecurringExtractor";
 import { EstimationExtractor } from "./extractors/estimation/EstimationExtractor";
 import { DurationExtractor } from "./extractors/duration/DurationExtractor";
 import { OverlapResolver } from "./processors/OverlapResolver";
 import { LastOccurrenceSelector } from "./processors/LastOccurrenceSelector";
+import { DateTimeSplitter } from "./processors/DateTimeSplitter";
+import { TimeToDateProcessor } from "./processors/TimeToDateProcessor";
 import type { Extractor } from "./extractors/base/Extractor";
 import type { Processor } from "./processors/base/Processor";
 import type { ParserContext, ParsedTask, ExtractionResult } from "./types";
@@ -21,6 +24,7 @@ export class TaskParser {
     new LabelExtractor(),
     new DateExtractor(),
     new WeekdayExtractor(),
+    new DurationDateExtractor(),
     new TimeExtractor(),
     new RecurringExtractor(),
     new EstimationExtractor(),
@@ -30,6 +34,8 @@ export class TaskParser {
   private processors: Processor[] = [
     new OverlapResolver(),
     new LastOccurrenceSelector(),
+    new TimeToDateProcessor(),
+    new DateTimeSplitter(),
   ];
 
   parse(text: string, context: ParserContext): ParserResult {
@@ -110,10 +116,8 @@ export class TaskParser {
     for (const result of sortedOriginalResults) {
       const { type, match, startIndex, endIndex } = result;
 
-      // Don't remove dates from title for readability
-      if (type === "date") {
-        continue;
-      }
+      // Dates should also be removed from title
+      // (Commented out the skip logic that was preserving dates)
 
       // Remove the match from the title (all other patterns should be removed)
       // Replace matched text with spaces to preserve positions of other matches

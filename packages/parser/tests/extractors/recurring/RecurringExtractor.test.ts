@@ -113,8 +113,8 @@ describe("RecurringExtractor", () => {
     expect(results).toEqual([]);
   });
 
-  // Phase 1: Hourly patterns - these should return enhanced recurring info with time calculations
-  it('should extract "every hour" and calculate next hour start time', () => {
+  // Phase 1: Hourly patterns - should return only recurring pattern
+  it('should extract "every hour" as recurring only', () => {
     const referenceDate = new Date(2025, 0, 15, 10, 30, 0); // Jan 15, 2025 10:30 AM
     const context: ParserContext = {
       locale: "en",
@@ -123,29 +123,18 @@ describe("RecurringExtractor", () => {
 
     const results = extractor.extract("Check status every hour", context);
 
-    // Should return 3 results: recurring + date + time
-    expect(results).toHaveLength(3);
+    // Should return only 1 result: recurring pattern
+    expect(results).toHaveLength(1);
 
     // Check the recurring pattern result
-    const recurringResult = results.find((r) => r.type === "recurring");
-    expect(recurringResult).toMatchObject({
+    expect(results[0]).toMatchObject({
       type: "recurring",
       value: "RRULE:FREQ=HOURLY",
       match: "every hour",
     });
-
-    // Check the date result (next hour start)
-    const dateResult = results.find((r) => r.type === "date");
-    expect(dateResult).toBeDefined();
-    expect(dateResult?.value).toEqual(new Date(2025, 0, 15, 11, 0, 0)); // 11:00 AM
-
-    // Check the time result (next hour time)
-    const timeResult = results.find((r) => r.type === "time");
-    expect(timeResult).toBeDefined();
-    expect(timeResult?.value).toBe("11:00");
   });
 
-  it('should extract "every 12 hours" with interval', () => {
+  it('should extract "every 12 hours" with interval as recurring only', () => {
     const referenceDate = new Date(2025, 0, 15, 10, 30, 0); // Jan 15, 2025 10:30 AM
     const context: ParserContext = {
       locale: "en",
@@ -154,78 +143,65 @@ describe("RecurringExtractor", () => {
 
     const results = extractor.extract("Medication every 12 hours", context);
 
-    // Should return 3 results: recurring + date + time
-    expect(results).toHaveLength(3);
+    // Should return only 1 result: recurring pattern
+    expect(results).toHaveLength(1);
 
     // Check the recurring pattern result
-    const recurringResult = results.find((r) => r.type === "recurring");
-    expect(recurringResult).toMatchObject({
+    expect(results[0]).toMatchObject({
       type: "recurring",
       value: "RRULE:FREQ=HOURLY;INTERVAL=12",
       match: "every 12 hours",
     });
-
-    // Check that time and date results are generated
-    const dateResult = results.find((r) => r.type === "date");
-    const timeResult = results.find((r) => r.type === "time");
-    expect(dateResult).toBeDefined();
-    expect(timeResult).toBeDefined();
   });
 
-  // Phase 1: Time-of-day patterns - should extract daily patterns with default times
-  it('should extract "every morning" as daily at 9am', () => {
+  // Phase 1: Time-of-day patterns - should return only recurring pattern
+  it('should extract "every morning" as recurring only', () => {
     const results = extractor.extract("Exercise every morning", context);
 
-    expect(results).toHaveLength(2);
+    expect(results).toHaveLength(1);
 
     // Check the recurring pattern result
-    const recurringResult = results.find((r) => r.type === "recurring");
-    expect(recurringResult).toMatchObject({
+    expect(results[0]).toMatchObject({
       type: "recurring",
       value: "RRULE:FREQ=DAILY",
       match: "every morning",
     });
-
-    // Check the time result (9am default)
-    const timeResult = results.find((r) => r.type === "time");
-    expect(timeResult).toBeDefined();
-    expect(timeResult?.value).toBe("09:00");
   });
 
-  it('should extract "every afternoon" as daily at 12pm', () => {
+  it('should extract "every afternoon" as recurring only', () => {
     const results = extractor.extract("Lunch break every afternoon", context);
 
-    expect(results).toHaveLength(2);
+    expect(results).toHaveLength(1);
 
-    const recurringResult = results.find((r) => r.type === "recurring");
-    expect(recurringResult?.match).toBe("every afternoon");
-
-    const timeResult = results.find((r) => r.type === "time");
-    expect(timeResult?.value).toBe("12:00");
+    expect(results[0]).toMatchObject({
+      type: "recurring",
+      value: "RRULE:FREQ=DAILY",
+      match: "every afternoon",
+    });
   });
 
-  it('should extract "every evening" as daily at 7pm', () => {
+  it('should extract "every evening" as recurring only', () => {
     const results = extractor.extract("Team meeting every evening", context);
 
-    expect(results).toHaveLength(2);
+    expect(results).toHaveLength(1);
 
-    const recurringResult = results.find((r) => r.type === "recurring");
-    expect(recurringResult?.match).toBe("every evening");
-
-    const timeResult = results.find((r) => r.type === "time");
-    expect(timeResult?.value).toBe("19:00");
+    expect(results[0]).toMatchObject({
+      type: "recurring",
+      value: "RRULE:FREQ=DAILY",
+      match: "every evening",
+    });
   });
 
-  it('should extract "every night" as daily at 10pm', () => {
+  it('should extract "every night" as recurring only', () => {
     const results = extractor.extract("Review every night", context);
 
-    expect(results).toHaveLength(2);
+    expect(results).toHaveLength(1);
 
-    const recurringResult = results.find((r) => r.type === "recurring");
-    expect(recurringResult?.match).toBe("every night");
-
-    const timeResult = results.find((r) => r.type === "time");
-    expect(timeResult?.value).toBe("22:00");
+    expect(results[0]).toMatchObject({
+      type: "recurring",
+      value: "RRULE:FREQ=DAILY",
+      match: "every night",
+    });
   });
 
   // Phase 1: Quarterly pattern support

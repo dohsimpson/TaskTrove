@@ -1,6 +1,5 @@
 import type { Extractor } from "../base/Extractor";
 import type { ExtractionResult, ParserContext } from "../../types";
-import { startOfHour, addHours } from "date-fns";
 
 const WORD_BOUNDARY_START = "(?:^|\\s)";
 const WORD_BOUNDARY_END = "(?=\\s|$)";
@@ -304,77 +303,6 @@ const MULTI_DAY_PATTERNS: RecurringPattern[] = [
     },
   },
 ];
-
-/**
- * Generate time-based extraction results for recurring patterns
- */
-function generateTimeResults(
-  value: string,
-  match: string,
-  startIndex: number,
-  context: ParserContext,
-): ExtractionResult[] {
-  const results: ExtractionResult[] = [];
-
-  // Handle hourly patterns - calculate next hour start
-  if (
-    value === "hourly" ||
-    (value.startsWith("every ") && value.includes(" hours"))
-  ) {
-    const nextHour = addHours(startOfHour(context.referenceDate), 1);
-
-    // Position date and time results right after the recurring pattern to avoid overlap
-    // Use different end positions to ensure no overlap
-    results.push({
-      type: "date",
-      value: nextHour,
-      match: match, // Use the original match for consistency
-      startIndex: startIndex,
-      endIndex: startIndex + match.length - 1, // Slightly shorter to avoid overlap
-    });
-
-    results.push({
-      type: "time",
-      value: nextHour.toTimeString().substring(0, 5), // HH:MM format
-      match: match,
-      startIndex: startIndex + match.length, // Position right after the recurring pattern
-      endIndex: startIndex + match.length + 1,
-    });
-  }
-
-  // Handle time-of-day patterns - generate time results with default times
-  if (value.includes(" at ")) {
-    const timeStr = value.split(" at ")[1];
-    let hour24: number;
-
-    switch (timeStr) {
-      case "9am":
-        hour24 = 9;
-        break;
-      case "12pm":
-        hour24 = 12;
-        break;
-      case "7pm":
-        hour24 = 19;
-        break;
-      case "10pm":
-        hour24 = 22;
-        break;
-      default:
-        return results; // Unknown time format, don't generate time result
-    }
-
-    results.push({
-      type: "time",
-      value: `${hour24.toString().padStart(2, "0")}:00`,
-      match: match,
-      startIndex: startIndex,
-      endIndex: startIndex + match.length,
-    });
-  }
-
-  return results;
-}
 
 // Special patterns for workday handling
 const SPECIAL_PATTERNS: RecurringPattern[] = [
@@ -747,15 +675,6 @@ export class RecurringExtractor implements Extractor {
           startIndex,
           endIndex: startIndex + (match[0]?.length || captured.length),
         });
-
-        // For time-based recurring patterns, also generate time/date results
-        const timeResults = generateTimeResults(
-          rawValue,
-          captured,
-          startIndex,
-          context,
-        );
-        results.push(...timeResults);
       }
     }
 
@@ -784,15 +703,6 @@ export class RecurringExtractor implements Extractor {
           startIndex,
           endIndex: startIndex + (match[0]?.length || captured.length),
         });
-
-        // For time-of-day patterns, also generate time results
-        const timeResults = generateTimeResults(
-          rawValue,
-          captured,
-          startIndex,
-          context,
-        );
-        results.push(...timeResults);
       }
     }
 
@@ -975,15 +885,6 @@ export class RecurringExtractor implements Extractor {
           startIndex,
           endIndex: startIndex + (match[0]?.length || captured.length),
         });
-
-        // For time-based recurring patterns, also generate time/date results
-        const timeResults = generateTimeResults(
-          rawValue,
-          captured,
-          startIndex,
-          context,
-        );
-        results.push(...timeResults);
       }
     }
 

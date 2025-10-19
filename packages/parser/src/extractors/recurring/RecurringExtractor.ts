@@ -28,13 +28,48 @@ const WEEKDAY_TO_RRULE: { [key: string]: string } = {
   sunday: "SU",
 };
 
-// Shared ordinal mapping
+// Shared ordinal mapping for month days
 const ORDINAL_TO_NUMBER: { [key: string]: string } = {
   "1st": "1",
   "2nd": "2",
   "3rd": "3",
   "4th": "4",
   "5th": "5",
+};
+
+// Ordinal word to number mapping (for month day patterns)
+const ORDINAL_WORD_TO_NUMBER: { [key: string]: string } = {
+  first: "1",
+  second: "2",
+  third: "3",
+  fourth: "4",
+  fifth: "5",
+  sixth: "6",
+  seventh: "7",
+  eighth: "8",
+  ninth: "9",
+  tenth: "10",
+  eleventh: "11",
+  twelfth: "12",
+  thirteenth: "13",
+  fourteenth: "14",
+  fifteenth: "15",
+  sixteenth: "16",
+  seventeenth: "17",
+  eighteenth: "18",
+  nineteenth: "19",
+  twentieth: "20",
+  "twenty-first": "21",
+  "twenty-second": "22",
+  "twenty-third": "23",
+  "twenty-fourth": "24",
+  "twenty-fifth": "25",
+  "twenty-sixth": "26",
+  "twenty-seventh": "27",
+  "twenty-eighth": "28",
+  "twenty-ninth": "29",
+  thirtieth: "30",
+  "thirty-first": "31",
 };
 
 // Convert simple recurring values to RRULE format
@@ -339,6 +374,7 @@ const ORDINAL_WEEKDAY_PATTERNS: RecurringPattern[] = [
 ];
 
 const MONTH_DAY_PATTERNS: RecurringPattern[] = [
+  // "ev 7" pattern
   {
     pattern: new RegExp(
       `${WORD_BOUNDARY_START}(ev (\\d{1,2}))${WORD_BOUNDARY_END}`,
@@ -346,6 +382,44 @@ const MONTH_DAY_PATTERNS: RecurringPattern[] = [
     ),
     getValue: (match) => {
       const day = match[2];
+      return `RRULE:FREQ=MONTHLY;BYMONTHDAY=${day}`;
+    },
+  },
+  // "every 27th" pattern
+  {
+    pattern: new RegExp(
+      `${WORD_BOUNDARY_START}(every (\\d{1,2})(?:st|nd|rd|th))${WORD_BOUNDARY_END}`,
+      "gi",
+    ),
+    getValue: (match) => {
+      const day = match[2];
+      return `RRULE:FREQ=MONTHLY;BYMONTHDAY=${day}`;
+    },
+  },
+  // "ev seventh" pattern - ordinal words
+  {
+    pattern: new RegExp(
+      `${WORD_BOUNDARY_START}(ev (first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth|thirteenth|fourteenth|fifteenth|sixteenth|seventeenth|eighteenth|nineteenth|twentieth|twenty-first|twenty-second|twenty-third|twenty-fourth|twenty-fifth|twenty-sixth|twenty-seventh|twenty-eighth|twenty-ninth|thirtieth|thirty-first))${WORD_BOUNDARY_END}`,
+      "gi",
+    ),
+    getValue: (match) => {
+      const ordinalWord = match[2]?.toLowerCase();
+      const day = ordinalWord ? ORDINAL_WORD_TO_NUMBER[ordinalWord] : null;
+      if (!day) return "RRULE:FREQ=MONTHLY";
+      return `RRULE:FREQ=MONTHLY;BYMONTHDAY=${day}`;
+    },
+  },
+  // "every 1st" pattern - short form
+  {
+    pattern: new RegExp(
+      `${WORD_BOUNDARY_START}(every (1st|2nd|3rd|[4-9]th|1[0-9]th|2[0-9]th|3[01](?:st|nd|rd|th)))${WORD_BOUNDARY_END}`,
+      "gi",
+    ),
+    getValue: (match) => {
+      const ordinal = match[2];
+      // Extract the number from ordinal (1st -> 1, 2nd -> 2, etc.)
+      const day = ordinal?.replace(/(?:st|nd|rd|th)$/, "");
+      if (!day) return "RRULE:FREQ=MONTHLY";
       return `RRULE:FREQ=MONTHLY;BYMONTHDAY=${day}`;
     },
   },

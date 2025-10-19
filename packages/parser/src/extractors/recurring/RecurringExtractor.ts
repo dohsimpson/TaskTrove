@@ -338,6 +338,19 @@ const ORDINAL_WEEKDAY_PATTERNS: RecurringPattern[] = [
   },
 ];
 
+const MONTH_DAY_PATTERNS: RecurringPattern[] = [
+  {
+    pattern: new RegExp(
+      `${WORD_BOUNDARY_START}(ev (\\d{1,2}))${WORD_BOUNDARY_END}`,
+      "gi",
+    ),
+    getValue: (match) => {
+      const day = match[2];
+      return `RRULE:FREQ=MONTHLY;BYMONTHDAY=${day}`;
+    },
+  },
+];
+
 const INTERVAL_PATTERNS: RecurringPattern[] = [
   {
     pattern: new RegExp(
@@ -549,6 +562,32 @@ export class RecurringExtractor implements Extractor {
 
     // Extract ordinal weekday patterns (every 2nd Monday, etc.)
     for (const { pattern, getValue } of ORDINAL_WEEKDAY_PATTERNS) {
+      const matches = [...text.matchAll(pattern)];
+
+      for (const match of matches) {
+        const captured = match[1];
+        if (!captured) continue;
+
+        if (context.disabledSections?.has(captured.toLowerCase())) {
+          continue;
+        }
+
+        const startIndex = match.index || 0;
+
+        const rruleValue = getValue(match);
+
+        results.push({
+          type: "recurring",
+          value: rruleValue,
+          match: captured,
+          startIndex,
+          endIndex: startIndex + (match[0]?.length || captured.length),
+        });
+      }
+    }
+
+    // Extract month day patterns
+    for (const { pattern, getValue } of MONTH_DAY_PATTERNS) {
       const matches = [...text.matchAll(pattern)];
 
       for (const match of matches) {

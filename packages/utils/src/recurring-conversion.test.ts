@@ -93,6 +93,14 @@ describe("Enhanced Natural Language Parser with RRULE conversion", () => {
     });
   });
 
+  describe("Phase 3.2: Month Day Patterns", () => {
+    it("should convert 'ev 7' to monthly recurrence on day 7", () => {
+      const result = parseEnhancedNaturalLanguage("Review ev 7");
+      expect(result.recurring).toBe("RRULE:FREQ=MONTHLY;BYMONTHDAY=7");
+      expect(result.title).toBe("Review");
+    });
+  });
+
   describe("Integration with existing functionality", () => {
     it("should work with all other parsing features", () => {
       const result = parseEnhancedNaturalLanguage(

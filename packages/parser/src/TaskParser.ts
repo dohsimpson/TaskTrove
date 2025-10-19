@@ -2,6 +2,7 @@ import { ParserResult } from "./ParserResult";
 import { PriorityExtractor } from "./extractors/priority/PriorityExtractor";
 import { ProjectExtractor } from "./extractors/tags/ProjectExtractor";
 import { LabelExtractor } from "./extractors/tags/LabelExtractor";
+import { DateExtractor } from "./extractors/date/DateExtractor";
 import { OverlapResolver } from "./processors/OverlapResolver";
 import { LastOccurrenceSelector } from "./processors/LastOccurrenceSelector";
 import type { Extractor } from "./extractors/base/Extractor";
@@ -13,6 +14,7 @@ export class TaskParser {
     new PriorityExtractor(),
     new ProjectExtractor(),
     new LabelExtractor(),
+    new DateExtractor(),
   ];
 
   private processors: Processor[] = [
@@ -76,6 +78,9 @@ export class TaskParser {
           break;
         case "label":
           parsedTask.labels.push(value as string);
+          break;
+        case "date":
+          parsedTask.dueDate = value as Date;
           break;
       }
     }

@@ -1121,7 +1121,7 @@ describe("TaskScheduleContent", () => {
         labels: [],
         originalText: "",
       })
-      vi.mocked(convertTimeToHHMMSS).mockReturnValue(null)
+      vi.mocked(convertTimeToHHMMSS).mockReturnValue("")
     })
 
     it("should render natural language input field with button", () => {
@@ -1208,7 +1208,7 @@ describe("TaskScheduleContent", () => {
         originalText: "task at invalid-time",
         time: "invalid-time", // Has time but it won't convert
       })
-      vi.mocked(convertTimeToHHMMSS).mockReturnValue(null) // Invalid time conversion
+      vi.mocked(convertTimeToHHMMSS).mockReturnValue("") // Invalid time conversion
 
       const user = userEvent.setup()
 

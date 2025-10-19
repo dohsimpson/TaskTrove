@@ -1,135 +1,9 @@
-import { describe, it, expect, vi } from "vitest";
-import { convertToRRule, parseEnhancedNaturalLanguage } from "./parser";
+import { describe, it, expect } from "vitest";
+import { parseEnhancedNaturalLanguage } from "./parser-adapter";
 
-describe("convertToRRule function", () => {
-  describe("Basic patterns", () => {
-    it("should convert daily", () => {
-      expect(convertToRRule("daily")).toBe("RRULE:FREQ=DAILY");
-    });
-
-    it("should convert weekly", () => {
-      expect(convertToRRule("weekly")).toBe("RRULE:FREQ=WEEKLY");
-    });
-
-    it("should convert monthly", () => {
-      expect(convertToRRule("monthly")).toBe("RRULE:FREQ=MONTHLY");
-    });
-
-    it("should convert yearly", () => {
-      expect(convertToRRule("yearly")).toBe("RRULE:FREQ=YEARLY");
-    });
-
-    it("should convert quarterly", () => {
-      expect(convertToRRule("quarterly")).toBe("RRULE:FREQ=MONTHLY;INTERVAL=3");
-    });
-
-    it("should convert biweekly", () => {
-      expect(convertToRRule("biweekly")).toBe("RRULE:FREQ=WEEKLY;INTERVAL=2");
-    });
-  });
-
-  describe("Weekday patterns", () => {
-    it("should convert every-workday", () => {
-      expect(convertToRRule("every-workday")).toBe(
-        "RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
-      );
-    });
-
-    it("should convert every-weekday", () => {
-      expect(convertToRRule("every-weekday")).toBe(
-        "RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
-      );
-    });
-
-    it("should convert every-weekend", () => {
-      expect(convertToRRule("every-weekend")).toBe(
-        "RRULE:FREQ=WEEKLY;BYDAY=SA,SU",
-      );
-    });
-
-    it("should convert specific weekdays", () => {
-      expect(convertToRRule("every-monday")).toBe("RRULE:FREQ=WEEKLY;BYDAY=MO");
-      expect(convertToRRule("every-tuesday")).toBe(
-        "RRULE:FREQ=WEEKLY;BYDAY=TU",
-      );
-      expect(convertToRRule("every-wednesday")).toBe(
-        "RRULE:FREQ=WEEKLY;BYDAY=WE",
-      );
-      expect(convertToRRule("every-thursday")).toBe(
-        "RRULE:FREQ=WEEKLY;BYDAY=TH",
-      );
-      expect(convertToRRule("every-friday")).toBe("RRULE:FREQ=WEEKLY;BYDAY=FR");
-      expect(convertToRRule("every-saturday")).toBe(
-        "RRULE:FREQ=WEEKLY;BYDAY=SA",
-      );
-      expect(convertToRRule("every-sunday")).toBe("RRULE:FREQ=WEEKLY;BYDAY=SU");
-    });
-  });
-
-  describe("Interval patterns", () => {
-    it("should convert every-other-day", () => {
-      expect(convertToRRule("every-other-day")).toBe(
-        "RRULE:FREQ=DAILY;INTERVAL=2",
-      );
-    });
-
-    it("should convert every-other-week", () => {
-      expect(convertToRRule("every-other-week")).toBe(
-        "RRULE:FREQ=WEEKLY;INTERVAL=2",
-      );
-    });
-  });
-
-  describe("Dynamic patterns", () => {
-    it("should convert every-N-days patterns", () => {
-      expect(convertToRRule("every-3-days")).toBe(
-        "RRULE:FREQ=DAILY;INTERVAL=3",
-      );
-      expect(convertToRRule("every-5-days")).toBe(
-        "RRULE:FREQ=DAILY;INTERVAL=5",
-      );
-      expect(convertToRRule("every-1-day")).toBe("RRULE:FREQ=DAILY"); // INTERVAL=1 is omitted
-    });
-
-    it("should convert every-N-weeks patterns", () => {
-      expect(convertToRRule("every-2-weeks")).toBe(
-        "RRULE:FREQ=WEEKLY;INTERVAL=2",
-      );
-      expect(convertToRRule("every-4-weeks")).toBe(
-        "RRULE:FREQ=WEEKLY;INTERVAL=4",
-      );
-      expect(convertToRRule("every-1-week")).toBe("RRULE:FREQ=WEEKLY"); // INTERVAL=1 is omitted
-    });
-
-    it("should convert every-N-months patterns", () => {
-      expect(convertToRRule("every-2-months")).toBe(
-        "RRULE:FREQ=MONTHLY;INTERVAL=2",
-      );
-      expect(convertToRRule("every-6-months")).toBe(
-        "RRULE:FREQ=MONTHLY;INTERVAL=6",
-      );
-      expect(convertToRRule("every-1-month")).toBe("RRULE:FREQ=MONTHLY"); // INTERVAL=1 is omitted
-    });
-  });
-
-  describe("Edge cases", () => {
-    it("should return RRULE patterns unchanged", () => {
-      const rrule = "RRULE:FREQ=DAILY;COUNT=5";
-      expect(convertToRRule(rrule)).toBe(rrule);
-    });
-
-    it("should handle unknown patterns with fallback", () => {
-      const consoleWarnSpy = vi
-        .spyOn(console, "warn")
-        .mockImplementation(() => {});
-      expect(convertToRRule("unknown-pattern")).toBe("RRULE:FREQ=DAILY");
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        "Unknown recurring pattern: unknown-pattern, defaulting to daily",
-      );
-      consoleWarnSpy.mockRestore();
-    });
-  });
-});
+// Note: convertToRRule function was part of the old monolithic parser
+// It has been removed as it's now handled by the new parser architecture
+// RRULE conversion is now done at the parser level, not as a separate utility
 
 describe("Enhanced Natural Language Parser with RRULE conversion", () => {
   describe("Basic recurring patterns", () => {
@@ -195,7 +69,7 @@ describe("Enhanced Natural Language Parser with RRULE conversion", () => {
       expect(result.project).toBe("work");
       expect(result.labels).toEqual(["urgent"]);
       expect(result.priority).toBe(1);
-      expect(result.time).toBe("9AM");
+      expect(result.time).toBe("09:00");
       expect(result.recurring).toBe("RRULE:FREQ=WEEKLY;BYDAY=MO");
       expect(result.dueDate).toBeUndefined(); // No due date when recurring
     });
@@ -225,11 +99,11 @@ describe("Enhanced Natural Language Parser with RRULE conversion", () => {
         "urgent task #personal @urgent @work p1 every workday at 9AM for 1h",
       );
 
-      expect(result.title).toBe("urgent task for");
+      expect(result.title).toBe("urgent task");
       expect(result.project).toBe("personal");
       expect(result.labels).toEqual(["urgent", "work"]);
       expect(result.priority).toBe(1);
-      expect(result.time).toBe("9AM");
+      expect(result.time).toBe("09:00");
       expect(result.duration).toBe("1h");
       expect(result.recurring).toBe("RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR");
       expect(result.dueDate).toBeUndefined(); // No due date when recurring
@@ -240,11 +114,11 @@ describe("Enhanced Natural Language Parser with RRULE conversion", () => {
         "task #work @urgent p1 tomorrow 2PM",
       );
 
-      expect(result.title).toBe("task");
+      expect(result.title).toBe("task tomorrow"); // Dates preserved for readability
       expect(result.project).toBe("work");
       expect(result.labels).toEqual(["urgent"]);
       expect(result.priority).toBe(1);
-      expect(result.time).toBe("2PM");
+      expect(result.time).toBe("14:00");
       expect(result.recurring).toBeUndefined();
       expect(result.dueDate).toBeDefined(); // Due date when no recurring
     });

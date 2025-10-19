@@ -3,9 +3,11 @@ import { PriorityExtractor } from "./extractors/priority/PriorityExtractor";
 import { ProjectExtractor } from "./extractors/tags/ProjectExtractor";
 import { LabelExtractor } from "./extractors/tags/LabelExtractor";
 import { DateExtractor } from "./extractors/date/DateExtractor";
+import { WeekdayExtractor } from "./extractors/date/WeekdayExtractor";
 import { TimeExtractor } from "./extractors/time/TimeExtractor";
 import { RecurringExtractor } from "./extractors/recurring/RecurringExtractor";
 import { EstimationExtractor } from "./extractors/estimation/EstimationExtractor";
+import { DurationExtractor } from "./extractors/duration/DurationExtractor";
 import { OverlapResolver } from "./processors/OverlapResolver";
 import { LastOccurrenceSelector } from "./processors/LastOccurrenceSelector";
 import type { Extractor } from "./extractors/base/Extractor";
@@ -18,9 +20,11 @@ export class TaskParser {
     new ProjectExtractor(),
     new LabelExtractor(),
     new DateExtractor(),
+    new WeekdayExtractor(),
     new TimeExtractor(),
     new RecurringExtractor(),
     new EstimationExtractor(),
+    new DurationExtractor(),
   ];
 
   private processors: Processor[] = [
@@ -43,14 +47,21 @@ export class TaskParser {
     }
 
     // Step 3: Convert to ParsedTask
-    const parsedTask = this.convertToParsedTask(text, processedResults);
+    // Use original extraction results for text cleaning (so all matched patterns are removed)
+    // Use processed results for values (so duplicates/overlaps are resolved)
+    const parsedTask = this.convertToParsedTask(
+      text,
+      processedResults,
+      extractionResults,
+    );
 
     return new ParserResult(parsedTask);
   }
 
   private convertToParsedTask(
     originalText: string,
-    results: ExtractionResult[],
+    processedResults: ExtractionResult[],
+    originalResults: ExtractionResult[],
   ): ParsedTask {
     const parsedTask: ParsedTask = {
       title: originalText,
@@ -58,18 +69,10 @@ export class TaskParser {
       originalText,
     };
 
-    let cleanText = originalText;
+    // Apply values from processed results (duplicates/overlaps resolved)
+    for (const result of processedResults) {
+      const { type, value } = result;
 
-    // Sort results by startIndex for processing in reverse order
-    const sortedResults = [...results].sort(
-      (a, b) => b.startIndex - a.startIndex,
-    );
-
-    // Extract values and remove patterns from title (process in reverse order to preserve indices)
-    for (const result of sortedResults) {
-      const { type, value, match, startIndex, endIndex } = result;
-
-      // Apply the extracted value to the parsed task
       switch (type) {
         case "priority":
           parsedTask.priority = value as number;
@@ -96,15 +99,28 @@ export class TaskParser {
           parsedTask.duration = value as string;
           break;
       }
+    }
 
-      // Remove the match from the title (dates should remain for readability)
-      if (type !== "date") {
-        // Replace matched text with spaces to preserve positions of other matches
-        cleanText =
-          cleanText.substring(0, startIndex) +
-          " ".repeat(match.length) +
-          cleanText.substring(endIndex);
+    // Clean title using original results, but preserve dates for readability
+    let cleanText = originalText;
+    const sortedOriginalResults = [...originalResults].sort(
+      (a, b) => b.startIndex - a.startIndex,
+    );
+
+    for (const result of sortedOriginalResults) {
+      const { type, match, startIndex, endIndex } = result;
+
+      // Don't remove dates from title for readability
+      if (type === "date") {
+        continue;
       }
+
+      // Remove the match from the title (all other patterns should be removed)
+      // Replace matched text with spaces to preserve positions of other matches
+      cleanText =
+        cleanText.substring(0, startIndex) +
+        " ".repeat(match.length) +
+        cleanText.substring(endIndex);
     }
 
     // Clean up the title by removing extra spaces

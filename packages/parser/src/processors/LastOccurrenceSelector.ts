@@ -18,16 +18,23 @@ export class LastOccurrenceSelector implements Processor {
       groupedByType.get(result.type)!.push(result);
     }
 
-    // For each type, keep only the last occurrence (by position)
+    // For each type, handle based on whether multiple occurrences are allowed
     const processedResults: ExtractionResult[] = [];
     for (const [type, typeResults] of groupedByType) {
-      if (typeResults.length === 1) {
+      // Types that allow multiple occurrences
+      if (type === "label") {
+        // Keep all labels, sorted by position
+        const sortedResults = typeResults.sort(
+          (a, b) => a.startIndex - b.startIndex,
+        );
+        processedResults.push(...sortedResults);
+      } else if (typeResults.length === 1) {
         const singleResult = typeResults[0];
         if (singleResult) {
           processedResults.push(singleResult);
         }
       } else {
-        // Find the result with the highest startIndex (last occurrence)
+        // For single-occurrence types, keep only the last occurrence
         const lastResult = typeResults.reduce((latest, current) =>
           current.startIndex > latest.startIndex ? current : latest,
         );

@@ -70,8 +70,11 @@ describe("LastOccurrenceSelector", () => {
 
     const processed = processor.process(results, context);
 
-    expect(processed).toHaveLength(1);
-    expect(processed[0]?.value).toBe("today");
+    // Labels should support multiple occurrences - keep all in order
+    expect(processed).toHaveLength(3);
+    expect(processed[0]?.value).toBe("urgent");
+    expect(processed[1]?.value).toBe("work");
+    expect(processed[2]?.value).toBe("today");
   });
 
   it("should preserve order when keeping different types", () => {

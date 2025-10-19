@@ -168,28 +168,28 @@ function buildParsedTask(
   for (const result of sortedResults) {
     switch (result.type) {
       case "priority":
-        parsed.priority = result.value;
+        parsed.priority = result.value as number;
         break;
       case "project":
-        parsed.project = result.value;
+        parsed.project = result.value as string;
         break;
       case "label":
-        parsed.labels.push(result.value);
+        parsed.labels.push(result.value as string);
         break;
       case "date":
-        parsed.dueDate = result.value;
+        parsed.dueDate = result.value as Date;
         break;
       case "time":
-        parsed.time = result.value;
+        parsed.time = result.value as string;
         break;
       case "recurring":
-        parsed.recurring = result.value;
+        parsed.recurring = result.value as string;
         break;
       case "estimation":
-        parsed.estimation = result.value;
+        parsed.estimation = result.value as number;
         break;
       case "duration":
-        parsed.duration = result.value;
+        parsed.duration = result.value as string;
         break;
     }
 

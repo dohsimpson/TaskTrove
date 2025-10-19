@@ -15,7 +15,7 @@ describe("RecurringExtractor", () => {
     expect(results).toHaveLength(1);
     expect(results[0]).toMatchObject({
       type: "recurring",
-      value: "daily",
+      value: "RRULE:FREQ=DAILY",
       match: "every day",
     });
   });
@@ -24,21 +24,21 @@ describe("RecurringExtractor", () => {
     const results = extractor.extract("Meeting daily", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("daily");
+    expect(results[0]?.value).toBe("RRULE:FREQ=DAILY");
   });
 
   it('should extract "every week"', () => {
     const results = extractor.extract("Review every week", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("weekly");
+    expect(results[0]?.value).toBe("RRULE:FREQ=WEEKLY");
   });
 
   it('should extract "weekly"', () => {
     const results = extractor.extract("Report weekly", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("weekly");
+    expect(results[0]?.value).toBe("RRULE:FREQ=WEEKLY");
   });
 
   it('should extract "every monday"', () => {
@@ -47,7 +47,7 @@ describe("RecurringExtractor", () => {
     expect(results).toHaveLength(1);
     expect(results[0]).toMatchObject({
       type: "recurring",
-      value: "weekly monday",
+      value: "RRULE:FREQ=WEEKLY;BYDAY=MO",
       match: "every monday",
     });
   });
@@ -56,42 +56,42 @@ describe("RecurringExtractor", () => {
     const results = extractor.extract("Pay bills every month", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("monthly");
+    expect(results[0]?.value).toBe("RRULE:FREQ=MONTHLY");
   });
 
   it('should extract "monthly"', () => {
     const results = extractor.extract("Newsletter monthly", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("monthly");
+    expect(results[0]?.value).toBe("RRULE:FREQ=MONTHLY");
   });
 
   it('should extract "every year"', () => {
     const results = extractor.extract("Birthday every year", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("yearly");
+    expect(results[0]?.value).toBe("RRULE:FREQ=YEARLY");
   });
 
   it('should extract "yearly"', () => {
     const results = extractor.extract("Checkup yearly", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("yearly");
+    expect(results[0]?.value).toBe("RRULE:FREQ=YEARLY");
   });
 
   it('should extract "every 3 days"', () => {
     const results = extractor.extract("Backup every 3 days", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("every 3 days");
+    expect(results[0]?.value).toBe("RRULE:FREQ=DAILY;INTERVAL=3");
   });
 
   it('should extract "every 2 weeks"', () => {
     const results = extractor.extract("Sprint every 2 weeks", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("every 2 weeks");
+    expect(results[0]?.value).toBe("RRULE:FREQ=WEEKLY;INTERVAL=2");
   });
 
   it("should return empty array when no recurring pattern found", () => {

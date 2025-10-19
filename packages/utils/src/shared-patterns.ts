@@ -11,7 +11,7 @@ import {
   TIME_SUGGESTIONS,
   WORD_BOUNDARY_START,
   WORD_BOUNDARY_END,
-} from "./parser";
+} from "./parser-adapter";
 
 export interface AutocompleteSuggestion {
   type:
@@ -82,6 +82,23 @@ export function generateDateSuggestions(): AutocompleteSuggestion[] {
       description: "Due in 2 weeks",
     },
     { value: "in 1 week", display: "In 1 week", description: "Due in 1 week" },
+    { value: "yesterday", display: "Yesterday", description: "Due yesterday" },
+    {
+      value: "next month",
+      display: "Next month",
+      description: "Due next month",
+    },
+    { value: "next year", display: "Next year", description: "Due next year" },
+    {
+      value: "this monday",
+      display: "This Monday",
+      description: "Due this Monday",
+    },
+    {
+      value: "next friday",
+      display: "Next Friday",
+      description: "Due next Friday",
+    },
   ];
 
   dynamicExamples.forEach((example) => {
@@ -124,25 +141,23 @@ export function generatePrioritySuggestions(): AutocompleteSuggestion[] {
     suggestions.push({
       type: "priority",
       value: pattern.level.toString(),
-      display: pattern.display,
+      display: `P${pattern.level}`,
       description: `Priority ${pattern.level} - ${pattern.level === 1 ? "Highest" : pattern.level === 2 ? "High" : pattern.level === 3 ? "Medium" : "Low"}`,
     });
   });
 
   // Priority suggestions from exclamation marks
   EXCLAMATION_PATTERNS.forEach((pattern) => {
-    // Extract the exclamation marks from the pattern
-    const match = pattern.pattern.source.match(/\(([!]+)\)/);
-    if (match) {
-      const exclamations = match[1];
-      if (exclamations) {
-        suggestions.push({
-          type: "priority",
-          value: exclamations,
-          display: exclamations,
-          description: `Priority ${pattern.level} - ${pattern.level === 1 ? "Highest" : pattern.level === 2 ? "High" : pattern.level === 3 ? "Medium" : "Low"}`,
-        });
-      }
+    // Extract the exclamation marks from the pattern - the pattern is like /!!!/g
+    // The source is "!!!", so we can extract directly
+    const exclamations = pattern.pattern.source;
+    if (exclamations) {
+      suggestions.push({
+        type: "priority",
+        value: exclamations,
+        display: exclamations,
+        description: `Priority ${pattern.level} - ${pattern.level === 1 ? "Highest" : pattern.level === 2 ? "High" : pattern.level === 3 ? "Medium" : "Low"}`,
+      });
     }
   });
 
@@ -381,8 +396,10 @@ export function generateHighlightingPatterns(
   const priorityCaptures = [
     ...PRIORITY_PATTERNS.map((p) => `p${p.level}`),
     ...EXCLAMATION_PATTERNS.map((p) => {
-      const match = p.pattern.source.match(/\([!]+\)/);
-      return match ? match[0].slice(1, -1) : "";
+      // Extract the exclamation marks directly from pattern source
+      // Pattern is like /!!!/g, so we remove the /g flags
+      const exclamations = p.pattern.source.replace(/[/g]/, "");
+      return exclamations;
     }).filter(Boolean),
   ];
   const priorityRegex = new RegExp(
@@ -392,12 +409,9 @@ export function generateHighlightingPatterns(
   patterns.push({ type: "priority", regex: priorityRegex });
 
   // Date patterns - comprehensive patterns covering all parser patterns
+  // Order matters: longer patterns must come before shorter ones
   const dateCaptures = [
-    // Static patterns from DATE_PATTERNS
-    ...DATE_PATTERNS.map((p) => p.display.toLowerCase()),
-    "tod",
-    "tmr",
-    // "This [shorthand]" weekday patterns (these should come before bare shorthands for precedence)
+    // "This [shorthand]" weekday patterns (longer, so must come first)
     "this mon",
     "this tue",
     "this wed",
@@ -405,7 +419,26 @@ export function generateHighlightingPatterns(
     "this fri",
     "this sat",
     "this sun",
-    // Shorthand weekday patterns
+    "this monday",
+    "this tuesday",
+    "this wednesday",
+    "this thursday",
+    "this friday",
+    "this saturday",
+    "this sunday",
+    // Static patterns from DATE_PATTERNS
+    ...DATE_PATTERNS.map((p) => p.display.toLowerCase()),
+    "tod",
+    "tmr",
+    // Weekday full names (shorter than "this X" versions)
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+    // Shorthand weekday patterns (shortest)
     "mon",
     "tue",
     "wed",

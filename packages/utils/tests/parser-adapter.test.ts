@@ -41,8 +41,8 @@ describe("parser-adapter backwards compatibility", () => {
   it("should parse multiple labels", () => {
     const result = parseEnhancedNaturalLanguage("Task @work @urgent");
 
-    // Note: Currently only one label is extracted, last occurrence wins
-    expect(result.labels).toEqual(["urgent"]);
+    // Multiple labels are supported and preserved in order
+    expect(result.labels).toEqual(["work", "urgent"]);
   });
 
   it("should parse estimation", () => {

@@ -96,7 +96,7 @@ describe("TaskParser", () => {
     const result = parser.parse("Team meeting weekly", context);
 
     expect(result.parsed.title).toBe("Team meeting");
-    expect(result.parsed.recurring).toBe("weekly");
+    expect(result.parsed.recurring).toBe("RRULE:FREQ=WEEKLY");
   });
 
   it("should extract estimation patterns", () => {
@@ -129,7 +129,7 @@ describe("TaskParser", () => {
     expect(result.parsed.project).toBe("work");
     expect(result.parsed.labels).toEqual(["urgent"]);
     expect(result.parsed.time).toBe("14:00");
-    expect(result.parsed.recurring).toBe("weekly");
+    expect(result.parsed.recurring).toBe("RRULE:FREQ=WEEKLY");
     expect(result.parsed.estimation).toBe(60);
     expect(result.parsed.dueDate).toBeDefined();
     expect(result.parsed.title).toBe("Important presentation tomorrow"); // dates remain

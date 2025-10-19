@@ -29,7 +29,7 @@ export * from "./routing";
 export * from "./group-utils";
 
 // Natural language parser
-export * from "./parser";
+export * from "./parser-adapter";
 
 // Shared patterns (used by parser for autocomplete/highlighting)
 export * from "./shared-patterns";
@@ -87,7 +87,6 @@ export {
 } from "./group-utils";
 export {
   parseEnhancedNaturalLanguage,
-  convertToRRule,
   convertTimeToHHMMSS,
   getPriorityDisplay,
   getPriorityBackgroundColor,
@@ -97,7 +96,7 @@ export {
   getDurationDisplay,
   DATE_SUGGESTIONS,
   TIME_SUGGESTIONS,
-} from "./parser";
+} from "./parser-adapter";
 export { saltAndHashPassword, verifyPassword } from "./encryption";
 export {
   getPriorityColor,

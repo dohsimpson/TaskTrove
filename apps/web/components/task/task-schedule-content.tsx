@@ -249,7 +249,7 @@ export function TaskScheduleContent({
 
     const hasDate = parsedNlInput.dueDate !== undefined
     const hasTime =
-      parsedNlInput.time !== undefined && convertTimeToHHMMSS(parsedNlInput.time) !== null
+      parsedNlInput.time !== undefined && convertTimeToHHMMSS(parsedNlInput.time) !== ""
     const hasRecurring = parsedNlInput.recurring !== undefined
 
     return hasDate || hasTime || hasRecurring

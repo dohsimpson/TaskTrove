@@ -18,6 +18,7 @@
     "./routing": "./src/routing.ts",
     "./group-utils": "./src/group-utils.ts",
     "./parser": "./src/parser.ts",
+    "./parser-adapter": "./src/parser-adapter.ts",
     "./time-estimation": "./src/time-estimation.ts",
     "./origin-validation": "./src/origin-validation.ts",
     "./shared-patterns": "./src/shared-patterns.ts",

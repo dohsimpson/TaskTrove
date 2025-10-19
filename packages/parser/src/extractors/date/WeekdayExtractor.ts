@@ -7,7 +7,7 @@ const WORD_BOUNDARY_END = "(?=\\s|$)";
 
 interface WeekdayPattern {
   pattern: RegExp;
-  getWeekday: (referenceDate: Date) => Date;
+  getWeekday: (referenceDate: Date, match?: RegExpMatchArray) => Date;
 }
 
 // Helper to get next occurrence of a specific weekday
@@ -77,8 +77,11 @@ const MODIFIED_WEEKDAY_PATTERNS: WeekdayPattern[] = [
       `${WORD_BOUNDARY_START}(this (sunday|sun|monday|mon|tuesday|tue|tues|wednesday|wed|thursday|thu|thurs|friday|fri|saturday|sat))${WORD_BOUNDARY_END}`,
       "gi",
     ),
-    getWeekday: (ref, match) => {
+    getWeekday: (ref: Date, match?: RegExpMatchArray) => {
+      if (!match) return ref;
       const weekdayName = match[2];
+      if (!weekdayName) return ref;
+
       const weekdayMap: Record<string, number> = {
         sunday: 0,
         sun: 0,
@@ -109,8 +112,11 @@ const MODIFIED_WEEKDAY_PATTERNS: WeekdayPattern[] = [
       `${WORD_BOUNDARY_START}(next (sunday|sun|monday|mon|tuesday|tue|tues|wednesday|wed|thursday|thu|thurs|friday|fri|saturday|sat))${WORD_BOUNDARY_END}`,
       "gi",
     ),
-    getWeekday: (ref, match) => {
+    getWeekday: (ref: Date, match?: RegExpMatchArray) => {
+      if (!match) return ref;
       const weekdayName = match[2];
+      if (!weekdayName) return ref;
+
       const weekdayMap: Record<string, number> = {
         sunday: 0,
         sun: 0,

@@ -40,7 +40,7 @@ const MONTH_MAP: Record<string, number> = {
 // Parse ordinal numbers (1st, 2nd, 3rd, 4th, etc.)
 const parseOrdinal = (ordinal: string): number => {
   const match = ordinal.match(/^(\d+)(st|nd|rd|th)$/);
-  return match ? parseInt(match[1]) : parseInt(ordinal);
+  return match && match[1] ? parseInt(match[1]) : parseInt(ordinal);
 };
 
 const DATE_PATTERNS: DatePattern[] = [
@@ -52,7 +52,10 @@ const DATE_PATTERNS: DatePattern[] = [
     ),
     getValue: (match, ref) => {
       const monthName = match[1];
-      const day = parseOrdinal(match[2]);
+      const dayStr = match[2];
+      if (!monthName || !dayStr) return null;
+
+      const day = parseOrdinal(dayStr);
       const month = MONTH_MAP[monthName.toLowerCase()];
 
       if (month === undefined || isNaN(day) || day < 1 || day > 31) return null;
@@ -69,8 +72,11 @@ const DATE_PATTERNS: DatePattern[] = [
       "gi",
     ),
     getValue: (match, ref) => {
-      const day = parseOrdinal(match[1]);
+      const dayStr = match[1];
       const monthName = match[2];
+      if (!dayStr || !monthName) return null;
+
+      const day = parseOrdinal(dayStr);
       const month = MONTH_MAP[monthName.toLowerCase()];
 
       if (month === undefined || isNaN(day) || day < 1 || day > 31) return null;
@@ -88,8 +94,12 @@ const DATE_PATTERNS: DatePattern[] = [
     ),
     getValue: (match) => {
       const monthName = match[1];
-      const day = parseOrdinal(match[2]);
-      const year = parseInt(match[3]);
+      const dayStr = match[2];
+      const yearStr = match[3];
+      if (!monthName || !dayStr || !yearStr) return null;
+
+      const day = parseOrdinal(dayStr);
+      const year = parseInt(yearStr);
       const month = MONTH_MAP[monthName.toLowerCase()];
 
       if (
@@ -113,9 +123,13 @@ const DATE_PATTERNS: DatePattern[] = [
       "gi",
     ),
     getValue: (match) => {
-      const day = parseOrdinal(match[1]);
+      const dayStr = match[1];
       const monthName = match[2];
-      const year = parseInt(match[3]);
+      const yearStr = match[3];
+      if (!dayStr || !monthName || !yearStr) return null;
+
+      const day = parseOrdinal(dayStr);
+      const year = parseInt(yearStr);
       const month = MONTH_MAP[monthName.toLowerCase()];
 
       if (
@@ -139,8 +153,12 @@ const DATE_PATTERNS: DatePattern[] = [
       "gi",
     ),
     getValue: (match, ref) => {
-      const month = parseInt(match[1]);
-      const day = parseInt(match[2]);
+      const monthStr = match[1];
+      const dayStr = match[2];
+      if (!monthStr || !dayStr) return null;
+
+      const month = parseInt(monthStr);
+      const day = parseInt(dayStr);
 
       if (
         isNaN(month) ||
@@ -164,8 +182,12 @@ const DATE_PATTERNS: DatePattern[] = [
       "gi",
     ),
     getValue: (match, ref) => {
-      const day = parseInt(match[1]);
-      const month = parseInt(match[2]);
+      const dayStr = match[1];
+      const monthStr = match[2];
+      if (!dayStr || !monthStr) return null;
+
+      const day = parseInt(dayStr);
+      const month = parseInt(monthStr);
 
       if (
         isNaN(day) ||
@@ -194,9 +216,14 @@ const DATE_PATTERNS: DatePattern[] = [
       "gi",
     ),
     getValue: (match) => {
-      const first = parseInt(match[1]);
-      const second = parseInt(match[2]);
-      const year = parseInt(match[3]);
+      const firstStr = match[1];
+      const secondStr = match[2];
+      const yearStr = match[3];
+      if (!firstStr || !secondStr || !yearStr) return null;
+
+      const first = parseInt(firstStr);
+      const second = parseInt(secondStr);
+      const year = parseInt(yearStr);
 
       if (isNaN(first) || isNaN(second) || isNaN(year)) return null;
 

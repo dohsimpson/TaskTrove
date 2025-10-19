@@ -95,6 +95,11 @@ function convertToRRule(value: string): string {
     return `RRULE:FREQ=WEEKLY;BYDAY=${daysStr}`;
   }
 
+  // If value is already an RRULE, return as-is
+  if (value.startsWith("RRULE:")) {
+    return value;
+  }
+
   // Handle "every X days/weeks/months/years/hours"
   const intervalMatch = value.match(
     /^every (\d+) (days?|weeks?|months?|years?|hours?)$/i,
@@ -211,6 +216,65 @@ const TIME_OF_DAY_PATTERNS: RecurringPattern[] = [
 
 // Multi-day list patterns (every monday, friday)
 const MULTI_DAY_PATTERNS: RecurringPattern[] = [
+  // Pattern with time: "ev mon, fri at 20:00" or "every monday, friday at 3PM"
+  {
+    pattern: new RegExp(
+      `${WORD_BOUNDARY_START}((every|ev) ([a-zA-Z]+(?:,\\s*[a-zA-Z]+)+) at (\\d{1,2}(?::\\d{2})?(?:\\s*(?:AM|PM))?))${WORD_BOUNDARY_END}`,
+      "gi",
+    ),
+    getValue: (match) => {
+      const prefix = match[2]; // "every" or "ev"
+      const dayList = match[3]; // "monday, friday" or "mon, fri"
+      const timeStr = match[4]; // "20:00" or "3PM"
+
+      if (!dayList) return "weekly";
+
+      // Split by comma and clean up
+      const days = dayList.split(",").map((day) => day.trim().toLowerCase());
+
+      // Convert directly to RRULE format using shared mapping
+      const rruleDays: string[] = [];
+      for (const day of days) {
+        const rruleDay = WEEKDAY_TO_RRULE[day];
+        if (rruleDay) {
+          rruleDays.push(rruleDay);
+        }
+      }
+
+      // Parse time to extract hour
+      let hour: number | null = null;
+      if (timeStr) {
+        // Handle 24-hour format (20:00)
+        const twentyFourMatch = timeStr.match(/^(\d{1,2})(?::(\d{2}))?$/);
+        if (twentyFourMatch && twentyFourMatch[1]) {
+          hour = parseInt(twentyFourMatch[1], 10);
+        } else {
+          // Handle 12-hour format with AM/PM (3PM, 9AM)
+          const twelveHourMatch = timeStr.match(
+            /^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/i,
+          );
+          if (twelveHourMatch && twelveHourMatch[1] && twelveHourMatch[3]) {
+            let h = parseInt(twelveHourMatch[1], 10);
+            const ampm = twelveHourMatch[3].toUpperCase();
+            if (ampm === "PM" && h !== 12) {
+              h += 12;
+            } else if (ampm === "AM" && h === 12) {
+              h = 0;
+            }
+            hour = h;
+          }
+        }
+      }
+
+      if (rruleDays.length > 0) {
+        const rrule = `RRULE:FREQ=WEEKLY;BYDAY=${rruleDays.join(",")}`;
+        return hour !== null ? `${rrule};BYHOUR=${hour}` : rrule;
+      }
+
+      return "weekly";
+    },
+  },
+  // Pattern without time: "every monday, friday"
   {
     pattern: new RegExp(
       `${WORD_BOUNDARY_START}(every|ev) ([a-zA-Z]+(?:,\\s*[a-zA-Z]+)+)${WORD_BOUNDARY_END}`,

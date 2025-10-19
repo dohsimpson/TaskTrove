@@ -335,6 +335,8 @@ describe("RecurringExtractor", () => {
   it('should extract "every 3rd friday" with lowercase', () => {
     const results = extractor.extract("Cleanup every 3rd friday", context);
 
+    // Should only have 1 result - the ordinal weekday pattern
+    // The negative lookahead prevents "every 3rd" from matching when followed by a weekday
     expect(results).toHaveLength(1);
 
     const recurringResult = results.find((r) => r.type === "recurring");
@@ -409,5 +411,26 @@ describe("RecurringExtractor", () => {
       value: "RRULE:FREQ=MONTHLY;BYDAY=2MO",
       match: "every 2nd Monday",
     });
+  });
+
+  // Phase 3.3: Time + Recurrence Combinations
+  it('should extract "ev mon, fri at 20:00" combining multi-day with time', () => {
+    const results = extractor.extract(
+      "Team sync ev mon, fri at 20:00",
+      context,
+    );
+
+    // Should extract both recurring pattern and time
+    expect(results.length).toBeGreaterThanOrEqual(2);
+
+    const recurringResult = results.find((r) => r.type === "recurring");
+    expect(recurringResult).toMatchObject({
+      type: "recurring",
+      value: "RRULE:FREQ=WEEKLY;BYDAY=MO,FR;BYHOUR=20",
+      match: "ev mon, fri at 20:00",
+    });
+
+    // Note: Time extraction is handled separately by TimeExtractor
+    // The recurring pattern should include BYHOUR parameter
   });
 });

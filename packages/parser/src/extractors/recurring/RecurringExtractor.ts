@@ -427,10 +427,11 @@ const MONTH_DAY_PATTERNS: RecurringPattern[] = [
       return `RRULE:FREQ=MONTHLY;BYMONTHDAY=${day}`;
     },
   },
-  // "every 27th" pattern
+  // "every 27th" pattern - with negative lookahead to avoid matching "every 3rd friday"
+  // The (?!.*(?:monday|mon|tuesday|tue|...)) prevents matching when followed by a weekday
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(every (\\d{1,2})(?:st|nd|rd|th))${WORD_BOUNDARY_END}`,
+      `${WORD_BOUNDARY_START}(every (\\d{1,2})(?:st|nd|rd|th))(?!.*(?:monday|mon|tuesday|tue|wednesday|wed|thursday|thu|friday|fri|saturday|sat|sunday|sun))${WORD_BOUNDARY_END}`,
       "gi",
     ),
     getValue: (match) => {
@@ -447,20 +448,6 @@ const MONTH_DAY_PATTERNS: RecurringPattern[] = [
     getValue: (match) => {
       const ordinalWord = match[2]?.toLowerCase();
       const day = ordinalWord ? ORDINAL_WORD_TO_NUMBER[ordinalWord] : null;
-      if (!day) return "RRULE:FREQ=MONTHLY";
-      return `RRULE:FREQ=MONTHLY;BYMONTHDAY=${day}`;
-    },
-  },
-  // "every 1st" pattern - short form
-  {
-    pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(every (1st|2nd|3rd|[4-9]th|1[0-9]th|2[0-9]th|3[01](?:st|nd|rd|th)))${WORD_BOUNDARY_END}`,
-      "gi",
-    ),
-    getValue: (match) => {
-      const ordinal = match[2];
-      // Extract the number from ordinal (1st -> 1, 2nd -> 2, etc.)
-      const day = ordinal?.replace(/(?:st|nd|rd|th)$/, "");
       if (!day) return "RRULE:FREQ=MONTHLY";
       return `RRULE:FREQ=MONTHLY;BYMONTHDAY=${day}`;
     },

@@ -17,6 +17,7 @@ export { LabelExtractor } from "./extractors/tags/LabelExtractor";
 export { DateExtractor } from "./extractors/date/DateExtractor";
 export { RecurringExtractor } from "./extractors/recurring/RecurringExtractor";
 export { TimeExtractor } from "./extractors/time/TimeExtractor";
+export { EstimationExtractor } from "./extractors/estimation/EstimationExtractor";
 export type { Extractor } from "./extractors/base/Extractor";
 
 // Processors

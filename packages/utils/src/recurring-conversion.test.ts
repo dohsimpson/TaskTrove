@@ -117,6 +117,32 @@ describe("Enhanced Natural Language Parser with RRULE conversion", () => {
       expect(result.recurring).toBe("RRULE:FREQ=MONTHLY;BYMONTHDAY=1");
       expect(result.title).toBe("Standup");
     });
+
+    it("should convert 'every jan 27th' to yearly recurrence", () => {
+      const result = parseEnhancedNaturalLanguage("Review every jan 27th");
+      expect(result.recurring).toBe(
+        "RRULE:FREQ=YEARLY;BYMONTH=1;BYMONTHDAY=27",
+      );
+      expect(result.title).toBe("Review");
+    });
+
+    it("should convert 'every december 25th' to yearly recurrence", () => {
+      const result = parseEnhancedNaturalLanguage(
+        "Christmas every december 25th",
+      );
+      expect(result.recurring).toBe(
+        "RRULE:FREQ=YEARLY;BYMONTH=12;BYMONTHDAY=25",
+      );
+      expect(result.title).toBe("Christmas");
+    });
+
+    it("should convert 'ev may 15' to yearly recurrence", () => {
+      const result = parseEnhancedNaturalLanguage("Tax deadline ev may 15");
+      expect(result.recurring).toBe(
+        "RRULE:FREQ=YEARLY;BYMONTH=5;BYMONTHDAY=15",
+      );
+      expect(result.title).toBe("Tax deadline");
+    });
   });
 
   describe("Integration with existing functionality", () => {

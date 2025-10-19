@@ -373,7 +373,49 @@ const ORDINAL_WEEKDAY_PATTERNS: RecurringPattern[] = [
   },
 ];
 
+// Month name to number mapping
+const MONTH_TO_NUMBER: { [key: string]: string } = {
+  jan: "1",
+  january: "1",
+  feb: "2",
+  february: "2",
+  mar: "3",
+  march: "3",
+  apr: "4",
+  april: "4",
+  may: "5",
+  jun: "6",
+  june: "6",
+  jul: "7",
+  july: "7",
+  aug: "8",
+  august: "8",
+  sep: "9",
+  september: "9",
+  oct: "10",
+  october: "10",
+  nov: "11",
+  november: "11",
+  dec: "12",
+  december: "12",
+};
+
 const MONTH_DAY_PATTERNS: RecurringPattern[] = [
+  // Yearly patterns with month name - must come first to avoid being caught by monthly patterns
+  // "every jan 27th" or "ev january 27"
+  {
+    pattern: new RegExp(
+      `${WORD_BOUNDARY_START}((?:every|ev) (jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|september|oct|october|nov|november|dec|december) (\\d{1,2})(?:st|nd|rd|th)?)${WORD_BOUNDARY_END}`,
+      "gi",
+    ),
+    getValue: (match) => {
+      const monthName = match[2]?.toLowerCase();
+      const day = match[3];
+      const month = monthName ? MONTH_TO_NUMBER[monthName] : null;
+      if (!month || !day) return "RRULE:FREQ=YEARLY";
+      return `RRULE:FREQ=YEARLY;BYMONTH=${month};BYMONTHDAY=${day}`;
+    },
+  },
   // "ev 7" pattern
   {
     pattern: new RegExp(

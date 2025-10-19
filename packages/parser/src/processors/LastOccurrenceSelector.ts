@@ -23,11 +23,22 @@ export class LastOccurrenceSelector implements Processor {
     for (const [type, typeResults] of groupedByType) {
       // Types that allow multiple occurrences
       if (type === "label") {
-        // Keep all labels, sorted by position
-        const sortedResults = typeResults.sort(
+        // Keep unique labels, preserving order of last occurrence
+        // Deduplicate identical label values while allowing different labels
+        const uniqueLabels = new Map<string, ExtractionResult>();
+
+        for (const result of typeResults) {
+          const labelValue = (result.value as string).toLowerCase();
+          // Keep the last occurrence of each label value
+          uniqueLabels.set(labelValue, result);
+        }
+
+        // Convert back to array and sort by position
+        const deduplicatedResults = Array.from(uniqueLabels.values()).sort(
           (a, b) => a.startIndex - b.startIndex,
         );
-        processedResults.push(...sortedResults);
+
+        processedResults.push(...deduplicatedResults);
       } else if (typeResults.length === 1) {
         const singleResult = typeResults[0];
         if (singleResult) {

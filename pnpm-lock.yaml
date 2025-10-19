@@ -1014,6 +1014,25 @@ importers:
         specifier: 'catalog:'
         version: 3.2.4(@types/node@22.18.6)(happy-dom@18.0.1)(jiti@2.6.0)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.20.6)(yaml@2.8.1)
 
+  packages/parser:
+    dependencies:
+      '@tasktrove/types':
+        specifier: workspace:*
+        version: link:../types
+      date-fns:
+        specifier: 'catalog:'
+        version: 4.1.0
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.4(@types/node@22.18.6)(happy-dom@18.0.1)(jiti@2.6.0)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.20.6)(yaml@2.8.1)
+
   packages/types:
     dependencies:
       '@tasktrove/constants':

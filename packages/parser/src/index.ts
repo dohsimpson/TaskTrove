@@ -15,6 +15,7 @@ export { PriorityExtractor } from "./extractors/priority/PriorityExtractor";
 export { ProjectExtractor } from "./extractors/tags/ProjectExtractor";
 export { LabelExtractor } from "./extractors/tags/LabelExtractor";
 export { DateExtractor } from "./extractors/date/DateExtractor";
+export { RecurringExtractor } from "./extractors/recurring/RecurringExtractor";
 export type { Extractor } from "./extractors/base/Extractor";
 
 // Processors

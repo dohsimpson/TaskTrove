@@ -60,13 +60,15 @@ export class TaskParser {
     for (const result of sortedResults) {
       const { type, value, match, startIndex, endIndex } = result;
 
-      // Remove the match from the title
-      parsedTask.title = this.removeMatchFromTitle(
-        parsedTask.title,
-        match,
-        startIndex,
-        endIndex,
-      );
+      // Remove the match from the title (except for dates which should remain)
+      if (type !== "date") {
+        parsedTask.title = this.removeMatchFromTitle(
+          parsedTask.title,
+          match,
+          startIndex,
+          endIndex,
+        );
+      }
 
       // Apply the extracted value to the parsed task
       switch (type) {

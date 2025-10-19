@@ -39,21 +39,18 @@ export class EnglishLocaleConfig implements LocaleConfig {
   }
 
   getExtractors(): Extractor[] {
-    let extractors = DEFAULT_EXTRACTORS;
+    // Create instances first
+    let instances: Extractor[] = DEFAULT_EXTRACTORS.map(
+      (Extractor) => new Extractor(),
+    );
 
-    // Filter out disabled extractors
+    // Filter out disabled extractors by checking their names
     if (this.options.disabledExtractors) {
-      extractors = extractors.filter(
-        (Extractor) =>
-          !this.options.disabledExtractors?.includes(
-            Extractor.name.replace("Extractor", "").toLowerCase() +
-              "-extractor",
-          ),
+      instances = instances.filter(
+        (extractor) =>
+          !this.options.disabledExtractors?.includes(extractor.name),
       );
     }
-
-    // Create instances
-    let instances: Extractor[] = extractors.map((Extractor) => new Extractor());
 
     // Apply custom order if specified
     if (this.options.extractorOrder) {

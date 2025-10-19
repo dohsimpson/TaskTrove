@@ -109,7 +109,7 @@ describe("TaskParser", () => {
     const result = parser.parse("Code review ~30min", context);
 
     expect(result.parsed.title).toBe("Code review");
-    expect(result.parsed.estimation).toBe(30);
+    expect(result.parsed.estimation).toBe(30 * 60); // 30 minutes = 1800 seconds
   });
 
   it("should handle complex task with all pattern types", () => {
@@ -130,7 +130,7 @@ describe("TaskParser", () => {
     expect(result.parsed.labels).toEqual(["urgent"]);
     expect(result.parsed.time).toBe("14:00");
     expect(result.parsed.recurring).toBe("RRULE:FREQ=WEEKLY");
-    expect(result.parsed.estimation).toBe(60);
+    expect(result.parsed.estimation).toBe(60 * 60); // 1 hour = 3600 seconds
     expect(result.parsed.dueDate).toBeDefined();
     expect(result.parsed.title).toBe("Important presentation tomorrow"); // dates remain
   });

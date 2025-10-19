@@ -48,7 +48,7 @@ describe("parser-adapter backwards compatibility", () => {
   it("should parse estimation", () => {
     const result = parseEnhancedNaturalLanguage("Task ~30min");
 
-    // Note: Currently returns minutes, not seconds
-    expect(result.estimation).toBe(30);
+    // Estimation now returns seconds, not minutes
+    expect(result.estimation).toBe(30 * 60); // 30 minutes = 1800 seconds
   });
 });

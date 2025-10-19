@@ -17,7 +17,8 @@ const COMBINED_PATTERNS: EstimationPattern[] = [
 
       const hours = parseInt(hoursStr);
       const minutes = parseInt(minutesStr);
-      return hours * 60 + minutes;
+      // Convert to seconds
+      return hours * 3600 + minutes * 60;
     },
   },
 ];
@@ -31,7 +32,8 @@ const HOUR_PATTERNS: EstimationPattern[] = [
       if (!hoursStr) return 0;
 
       const hours = parseInt(hoursStr);
-      return hours * 60;
+      // Convert to seconds
+      return hours * 3600;
     },
   },
 ];
@@ -45,7 +47,8 @@ const MINUTE_PATTERNS: EstimationPattern[] = [
       if (!minutesStr) return 0;
 
       const minutes = parseInt(minutesStr);
-      return minutes;
+      // Convert to seconds
+      return minutes * 60;
     },
   },
   {
@@ -55,7 +58,8 @@ const MINUTE_PATTERNS: EstimationPattern[] = [
       if (!minutesStr) return 0;
 
       const minutes = parseInt(minutesStr);
-      return minutes;
+      // Convert to seconds
+      return minutes * 60;
     },
   },
 ];

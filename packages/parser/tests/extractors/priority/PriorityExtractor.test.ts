@@ -1,0 +1,58 @@
+import { describe, it, expect } from "vitest";
+import { PriorityExtractor } from "../../../src/extractors/priority/PriorityExtractor";
+import type { ParserContext } from "../../../src/types";
+
+describe("PriorityExtractor", () => {
+  const extractor = new PriorityExtractor();
+  const context: ParserContext = {
+    locale: "en",
+    referenceDate: new Date(),
+  };
+
+  it("should extract p1 priority", () => {
+    const results = extractor.extract("Buy milk p1", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]).toMatchObject({
+      type: "priority",
+      value: 1,
+      match: "p1",
+    });
+    expect(results[0]?.startIndex).toBeGreaterThanOrEqual(0);
+  });
+
+  it("should extract p2 priority", () => {
+    const results = extractor.extract("Task p2 here", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe(2);
+  });
+
+  it("should extract p3 priority", () => {
+    const results = extractor.extract("Low priority p3", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe(3);
+  });
+
+  it("should extract p4 priority", () => {
+    const results = extractor.extract("Later p4", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe(4);
+  });
+
+  it("should return empty array when no priority found", () => {
+    const results = extractor.extract("Just a task", context);
+
+    expect(results).toEqual([]);
+  });
+
+  it("should find multiple priority occurrences", () => {
+    const results = extractor.extract("Task p3 with details p1", context);
+
+    expect(results).toHaveLength(2);
+    expect(results[0]?.value).toBe(3);
+    expect(results[1]?.value).toBe(1);
+  });
+});

@@ -415,9 +415,58 @@ const WEEKDAY_PATTERNS: RecurringPattern[] = [
 
 // Ordinal weekday patterns (every 2nd Monday, every 3rd Friday, etc.)
 const ORDINAL_WEEKDAY_PATTERNS: RecurringPattern[] = [
+  // Pattern with time: "every 3rd friday 8pm" or "every 2nd monday at 9am"
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(every (1st|2nd|3rd|4th|5th) (monday|mon|tuesday|tue|wednesday|wed|thursday|thu|friday|fri|saturday|sat|sunday|sun))${WORD_BOUNDARY_END}`,
+      `${WORD_BOUNDARY_START}(every (1st|2nd|3rd|4th|5th) (monday|mon|tuesday|tue|wednesday|wed|thursday|thu|friday|fri|saturday|sat|sunday|sun) (?:at )?(\\d{1,2}(?::\\d{2})?(?:AM|PM)?))${WORD_BOUNDARY_END}`,
+      "gi",
+    ),
+    getValue: (match) => {
+      const ordinal = match[2]; // "1st", "2nd", "3rd", "4th"
+      const weekdayStr = match[3]; // "monday", "mon", etc.
+      const timeStr = match[4]; // "8pm" or "9am" or "20:00"
+
+      if (!ordinal || !weekdayStr) return "weekly";
+
+      const ordinalNum = ORDINAL_TO_NUMBER[ordinal.toLowerCase()];
+      const rruleDay = WEEKDAY_TO_RRULE[weekdayStr.toLowerCase()];
+
+      if (!rruleDay || !ordinalNum) return "weekly";
+
+      // Parse time to extract hour
+      let hour: number | null = null;
+      if (timeStr) {
+        // Handle 24-hour format (20:00)
+        const twentyFourMatch = timeStr.match(/^(\d{1,2})(?::(\d{2}))?$/);
+        if (twentyFourMatch && twentyFourMatch[1]) {
+          hour = parseInt(twentyFourMatch[1], 10);
+        } else {
+          // Handle 12-hour format with AM/PM (8pm, 9am)
+          const twelveHourMatch = timeStr.match(
+            /^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/i,
+          );
+          if (twelveHourMatch && twelveHourMatch[1] && twelveHourMatch[3]) {
+            let h = parseInt(twelveHourMatch[1], 10);
+            const ampm = twelveHourMatch[3].toUpperCase();
+            if (ampm === "PM" && h !== 12) {
+              h += 12;
+            } else if (ampm === "AM" && h === 12) {
+              h = 0;
+            }
+            hour = h;
+          }
+        }
+      }
+
+      // RRULE format: FREQ=MONTHLY;BYDAY=2MO (2nd Monday of month)
+      const rrule = `RRULE:FREQ=MONTHLY;BYDAY=${ordinalNum}${rruleDay}`;
+      return hour !== null ? `${rrule};BYHOUR=${hour}` : rrule;
+    },
+  },
+  // Pattern without time: "every 2nd Monday" - negative lookahead to avoid matching when time follows
+  {
+    pattern: new RegExp(
+      `${WORD_BOUNDARY_START}(every (1st|2nd|3rd|4th|5th) (monday|mon|tuesday|tue|wednesday|wed|thursday|thu|friday|fri|saturday|sat|sunday|sun))(?!\\s*(?:at\\s*)?\\d{1,2})${WORD_BOUNDARY_END}`,
       "gi",
     ),
     getValue: (match) => {

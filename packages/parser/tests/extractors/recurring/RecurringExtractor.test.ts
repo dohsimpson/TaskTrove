@@ -376,28 +376,26 @@ describe("RecurringExtractor", () => {
     });
   });
 
-  // Phase 3.2: Ordinal + Time Combination
-  it('should extract "every 3rd friday 8pm" with time', () => {
+  // Phase 3.2: Ordinal + Time Combination - now handled by Phase 3.3 patterns
+  // These tests verify that ordinal weekday + time patterns are extracted as single RRULE with BYHOUR
+  it('should extract "every 3rd friday 8pm" with time combined', () => {
     const results = extractor.extract(
       "Team happy hour every 3rd friday 8pm",
       context,
     );
 
-    // Should extract both recurring pattern and time
+    // Should extract recurring pattern with time included in RRULE
     expect(results.length).toBeGreaterThanOrEqual(1);
 
     const recurringResult = results.find((r) => r.type === "recurring");
     expect(recurringResult).toMatchObject({
       type: "recurring",
-      value: "RRULE:FREQ=MONTHLY;BYDAY=3FR",
-      match: "every 3rd friday",
+      value: "RRULE:FREQ=MONTHLY;BYDAY=3FR;BYHOUR=20",
+      match: "every 3rd friday 8pm",
     });
-
-    // Time should be extracted separately by TimeExtractor
-    // This test just ensures ordinal pattern extraction works alongside time patterns
   });
 
-  it('should extract "every 2nd Monday at 9am"', () => {
+  it('should extract "every 2nd Monday at 9am" with time combined', () => {
     const results = extractor.extract(
       "Standup every 2nd Monday at 9am",
       context,
@@ -408,20 +406,20 @@ describe("RecurringExtractor", () => {
     const recurringResult = results.find((r) => r.type === "recurring");
     expect(recurringResult).toMatchObject({
       type: "recurring",
-      value: "RRULE:FREQ=MONTHLY;BYDAY=2MO",
-      match: "every 2nd Monday",
+      value: "RRULE:FREQ=MONTHLY;BYDAY=2MO;BYHOUR=9",
+      match: "every 2nd Monday at 9am",
     });
   });
 
-  // Phase 3.3: Time + Recurrence Combinations
+  // Phase 3.3: Time + Recurrence Combinations for multi-day patterns
   it('should extract "ev mon, fri at 20:00" combining multi-day with time', () => {
     const results = extractor.extract(
       "Team sync ev mon, fri at 20:00",
       context,
     );
 
-    // Should extract both recurring pattern and time
-    expect(results.length).toBeGreaterThanOrEqual(2);
+    // Should extract recurring pattern with time
+    expect(results.length).toBeGreaterThanOrEqual(1);
 
     const recurringResult = results.find((r) => r.type === "recurring");
     expect(recurringResult).toMatchObject({

@@ -32,3 +32,7 @@ export type { Processor } from "./processors/base/Processor";
 
 // Plugin system (for extensibility)
 export { createParser, registerCustomExtractor } from "./PluginSystem";
+
+// Utilities
+export { extractRecurringAnchor } from "./utils/RecurringAnchorExtractor";
+export type { RecurringAnchor } from "./utils/RecurringAnchorExtractor";

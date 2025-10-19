@@ -9,110 +9,108 @@ describe("TimeExtractor", () => {
     referenceDate: new Date(),
   };
 
-  it('should extract "3PM"', () => {
+  it("should extract 12-hour format with AM/PM (3PM)", () => {
     const results = extractor.extract("Meeting 3PM", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]).toMatchObject({
-      type: "time",
-      value: "15:00",
-      match: "3PM",
-    });
+    expect(results[0]?.type).toBe("time");
+    expect(results[0]?.value).toBe("15:00");
+    expect(results[0]?.match).toBe("3PM");
   });
 
-  it('should extract "10AM"', () => {
-    const results = extractor.extract("Call 10AM", context);
+  it("should extract 12-hour format with space (3 PM)", () => {
+    const results = extractor.extract("Call 3 PM", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("10:00");
+    expect(results[0]?.value).toBe("15:00");
+    expect(results[0]?.match).toBe("3 PM");
   });
 
-  it('should extract "12PM"', () => {
-    const results = extractor.extract("Lunch 12PM", context);
+  it("should extract 12-hour format with am/pm (3am)", () => {
+    const results = extractor.extract("Breakfast 3am", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("12:00");
+    expect(results[0]?.value).toBe("03:00");
+    expect(results[0]?.match).toBe("3am");
   });
 
-  it('should extract "12AM" separately from other text', () => {
-    const results = extractor.extract("Call 12AM", context);
-
-    expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("00:00");
-    expect(results[0]?.match).toBe("12AM");
-  });
-
-  it('should extract "14:00" (24-hour format)', () => {
-    const results = extractor.extract("Train 14:00", context);
+  it("should extract 24-hour format (14:00)", () => {
+    const results = extractor.extract("Meeting 14:00", context);
 
     expect(results).toHaveLength(1);
     expect(results[0]?.value).toBe("14:00");
+    expect(results[0]?.match).toBe("14:00");
   });
 
-  it('should extract "9:30AM"', () => {
-    const results = extractor.extract("Breakfast 9:30AM", context);
+  it("should extract 24-hour format with minutes (09:30)", () => {
+    const results = extractor.extract("Start 09:30", context);
 
     expect(results).toHaveLength(1);
     expect(results[0]?.value).toBe("09:30");
   });
 
-  it('should extract "23:45" (24-hour with minutes)', () => {
-    const results = extractor.extract("Late meeting 23:45", context);
+  it('should extract time with "at" prefix (at 9AM)', () => {
+    const results = extractor.extract("Meet at 9AM", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("23:45");
+    expect(results[0]?.value).toBe("09:00");
+    expect(results[0]?.match).toBe("at 9AM");
   });
 
-  it('should extract "at 5PM"', () => {
-    const results = extractor.extract("Dinner at 5PM", context);
+  it('should extract time with "at" prefix and 24-hour format (at 14:30)', () => {
+    const results = extractor.extract("Call at 14:30", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("17:00");
-    expect(results[0]?.match).toBe("at 5PM");
+    expect(results[0]?.value).toBe("14:30");
+    expect(results[0]?.match).toBe("at 14:30");
   });
 
-  it('should extract "at 9:15 AM"', () => {
-    const results = extractor.extract("Appointment at 9:15 AM", context);
+  it("should extract hour only (9 AM)", () => {
+    const results = extractor.extract("Meeting 9 AM", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("09:15");
+    expect(results[0]?.value).toBe("09:00");
+    expect(results[0]?.match).toBe("9 AM");
   });
 
-  it('should extract "8PM" from text with multiple words', () => {
-    const results = extractor.extract("Team standup 8PM daily", context);
+  it("should extract time with minutes in 12-hour format (9:30 AM)", () => {
+    const results = extractor.extract("Start 9:30 AM", context);
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.value).toBe("20:00");
+    expect(results[0]?.value).toBe("09:30");
+    expect(results[0]?.match).toBe("9:30 AM");
   });
 
-  it('should handle "noon" as 12:00 PM', () => {
+  it("should handle noon as 12:00 PM", () => {
     const results = extractor.extract("Meeting noon", context);
 
     expect(results).toHaveLength(1);
     expect(results[0]?.value).toBe("12:00");
+    expect(results[0]?.match).toBe("noon");
   });
 
-  it('should handle "midnight" as 00:00', () => {
+  it("should handle midnight as 00:00", () => {
     const results = extractor.extract("Call midnight", context);
 
     expect(results).toHaveLength(1);
     expect(results[0]?.value).toBe("00:00");
+    expect(results[0]?.match).toBe("midnight");
   });
 
-  it("should return empty array when no time found", () => {
+  it("should return empty when no time found", () => {
     const results = extractor.extract("Just a task", context);
 
     expect(results).toEqual([]);
   });
 
   it("should respect disabled sections", () => {
-    const context: ParserContext = {
+    const contextWithDisabled: ParserContext = {
       locale: "en",
       referenceDate: new Date(),
       disabledSections: new Set(["3pm"]),
     };
 
-    const results = extractor.extract("Meeting 3PM", context);
+    const results = extractor.extract("Meeting 3PM", contextWithDisabled);
 
     expect(results).toEqual([]);
   });

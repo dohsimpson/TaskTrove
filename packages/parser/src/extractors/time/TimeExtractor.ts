@@ -88,7 +88,7 @@ const SPECIAL_PATTERNS: TimePattern[] = [
 // 12-hour patterns with AM/PM (processed after "at" patterns)
 const HOUR_12_PATTERNS: TimePattern[] = [
   {
-    pattern: /\b(\d{1,2})(AM|PM|am|pm)\b/gi,
+    pattern: /\b(\d{1,2})\s?(AM|PM|am|pm)\b/gi,
     getValue: (match) => {
       const hourStr = match[1];
       const periodStr = match[2];
@@ -109,7 +109,7 @@ const HOUR_12_PATTERNS: TimePattern[] = [
     },
   },
   {
-    pattern: /\b(\d{1,2}):(\d{2})(AM|PM|am|pm)\b/gi,
+    pattern: /\b(\d{1,2}):(\d{2})\s?(AM|PM|am|pm)\b/gi,
     getValue: (match) => {
       const hourStr = match[1];
       const minuteStr = match[2];

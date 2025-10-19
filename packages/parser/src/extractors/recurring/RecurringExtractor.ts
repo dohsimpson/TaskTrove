@@ -47,7 +47,10 @@ const WEEKDAY_PATTERNS: RecurringPattern[] = [
       "gi",
     ),
     getValue: (match) => {
-      const weekday = match[2].toLowerCase();
+      const weekdayStr = match[2];
+      if (!weekdayStr) return "weekly";
+
+      const weekday = weekdayStr.toLowerCase();
       const weekdayMap: { [key: string]: string } = {
         mon: "monday",
         monday: "monday",

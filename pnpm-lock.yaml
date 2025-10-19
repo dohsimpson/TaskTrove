@@ -1080,6 +1080,9 @@ importers:
       '@tasktrove/constants':
         specifier: workspace:*
         version: link:../constants
+      '@tasktrove/parser':
+        specifier: workspace:*
+        version: link:../parser
       '@tasktrove/types':
         specifier: workspace:*
         version: link:../types

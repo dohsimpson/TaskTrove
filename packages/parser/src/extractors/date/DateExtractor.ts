@@ -66,8 +66,12 @@ export class DateExtractor implements Extractor {
     {
       pattern: /\b(\d{1,2})\/(\d{1,2})\b/g,
       handler: (match, referenceDate) => {
-        const month = parseInt(match[1]);
-        const day = parseInt(match[2]);
+        const monthStr = match[1];
+        const dayStr = match[2];
+        if (!monthStr || !dayStr) return referenceDate;
+
+        const month = parseInt(monthStr);
+        const day = parseInt(dayStr);
         const year = referenceDate.getFullYear();
         return new Date(year, month - 1, day);
       },
@@ -75,9 +79,14 @@ export class DateExtractor implements Extractor {
     {
       pattern: /\b(\d{1,2})\/(\d{1,2})\/(\d{2,4})\b/g,
       handler: (match, referenceDate) => {
-        const month = parseInt(match[1]);
-        const day = parseInt(match[2]);
-        const year = parseInt(match[3]);
+        const monthStr = match[1];
+        const dayStr = match[2];
+        const yearStr = match[3];
+        if (!monthStr || !dayStr || !yearStr) return referenceDate;
+
+        const month = parseInt(monthStr);
+        const day = parseInt(dayStr);
+        const year = parseInt(yearStr);
         const fullYear = year < 100 ? 2000 + year : year;
         return new Date(fullYear, month - 1, day);
       },
@@ -87,9 +96,13 @@ export class DateExtractor implements Extractor {
       pattern:
         /\b(january|jan|february|feb|march|mar|april|apr|may|june|jun|july|jul|august|aug|september|sep|october|oct|november|nov|december|dec)\s+(\d{1,2})(?:\s+(\d{4}))?\b/gi,
       handler: (match, referenceDate) => {
-        const monthName = match[1].toLowerCase();
-        const day = parseInt(match[2]);
+        const monthNameStr = match[1];
+        const dayStr = match[2];
         const yearStr = match[3];
+        if (!monthNameStr || !dayStr) return referenceDate;
+
+        const monthName = monthNameStr.toLowerCase();
+        const day = parseInt(dayStr);
 
         const monthMap: { [key: string]: number } = {
           jan: 0,
@@ -118,6 +131,8 @@ export class DateExtractor implements Extractor {
         };
 
         const month = monthMap[monthName];
+        if (month === undefined) return referenceDate;
+
         const year = yearStr ? parseInt(yearStr) : referenceDate.getFullYear();
 
         return new Date(year, month, day);

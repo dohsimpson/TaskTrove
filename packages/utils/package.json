@@ -36,6 +36,7 @@
   "dependencies": {
     "@tasktrove/types": "workspace:*",
     "@tasktrove/constants": "workspace:*",
+    "@tasktrove/parser": "workspace:*",
     "bcryptjs": "catalog:",
     "clsx": "catalog:",
     "date-fns": "latest",

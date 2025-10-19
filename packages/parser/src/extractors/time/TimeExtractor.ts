@@ -11,8 +11,12 @@ const AT_PATTERNS: TimePattern[] = [
   {
     pattern: /\b(at\s+(\d{1,2})(AM|PM|am|pm))\b/gi,
     getValue: (match) => {
-      const hour = parseInt(match[2]);
-      const period = match[3].toUpperCase();
+      const hourStr = match[2];
+      const periodStr = match[3];
+      if (!hourStr || !periodStr) return "00:00";
+
+      const hour = parseInt(hourStr);
+      const period = periodStr.toUpperCase();
 
       if (period === "AM") {
         if (hour === 12) return "00:00"; // 12AM = midnight
@@ -28,9 +32,14 @@ const AT_PATTERNS: TimePattern[] = [
   {
     pattern: /\b(at\s+(\d{1,2}):(\d{2})(AM|PM|am|pm))\b/gi,
     getValue: (match) => {
-      const hour = parseInt(match[2]);
-      const minute = parseInt(match[3]);
-      const period = match[4].toUpperCase();
+      const hourStr = match[2];
+      const minuteStr = match[3];
+      const periodStr = match[4];
+      if (!hourStr || !minuteStr || !periodStr) return "00:00";
+
+      const hour = parseInt(hourStr);
+      const minute = parseInt(minuteStr);
+      const period = periodStr.toUpperCase();
 
       if (period === "AM") {
         if (hour === 12) return `00:${minute.toString().padStart(2, "0")}`; // 12AM = midnight
@@ -48,8 +57,12 @@ const AT_PATTERNS: TimePattern[] = [
   {
     pattern: /\b(at\s+(\d{1,2}):(\d{2}))\b/g,
     getValue: (match) => {
-      const hour = parseInt(match[2]);
-      const minute = parseInt(match[3]);
+      const hourStr = match[2];
+      const minuteStr = match[3];
+      if (!hourStr || !minuteStr) return "00:00";
+
+      const hour = parseInt(hourStr);
+      const minute = parseInt(minuteStr);
 
       // Validate 24-hour format (00-23:00-59)
       if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
@@ -77,8 +90,12 @@ const HOUR_12_PATTERNS: TimePattern[] = [
   {
     pattern: /\b(\d{1,2})(AM|PM|am|pm)\b/gi,
     getValue: (match) => {
-      const hour = parseInt(match[1]);
-      const period = match[2].toUpperCase();
+      const hourStr = match[1];
+      const periodStr = match[2];
+      if (!hourStr || !periodStr) return "00:00";
+
+      const hour = parseInt(hourStr);
+      const period = periodStr.toUpperCase();
 
       if (period === "AM") {
         if (hour === 12) return "00:00"; // 12AM = midnight
@@ -94,9 +111,14 @@ const HOUR_12_PATTERNS: TimePattern[] = [
   {
     pattern: /\b(\d{1,2}):(\d{2})(AM|PM|am|pm)\b/gi,
     getValue: (match) => {
-      const hour = parseInt(match[1]);
-      const minute = parseInt(match[2]);
-      const period = match[3].toUpperCase();
+      const hourStr = match[1];
+      const minuteStr = match[2];
+      const periodStr = match[3];
+      if (!hourStr || !minuteStr || !periodStr) return "00:00";
+
+      const hour = parseInt(hourStr);
+      const minute = parseInt(minuteStr);
+      const period = periodStr.toUpperCase();
 
       if (period === "AM") {
         if (hour === 12) return `00:${minute.toString().padStart(2, "0")}`; // 12AM = midnight
@@ -118,8 +140,12 @@ const HOUR_24_PATTERNS: TimePattern[] = [
   {
     pattern: /\b(\d{1,2}):(\d{2})\b/g,
     getValue: (match) => {
-      const hour = parseInt(match[1]);
-      const minute = parseInt(match[2]);
+      const hourStr = match[1];
+      const minuteStr = match[2];
+      if (!hourStr || !minuteStr) return "00:00";
+
+      const hour = parseInt(hourStr);
+      const minute = parseInt(minuteStr);
 
       // Validate 24-hour format (00-23:00-59)
       if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
@@ -157,8 +183,10 @@ export class TimeExtractor implements Extractor {
         seenRanges.push({ start: result.startIndex, end: result.endIndex });
       } else {
         // Has overlap, prefer longer (more specific) match
-        const existingLength =
-          seenRanges[overlappingIndex].end - seenRanges[overlappingIndex].start;
+        const existingRange = seenRanges[overlappingIndex];
+        if (!existingRange) return;
+
+        const existingLength = existingRange.end - existingRange.start;
         const newLength = result.endIndex - result.startIndex;
 
         if (newLength > existingLength) {

@@ -22,7 +22,10 @@ export class LastOccurrenceSelector implements Processor {
     const processedResults: ExtractionResult[] = [];
     for (const [type, typeResults] of groupedByType) {
       if (typeResults.length === 1) {
-        processedResults.push(typeResults[0]);
+        const singleResult = typeResults[0];
+        if (singleResult) {
+          processedResults.push(singleResult);
+        }
       } else {
         // Find the result with the highest startIndex (last occurrence)
         const lastResult = typeResults.reduce((latest, current) =>

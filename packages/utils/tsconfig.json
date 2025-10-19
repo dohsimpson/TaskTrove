@@ -5,6 +5,6 @@
     "moduleResolution": "Bundler",
     "customConditions": ["pro"]
   },
-  "include": ["src/**/*", "*.ts", "*.js"],
+  "include": ["src/**/*", "tests/**/*", "*.ts", "*.js"],
   "exclude": ["dist", "node_modules", "eslint.config.js"]
 }

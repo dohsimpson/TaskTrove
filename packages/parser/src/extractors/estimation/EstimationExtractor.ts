@@ -11,8 +11,12 @@ const COMBINED_PATTERNS: EstimationPattern[] = [
   {
     pattern: /~(\d+)h(\d+)m/gi,
     getValue: (match) => {
-      const hours = parseInt(match[1]);
-      const minutes = parseInt(match[2]);
+      const hoursStr = match[1];
+      const minutesStr = match[2];
+      if (!hoursStr || !minutesStr) return 0;
+
+      const hours = parseInt(hoursStr);
+      const minutes = parseInt(minutesStr);
       return hours * 60 + minutes;
     },
   },
@@ -23,7 +27,10 @@ const HOUR_PATTERNS: EstimationPattern[] = [
   {
     pattern: /~(\d+)h/gi,
     getValue: (match) => {
-      const hours = parseInt(match[1]);
+      const hoursStr = match[1];
+      if (!hoursStr) return 0;
+
+      const hours = parseInt(hoursStr);
       return hours * 60;
     },
   },
@@ -34,14 +41,20 @@ const MINUTE_PATTERNS: EstimationPattern[] = [
   {
     pattern: /~(\d+)min/gi,
     getValue: (match) => {
-      const minutes = parseInt(match[1]);
+      const minutesStr = match[1];
+      if (!minutesStr) return 0;
+
+      const minutes = parseInt(minutesStr);
       return minutes;
     },
   },
   {
     pattern: /~(\d+)m\b/gi, // Only match if followed by word boundary to avoid conflicts
     getValue: (match) => {
-      const minutes = parseInt(match[1]);
+      const minutesStr = match[1];
+      if (!minutesStr) return 0;
+
+      const minutes = parseInt(minutesStr);
       return minutes;
     },
   },
@@ -69,8 +82,10 @@ export class EstimationExtractor implements Extractor {
         seenRanges.push({ start: result.startIndex, end: result.endIndex });
       } else {
         // Has overlap, prefer longer (more specific) match
-        const existingLength =
-          seenRanges[overlappingIndex].end - seenRanges[overlappingIndex].start;
+        const existingRange = seenRanges[overlappingIndex];
+        if (!existingRange) return;
+
+        const existingLength = existingRange.end - existingRange.start;
         const newLength = result.endIndex - result.startIndex;
 
         if (newLength > existingLength) {

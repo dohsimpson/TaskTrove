@@ -431,4 +431,123 @@ describe("RecurringExtractor", () => {
     // Note: Time extraction is handled separately by TimeExtractor
     // The recurring pattern should include BYHOUR parameter
   });
+
+  // Phase 3.4: Last Position Patterns
+  describe("Last position patterns", () => {
+    it('should extract "ev last day" as last day of month', () => {
+      const results = extractor.extract("Pay bills ev last day", context);
+
+      expect(results).toHaveLength(1);
+
+      const recurringResult = results.find((r) => r.type === "recurring");
+      expect(recurringResult).toMatchObject({
+        type: "recurring",
+        value: "RRULE:FREQ=MONTHLY;BYMONTHDAY=-1",
+        match: "ev last day",
+      });
+    });
+
+    it('should extract "every last day" as last day of month', () => {
+      const results = extractor.extract(
+        "Review every last day of the month",
+        context,
+      );
+
+      expect(results).toHaveLength(1);
+
+      const recurringResult = results.find((r) => r.type === "recurring");
+      expect(recurringResult).toMatchObject({
+        type: "recurring",
+        value: "RRULE:FREQ=MONTHLY;BYMONTHDAY=-1",
+        match: "every last day",
+      });
+    });
+
+    it('should extract "ev last mon" as last Monday of month', () => {
+      const results = extractor.extract("Team meeting ev last mon", context);
+
+      expect(results).toHaveLength(1);
+
+      const recurringResult = results.find((r) => r.type === "recurring");
+      expect(recurringResult).toMatchObject({
+        type: "recurring",
+        value: "RRULE:FREQ=MONTHLY;BYDAY=-1MO",
+        match: "ev last mon",
+      });
+    });
+
+    it('should extract "every last friday" as last Friday of month', () => {
+      const results = extractor.extract(
+        "Happy hour every last friday",
+        context,
+      );
+
+      expect(results).toHaveLength(1);
+
+      const recurringResult = results.find((r) => r.type === "recurring");
+      expect(recurringResult).toMatchObject({
+        type: "recurring",
+        value: "RRULE:FREQ=MONTHLY;BYDAY=-1FR",
+        match: "every last friday",
+      });
+    });
+  });
+
+  // Phase 3.4: Skip Logic (Every Other)
+  describe("Skip logic patterns", () => {
+    it('should extract "every other friday" with interval', () => {
+      const results = extractor.extract(
+        "Pizza party every other friday",
+        context,
+      );
+
+      expect(results).toHaveLength(1);
+
+      const recurringResult = results.find((r) => r.type === "recurring");
+      expect(recurringResult).toMatchObject({
+        type: "recurring",
+        value: "RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=FR",
+        match: "every other friday",
+      });
+    });
+
+    it('should extract "every other monday" with interval', () => {
+      const results = extractor.extract("Standup every other monday", context);
+
+      expect(results).toHaveLength(1);
+
+      const recurringResult = results.find((r) => r.type === "recurring");
+      expect(recurringResult).toMatchObject({
+        type: "recurring",
+        value: "RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO",
+        match: "every other monday",
+      });
+    });
+
+    it('should extract "every other day" as interval 2 daily', () => {
+      const results = extractor.extract("Exercise every other day", context);
+
+      expect(results).toHaveLength(1);
+
+      const recurringResult = results.find((r) => r.type === "recurring");
+      expect(recurringResult).toMatchObject({
+        type: "recurring",
+        value: "RRULE:FREQ=DAILY;INTERVAL=2",
+        match: "every other day",
+      });
+    });
+
+    it('should extract "every other week" as interval 2 weekly', () => {
+      const results = extractor.extract("Report every other week", context);
+
+      expect(results).toHaveLength(1);
+
+      const recurringResult = results.find((r) => r.type === "recurring");
+      expect(recurringResult).toMatchObject({
+        type: "recurring",
+        value: "RRULE:FREQ=WEEKLY;INTERVAL=2",
+        match: "every other week",
+      });
+    });
+  });
 });

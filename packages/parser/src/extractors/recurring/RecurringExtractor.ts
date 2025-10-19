@@ -567,6 +567,76 @@ const MONTH_DAY_PATTERNS: RecurringPattern[] = [
   },
 ];
 
+// Last position patterns (last day, last weekday)
+const LAST_POSITION_PATTERNS: RecurringPattern[] = [
+  // "ev last day" or "every last day" - last day of month
+  {
+    pattern: new RegExp(
+      `${WORD_BOUNDARY_START}((ev|every) last day)${WORD_BOUNDARY_END}`,
+      "gi",
+    ),
+    getValue: (match) => {
+      return "RRULE:FREQ=MONTHLY;BYMONTHDAY=-1";
+    },
+  },
+  // "ev last mon" or "every last monday" - last occurrence of weekday in month
+  {
+    pattern: new RegExp(
+      `${WORD_BOUNDARY_START}((ev|every) last (monday|mon|tuesday|tue|wednesday|wed|thursday|thu|friday|fri|saturday|sat|sunday|sun))${WORD_BOUNDARY_END}`,
+      "gi",
+    ),
+    getValue: (match) => {
+      const weekdayStr = match[3];
+      if (!weekdayStr) return "RRULE:FREQ=MONTHLY";
+
+      const rruleDay = WEEKDAY_TO_RRULE[weekdayStr.toLowerCase()];
+      if (!rruleDay) return "RRULE:FREQ=MONTHLY";
+
+      return `RRULE:FREQ=MONTHLY;BYDAY=-1${rruleDay}`;
+    },
+  },
+];
+
+// Every other patterns (skip logic with interval 2)
+const EVERY_OTHER_PATTERNS: RecurringPattern[] = [
+  // "every other friday" - specific weekday with interval 2
+  {
+    pattern: new RegExp(
+      `${WORD_BOUNDARY_START}(every other (monday|mon|tuesday|tue|wednesday|wed|thursday|thu|friday|fri|saturday|sat|sunday|sun))${WORD_BOUNDARY_END}`,
+      "gi",
+    ),
+    getValue: (match) => {
+      const weekdayStr = match[2];
+      if (!weekdayStr) return "RRULE:FREQ=WEEKLY;INTERVAL=2";
+
+      const rruleDay = WEEKDAY_TO_RRULE[weekdayStr.toLowerCase()];
+      if (!rruleDay) return "RRULE:FREQ=WEEKLY;INTERVAL=2";
+
+      return `RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=${rruleDay}`;
+    },
+  },
+  // "every other day"
+  {
+    pattern: new RegExp(
+      `${WORD_BOUNDARY_START}(every other day)${WORD_BOUNDARY_END}`,
+      "gi",
+    ),
+    getValue: (match) => {
+      return "RRULE:FREQ=DAILY;INTERVAL=2";
+    },
+  },
+  // "every other week"
+  {
+    pattern: new RegExp(
+      `${WORD_BOUNDARY_START}(every other week)${WORD_BOUNDARY_END}`,
+      "gi",
+    ),
+    getValue: (match) => {
+      return "RRULE:FREQ=WEEKLY;INTERVAL=2";
+    },
+  },
+];
+
 const INTERVAL_PATTERNS: RecurringPattern[] = [
   {
     pattern: new RegExp(
@@ -804,6 +874,58 @@ export class RecurringExtractor implements Extractor {
 
     // Extract month day patterns
     for (const { pattern, getValue } of MONTH_DAY_PATTERNS) {
+      const matches = [...text.matchAll(pattern)];
+
+      for (const match of matches) {
+        const captured = match[1];
+        if (!captured) continue;
+
+        if (context.disabledSections?.has(captured.toLowerCase())) {
+          continue;
+        }
+
+        const startIndex = match.index || 0;
+
+        const rruleValue = getValue(match);
+
+        results.push({
+          type: "recurring",
+          value: rruleValue,
+          match: captured,
+          startIndex,
+          endIndex: startIndex + (match[0]?.length || captured.length),
+        });
+      }
+    }
+
+    // Extract last position patterns (ev last day, ev last mon)
+    for (const { pattern, getValue } of LAST_POSITION_PATTERNS) {
+      const matches = [...text.matchAll(pattern)];
+
+      for (const match of matches) {
+        const captured = match[1];
+        if (!captured) continue;
+
+        if (context.disabledSections?.has(captured.toLowerCase())) {
+          continue;
+        }
+
+        const startIndex = match.index || 0;
+
+        const rruleValue = getValue(match);
+
+        results.push({
+          type: "recurring",
+          value: rruleValue,
+          match: captured,
+          startIndex,
+          endIndex: startIndex + (match[0]?.length || captured.length),
+        });
+      }
+    }
+
+    // Extract every other patterns (every other friday, every other day)
+    for (const { pattern, getValue } of EVERY_OTHER_PATTERNS) {
       const matches = [...text.matchAll(pattern)];
 
       for (const match of matches) {

@@ -25,6 +25,21 @@ const PRIORITY_PATTERNS: PriorityPattern[] = [
   },
 ];
 
+const EXCLAMATION_PATTERNS: PriorityPattern[] = [
+  {
+    pattern: /(?<!\!)(!!!)(?!\!)/g,
+    level: 1,
+  },
+  {
+    pattern: /(?<!\!)(!!)(?!\!)/g,
+    level: 2,
+  },
+  {
+    pattern: /(?<!\!)(!)(?!\!)/g,
+    level: 3,
+  },
+];
+
 export class PriorityExtractor implements Extractor {
   readonly name = "priority-extractor";
   readonly type = "priority";
@@ -32,6 +47,7 @@ export class PriorityExtractor implements Extractor {
   extract(text: string, context: ParserContext): ExtractionResult[] {
     const results: ExtractionResult[] = [];
 
+    // Extract p1-p4 patterns
     for (const { pattern, level } of PRIORITY_PATTERNS) {
       const matches = [...text.matchAll(pattern)];
 
@@ -39,7 +55,30 @@ export class PriorityExtractor implements Extractor {
         const captured = match[1];
         if (!captured) continue;
 
-        // Check if disabled
+        if (context.disabledSections?.has(captured.toLowerCase())) {
+          continue;
+        }
+
+        const startIndex = match.index || 0;
+
+        results.push({
+          type: "priority",
+          value: level,
+          match: captured,
+          startIndex,
+          endIndex: startIndex + captured.length,
+        });
+      }
+    }
+
+    // Extract exclamation patterns
+    for (const { pattern, level } of EXCLAMATION_PATTERNS) {
+      const matches = [...text.matchAll(pattern)];
+
+      for (const match of matches) {
+        const captured = match[1];
+        if (!captured) continue;
+
         if (context.disabledSections?.has(captured.toLowerCase())) {
           continue;
         }

@@ -55,4 +55,44 @@ describe("PriorityExtractor", () => {
     expect(results[0]?.value).toBe(3);
     expect(results[1]?.value).toBe(1);
   });
+
+  describe("PriorityExtractor - exclamation marks", () => {
+    const extractor = new PriorityExtractor();
+    const context: ParserContext = {
+      locale: "en",
+      referenceDate: new Date(),
+    };
+
+    it("should extract single exclamation as p3", () => {
+      const results = extractor.extract("Urgent task !", context);
+
+      expect(results).toHaveLength(1);
+      expect(results[0]?.value).toBe(3);
+      expect(results[0]?.match).toBe("!");
+    });
+
+    it("should extract double exclamation as p2", () => {
+      const results = extractor.extract("Very urgent !!", context);
+
+      expect(results).toHaveLength(1);
+      expect(results[0]?.value).toBe(2);
+      expect(results[0]?.match).toBe("!!");
+    });
+
+    it("should extract triple exclamation as p1", () => {
+      const results = extractor.extract("Critical !!!", context);
+
+      expect(results).toHaveLength(1);
+      expect(results[0]?.value).toBe(1);
+      expect(results[0]?.match).toBe("!!!");
+    });
+
+    it("should find all exclamation patterns", () => {
+      const results = extractor.extract("Task ! and other !!", context);
+
+      expect(results).toHaveLength(2);
+      expect(results[0]?.value).toBe(3);
+      expect(results[1]?.value).toBe(2);
+    });
+  });
 });

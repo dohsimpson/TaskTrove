@@ -373,4 +373,41 @@ describe("RecurringExtractor", () => {
       match: "every 4th Wednesday",
     });
   });
+
+  // Phase 3.2: Ordinal + Time Combination
+  it('should extract "every 3rd friday 8pm" with time', () => {
+    const results = extractor.extract(
+      "Team happy hour every 3rd friday 8pm",
+      context,
+    );
+
+    // Should extract both recurring pattern and time
+    expect(results.length).toBeGreaterThanOrEqual(1);
+
+    const recurringResult = results.find((r) => r.type === "recurring");
+    expect(recurringResult).toMatchObject({
+      type: "recurring",
+      value: "RRULE:FREQ=MONTHLY;BYDAY=3FR",
+      match: "every 3rd friday",
+    });
+
+    // Time should be extracted separately by TimeExtractor
+    // This test just ensures ordinal pattern extraction works alongside time patterns
+  });
+
+  it('should extract "every 2nd Monday at 9am"', () => {
+    const results = extractor.extract(
+      "Standup every 2nd Monday at 9am",
+      context,
+    );
+
+    expect(results.length).toBeGreaterThanOrEqual(1);
+
+    const recurringResult = results.find((r) => r.type === "recurring");
+    expect(recurringResult).toMatchObject({
+      type: "recurring",
+      value: "RRULE:FREQ=MONTHLY;BYDAY=2MO",
+      match: "every 2nd Monday",
+    });
+  });
 });

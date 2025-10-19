@@ -10,6 +10,33 @@ interface RecurringPattern {
   getValue: (match: RegExpMatchArray) => string;
 }
 
+// Shared weekday mapping for RRULE format
+const WEEKDAY_TO_RRULE: { [key: string]: string } = {
+  mon: "MO",
+  monday: "MO",
+  tue: "TU",
+  tuesday: "TU",
+  wed: "WE",
+  wednesday: "WE",
+  thu: "TH",
+  thursday: "TH",
+  fri: "FR",
+  friday: "FR",
+  sat: "SA",
+  saturday: "SA",
+  sun: "SU",
+  sunday: "SU",
+};
+
+// Shared ordinal mapping
+const ORDINAL_TO_NUMBER: { [key: string]: string } = {
+  "1st": "1",
+  "2nd": "2",
+  "3rd": "3",
+  "4th": "4",
+  "5th": "5",
+};
+
 // Convert simple recurring values to RRULE format
 function convertToRRule(value: string): string {
   // Handle simple frequencies
@@ -23,16 +50,7 @@ function convertToRRule(value: string): string {
   // Handle weekly with specific day
   if (value.startsWith("weekly ")) {
     const weekday = value.substring(7); // Remove "weekly " prefix (7 chars)
-    const weekdayMap: { [key: string]: string } = {
-      monday: "MO",
-      tuesday: "TU",
-      wednesday: "WE",
-      thursday: "TH",
-      friday: "FR",
-      saturday: "SA",
-      sunday: "SU",
-    };
-    const rruleDay = weekdayMap[weekday];
+    const rruleDay = WEEKDAY_TO_RRULE[weekday];
     if (rruleDay) return `RRULE:FREQ=WEEKLY;BYDAY=${rruleDay}`;
   }
 
@@ -172,42 +190,12 @@ const MULTI_DAY_PATTERNS: RecurringPattern[] = [
       // Split by comma and clean up
       const days = dayList.split(",").map((day) => day.trim().toLowerCase());
 
-      // Convert to standard day names and then to RRULE format
-      const weekdayMap: { [key: string]: string } = {
-        mon: "monday",
-        monday: "monday",
-        tue: "tuesday",
-        tuesday: "tuesday",
-        wed: "wednesday",
-        wednesday: "wednesday",
-        thu: "thursday",
-        thursday: "thursday",
-        fri: "friday",
-        friday: "friday",
-        sat: "saturday",
-        saturday: "saturday",
-        sun: "sunday",
-        sunday: "sunday",
-      };
-
-      const rruleDayMap: { [key: string]: string } = {
-        monday: "MO",
-        tuesday: "TU",
-        wednesday: "WE",
-        thursday: "TH",
-        friday: "FR",
-        saturday: "SA",
-        sunday: "SU",
-      };
-
+      // Convert directly to RRULE format using shared mapping
       const rruleDays: string[] = [];
       for (const day of days) {
-        const standardDay = weekdayMap[day];
-        if (standardDay) {
-          const rruleDay = rruleDayMap[standardDay];
-          if (rruleDay) {
-            rruleDays.push(rruleDay);
-          }
+        const rruleDay = WEEKDAY_TO_RRULE[day];
+        if (rruleDay) {
+          rruleDays.push(rruleDay);
         }
       }
 
@@ -311,23 +299,17 @@ const WEEKDAY_PATTERNS: RecurringPattern[] = [
       if (!weekdayStr) return "weekly";
 
       const weekday = weekdayStr.toLowerCase();
-      const weekdayMap: { [key: string]: string } = {
-        mon: "monday",
-        monday: "monday",
-        tue: "tuesday",
-        tuesday: "tuesday",
-        wed: "wednesday",
-        wednesday: "wednesday",
-        thu: "thursday",
-        thursday: "thursday",
-        fri: "friday",
-        friday: "friday",
-        sat: "saturday",
-        saturday: "saturday",
-        sun: "sunday",
-        sunday: "sunday",
-      };
-      return `weekly ${weekdayMap[weekday]}`;
+      // Normalize to full day name for convertToRRule
+      const normalizedDay =
+        weekday.length === 3
+          ? Object.keys(WEEKDAY_TO_RRULE).find(
+              (key) =>
+                key.startsWith(weekday) &&
+                WEEKDAY_TO_RRULE[key] === WEEKDAY_TO_RRULE[weekday],
+            ) || weekday
+          : weekday;
+
+      return `weekly ${normalizedDay}`;
     },
   },
 ];
@@ -345,36 +327,9 @@ const ORDINAL_WEEKDAY_PATTERNS: RecurringPattern[] = [
 
       if (!ordinal || !weekdayStr) return "weekly";
 
-      // Convert ordinal to number
-      const ordinalMap: { [key: string]: string } = {
-        "1st": "1",
-        "2nd": "2",
-        "3rd": "3",
-        "4th": "4",
-        "5th": "5",
-      };
-      const ordinalNum = ordinalMap[ordinal.toLowerCase()];
+      const ordinalNum = ORDINAL_TO_NUMBER[ordinal.toLowerCase()];
+      const rruleDay = WEEKDAY_TO_RRULE[weekdayStr.toLowerCase()];
 
-      // Convert weekday to RRULE format
-      const weekday = weekdayStr.toLowerCase();
-      const weekdayMap: { [key: string]: string } = {
-        mon: "MO",
-        monday: "MO",
-        tue: "TU",
-        tuesday: "TU",
-        wed: "WE",
-        wednesday: "WE",
-        thu: "TH",
-        thursday: "TH",
-        fri: "FR",
-        friday: "FR",
-        sat: "SA",
-        saturday: "SA",
-        sun: "SU",
-        sunday: "SU",
-      };
-
-      const rruleDay = weekdayMap[weekday];
       if (!rruleDay || !ordinalNum) return "weekly";
 
       // RRULE format: FREQ=MONTHLY;BYDAY=2MO (2nd Monday of month)

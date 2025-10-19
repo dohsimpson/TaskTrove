@@ -39,6 +39,8 @@ export class DateTimeLinker implements Processor {
         if (usedTimeIndices.has(timeIndex)) continue;
 
         const timeResult = timeResults[timeIndex];
+        if (!timeResult) continue;
+
         const distance = this.calculateDistance(dateResult, timeResult);
 
         if (distance <= MAX_DISTANCE && distance < minDistance) {
@@ -64,7 +66,10 @@ export class DateTimeLinker implements Processor {
     // Add any unused time results
     for (let timeIndex = 0; timeIndex < timeResults.length; timeIndex++) {
       if (!usedTimeIndices.has(timeIndex)) {
-        processed.push(timeResults[timeIndex]);
+        const timeResult = timeResults[timeIndex];
+        if (timeResult) {
+          processed.push(timeResult);
+        }
       }
     }
 

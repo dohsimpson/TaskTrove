@@ -23,4 +23,13 @@ export type { Extractor } from "./extractors/base/Extractor";
 // Processors
 export { OverlapResolver } from "./processors/OverlapResolver";
 export { LastOccurrenceSelector } from "./processors/LastOccurrenceSelector";
+export { DateTimeLinker } from "./processors/DateTimeLinker";
+export { TextCleaner } from "./processors/TextCleaner";
 export type { Processor } from "./processors/base/Processor";
+
+// Locales
+export { EnglishLocaleConfig } from "./locales/en/config";
+export type {
+  LocaleConfig,
+  LocaleConfigOptions,
+} from "./locales/base/LocaleConfig";

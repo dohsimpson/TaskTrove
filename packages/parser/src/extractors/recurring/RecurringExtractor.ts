@@ -138,7 +138,7 @@ export class RecurringExtractor implements Extractor {
           value: getValue(match),
           match: captured,
           startIndex,
-          endIndex: startIndex + captured.length,
+          endIndex: startIndex + (match[0]?.length || captured.length),
         });
       }
     }
@@ -162,7 +162,7 @@ export class RecurringExtractor implements Extractor {
           value: getValue(match),
           match: captured,
           startIndex,
-          endIndex: startIndex + captured.length,
+          endIndex: startIndex + (match[0]?.length || captured.length),
         });
       }
     }
@@ -186,7 +186,7 @@ export class RecurringExtractor implements Extractor {
           value: getValue(match),
           match: captured,
           startIndex,
-          endIndex: startIndex + captured.length,
+          endIndex: startIndex + (match[0]?.length || captured.length),
         });
       }
     }

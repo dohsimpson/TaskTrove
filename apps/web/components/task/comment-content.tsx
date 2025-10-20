@@ -20,6 +20,7 @@ interface CommentContentProps {
   task?: Task // Deprecated - use taskId instead
   onAddComment?: (content: string) => void // Optional callback - if not provided, will update atoms directly
   onViewAll?: () => void
+  onClose?: () => void // Callback to close the popover
   mode?: "inline" | "popover"
   className?: string
   scrollToBottomKey?: number // When this changes, triggers scroll to bottom
@@ -29,6 +30,7 @@ export function CommentContent({
   taskId,
   task: legacyTask,
   onAddComment,
+  onClose,
   mode = "inline",
   className,
   scrollToBottomKey,
@@ -161,9 +163,7 @@ export function CommentContent({
             variant="ghost"
             size="sm"
             className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-            onClick={() => {
-              /* Close handled by ContentPopover */
-            }}
+            onClick={() => onClose?.()}
             aria-label="Close"
           >
             <X className="h-4 w-4" />

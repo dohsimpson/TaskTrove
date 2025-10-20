@@ -46,6 +46,7 @@ export function CommentManagementPopover({
           taskId={taskId}
           task={task}
           onAddComment={onAddComment}
+          onClose={() => handleOpenChange(false)}
           mode="popover"
           scrollToBottomKey={scrollToBottomKey}
         />

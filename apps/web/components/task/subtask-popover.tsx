@@ -43,6 +43,7 @@ export function SubtaskPopover({
         <SubtaskContent
           taskId={taskId}
           task={task}
+          onClose={() => handleOpenChange(false)}
           mode="popover"
           scrollToBottomKey={scrollToBottomKey}
         />

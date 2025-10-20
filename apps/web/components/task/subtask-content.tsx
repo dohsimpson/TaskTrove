@@ -23,6 +23,7 @@ import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag
 interface SubtaskContentProps {
   taskId?: string // Optional for quick-add mode
   task?: Task // Deprecated - use taskId instead
+  onClose?: () => void // Callback to close the popover
   mode?: "inline" | "popover"
   className?: string
   persistEstimationOnAdd?: boolean // If true, keeps the estimation value after adding a subtask
@@ -32,6 +33,7 @@ interface SubtaskContentProps {
 export function SubtaskContent({
   taskId,
   task: legacyTask,
+  onClose,
   mode = "inline",
   className,
   persistEstimationOnAdd = true,
@@ -171,9 +173,7 @@ export function SubtaskContent({
             variant="ghost"
             size="sm"
             className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-            onClick={() => {
-              /* Close handled by ContentPopover */
-            }}
+            onClick={() => onClose?.()}
             aria-label="Close"
           >
             <X className="h-4 w-4" />

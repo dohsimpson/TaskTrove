@@ -107,7 +107,7 @@ catalog:
   next-logger: ^5.0.1
   next-themes: ^0.4.6
   node-cron: ^4.2.1
-  pino: ^9.11.0
+  pino: ^10.1.0
   pino-pretty: ^13.1.1
   postcss: ^8.5.0
   postcss-import: ^16.1.1

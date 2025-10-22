@@ -1,80 +1,45 @@
 "use client"
 
-import React, { useRef, useEffect } from "react"
+import React, { useRef, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { createKeyboardHandler } from "@/lib/utils/keyboard"
 
 /**
  * Clean contentEditable text by replacing non-breaking spaces with newlines
- * while preserving all empty lines and user formatting.
- * This fixes the common U+A0 issue with contentEditable.
- * @param text - Raw text from contentEditable element
- * @returns Cleaned text with preserved formatting and empty lines
  */
-function cleanContentEditableText(text: string): string {
-  return text
-    .replace(/\u00A0/g, "\n") // Replace non-breaking spaces (U+A0) with newlines
-    .trim() // Only trim start/end, preserve all internal formatting
+function cleanText(text: string): string {
+  return text.replace(/\u00A0/g, "\n").trim()
 }
 
 /**
- * Move the cursor to the end of a contentEditable element
- * @param element - The contentEditable element to modify
+ * Set cursor position in contentEditable element
  */
-function moveCursorToEnd(element: EditableDivElement): void {
+function setCursorPosition(element: HTMLElement, position: "start" | "end" | number): void {
+  const selection = window.getSelection()
+  const range = document.createRange()
+
+  if (!selection || !element.firstChild) return
+
   try {
-    const range = document.createRange()
-    const selection = window.getSelection()
-
-    if (!selection) return
-
-    if (element.firstChild) {
-      range.selectNodeContents(element)
-      range.collapse(false) // false = collapse to end
-    } else {
-      // Handle empty elements by setting range to element itself
-      range.setStart(element, 0)
-      range.setEnd(element, 0)
-    }
-
-    selection.removeAllRanges()
-    selection.addRange(range)
-  } catch (error) {
-    // Fallback for older browsers - just focus without cursor positioning
-    console.warn("Cursor positioning not supported:", error)
-  }
-}
-
-/**
- * Move the cursor to a specific character position in a contentEditable element
- * @param element - The contentEditable element to modify
- * @param position - The character position to place the cursor at
- */
-function moveCursorToPosition(element: EditableDivElement, position: number): void {
-  try {
-    const range = document.createRange()
-    const selection = window.getSelection()
-
-    if (!selection) return
-
     const textNode = element.firstChild
-    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
-      // No text content, just focus
-      range.setStart(element, 0)
-      range.setEnd(element, 0)
-    } else {
-      // Clamp position to text length
-      const textLength = textNode.textContent?.length || 0
-      const clampedPosition = Math.min(Math.max(0, position), textLength)
+    const textLength = textNode.textContent?.length || 0
 
-      range.setStart(textNode, clampedPosition)
-      range.setEnd(textNode, clampedPosition)
+    if (position === "start") {
+      range.setStart(textNode, 0)
+      range.setEnd(textNode, 0)
+    } else if (position === "end") {
+      range.setStart(textNode, textLength)
+      range.setEnd(textNode, textLength)
+    } else {
+      const pos = Math.min(Math.max(0, position), textLength)
+      range.setStart(textNode, pos)
+      range.setEnd(textNode, pos)
     }
 
     selection.removeAllRanges()
     selection.addRange(range)
-  } catch (error) {
-    console.warn("Cursor positioning not supported:", error)
+  } catch {
+    // Cursor positioning failed, element will still be focused
   }
 }
 
@@ -94,13 +59,6 @@ interface EditableDivProps extends Omit<React.HTMLAttributes<EditableDivElement>
   allowEmpty?: boolean
   autoFocus?: boolean
   onEditingChange?: (isEditing: boolean) => void
-  /**
-   * Controls cursor position when autoFocus is enabled
-   * - "start": Position at beginning of text
-   * - "end": Position at end of text
-   * - number: Position at specific character index
-   * @default "start"
-   */
   cursorPosition?: "start" | "end" | number
 }
 
@@ -116,45 +74,78 @@ export function EditableDiv({
   autoFocus = false,
   onEditingChange,
   cursorPosition = "start",
-  ...props
+  ...domProps
 }: EditableDivProps) {
   const ref = useRef<EditableDivElement>(null)
-  const cancelingRef = useRef(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const isCancelingRef = useRef(false)
+
+  // Sync value to DOM when not editing
+  useEffect(() => {
+    if (!isEditing && ref.current) {
+      const displayValue = value || placeholder
+      if (ref.current.textContent !== displayValue) {
+        ref.current.textContent = displayValue
+      }
+    }
+  }, [value, placeholder, isEditing])
+
+  // Handle autoFocus and cursor positioning
+  useEffect(() => {
+    if (autoFocus && ref.current) {
+      ref.current.focus()
+
+      // Only position cursor if we have content (not just placeholder)
+      if (value && ref.current.firstChild) {
+        requestAnimationFrame(() => {
+          if (ref.current) {
+            setCursorPosition(ref.current, cursorPosition)
+          }
+        })
+      }
+    }
+  }, [autoFocus, cursorPosition, value])
+
+  const handleFocus = () => {
+    setIsEditing(true)
+    onEditingChange?.(true)
+
+    // Clear placeholder text
+    if (ref.current?.textContent === placeholder) {
+      ref.current.textContent = ""
+    }
+  }
 
   const handleBlur = () => {
+    setIsEditing(false)
     onEditingChange?.(false)
 
-    // If we're canceling, don't process the blur event
-    if (cancelingRef.current) {
-      cancelingRef.current = false
+    if (isCancelingRef.current) {
+      isCancelingRef.current = false
       return
     }
 
     const rawText = ref.current?.textContent || ""
-    const cleanText = cleanContentEditableText(rawText)
+    const cleaned = cleanText(rawText)
 
-    // Don't save placeholder text as content
-    if (cleanText === placeholder) {
-      if (ref.current) {
-        ref.current.textContent = value || placeholder
-      }
+    // Don't save placeholder as content
+    if (cleaned === placeholder) {
+      if (ref.current) ref.current.textContent = value || placeholder
       onCancel?.()
       return
     }
 
-    if (!allowEmpty && !cleanText.trim()) {
-      // Revert to original value or placeholder
-      if (ref.current) {
-        ref.current.textContent = value || placeholder
-      }
+    // Validate empty content
+    if (!allowEmpty && !cleaned) {
+      if (ref.current) ref.current.textContent = value || placeholder
       onCancel?.()
       return
     }
 
-    if (cleanText !== value) {
-      onChange(cleanText)
+    // Save if changed
+    if (cleaned !== value) {
+      onChange(cleaned)
     } else {
-      // Text didn't change, but we still need to signal that editing is done
       onCancel?.()
     }
   }
@@ -163,7 +154,7 @@ export function EditableDiv({
     multiline,
     onSave: () => ref.current?.blur(),
     onCancel: () => {
-      cancelingRef.current = true
+      isCancelingRef.current = true
       if (ref.current) {
         ref.current.textContent = value || placeholder
       }
@@ -172,79 +163,20 @@ export function EditableDiv({
     },
   })
 
-  const handleFocus = () => {
-    onEditingChange?.(true)
-
-    if (ref.current && ref.current.textContent === placeholder) {
-      ref.current.textContent = ""
-    }
-  }
-
-  useEffect(() => {
-    if (ref.current) {
-      const displayValue = value || placeholder
-      if (ref.current.textContent !== displayValue) {
-        ref.current.textContent = displayValue
-      }
-    }
-  }, [value, placeholder])
-
-  useEffect(() => {
-    if (autoFocus && ref.current) {
-      ref.current.focus()
-
-      // Position cursor after focus
-      if (cursorPosition === "end") {
-        // Use requestAnimationFrame for more reliable timing
-        requestAnimationFrame(() => {
-          if (ref.current) {
-            moveCursorToEnd(ref.current)
-          }
-        })
-      } else if (typeof cursorPosition === "number") {
-        requestAnimationFrame(() => {
-          if (ref.current) {
-            moveCursorToPosition(ref.current, cursorPosition)
-          }
-        })
-      }
-    }
-  }, [autoFocus, cursorPosition])
-
-  // Filter out component-specific props that shouldn't be passed to DOM
-  const domProps = Object.fromEntries(
-    Object.entries(props).filter(
-      ([key]) =>
-        ![
-          "value",
-          "onChange",
-          "onCancel",
-          "placeholder",
-          "multiline",
-          "allowEmpty",
-          "autoFocus",
-          "onEditingChange",
-          "cursorPosition",
-        ].includes(key),
-    ),
-  )
-
   return React.createElement(Component, {
     ref,
     contentEditable: "plaintext-only",
     suppressContentEditableWarning: true,
     className: cn(
       "outline-none cursor-text",
-      // Focus border for visual cue
       "focus:ring-2 focus:ring-primary/20 focus:border-primary px-1 py-0.5 -mx-1 -my-0.5",
       multiline && "whitespace-pre-line",
-      // Ensure minimum width when empty to maintain clickable area
       "min-w-[4rem]",
       className,
     ),
+    onFocus: handleFocus,
     onBlur: handleBlur,
     onKeyDown: handleKeyDown,
-    onFocus: handleFocus,
     ...domProps,
   })
 }

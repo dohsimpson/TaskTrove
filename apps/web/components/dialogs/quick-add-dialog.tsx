@@ -299,7 +299,7 @@ export function QuickAddDialog() {
   useEffect(() => {
     if (parsed?.labels && parsed.labels.length > 0) {
       const parsedLabelIds: LabelId[] = []
-      parsed.labels.forEach((labelName) => {
+      parsed.labels.forEach((labelName: string) => {
         const existingLabel = labels.find((l) => l.name.toLowerCase() === labelName.toLowerCase())
         if (existingLabel) {
           parsedLabelIds.push(existingLabel.id)

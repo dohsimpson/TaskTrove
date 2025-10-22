@@ -9,7 +9,7 @@ import { SidebarMenuItem, SidebarMenuButton, SidebarMenuBadge } from "@/componen
 import { cn } from "@/lib/utils"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
-import { ProjectContextMenu } from "./project-context-menu"
+import { ProjectContextMenu } from "@/components/navigation/project-context-menu"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import {
   editingProjectIdAtom,
@@ -18,19 +18,20 @@ import {
   projectTaskCountsAtom,
   projectAtoms,
 } from "@tasktrove/atoms"
-import type { ProjectGroup, ProjectId } from "@/lib/types"
+import type { Project, ProjectGroup, ProjectId } from "@/lib/types"
 
 interface ProjectGroupItemProps {
   group: ProjectGroup
-  projects: Array<{ id: ProjectId; name: string; slug: string; color: string }>
+  projects: Array<Project>
 }
 
 // Helper component for individual projects within groups
 interface GroupedProjectItemProps {
-  project: { id: ProjectId; name: string; slug: string; color: string }
+  project: Project
+  renderSharedBadge?: (project: Project) => React.ReactNode
 }
 
-function GroupedProjectItem({ project }: GroupedProjectItemProps) {
+function GroupedProjectItem({ project, renderSharedBadge }: GroupedProjectItemProps) {
   const [isHovered, setIsHovered] = useState(false)
   const pathname = useAtomValue(pathnameAtom)
   const projectTaskCounts = useAtomValue(projectTaskCountsAtom)
@@ -83,6 +84,7 @@ function GroupedProjectItem({ project }: GroupedProjectItemProps) {
               ) : (
                 <span className="flex-1 truncate">{project.name}</span>
               )}
+              {renderSharedBadge?.(project)}
               <SidebarMenuBadge className={contextMenuVisible ? "opacity-0" : ""}>
                 {projectTaskCount}
               </SidebarMenuBadge>
@@ -104,7 +106,11 @@ function GroupedProjectItem({ project }: GroupedProjectItemProps) {
   )
 }
 
-export function ProjectGroupItem({ group, projects }: ProjectGroupItemProps) {
+export function ProjectGroupItem({
+  group,
+  projects,
+  renderSharedBadge,
+}: ProjectGroupItemProps & { renderSharedBadge?: GroupedProjectItemProps["renderSharedBadge"] }) {
   const [isExpanded, setIsExpanded] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
   const projectTaskCounts = useAtomValue(projectTaskCountsAtom)
@@ -203,7 +209,11 @@ export function ProjectGroupItem({ group, projects }: ProjectGroupItemProps) {
         <>
           {/* Direct projects in this group */}
           {groupProjects.map((project) => (
-            <GroupedProjectItem key={project.id} project={project} />
+            <GroupedProjectItem
+              key={project.id}
+              project={project}
+              renderSharedBadge={renderSharedBadge}
+            />
           ))}
         </>
       )}

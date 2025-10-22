@@ -16,3 +16,11 @@ export const isPro = (): boolean => {
 export const isDevelopment = (): boolean => {
   return process.env.NODE_ENV === "development"
 }
+
+/**
+ * Check if authentication is enabled
+ * Auth is enabled when AUTH_SECRET environment variable is set
+ */
+export const isAuthEnabled = (): boolean => {
+  return Boolean(process.env.AUTH_SECRET)
+}

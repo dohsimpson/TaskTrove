@@ -19,6 +19,7 @@ interface ProjectContextMenuProps {
   onDuplicate?: () => void
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  renderAdditionalMenuItems?: () => React.ReactNode
 }
 
 export function ProjectContextMenu({
@@ -27,6 +28,7 @@ export function ProjectContextMenu({
   onDuplicate,
   open,
   onOpenChange,
+  renderAdditionalMenuItems,
 }: ProjectContextMenuProps) {
   // Get project data and actions from atoms
   const [projectsData] = useAtom(projectsAtom)
@@ -102,6 +104,7 @@ export function ProjectContextMenu({
       onAddBelow={handleAddBelow}
       open={open}
       onOpenChange={onOpenChange}
+      renderAdditionalMenuItems={renderAdditionalMenuItems}
     />
   )
 }

@@ -76,7 +76,9 @@ export const scheduledNotificationsAtom = atom<
 >(new Map());
 
 /** Current active notification timer ID */
-export const activeNotificationTimerAtom = atom<NodeJS.Timeout | null>(null);
+export const activeNotificationTimerAtom = atom<ReturnType<
+  typeof setTimeout
+> | null>(null);
 
 /** Whether notification system is active */
 export const isNotificationSystemActiveAtom = atom<boolean>(false);

@@ -21,22 +21,13 @@ import {
 } from "@/components/ui/sidebar"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import {
-  Inbox,
-  Calendar,
-  Clock,
-  CheckSquare,
-  ListCheck,
-  Tag,
-  Plus,
-  ChevronDown,
-} from "lucide-react"
+import { Tag, Plus, ChevronDown } from "lucide-react"
 import { SearchIcon, type SearchIconHandle } from "@/components/ui/search"
 import { PlusIcon, type PlusIconHandle } from "@/components/ui/plus"
-import { ProjectContextMenu } from "./project-context-menu"
+import { ProjectContextMenu } from "@/components/navigation/project-context-menu"
 import { LabelContextMenu } from "./label-context-menu"
 import { DraggableProjectGroupItem } from "./draggable-project-group-item"
-import { DraggableProjectItem } from "./draggable-project-item"
+import { DraggableProjectItem } from "@/components/navigation/draggable-project-item"
 import { DraggableLabelItem, DropTargetLabelItem } from "./drag-drop"
 import { useSidebarDragDrop } from "@/hooks/use-sidebar-drag-drop"
 import { useLabelDragDrop } from "@/hooks/use-label-drag-drop"
@@ -65,6 +56,8 @@ import {
   stopEditingLabelAtom,
 } from "@tasktrove/atoms"
 import { useTranslation } from "@tasktrove/i18n"
+import { getMainNavItems } from "@/components/navigation/main-nav-items"
+
 export function SidebarNav() {
   // Translation setup
   const { t } = useTranslation("navigation")
@@ -90,51 +83,7 @@ export function SidebarNav() {
   const CARD_BUTTON_STYLES =
     "h-[100px] w-full flex flex-col items-center justify-center gap-1.5 bg-card border-1 border-border hover:border-primary/50 hover:bg-primary/5 hover:scale-105 rounded-lg transition-all duration-200 cursor-pointer"
 
-  // Define main nav items directly
-  const mainNavItems = [
-    {
-      id: "all",
-      label: t("mainNav.allTasks", "All Tasks"),
-      icon: <ListCheck className="h-4 w-4" />,
-      count: taskCountsData.all,
-      href: "/all",
-    },
-    {
-      id: "inbox",
-      label: t("mainNav.inbox", "Inbox"),
-      icon: <Inbox className="h-4 w-4" />,
-      count: taskCountsData.inbox,
-      href: "/inbox",
-    },
-    {
-      id: "today",
-      label: t("mainNav.today", "Today"),
-      icon: <Calendar className="h-4 w-4" />,
-      count: taskCountsData.today,
-      href: "/today",
-    },
-    {
-      id: "upcoming",
-      label: t("mainNav.upcoming", "Upcoming"),
-      icon: <Clock className="h-4 w-4" />,
-      count: taskCountsData.upcoming,
-      href: "/upcoming",
-    },
-    {
-      id: "calendar",
-      label: t("mainNav.calendar", "Calendar"),
-      icon: <Calendar className="h-4 w-4" />,
-      count: taskCountsData.calendar,
-      href: "/calendar",
-    },
-    {
-      id: "completed",
-      label: t("mainNav.completed", "Completed"),
-      icon: <CheckSquare className="h-4 w-4" />,
-      count: taskCountsData.completed,
-      href: "/completed",
-    },
-  ]
+  const mainNavItems = getMainNavItems({ taskCountsData, t })
 
   // Refs for controlling animated icons
   const searchIconRef = useRef<SearchIconHandle>(null)

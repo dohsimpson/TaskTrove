@@ -15,7 +15,7 @@ export const MAX_SAFE_TIMEOUT_DELAY = 2_147_483_647;
 export function safeSetTimeout(
   callback: () => void,
   delay: number,
-): NodeJS.Timeout {
+): ReturnType<typeof setTimeout> {
   if (delay > MAX_SAFE_TIMEOUT_DELAY) {
     throw new Error(
       `setTimeout delay of ${delay}ms exceeds maximum safe value of ${MAX_SAFE_TIMEOUT_DELAY}ms. ` +

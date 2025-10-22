@@ -5,6 +5,7 @@ import { render } from "@/test-utils/render-with-providers"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { ProjectGroupItem } from "./project-group-item"
 import { TEST_PROJECT_ID_1, TEST_PROJECT_ID_2 } from "@tasktrove/types/test-constants"
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
 import type { ProjectGroup } from "@/lib/types"
 import { createGroupId, createProjectId } from "@/lib/types"
 
@@ -50,12 +51,14 @@ describe("ProjectGroupItem", () => {
       name: "Project 1",
       slug: "project-1",
       color: "#ef4444",
+      sections: [DEFAULT_PROJECT_SECTION],
     },
     {
       id: TEST_PROJECT_ID_2,
       name: "Project 2",
       slug: "project-2",
       color: "#10b981",
+      sections: [DEFAULT_PROJECT_SECTION],
     },
   ]
 

@@ -3211,8 +3211,9 @@ describe("TaskItem", () => {
       // Should have text-focused hover styling for better editability indication
       expect(editableText).toHaveClass("cursor-text")
       expect(editableText).toHaveClass("hover:bg-accent")
-      expect(editableText).toHaveClass("px-1", "py-0.5", "rounded")
+      expect(editableText).toHaveClass("px-1", "py-0.5")
       expect(editableText).toHaveClass("transition-colors")
+      expect(editableText).toHaveClass("border", "border-transparent", "hover:border-accent")
     })
 
     it("does not show metadata like due date, priority, or labels in subtask variant", () => {

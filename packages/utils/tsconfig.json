@@ -2,9 +2,16 @@
   "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
     "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "customConditions": ["pro"]
+    "moduleResolution": "Bundler"
   },
   "include": ["src/**/*", "tests/**/*", "*.ts", "*.js"],
-  "exclude": ["dist", "node_modules", "eslint.config.js"]
+  "exclude": [
+    "dist",
+    "node_modules",
+    "eslint.config.js",
+    "**/*.pro.ts",
+    "**/*.pro.tsx",
+    "**/*.pro.test.ts",
+    "**/*.pro.test.tsx"
+  ]
 }

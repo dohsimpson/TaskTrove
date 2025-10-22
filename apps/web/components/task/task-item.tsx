@@ -40,6 +40,7 @@ import { PriorityPopover } from "./priority-popover"
 import { ProjectPopover } from "./project-popover"
 import { TaskActionsMenu } from "./task-actions-menu"
 import { AssigneeManagementPopover } from "@/components/task/assignee-management-popover"
+import { AssigneeBadges } from "@/components/task/assignee-badges"
 import {
   toggleTaskAtom,
   deleteTaskAtom,
@@ -803,7 +804,7 @@ export function TaskItem({
             }}
             placeholder={t("placeholders.addDescription", "Add description...")}
             className={cn(
-              "text-xs cursor-text hover:bg-accent px-1 py-0.5 rounded transition-colors min-w-48 max-w-sm",
+              "text-xs hover:bg-accent min-w-48 max-w-sm",
               // Only apply line-clamp when not editing, otherwise use max-height with scroll
               !isDescriptionEditing && "line-clamp-2",
               isDescriptionEditing && "max-h-20 overflow-y-auto",
@@ -987,9 +988,12 @@ export function TaskItem({
         onMouseLeave={() => setIsHovered(false)}
         className={cn("group/task text-xs", className)}
       >
-        <LinkifiedText as="span" className="truncate text-xs">
-          {task.title}
-        </LinkifiedText>
+        <div className="flex items-center gap-1 min-w-0">
+          <LinkifiedText as="span" className="truncate text-xs flex-1">
+            {task.title}
+          </LinkifiedText>
+          {isPro() && <AssigneeBadges task={task} className="flex-shrink-0" showOwner={false} />}
+        </div>
       </MaterialCard>
     )
   }
@@ -1166,7 +1170,7 @@ export function TaskItem({
                 }}
                 placeholder={t("placeholders.addDescription", "Add description...")}
                 className={cn(
-                  "text-xs sm:text-sm cursor-text hover:bg-accent px-1 py-0.5 rounded transition-colors max-h-20 overflow-y-auto",
+                  "text-xs sm:text-sm hover:bg-accent max-h-20 overflow-y-auto",
                   "min-w-[150px] sm:min-w-[200px] md:min-w-64",
                   "max-w-fit",
                   task.description

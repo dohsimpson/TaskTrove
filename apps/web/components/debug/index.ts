@@ -7,6 +7,7 @@
 
 export { ProjectSectionDebugBadge } from "./project-section-debug-badge"
 export { SoundTester } from "./sound-tester"
+export { TaskDebugBadge } from "./task-debug-badge"
 export { StubIndicator } from "./stub-indicator"
 export { VirtualizationDebugBadge } from "./virtualization-debug-badge"
 

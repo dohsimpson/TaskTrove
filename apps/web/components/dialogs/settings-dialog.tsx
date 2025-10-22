@@ -5,7 +5,7 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Database, X, Bell, Settings, Menu } from "lucide-react"
+import { Database, X, Bell, Settings, Menu, Palette } from "lucide-react"
 // Future icons (not used yet):
 // import { Link, Target, Code } from "lucide-react"
 import { showSettingsDialogAtom, closeSettingsDialogAtom } from "@tasktrove/atoms"
@@ -13,7 +13,7 @@ import { useTranslation } from "@tasktrove/i18n"
 import { DataForm } from "./settings-forms/data-form"
 import { NotificationsForm } from "./settings-forms/notifications-form"
 import { GeneralForm } from "./settings-forms/general-form"
-// import { AppearanceForm } from "./settings-forms/appearance-form"
+import { AppearanceForm } from "./settings-forms/appearance-form"
 // Future form imports (not used yet):
 // import { ProductivityForm } from "./settings-forms/productivity-form"
 // import { ApiForm } from "./settings-forms/api-form"
@@ -52,15 +52,15 @@ function SettingsContent() {
       icon: Database,
       description: t("settings.categories.data.description", "Import/export, backups"),
     },
-    // {
-    //   id: "appearance",
-    //   title: t("settings.categories.appearance.title", "Appearance"),
-    //   icon: Palette,
-    //   description: t(
-    //     "settings.categories.appearance.description",
-    //     "Themes, colors, and visual preferences",
-    //   ),
-    // },
+    {
+      id: "appearance",
+      title: t("settings.categories.appearance.title", "Appearance"),
+      icon: Palette,
+      description: t(
+        "settings.categories.appearance.description",
+        "Themes, colors, and visual preferences",
+      ),
+    },
     // Future settings categories (not implemented yet):
     // {
     //   id: "productivity",
@@ -105,8 +105,8 @@ function SettingsContent() {
         return <DataForm />
       case "notifications":
         return <NotificationsForm />
-      // case "appearance":
-      //   return <AppearanceForm />
+      case "appearance":
+        return <AppearanceForm />
       // Future forms (not implemented yet):
       // case "productivity":
       //   return <ProductivityForm />

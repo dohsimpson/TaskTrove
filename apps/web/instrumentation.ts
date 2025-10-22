@@ -7,7 +7,7 @@ export async function register() {
     // Initialize the scheduler for automatic backups
     try {
       console.log("Attempting to import scheduler...")
-      const { initializeScheduler } = await import("./lib/backup")
+      const { initializeScheduler } = await import("@/lib/backup")
       console.log("Scheduler imported successfully. Initializing...")
       initializeScheduler()
       console.log("Scheduler initialization called.")

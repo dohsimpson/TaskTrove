@@ -3,6 +3,7 @@ import acceptLanguage from "accept-language"
 import { auth } from "@/auth"
 import { languages, fallbackLng, cookieName } from "./lib/i18n/settings"
 import { NextAuthRequest } from "next-auth"
+import { isAuthEnabled } from "@/lib/utils/env"
 
 acceptLanguage.languages([...languages])
 
@@ -21,8 +22,6 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\..*|public).*)",
   ],
 }
-
-const isAuthEnabled = Boolean(process.env.AUTH_SECRET)
 
 // const isAPIAuthEnabled = Boolean(process.env.API_SECRET_TOKEN)
 //
@@ -94,7 +93,7 @@ function middleware(req: NextRequest) {
     return setI18nResponse(NextResponse.next(), lng, req)
   }
 
-  if (isAuthEnabled) {
+  if (isAuthEnabled()) {
     if (authReq.auth) {
       return setI18nResponse(NextResponse.next(), lng, req)
     } else {
@@ -112,4 +111,4 @@ function middleware(req: NextRequest) {
   return setI18nResponse(NextResponse.next(), lng, req)
 }
 
-export default isAuthEnabled ? auth(middleware) : middleware
+export default isAuthEnabled() ? auth(middleware) : middleware

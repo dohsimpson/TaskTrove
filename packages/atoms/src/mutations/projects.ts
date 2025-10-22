@@ -56,13 +56,14 @@ export const createProjectMutationAtom = createEntityMutation<
     oldProjects: Project[],
   ) => {
     return {
+      ...projectData,
       id: createProjectId(uuidv4()), // Temporary ID that will be replaced by server response
       name: projectData.name,
       slug:
         projectData.slug ??
         createSafeProjectNameSlug(projectData.name, oldProjects),
       color: projectData.color ?? DEFAULT_PROJECT_COLORS[0],
-      sections: [
+      sections: projectData.sections ?? [
         {
           id: createGroupId(DEFAULT_UUID),
           name: "Default",

@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
-import { describe, it, expect, vi } from "vitest"
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
+import { describe, it, expect, vi, afterEach } from "vitest"
 import { SubmitButton } from "./submit-button"
 
 // Mock the Button component
@@ -17,6 +17,9 @@ vi.mock("@/components/ui/button", () => ({
 }))
 
 describe("SubmitButton", () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
   it("renders children when not submitting", () => {
     render(<SubmitButton>Submit</SubmitButton>)
 
@@ -39,36 +42,39 @@ describe("SubmitButton", () => {
   })
 
   it("shows loading state while submitting", async () => {
+    vi.useFakeTimers()
+
     const mockOnSubmit = vi.fn(
       () => new Promise<void>((resolve) => setTimeout(() => resolve(), 100)),
     )
     render(<SubmitButton onSubmit={mockOnSubmit}>Submit</SubmitButton>)
 
     const button = screen.getByRole("button", { name: "Submit" })
-    fireEvent.click(button)
+
+    await act(async () => {
+      fireEvent.click(button)
+    })
 
     // Should show loading state immediately
     expect(button).toBeDisabled()
     expect(button.querySelector("svg.animate-spin")).toBeInTheDocument()
     expect(screen.getByText("Submit...")).toBeInTheDocument()
 
-    // Wait for submission to complete
-    await waitFor(
-      () => {
-        expect(mockOnSubmit).toHaveBeenCalledTimes(1)
-      },
-      { timeout: 200 },
-    )
+    // Advance timers to complete the async operation
+    await act(async () => {
+      await vi.runAllTimersAsync()
+    })
 
     // Should return to normal state after completion
-    await waitFor(() => {
-      expect(button).not.toBeDisabled()
-      expect(button.querySelector("svg.animate-spin")).not.toBeInTheDocument()
-      expect(screen.getByText("Submit")).toBeInTheDocument()
-    })
+    expect(mockOnSubmit).toHaveBeenCalledTimes(1)
+    expect(button).not.toBeDisabled()
+    expect(button.querySelector("svg.animate-spin")).not.toBeInTheDocument()
+    expect(screen.getByText("Submit")).toBeInTheDocument()
   })
 
   it("uses custom submitting text", async () => {
+    vi.useFakeTimers()
+
     const mockOnSubmit = vi.fn(
       () => new Promise<void>((resolve) => setTimeout(() => resolve(), 50)),
     )
@@ -79,10 +85,16 @@ describe("SubmitButton", () => {
     )
 
     const button = screen.getByRole("button")
-    fireEvent.click(button)
 
-    await waitFor(() => {
-      expect(screen.getByText("Adding task...")).toBeInTheDocument()
+    await act(async () => {
+      fireEvent.click(button)
+    })
+
+    expect(screen.getByText("Adding task...")).toBeInTheDocument()
+
+    // Complete the async operation
+    await act(async () => {
+      await vi.runAllTimersAsync()
     })
   })
 
@@ -125,6 +137,8 @@ describe("SubmitButton", () => {
   })
 
   it("hides loading icon when hideLoadingIcon is true", async () => {
+    vi.useFakeTimers()
+
     const mockOnSubmit = vi.fn(
       () => new Promise<void>((resolve) => setTimeout(() => resolve(), 50)),
     )
@@ -135,15 +149,23 @@ describe("SubmitButton", () => {
     )
 
     const button = screen.getByRole("button")
-    fireEvent.click(button)
 
-    await waitFor(() => {
-      expect(button.querySelector("svg.animate-spin")).not.toBeInTheDocument()
-      expect(screen.getByText("Submit...")).toBeInTheDocument()
+    await act(async () => {
+      fireEvent.click(button)
+    })
+
+    expect(button.querySelector("svg.animate-spin")).not.toBeInTheDocument()
+    expect(screen.getByText("Submit...")).toBeInTheDocument()
+
+    // Complete the async operation
+    await act(async () => {
+      await vi.runAllTimersAsync()
     })
   })
 
   it("uses custom loading icon", async () => {
+    vi.useFakeTimers()
+
     const CustomIcon = () => <div data-testid="custom-icon">Custom</div>
     const mockOnSubmit = vi.fn(
       () => new Promise<void>((resolve) => setTimeout(() => resolve(), 50)),
@@ -156,15 +178,23 @@ describe("SubmitButton", () => {
     )
 
     const button = screen.getByRole("button")
-    fireEvent.click(button)
 
-    await waitFor(() => {
-      expect(screen.getByTestId("custom-icon")).toBeInTheDocument()
-      expect(button.querySelector("svg.animate-spin")).not.toBeInTheDocument()
+    await act(async () => {
+      fireEvent.click(button)
+    })
+
+    expect(screen.getByTestId("custom-icon")).toBeInTheDocument()
+    expect(button.querySelector("svg.animate-spin")).not.toBeInTheDocument()
+
+    // Complete the async operation
+    await act(async () => {
+      await vi.runAllTimersAsync()
     })
   })
 
   it("applies custom icon sizes", async () => {
+    vi.useFakeTimers()
+
     const mockOnSubmit = vi.fn(
       () => new Promise<void>((resolve) => setTimeout(() => resolve(), 50)),
     )
@@ -175,12 +205,18 @@ describe("SubmitButton", () => {
     )
 
     const button = screen.getByRole("button")
-    fireEvent.click(button)
 
-    await waitFor(() => {
-      const loader = button.querySelector("svg.animate-spin")
-      expect(loader).toBeInTheDocument()
-      expect(loader).toHaveClass("h-5", "w-5")
+    await act(async () => {
+      fireEvent.click(button)
+    })
+
+    const loader = button.querySelector("svg.animate-spin")
+    expect(loader).toBeInTheDocument()
+    expect(loader).toHaveClass("h-5", "w-5")
+
+    // Complete the async operation
+    await act(async () => {
+      await vi.runAllTimersAsync()
     })
   })
 
@@ -196,6 +232,8 @@ describe("SubmitButton", () => {
   })
 
   it("handles non-string children", async () => {
+    vi.useFakeTimers()
+
     const mockOnSubmit = vi.fn(
       () => new Promise<void>((resolve) => setTimeout(() => resolve(), 50)),
     )
@@ -206,11 +244,17 @@ describe("SubmitButton", () => {
     )
 
     const button = screen.getByRole("button")
-    fireEvent.click(button)
 
-    await waitFor(() => {
-      // Should show the original content when children is not a string
-      expect(screen.getByText("Submit Content")).toBeInTheDocument()
+    await act(async () => {
+      fireEvent.click(button)
+    })
+
+    // Should show the original content when children is not a string
+    expect(screen.getByText("Submit Content")).toBeInTheDocument()
+
+    // Complete the async operation
+    await act(async () => {
+      await vi.runAllTimersAsync()
     })
   })
 

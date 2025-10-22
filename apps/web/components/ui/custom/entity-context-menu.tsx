@@ -55,6 +55,7 @@ interface EntityContextMenuProps {
   onSetAsDefault?: () => void
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  renderAdditionalMenuItems?: () => React.ReactNode
 }
 
 export function EntityContextMenu({
@@ -76,6 +77,7 @@ export function EntityContextMenu({
   onSetAsDefault,
   open,
   onOpenChange,
+  renderAdditionalMenuItems,
 }: EntityContextMenuProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showColorPicker, setShowColorPicker] = useState(false)
@@ -282,6 +284,14 @@ export function EntityContextMenu({
                 <Star className="h-3 w-3 mr-2" />
                 Set as Default
               </DropdownMenuItem>
+            )}
+
+            {/* Additional menu items (for Pro extensions) */}
+            {renderAdditionalMenuItems && (
+              <>
+                <DropdownMenuSeparator />
+                {renderAdditionalMenuItems()}
+              </>
             )}
 
             {/* Reordering submenus */}

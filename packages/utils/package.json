@@ -25,12 +25,19 @@
     "./encryption": "./src/encryption.ts",
     "./color-utils": "./src/color-utils.ts",
     "./date-filter-utils": "./src/date-filter-utils.ts",
-    "./task-date-formatter": "./src/task-date-formatter.ts"
+    "./task-date-formatter": "./src/task-date-formatter.ts",
+    "./project-permissions": {
+      "pro": "./src/project-permissions.pro.ts",
+      "default": "./src/project-permissions.pro.ts"
+    }
   },
   "scripts": {
     "lint": "eslint .",
-    "typecheck": "tsgo --noEmit",
-    "check": "tsgo --noEmit && pnpm lint && pnpm test",
+    "typecheck:base": "tsgo --noEmit",
+    "typecheck:pro": "tsgo --project tsconfig.pro.json --noEmit",
+    "typecheck": "pnpm typecheck:base && (test -f tsconfig.pro.json && pnpm typecheck:pro || true)",
+    "check": "pnpm typecheck && pnpm lint && pnpm test",
+    "check:pro": "pnpm typecheck:pro && pnpm lint",
     "test": "vitest run --reporter=dot --no-coverage",
     "test:watch": "vitest --watch"
   },

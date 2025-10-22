@@ -9,18 +9,29 @@
  */
 
 import { atom } from "jotai";
-import type { ProjectId, LabelId, Task } from "@tasktrove/types";
+import { atomFamily } from "jotai/utils";
+import type { ProjectId, LabelId, ViewId } from "@tasktrove/types";
 import { projectsAtom, labelsAtom } from "#data/base/atoms";
-import {
-  activeTasksAtom,
-  completedTasksAtom,
-  calendarTasksAtom,
-  overdueTasksAtom,
-} from "#data/tasks/filters";
+import { activeTasksAtom, completedTasksAtom } from "#data/tasks/filters";
 import { viewStatesAtom, getViewStateOrDefault } from "#ui/views";
 import { uiFilteredTasksForViewAtom } from "#ui/filtered-tasks";
 import { applyViewStateFilters } from "#utils/view-filters";
 import { handleAtomError } from "#utils/atom-helpers";
+
+/**
+ * Get task count for any view
+ * Leverages uiFilteredTasksForViewAtom which already handles all filtering
+ */
+export const taskCountForViewAtom = atomFamily((viewId: ViewId) =>
+  atom((get) => {
+    try {
+      return get(uiFilteredTasksForViewAtom(viewId)).length;
+    } catch (error) {
+      handleAtomError(error, `taskCountForViewAtom(${viewId})`);
+      return 0;
+    }
+  }),
+);
 
 /**
  * UI-specific atom for project task counts
@@ -97,50 +108,26 @@ labelTaskCountsAtom.debugLabel = "labelTaskCountsAtom";
  * Returns counts for all standard views (inbox, today, upcoming, etc.)
  * Respects per-view showCompleted settings from viewStates
  *
- * This atom was moved from core/tasks.ts to eliminate circular dependencies.
+ * REFACTORED: Simplified to delegate to taskCountForViewAtom
+ * All filtering logic is handled by uiFilteredTasksForViewAtom
  */
 export const taskCountsAtom = atom((get) => {
   try {
+    // Raw counts (not view-specific, always show all active/completed)
     const activeTasks = get(activeTasksAtom);
     const completedTasks = get(completedTasksAtom);
-    const calendarTasks = get(calendarTasksAtom);
-    const overdueTasks = get(overdueTasksAtom);
-    const viewStates = get(viewStatesAtom);
 
-    // Use UI-filtered atoms for standard views (they respect showCompleted)
-    const inboxTasks = get(uiFilteredTasksForViewAtom("inbox"));
-    const todayTasks = get(uiFilteredTasksForViewAtom("today"));
-    const upcomingTasks = get(uiFilteredTasksForViewAtom("upcoming"));
-    const allTasks = get(uiFilteredTasksForViewAtom("all"));
-
-    // Calendar view: apply showCompleted setting
-    const calendarShowCompleted = getViewStateOrDefault(
-      viewStates,
-      "calendar",
-    ).showCompleted;
-    const calendarCount = calendarShowCompleted
-      ? calendarTasks.length
-      : calendarTasks.filter((task: Task) => !task.completed).length;
-
-    // Overdue: apply "today" view's showCompleted setting (overdue is part of today)
-    const todayShowCompleted = getViewStateOrDefault(
-      viewStates,
-      "today",
-    ).showCompleted;
-    const overdueCount = todayShowCompleted
-      ? overdueTasks.length
-      : overdueTasks.filter((task: Task) => !task.completed).length;
-
+    // Standard view counts (all respect per-view showCompleted settings via uiFilteredTasksForViewAtom)
     return {
       total: activeTasks.length,
-      inbox: inboxTasks.length,
-      today: todayTasks.length,
-      upcoming: upcomingTasks.length,
-      calendar: calendarCount,
-      overdue: overdueCount,
+      inbox: get(taskCountForViewAtom("inbox")),
+      today: get(taskCountForViewAtom("today")),
+      upcoming: get(taskCountForViewAtom("upcoming")),
+      calendar: get(taskCountForViewAtom("calendar")),
+      overdue: get(taskCountForViewAtom("today")), // overdue is shown in today view
       completed: completedTasks.length,
-      all: allTasks.length,
-      active: activeTasks.filter((task: Task) => !task.completed).length,
+      all: get(taskCountForViewAtom("all")),
+      active: activeTasks.filter((task) => !task.completed).length,
     };
   } catch (error) {
     handleAtomError(error, "taskCountsAtom");

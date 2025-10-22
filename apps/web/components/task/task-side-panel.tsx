@@ -28,6 +28,7 @@ import { SubtaskContent } from "./subtask-content"
 import { LabelContent } from "./label-content"
 import { CommentContent } from "./comment-content"
 import { TaskActionsMenu } from "./task-actions-menu"
+import { TaskDebugBadge } from "@/components/debug"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
 import {
   updateTaskAtom,
@@ -120,6 +121,9 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
 
   const TaskPanelContent = ({ task, className = "" }: TaskPanelContentProps) => (
     <div className={cn("space-y-4", className)}>
+      {/* Debug Badge */}
+      <TaskDebugBadge task={task} />
+
       {/* Due Date & Assignment Section */}
       <div className="space-y-3">
         <h3 className="text-sm text-foreground font-bold">

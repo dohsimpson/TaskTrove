@@ -10,16 +10,6 @@
 export const DEFAULT_UUID = "00000000-0000-0000-0000-000000000000";
 
 // =============================================================================
-// THEME DEFAULTS
-// =============================================================================
-
-/** Storage key for the selected theme in localStorage */
-export const SELECTED_THEME_KEY = "selected-theme";
-
-/** Default theme when no theme is selected */
-export const DEFAULT_SELECTED_THEME = "violet-bloom";
-
-// =============================================================================
 // TASK DEFAULTS
 // =============================================================================
 
@@ -489,18 +479,9 @@ export type SupportedAvatarMimeType =
 // =============================================================================
 
 /**
- * Base theme names for the application
+ * Base theme names for the application (base version only has default)
  */
-export const BASE_THEME_OPTIONS = [
-  "default",
-  "violet-bloom",
-  "amethyst-haze",
-  "catppuccin",
-  "bubblegum",
-  "clean-slate",
-  "modern-minimal",
-  "doom-64",
-] as const;
+export const BASE_THEME_OPTIONS = ["default"] as const;
 
 /**
  * Available theme options for the application
@@ -519,11 +500,11 @@ export const DEFAULT_THEME: Theme = "default";
  */
 export const THEME_DISPLAY_NAMES = {
   default: "Default",
-  "violet-bloom": "Violet Bloom",
-  "amethyst-haze": "Amethyst Haze",
-  catppuccin: "Catppuccin",
-  bubblegum: "Bubblegum",
-  "clean-slate": "Clean Slate",
-  "modern-minimal": "Modern Minimal",
-  "doom-64": "Doom 64",
+} as const satisfies Record<Theme, string>;
+
+/**
+ * Theme descriptions for UI (shown in settings)
+ */
+export const THEME_DESCRIPTIONS = {
+  default: "Default theme",
 } as const satisfies Record<Theme, string>;

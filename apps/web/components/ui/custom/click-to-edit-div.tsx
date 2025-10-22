@@ -41,10 +41,7 @@ export function ClickToEditDiv({
         const TextComponent = Component
         return (
           <TextComponent
-            className={cn(
-              "cursor-text hover:bg-accent px-1 py-0.5 rounded transition-colors",
-              className,
-            )}
+            className={cn("cursor-text hover:bg-accent px-1 py-0.5 transition-colors", className)}
             onClick={onClick}
             data-action="edit"
           >

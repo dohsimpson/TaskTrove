@@ -6,7 +6,7 @@ import { getAvatarApiUrl } from "@tasktrove/utils"
 import { getConsistentColor } from "@tasktrove/utils/color-utils"
 
 interface UserAvatarProps {
-  username: string
+  username?: string
   avatar?: string
   size?: "sm" | "md" | "lg"
   className?: string

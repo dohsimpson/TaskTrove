@@ -5,8 +5,18 @@
     "moduleResolution": "Bundler",
     "declaration": false,
     "declarationMap": false,
-    "customConditions": ["pro"]
+    "paths": {
+      "@tasktrove/atoms": ["./src/index.ts"]
+    }
   },
   "include": ["src/**/*", "*.ts", "*.js"],
-  "exclude": ["dist", "node_modules", "eslint.config.js"]
+  "exclude": [
+    "dist",
+    "node_modules",
+    "eslint.config.js",
+    "**/*.pro.ts",
+    "**/*.pro.tsx",
+    "**/*.pro.test.ts",
+    "**/*.pro.test.tsx"
+  ]
 }

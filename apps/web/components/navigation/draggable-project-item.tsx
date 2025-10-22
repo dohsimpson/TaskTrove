@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Folder } from "lucide-react"
 import { SidebarMenuItem, SidebarMenuButton, SidebarMenuBadge } from "@/components/ui/sidebar"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
-import { ProjectContextMenu } from "./project-context-menu"
+import { ProjectContextMenu } from "@/components/navigation/project-context-menu"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { useSidebarDragDrop } from "@/hooks/use-sidebar-drag-drop"
 import { DraggableSidebarProject, DropTargetSidebarProject } from "./drag-drop"
@@ -25,6 +25,7 @@ interface DraggableProjectItemProps {
   index: number
   isInGroup?: boolean
   groupId?: GroupId
+  renderSharedBadge?: (project: Project) => React.ReactNode
 }
 
 /**
@@ -36,6 +37,7 @@ export function DraggableProjectItem({
   index,
   isInGroup = false,
   groupId,
+  renderSharedBadge,
 }: DraggableProjectItemProps) {
   const [isHovered, setIsHovered] = useState(false)
   const router = useRouter()
@@ -111,6 +113,7 @@ export function DraggableProjectItem({
                 ) : (
                   <span className="flex-1 truncate mr-6">{project.name}</span>
                 )}
+                {renderSharedBadge?.(project)}
                 <SidebarMenuBadge className={contextMenuVisible ? "opacity-0" : ""}>
                   {taskCount}
                 </SidebarMenuBadge>

@@ -20,8 +20,11 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "typecheck": "tsgo --noEmit",
-    "check": "tsgo --noEmit && pnpm lint && pnpm test",
+    "typecheck:base": "tsgo --noEmit",
+    "typecheck:pro": "tsgo --project tsconfig.pro.json --noEmit",
+    "typecheck": "pnpm typecheck:base && (test -f tsconfig.pro.json && pnpm typecheck:pro || true)",
+    "check": "pnpm typecheck && pnpm lint && pnpm test",
+    "check:pro": "pnpm typecheck:pro && pnpm lint",
     "test": "vitest run --reporter=dot --no-coverage",
     "test:watch": "vitest --watch"
   },

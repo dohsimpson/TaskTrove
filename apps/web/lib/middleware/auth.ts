@@ -12,6 +12,7 @@ import { NextResponse } from "next/server"
 import { ApiErrorCode, ErrorResponse } from "@/lib/types"
 import type { EnhancedRequest } from "./api-logger"
 import { safeReadDataFile } from "@/lib/utils/safe-file-operations"
+import { isAuthEnabled } from "@/lib/utils/env"
 
 /**
  * Checks if the provided bearer token matches the user's API token
@@ -66,10 +67,8 @@ export function withAuthentication<T>(
   return async (request: EnhancedRequest) => {
     // Check if authentication is enabled via AUTH_SECRET environment variable
     // This matches the behavior in middleware.ts
-    const isAuthEnabled = Boolean(process.env.AUTH_SECRET)
-
     // If authentication is disabled (no AUTH_SECRET), bypass auth check
-    if (!isAuthEnabled) {
+    if (!isAuthEnabled()) {
       return handler(request)
     }
 

@@ -107,7 +107,7 @@ export function LinkifiedEditableDiv({
   return (
     <LinkifiedText
       as={Component}
-      className={cn("cursor-text hover:bg-accent px-1 py-0.5 rounded transition-colors", className)}
+      className={cn("cursor-text hover:bg-accent px-1 py-0.5 transition-colors", className)}
       onClick={handleClick}
       {...linkifiedProps}
     >

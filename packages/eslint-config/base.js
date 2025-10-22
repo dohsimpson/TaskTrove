@@ -25,7 +25,24 @@ export const config = [
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        projectService: true,
+        project: true,
+        projectService: {
+          maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 30,
+          allowDefaultProject: [
+            "src/*.pro.ts",
+            "src/*.pro.tsx",
+            "src/*.pro.test.ts",
+            "src/*.pro.test.tsx",
+            "src/*/*.pro.ts",
+            "src/*/*.pro.tsx",
+            "src/*/*.pro.test.ts",
+            "src/*/*.pro.test.tsx",
+            "src/*/*/*.pro.ts",
+            "src/*/*/*.pro.tsx",
+            "src/*/*/*.pro.test.ts",
+            "src/*/*/*.pro.test.tsx",
+          ],
+        },
       },
     },
     rules: {

@@ -138,6 +138,8 @@ export {
   removeTaskFromSection,
 } from "#data/tasks/ordering";
 
+export * from "#data/tasks/filters";
+
 // Test helpers
 export {
   createMockTask,

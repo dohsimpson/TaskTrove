@@ -374,6 +374,13 @@ export function QuickAddDialog() {
         } else if (currentProject) {
           updates.projectId = currentProject
         }
+
+        // If in today view, set due date to today
+        if (routeContext.viewId === "today") {
+          const today = new Date()
+          today.setHours(0, 0, 0, 0) // Set to start of day
+          updates.dueDate = today
+        }
       }
 
       if (Object.keys(updates).length > 0) {
@@ -394,7 +401,16 @@ export function QuickAddDialog() {
       hasInitializedRef.current = false
       resetCopyTask()
     }
-  }, [currentLabel, currentProject, open, taskToCopy, newTask, resetCopyTask, updateNewTask])
+  }, [
+    currentLabel,
+    currentProject,
+    open,
+    taskToCopy,
+    newTask,
+    resetCopyTask,
+    updateNewTask,
+    routeContext.viewId,
+  ])
 
   // Prepare autocomplete items
   const autocompleteItems = useMemo(

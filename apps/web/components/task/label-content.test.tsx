@@ -27,17 +27,7 @@ vi.mock("jotai", () => ({
   Provider: vi.fn(({ children }) => children),
 }))
 
-// Mock @/lib/atoms (legacy)
-vi.mock("@/lib/atoms", () => ({
-  // Empty mock - moved to @tasktrove/atoms
-}))
-
-// Mock @tasktrove/atoms with all required exports
-vi.mock("@tasktrove/atoms", () => ({
-  labelsFromIdsAtom: { toString: () => "labelsFromIdsAtom" },
-  sortedLabelsAtom: { toString: () => "sortedLabelsAtom" },
-  labelsAtom: { toString: () => "labelsAtom" },
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Mock component interfaces
 interface MockButtonProps {

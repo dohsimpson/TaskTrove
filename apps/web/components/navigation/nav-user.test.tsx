@@ -16,14 +16,7 @@ vi.mock("sonner", () => ({
   },
 }))
 
-// Mock atoms
-vi.mock("@tasktrove/atoms", () => ({
-  // UI state atoms
-  openSettingsDialogAtom: vi.fn(),
-  openUserProfileDialogAtom: vi.fn(),
-  // User atom (from old lib/atoms)
-  userAtom: vi.fn(),
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Mock jotai hooks
 vi.mock("jotai", async (importOriginal) => {

@@ -30,15 +30,13 @@ import { CommentContent } from "./comment-content"
 import { TaskActionsMenu } from "./task-actions-menu"
 import { TaskDebugBadge } from "@/components/debug"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
-import {
-  updateTaskAtom,
-  addCommentAtom,
-  projectsAtom,
-  selectedTaskAtom,
-  deleteTaskAtom,
-} from "@tasktrove/atoms"
+import { updateTaskAtom, deleteTaskAtom } from "@tasktrove/atoms/core/tasks"
+import { projectsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { selectedTaskAtom } from "@tasktrove/atoms/ui/selection"
+import { addCommentAtom } from "@tasktrove/atoms/core/tasks"
 import { log } from "@/lib/utils/logger"
-import { labelsAtom, addLabelAndWaitForRealIdAtom } from "@tasktrove/atoms"
+import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { addLabelAndWaitForRealIdAtom } from "@tasktrove/atoms/core/labels"
 import { type LabelId, Task } from "@/lib/types"
 import { getDueDateTextColor, getPriorityTextColor } from "@/lib/color-utils"
 import { DEFAULT_COLOR_PALETTE } from "@tasktrove/constants"

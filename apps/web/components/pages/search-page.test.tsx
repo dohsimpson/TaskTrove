@@ -17,11 +17,7 @@ vi.mock("@/components/search/advanced-search", () => ({
   AdvancedSearch: () => <div data-testid="advanced-search" />,
 }))
 
-vi.mock("@tasktrove/atoms", () => ({
-  taskAtoms: { tasks: { toString: () => "tasksAtom" } },
-  projectAtoms: { projects: { toString: () => "projectsAtom" } },
-  labelAtoms: { labels: { toString: () => "labelsAtom" } },
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Import after mocking
 import { SearchPage } from "./search-page"

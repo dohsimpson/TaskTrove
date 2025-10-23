@@ -18,8 +18,10 @@ import {
   labelsQueryAtom,
   settingsQueryAtom,
   userQueryAtom,
-} from "#data/base/query";
+} from "@tasktrove/atoms/data/base/query";
 import type {
+  Task,
+  TaskId,
   Project,
   Label,
   UserSettings,
@@ -38,14 +40,18 @@ import {
   DEFAULT_GENERAL_SETTINGS,
   DEFAULT_USER,
 } from "@tasktrove/types/defaults";
-import { log, namedAtom } from "#utils/atom-helpers";
+import {
+  log,
+  namedAtom,
+  withErrorHandling,
+} from "@tasktrove/atoms/utils/atom-helpers";
 
 // Import mutation atoms that are referenced in write functions
-import { updateTasksMutationAtom } from "#mutations/tasks";
-import { updateProjectsMutationAtom } from "#mutations/projects";
-import { updateLabelsMutationAtom } from "#mutations/labels";
-import { updateSettingsMutationAtom } from "#mutations/settings";
-import { updateUserMutationAtom } from "#mutations/user";
+import { updateTasksMutationAtom } from "@tasktrove/atoms/mutations/tasks";
+import { updateProjectsMutationAtom } from "@tasktrove/atoms/mutations/projects";
+import { updateLabelsMutationAtom } from "@tasktrove/atoms/mutations/labels";
+import { updateSettingsMutationAtom } from "@tasktrove/atoms/mutations/settings";
+import { updateUserMutationAtom } from "@tasktrove/atoms/mutations/user";
 
 // =============================================================================
 // BASE TASKS ATOM
@@ -80,6 +86,32 @@ export const tasksAtom = namedAtom(
         throw error;
       }
     },
+  ),
+);
+
+/**
+ * Task lookup by ID atom - provides O(1) task lookup via Map
+ *
+ * Derives from tasksAtom to create an indexed view for fast lookups.
+ * Located in data layer as it's a simple transformation of the base data atom.
+ *
+ * @read Returns Map<TaskId, Task> for O(1) lookups
+ */
+export const taskByIdAtom = namedAtom(
+  "taskByIdAtom",
+  atom((get) =>
+    withErrorHandling(
+      () => {
+        const tasks = get(tasksAtom);
+        const taskMap = new Map<TaskId, Task>();
+        for (const task of tasks) {
+          taskMap.set(task.id, task);
+        }
+        return taskMap;
+      },
+      "taskByIdAtom",
+      new Map<TaskId, Task>(),
+    ),
   ),
 );
 

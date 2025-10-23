@@ -42,25 +42,7 @@ vi.mock("jotai", () => ({
   Provider: vi.fn(({ children }) => children),
 }))
 
-vi.mock("@tasktrove/atoms", () => ({
-  updateQuickAddTaskAtom: { toString: () => "updateQuickAddTaskAtom" },
-  quickAddTaskAtom: { toString: () => "quickAddTaskAtom" },
-  tasksAtom: { toString: () => "tasksAtom" },
-  updateTaskAtom: { toString: () => "updateTaskAtom" },
-  userAtom: { toString: () => "userAtom" },
-  taskAtoms: {
-    actions: {},
-    derived: {},
-  },
-  projectAtoms: {
-    actions: {},
-    derived: {},
-  },
-  labelsAtom: { toString: () => "labelsAtom" },
-  updateLabelAtom: { toString: () => "updateLabelAtom" },
-  deleteLabelAtom: { toString: () => "deleteLabelAtom" },
-  toggleTaskSelectionAtom: { toString: () => "toggleTaskSelectionAtom" },
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Mock component interfaces
 interface MockButtonProps {

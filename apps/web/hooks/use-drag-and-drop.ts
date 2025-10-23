@@ -3,7 +3,9 @@
 import { useCallback } from "react"
 import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder"
 import { useAtom } from "jotai"
-import { tasksAtom, taskAtoms, projectAtoms } from "@tasktrove/atoms"
+import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
+import { taskAtoms } from "@tasktrove/atoms/core/tasks"
+import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import { toast } from "sonner"
 import { Task, Project, createProjectId, createLabelId, TaskId } from "@/lib/types"
 

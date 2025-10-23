@@ -24,12 +24,7 @@ const mockJotai = vi.hoisted(() => ({
 
 vi.mock("jotai", () => mockJotai)
 
-// Mock the keyboard context atoms
-vi.mock("@tasktrove/atoms", () => ({
-  registerKeyboardHandlerAtom: "mockRegisterKeyboardHandlerAtom",
-  unregisterKeyboardHandlerAtom: "mockUnregisterKeyboardHandlerAtom",
-  setActiveComponentAtom: "mockSetActiveComponentAtom",
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Mock the global keyboard manager
 vi.mock("@/hooks/use-global-keyboard-manager", () => ({
@@ -54,9 +49,10 @@ describe("useKeyboardShortcuts", () => {
 
     // @ts-expect-error - Mock implementation typing
     mockJotai.useSetAtom.mockImplementation((_atom: unknown) => {
-      if (_atom === "mockRegisterKeyboardHandlerAtom") return mockRegisterHandler
-      if (_atom === "mockUnregisterKeyboardHandlerAtom") return mockUnregisterHandler
-      if (_atom === "mockSetActiveComponentAtom") return mockSetActiveComponent
+      const atom = _atom as { debugLabel?: string }
+      if (atom.debugLabel === "registerKeyboardHandlerAtom") return mockRegisterHandler
+      if (atom.debugLabel === "unregisterKeyboardHandlerAtom") return mockUnregisterHandler
+      if (atom.debugLabel === "setActiveComponentAtom") return mockSetActiveComponent
       return vi.fn()
     })
   })

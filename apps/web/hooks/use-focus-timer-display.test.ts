@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { renderHook, act } from "@/test-utils"
 import { useFocusTimerDisplay } from "./use-focus-timer-display"
 import type { Task } from "@/lib/types"
-import type { FocusTimer } from "@tasktrove/atoms"
+import type { FocusTimer } from "@tasktrove/atoms/ui/focus-timer"
 import { createTaskId } from "@/lib/types"
 import { v4 as uuidv4 } from "uuid"
 
@@ -44,15 +44,8 @@ vi.mock("jotai", () => ({
   }),
 }))
 
-// Mock @tasktrove/atoms
-vi.mock("@tasktrove/atoms", () => ({
-  activeFocusTimerAtom: { toString: () => "activeFocusTimerAtom" },
-  focusTimerStatusAtom: { toString: () => "focusTimerStatusAtom" },
-  activeFocusTaskAtom: { toString: () => "activeFocusTaskAtom" },
-  focusTimerDisplayAtom: { toString: () => "focusTimerDisplayAtom" },
-  focusTimerTickAtom: { toString: () => "focusTimerTickAtom" },
-  stopFocusTimerAtom: { toString: () => "stopFocusTimerAtom" },
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
+// and imported via test-setup.ts
 
 describe("useFocusTimerDisplay", () => {
   const taskId = createTaskId(uuidv4())

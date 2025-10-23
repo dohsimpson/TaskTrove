@@ -4,12 +4,10 @@ import { useCallback } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item"
 import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
-import {
-  updateProjectGroupAtom,
-  allGroupsAtom,
-  updateTasksAtom,
-  projectsAtom,
-} from "@tasktrove/atoms"
+import { allGroupsAtom } from "@tasktrove/atoms/core/groups"
+import { projectsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { updateProjectGroupAtom } from "@tasktrove/atoms/core/groups"
+import { updateTasksAtom } from "@tasktrove/atoms/core/tasks"
 import type { ProjectId, GroupId, TaskId, UpdateTaskRequest } from "@/lib/types"
 import { getDefaultSectionId } from "@tasktrove/types/defaults"
 import { toast } from "sonner"

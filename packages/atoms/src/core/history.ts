@@ -15,8 +15,12 @@
 import { atom } from "jotai";
 import type { WritableAtom } from "jotai";
 import { withHistory, UNDO, REDO, RESET } from "jotai-history";
-import { handleAtomError, log } from "#utils/atom-helpers";
-import { tasksAtom, projectsAtom, labelsAtom } from "#data/base/atoms";
+import { handleAtomError, log } from "@tasktrove/atoms/utils/atom-helpers";
+import {
+  tasksAtom,
+  projectsAtom,
+  labelsAtom,
+} from "@tasktrove/atoms/data/base/atoms";
 
 // =============================================================================
 // CONFIGURATION

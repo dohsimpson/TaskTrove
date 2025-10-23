@@ -3,7 +3,7 @@ import { createVersionString, DataFileSchema } from "@/lib/types"
 import { DEFAULT_UUID, DEFAULT_SECTION_NAME, DEFAULT_SECTION_COLOR } from "@tasktrove/constants"
 import { DEFAULT_USER_SETTINGS, DEFAULT_USER } from "@/lib/types"
 import { cleanupAllDanglingTasks } from "@tasktrove/types/utils"
-import packageJson from "@/package.json"
+import { getAppVersion } from "@/lib/utils/version"
 
 /**
  * Data Migration Utility for TaskTrove Data Files
@@ -710,7 +710,7 @@ const migrationFunctions: MigrationStep[] = [
  */
 export function migrateDataFile(dataFile: Json): DataFile {
   const latestAvailableMigration = getLatestAvailableMigration()
-  const target = latestAvailableMigration || createVersionString(`v${packageJson.version}`)
+  const target = latestAvailableMigration || createVersionString(`v${getAppVersion()}`)
 
   // Convert Json to a workable object type
   if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {

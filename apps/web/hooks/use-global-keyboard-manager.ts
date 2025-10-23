@@ -14,12 +14,9 @@
 
 import { useEffect, useMemo } from "react"
 import { useAtomValue } from "jotai"
-import {
-  keyboardContextAtom,
-  keyboardHandlersAtom,
-  type KeyboardContext,
-  type KeyboardHandler,
-} from "@tasktrove/atoms"
+import { keyboardContextAtom } from "@tasktrove/atoms/ui/keyboard-context"
+import { keyboardHandlersAtom } from "@tasktrove/atoms/ui/keyboard-context"
+import type { KeyboardHandler, KeyboardContext } from "@tasktrove/atoms/ui/keyboard-context"
 import { shouldIgnoreNativeKeyboardEvent } from "@/lib/utils/keyboard"
 import { log } from "@/lib/utils/logger"
 

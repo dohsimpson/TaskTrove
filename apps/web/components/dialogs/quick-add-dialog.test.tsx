@@ -198,17 +198,10 @@ vi.mock("@/lib/types", async (importOriginal) => {
   }
 })
 
-// Mock the nlpEnabledAtom with reactive approach using React state
-vi.mock("@tasktrove/atoms", async (importOriginal) => {
-  const actual = await importOriginal<Record<string, unknown>>()
-  // Create state object that will be managed by React in the component
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any
-  ;(globalThis as any).nlpEnabledState = { value: true, listeners: [] as (() => void)[] }
-  return {
-    ...actual,
-    nlpEnabledAtom: { toString: () => "nlpEnabledAtom" },
-  }
-})
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
+// Special handling for nlpEnabledAtom reactive state
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-explicit-any
+;(globalThis as any).nlpEnabledState = { value: true, listeners: [] as (() => void)[] }
 
 // Mock date-fns
 vi.mock("date-fns", () => ({

@@ -1,13 +1,12 @@
+// Unmock atoms - this test needs real atoms for store API
+vi.unmock("@tasktrove/atoms/ui/views")
+
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@/test-utils"
 import { Provider, createStore } from "jotai"
-import {
-  currentViewAtom,
-  currentViewStateAtom,
-  updateViewStateAtom,
-  viewStatesAtom,
-} from "@tasktrove/atoms"
+import { currentViewAtom, currentViewStateAtom, viewStatesAtom } from "@tasktrove/atoms/ui/views"
+import { updateViewStateAtom } from "@tasktrove/atoms/ui/views"
 import type { ViewId } from "@/lib/types"
 import { mockUseToast, mockNextThemes } from "@/test-utils"
 

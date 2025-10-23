@@ -5,7 +5,7 @@ import { useAtomValue } from "jotai"
 import { Badge } from "@/components/ui/badge"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { SectionContextMenu } from "./section-context-menu"
-import { editingSectionIdAtom } from "@tasktrove/atoms"
+import { editingSectionIdAtom } from "@tasktrove/atoms/ui/navigation"
 import { createGroupId } from "@/lib/types"
 import { cn } from "@/lib/utils"
 

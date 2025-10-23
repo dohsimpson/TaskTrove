@@ -20,9 +20,8 @@ import {
   registerKeyboardHandlerAtom,
   unregisterKeyboardHandlerAtom,
   setActiveComponentAtom,
-  type KeyboardHandler,
-  type KeyboardHandlerContext,
-} from "@tasktrove/atoms"
+} from "@tasktrove/atoms/ui/keyboard-context"
+import type { KeyboardHandler, KeyboardHandlerContext } from "@tasktrove/atoms/ui/keyboard-context"
 import { matchesShortcut } from "@/hooks/use-global-keyboard-manager"
 
 interface ShortcutOptions extends Omit<KeyboardHandlerContext, "priority"> {

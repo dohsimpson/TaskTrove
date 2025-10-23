@@ -73,7 +73,6 @@
     "@tasktrove/constants": "workspace:*",
     "@tasktrove/dom-utils": "workspace:*",
     "@tasktrove/i18n": "workspace:^",
-    "@tasktrove/parser": "workspace:*",
     "@tasktrove/types": "workspace:*",
     "@tasktrove/utils": "workspace:*",
     "@uidotdev/usehooks": "catalog:",

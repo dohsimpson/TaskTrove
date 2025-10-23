@@ -4,6 +4,9 @@ import { afterEach, vi } from "vitest"
 import i18next from "i18next"
 import { initReactI18next } from "react-i18next"
 
+// Import centralized atom mocks
+import "./test-utils/atoms-mocks"
+
 // Initialize i18next before any tests run
 // This mimics what the old @/lib/i18n/client.ts did at module load time
 // The LanguageProvider will skip initialization if already initialized

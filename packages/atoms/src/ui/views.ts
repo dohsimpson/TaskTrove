@@ -17,10 +17,17 @@ import {
   DEFAULT_ACTIVE_FILTERS,
   STANDARD_VIEW_IDS,
 } from "@tasktrove/constants";
-import { createAtomWithStorage, log, namedAtom } from "#utils/atom-helpers";
-import { showTaskPanelAtom } from "#ui/dialogs";
-import { selectedTaskIdAtom, setSelectedTaskIdAtom } from "#ui/selection";
-import { tasksAtom } from "#data/base/atoms";
+import {
+  createAtomWithStorage,
+  log,
+  namedAtom,
+} from "@tasktrove/atoms/utils/atom-helpers";
+import { showTaskPanelAtom } from "@tasktrove/atoms/ui/dialogs";
+import {
+  selectedTaskIdAtom,
+  setSelectedTaskIdAtom,
+} from "@tasktrove/atoms/ui/selection";
+import { tasksAtom } from "@tasktrove/atoms/data/base/atoms";
 
 /**
  * UI view state atoms for TaskTrove's Jotai migration

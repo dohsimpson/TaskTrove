@@ -11,12 +11,18 @@
 import { atom } from "jotai";
 import { atomFamily } from "jotai/utils";
 import type { ProjectId, LabelId, ViewId } from "@tasktrove/types";
-import { projectsAtom, labelsAtom } from "#data/base/atoms";
-import { activeTasksAtom, completedTasksAtom } from "#data/tasks/filters";
-import { viewStatesAtom, getViewStateOrDefault } from "#ui/views";
-import { uiFilteredTasksForViewAtom } from "#ui/filtered-tasks";
-import { applyViewStateFilters } from "#utils/view-filters";
-import { handleAtomError } from "#utils/atom-helpers";
+import { projectsAtom, labelsAtom } from "@tasktrove/atoms/data/base/atoms";
+import {
+  activeTasksAtom,
+  completedTasksAtom,
+} from "@tasktrove/atoms/data/tasks/filters";
+import {
+  viewStatesAtom,
+  getViewStateOrDefault,
+} from "@tasktrove/atoms/ui/views";
+import { uiFilteredTasksForViewAtom } from "@tasktrove/atoms/ui/filtered-tasks";
+import { applyViewStateFilters } from "@tasktrove/atoms/utils/view-filters";
+import { handleAtomError } from "@tasktrove/atoms/utils/atom-helpers";
 
 /**
  * Get task count for any view

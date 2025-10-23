@@ -85,27 +85,7 @@ vi.mock("jotai", () => ({
   Provider: vi.fn(({ children }) => children),
 }))
 
-// Mock all atom modules
-// Consolidated atoms mock
-vi.mock("@tasktrove/atoms", () => ({
-  // Page header specific atoms
-  dynamicPageInfoAtom: { debugLabel: "dynamicPageInfoAtom" },
-  currentRouteContextAtom: { debugLabel: "currentRouteContextAtom" },
-  openQuickAddAtom: { debugLabel: "openQuickAddAtom" },
-  openSearchAtom: { debugLabel: "openSearchAtom" },
-  openProjectDialogAtom: { debugLabel: "openProjectDialogAtom" },
-  openSettingsDialogAtom: { debugLabel: "openSettingsDialogAtom" },
-
-  // View state atoms
-  currentViewStateAtom: { debugLabel: "currentViewStateAtom" },
-  setViewModeAtom: { debugLabel: "setViewModeAtom" },
-  setSortingAtom: { debugLabel: "setSortingAtom" },
-  setSearchQueryAtom: { debugLabel: "setSearchQueryAtom" },
-  setShowCompletedAtom: { debugLabel: "setShowCompletedAtom" },
-  setCompactViewAtom: { debugLabel: "setCompactViewAtom" },
-  setViewOptionsAtom: { debugLabel: "setViewOptionsAtom" },
-  tasksAtom: { debugLabel: "tasksAtom" },
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Mock UI components with minimal implementations
 interface MockButtonProps {

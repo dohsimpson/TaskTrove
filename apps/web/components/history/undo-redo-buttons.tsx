@@ -16,7 +16,7 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { Undo2, Redo2 } from "lucide-react"
 import { Button } from "../ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
-import { historyStateAtom, undoAtom, redoAtom } from "@tasktrove/atoms"
+import { historyStateAtom, undoAtom, redoAtom } from "@tasktrove/atoms/core/history"
 
 /**
  * Individual Undo Button Component

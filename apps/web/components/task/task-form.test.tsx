@@ -240,21 +240,7 @@ vi.mock("@/lib/utils", () => ({
   cn: (...args: (string | undefined | null | boolean)[]) => args.filter(Boolean).join(" "),
 }))
 
-// Mock task atoms
-vi.mock("@tasktrove/atoms", () => ({
-  taskAtoms: {
-    actions: {
-      addTask: { toString: () => "addTaskAtom" },
-      updateTask: { toString: () => "updateTaskAtom" },
-    },
-  },
-  projectAtoms: {
-    projects: { toString: () => "projectsAtom" },
-  },
-  labelAtoms: {
-    labels: { toString: () => "labelsAtom" },
-  },
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Mock icons
 vi.mock("lucide-react", () => ({

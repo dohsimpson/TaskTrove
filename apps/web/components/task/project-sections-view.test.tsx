@@ -57,43 +57,7 @@ vi.mock("@/lib/atoms/core/base", () => ({
   updateOrderingMutationAtom: { debugLabel: "updateOrderingMutationAtom" },
 }))
 
-// Removed duplicate @tasktrove/atoms mock - consolidated into single comprehensive mock below
-
-// Disabled - consolidated into first mock above
-// vi.mock("@tasktrove/atoms", () => ({
-//   viewStatesAtom: { debugLabel: "viewStatesAtom" },
-//   currentViewStateAtom: { debugLabel: "currentViewStateAtom" },
-//   setViewOptionsAtom: { debugLabel: "setViewOptionsAtom" },
-//   setSearchQueryAtom: { debugLabel: "setSearchQueryAtom" },
-// }))
-
-// Disabled - consolidated into first mock above
-// vi.mock("@tasktrove/atoms", () => ({
-//   orderedTasksByProjectAtom: { debugLabel: "orderedTasksByProjectAtom" },
-//   reorderTaskInViewAtom: { debugLabel: "reorderTaskInViewAtom" },
-//   moveTaskBetweenSectionsAtom: { debugLabel: "moveTaskBetweenSectionsAtom" },
-//   taskAtoms: {
-//     derived: {
-//       orderedTasksBySection: { debugLabel: "orderedTasksBySection" },
-//     },
-//   },
-// }))
-
-// Mock view state utilities to prevent atom loading issues
-// Disabled - consolidated into first mock above
-// vi.mock("@tasktrove/atoms", () => ({
-//   applyViewStateFilters: vi.fn((tasks) => tasks),
-//   sortTasksByViewState: vi.fn((tasks) => tasks),
-// }))
-
-// Disabled - consolidated into first mock above
-// vi.mock("@tasktrove/atoms", () => ({
-//   currentRouteContextAtom: { debugLabel: "currentRouteContextAtom" },
-//   editingSectionIdAtom: { debugLabel: "editingSectionIdAtom" },
-//   stopEditingSectionAtom: { debugLabel: "stopEditingSectionAtom" },
-//   collapsedSectionsAtom: { debugLabel: "collapsedSectionsAtom" },
-//   toggleSectionCollapseAtom: { debugLabel: "toggleSectionCollapseAtom" },
-// }))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 vi.mock("@/hooks/use-add-task-to-section", () => ({
   useAddTaskToSection: vi.fn(() => vi.fn()),
@@ -186,99 +150,7 @@ vi.mock("@/hooks/use-drag-and-drop", () => ({
   }),
 }))
 
-// Mock all the atoms used by component - moved to @tasktrove/atoms to avoid circular dependency
-vi.mock("@tasktrove/atoms", () => {
-  return {
-    projectAtoms: {
-      actions: {
-        addSection: { debugLabel: "addSection" },
-        renameSection: { debugLabel: "renameSection" },
-        removeSection: { debugLabel: "removeSection" },
-        moveSection: { debugLabel: "moveSection" },
-      },
-      derived: {
-        projectById: { debugLabel: "projectById" },
-      },
-    },
-    projectActions: {
-      addSection: { debugLabel: "addSection" },
-      renameSection: { debugLabel: "renameSection" },
-      removeSection: { debugLabel: "removeSection" },
-      moveSection: { debugLabel: "moveSection" },
-    },
-    projectsAtom: { debugLabel: "projectsAtom" },
-    taskAtoms: {
-      actions: {
-        updateTask: "mockUpdateTask",
-        toggleTask: "mockToggleTask",
-        addTask: "mockAddTask",
-        deleteTask: "mockDeleteTask",
-      },
-      derived: {
-        taskCounts: "mockTaskCounts",
-        searchResults: "mockSearchResults",
-        filteredTasks: "mockFilteredTasks",
-        groupedTasks: "mockGroupedTasks",
-        visibleTasks: "mockVisibleTasks",
-        tasksByProject: "mockTasksByProject",
-        orderedTasksBySection: { debugLabel: "orderedTasksBySection" },
-        taskById: { debugLabel: "taskById" },
-      },
-    },
-    tasksAtom: { debugLabel: "tasksAtom" },
-    taskCountsAtom: { debugLabel: "taskCountsAtom" },
-    updateLabelAtom: { debugLabel: "updateLabelAtom" },
-    deleteLabelAtom: { debugLabel: "deleteLabelAtom" },
-    toggleTaskSelectionAtom: { debugLabel: "toggleTaskSelectionAtom" },
-    currentRouteContextAtom: { debugLabel: "currentRouteContextAtom" },
-    editingSectionIdAtom: { debugLabel: "editingSectionIdAtom" },
-    stopEditingSectionAtom: { debugLabel: "stopEditingSectionAtom" },
-    startEditingSectionAtom: { debugLabel: "startEditingSectionAtom" },
-    openSectionDialogAtom: { debugLabel: "openSectionDialogAtom" },
-    applyViewStateFilters: vi.fn((tasks) => tasks),
-    sortTasksByViewState: vi.fn((tasks) => tasks),
-    setSearchQueryAtom: { debugLabel: "setSearchQueryAtom" },
-    currentViewStateAtom: { debugLabel: "currentViewStateAtom" },
-    filteredTasksAtom: { debugLabel: "filteredTasksAtom" },
-    selectedTaskAtom: { debugLabel: "selectedTaskAtom" },
-    setViewOptionsAtom: { debugLabel: "setViewOptionsAtom" },
-    collapsedSectionsAtom: { debugLabel: "collapsedSectionsAtom" },
-    toggleSectionCollapseAtom: { debugLabel: "toggleSectionCollapseAtom" },
-    labelsAtom: { debugLabel: "labelsAtom" },
-    sidePanelWidthAtom: { debugLabel: "sidePanelWidthAtom" },
-    updateGlobalViewOptionsAtom: { debugLabel: "updateGlobalViewOptionsAtom" },
-    updateProjectsAtom: { debugLabel: "updateProjectsAtom" },
-    updateTasksAtom: { debugLabel: "updateTasksAtom" },
-    selectedTasksAtom: { debugLabel: "selectedTasksAtom" },
-    multiSelectDraggingAtom: { debugLabel: "multiSelectDraggingAtom" },
-    openQuickAddAtom: { debugLabel: "openQuickAddAtom" },
-    allGroupsAtom: { debugLabel: "allGroupsAtom" },
-  }
-})
-
-// Disabled - consolidated into first mock above
-// vi.mock("@tasktrove/atoms", () => ({
-//   currentRouteContextAtom: "mockCurrentRouteContextAtom",
-//   editingSectionIdAtom: "mockEditingSectionIdAtom",
-//   stopEditingSectionAtom: "mockStopEditingSectionAtom",
-//   startEditingSectionAtom: "mockStartEditingSectionAtom",
-//   openSectionDialogAtom: "mockOpenSectionDialogAtom",
-// }))
-
-// Disabled - consolidated into first mock above
-// vi.mock("@tasktrove/atoms", () => ({
-//   orderedTasksByProjectAtom: "mockOrderedTasksByProjectAtom",
-//   reorderTaskInViewAtom: "mockReorderTaskInViewAtom",
-//   moveTaskBetweenSectionsAtom: "mockMoveTaskBetweenSectionsAtom",
-//   applyViewStateFilters: vi.fn((tasks) => tasks),
-//   sortTasksByViewState: vi.fn((tasks) => tasks),
-//   taskAtoms: {
-//     derived: {
-//       orderedTasksBySection: vi.fn(() => vi.fn(() => [])),
-//       taskById: vi.fn(() => new Map()),
-//     },
-//   },
-// }))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 vi.mock("@/lib/utils", () => ({
   cn: vi.fn((...classes) => classes.filter(Boolean).join(" ")),
@@ -808,6 +680,19 @@ describe("ProjectSectionsView", () => {
   })
 
   it("renders project sections with tasks", () => {
+    // Override to show completed tasks (TEST_TASK_ID_2 is completed)
+    mockJotai.useAtomValue.mockImplementation(
+      createMockUseAtomValue({
+        currentViewStateAtom: {
+          showSidePanel: false,
+          compactView: false,
+          viewMode: "list",
+          sortBy: "dueDate",
+          showCompleted: true,
+        },
+      }),
+    )
+
     render(<ProjectSectionsView droppableId="test-droppable" />)
 
     // Check that sections are rendered
@@ -822,6 +707,19 @@ describe("ProjectSectionsView", () => {
   })
 
   it("shows task counts for each section", () => {
+    // Override to show completed tasks (TEST_TASK_ID_2 is completed)
+    mockJotai.useAtomValue.mockImplementation(
+      createMockUseAtomValue({
+        currentViewStateAtom: {
+          showSidePanel: false,
+          compactView: false,
+          viewMode: "list",
+          sortBy: "dueDate",
+          showCompleted: true,
+        },
+      }),
+    )
+
     render(<ProjectSectionsView droppableId="test-droppable" />)
 
     const badges = screen.getAllByTestId("badge")
@@ -953,6 +851,19 @@ describe("ProjectSectionsView", () => {
   })
 
   it("renders droppable areas for drag and drop", () => {
+    // Override to show completed tasks (TEST_TASK_ID_2 is completed)
+    mockJotai.useAtomValue.mockImplementation(
+      createMockUseAtomValue({
+        currentViewStateAtom: {
+          showSidePanel: false,
+          compactView: false,
+          viewMode: "list",
+          sortBy: "dueDate",
+          showCompleted: true,
+        },
+      }),
+    )
+
     render(<ProjectSectionsView droppableId="test-droppable" />)
 
     // Check that droppable areas are rendered
@@ -1156,6 +1067,54 @@ describe("ProjectSectionsView", () => {
         `test-droppable-section-${TEST_GROUP_ID_1}`,
       )
       expect(planningSectionDroppables.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe("layout and centering", () => {
+    it("ensures toolbars are inside centered container with max-width in flat mode", () => {
+      render(<ProjectSectionsView droppableId="test-droppable" supportsSections={false} />)
+
+      // Find the SelectionToolbar
+      const selectionToolbar = screen.getByTestId("selection-toolbar")
+      expect(selectionToolbar).toBeInTheDocument()
+
+      // Find the closest ancestor with max-w-screen-2xl class
+      const centeredContainer = selectionToolbar.closest(".max-w-screen-2xl")
+      expect(centeredContainer).toBeInTheDocument()
+
+      // Verify that the toolbar is inside a centered container (with flex justify-center)
+      const flexCenterContainer = centeredContainer?.parentElement
+      expect(flexCenterContainer).toHaveClass("flex", "justify-center")
+    })
+
+    it("ensures toolbars are inside centered container with max-width in sectioned mode", () => {
+      render(<ProjectSectionsView droppableId="test-droppable" supportsSections={true} />)
+
+      // Find the SelectionToolbar
+      const selectionToolbar = screen.getByTestId("selection-toolbar")
+      expect(selectionToolbar).toBeInTheDocument()
+
+      // Find the closest ancestor with max-w-screen-2xl class
+      const centeredContainer = selectionToolbar.closest(".max-w-screen-2xl")
+      expect(centeredContainer).toBeInTheDocument()
+
+      // Verify that the toolbar is inside a centered container (with flex justify-center)
+      const flexCenterContainer = centeredContainer?.parentElement
+      expect(flexCenterContainer).toHaveClass("flex", "justify-center")
+    })
+
+    it("ensures both toolbars are in the same centered container as task content", () => {
+      render(<ProjectSectionsView droppableId="test-droppable" supportsSections={false} />)
+
+      // Find both toolbars
+      const selectionToolbar = screen.getByTestId("selection-toolbar")
+      const filterControls = screen.getByTestId("task-filter-controls")
+
+      // Both should be in the same max-w-screen-2xl container
+      const selectionToolbarContainer = selectionToolbar.closest(".max-w-screen-2xl")
+      const filterControlsContainer = filterControls.closest(".max-w-screen-2xl")
+
+      expect(selectionToolbarContainer).toBe(filterControlsContainer)
     })
   })
 

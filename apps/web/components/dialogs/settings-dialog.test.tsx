@@ -26,11 +26,7 @@ vi.mock("./settings-forms/general-form", () => ({
   GeneralForm: () => <div data-testid="general-form">General Form</div>,
 }))
 
-// Mock atoms
-vi.mock("@tasktrove/atoms", () => ({
-  showSettingsDialogAtom: {},
-  closeSettingsDialogAtom: {},
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 describe("SettingsDialog", () => {
   const mockCloseDialog = vi.fn()

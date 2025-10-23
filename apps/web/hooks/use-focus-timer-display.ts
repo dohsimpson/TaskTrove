@@ -2,14 +2,13 @@
 
 import { useAtomValue, useSetAtom } from "jotai"
 import { useEffect } from "react"
+import { focusTimerTickAtom, stopFocusTimerAtom } from "@tasktrove/atoms/ui/focus-timer"
 import {
   activeFocusTimerAtom,
   activeFocusTaskAtom,
   focusTimerStatusAtom,
   focusTimerDisplayAtom,
-  focusTimerTickAtom,
-  stopFocusTimerAtom,
-} from "@tasktrove/atoms"
+} from "@tasktrove/atoms/ui/focus-timer"
 
 export function useFocusTimerDisplay() {
   const activeTimer = useAtomValue(activeFocusTimerAtom)

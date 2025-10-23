@@ -2,8 +2,9 @@
 
 import { useAtom, useSetAtom } from "jotai"
 import { EntityContextMenu } from "@/components/ui/custom/entity-context-menu"
-import { labelsAtom, deleteLabelAtom, updateLabelAtom } from "@tasktrove/atoms"
-import { startEditingLabelAtom, openLabelDialogAtom } from "@tasktrove/atoms"
+import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { deleteLabelAtom, updateLabelAtom } from "@tasktrove/atoms/core/labels"
+import { startEditingLabelAtom, openLabelDialogAtom } from "@tasktrove/atoms/ui/navigation"
 import type { Label, LabelId } from "@/lib/types"
 
 interface LabelContextMenuProps {

@@ -7,12 +7,12 @@ import { Coffee, Play, Pause, Square } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ContentPopover } from "@/components/ui/content-popover"
 import {
-  isTaskTimerActiveAtom,
   startFocusTimerAtom,
   pauseFocusTimerAtom,
   stopFocusTimerAtom,
-  tasksAtom,
-} from "@tasktrove/atoms"
+} from "@tasktrove/atoms/ui/focus-timer"
+import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
+import { isTaskTimerActiveAtom } from "@tasktrove/atoms/ui/focus-timer"
 import { useFocusTimerDisplay } from "@/hooks/use-focus-timer-display"
 import type { TaskId } from "@/lib/types"
 

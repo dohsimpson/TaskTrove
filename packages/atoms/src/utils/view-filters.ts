@@ -6,7 +6,10 @@
  */
 
 import type { Task, ViewState, ViewId } from "@tasktrove/types";
-import { filterTasks, viewStateToFilterConfig } from "#utils/filters";
+import {
+  filterTasks,
+  viewStateToFilterConfig,
+} from "@tasktrove/atoms/utils/filters";
 
 /**
  * Apply all view state filters to a list of tasks

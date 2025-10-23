@@ -41,31 +41,30 @@ import { ProjectPopover } from "./project-popover"
 import { TaskActionsMenu } from "./task-actions-menu"
 import { AssigneeManagementPopover } from "@/components/task/assignee-management-popover"
 import { AssigneeBadges } from "@/components/task/assignee-badges"
+import { deleteTaskAtom, updateTaskAtom, toggleTaskAtom } from "@tasktrove/atoms/core/tasks"
+import { tasksAtom, labelsAtom, projectsAtom } from "@tasktrove/atoms/data/base/atoms"
 import {
-  toggleTaskAtom,
-  deleteTaskAtom,
-  updateTaskAtom,
-  addCommentAtom,
-  toggleTaskPanelWithViewStateAtom,
-  tasksAtom,
-  isTaskTimerActiveAtom,
-  focusTimerStatusAtom,
-  activeFocusTimerAtom,
   startFocusTimerAtom,
   pauseFocusTimerAtom,
   stopFocusTimerAtom,
-  // Use centralized selection atoms
-  selectedTasksAtom,
+  isTaskTimerActiveAtom,
+} from "@tasktrove/atoms/ui/focus-timer"
+import {
   lastSelectedTaskAtom,
   selectRangeAtom,
   toggleTaskSelectionAtom,
-  labelsAtom,
-  addLabelAndWaitForRealIdAtom,
-  labelsFromIdsAtom,
-  projectsAtom,
-} from "@tasktrove/atoms"
-import { quickAddTaskAtom, updateQuickAddTaskAtom, showQuickAddAtom } from "@tasktrove/atoms"
-import { selectedTaskIdAtom } from "@tasktrove/atoms"
+  selectedTasksAtom,
+} from "@tasktrove/atoms/ui/selection"
+import { addCommentAtom } from "@tasktrove/atoms/core/tasks"
+import { focusTimerStatusAtom, activeFocusTimerAtom } from "@tasktrove/atoms/ui/focus-timer"
+import { addLabelAndWaitForRealIdAtom, labelsFromIdsAtom } from "@tasktrove/atoms/core/labels"
+import {
+  quickAddTaskAtom,
+  updateQuickAddTaskAtom,
+  showQuickAddAtom,
+} from "@tasktrove/atoms/ui/dialogs"
+import { selectedTaskIdAtom } from "@tasktrove/atoms/ui/selection"
+import { toggleTaskPanelWithViewStateAtom } from "@tasktrove/atoms/ui/views"
 import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } from "@/lib/types"
 import { INBOX_PROJECT_ID, createTaskId } from "@/lib/types"
 import { TimeEstimationPicker } from "../ui/custom/time-estimation-picker"

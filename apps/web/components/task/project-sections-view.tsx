@@ -10,18 +10,18 @@ import { AddSectionDivider } from "./add-section-divider"
 import { SelectionToolbar } from "./selection-toolbar"
 import { ProjectViewToolbar } from "./project-view-toolbar"
 import { Section } from "./section"
+import { projectAtoms } from "@tasktrove/atoms/core/projects"
+import { projectsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { filteredTasksAtom } from "@tasktrove/atoms/ui/filtered-tasks"
 import {
-  projectAtoms,
-  projectsAtom,
-  filteredTasksAtom,
   currentViewStateAtom,
-  selectedTaskAtom,
   setViewOptionsAtom,
-  sidePanelWidthAtom,
   updateGlobalViewOptionsAtom,
-} from "@tasktrove/atoms"
+} from "@tasktrove/atoms/ui/views"
+import { selectedTaskAtom } from "@tasktrove/atoms/ui/selection"
+import { sidePanelWidthAtom } from "@tasktrove/atoms/ui/views"
 import { SIDE_PANEL_WIDTH_MIN, SIDE_PANEL_WIDTH_MAX } from "@tasktrove/constants"
-import { currentRouteContextAtom } from "@tasktrove/atoms"
+import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
 import type { Task, Project, ProjectSection } from "@/lib/types"
 import { createGroupId } from "@/lib/types"
 import { Button } from "@/components/ui/button"
@@ -190,15 +190,15 @@ export function ProjectSectionsView({
     if (!supportsSections) {
       return (
         <div className="px-4 py-3">
-          {/* Selection Toolbar - Full Width */}
-          <SelectionToolbar />
-
-          {/* Filter Controls, Search Input and Add Task Button - Full Width */}
-          <ProjectViewToolbar className="mb-3" />
-
-          {/* Centered Task Content */}
+          {/* Centered Content Container */}
           <div className="flex justify-center">
             <div className="w-full max-w-screen-2xl">
+              {/* Selection Toolbar */}
+              <SelectionToolbar />
+
+              {/* Filter Controls, Search Input and Add Task Button */}
+              <ProjectViewToolbar className="mb-3" />
+
               {/* Flat Task List without sections */}
               <VirtualizedTaskList
                 tasks={tasks}
@@ -215,18 +215,17 @@ export function ProjectSectionsView({
     // Sectioned view
     return (
       <div className="px-4 py-3">
-        {/* Selection Toolbar - Full Width */}
-        <SelectionToolbar />
-
-        {/* Filter Controls, Search Input and Add Task Button - Full Width */}
-        <ProjectViewToolbar className="mb-3" />
-
-        {/* Debug Badge */}
-        {project && <ProjectSectionDebugBadge project={project} />}
-
-        {/* Centered Task Content */}
+        {/* Centered Content Container */}
         <div className="flex justify-center">
           <div className="w-full max-w-screen-2xl">
+            {/* Selection Toolbar */}
+            <SelectionToolbar />
+
+            {/* Filter Controls, Search Input and Add Task Button */}
+            <ProjectViewToolbar className="mb-3" />
+
+            {/* Debug Badge */}
+            {project && <ProjectSectionDebugBadge project={project} />}
             {sectionsToShow.map((section, index) => (
               <div key={section.id}>
                 {/* Show add section input if this is the position being added */}

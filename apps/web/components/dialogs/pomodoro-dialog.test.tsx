@@ -34,12 +34,7 @@ let mockDialogOpen = true
 let mockSelectedTask: Task | null = null
 const mockClosePomodoro = vi.fn()
 
-// Mock atoms for testing
-vi.mock("@tasktrove/atoms", () => ({
-  showPomodoroAtom: "showPomodoroAtom",
-  selectedTaskAtom: "selectedTaskAtom",
-  closePomodoroAtom: "closePomodoroAtom",
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Mock jotai with controlled return values
 vi.mock("jotai", async (importOriginal) => {

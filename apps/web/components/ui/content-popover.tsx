@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react"
 import { useAtomValue } from "jotai"
 import { useDebounce } from "@uidotdev/usehooks"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { settingsAtom } from "@tasktrove/atoms"
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { cn } from "@/lib/utils"
 
 interface ContentPopoverProps {

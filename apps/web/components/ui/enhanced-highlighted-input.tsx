@@ -4,9 +4,9 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from "react"
 import { useAtomValue } from "jotai"
 import { cn } from "@/lib/utils"
 import { generateHighlightingPatterns } from "@/lib/utils/shared-patterns"
-import { nlpEnabledAtom } from "@tasktrove/atoms"
-import { labelsAtom } from "@tasktrove/atoms"
-import { visibleProjectsAtom } from "@tasktrove/atoms"
+import { nlpEnabledAtom } from "@tasktrove/atoms/ui/dialogs"
+import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { visibleProjectsAtom } from "@tasktrove/atoms/core/projects"
 
 interface ParsedToken {
   type:

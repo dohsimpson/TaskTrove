@@ -1,7 +1,7 @@
 import { useAtomValue } from "jotai"
 import { Badge } from "@/components/ui/badge"
 import type { Project } from "@tasktrove/types"
-import { tasksAtom } from "@tasktrove/atoms"
+import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
 
 interface ProjectSectionDebugBadgeProps {
   project: Project

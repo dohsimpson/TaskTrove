@@ -13,11 +13,8 @@
  */
 
 import { atom } from "jotai"
-import {
-  keyboardHandlersAtom,
-  type KeyboardHandler,
-  type KeyboardHandlerContext,
-} from "@tasktrove/atoms"
+import { keyboardHandlersAtom } from "@tasktrove/atoms/ui/keyboard-context"
+import type { KeyboardHandler, KeyboardHandlerContext } from "@tasktrove/atoms/ui/keyboard-context"
 
 /**
  * Interface for representing a shortcut conflict

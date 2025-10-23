@@ -29,6 +29,7 @@ export const config = [
         projectService: {
           maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 30,
           allowDefaultProject: [
+            "*.pro.ts",
             "src/*.pro.ts",
             "src/*.pro.tsx",
             "src/*.pro.test.ts",

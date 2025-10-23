@@ -1,5 +1,6 @@
 import { useSetAtom } from "jotai"
-import { openQuickAddAtom, updateQuickAddTaskAtom, resetQuickAddTaskAtom } from "@tasktrove/atoms"
+import { openQuickAddAtom } from "@tasktrove/atoms/ui/navigation"
+import { updateQuickAddTaskAtom, resetQuickAddTaskAtom } from "@tasktrove/atoms/ui/dialogs"
 import { ProjectIdSchema, createGroupId, GroupIdSchema } from "@/lib/types"
 import type { ProjectId, GroupId } from "@/lib/types"
 

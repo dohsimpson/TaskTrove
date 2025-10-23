@@ -42,15 +42,10 @@ vi.mock("./task-search-input", () => ({
   ),
 }))
 
-// Mock atoms
-vi.mock("@tasktrove/atoms", () => ({
-  openQuickAddAtom: "mockOpenQuickAddAtom",
-  openSectionDialogAtom: "mockOpenSectionDialogAtom",
-  currentRouteContextAtom: "mockCurrentRouteContextAtom",
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 vi.mock("@/lib/atoms", () => ({
-  // Empty mock - openQuickAddAtom moved to @tasktrove/atoms
+  // Empty - atoms moved to @tasktrove/atoms
 }))
 
 // Mock UI components
@@ -113,13 +108,15 @@ describe("ProjectViewToolbar", () => {
     vi.mocked(isValidProjectId).mockReturnValue(false)
 
     mockJotai.useSetAtom.mockImplementation((atom) => {
-      if (atom === "mockOpenQuickAddAtom") return mockOpenQuickAdd
-      if (atom === "mockOpenSectionDialogAtom") return mockOpenSectionDialog
+      const label = String(atom?.debugLabel ?? "")
+      if (label === "openQuickAddAtom") return mockOpenQuickAdd
+      if (label === "openSectionDialogAtom") return mockOpenSectionDialog
       return vi.fn()
     })
 
     mockJotai.useAtomValue.mockImplementation((atom) => {
-      if (atom === "mockCurrentRouteContextAtom") return mockRouteContext
+      const label = String(atom?.debugLabel ?? "")
+      if (label === "currentRouteContextAtom") return mockRouteContext
       return undefined
     })
   })

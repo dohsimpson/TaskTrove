@@ -3,12 +3,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@/test-utils"
 import type { Task, VoiceCommand } from "@/lib/types"
 import { TEST_VOICE_COMMAND_ID_1, TEST_TASK_ID_3 } from "@tasktrove/types/test-constants"
-import { createMockTask } from "@tasktrove/atoms"
+import { createMockTask } from "@tasktrove/atoms/utils/test-helpers"
 
-// Mock the pathnameAtom
-vi.mock("@tasktrove/atoms", () => ({
-  pathnameAtom: { read: vi.fn().mockReturnValue("/today") },
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Mock the imported page components
 vi.mock("@/components/layout/main-content", () => ({

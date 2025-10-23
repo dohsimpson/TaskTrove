@@ -22,8 +22,8 @@ import {
 import { cn } from "@/lib/utils"
 import type { Task } from "@/lib/types"
 import { useSetAtom } from "jotai"
-import { openQuickAddWithCopyAtom } from "@tasktrove/atoms"
-// import { openPomodoroAtom } from "@tasktrove/atoms" // Commented out since pomodoro timer is disabled
+import { openQuickAddWithCopyAtom } from "@tasktrove/atoms/ui/dialogs"
+// import { openPomodoroAtom } "@tasktrove/atoms" // Commented out since pomodoro timer is disabled
 
 interface TaskActionsMenuProps {
   task: Task

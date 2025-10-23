@@ -5,13 +5,15 @@ import type { UserConfig } from "vitest/config";
 import { baseConfig } from "./base.ts";
 
 /**
- * Vitest configuration for jsdom environment.
+ * Vitest configuration for jsdom environment (base tests only).
  * Use this for testing React components and browser code.
+ * Excludes Pro test files (*.pro.test.ts)
  */
 export default defineConfig(
   mergeConfig(baseConfig, {
     test: {
       environment: "jsdom",
+      exclude: [...(baseConfig.test?.exclude || []), "**/*.pro.test.ts"],
     },
   }),
 );

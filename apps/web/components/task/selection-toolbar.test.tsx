@@ -16,23 +16,25 @@ let mockUpdateTask: Mock
 
 // Mock Jotai
 vi.mock("jotai", () => ({
-  useSetAtom: vi.fn((atom: { toString: () => string }) => {
-    if (atom.toString().includes("clearSelectedTasks")) return mockClearSelection
-    if (atom.toString().includes("tasksAtom")) return mockUpdateTasks
-    if (atom.toString().includes("deleteTasksAtom")) return mockDeleteTasks
-    if (atom.toString().includes("updateTask")) return mockUpdateTask
+  useSetAtom: vi.fn((atom) => {
+    const label = String(atom?.debugLabel ?? "")
+    if (label.includes("clearSelectedTasks")) return mockClearSelection
+    if (label.includes("tasksAtom")) return mockUpdateTasks
+    if (label.includes("deleteTasksAtom")) return mockDeleteTasks
+    if (label.includes("updateTask")) return mockUpdateTask
     return vi.fn()
   }),
-  useAtomValue: vi.fn((atom: { toString: () => string }) => {
-    if (atom.toString().includes("selectedTasks")) return mockSelectedTaskIds
-    if (atom.toString().includes("tasksAtom")) return mockAllTasks
-    if (atom.toString().includes("userAtom"))
+  useAtomValue: vi.fn((atom) => {
+    const label = String(atom?.debugLabel ?? "")
+    if (label.includes("selectedTasks")) return mockSelectedTaskIds
+    if (label.includes("tasksAtom")) return mockAllTasks
+    if (label.includes("userAtom"))
       return {
         id: createUserId(DEFAULT_UUID),
         username: "testuser",
         password: "testpassword",
       }
-    if (atom.toString().includes("settingsAtom"))
+    if (label.includes("settingsAtom"))
       return {
         general: { popoverHoverOpen: false },
         notifications: {},
@@ -40,39 +42,17 @@ vi.mock("jotai", () => ({
       }
     return null
   }),
-  useAtom: vi.fn((atom: { toString: () => string }) => {
+  useAtom: vi.fn((atom) => {
+    const label = String(atom?.debugLabel ?? "")
     // useAtom returns [value, setter]
-    if (atom.toString().includes("multiSelectDragging")) return [false, vi.fn()]
+    if (label.includes("multiSelectDragging")) return [false, vi.fn()]
     return [null, vi.fn()]
   }),
   atom: vi.fn((value) => ({ init: value, toString: () => "mockAtom" })),
   Provider: vi.fn(({ children }) => children),
 }))
 
-// Mock atoms
-vi.mock("@tasktrove/atoms", () => ({
-  selectedTasksAtom: { toString: () => "selectedTasksAtom" },
-  clearSelectedTasksAtom: { toString: () => "clearSelectedTasksAtom" },
-  tasksAtom: { toString: () => "tasksAtom" },
-  deleteTasksAtom: { toString: () => "deleteTasksAtom" },
-  settingsAtom: { toString: () => "settingsAtom" },
-  userAtom: { toString: () => "userAtom" },
-  multiSelectDraggingAtom: { toString: () => "multiSelectDraggingAtom" },
-  taskAtoms: {
-    actions: { updateTask: vi.fn() },
-    derived: {},
-  },
-  taskCountsAtom: { toString: () => "taskCountsAtom" },
-  projectAtoms: {
-    actions: {},
-    derived: {},
-  },
-  projectsAtom: { toString: () => "projectsAtom" },
-  labelsAtom: { toString: () => "labelsAtom" },
-  updateLabelAtom: { toString: () => "updateLabelAtom" },
-  deleteLabelAtom: { toString: () => "deleteLabelAtom" },
-  toggleTaskSelectionAtom: { toString: () => "toggleTaskSelectionAtom" },
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 const createMockTask = (id: string, overrides?: Partial<Task>): Task => ({
   id: createTaskId(id),

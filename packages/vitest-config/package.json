@@ -7,7 +7,11 @@
     "./base": "./base.ts",
     "./base.ts": "./base.ts",
     "./node": "./node.ts",
+    "./node.pro": "./node.pro.ts",
+    "./node.pro.ts": "./node.pro.ts",
     "./jsdom": "./jsdom.ts",
+    "./jsdom.pro": "./jsdom.pro.ts",
+    "./jsdom.pro.ts": "./jsdom.pro.ts",
     "./happy-dom": "./happy-dom.ts"
   },
   "devDependencies": {

@@ -37,8 +37,8 @@ import {
   getRecurringReferenceDate,
 } from "@/lib/utils/recurring-task-processor"
 import { useAtomValue, useSetAtom } from "jotai"
-import { tasksAtom } from "@tasktrove/atoms"
-import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@tasktrove/atoms"
+import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
+import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@tasktrove/atoms/ui/dialogs"
 import { HelpPopover } from "@/components/ui/help-popover"
 import {
   parseEnhancedNaturalLanguage,

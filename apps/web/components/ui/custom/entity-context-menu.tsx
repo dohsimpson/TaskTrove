@@ -31,8 +31,8 @@ import {
   Star,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { projectAtoms } from "@tasktrove/atoms"
-import { currentRouteContextAtom } from "@tasktrove/atoms"
+import { projectAtoms } from "@tasktrove/atoms/core/projects"
+import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
 import { isValidProjectId } from "@/lib/utils/routing"
 import { GroupId, LabelId, ProjectId, SectionId } from "@/lib/types"
 
@@ -289,8 +289,8 @@ export function EntityContextMenu({
             {/* Additional menu items (for Pro extensions) */}
             {renderAdditionalMenuItems && (
               <>
-                <DropdownMenuSeparator />
                 {renderAdditionalMenuItems()}
+                <DropdownMenuSeparator />
               </>
             )}
 

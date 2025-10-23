@@ -15,9 +15,9 @@ import {
   editingProjectIdAtom,
   stopEditingProjectAtom,
   pathnameAtom,
-  projectTaskCountsAtom,
-  projectAtoms,
-} from "@tasktrove/atoms"
+} from "@tasktrove/atoms/ui/navigation"
+import { projectTaskCountsAtom } from "@tasktrove/atoms/ui/task-counts"
+import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import type { Project, ProjectGroup, ProjectId } from "@/lib/types"
 
 interface ProjectGroupItemProps {

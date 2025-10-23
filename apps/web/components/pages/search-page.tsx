@@ -4,7 +4,9 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { useAtomValue } from "jotai"
 import { Search, Loader2 } from "lucide-react"
 import { AdvancedSearch } from "@/components/search/advanced-search"
-import { taskAtoms, projectAtoms, labelAtoms } from "@tasktrove/atoms"
+import { taskAtoms } from "@tasktrove/atoms/core/tasks"
+import { projectAtoms } from "@tasktrove/atoms/core/projects"
+import { labelAtoms } from "@tasktrove/atoms/core/labels"
 import { Task, Project, Label, LabelId } from "@/lib/types"
 
 interface SearchFilter {

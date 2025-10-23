@@ -2,12 +2,13 @@
 
 import { useAtom, useSetAtom, useAtomValue } from "jotai"
 import { EntityContextMenu } from "@/components/ui/custom/entity-context-menu"
-import { projectsAtom, projectAtoms } from "@tasktrove/atoms"
+import { projectsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import {
   startEditingSectionAtom,
   currentRouteContextAtom,
   openSectionDialogAtom,
-} from "@tasktrove/atoms"
+} from "@tasktrove/atoms/ui/navigation"
 import { isValidProjectId } from "@/lib/utils/routing"
 import type { Project, ProjectSection, GroupId } from "@/lib/types"
 import { getDefaultSectionId } from "@tasktrove/types/defaults"

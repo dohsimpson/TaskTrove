@@ -14,26 +14,7 @@ const mockUpdateFilters = vi.fn()
 const mockAllProjects: Project[] = []
 const mockAllLabels: Label[] = []
 
-// Mock @tasktrove/atoms with all required exports
-vi.mock("@tasktrove/atoms", () => ({
-  activeFiltersAtom: {
-    toString: () => "activeFiltersAtom",
-  },
-  hasActiveFiltersAtom: {
-    toString: () => "hasActiveFiltersAtom",
-  },
-  updateFiltersAtom: {
-    toString: () => "updateFiltersAtom",
-  },
-  projectAtoms: {
-    derived: {
-      allProjects: { toString: () => "allProjectsAtom" },
-    },
-  },
-  labelsAtom: {
-    toString: () => "labelsAtom",
-  },
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Mock @tasktrove/i18n
 vi.mock("@tasktrove/i18n", () => ({

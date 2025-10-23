@@ -8,16 +8,16 @@
 import { atom } from "jotai";
 import { atomFamily } from "jotai/utils";
 import type { ViewId } from "@tasktrove/types";
-import { baseFilteredTasksForViewAtom } from "@tasktrove/atoms";
+import { baseFilteredTasksForViewAtom } from "@tasktrove/atoms/data/tasks/filters";
 import {
   currentViewAtom,
   currentViewStateAtom,
   viewStatesAtom,
   getViewStateOrDefault,
-} from "#ui/views";
-import { handleAtomError } from "#utils/atom-helpers";
-import { applyViewStateFilters } from "#utils/view-filters";
-import { sortTasksByViewState } from "#utils/view-sorting";
+} from "@tasktrove/atoms/ui/views";
+import { handleAtomError } from "@tasktrove/atoms/utils/atom-helpers";
+import { applyViewStateFilters } from "@tasktrove/atoms/utils/view-filters";
+import { sortTasksByViewState } from "@tasktrove/atoms/utils/view-sorting";
 
 /**
  * UI-filtered tasks for a specific view

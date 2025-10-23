@@ -6,7 +6,11 @@ import { Coffee, Pause, Play, Square } from "lucide-react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { ContentPopover } from "@/components/ui/content-popover"
-import { pauseFocusTimerAtom, startFocusTimerAtom, stopFocusTimerAtom } from "@tasktrove/atoms"
+import {
+  pauseFocusTimerAtom,
+  startFocusTimerAtom,
+  stopFocusTimerAtom,
+} from "@tasktrove/atoms/ui/focus-timer"
 import { cn } from "@/lib/utils"
 import { useFocusTimerDisplay } from "@/hooks/use-focus-timer-display"
 

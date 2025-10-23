@@ -388,69 +388,7 @@ vi.mock("@/lib/types", () => ({
   },
 }))
 
-// Comprehensive atoms mock combining all required atoms
-vi.mock("@tasktrove/atoms", () => ({
-  // Dialog and UI atoms
-  showQuickAddAtom: true,
-  closeQuickAddAtom: vi.fn(),
-  copyTaskAtom: null,
-  resetCopyTaskAtom: vi.fn(),
-  quickAddTaskAtom: {},
-  updateQuickAddTaskAtom: vi.fn(),
-  resetQuickAddTaskAtom: vi.fn(),
-  currentRouteContextAtom: { routeType: "inbox", projectId: null, labelId: null },
-
-  // Task atoms
-  tasksAtom: [],
-  addTaskAtom: "mockAddTaskAtom",
-  updateTaskAtom: "mockUpdateTaskAtom",
-  taskCountsAtom: "mockTaskCountsAtom",
-  projectsAtom: [],
-  labelsAtom: [],
-  labelsFromIdsAtom: "mockLabelsFromIdsAtom",
-  addLabelAndWaitForRealIdAtom: vi.fn(),
-  allGroupsAtom: "mockAllGroupsAtom",
-  projectIdsAtom: "mockProjectIdsAtom",
-  visibleProjectsAtom: [],
-  updateLabelAtom: vi.fn(),
-  deleteLabelAtom: vi.fn(),
-  toggleTaskSelectionAtom: vi.fn(),
-  nlpEnabledAtom: true,
-
-  // Project atoms
-  projectAtoms: {
-    actions: {},
-    derived: {},
-  },
-
-  // Task atoms nested structure
-  taskAtoms: {
-    tasks: "mockTasksAtom",
-    actions: {
-      addTask: "mockAddTaskAtom",
-      updateTask: "mockUpdateTaskAtom",
-      deleteTask: "mockDeleteTaskAtom",
-      toggleTask: "mockToggleTaskAtom",
-      addComment: "mockAddCommentAtom",
-      bulkActions: "mockBulkActionsAtom",
-      moveTask: "mockMoveTaskAtom",
-      moveTaskBetweenSections: "mockMoveTaskBetweenSectionsAtom",
-      reorderTaskInView: "mockReorderTaskInViewAtom",
-      addTaskToView: "mockAddTaskToViewAtom",
-      removeTaskFromView: "mockRemoveTaskFromViewAtom",
-      createTaskMutation: "mockCreateTaskMutationAtom",
-      deleteTaskMutation: "mockDeleteTaskMutationAtom",
-    },
-    derived: {
-      taskCounts: "mockTaskCountsAtom",
-      searchResults: "mockSearchResultsAtom",
-      filteredTasks: "mockFilteredTasksAtom",
-      groupedTasks: "mockGroupedTasksAtom",
-      visibleTasks: "mockVisibleTasksAtom",
-      tasksByProject: "mockTasksByProjectAtom",
-    },
-  },
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 vi.mock("@/lib/utils/logger", () => ({
   log: {

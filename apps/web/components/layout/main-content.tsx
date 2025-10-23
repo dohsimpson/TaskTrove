@@ -4,14 +4,11 @@ import React from "react"
 import { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { useTranslation } from "@tasktrove/i18n"
-import {
-  projectAtoms,
-  addCommentAtom,
-  filteredTasksAtom,
-  currentViewAtom,
-  currentViewStateAtom,
-} from "@tasktrove/atoms"
-import { currentRouteContextAtom } from "@tasktrove/atoms"
+import { projectAtoms } from "@tasktrove/atoms/core/projects"
+import { filteredTasksAtom } from "@tasktrove/atoms/ui/filtered-tasks"
+import { currentViewAtom, currentViewStateAtom } from "@tasktrove/atoms/ui/views"
+import { addCommentAtom } from "@tasktrove/atoms/core/tasks"
+import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
 import {
   INBOX_PROJECT_ID,
   type Task,

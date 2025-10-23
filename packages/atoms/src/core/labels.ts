@@ -3,15 +3,15 @@ import {
   handleAtomError,
   namedAtom,
   withErrorHandling,
-} from "#utils/atom-helpers";
+} from "@tasktrove/atoms/utils/atom-helpers";
 import { Label, LabelId, CreateLabelRequest } from "@tasktrove/types";
-import { labelsAtom } from "#data/base/atoms";
+import { labelsAtom } from "@tasktrove/atoms/data/base/atoms";
 import {
   createLabelMutationAtom,
   createLabelWithoutOptimisticUpdateAtom,
   deleteLabelMutationAtom,
-} from "#mutations/labels";
-import { recordOperationAtom } from "#core/history";
+} from "@tasktrove/atoms/mutations/labels";
+import { recordOperationAtom } from "@tasktrove/atoms/core/history";
 
 /**
  * Core label atoms for TaskTrove

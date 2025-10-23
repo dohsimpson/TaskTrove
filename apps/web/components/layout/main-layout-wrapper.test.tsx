@@ -2,7 +2,7 @@ import React from "react"
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@/test-utils"
 import type { Task, Project } from "@/lib/types"
-import { createMockTask } from "@tasktrove/atoms"
+import { createMockTask } from "@tasktrove/atoms/utils/test-helpers"
 import { TEST_TASK_ID_1, TEST_TASK_ID_2 } from "@tasktrove/types/test-constants"
 import { mockNextNavigation, mockNavigation, mockUseToast, mockNextThemes } from "@/test-utils"
 
@@ -71,70 +71,7 @@ mockNextThemes()
 // Mock the toast hook
 mockUseToast()
 
-// Mock all the imported atoms and components
-vi.mock("@tasktrove/atoms", () => ({
-  // Core atoms (from old lib/atoms)
-  tasksAtom: { init: [] },
-  taskAtoms: {
-    actions: {
-      addTask: { init: null },
-      updateTask: { init: null },
-      toggleTask: { init: null },
-      deleteTask: { init: null },
-    },
-    derived: {},
-  },
-  taskCountsAtom: { init: {} },
-  moveTaskAtom: { init: null },
-  reorderTaskInViewAtom: { init: null },
-  moveTaskBetweenSectionsAtom: { init: null },
-  projectsAtom: { init: [] },
-  projectAtoms: {
-    actions: {
-      addProject: { init: null },
-      reorderProject: { init: null },
-    },
-    derived: { init: [] },
-  },
-  projectDerived: { init: [] },
-  currentProjectId: { init: "" },
-  labelsAtom: { init: [] },
-  sortedLabels: { init: [] },
-  updateLabelAtom: { init: null },
-  deleteLabelAtom: { init: null },
-  toggleTaskSelectionAtom: { init: null },
-  labelAtoms: {
-    reorderLabel: { init: null },
-    updateLabel: { init: null },
-    deleteLabel: { init: null },
-  },
-  currentViewAtom: { init: "today" },
-  currentViewStateAtom: {
-    init: {
-      viewMode: "list",
-      searchQuery: "",
-      sortBy: "dueDate",
-      sortDirection: "asc",
-      showCompleted: false,
-      showSidePanel: false,
-    },
-  },
-  setViewModeAtom: { init: null },
-  setSortingAtom: { init: null },
-  setSearchQueryAtom: { init: null },
-  setShowCompletedAtom: { init: null },
-  showQuickAddAtom: { init: false },
-  showTaskPanelAtom: { init: false },
-  showPomodoroAtom: { init: false },
-  showProjectDialogAtom: { init: false },
-  showSearchDialogAtom: { init: false },
-  selectedTaskAtom: { init: null },
-  selectedTasksAtom: { init: [] },
-  openQuickAddAtom: { init: null },
-  closeQuickAddAtom: { init: null },
-  toggleTaskPanelAtom: { init: null },
-  closeTaskPanelAtom: { init: null },
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Mock jotai hooks
 vi.mock("jotai", async (importOriginal) => {

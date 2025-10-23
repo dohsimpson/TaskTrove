@@ -24,10 +24,7 @@ vi.mock("jotai", async () => {
   }
 })
 
-// Mock atoms - needed to specify which atoms we're using
-vi.mock("@tasktrove/atoms", () => ({
-  tasksAtom: { toString: () => "tasksAtom" },
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Mock component interfaces
 interface MockInputProps {

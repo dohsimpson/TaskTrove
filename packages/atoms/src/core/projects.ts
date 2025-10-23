@@ -14,7 +14,7 @@ import {
   createAtomWithStorage,
   namedAtom,
   withErrorHandling,
-} from "#utils/atom-helpers";
+} from "@tasktrove/atoms/utils/atom-helpers";
 import type {
   Project,
   ProjectId,
@@ -34,14 +34,14 @@ import {
   createGroupId,
   ProjectIdSchema,
 } from "@tasktrove/types";
-import { projectsAtom } from "#data/base/atoms";
+import { projectsAtom } from "@tasktrove/atoms/data/base/atoms";
 import {
   updateProjectsMutationAtom,
   createProjectMutationAtom,
   deleteProjectMutationAtom,
-} from "#mutations/projects";
-import { recordOperationAtom } from "#core/history";
-import { log } from "#utils/atom-helpers";
+} from "@tasktrove/atoms/mutations/projects";
+import { recordOperationAtom } from "@tasktrove/atoms/core/history";
+import { log } from "@tasktrove/atoms/utils/atom-helpers";
 import { clearNullValues } from "@tasktrove/utils";
 
 // =============================================================================

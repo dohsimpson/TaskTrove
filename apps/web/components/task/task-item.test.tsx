@@ -1,3 +1,12 @@
+// Unmock atoms - this test needs real atoms for store API
+vi.unmock("@tasktrove/atoms/core/tasks")
+vi.unmock("@tasktrove/atoms/data/base/atoms")
+vi.unmock("@tasktrove/atoms/ui/focus-timer")
+vi.unmock("@tasktrove/atoms/ui/selection")
+vi.unmock("@tasktrove/atoms/core/labels")
+vi.unmock("@tasktrove/atoms/ui/dialogs")
+vi.unmock("@tasktrove/atoms/ui/views")
+
 import React from "react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen, fireEvent, waitFor, within } from "@/test-utils"
@@ -26,20 +35,16 @@ const mockStartFocusTimer = vi.fn()
 const mockPauseFocusTimer = vi.fn()
 const mockStopFocusTimer = vi.fn()
 
-// Mock Jotai (simplified)
-vi.mock("jotai", () => ({
-  useAtomValue: vi.fn(),
-  useSetAtom: vi.fn(),
-  atom: vi.fn((value) => ({ init: value, toString: () => "mockAtom" })),
-  Provider: ({ children }: { children?: React.ReactNode }) => children,
-  createStore: () => {
-    const store = new Map()
-    return {
-      set: (atom: unknown, value: unknown) => store.set(atom, value),
-      get: (atom: unknown) => store.get(atom) || [],
-    }
-  },
-}))
+// Mock Jotai hooks but use real atoms and store
+vi.mock("jotai", async () => {
+  const actual = await vi.importActual<typeof import("jotai")>("jotai")
+  return {
+    ...actual,
+    useAtomValue: vi.fn(),
+    useSetAtom: vi.fn(),
+    useAtom: vi.fn(),
+  }
+})
 
 // Mock date-fns
 vi.mock("date-fns", () => ({
@@ -55,73 +60,21 @@ vi.mock("@/lib/utils", () => ({
   getContrastColor: vi.fn(() => "white"),
 }))
 
-// Mock atoms
-vi.mock("@tasktrove/atoms", () => ({
-  // Core atoms
-  toggleTaskAtom: { toString: () => "toggleTaskAtom" },
-  deleteTaskAtom: { toString: () => "deleteTaskAtom" },
-  updateTaskAtom: { toString: () => "updateTaskAtom" },
-  addCommentAtom: { toString: () => "addCommentAtom" },
-  toggleTaskPanelWithViewStateAtom: { toString: () => "toggleTaskPanelWithViewStateAtom" },
-  tasksAtom: { toString: () => "tasksAtom" },
-  selectedTaskIdAtom: { toString: () => "selectedTaskIdAtom" },
-  selectedTaskAtom: { toString: () => "selectedTaskAtom" },
-  selectedTasksAtom: { toString: () => "selectedTasksAtom" },
-  lastSelectedTaskAtom: { toString: () => "lastSelectedTaskAtom" },
-  toggleTaskSelectionAtom: { toString: () => "toggleTaskSelectionAtom" },
-  clearSelectedTasksAtom: { toString: () => "clearSelectedTasksAtom" },
-  setSelectedTaskIdAtom: { toString: () => "setSelectedTaskIdAtom" },
-  selectRangeAtom: { toString: () => "selectRangeAtom" },
-  taskCountsAtom: { toString: () => "taskCountsAtom" },
-  // Grouped atoms
-  taskAtoms: {
-    actions: {
-      updateTask: { toString: () => "updateTask" },
-      toggleTask: { toString: () => "toggleTask" },
-      deleteTask: { toString: () => "deleteTask" },
-    },
-    derived: {},
-  },
-  projectAtoms: {
-    actions: {},
-    derived: {},
-  },
-  sortedProjectsAtom: { toString: () => "sortedProjectsAtom" },
-  projectsAtom: { toString: () => "projectsAtom" },
-  // Label atoms
-  sortedLabelsAtom: { toString: () => "sortedLabelsAtom" },
-  addLabelAtom: { toString: () => "addLabelAtom" },
-  addLabelAndWaitForRealIdAtom: { toString: () => "addLabelAndWaitForRealIdAtom" },
-  labelsFromIdsAtom: { toString: () => "labelsFromIdsAtom" },
-  labelsAtom: { toString: () => "labelsAtom" },
-  updateLabelAtom: { toString: () => "updateLabelAtom" },
-  deleteLabelAtom: { toString: () => "deleteLabelAtom" },
-  // Focus timer atoms - use simple string identifiers since logic is handled in jotai mock
-  focusTimerStateAtom: "focusTimerStateAtom",
-  activeFocusTimerAtom: "activeFocusTimerAtom",
-  isTaskTimerActiveAtom: () => () => false,
-  focusTimerStatusAtom: "stopped",
-  startFocusTimerAtom: () => {},
-  pauseFocusTimerAtom: () => {},
-  activeFocusTaskAtom: "activeFocusTaskAtom",
-  isAnyTimerRunningAtom: "isAnyTimerRunningAtom",
-  currentFocusTimerElapsedAtom: "currentFocusTimerElapsedAtom",
-  focusTimerDisplayAtom: "focusTimerDisplayAtom",
-  stopFocusTimerAtom: "stopFocusTimerAtom",
-  stopAllFocusTimersAtom: "stopAllFocusTimersAtom",
-  focusTimerAtoms: "focusTimerAtoms",
-  settingsAtom: { toString: () => "settingsAtom" },
-  // Quick add atoms
-  quickAddTaskAtom: { toString: () => "quickAddTaskAtom" },
-  updateQuickAddTaskAtom: { toString: () => "updateQuickAddTaskAtom" },
-  showQuickAddAtom: { toString: () => "showQuickAddAtom" },
-  formatElapsedTime: vi.fn((ms: number) => {
-    const seconds = Math.floor(ms / 1000)
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = seconds % 60
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
-  }),
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
+
+// formatElapsedTime is a utility function, not an atom, so mock it separately
+vi.mock("@tasktrove/atoms/ui/focus-timer", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tasktrove/atoms/ui/focus-timer")>()
+  return {
+    ...actual,
+    formatElapsedTime: vi.fn((ms: number) => {
+      const seconds = Math.floor(ms / 1000)
+      const minutes = Math.floor(seconds / 60)
+      const remainingSeconds = seconds % 60
+      return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
+    }),
+  }
+})
 
 // Mock FocusTimerPopover component
 vi.mock("./focus-timer-popover", () => ({

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import packageJson from "@/package.json"
+import { getAppVersion } from "@/lib/utils/version"
 
 interface GitHubRelease {
   tag_name: string
@@ -45,7 +45,7 @@ function compareVersions(current: string, latest: string): boolean {
 export function useUpdateChecker(): UpdateInfo {
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo>({
     hasUpdate: false,
-    currentVersion: packageJson.version,
+    currentVersion: getAppVersion(),
     loading: true,
   })
 
@@ -71,11 +71,11 @@ export function useUpdateChecker(): UpdateInfo {
           return
         }
 
-        const hasUpdate = compareVersions(packageJson.version, release.tag_name)
+        const hasUpdate = compareVersions(getAppVersion(), release.tag_name)
 
         setUpdateInfo({
           hasUpdate,
-          currentVersion: packageJson.version,
+          currentVersion: getAppVersion(),
           latestVersion: release.tag_name,
           releaseUrl: release.html_url,
           loading: false,

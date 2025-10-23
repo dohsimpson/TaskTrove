@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
 import { useAtomValue } from "jotai"
-import { nlpEnabledAtom } from "@tasktrove/atoms"
-import { labelsAtom } from "@tasktrove/atoms"
-import { visibleProjectsAtom } from "@tasktrove/atoms"
+import { nlpEnabledAtom } from "@tasktrove/atoms/ui/dialogs"
+import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { visibleProjectsAtom } from "@tasktrove/atoms/core/projects"
 import {
   parseEnhancedNaturalLanguage,
   type ParsedTask,

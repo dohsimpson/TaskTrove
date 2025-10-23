@@ -7,7 +7,11 @@ import { useTranslation } from "@tasktrove/i18n"
 import { TaskFilterControls } from "./task-filter-controls"
 import { TaskFilterBadges } from "./task-filter-badges"
 import { TaskSearchInput } from "./task-search-input"
-import { openQuickAddAtom, openSectionDialogAtom, currentRouteContextAtom } from "@tasktrove/atoms"
+import {
+  openQuickAddAtom,
+  openSectionDialogAtom,
+  currentRouteContextAtom,
+} from "@tasktrove/atoms/ui/navigation"
 import { isValidProjectId } from "@/lib/utils/routing"
 import { createProjectId } from "@/lib/types"
 

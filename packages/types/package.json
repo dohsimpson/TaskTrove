@@ -111,9 +111,12 @@
     "typecheck:pro": "tsgo --project tsconfig.pro.json --noEmit",
     "typecheck": "pnpm typecheck:base && (test -f tsconfig.pro.json && pnpm typecheck:pro || true)",
     "check": "pnpm typecheck && pnpm lint && pnpm test",
-    "check:pro": "pnpm typecheck:pro && pnpm lint",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "check:pro": "pnpm typecheck:pro && pnpm lint && pnpm test:pro",
+    "test:base": "vitest run --config vitest.config.ts",
+    "test:pro": "vitest run --config vitest.config.pro.ts",
+    "test": "pnpm test:base && (test -f vitest.config.pro.ts && pnpm test:pro || true)",
+    "test:watch": "vitest",
+    "test:watch:pro": "vitest --config vitest.config.pro.ts"
   },
   "dependencies": {
     "zod": "catalog:",

@@ -2,7 +2,7 @@ import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
 import { describe, it, expect } from "vitest"
 import { render, screen, fireEvent } from "@/test-utils"
 import { TaskSectionPopover } from "./task-section-popover"
-import { projectAtoms } from "@tasktrove/atoms"
+import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import { createProjectId, createGroupId, createTaskId } from "@/lib/types"
 import type { Project } from "@/lib/types"
 

@@ -60,7 +60,7 @@ import {
   DEFAULT_GENERAL_SETTINGS,
   DEFAULT_USER,
 } from "@tasktrove/types/defaults";
-import { log } from "#utils/atom-helpers";
+import { log } from "@tasktrove/atoms/utils/atom-helpers";
 
 // =============================================================================
 // Test Data

@@ -12,8 +12,8 @@ import { useGlobalKeyboardManager } from "@/hooks/use-global-keyboard-manager"
 import {
   registerKeyboardHandlerAtom,
   unregisterKeyboardHandlerAtom,
-  type KeyboardHandler,
-} from "@tasktrove/atoms"
+} from "@tasktrove/atoms/ui/keyboard-context"
+import type { KeyboardHandler } from "@tasktrove/atoms/ui/keyboard-context"
 import { registerRefreshHandler, scheduleAtTime } from "@tasktrove/dom-utils"
 import { addDays, startOfDay } from "date-fns"
 import { SidebarNav } from "@/components/navigation/sidebar-nav"
@@ -39,28 +39,20 @@ import { UserProfileDialog } from "@/components/dialogs/user-profile-dialog"
 import { RouteContent } from "@/components/layout/route-content"
 import { useTheme } from "next-themes"
 import { toast } from "sonner"
-import {
-  // Task atoms
-  taskAtoms,
-  // Label atoms
-  // View atoms
-  currentViewAtom,
-  // Dialog atoms
-  selectedTaskAtom,
-  toggleTaskPanelAtom,
-  closeTaskPanelAtom,
-  // Project atoms
-  // UI atoms
-  appRefreshTriggerAtom,
-} from "@tasktrove/atoms"
-import { keyboardShortcutAtom } from "@tasktrove/atoms"
+import { closeTaskPanelAtom } from "@tasktrove/atoms/ui/dialogs"
+import { toggleTaskPanelAtom } from "@tasktrove/atoms/ui/dialogs"
+import { keyboardShortcutAtom } from "@tasktrove/atoms/core/history"
+import { updateTaskAtom, toggleTaskAtom } from "@tasktrove/atoms/core/tasks"
+import { selectedTaskAtom } from "@tasktrove/atoms/ui/selection"
+import { currentViewAtom } from "@tasktrove/atoms/ui/views"
+import { appRefreshTriggerAtom } from "@tasktrove/atoms/ui/app-refresh"
 // Import our new atoms
 import {
   setPathnameAtom,
   currentRouteContextAtom,
   openSearchAtom,
   openQuickAddAtom,
-} from "@tasktrove/atoms"
+} from "@tasktrove/atoms/ui/navigation"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useNotificationSystem } from "@/hooks/use-notification-system"
 import "@khmyznikov/pwa-install"
@@ -138,8 +130,8 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
   const openQuickAddAction = useSetAtom(openQuickAddAtom)
 
   // Still need some existing atoms for functionality
-  const updateTask = useSetAtom(taskAtoms.actions.updateTask)
-  const toggleTask = useSetAtom(taskAtoms.actions.toggleTask)
+  const updateTask = useSetAtom(updateTaskAtom)
+  const toggleTask = useSetAtom(toggleTaskAtom)
   // const deleteTask = useSetAtom(taskActions.deleteTask) // DISABLED with gesture handler
   // Dialog state atoms
   const [selectedTask] = useAtom(selectedTaskAtom)

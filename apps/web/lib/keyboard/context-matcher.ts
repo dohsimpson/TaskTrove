@@ -6,7 +6,7 @@
  * various UI state conditions.
  */
 
-import type { KeyboardHandler, KeyboardContext } from "@tasktrove/atoms"
+import type { KeyboardHandler, KeyboardContext } from "@tasktrove/atoms/ui/keyboard-context"
 
 /**
  * Determines if a keyboard handler applies to the current context

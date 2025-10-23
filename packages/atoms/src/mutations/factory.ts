@@ -11,9 +11,10 @@
 
 import { z } from "zod";
 import { atomWithMutation } from "jotai-tanstack-query";
+import type { Atom } from "jotai";
 import type { QueryKey } from "@tanstack/react-query";
-import { queryClientAtom } from "#data/base/query";
-import { log, toast } from "#utils/atom-helpers";
+import { queryClientAtom } from "@tasktrove/atoms/data/base/query";
+import { log, toast } from "@tasktrove/atoms/utils/atom-helpers";
 import { API_ROUTES } from "@tasktrove/types";
 
 // =============================================================================
@@ -156,11 +157,13 @@ export interface MutationConfig<
    *
    * @param variables - Request payload
    * @param oldResource - Current resource (for context like ID generation)
+   * @param get - Optional jotai getter to access other atoms
    * @returns Optimistic entity with computed defaults
    */
   optimisticDataFactory?: (
     variables: TRequest,
     oldResource: TResource,
+    get?: <Value>(atom: Atom<Value>) => Value,
   ) => TOptimisticData;
 
   /** Module name for logging (e.g., "projects", "labels") */
@@ -279,7 +282,7 @@ export function createMutation<
 
       // Create optimistic data if factory provided
       const optimisticData = optimisticDataFactory
-        ? optimisticDataFactory(variables, currentResource)
+        ? optimisticDataFactory(variables, currentResource, get)
         : undefined;
 
       // Optimistic cache update with resource

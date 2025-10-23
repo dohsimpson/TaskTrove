@@ -17,7 +17,7 @@ import type { Json } from "@/lib/types"
 import { createVersionString, createProjectId, createLabelId, DataFileSchema } from "@/lib/types"
 import { DEFAULT_EMPTY_DATA_FILE, DEFAULT_USER_SETTINGS, DEFAULT_USER } from "@/lib/types"
 import { DEFAULT_UUID, DEFAULT_SECTION_NAME, DEFAULT_SECTION_COLOR } from "@tasktrove/constants"
-import packageJson from "@/package.json"
+import { getAppVersion } from "@/lib/utils/version"
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
@@ -2062,17 +2062,17 @@ describe("Data Migration Utility", () => {
 
       // CRITICAL: Verify package.json version vs migration system synchronization
       // If package.json version >= latest migration version, then DataFileSchema must parse migrated data
-      const packageVersion = createVersionString(`v${packageJson.version}`)
+      const packageVersion = createVersionString(`v${getAppVersion()}`)
       if (latestMigrationVersion !== null && packageVersion >= latestMigrationVersion) {
         // This ensures the current schema can handle the latest migration output
         // If this fails, it means the migration system and schema are out of sync
         expect(() => DataFileSchema.parse(migratedData)).not.toThrow()
         console.log(
-          `✓ Schema synchronization verified: package v${packageJson.version} >= migration ${latestMigrationVersion}`,
+          `✓ Schema synchronization verified: package v${getAppVersion()} >= migration ${latestMigrationVersion}`,
         )
       } else {
         console.log(
-          `ℹ Package v${packageJson.version} < migration ${latestMigrationVersion || "unknown"} - schema sync check skipped`,
+          `ℹ Package v${getAppVersion()} < migration ${latestMigrationVersion || "unknown"} - schema sync check skipped`,
         )
       }
 

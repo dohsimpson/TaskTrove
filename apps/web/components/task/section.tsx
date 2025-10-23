@@ -2,19 +2,16 @@
 
 import { useCallback } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
+import { projectAtoms, updateProjectsAtom } from "@tasktrove/atoms/core/projects"
+import { taskAtoms, updateTasksAtom } from "@tasktrove/atoms/core/tasks"
+import { stopEditingSectionAtom, currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
 import {
-  projectAtoms,
-  taskAtoms,
-  stopEditingSectionAtom,
   currentViewStateAtom,
-  currentRouteContextAtom,
-  applyViewStateFilters,
-  sortTasksByViewState,
-  updateProjectsAtom,
-  updateTasksAtom,
   collapsedSectionsAtom,
   toggleSectionCollapseAtom,
-} from "@tasktrove/atoms"
+} from "@tasktrove/atoms/ui/views"
+import { applyViewStateFilters } from "@tasktrove/atoms/utils/view-filters"
+import { sortTasksByViewState } from "@tasktrove/atoms/utils/view-sorting"
 import type { ProjectId, GroupId, Task, TaskId, Project } from "@/lib/types"
 import { createTaskId } from "@/lib/types"
 import { EditableSectionHeader } from "./editable-section-header"

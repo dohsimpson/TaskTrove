@@ -29,36 +29,63 @@ vi.mock("@/hooks/use-context-menu-visibility", () => ({
 // Mock Next.js router using centralized utilities
 mockNextNavigation()
 
-// Mock Jotai hooks with test data (following sidebar-nav.test.tsx pattern)
-vi.mock("jotai", async (importOriginal) => {
-  const actual = await importOriginal()
-  return {
-    ...Object(actual),
-    useAtomValue: vi.fn((atom: { debugLabel?: string; toString?: () => string }) => {
-      const atomStr = atom.toString?.() || ""
+// Override specific atoms for this test with test-specific data
+vi.mock("@tasktrove/atoms/ui/navigation", () => ({
+  editingGroupIdAtom: {
+    toString: () => "editingGroupIdAtom",
+    debugLabel: "editingGroupIdAtom",
+    read: vi.fn(() => null),
+  },
+  pathnameAtom: {
+    toString: () => "pathnameAtom",
+    debugLabel: "pathnameAtom",
+    read: vi.fn(() => "/"),
+  },
+  startEditingGroupAtom: {
+    toString: () => "startEditingGroupAtom",
+    debugLabel: "startEditingGroupAtom",
+    read: vi.fn(),
+    write: vi.fn(),
+  },
+  stopEditingGroupAtom: {
+    toString: () => "stopEditingGroupAtom",
+    debugLabel: "stopEditingGroupAtom",
+    read: vi.fn(),
+    write: vi.fn(),
+  },
+}))
 
-      // Ensure isEditing is false
-      if (atomStr.includes("editingGroupId")) {
-        return null
-      }
-      // Mock project task counts
-      if (atomStr.includes("projectTaskCounts")) {
-        return { "22222222-2222-4222-8222-222222222222": 5 }
-      }
-      // Mock group expansion map
-      if (atomStr.includes("groupExpansion")) {
-        return {}
-      }
-      // Mock pathname
-      if (atomStr.includes("pathname")) {
-        return "/"
-      }
-      // Default return for other atoms
-      return []
-    }),
-    useSetAtom: vi.fn(() => vi.fn()),
-  }
-})
+vi.mock("@tasktrove/atoms/ui/task-counts", () => ({
+  taskCountsAtom: {
+    toString: () => "taskCountsAtom",
+    debugLabel: "taskCountsAtom",
+    read: vi.fn(() => ({
+      projectTaskCounts: { "22222222-2222-4222-8222-222222222222": 5 },
+    })),
+  },
+  projectTaskCountsAtom: {
+    toString: () => "projectTaskCountsAtom",
+    debugLabel: "projectTaskCountsAtom",
+    read: vi.fn(() => ({ "22222222-2222-4222-8222-222222222222": 5 })),
+  },
+}))
+
+// Mock group expansion state
+const mockGroupExpansionMap = {}
+vi.mock("@/lib/atoms/ui/group-expansion", () => ({
+  groupExpansionMapAtom: {
+    toString: () => "groupExpansionMapAtom",
+    debugLabel: "groupExpansionMapAtom",
+    read: vi.fn(() => mockGroupExpansionMap),
+    write: vi.fn(),
+  },
+  toggleGroupExpansionAtom: {
+    toString: () => "toggleGroupExpansionAtom",
+    debugLabel: "toggleGroupExpansionAtom",
+    read: vi.fn(),
+    write: vi.fn(),
+  },
+}))
 
 // Mock the drag and drop modules
 const mockExtractInstruction = vi.fn()

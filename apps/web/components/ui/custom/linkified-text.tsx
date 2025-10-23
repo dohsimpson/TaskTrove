@@ -3,7 +3,7 @@
 import React from "react"
 import Linkify from "linkify-react"
 import { useAtomValue } from "jotai"
-import { settingsAtom } from "@tasktrove/atoms"
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 
 interface LinkifiedTextProps {
   children: React.ReactNode

@@ -3,7 +3,7 @@
  */
 import React from "react"
 import { HelpSection, HelpDescription, HelpList, HelpTip } from "@/components/ui/help-content"
-import type { RouteContext } from "@tasktrove/atoms"
+import type { RouteContext } from "@tasktrove/atoms/ui/navigation"
 
 export interface HelpContent {
   title: string

@@ -36,14 +36,10 @@ import { isValidLabelOperation } from "@/lib/label-drag-drop-logic"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { useSetAtom, useAtom, useAtomValue } from "jotai"
-import {
-  taskCountsAtom,
-  projectsAtom,
-  labelTaskCountsAtom,
-  updateLabelAtom,
-  labelsAtom,
-} from "@tasktrove/atoms"
-import { allGroupsAtom } from "@tasktrove/atoms"
+import { taskCountsAtom, labelTaskCountsAtom } from "@tasktrove/atoms/ui/task-counts"
+import { projectsAtom, labelsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { updateLabelAtom } from "@tasktrove/atoms/core/labels"
+import { allGroupsAtom } from "@tasktrove/atoms/core/groups"
 import type { Project, Label, ProjectGroup } from "@/lib/types"
 import { isGroup } from "@/lib/types"
 import {
@@ -54,7 +50,7 @@ import {
   pathnameAtom,
   editingLabelIdAtom,
   stopEditingLabelAtom,
-} from "@tasktrove/atoms"
+} from "@tasktrove/atoms/ui/navigation"
 import { useTranslation } from "@tasktrove/i18n"
 import { getMainNavItems } from "@/components/navigation/main-nav-items"
 

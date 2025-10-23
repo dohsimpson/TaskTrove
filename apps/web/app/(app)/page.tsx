@@ -2,7 +2,7 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAtomValue } from "jotai"
-import { settingsAtom } from "@tasktrove/atoms"
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { DEFAULT_ROUTE } from "@tasktrove/constants"
 
 export default function HomePage() {

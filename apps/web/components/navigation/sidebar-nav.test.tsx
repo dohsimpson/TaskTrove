@@ -108,77 +108,7 @@ vi.mock("jotai", async (importOriginal) => {
   }
 })
 
-// Mock all atom modules
-vi.mock("@tasktrove/atoms", () => ({
-  // Core atoms (from old lib/atoms)
-  projectActions: {
-    updateProject: vi.fn(),
-    deleteProject: vi.fn(),
-  },
-  updateLabel: vi.fn(),
-  deleteLabel: vi.fn(),
-  updateProjectAtom: vi.fn(),
-  updateLabelAtom: vi.fn(),
-  updateTasksAtom: { debugLabel: "updateTasksAtom" },
-  taskCounts: vi.fn(),
-  taskCountsAtom: vi.fn(),
-  sortedLabels: vi.fn(),
-  labelsAtom: vi.fn(),
-  tasksAtom: vi.fn(),
-  projectsAtom: vi.fn(),
-  // Grouped atoms
-  taskAtoms: {
-    actions: {
-      updateTask: vi.fn(),
-    },
-    derived: {},
-  },
-  projectAtoms: {
-    actions: {
-      updateProject: vi.fn(),
-      deleteProject: vi.fn(),
-    },
-    derived: {
-      visibleProjects: vi.fn(),
-    },
-  },
-  projectDerived: {
-    visibleProjects: vi.fn(),
-  },
-  labelAtoms: {
-    labels: vi.fn(),
-  },
-  // UI state atoms
-  openSettingsDialogAtom: { debugLabel: "openSettingsDialogAtom" },
-  openSearchAtom: { debugLabel: "openSearchAtom" },
-  openQuickAddAtom: { debugLabel: "openQuickAddAtom" },
-  openProjectDialogAtom: { debugLabel: "openProjectDialogAtom" },
-  openLabelDialogAtom: { debugLabel: "openLabelDialogAtom" },
-  openProjectGroupDialogAtom: { debugLabel: "openProjectGroupDialogAtom" },
-  // Navigation and editing atoms
-  pathnameAtom: { debugLabel: "pathnameAtom" },
-  editingProjectIdAtom: { debugLabel: "editingProjectIdAtom" },
-  stopEditingProjectAtom: { debugLabel: "stopEditingProjectAtom" },
-  editingLabelIdAtom: { debugLabel: "editingLabelIdAtom" },
-  stopEditingLabelAtom: { debugLabel: "stopEditingLabelAtom" },
-  // Project group atoms
-  allGroupsAtom: { debugLabel: "allGroupsAtom" },
-  reorderProjectWithinGroupAtom: { debugLabel: "reorderProjectWithinGroupAtom" },
-  moveProjectToGroupAtom: { debugLabel: "moveProjectToGroupAtom" },
-  removeProjectFromGroupWithIndexAtom: { debugLabel: "removeProjectFromGroupWithIndexAtom" },
-  reorderGroupAtom: { debugLabel: "reorderGroupAtom" },
-  reorderProjectWithinRootAtom: { debugLabel: "reorderProjectWithinRootAtom" },
-  updateProjectGroupAtom: { debugLabel: "updateProjectGroupAtom" },
-  // Derived atoms
-  visibleProjectsAtom: { debugLabel: "visibleProjectsAtom" },
-  projectTaskCountsAtom: { debugLabel: "projectTaskCountsAtom" },
-  labelTaskCountsAtom: vi.fn(),
-  projectIdsAtom: { debugLabel: "projectIdsAtom" },
-  // Ordering atoms
-  orderingAtom: vi.fn(),
-  reorderProjectAtom: { debugLabel: "reorderProjectAtom" },
-  reorderLabelsAtom: { debugLabel: "reorderLabelsAtom" },
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Mock ProjectGroupItem component
 vi.mock("./draggable-project-group-item", () => ({

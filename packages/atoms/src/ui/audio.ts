@@ -5,8 +5,8 @@
 
 import { atom } from "jotai";
 import { playSound, type SoundType } from "@tasktrove/dom-utils/audio";
-import { namedAtom } from "#utils/atom-helpers";
-import { settingsAtom } from "#data/base/atoms";
+import { namedAtom } from "@tasktrove/atoms/utils/atom-helpers";
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms";
 
 /**
  * Atom for playing sounds with DOM environment support

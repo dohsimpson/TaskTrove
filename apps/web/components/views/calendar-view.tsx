@@ -30,16 +30,12 @@ import {
 import { TaskItem } from "@/components/task/task-item"
 import { SelectionToolbar } from "@/components/task/selection-toolbar"
 import { TaskSidePanel } from "@/components/task/task-side-panel"
-import {
-  showTaskPanelAtom,
-  updateQuickAddTaskAtom,
-  closeTaskPanelAtom,
-  selectedTaskAtom,
-  currentViewStateAtom,
-  taskAtoms,
-  sidePanelWidthAtom,
-  updateGlobalViewOptionsAtom,
-} from "@tasktrove/atoms"
+import { showTaskPanelAtom, closeTaskPanelAtom } from "@tasktrove/atoms/ui/dialogs"
+import { selectedTaskAtom } from "@tasktrove/atoms/ui/selection"
+import { currentViewStateAtom, updateGlobalViewOptionsAtom } from "@tasktrove/atoms/ui/views"
+import { taskAtoms } from "@tasktrove/atoms/core/tasks"
+import { updateQuickAddTaskAtom } from "@tasktrove/atoms/ui/dialogs"
+import { sidePanelWidthAtom } from "@tasktrove/atoms/ui/views"
 import { SIDE_PANEL_WIDTH_MIN, SIDE_PANEL_WIDTH_MAX } from "@tasktrove/constants"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"

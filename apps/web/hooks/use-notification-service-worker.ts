@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useCallback } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { notificationAtoms } from "@tasktrove/atoms"
-import { tasksAtom, updateTaskAtom } from "@tasktrove/atoms"
+import { notificationAtoms } from "@tasktrove/atoms/core/notifications"
+import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
+import { updateTaskAtom } from "@tasktrove/atoms/core/tasks"
 import { log } from "@/lib/utils/logger"
 import type { TaskId, ScheduledNotification } from "@/lib/types"
 import { getServiceWorker, isSecureContext } from "@tasktrove/dom-utils/notifications"

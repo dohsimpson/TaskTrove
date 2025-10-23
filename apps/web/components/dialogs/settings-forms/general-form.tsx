@@ -15,7 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { SettingsCard } from "@/components/ui/custom/settings-card"
-import { settingsAtom, updateSettingsAtom, userAtom } from "@tasktrove/atoms"
+import { settingsAtom, userAtom } from "@tasktrove/atoms/data/base/atoms"
+import { updateSettingsAtom } from "@tasktrove/atoms/core/settings"
 import { UserSchema, type StandardViewId } from "@/lib/types"
 import { START_VIEW_METADATA } from "@tasktrove/constants"
 import {

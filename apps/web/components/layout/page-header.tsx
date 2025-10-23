@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { dynamicPageInfoAtom, currentRouteContextAtom } from "@tasktrove/atoms"
-import { tasksAtom } from "@tasktrove/atoms"
-import { openQuickAddAtom, openProjectDialogAtom } from "@tasktrove/atoms"
-import { openSettingsDialogAtom } from "@tasktrove/atoms"
+import { dynamicPageInfoAtom, currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
+import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
+import { openQuickAddAtom, openProjectDialogAtom } from "@tasktrove/atoms/ui/navigation"
+import { openSettingsDialogAtom } from "@tasktrove/atoms/ui/dialogs"
 import { STANDARD_VIEW_METADATA } from "@tasktrove/constants"
 
 import { Button } from "@/components/ui/button"
@@ -35,6 +35,7 @@ import { getHelpContent } from "@/lib/help-content"
 import { useTheme } from "next-themes"
 import { useTranslation } from "@tasktrove/i18n"
 import { OnlineStatus } from "@/components/layout/online-status"
+import { RewardsBadge } from "@/components/layout/rewards-badge"
 // import { ToolbarUndoRedo } from "@/components/history/undo-redo-buttons"
 
 interface PageHeaderProps {
@@ -241,6 +242,9 @@ export function PageHeader({
 
           {/* Online Status Indicator */}
           <OnlineStatus />
+
+          {/* Rewards Badge - Shows points and level (Pro only) */}
+          <RewardsBadge />
 
           {/* View Options Popover - Uses atoms directly */}
           <ViewOptionsPopover onAdvancedSearch={onAdvancedSearch} />

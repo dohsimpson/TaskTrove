@@ -19,35 +19,7 @@ const mockJotai = vi.hoisted(() => ({
 
 vi.mock("jotai", () => mockJotai)
 
-// Mock atoms
-vi.mock("@tasktrove/atoms", () => ({
-  projectAtoms: {
-    derived: {
-      projectById: { debugLabel: "projectById" },
-    },
-    actions: {
-      renameSection: { debugLabel: "renameSection" },
-    },
-  },
-  taskAtoms: {
-    derived: {
-      orderedTasksBySection: { debugLabel: "orderedTasksBySection" },
-      taskById: { debugLabel: "taskById" },
-    },
-  },
-  currentViewStateAtom: { debugLabel: "currentViewStateAtom" },
-  currentRouteContextAtom: { debugLabel: "currentRouteContextAtom" },
-  editingSectionIdAtom: { debugLabel: "editingSectionIdAtom" },
-  stopEditingSectionAtom: { debugLabel: "stopEditingSectionAtom" },
-  moveTaskBetweenSectionsAtom: { debugLabel: "moveTaskBetweenSectionsAtom" },
-  reorderTaskInViewAtom: { debugLabel: "reorderTaskInViewAtom" },
-  updateProjectsAtom: { debugLabel: "updateProjectsAtom" },
-  updateTasksAtom: { debugLabel: "updateTasksAtom" },
-  collapsedSectionsAtom: { debugLabel: "collapsedSectionsAtom" },
-  toggleSectionCollapseAtom: { debugLabel: "toggleSectionCollapseAtom" },
-  applyViewStateFilters: vi.fn((tasks) => tasks),
-  sortTasksByViewState: vi.fn((tasks) => tasks),
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 vi.mock("@/hooks/use-add-task-to-section", () => ({
   useAddTaskToSection: vi.fn(() => vi.fn()),

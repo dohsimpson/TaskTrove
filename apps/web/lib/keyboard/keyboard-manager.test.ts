@@ -7,8 +7,15 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { createStore } from "jotai"
+
+// Unmock atoms - this test needs real atoms for store API
+vi.unmock("@tasktrove/atoms/ui/keyboard-context")
+vi.unmock("@tasktrove/atoms/ui/dialogs")
+vi.unmock("@tasktrove/atoms/ui/views")
+vi.unmock("@tasktrove/atoms/ui/selection")
+
+import { keyboardContextAtom } from "@tasktrove/atoms/ui/keyboard-context"
 import {
-  keyboardContextAtom,
   keyboardHandlersAtom,
   registerKeyboardHandlerAtom,
   unregisterKeyboardHandlerAtom,
@@ -16,9 +23,8 @@ import {
   unregisterHandlerGroupAtom,
   activeComponentAtom,
   isTypingAtom,
-  type KeyboardHandler,
-  type KeyboardContext,
-} from "@tasktrove/atoms"
+} from "@tasktrove/atoms/ui/keyboard-context"
+import type { KeyboardHandler, KeyboardContext } from "@tasktrove/atoms/ui/keyboard-context"
 import { matchesShortcut } from "@/hooks/use-global-keyboard-manager"
 import * as ContextMatcher from "@/lib/keyboard/context-matcher"
 import { TEST_TASK_ID_1, TEST_SECTION_ID_1 } from "@tasktrove/types/test-constants"

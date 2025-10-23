@@ -11,10 +11,10 @@ import {
   clearActiveFiltersAtom,
   currentViewStateAtom,
   currentViewAtom,
-} from "@tasktrove/atoms"
-import { projectAtoms } from "@tasktrove/atoms"
-import { labelsAtom } from "@tasktrove/atoms"
-import { uiFilteredTasksForViewAtom } from "@tasktrove/atoms"
+} from "@tasktrove/atoms/ui/views"
+import { projectAtoms } from "@tasktrove/atoms/core/projects"
+import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { uiFilteredTasksForViewAtom } from "@tasktrove/atoms/ui/filtered-tasks"
 import type { Task, Project, Label as LabelType, LabelId } from "@/lib/types"
 import { createLabelId, type ProjectId } from "@/lib/types"
 import { cn } from "@/lib/utils"

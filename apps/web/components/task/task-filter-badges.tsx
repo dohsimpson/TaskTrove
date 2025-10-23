@@ -2,9 +2,13 @@
 
 import React from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { activeFiltersAtom, hasActiveFiltersAtom, updateFiltersAtom } from "@tasktrove/atoms"
-import { projectAtoms } from "@tasktrove/atoms"
-import { labelsAtom } from "@tasktrove/atoms"
+import {
+  activeFiltersAtom,
+  hasActiveFiltersAtom,
+  updateFiltersAtom,
+} from "@tasktrove/atoms/ui/views"
+import { projectAtoms } from "@tasktrove/atoms/core/projects"
+import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { type Project, type Label, type ProjectId } from "@/lib/types"
 import { getPresetLabel, getCustomRangeLabel } from "@/lib/utils/date-filter-utils"
 import { useTranslation } from "@tasktrove/i18n"

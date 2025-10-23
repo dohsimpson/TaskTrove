@@ -1,3 +1,6 @@
+// Unmock atoms - this test needs real atoms for store API
+vi.unmock("jotai/utils")
+
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import {
   userShortcutsAtom,
@@ -76,11 +79,7 @@ vi.mock("jotai/utils", () => ({
   }),
 }))
 
-// Mock keyboard context atoms
-vi.mock("@tasktrove/atoms", () => ({
-  keyboardHandlersAtom: "mockKeyboardHandlersAtom",
-  registerKeyboardHandlerAtom: "mockRegisterKeyboardHandlerAtom",
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Mock conflict detector
 vi.mock("./conflict-detector", () => ({

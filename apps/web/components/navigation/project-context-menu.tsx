@@ -2,15 +2,10 @@
 
 import { useAtom, useSetAtom, useAtomValue } from "jotai"
 import { EntityContextMenu } from "@/components/ui/custom/entity-context-menu"
-import {
-  projectsAtom,
-  projectAtoms,
-  updateProjectAtom,
-  tasksAtom,
-  deleteTasksAtom,
-  updateTasksAtom,
-} from "@tasktrove/atoms"
-import { startEditingProjectAtom, openProjectDialogAtom } from "@tasktrove/atoms"
+import { projectsAtom, tasksAtom } from "@tasktrove/atoms/data/base/atoms"
+import { projectAtoms, updateProjectAtom } from "@tasktrove/atoms/core/projects"
+import { updateTasksAtom, deleteTasksAtom } from "@tasktrove/atoms/core/tasks"
+import { startEditingProjectAtom, openProjectDialogAtom } from "@tasktrove/atoms/ui/navigation"
 import type { Project, ProjectId, TaskId } from "@/lib/types"
 
 interface ProjectContextMenuProps {

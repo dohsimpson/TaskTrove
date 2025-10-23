@@ -2,8 +2,8 @@
 
 import { useEffect } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { notificationAtoms } from "@tasktrove/atoms"
-import { tasksAtom } from "@tasktrove/atoms"
+import { notificationAtoms } from "@tasktrove/atoms/core/notifications"
+import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
 import { useNotificationServiceWorker } from "./use-notification-service-worker"
 import { log } from "@/lib/utils/logger"
 

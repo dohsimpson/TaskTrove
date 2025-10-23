@@ -3,9 +3,13 @@
 import type React from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { VIEW_CONFIG_OPTIONS } from "@tasktrove/constants"
-import { currentViewAtom, currentViewStateAtom, setViewOptionsAtom } from "@tasktrove/atoms"
-import { currentRouteContextAtom } from "@tasktrove/atoms"
-import { showTaskPanelAtom } from "@tasktrove/atoms"
+import {
+  currentViewAtom,
+  currentViewStateAtom,
+  setViewOptionsAtom,
+} from "@tasktrove/atoms/ui/views"
+import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
+import { showTaskPanelAtom } from "@tasktrove/atoms/ui/dialogs"
 
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"

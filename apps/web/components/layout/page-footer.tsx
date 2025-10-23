@@ -2,12 +2,9 @@
 
 import { useAtomValue, useSetAtom } from "jotai"
 import { CheckCircle, Calendar } from "lucide-react"
-import {
-  completedTasksTodayAtom,
-  uiFilteredTasksForViewAtom,
-  toggleTaskAtom,
-  toggleTaskPanelWithViewStateAtom,
-} from "@tasktrove/atoms"
+import { uiFilteredTasksForViewAtom } from "@tasktrove/atoms/ui/filtered-tasks"
+import { toggleTaskAtom, completedTasksTodayAtom } from "@tasktrove/atoms/core/tasks"
+import { toggleTaskPanelWithViewStateAtom } from "@tasktrove/atoms/ui/views"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { Button } from "@/components/ui/button"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"

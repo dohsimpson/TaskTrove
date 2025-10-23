@@ -47,35 +47,7 @@ vi.mock("@/hooks/use-context-menu-visibility", () => ({
   })),
 }))
 
-vi.mock("@tasktrove/atoms", () => ({
-  updateTaskAtom: "mockUpdateTaskAtom",
-  addCommentAtom: "mockAddCommentAtom",
-  sortedProjectsAtom: "mockSortedProjectsAtom",
-  selectedTaskAtom: "mockSelectedTaskAtom",
-  projectsAtom: "mockProjectsAtom",
-  settingsAtom: "mockSettingsAtom",
-  deleteTaskAtom: "mockDeleteTaskAtom",
-  // Add other commonly used atoms
-  tasksAtom: "mockTasksAtom",
-  taskCountsAtom: "mockTaskCountsAtom",
-  taskAtoms: {
-    actions: {
-      updateTask: "mockUpdateTaskAtom",
-      toggleTask: "mockToggleTaskAtom",
-      deleteTask: "mockDeleteTaskAtom",
-    },
-  },
-  toggleTaskAtom: "mockToggleTaskAtom",
-  addLabelAtom: "mockAddLabelAtom",
-  updateLabelAtom: "mockUpdateLabelAtom",
-  deleteLabelAtom: "mockDeleteLabelAtom",
-  toggleTaskSelectionAtom: "mockToggleTaskSelectionAtom",
-  labelsAtom: "mockLabelsAtom",
-  sortedLabelsAtom: "mockSortedLabelsAtom",
-  labelsFromIdsAtom: "mockLabelsFromIdsAtom",
-  projectAtoms: "mockProjectAtoms",
-  addLabelAndWaitForRealIdAtom: "mockAddLabelAndWaitForRealIdAtom",
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 vi.mock("@/lib/utils", () => ({
   cn: vi.fn((...classes) => classes.filter(Boolean).join(" ")),
@@ -519,21 +491,23 @@ describe("TaskSidePanel", () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // Mock useSetAtom to return different functions based on the atom
+    // Mock useSetAtom to return different functions based on the atom's debugLabel
     mockJotai.useSetAtom.mockImplementation((atom) => {
-      if (atom === "mockUpdateTaskAtom") return mockUpdateTask
-      if (atom === "mockAddCommentAtom") return mockAddComment
-      if (atom === "mockAddLabelAtom") return mockAddLabel
+      const label = String(atom?.debugLabel ?? "")
+      if (label === "updateTaskAtom") return mockUpdateTask
+      if (label === "addCommentAtom") return mockAddComment
+      if (label === "addLabelAtom") return mockAddLabel
       return vi.fn()
     })
 
-    // Mock useAtomValue to return appropriate values
+    // Mock useAtomValue to return appropriate values based on debugLabel
     mockJotai.useAtomValue.mockImplementation((atom) => {
-      if (atom === "mockSelectedTaskAtom") return mockTask
-      if (atom === "mockSortedLabelsAtom") return mockAllLabels
-      if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-      if (atom === "mockSortedProjectsAtom") return mockProjects
-      if (atom === "mockSettingsAtom") return mockSettings
+      const label = String(atom?.debugLabel ?? "")
+      if (label === "selectedTaskAtom") return mockTask
+      if (label === "sortedLabelsAtom") return mockAllLabels
+      if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
+      if (label === "sortedProjectsAtom") return mockProjects
+      if (label === "settingsAtom") return mockSettings
       return []
     })
   })
@@ -550,11 +524,12 @@ describe("TaskSidePanel", () => {
   it("renders nothing when no task", () => {
     // Mock selectedTaskAtom to return null
     mockJotai.useAtomValue.mockImplementation((atom) => {
-      if (atom === "mockSelectedTaskAtom") return null
-      if (atom === "mockSortedLabelsAtom") return mockAllLabels
-      if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-      if (atom === "mockSortedProjectsAtom") return mockProjects
-      if (atom === "mockSettingsAtom") return mockSettings
+      const label = String(atom?.debugLabel ?? "")
+      if (label === "selectedTaskAtom") return null
+      if (label === "sortedLabelsAtom") return mockAllLabels
+      if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
+      if (label === "sortedProjectsAtom") return mockProjects
+      if (label === "settingsAtom") return mockSettings
       return []
     })
 
@@ -665,11 +640,12 @@ describe("TaskSidePanel", () => {
 
     // Update mock to return completed task
     mockJotai.useAtomValue.mockImplementation((atom) => {
-      if (atom === "mockSelectedTaskAtom") return completedTask
-      if (atom === "mockSortedLabelsAtom") return mockAllLabels
-      if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-      if (atom === "mockSortedProjectsAtom") return mockProjects
-      if (atom === "mockSettingsAtom") return mockSettings
+      const label = String(atom?.debugLabel ?? "")
+      if (label === "selectedTaskAtom") return completedTask
+      if (label === "sortedLabelsAtom") return mockAllLabels
+      if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
+      if (label === "sortedProjectsAtom") return mockProjects
+      if (label === "settingsAtom") return mockSettings
       return []
     })
 
@@ -800,11 +776,12 @@ describe("TaskSidePanel", () => {
 
     // Update mock to return task without description
     mockJotai.useAtomValue.mockImplementation((atom) => {
-      if (atom === "mockSelectedTaskAtom") return taskWithoutDescription
-      if (atom === "mockSortedLabelsAtom") return mockAllLabels
-      if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-      if (atom === "mockSortedProjectsAtom") return mockProjects
-      if (atom === "mockSettingsAtom") return mockSettings
+      const label = String(atom?.debugLabel ?? "")
+      if (label === "selectedTaskAtom") return taskWithoutDescription
+      if (label === "sortedLabelsAtom") return mockAllLabels
+      if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
+      if (label === "sortedProjectsAtom") return mockProjects
+      if (label === "settingsAtom") return mockSettings
       return []
     })
 
@@ -832,11 +809,12 @@ describe("TaskSidePanel", () => {
 
     // Update mock to return task without subtasks
     mockJotai.useAtomValue.mockImplementation((atom) => {
-      if (atom === "mockSelectedTaskAtom") return taskWithoutSubtasks
-      if (atom === "mockSortedLabelsAtom") return mockAllLabels
-      if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-      if (atom === "mockSortedProjectsAtom") return mockProjects
-      if (atom === "mockSettingsAtom") return mockSettings
+      const label = String(atom?.debugLabel ?? "")
+      if (label === "selectedTaskAtom") return taskWithoutSubtasks
+      if (label === "sortedLabelsAtom") return mockAllLabels
+      if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
+      if (label === "sortedProjectsAtom") return mockProjects
+      if (label === "settingsAtom") return mockSettings
       return []
     })
 
@@ -851,11 +829,12 @@ describe("TaskSidePanel", () => {
 
     // Update mock to return task without comments
     mockJotai.useAtomValue.mockImplementation((atom) => {
-      if (atom === "mockSelectedTaskAtom") return taskWithoutComments
-      if (atom === "mockSortedLabelsAtom") return mockAllLabels
-      if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-      if (atom === "mockSortedProjectsAtom") return mockProjects
-      if (atom === "mockSettingsAtom") return mockSettings
+      const label = String(atom?.debugLabel ?? "")
+      if (label === "selectedTaskAtom") return taskWithoutComments
+      if (label === "sortedLabelsAtom") return mockAllLabels
+      if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
+      if (label === "sortedProjectsAtom") return mockProjects
+      if (label === "settingsAtom") return mockSettings
       return []
     })
 
@@ -871,11 +850,12 @@ describe("TaskSidePanel", () => {
 
       // Update mock to return task without description
       mockJotai.useAtomValue.mockImplementation((atom) => {
-        if (atom === "mockSelectedTaskAtom") return taskWithoutDescription
-        if (atom === "mockSortedLabelsAtom") return mockAllLabels
-        if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-        if (atom === "mockSortedProjectsAtom") return mockProjects
-        if (atom === "mockSettingsAtom") return mockSettings
+        const label = String(atom?.debugLabel ?? "")
+        if (label === "selectedTaskAtom") return taskWithoutDescription
+        if (label === "sortedLabelsAtom") return mockAllLabels
+        if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
+        if (label === "sortedProjectsAtom") return mockProjects
+        if (label === "settingsAtom") return mockSettings
         return []
       })
 
@@ -926,11 +906,12 @@ describe("TaskSidePanel", () => {
 
       // Update mock to return task with empty title
       mockJotai.useAtomValue.mockImplementation((atom) => {
-        if (atom === "mockSelectedTaskAtom") return taskWithEmptyTitle
-        if (atom === "mockSortedLabelsAtom") return mockAllLabels
-        if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-        if (atom === "mockSortedProjectsAtom") return mockProjects
-        if (atom === "mockSettingsAtom") return mockSettings
+        const label = String(atom?.debugLabel ?? "")
+        if (label === "selectedTaskAtom") return taskWithEmptyTitle
+        if (label === "sortedLabelsAtom") return mockAllLabels
+        if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
+        if (label === "sortedProjectsAtom") return mockProjects
+        if (label === "settingsAtom") return mockSettings
         return []
       })
 
@@ -1378,11 +1359,12 @@ describe("TaskSidePanel", () => {
 
         // Update mock to return overdue completed task
         mockJotai.useAtomValue.mockImplementation((atom) => {
-          if (atom === "mockSelectedTaskAtom") return overdueCompletedTask
-          if (atom === "mockSortedLabelsAtom") return mockAllLabels
-          if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-          if (atom === "mockSortedProjectsAtom") return mockProjects
-          if (atom === "mockSettingsAtom") return mockSettings
+          const label = String(atom?.debugLabel ?? "")
+          if (label === "selectedTaskAtom") return overdueCompletedTask
+          if (label === "sortedLabelsAtom") return mockAllLabels
+          if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
+          if (label === "sortedProjectsAtom") return mockProjects
+          if (label === "settingsAtom") return mockSettings
           return []
         })
 
@@ -1693,11 +1675,12 @@ describe("TaskSidePanel", () => {
       const taskWithDateOnly = { ...mockTask, dueTime: undefined }
 
       mockJotai.useAtomValue.mockImplementation((atom) => {
-        if (atom === "mockSelectedTaskAtom") return taskWithDateOnly
-        if (atom === "mockSortedLabelsAtom") return mockAllLabels
-        if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-        if (atom === "mockSortedProjectsAtom") return mockProjects
-        if (atom === "mockSettingsAtom") return mockSettings
+        const label = String(atom?.debugLabel ?? "")
+        if (label === "selectedTaskAtom") return taskWithDateOnly
+        if (label === "sortedLabelsAtom") return mockAllLabels
+        if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
+        if (label === "sortedProjectsAtom") return mockProjects
+        if (label === "settingsAtom") return mockSettings
         return []
       })
 
@@ -1714,11 +1697,12 @@ describe("TaskSidePanel", () => {
       const taskWithDateTime = { ...mockTask, dueTime }
 
       mockJotai.useAtomValue.mockImplementation((atom) => {
-        if (atom === "mockSelectedTaskAtom") return taskWithDateTime
-        if (atom === "mockSortedLabelsAtom") return mockAllLabels
-        if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-        if (atom === "mockSortedProjectsAtom") return mockProjects
-        if (atom === "mockSettingsAtom") return mockSettings
+        const label = String(atom?.debugLabel ?? "")
+        if (label === "selectedTaskAtom") return taskWithDateTime
+        if (label === "sortedLabelsAtom") return mockAllLabels
+        if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
+        if (label === "sortedProjectsAtom") return mockProjects
+        if (label === "settingsAtom") return mockSettings
         return []
       })
 
@@ -1738,11 +1722,12 @@ describe("TaskSidePanel", () => {
       const taskDueToday = { ...mockTask, dueDate: new Date(), dueTime }
 
       mockJotai.useAtomValue.mockImplementation((atom) => {
-        if (atom === "mockSelectedTaskAtom") return taskDueToday
-        if (atom === "mockSortedLabelsAtom") return mockAllLabels
-        if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-        if (atom === "mockSortedProjectsAtom") return mockProjects
-        if (atom === "mockSettingsAtom") return mockSettings
+        const label = String(atom?.debugLabel ?? "")
+        if (label === "selectedTaskAtom") return taskDueToday
+        if (label === "sortedLabelsAtom") return mockAllLabels
+        if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
+        if (label === "sortedProjectsAtom") return mockProjects
+        if (label === "settingsAtom") return mockSettings
         return []
       })
 
@@ -1760,11 +1745,12 @@ describe("TaskSidePanel", () => {
       const taskDueTomorrow = { ...mockTask, dueDate: new Date(), dueTime }
 
       mockJotai.useAtomValue.mockImplementation((atom) => {
-        if (atom === "mockSelectedTaskAtom") return taskDueTomorrow
-        if (atom === "mockSortedLabelsAtom") return mockAllLabels
-        if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-        if (atom === "mockSortedProjectsAtom") return mockProjects
-        if (atom === "mockSettingsAtom") return mockSettings
+        const label = String(atom?.debugLabel ?? "")
+        if (label === "selectedTaskAtom") return taskDueTomorrow
+        if (label === "sortedLabelsAtom") return mockAllLabels
+        if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
+        if (label === "sortedProjectsAtom") return mockProjects
+        if (label === "settingsAtom") return mockSettings
         return []
       })
 
@@ -1782,11 +1768,12 @@ describe("TaskSidePanel", () => {
       const taskWithTimeOnly = { ...mockTask, dueDate: undefined, dueTime }
 
       mockJotai.useAtomValue.mockImplementation((atom) => {
-        if (atom === "mockSelectedTaskAtom") return taskWithTimeOnly
-        if (atom === "mockSortedLabelsAtom") return mockAllLabels
-        if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-        if (atom === "mockSortedProjectsAtom") return mockProjects
-        if (atom === "mockSettingsAtom") return mockSettings
+        const label = String(atom?.debugLabel ?? "")
+        if (label === "selectedTaskAtom") return taskWithTimeOnly
+        if (label === "sortedLabelsAtom") return mockAllLabels
+        if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
+        if (label === "sortedProjectsAtom") return mockProjects
+        if (label === "settingsAtom") return mockSettings
         return []
       })
 
@@ -1804,11 +1791,12 @@ describe("TaskSidePanel", () => {
       const taskWithDateTime = { ...mockTask, dueTime }
 
       mockJotai.useAtomValue.mockImplementation((atom) => {
-        if (atom === "mockSelectedTaskAtom") return taskWithDateTime
-        if (atom === "mockSortedLabelsAtom") return mockAllLabels
-        if (atom === "mockLabelsFromIdsAtom") return mockGetLabelsFromIds
-        if (atom === "mockSortedProjectsAtom") return mockProjects
-        if (atom === "mockSettingsAtom") return mockSettings
+        const label = String(atom?.debugLabel ?? "")
+        if (label === "selectedTaskAtom") return taskWithDateTime
+        if (label === "sortedLabelsAtom") return mockAllLabels
+        if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
+        if (label === "sortedProjectsAtom") return mockProjects
+        if (label === "settingsAtom") return mockSettings
         return []
       })
 

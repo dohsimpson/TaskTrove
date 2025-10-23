@@ -17,8 +17,8 @@ import { atomWithStorage } from "jotai/utils"
 import {
   keyboardHandlersAtom,
   registerKeyboardHandlerAtom,
-  type KeyboardHandler,
-} from "@tasktrove/atoms"
+} from "@tasktrove/atoms/ui/keyboard-context"
+import type { KeyboardHandler } from "@tasktrove/atoms/ui/keyboard-context"
 import { validateHandlerRegistration } from "./conflict-detector"
 
 // Create a store instance for updating atoms

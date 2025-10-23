@@ -116,56 +116,110 @@ const mockTask: Task = {
   createdAt: new Date(),
 }
 
-// Mock atom functions
+// Mock update function for testing interactions
 const mockUpdateTask = vi.fn()
 
-// Mock component interfaces
-interface MockProviderProps {
-  children: React.ReactNode
-}
-
-// Mock Jotai
-vi.mock("jotai", () => ({
-  useSetAtom: vi.fn(() => mockUpdateTask),
-  useAtomValue: vi.fn((atom) => {
-    if (atom === "mockProjectsAtom") {
-      return mockProjects
-    }
-    if (atom === "mockAllGroupsAtom") {
-      return mockProjectGroups
-    }
-    if (atom === "mockProjectIdsAtom") {
-      return new Set([
-        "550e8400-e29b-41d4-a716-446655440001",
-        "550e8400-e29b-41d4-a716-446655440002",
-        "550e8400-e29b-41d4-a716-446655440003",
-      ])
-    }
-    return []
-  }),
-  atom: vi.fn((value) => ({ init: value, toString: () => "mockAtom" })),
-  Provider: ({ children }: MockProviderProps) => children,
+// Override specific atoms for this test file with test-specific data
+vi.mock("@tasktrove/atoms/data/base/atoms", () => ({
+  tasksAtom: {
+    toString: () => "tasksAtom",
+    debugLabel: "tasksAtom",
+    read: vi.fn(() => [mockTask]),
+    write: vi.fn((get, set, update) => {
+      mockUpdateTask(update)
+    }),
+  },
+  projectsAtom: {
+    toString: () => "projectsAtom",
+    debugLabel: "projectsAtom",
+    read: vi.fn(() => mockProjects),
+  },
+  labelsAtom: {
+    toString: () => "labelsAtom",
+    debugLabel: "labelsAtom",
+    read: vi.fn(() => []),
+  },
+  settingsAtom: {
+    toString: () => "settingsAtom",
+    debugLabel: "settingsAtom",
+    read: vi.fn(() => ({ general: {}, data: {} })),
+  },
+  userAtom: {
+    toString: () => "userAtom",
+    debugLabel: "userAtom",
+    read: vi.fn(() => null),
+  },
+  taskByIdAtom: {
+    toString: () => "taskByIdAtom",
+    debugLabel: "taskByIdAtom",
+    read: vi.fn(() => new Map([[mockTask.id, mockTask]])),
+  },
 }))
 
-// Mock atoms
-vi.mock("@/lib/atoms", () => ({
-  projectsAtom: "mockProjectsAtom",
-  updateTaskAtom: "mockUpdateTaskAtom",
-  tasksAtom: "mockTasksAtom",
-  allGroupsAtom: "mockAllGroupsAtom",
+vi.mock("@tasktrove/atoms/core/projects", () => ({
+  projectIdsAtom: {
+    toString: () => "projectIdsAtom",
+    debugLabel: "projectIdsAtom",
+    read: vi.fn(
+      () =>
+        new Set([
+          "550e8400-e29b-41d4-a716-446655440001",
+          "550e8400-e29b-41d4-a716-446655440002",
+          "550e8400-e29b-41d4-a716-446655440003",
+        ]),
+    ),
+  },
+  visibleProjectsAtom: {
+    toString: () => "visibleProjectsAtom",
+    debugLabel: "visibleProjectsAtom",
+    read: vi.fn(() => mockProjects),
+  },
+  projectByIdAtom: {
+    toString: () => "projectByIdAtom",
+    debugLabel: "projectByIdAtom",
+    read: vi.fn(() => new Map(mockProjects.map((p) => [p.id, p]))),
+  },
+  addProjectAtom: { toString: () => "addProjectAtom", write: vi.fn() },
+  updateProjectAtom: { toString: () => "updateProjectAtom", write: vi.fn() },
+  updateProjectsAtom: { toString: () => "updateProjectsAtom", write: vi.fn() },
+  deleteProjectAtom: { toString: () => "deleteProjectAtom", write: vi.fn() },
 }))
 
-vi.mock("@/lib/atoms", () => ({
-  projectIdsAtom: "mockProjectIdsAtom",
+vi.mock("@tasktrove/atoms/core/tasks", () => ({
+  updateTaskAtom: {
+    toString: () => "updateTaskAtom",
+    debugLabel: "updateTaskAtom",
+    read: vi.fn(),
+    write: vi.fn((get, set, update) => {
+      mockUpdateTask(update)
+    }),
+  },
+  updateTasksAtom: {
+    toString: () => "updateTasksAtom",
+    debugLabel: "updateTasksAtom",
+    read: vi.fn(),
+    write: vi.fn((get, set, updates) => {
+      mockUpdateTask(updates)
+    }),
+  },
 }))
 
-// Mock @tasktrove/atoms properly since component imports from there directly
-vi.mock("@tasktrove/atoms", () => ({
-  projectsAtom: "mockProjectsAtom",
-  tasksAtom: "mockTasksAtom",
-  projectIdsAtom: "mockProjectIdsAtom",
-  allGroupsAtom: "mockAllGroupsAtom",
-  updateTaskAtom: "mockUpdateTaskAtom",
+vi.mock("@tasktrove/atoms/core/groups", () => ({
+  allGroupsAtom: {
+    toString: () => "allGroupsAtom",
+    debugLabel: "allGroupsAtom",
+    read: vi.fn(() => mockProjectGroups),
+  },
+  projectGroupsAtom: {
+    toString: () => "projectGroupsAtom",
+    debugLabel: "projectGroupsAtom",
+    read: vi.fn(() => mockProjectGroups.projectGroups),
+  },
+  flattenProjectGroupsAtom: {
+    toString: () => "flattenProjectGroupsAtom",
+    debugLabel: "flattenProjectGroupsAtom",
+    read: vi.fn(() => []),
+  },
 }))
 
 describe("ProjectContent", () => {

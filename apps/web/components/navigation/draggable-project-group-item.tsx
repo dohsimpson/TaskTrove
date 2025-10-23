@@ -11,13 +11,13 @@ import { useSidebarDragDrop } from "@/hooks/use-sidebar-drag-drop"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
 import { DraggableProjectItem } from "./draggable-project-item"
 import { DraggableSidebarGroup, DropTargetSidebarGroup } from "./drag-drop"
-import { projectTaskCountsAtom } from "@tasktrove/atoms"
+import { projectTaskCountsAtom } from "@tasktrove/atoms/ui/task-counts"
 import {
-  updateProjectGroupAtom,
   editingGroupIdAtom,
   stopEditingGroupAtom,
   pathnameAtom,
-} from "@tasktrove/atoms"
+} from "@tasktrove/atoms/ui/navigation"
+import { updateProjectGroupAtom } from "@tasktrove/atoms/core/groups"
 import type { ProjectGroup, ProjectId, Project } from "@/lib/types"
 import { cn } from "@/lib/utils"
 

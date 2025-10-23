@@ -2,9 +2,12 @@
 
 import { atom, useAtomValue } from "jotai"
 import { BaseDialog } from "./base-dialog"
-import { showProjectGroupDialogAtom, projectGroupDialogContextAtom } from "@tasktrove/atoms"
-import { closeProjectGroupDialogAtom } from "@tasktrove/atoms"
-import { addProjectGroupAtom, flattenProjectGroupsAtom } from "@tasktrove/atoms"
+import {
+  showProjectGroupDialogAtom,
+  projectGroupDialogContextAtom,
+} from "@tasktrove/atoms/ui/dialogs"
+import { closeProjectGroupDialogAtom } from "@tasktrove/atoms/ui/navigation"
+import { addProjectGroupAtom, flattenProjectGroupsAtom } from "@tasktrove/atoms/core/groups"
 import { createGroupId } from "@/lib/types"
 
 // Wrapper atom to match BaseDialog's expected Promise<void> return type

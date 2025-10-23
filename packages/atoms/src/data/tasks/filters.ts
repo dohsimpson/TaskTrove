@@ -14,12 +14,12 @@ import {
   handleAtomError,
   namedAtom,
   withErrorHandling,
-} from "#utils/atom-helpers";
-import { tasksAtom } from "#data/base/atoms";
-import { currentRouteContextAtom } from "#ui/navigation";
-import { allGroupsAtom } from "#core/groups";
-import { projectIdsAtom } from "#core/projects";
-import { appRefreshTriggerAtom } from "#ui/app-refresh";
+} from "@tasktrove/atoms/utils/atom-helpers";
+import { tasksAtom } from "@tasktrove/atoms/data/base/atoms";
+import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation";
+import { allGroupsAtom } from "@tasktrove/atoms/core/groups";
+import { projectIdsAtom } from "@tasktrove/atoms/core/projects";
+import { appRefreshTriggerAtom } from "@tasktrove/atoms/ui/app-refresh";
 
 // =============================================================================
 // ACTIVE TASKS

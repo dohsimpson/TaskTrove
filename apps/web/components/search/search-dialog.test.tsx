@@ -2,8 +2,10 @@ import React from "react"
 import { describe, it, expect } from "vitest"
 import { render, screen } from "@/test-utils"
 import { SearchDialog } from "./search-dialog"
-import { taskAtoms, projectAtoms, labelAtoms } from "@tasktrove/atoms"
-import { showSearchDialogAtom } from "@tasktrove/atoms"
+import { taskAtoms } from "@tasktrove/atoms/core/tasks"
+import { projectAtoms } from "@tasktrove/atoms/core/projects"
+import { labelAtoms } from "@tasktrove/atoms/core/labels"
+import { showSearchDialogAtom } from "@tasktrove/atoms/ui/dialogs"
 
 describe("SearchDialog", () => {
   it("can import SearchDialog component", () => {

@@ -369,21 +369,7 @@ vi.mock("@/components/task/task-side-panel", () => ({
     ) : null,
 }))
 
-// Mock @tasktrove/atoms
-vi.mock("@tasktrove/atoms", () => ({
-  showTaskPanelAtom: { toString: () => "showTaskPanelAtom" },
-  closeTaskPanelAtom: { toString: () => "closeTaskPanelAtom" },
-  selectedTaskAtom: { toString: () => "selectedTaskAtom" },
-  currentViewStateAtom: { toString: () => "currentViewStateAtom" },
-  taskAtoms: {
-    actions: {
-      updateTask: { toString: () => "updateTaskAtom" },
-    },
-  },
-  sidePanelWidthAtom: { toString: () => "sidePanelAtomWidthAtom" },
-  updateGlobalViewOptionsAtom: { toString: () => "updateGlobalViewOptionsAtom" },
-  updateQuickAddTaskAtom: { toString: () => "updateQuickAddTaskAtom" },
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Mock atom values
 vi.mock("jotai", async (importOriginal) => {

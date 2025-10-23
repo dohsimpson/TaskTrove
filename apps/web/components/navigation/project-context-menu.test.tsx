@@ -157,30 +157,7 @@ const mockDeleteProject = vi.fn()
 const mockDeleteTasks = vi.fn()
 const mockUpdateTasks = vi.fn()
 
-// Mock the atoms module to provide controllable values for testing
-vi.mock("@tasktrove/atoms", () => ({
-  // Core atoms (from old lib/atoms)
-  projects: Symbol("projectsAtom"),
-  projectsAtom: Symbol("projectsAtom"),
-  tasks: Symbol("tasksAtom"),
-  tasksAtom: Symbol("tasksAtom"),
-  deleteTaskAtom: Symbol("deleteTaskAtom"),
-  deleteTasksAtom: Symbol("deleteTasksAtom"),
-  updateTaskAtom: Symbol("updateTaskAtom"),
-  updateTasksAtom: Symbol("updateTasksAtom"),
-  updateProjectAtom: Symbol("updateProjectAtom"),
-  // Project atoms (grouped structure)
-  projectAtoms: {
-    actions: {
-      deleteProject: Symbol("deleteProjectAtom"),
-      updateProject: Symbol("updateProjectAtom"),
-    },
-    derived: {},
-  },
-  // UI state atoms
-  startEditingProjectAtom: Symbol("startEditingProjectAtom"),
-  openProjectDialogAtom: Symbol("openProjectDialogAtom"),
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 vi.mock("jotai", async (importOriginal) => {
   const actual = await importOriginal<typeof import("jotai")>()

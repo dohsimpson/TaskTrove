@@ -2,10 +2,7 @@ import { render, screen } from "@/test-utils"
 import { describe, it, expect, vi } from "vitest"
 import { LinkifiedText } from "./linkified-text"
 
-// Mock the settings atom specifically
-vi.mock("@tasktrove/atoms", () => ({
-  settingsAtom: Symbol("settingsAtom"),
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 // Mock Jotai
 vi.mock("jotai", async (importOriginal) => {

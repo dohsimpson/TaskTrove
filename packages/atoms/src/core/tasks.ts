@@ -31,27 +31,32 @@ import {
   handleAtomError,
   namedAtom,
   withErrorHandling,
-} from "#utils/atom-helpers";
-import { playSoundAtom } from "#ui/audio";
-import { notificationAtoms } from "#core/notifications";
+} from "@tasktrove/atoms/utils/atom-helpers";
+import { playSoundAtom } from "@tasktrove/atoms/ui/audio";
+import { notificationAtoms } from "@tasktrove/atoms/core/notifications";
 import {
   getOrderedTasksForProject,
   getOrderedTasksForSection,
   moveTaskWithinSection,
   addTaskToSection,
   removeTaskFromSection,
-} from "#data/tasks/ordering";
+} from "@tasktrove/atoms/data/tasks/ordering";
 
-// Note: moveTaskWithinSection is imported directly from "#data/tasks/ordering" for internal use
-import { tasksAtom, projectsAtom, userAtom } from "#data/base/atoms";
+// Note: moveTaskWithinSection is imported directly from "@tasktrove/atoms/data/tasks/ordering" for internal use
+import {
+  tasksAtom,
+  taskByIdAtom,
+  projectsAtom,
+  userAtom,
+} from "@tasktrove/atoms/data/base/atoms";
 import {
   createTaskMutationAtom,
   updateTasksMutationAtom,
   deleteTaskMutationAtom,
-} from "#mutations/tasks";
-import { updateProjectsMutationAtom } from "#mutations/projects";
-import { recordOperationAtom } from "#core/history";
-import { log } from "#utils/atom-helpers";
+} from "@tasktrove/atoms/mutations/tasks";
+import { updateProjectsMutationAtom } from "@tasktrove/atoms/mutations/projects";
+import { recordOperationAtom } from "@tasktrove/atoms/core/history";
+import { log } from "@tasktrove/atoms/utils/atom-helpers";
 
 /**
  * Core task management atoms for TaskTrove's Jotai migration
@@ -457,29 +462,9 @@ import {
   overdueTasksAtom,
   completedTasksAtom,
   baseFilteredTasksForViewAtom,
-} from "#data/tasks/filters";
+} from "@tasktrove/atoms/data/tasks/filters";
 
-/**
- * Task lookup map for O(1) access by ID
- * Creates a Map from task IDs to tasks for efficient lookups
- */
-export const taskByIdAtom = namedAtom(
-  "taskByIdAtom",
-  atom((get) =>
-    withErrorHandling(
-      () => {
-        const tasks = get(tasksAtom);
-        const taskMap = new Map<TaskId, Task>();
-        for (const task of tasks) {
-          taskMap.set(task.id, task);
-        }
-        return taskMap;
-      },
-      "taskByIdAtom",
-      new Map<TaskId, Task>(),
-    ),
-  ),
-);
+// Note: taskByIdAtom moved to data/base/atoms.ts to avoid circular dependency
 
 /**
  * Tasks due exactly today (strict date match)

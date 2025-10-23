@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useAtom, useAtomValue } from "jotai"
-import { selectedTasksAtom, multiSelectDraggingAtom } from "@tasktrove/atoms"
+import { selectedTasksAtom, multiSelectDraggingAtom } from "@tasktrove/atoms/ui/selection"
 import { DraggableItem } from "@/components/ui/drag-drop"
 import type { TaskId } from "@/lib/types"
 

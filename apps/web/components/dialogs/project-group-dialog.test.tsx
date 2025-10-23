@@ -41,14 +41,7 @@ const { useAtomValue, useSetAtom } = vi.hoisted(() => ({
   useSetAtom: vi.fn(),
 }))
 
-// Mock the atoms directly
-vi.mock("@tasktrove/atoms", () => ({
-  showProjectGroupDialogAtom: { debugLabel: "showProjectGroupDialogAtom" },
-  projectGroupDialogContextAtom: { debugLabel: "projectGroupDialogContextAtom" },
-  closeProjectGroupDialogAtom: { debugLabel: "closeProjectGroupDialogAtom" },
-  addProjectGroupAtom: { debugLabel: "addProjectGroupAtom" },
-  flattenProjectGroupsAtom: { debugLabel: "flattenProjectGroupsAtom" },
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 vi.mock("@/lib/atoms/core/groups", () => ({
   // Empty mock - moved to @tasktrove/atoms

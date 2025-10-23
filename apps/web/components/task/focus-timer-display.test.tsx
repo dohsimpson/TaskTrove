@@ -47,32 +47,7 @@ vi.mock("jotai", () => ({
   Provider: vi.fn(({ children }) => children),
 }))
 
-// Mock the atoms module
-vi.mock("@tasktrove/atoms", () => ({
-  activeFocusTimerAtom: {},
-  activeFocusTaskAtom: {},
-  focusTimerDisplayAtom: {},
-  focusTimerStatusAtom: {},
-  focusTimerTickAtom: {},
-  tasksAtom: {},
-  taskCountsAtom: {},
-  taskAtoms: {
-    actions: {},
-    derived: {},
-  },
-  projectAtoms: {
-    actions: {},
-    derived: {},
-  },
-  projectsAtom: {},
-  labelsAtom: {},
-  updateLabelAtom: {},
-  deleteLabelAtom: {},
-  toggleTaskSelectionAtom: {},
-  pauseFocusTimerAtom: {},
-  startFocusTimerAtom: {},
-  stopFocusTimerAtom: {},
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 const testTaskId = TEST_TASK_ID_1
 const mockTask = {

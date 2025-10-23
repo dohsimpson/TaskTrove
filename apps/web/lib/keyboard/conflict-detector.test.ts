@@ -21,10 +21,7 @@ const mockJotai = vi.hoisted(() => ({
 
 vi.mock("jotai", () => mockJotai)
 
-// Mock keyboard context atoms
-vi.mock("@tasktrove/atoms", () => ({
-  keyboardHandlersAtom: "mockKeyboardHandlersAtom",
-}))
+// Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 describe("Keyboard Conflict Detection System", () => {
   const mockHandlersWithConflicts = new Map([
@@ -123,8 +120,8 @@ describe("Keyboard Conflict Detection System", () => {
       // Mock atom implementation for conflicts test
       mockJotai.atom.mockImplementation((getter?: unknown | ((get: unknown) => unknown)) => {
         const mockGet = vi.fn()
-        mockGet.mockImplementation((atom: string) => {
-          if (atom === "mockKeyboardHandlersAtom") return mockHandlersWithConflicts
+        mockGet.mockImplementation((atom: { debugLabel?: string }) => {
+          if (atom.debugLabel === "keyboardHandlersAtom") return mockHandlersWithConflicts
           return null
         })
 
@@ -145,8 +142,8 @@ describe("Keyboard Conflict Detection System", () => {
       // Mock atom implementation for no conflicts test
       mockJotai.atom.mockImplementation((getter?: unknown | ((get: unknown) => unknown)) => {
         const mockGet = vi.fn()
-        mockGet.mockImplementation((atom: string) => {
-          if (atom === "mockKeyboardHandlersAtom") return mockHandlersNoConflicts
+        mockGet.mockImplementation((atom: { debugLabel?: string }) => {
+          if (atom.debugLabel === "keyboardHandlersAtom") return mockHandlersNoConflicts
           return null
         })
 

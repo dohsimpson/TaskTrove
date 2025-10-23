@@ -198,11 +198,10 @@ export function DropTargetItem({
   if (mode === "group") {
     return (
       <div className={cn(className, "flex-1 flex")} data-testid={`drop-target-${id}`}>
-        <div className="flex flex-1">
-          <GroupDropIndicator isActive={isOver} ref={ref}>
-            {children}
-          </GroupDropIndicator>
-        </div>
+        {/* NOTE: important!!! Do not remove the className on GroupDropIndicator!!! The className must be applied on this element or the UI would break */}
+        <GroupDropIndicator isActive={isOver} ref={ref} className="flex flex-1">
+          {children}
+        </GroupDropIndicator>
       </div>
     )
   }

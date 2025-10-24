@@ -174,6 +174,54 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
         expect(span).not.toHaveClass("border-r")
       })
     })
+
+    it("should NOT use font-medium on tokens to prevent Inter font misalignment", () => {
+      // Enable NLP for this test to ensure tokens are highlighted
+      const { container } = render(
+        <EnhancedHighlightedInput
+          {...defaultProps}
+          value="Task #Work @bug tomorrow ~2h"
+          autocompleteItems={{
+            projects: [{ id: "1", label: "Work", icon: <span>📁</span>, type: "project" }],
+            labels: [{ id: "2", label: "bug", icon: <span>🏷️</span>, type: "label" }],
+            dates: [],
+            estimations: [{ id: "3", label: "2h", icon: <span>⏰</span>, type: "estimation" }],
+          }}
+        />,
+      )
+
+      const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
+      expect(overlay).toBeTruthy()
+
+      // Get all highlighted spans (tokens) - they should have class containing colors
+      const allSpans = overlay?.querySelectorAll("span") || []
+      const highlightedSpans = Array.from(allSpans).filter(
+        (span) => span.className.includes("bg-") || span.className.includes("text-"),
+      )
+
+      // If no highlighted spans, check if NLP is disabled - tokens won't be styled
+      if (highlightedSpans.length === 0) {
+        // NLP might be disabled in test context, skip font-weight check but ensure no font-medium in any spans
+        allSpans.forEach((span) => {
+          expect(span).not.toHaveClass("font-medium")
+          expect(span).not.toHaveClass("font-semibold")
+          expect(span).not.toHaveClass("font-bold")
+        })
+      } else {
+        // Check highlighted spans don't have font-weight classes
+        highlightedSpans.forEach((span) => {
+          // CRITICAL: font-medium causes cumulative misalignment with Inter font
+          // Different font weights in Inter have different character widths
+          expect(span).not.toHaveClass("font-medium")
+          expect(span).not.toHaveClass("font-semibold")
+          expect(span).not.toHaveClass("font-bold")
+
+          // Ensure no font-weight modifications that could cause width discrepancies
+          const classes = span.className
+          expect(classes).not.toMatch(/font-(light|normal|medium|semibold|bold|extrabold|black)/)
+        })
+      }
+    })
   })
 
   describe("Structural Positioning", () => {

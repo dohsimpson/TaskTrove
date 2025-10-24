@@ -93,27 +93,30 @@ const createReactChangeEvent = (value: string): React.ChangeEvent<HTMLInputEleme
 }
 
 // Token styling based on TaskTrove's theme system
+// IMPORTANT: Do NOT add font-medium or any font-weight classes to these styles.
+// Inter font has different character widths for different font weights,
+// causing cumulative misalignment between the overlay and contentEditable text.
 const TOKEN_STYLES = {
-  project: "bg-purple-500/20 text-purple-300 font-medium",
-  label: "bg-blue-500/20 text-blue-300 font-medium",
-  priority: "bg-red-500/20 text-red-300 font-medium",
-  date: "bg-green-500/20 text-green-300 font-medium",
-  time: "bg-purple-500/20 text-purple-300 font-medium",
-  recurring: "bg-blue-500/20 text-blue-300 font-medium",
-  duration: "bg-orange-500/20 text-orange-300 font-medium",
-  estimation: "bg-cyan-500/20 text-cyan-300 font-medium",
+  project: "bg-purple-500/20 text-purple-300",
+  label: "bg-blue-500/20 text-blue-300",
+  priority: "bg-red-500/20 text-red-300",
+  date: "bg-green-500/20 text-green-300",
+  time: "bg-purple-500/20 text-purple-300",
+  recurring: "bg-blue-500/20 text-blue-300",
+  duration: "bg-orange-500/20 text-orange-300",
+  estimation: "bg-cyan-500/20 text-cyan-300",
   text: "",
 }
 
 const DISABLED_TOKEN_STYLES = {
-  project: "bg-gray-200 text-gray-600 line-through font-medium",
-  label: "bg-gray-200 text-gray-600 line-through font-medium",
-  priority: "bg-gray-200 text-gray-600 line-through font-medium",
-  date: "bg-gray-200 text-gray-600 line-through font-medium",
-  time: "bg-gray-200 text-gray-600 line-through font-medium",
-  recurring: "bg-gray-200 text-gray-600 line-through font-medium",
-  duration: "bg-gray-200 text-gray-600 line-through font-medium",
-  estimation: "bg-gray-200 text-gray-600 line-through font-medium",
+  project: "bg-gray-200 text-gray-600 line-through",
+  label: "bg-gray-200 text-gray-600 line-through",
+  priority: "bg-gray-200 text-gray-600 line-through",
+  date: "bg-gray-200 text-gray-600 line-through",
+  time: "bg-gray-200 text-gray-600 line-through",
+  recurring: "bg-gray-200 text-gray-600 line-through",
+  duration: "bg-gray-200 text-gray-600 line-through",
+  estimation: "bg-gray-200 text-gray-600 line-through",
   text: "",
 }
 

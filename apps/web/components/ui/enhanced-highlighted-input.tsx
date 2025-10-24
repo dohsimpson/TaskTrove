@@ -443,9 +443,53 @@ export function EnhancedHighlightedInput({
     [onChange, detectAutocomplete, calculateAutocompletePosition],
   )
 
+  // Handle paste events to strip newlines
+  const handlePaste = useCallback((e: React.ClipboardEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    const text = e.clipboardData.getData("text/plain")
+    // Replace all newlines with spaces
+    const cleanedText = text.replace(/\r?\n/g, " ")
+
+    // Insert the cleaned text
+    const selection = window.getSelection()
+    if (selection && selection.rangeCount > 0) {
+      selection.deleteFromDocument()
+      const range = selection.getRangeAt(0)
+      const textNode = document.createTextNode(cleanedText)
+      range.insertNode(textNode)
+      range.setStartAfter(textNode)
+      range.collapse(true)
+      selection.removeAllRanges()
+      selection.addRange(range)
+
+      // Trigger input event to update state
+      if (inputRef.current) {
+        const event = new Event("input", { bubbles: true })
+        inputRef.current.dispatchEvent(event)
+      }
+    }
+  }, [])
+
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
+      // Prevent newlines from Enter or Shift+Enter
+      if (e.key === "Enter") {
+        e.preventDefault()
+
+        if (autocomplete.show) {
+          // If autocomplete is showing, select the current item
+          const selectedItem = autocomplete.items[autocomplete.selectedIndex]
+          if (selectedItem) {
+            handleAutocompleteSelect(selectedItem)
+          }
+        } else {
+          // Pass through to parent handler for form submission
+          onKeyDown?.(e)
+        }
+        return
+      }
+
       if (autocomplete.show) {
         switch (e.key) {
           case "ArrowDown":
@@ -464,8 +508,7 @@ export function EnhancedHighlightedInput({
             }))
             break
 
-          case "Tab":
-          case "Enter": {
+          case "Tab": {
             e.preventDefault()
             const selectedItem = autocomplete.items[autocomplete.selectedIndex]
             if (selectedItem) {
@@ -544,6 +587,7 @@ export function EnhancedHighlightedInput({
         className={cn(SHARED_TEXT_CLASSES, "bg-transparent")}
         onInput={handleInput}
         onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         suppressContentEditableWarning

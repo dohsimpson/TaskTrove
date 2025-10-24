@@ -1,5 +1,6 @@
 "use client"
 
+import { useRef } from "react"
 import { Button } from "@/components/ui/button"
 import {
   AlertDialog,
@@ -25,6 +26,7 @@ export function UnsavedConfirmationDialog({
   onConfirm,
 }: UnsavedConfirmationDialogProps) {
   const { t } = useTranslation("dialogs")
+  const discardButtonRef = useRef<HTMLButtonElement>(null)
 
   const handleConfirm = () => {
     onConfirm()
@@ -33,7 +35,16 @@ export function UnsavedConfirmationDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent
+        onOpenAutoFocus={(e) => {
+          // Prevent default focus behavior (which focuses Cancel button)
+          e.preventDefault()
+          // Use setTimeout to ensure focus happens after any click events resolve
+          setTimeout(() => {
+            discardButtonRef.current?.focus()
+          }, 0)
+        }}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>
             {t("unsavedConfirmation.title", "Discard unsaved changes?")}
@@ -49,8 +60,9 @@ export function UnsavedConfirmationDialog({
           <AlertDialogCancel>{t("common.cancel", "Cancel")}</AlertDialogCancel>
           <AlertDialogAction asChild>
             <Button
+              ref={discardButtonRef}
               variant="outline"
-              className="border border-red-600 text-red-600 bg-background hover:text-red-700 hover:bg-transparent"
+              className="border border-red-600 text-red-600 bg-background hover:text-red-700 hover:bg-transparent focus:ring-4 focus:ring-muted-foreground"
               onClick={handleConfirm}
             >
               {t("unsavedConfirmation.confirm", "Discard Changes")}

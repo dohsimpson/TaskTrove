@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createStore } from "jotai";
 import { v4 as uuidv4 } from "uuid";
-import type { CreateTaskRequest } from "@tasktrove/types";
-import { createLabelId, createProjectId } from "@tasktrove/types";
+import type { CreateTaskRequest } from "@tasktrove/types/api-requests";
+import { createLabelId, createProjectId } from "@tasktrove/types/id";
 import {
   quickAddTaskAtom,
   updateQuickAddTaskAtom,

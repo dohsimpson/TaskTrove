@@ -19,12 +19,10 @@ import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
 import { describe, it, expect, beforeEach } from "vitest";
 import { atom, createStore } from "jotai";
 import { setPathnameAtom, pathnameAtom } from "../ui/navigation";
-import type { Project, Label, ViewId, StandardViewId } from "@tasktrove/types";
-import {
-  createProjectId,
-  createLabelId,
-  INBOX_PROJECT_ID,
-} from "@tasktrove/types";
+import type { Project, Label } from "@tasktrove/types/core";
+import type { ViewId, StandardViewId } from "@tasktrove/types/id";
+import { createProjectId, createLabelId } from "@tasktrove/types/id";
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
 import type { RouteContext } from "../ui/navigation";
 import { resolveProject, resolveLabel } from "@tasktrove/utils/routing";
 

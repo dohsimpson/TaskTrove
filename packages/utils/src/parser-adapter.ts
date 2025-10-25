@@ -1,23 +1,23 @@
-import { TaskParser, extractRecurringAnchor } from "@tasktrove/parser";
-import type { ParsedTask, ParserContext } from "@tasktrove/parser";
+import { TaskParser } from "@tasktrove/parser/core/parser";
+import { extractRecurringAnchor } from "@tasktrove/parser/utils/recurring-anchor";
+import type { ParsedTask, ParserContext } from "@tasktrove/parser/types";
 
 interface DynamicPatternsConfig {
   projects?: Array<{ name: string }>;
   labels?: Array<{ name: string }>;
+  users?: Array<{ username: string }>;
 }
-
-// Create default parser instance
-const defaultParser = new TaskParser();
 
 /**
  * Backwards-compatible adapter for the old parseEnhancedNaturalLanguage API
+ * Creates a new TaskParser instance each time to ensure correct Pro/base resolution
  */
 export function parseEnhancedNaturalLanguage(
   text: string,
   disabledSections: Set<string> = new Set(),
   config?: DynamicPatternsConfig,
 ): ParsedTask {
-  const context: ParserContext = {
+  const baseContext: ParserContext = {
     locale: "en",
     referenceDate: new Date(),
     disabledSections,
@@ -25,7 +25,14 @@ export function parseEnhancedNaturalLanguage(
     labels: config?.labels,
   };
 
-  const result = defaultParser.parse(text, context);
+  // Add users if provided (Pro feature)
+  const context = config?.users
+    ? { ...baseContext, users: config.users }
+    : baseContext;
+
+  // Create new parser instance each time (not singleton) to support Pro/base conditional exports
+  const parser = new TaskParser();
+  const result = parser.parse(text, context);
   const parsed = result.parsed;
 
   // Auto-enrich recurring patterns with anchor date/time if not already present

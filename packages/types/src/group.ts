@@ -5,13 +5,13 @@
  */
 
 import { z } from "zod";
-import type { TaskId, ProjectId, LabelId, GroupId } from "#id";
+import type { TaskId, ProjectId, LabelId, GroupId } from "./id";
 import {
   TaskIdSchema,
   ProjectIdSchema,
   LabelIdSchema,
   GroupIdSchema,
-} from "#id";
+} from "./id";
 
 // =============================================================================
 // GROUP INTERFACES

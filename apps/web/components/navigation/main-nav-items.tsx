@@ -8,8 +8,11 @@ export interface MainNavItem {
   id: string
   label: string
   icon: React.ReactNode
-  count: number
+  count?: number
   href: string
+  comingSoon?: boolean
+  featureName?: string
+  proOnly?: boolean
 }
 
 export interface MainNavItemsConfig {

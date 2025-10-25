@@ -662,8 +662,8 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
             )}
 
             <div className="space-y-4">
-              <AssigneeFilterSection />
               <OwnerFilterSection />
+              <AssigneeFilterSection />
             </div>
           </div>
         </ScrollArea>

@@ -16,15 +16,9 @@ import { atomWithQuery, queryClientAtom } from "jotai-tanstack-query";
 
 // Re-export queryClientAtom for use in mutations
 export { queryClientAtom };
-import type {
-  Task,
-  Project,
-  Label,
-  ProjectGroup,
-  LabelGroup,
-  UserSettings,
-  User,
-} from "@tasktrove/types";
+import type { Task, Project, Label, User } from "@tasktrove/types/core";
+import type { ProjectGroup, LabelGroup } from "@tasktrove/types/group";
+import type { UserSettings } from "@tasktrove/types/settings";
 import {
   GetTasksResponseSchema,
   GetProjectsResponseSchema,
@@ -32,18 +26,21 @@ import {
   GetGroupsResponseSchema,
   GetSettingsResponseSchema,
   GetUserResponseSchema,
+} from "@tasktrove/types/api-responses";
+import {
   TaskSchema,
   ProjectSchema,
   LabelSchema,
-  ProjectGroupSchema,
-  LabelGroupSchema,
-  UserSettingsSchema,
   UserSchema,
+} from "@tasktrove/types/core";
+import { ProjectGroupSchema, LabelGroupSchema } from "@tasktrove/types/group";
+import { UserSettingsSchema } from "@tasktrove/types/settings";
+import {
   createProjectId,
   createLabelId,
   createGroupId,
-  API_ROUTES,
-} from "@tasktrove/types";
+} from "@tasktrove/types/id";
+import { API_ROUTES } from "@tasktrove/types/constants";
 import {
   DEFAULT_AUTO_BACKUP_ENABLED,
   DEFAULT_BACKUP_TIME,

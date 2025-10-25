@@ -4,7 +4,8 @@ import { v4 as uuidv4 } from "uuid"
 import { z } from "zod"
 import { Mutex } from "async-mutex"
 import { log } from "./logger"
-import { DataFile, DataFileSchema, DataFileSerializationSchema } from "@/lib/types"
+import { DataFile, DataFileSchema, UserFile, UserFileSchema } from "@tasktrove/types/data-file"
+import { DataFileSerializationSchema } from "@tasktrove/types/data-file"
 import { DEFAULT_DATA_FILE_PATH, DEFAULT_DATA_DIR, DEFAULT_AVATAR_DIR } from "@tasktrove/constants"
 
 // Create a mutex instance to synchronize all file read/write operations
@@ -25,6 +26,112 @@ export async function safeReadDataFile({
     filePath,
     schema: DataFileSchema,
     // No defaultValue - data files return undefined on failure
+  })
+}
+
+/**
+ * Safely reads just the user field from the data file.
+ * This is a lightweight alternative to safeReadDataFile for auth purposes.
+ * Uses UserFileSchema which only validates the user field, avoiding full validation.
+ *
+ * @param options - Configuration options for reading the user data
+ * @param options.filePath - Path to the JSON file to read (defaults to DEFAULT_DATA_FILE_PATH)
+ * @returns The user data from the file, or undefined if parsing/validation fails.
+ */
+export async function safeReadUserFile({
+  filePath = DEFAULT_DATA_FILE_PATH,
+}: { filePath?: string } = {}): Promise<UserFile | undefined> {
+  return safeReadJsonFile({
+    filePath,
+    schema: UserFileSchema,
+    // No defaultValue - return undefined on failure
+  })
+}
+
+/**
+ * Safely writes just the user field to the data file, preserving all other fields.
+ * This is a lightweight alternative to safeWriteDataFile for user updates.
+ * Uses read-modify-write pattern to avoid overwriting tasks, projects, labels, etc.
+ *
+ * @param options - Configuration options for writing the user data
+ * @param options.filePath - Path to the JSON file to write (defaults to DEFAULT_DATA_FILE_PATH)
+ * @param options.data - The user data object to write to the file
+ * @param options.schema - Zod schema to validate the user data
+ * @returns true if the write operation was successful, false otherwise.
+ */
+export async function safeWriteUserFile<T extends UserFile>({
+  filePath = DEFAULT_DATA_FILE_PATH,
+  data,
+  schema,
+}: {
+  filePath?: string
+  data: T
+  schema: z.ZodSchema<T>
+}): Promise<boolean> {
+  log.debug(`Attempting to update user field in file: ${filePath}`)
+
+  // Validate the user data against the provided schema
+  let validatedData: T
+  try {
+    validatedData = schema.parse(data, { reportInput: true })
+    log.debug(`User data validated successfully for file: ${filePath}`)
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      log.error(`User data validation failed for file ${filePath}:`)
+      log.error(JSON.stringify(error.issues, null, 2))
+    } else if (error instanceof Error) {
+      log.error(
+        `An unexpected error occurred during user data validation for file ${filePath}: ${error.message}`,
+      )
+    } else {
+      log.error(`An unknown error occurred during user data validation for file ${filePath}`)
+    }
+    return false
+  }
+
+  return await fileOperationsMutex.runExclusive(async () => {
+    // Read existing file as raw JSON (no schema validation)
+    let existingJson: Record<string, unknown>
+    try {
+      const fileContent = await fs.readFile(filePath, "utf-8")
+      const parsed: unknown = JSON.parse(fileContent)
+      if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+        log.error(`File ${filePath} does not contain a valid JSON object`)
+        return false
+      }
+      // We've validated it's a non-null, non-array object, so it's safe to treat as Record
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      existingJson = parsed as Record<string, unknown>
+      log.debug(`Successfully read existing JSON from file: ${filePath}`)
+    } catch (error) {
+      if (error instanceof Error) {
+        log.error(`Failed to read file ${filePath}: ${error.message}`)
+      } else {
+        log.error(`Failed to read file ${filePath}`)
+      }
+      return false
+    }
+
+    // Merge user field into existing JSON
+    const updatedJson = {
+      ...existingJson,
+      user: validatedData.user,
+    }
+
+    // Write updated JSON back to file
+    try {
+      const jsonString = JSON.stringify(updatedJson, null, 2)
+      await fs.writeFile(filePath, jsonString, "utf-8")
+      log.debug(`Successfully updated user field in file: ${filePath}`)
+      return true
+    } catch (error) {
+      if (error instanceof Error) {
+        log.error(`Failed to write file ${filePath}: ${error.message}`)
+      } else {
+        log.error(`Failed to write file ${filePath}`)
+      }
+      return false
+    }
   })
 }
 

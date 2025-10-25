@@ -7,7 +7,7 @@
 
 import { atom } from "jotai";
 import { atomFamily } from "jotai/utils";
-import type { ViewId } from "@tasktrove/types";
+import type { ViewId } from "@tasktrove/types/id";
 import { baseFilteredTasksForViewAtom } from "@tasktrove/atoms/data/tasks/filters";
 import {
   currentViewAtom,

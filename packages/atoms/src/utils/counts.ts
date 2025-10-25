@@ -8,13 +8,8 @@
  */
 
 import { isToday, isPast, isFuture } from "date-fns";
-import type {
-  Task,
-  Project,
-  Label,
-  ProjectId,
-  LabelId,
-} from "@tasktrove/types";
+import type { Task, Project, Label } from "@tasktrove/types/core";
+import type { ProjectId, LabelId } from "@tasktrove/types/id";
 import { shouldTaskBeInInbox } from "@tasktrove/utils";
 import { filterTasksByCompleted } from "./filters";
 

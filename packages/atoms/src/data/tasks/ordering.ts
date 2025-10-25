@@ -1,11 +1,5 @@
-import type {
-  Task,
-  TaskId,
-  ProjectId,
-  GroupId,
-  Project,
-  ProjectSection,
-} from "@tasktrove/types";
+import type { Task, Project, ProjectSection } from "@tasktrove/types/core";
+import type { TaskId, ProjectId, GroupId } from "@tasktrove/types/id";
 
 /**
  * Gets ordered tasks for a specific section.

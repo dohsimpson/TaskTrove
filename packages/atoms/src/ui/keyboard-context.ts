@@ -11,7 +11,7 @@
  */
 
 import { atom } from "jotai";
-import type { Task } from "@tasktrove/types";
+import type { Task } from "@tasktrove/types/core";
 import {
   isAnyDialogOpenAtom,
   showTaskPanelAtom,

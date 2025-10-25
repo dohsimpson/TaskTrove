@@ -15,7 +15,7 @@ import type { Atom } from "jotai";
 import type { QueryKey } from "@tanstack/react-query";
 import { queryClientAtom } from "@tasktrove/atoms/data/base/query";
 import { log, toast } from "@tasktrove/atoms/utils/atom-helpers";
-import { API_ROUTES } from "@tasktrove/types";
+import { API_ROUTES } from "@tasktrove/types/constants";
 
 // =============================================================================
 // MUTATION UTILITIES

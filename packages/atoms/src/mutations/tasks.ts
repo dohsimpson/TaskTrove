@@ -8,23 +8,25 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
+import { type Task } from "@tasktrove/types/core";
 import {
-  type Task,
   type CreateTaskRequest,
+  type DeleteTaskRequest,
+  TaskCreateSerializationSchema,
+  type TaskUpdateUnion,
+  TaskUpdateArraySerializationSchema,
+  TaskDeleteSerializationSchema,
+} from "@tasktrove/types/api-requests";
+import {
   type CreateTaskResponse,
   CreateTaskResponseSchema,
-  TaskCreateSerializationSchema,
   type UpdateTaskResponse,
-  type TaskUpdateUnion,
   UpdateTaskResponseSchema,
-  TaskUpdateArraySerializationSchema,
-  type DeleteTaskRequest,
   type DeleteTaskResponse,
   DeleteTaskResponseSchema,
-  TaskDeleteSerializationSchema,
-  createTaskId,
-  INBOX_PROJECT_ID,
-} from "@tasktrove/types";
+} from "@tasktrove/types/api-responses";
+import { createTaskId } from "@tasktrove/types/id";
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
 import {
   DEFAULT_TASK_PRIORITY,
   DEFAULT_TASK_TITLE,

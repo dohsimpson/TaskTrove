@@ -16,7 +16,7 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { createStore, atom, type WritableAtom } from "jotai";
-import type { UserSettings } from "@tasktrove/types";
+import type { UserSettings } from "@tasktrove/types/settings";
 import {
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_GENERAL_SETTINGS,

@@ -7,18 +7,15 @@ import { generateHighlightingPatterns } from "@/lib/utils/shared-patterns"
 import { nlpEnabledAtom } from "@tasktrove/atoms/ui/dialogs"
 import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { visibleProjectsAtom } from "@tasktrove/atoms/core/projects"
+import {
+  getAutocompletePrefix,
+  TOKEN_STYLES,
+  DISABLED_TOKEN_STYLES,
+} from "@/components/ui/enhanced-highlighted-input-helpers"
+import type { ExtractionType, AutocompleteType } from "@tasktrove/parser/types"
 
 interface ParsedToken {
-  type:
-    | "project"
-    | "label"
-    | "time"
-    | "date"
-    | "priority"
-    | "recurring"
-    | "duration"
-    | "estimation"
-    | "text"
+  type: ExtractionType | "text"
   value: string
   start: number
   end: number
@@ -28,13 +25,13 @@ interface AutocompleteItem {
   id: string
   label: string // Display text (name)
   icon: React.ReactNode
-  type: "project" | "label" | "date" | "estimation"
+  type: AutocompleteType
   value?: string
 }
 
 interface AutocompleteState {
   show: boolean
-  type: "project" | "label" | "date" | "estimation" | null
+  type: AutocompleteType | null
   query: string
   items: AutocompleteItem[]
   selectedIndex: number
@@ -56,7 +53,9 @@ interface EnhancedHighlightedInputProps {
     labels: AutocompleteItem[]
     dates: AutocompleteItem[]
     estimations: AutocompleteItem[]
+    assignees?: AutocompleteItem[]
   }
+  users?: Array<{ username: string; id: string; avatar?: string }>
 }
 
 // Create a function that constructs a proper React change event
@@ -92,39 +91,19 @@ const createReactChangeEvent = (value: string): React.ChangeEvent<HTMLInputEleme
   return syntheticEvent
 }
 
-// Token styling based on TaskTrove's theme system
-// IMPORTANT: Do NOT add font-medium or any font-weight classes to these styles.
-// Inter font has different character widths for different font weights,
-// causing cumulative misalignment between the overlay and contentEditable text.
-const TOKEN_STYLES = {
-  project: "bg-purple-500/20 text-purple-300",
-  label: "bg-blue-500/20 text-blue-300",
-  priority: "bg-red-500/20 text-red-300",
-  date: "bg-green-500/20 text-green-300",
-  time: "bg-purple-500/20 text-purple-300",
-  recurring: "bg-blue-500/20 text-blue-300",
-  duration: "bg-orange-500/20 text-orange-300",
-  estimation: "bg-cyan-500/20 text-cyan-300",
-  text: "",
-}
-
-const DISABLED_TOKEN_STYLES = {
-  project: "bg-gray-200 text-gray-600 line-through",
-  label: "bg-gray-200 text-gray-600 line-through",
-  priority: "bg-gray-200 text-gray-600 line-through",
-  date: "bg-gray-200 text-gray-600 line-through",
-  time: "bg-gray-200 text-gray-600 line-through",
-  recurring: "bg-gray-200 text-gray-600 line-through",
-  duration: "bg-gray-200 text-gray-600 line-through",
-  estimation: "bg-gray-200 text-gray-600 line-through",
-  text: "",
-}
-
-// Dynamic token patterns will be generated inside the component
-
 // Shared classes for contentEditable and overlay to ensure perfect alignment
 const SHARED_TEXT_CLASSES =
   "w-full min-h-[60px] p-3 whitespace-pre-wrap break-words whitespace-break-spaces"
+
+// Helper to safely lookup token styles (handles Pro-only types like 'assignee' in base)
+function getStyleForToken<T extends Record<string, string>>(styles: T, tokenType: string): string {
+  const key = tokenType
+  if (key in styles) {
+    // Safe: we verified key exists in styles, use nullish coalescing for type safety
+    return styles[key] ?? ""
+  }
+  return ""
+}
 
 export function EnhancedHighlightedInput({
   value,
@@ -136,6 +115,7 @@ export function EnhancedHighlightedInput({
   onToggleSection,
   onAutocompleteSelect,
   autocompleteItems = { projects: [], labels: [], dates: [], estimations: [] },
+  users = [],
 }: EnhancedHighlightedInputProps) {
   const inputRef = useRef<HTMLDivElement>(null)
   const autocompleteRef = useRef<HTMLDivElement>(null)
@@ -165,10 +145,11 @@ export function EnhancedHighlightedInput({
     (input: string): ParsedToken[] => {
       const tokens: ParsedToken[] = []
 
-      // Generate dynamic patterns based on available projects and labels
+      // Generate dynamic patterns based on available projects, labels, and users
       const dynamicPatterns = generateHighlightingPatterns({
         projects: projects.map((p) => ({ name: p.name })),
         labels: labels.map((l) => ({ name: l.name })),
+        ...(users.length > 0 ? { users: users.map((u) => ({ username: u.username })) } : {}),
       })
 
       dynamicPatterns.forEach(({ type, regex }) => {
@@ -229,7 +210,7 @@ export function EnhancedHighlightedInput({
 
       return result
     },
-    [projects, labels],
+    [projects, labels, users],
   )
 
   // Detect autocomplete triggers
@@ -241,7 +222,7 @@ export function EnhancedHighlightedInput({
       }
 
       const textBeforeCursor = text.slice(0, cursorPos)
-      const lastChar = textBeforeCursor[textBeforeCursor.length - 1]
+      const lastChar = textBeforeCursor[textBeforeCursor.length - 1] || ""
       const lastWord = textBeforeCursor.split(/\s/).pop() || ""
 
       // Project autocomplete (#)
@@ -264,19 +245,30 @@ export function EnhancedHighlightedInput({
         }
       }
 
-      // Label autocomplete (@)
+      // Label + Assignee autocomplete (@)
       if (lastChar === "@" || (lastWord.startsWith("@") && lastWord.length > 1)) {
         const query = lastWord.slice(1)
+
+        // Get filtered assignees (if available)
+        const filteredAssignees =
+          autocompleteItems.assignees?.filter((a) =>
+            a.label.toLowerCase().includes(query.toLowerCase()),
+          ) || []
+
+        // Get filtered labels
         const filteredLabels = autocompleteItems.labels.filter((l) =>
           l.label.toLowerCase().includes(query.toLowerCase()),
         )
 
-        if (filteredLabels.length > 0) {
+        // Combine: assignees first, then labels (total max 8 items)
+        const combinedItems = [...filteredAssignees, ...filteredLabels].slice(0, 8)
+
+        if (combinedItems.length > 0) {
           return {
             show: true,
             type: "label",
             query,
-            items: filteredLabels.slice(0, 8),
+            items: combinedItems,
             selectedIndex: 0,
             position: { x: 0, y: 0 },
             startPos: textBeforeCursor.lastIndexOf("@"),
@@ -366,14 +358,9 @@ export function EnhancedHighlightedInput({
     (item: AutocompleteItem) => {
       if (!inputRef.current) return
 
-      const prefix =
-        autocomplete.type === "project"
-          ? "#"
-          : autocomplete.type === "label"
-            ? "@"
-            : autocomplete.type === "estimation"
-              ? "~"
-              : ""
+      // Get prefix based on the item's type (not autocomplete.type)
+      // This allows mixing assignees and labels in the same dropdown
+      const prefix = getAutocompletePrefix(item.type)
 
       // Use the actual label/name for insertion
       const insertText = item.label
@@ -545,7 +532,8 @@ export function EnhancedHighlightedInput({
       }
 
       const isDisabled = disabledSections.has(token.value.toLowerCase())
-      const tokenStyle = isDisabled ? DISABLED_TOKEN_STYLES[token.type] : TOKEN_STYLES[token.type]
+      const styles = isDisabled ? DISABLED_TOKEN_STYLES : TOKEN_STYLES
+      const tokenStyle = getStyleForToken(styles, token.type)
 
       return (
         <span

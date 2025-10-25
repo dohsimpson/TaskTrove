@@ -12,11 +12,8 @@
 
 import { describe, it, expect } from "vitest";
 import { addTaskToSection } from "../data/tasks/ordering";
-import {
-  createTaskId,
-  createGroupId,
-  type ProjectSection,
-} from "@tasktrove/types";
+import { createTaskId, createGroupId } from "@tasktrove/types/id";
+import { type ProjectSection } from "@tasktrove/types/core";
 import { DEFAULT_UUID } from "@tasktrove/constants";
 
 describe("addTaskToSection - Section Assignment Logic", () => {

@@ -3,12 +3,9 @@ import type {
   PartialUserSettings,
   DataSettings,
   NotificationSettings,
-  // Future type imports (not used yet):
-  // AppearanceSettings,
-  // BehaviorSettings,
-  // ProductivitySettings,
-  // TaskPriority,
-} from "@tasktrove/types";
+} from "@tasktrove/types/settings";
+// Future type imports (not used yet):
+// import type { AppearanceSettings, BehaviorSettings, ProductivitySettings, TaskPriority } from "@tasktrove/types/settings";
 import { settingsAtom } from "@tasktrove/atoms/data/base/atoms";
 import { updateSettingsAtom } from "@tasktrove/atoms/core/settings";
 

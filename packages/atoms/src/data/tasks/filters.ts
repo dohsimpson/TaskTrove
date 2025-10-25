@@ -6,8 +6,9 @@
 import { atom } from "jotai";
 import { atomFamily } from "jotai/utils";
 import { isToday, isPast, isFuture } from "date-fns";
-import type { Task, ViewId, GroupId } from "@tasktrove/types";
-import { LabelIdSchema, GroupIdSchema } from "@tasktrove/types";
+import type { Task } from "@tasktrove/types/core";
+import type { ViewId, GroupId } from "@tasktrove/types/id";
+import { LabelIdSchema, GroupIdSchema } from "@tasktrove/types/id";
 import { shouldTaskBeInInbox } from "@tasktrove/utils";
 import { collectProjectIdsFromGroup } from "@tasktrove/utils/group-utils";
 import {

@@ -5,7 +5,7 @@
  * to apply viewState sorting (sortBy, sortDirection)
  */
 
-import type { Task, ViewState } from "@tasktrove/types";
+import type { Task, ViewState } from "@tasktrove/types/core";
 
 /**
  * Sort tasks based on view state preferences

@@ -6,7 +6,8 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { GET, PATCH } from "./route"
-import { DataFile, DataFileSchema, User, createAvatarFilePath, createUserId } from "@/lib/types"
+import { DataFile, DataFileSchema, User, createUserId } from "@/lib/types"
+import { createAvatarFilePath } from "@tasktrove/types/constants"
 import { DEFAULT_EMPTY_DATA_FILE, DEFAULT_USER } from "@/lib/types"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 import {

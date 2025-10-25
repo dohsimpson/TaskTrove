@@ -29,7 +29,18 @@ export const DataFileSchema = z.object({
   settings: UserSettingsSchema,
   user: UserSchema,
   version: VersionStringSchema.optional(), // TODO: make this required after v0.9.0
+  edition: z.string().optional(),
 });
+
+/**
+ * Minimal schema for reading just the user field from data file
+ * Used by auth to avoid full DataFileSchema validation during login
+ */
+export const UserFileSchema = z.object({
+  user: UserSchema,
+});
+
+export type UserFile = z.infer<typeof UserFileSchema>;
 
 /**
  * Data File Serialization Schema

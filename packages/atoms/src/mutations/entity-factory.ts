@@ -83,7 +83,7 @@ import {
   SETTINGS_QUERY_KEY,
 } from "@tasktrove/constants";
 import { createMutation, type MutationConfig } from "./factory";
-import { API_ROUTES } from "@tasktrove/types";
+import { API_ROUTES } from "@tasktrove/types/constants";
 
 // =============================================================================
 // TYPES

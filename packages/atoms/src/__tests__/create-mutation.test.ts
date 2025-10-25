@@ -15,10 +15,8 @@ import {
   createLabelId,
   createProjectId,
   createTaskId,
-  type Label,
-  type Project,
-  type Task,
-} from "@tasktrove/types";
+} from "@tasktrove/types/id";
+import { type Label, type Project, type Task } from "@tasktrove/types/core";
 import { QueryClient } from "@tanstack/react-query";
 import {
   DEFAULT_TASK_COMPLETED,

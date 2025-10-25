@@ -4,7 +4,9 @@ import {
   namedAtom,
   withErrorHandling,
 } from "@tasktrove/atoms/utils/atom-helpers";
-import { Label, LabelId, CreateLabelRequest } from "@tasktrove/types";
+import { Label } from "@tasktrove/types/core";
+import { LabelId } from "@tasktrove/types/id";
+import { CreateLabelRequest } from "@tasktrove/types/api-requests";
 import { labelsAtom } from "@tasktrove/atoms/data/base/atoms";
 import {
   createLabelMutationAtom,

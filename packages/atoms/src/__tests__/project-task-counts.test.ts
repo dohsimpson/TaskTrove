@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { createStore } from "jotai";
-import type { Task } from "@tasktrove/types";
+import type { Task } from "@tasktrove/types/core";
 import { TEST_PROJECT_ID_1 } from "../utils/test-helpers";
 
 // Import the REAL atoms - not mocking them

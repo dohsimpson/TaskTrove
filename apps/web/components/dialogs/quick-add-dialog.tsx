@@ -25,11 +25,10 @@ import {
 import { cn } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { useAtomValue, useSetAtom } from "jotai"
-import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { labelsAtom, tasksAtom, usersAtom, userAtom } from "@tasktrove/atoms/data/base/atoms"
 import { visibleProjectsAtom } from "@tasktrove/atoms/core/projects"
 import { addLabelAndWaitForRealIdAtom } from "@tasktrove/atoms/core/labels"
 import { addTaskAtom } from "@tasktrove/atoms/core/tasks"
-import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
 import { nlpEnabledAtom } from "@tasktrove/atoms/ui/dialogs"
 import {
   showQuickAddAtom,
@@ -59,27 +58,26 @@ import {
   type TaskPriority,
   ProjectIdSchema,
   LabelIdSchema,
-  isValidPriority,
   createSubtaskId,
   createCommentId,
   taskToCreateTaskRequest,
 } from "@/lib/types"
 import { PLACEHOLDER_TASK_INPUT } from "@tasktrove/constants"
-import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
 import { log } from "@/lib/utils/logger"
-import { convertTimeToHHMMSS } from "@/lib/utils/enhanced-natural-language-parser"
 import { v4 as uuidv4 } from "uuid"
 import { getPriorityTextColor } from "@/lib/color-utils"
 import { useDebouncedParse } from "@/hooks/use-debounced-parse"
+import { useQuickAddSync } from "@/hooks/use-quick-add-sync"
 import { useTranslation } from "@tasktrove/i18n"
 import { generateEstimationSuggestions } from "@/lib/utils/shared-patterns"
 import { UnsavedConfirmationDialog } from "./unsaved-confirmation-dialog"
 import { PeopleManagementPopover } from "@/components/task/people-management-popover"
 import { AssigneeBadges } from "@/components/task/assignee-badges"
+import { getProViewUpdates } from "@/components/dialogs/quick-add-helpers"
+import { getAssigneeAutocompleteItems } from "@/components/dialogs/quick-add-autocomplete-items"
+import type { AutocompleteType } from "@tasktrove/parser/types"
 
 // Enhanced autocomplete interface
-type AutocompleteType = "project" | "label" | "date" | "estimation"
-
 interface AutocompleteItem {
   id: string
   label: string
@@ -126,16 +124,6 @@ export function QuickAddDialog() {
   const [showAdvancedRow, setShowAdvancedRow] = useState(false)
   const [showConfirmCloseDialog, setShowConfirmCloseDialog] = useState(false)
 
-  // Track whether values were set by parsing (to avoid clearing manually selected values)
-  const projectSetByParsingRef = useRef(false)
-  const prioritySetByParsingRef = useRef(false)
-  const dueDateSetByParsingRef = useRef(false)
-  const dueDateSetByRecurringRef = useRef(false)
-  const dueTimeSetByParsingRef = useRef(false)
-  const recurringSetByParsingRef = useRef(false)
-  const labelsSetByParsingRef = useRef(false)
-  const estimationSetByParsingRef = useRef(false)
-
   const newTask: CreateTaskRequest = useAtomValue(quickAddTaskAtom)
   const updateNewTask = useSetAtom(updateQuickAddTaskAtom)
   const resetNewTask = useSetAtom(resetQuickAddTaskAtom)
@@ -147,6 +135,8 @@ export function QuickAddDialog() {
   const labels = useAtomValue(labelsAtom)
   const projects = useAtomValue(visibleProjectsAtom)
   const tasks = useAtomValue(tasksAtom)
+  const users = useAtomValue(usersAtom)
+  const currentUserId = useAtomValue(userAtom).id
   const addTask = useSetAtom(addTaskAtom)
   const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
   const nlpEnabled = useAtomValue(nlpEnabledAtom)
@@ -161,183 +151,28 @@ export function QuickAddDialog() {
   // Use debounced parsing for better performance (disabled when NLP toggle is off)
   const parsed = useDebouncedParse(input, disabledSections)
 
+  // Use hook for syncing parsed values to task atom
+  const {
+    projectSetByParsingRef,
+    prioritySetByParsingRef,
+    dueDateSetByParsingRef,
+    dueTimeSetByParsingRef,
+    recurringSetByParsingRef,
+    labelsSetByParsingRef,
+    estimationSetByParsingRef,
+  } = useQuickAddSync({
+    parsed,
+    nlpEnabled,
+    updateNewTask,
+    newTask,
+    projects,
+    labels,
+    users,
+  })
+
   // Initialize initialTask after newTask is available
   const [initialTask, setInitialTask] = useState<typeof newTask>(newTask)
   const hasInitializedRef = useRef(false)
-
-  // Clear any values that were set by parsing when NLP is disabled
-  useEffect(() => {
-    if (!nlpEnabled) {
-      // Only clear values that were set by parsing, preserve manually set values
-      if (prioritySetByParsingRef.current) {
-        prioritySetByParsingRef.current = false
-        updateNewTask({ updateRequest: { priority: undefined } })
-      }
-      if (dueDateSetByParsingRef.current || dueDateSetByRecurringRef.current) {
-        dueDateSetByParsingRef.current = false
-        dueDateSetByRecurringRef.current = false
-        updateNewTask({ updateRequest: { dueDate: undefined } })
-      }
-      if (dueTimeSetByParsingRef.current) {
-        dueTimeSetByParsingRef.current = false
-        updateNewTask({ updateRequest: { dueTime: undefined } })
-      }
-      if (recurringSetByParsingRef.current) {
-        recurringSetByParsingRef.current = false
-        updateNewTask({ updateRequest: { recurring: undefined } })
-      }
-      if (projectSetByParsingRef.current) {
-        projectSetByParsingRef.current = false
-        updateNewTask({ updateRequest: { projectId: undefined } })
-      }
-      if (labelsSetByParsingRef.current) {
-        labelsSetByParsingRef.current = false
-        updateNewTask({ updateRequest: { labels: [] } })
-      }
-      if (estimationSetByParsingRef.current) {
-        estimationSetByParsingRef.current = false
-        updateNewTask({ updateRequest: { estimation: undefined } })
-      }
-    }
-  }, [nlpEnabled, updateNewTask])
-
-  // Auto-sync parsed values to newTask atom
-  useEffect(() => {
-    if (parsed?.priority && isValidPriority(parsed.priority)) {
-      prioritySetByParsingRef.current = true
-      updateNewTask({ updateRequest: { priority: parsed.priority } })
-    } else if (!parsed?.priority && prioritySetByParsingRef.current) {
-      // Only clear if the priority was previously set by parsing
-      prioritySetByParsingRef.current = false
-      updateNewTask({ updateRequest: { priority: undefined } })
-    }
-  }, [parsed?.priority, updateNewTask])
-
-  useEffect(() => {
-    if (parsed?.dueDate) {
-      dueDateSetByParsingRef.current = true
-      updateNewTask({ updateRequest: { dueDate: parsed.dueDate } })
-    } else if (!parsed?.dueDate && dueDateSetByParsingRef.current) {
-      // Only clear if the due date was previously set by parsing
-      dueDateSetByParsingRef.current = false
-      updateNewTask({ updateRequest: { dueDate: undefined } })
-    }
-  }, [parsed?.dueDate, updateNewTask])
-
-  useEffect(() => {
-    if (parsed?.time) {
-      dueTimeSetByParsingRef.current = true
-      // Convert time to Date object for the dueTime field
-      const timeDate = new Date()
-      const timeFormatted = convertTimeToHHMMSS(parsed.time)
-      if (timeFormatted) {
-        const timeParts = timeFormatted.split(":").map(Number)
-        const hours = timeParts[0] ?? 0
-        const minutes = timeParts[1] ?? 0
-        timeDate.setHours(hours, minutes, 0, 0)
-        updateNewTask({ updateRequest: { dueTime: timeDate } })
-      }
-    } else if (!parsed?.time && dueTimeSetByParsingRef.current) {
-      // Only clear if the due time was previously set by parsing
-      dueTimeSetByParsingRef.current = false
-      updateNewTask({ updateRequest: { dueTime: undefined } })
-    }
-  }, [parsed?.time, updateNewTask])
-
-  useEffect(() => {
-    if (parsed?.recurring) {
-      // Calculate the initial due date for the recurring pattern if none exists
-      let dueDate = newTask.dueDate
-      let setDueDateByRecurring = false
-      if (!dueDate) {
-        const calculatedDueDate = calculateNextDueDate(parsed.recurring, new Date(), true)
-        if (calculatedDueDate) {
-          dueDate = calculatedDueDate
-          setDueDateByRecurring = true
-        }
-      }
-
-      recurringSetByParsingRef.current = true
-      if (setDueDateByRecurring) {
-        dueDateSetByRecurringRef.current = true
-      }
-      updateNewTask({
-        updateRequest: {
-          recurring: parsed.recurring,
-          ...(dueDate && !newTask.dueDate ? { dueDate } : {}),
-        },
-      })
-    } else if (!parsed?.recurring && recurringSetByParsingRef.current) {
-      // Only clear if the recurring pattern was previously set by parsing
-      recurringSetByParsingRef.current = false
-      const updateRequest: { recurring: undefined; dueDate?: undefined } = { recurring: undefined }
-
-      // Also clear due date if it was set automatically by the recurring pattern
-      if (dueDateSetByRecurringRef.current) {
-        dueDateSetByRecurringRef.current = false
-        updateRequest.dueDate = undefined
-      }
-
-      updateNewTask({ updateRequest })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- newTask.dueDate intentionally excluded to prevent infinite re-renders
-  }, [parsed?.recurring, updateNewTask])
-
-  useEffect(() => {
-    if (parsed?.project && parsed.project.trim()) {
-      const foundProject = projects.find(
-        (p) => p.name.toLowerCase() === parsed.project?.toLowerCase(),
-      )
-      if (foundProject) {
-        projectSetByParsingRef.current = true
-        updateNewTask({ updateRequest: { projectId: foundProject.id } })
-      }
-    } else if (!parsed?.project && projectSetByParsingRef.current) {
-      // Only clear if the project was previously set by parsing
-      projectSetByParsingRef.current = false
-      updateNewTask({ updateRequest: { projectId: undefined } })
-    }
-  }, [parsed?.project, projects, updateNewTask])
-
-  useEffect(() => {
-    if (parsed?.labels && parsed.labels.length > 0) {
-      const parsedLabelIds: LabelId[] = []
-      parsed.labels.forEach((labelName) => {
-        const existingLabel = labels.find((l) => l.name.toLowerCase() === labelName.toLowerCase())
-        if (existingLabel) {
-          parsedLabelIds.push(existingLabel.id)
-        }
-      })
-      if (parsedLabelIds.length > 0) {
-        // Only update if the labels have changed to avoid infinite re-renders
-        const currentLabels = newTask.labels || []
-        const hasChanged =
-          parsedLabelIds.length !== currentLabels.length ||
-          parsedLabelIds.some((id) => !currentLabels.includes(id))
-
-        if (hasChanged) {
-          labelsSetByParsingRef.current = true
-          updateNewTask({ updateRequest: { labels: parsedLabelIds } })
-        }
-      }
-    } else if ((!parsed?.labels || parsed.labels.length === 0) && labelsSetByParsingRef.current) {
-      // Only clear if the labels were previously set by parsing
-      labelsSetByParsingRef.current = false
-      updateNewTask({ updateRequest: { labels: [] } })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- newTask.labels intentionally excluded to prevent infinite re-renders
-  }, [parsed?.labels, labels, updateNewTask])
-
-  useEffect(() => {
-    if (parsed?.estimation) {
-      estimationSetByParsingRef.current = true
-      updateNewTask({ updateRequest: { estimation: parsed.estimation } })
-    } else if (!parsed?.estimation && estimationSetByParsingRef.current) {
-      // Only clear if the estimation was previously set by parsing
-      estimationSetByParsingRef.current = false
-      updateNewTask({ updateRequest: { estimation: undefined } })
-    }
-  }, [parsed?.estimation, updateNewTask])
 
   // Auto-initialize values based on route context when dialog opens
   useEffect(() => {
@@ -384,6 +219,9 @@ export function QuickAddDialog() {
           today.setHours(0, 0, 0, 0) // Set to start of day
           updates.dueDate = today
         }
+
+        const proUpdates = getProViewUpdates(routeContext, users, currentUserId)
+        Object.assign(updates, proUpdates)
       }
 
       if (Object.keys(updates).length > 0) {
@@ -412,7 +250,9 @@ export function QuickAddDialog() {
     newTask,
     resetCopyTask,
     updateNewTask,
-    routeContext.viewId,
+    routeContext,
+    users,
+    currentUserId,
   ])
 
   // Prepare autocomplete items
@@ -458,8 +298,9 @@ export function QuickAddDialog() {
           type: "estimation",
         }),
       ),
+      assignees: getAssigneeAutocompleteItems(users),
     }),
-    [projects, labels],
+    [projects, labels, users],
   )
 
   const handleSubmit = async () => {

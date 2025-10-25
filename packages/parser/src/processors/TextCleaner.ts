@@ -1,5 +1,5 @@
 import type { Processor } from "./base/Processor";
-import type { ExtractionResult, ParserContext } from "../types";
+import type { ExtractionResult, ParserContext } from "@tasktrove/parser/types";
 
 // Types that should be removed from title when cleaning
 const REMOVAL_TYPES = new Set([

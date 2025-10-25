@@ -10,12 +10,14 @@
 
 import {
   type UpdateSettingsRequest,
+  UpdateSettingsRequestSchema,
+} from "@tasktrove/types/api-requests";
+import {
   type UpdateSettingsResponse,
   UpdateSettingsResponseSchema,
-  UpdateSettingsRequestSchema,
-  type UserSettings,
-  API_ROUTES,
-} from "@tasktrove/types";
+} from "@tasktrove/types/api-responses";
+import { type UserSettings } from "@tasktrove/types/settings";
+import { API_ROUTES } from "@tasktrove/types/constants";
 import { DEFAULT_USER_SETTINGS } from "@tasktrove/types/defaults";
 import {
   DEFAULT_AUTO_BACKUP_ENABLED,

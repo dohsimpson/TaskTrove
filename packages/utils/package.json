@@ -21,7 +21,10 @@
     "./parser-adapter": "./src/parser-adapter.ts",
     "./time-estimation": "./src/time-estimation.ts",
     "./origin-validation": "./src/origin-validation.ts",
-    "./shared-patterns": "./src/shared-patterns.ts",
+    "./shared-patterns": {
+      "pro": "./src/shared-patterns.pro.ts",
+      "default": "./src/shared-patterns.ts"
+    },
     "./encryption": "./src/encryption.ts",
     "./color-utils": "./src/color-utils.ts",
     "./date-filter-utils": "./src/date-filter-utils.ts",

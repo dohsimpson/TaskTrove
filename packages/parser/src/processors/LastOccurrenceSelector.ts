@@ -1,5 +1,5 @@
-import type { Processor } from "./base/Processor";
-import type { ExtractionResult, ParserContext } from "../types";
+import type { Processor } from "@tasktrove/parser/processors/base";
+import type { ExtractionResult, ParserContext } from "@tasktrove/parser/types";
 
 export class LastOccurrenceSelector implements Processor {
   readonly name = "last-occurrence-selector";

@@ -5,7 +5,7 @@
  */
 
 import { z } from "zod";
-import { VoiceCommandIdSchema } from "#id";
+import { VoiceCommandIdSchema } from "./id";
 
 /**
  * Schema for a voice command

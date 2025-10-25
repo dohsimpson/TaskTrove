@@ -21,7 +21,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { createStore } from "jotai";
 import { taskAtoms } from "../core/tasks";
 import { deleteTaskMutationAtom } from "../mutations/tasks";
-import { createTaskId } from "@tasktrove/types";
+import { createTaskId } from "@tasktrove/types/id";
 import {
   createMockTask,
   TEST_TASK_ID_1,

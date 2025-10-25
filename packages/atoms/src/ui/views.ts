@@ -1,14 +1,14 @@
 import { atom } from "jotai";
 import {
   ViewState,
-  SortConfig,
   ViewStatesSchema,
   ViewStates,
   Task,
-  ViewId,
   ViewStateSchema,
   GlobalViewOptions,
-} from "@tasktrove/types";
+} from "@tasktrove/types/core";
+import { SortConfig } from "@tasktrove/types/utils";
+import { ViewId } from "@tasktrove/types/id";
 import {
   DEFAULT_VIEW_STATE,
   DEFAULT_GLOBAL_VIEW_OPTIONS,

@@ -4,9 +4,13 @@ import type {
   LocaleConfig,
   LocaleConfigOptions,
 } from "./locales/base/LocaleConfig";
-import type { Extractor } from "./extractors/base/Extractor";
+import type { Extractor } from "@tasktrove/parser/extractors/base";
 import type { Processor } from "./processors/base/Processor";
-import type { ParsedTask, ParserContext, ExtractionResult } from "./types";
+import type {
+  ParsedTask,
+  ParserContext,
+  ExtractionResult,
+} from "@tasktrove/parser/types";
 
 export interface ParserFactoryOptions {
   locale?: string;

@@ -8,6 +8,11 @@ export type ExtractionType =
   | "estimation"
   | "duration";
 
+/**
+ * Autocomplete types - subset of extraction types that support autocomplete in UI
+ */
+export type AutocompleteType = "project" | "label" | "date" | "estimation";
+
 export interface ExtractionResult {
   type: ExtractionType;
   value: unknown;

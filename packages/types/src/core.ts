@@ -12,16 +12,16 @@ import {
   ProjectIdSchema,
   LabelIdSchema,
   UserIdSchema,
-} from "#id";
+} from "./id";
 import {
   AvatarFilePathSchema,
   flexibleDateSchema,
   flexibleTimeSchema,
   flexibleDateTimeSchema,
   TaskPriority,
-} from "#constants";
-import { validateRRule } from "#validators";
-import { ProjectSectionSchema } from "#group";
+} from "./constants";
+import { validateRRule } from "./validators";
+import { ProjectSectionSchema } from "./group";
 
 // =============================================================================
 // CORE TASK SCHEMAS
@@ -274,4 +274,4 @@ export type NotificationPermissionStatus = "default" | "granted" | "denied";
 export type { TaskPriority };
 
 // Re-export ProjectSection from group (needed for ProjectSchema dependency)
-export type { ProjectSection } from "#group";
+export type { ProjectSection } from "./group";

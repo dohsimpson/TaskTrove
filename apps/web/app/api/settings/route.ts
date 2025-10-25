@@ -129,7 +129,12 @@ async function updateSettings(
   }
 
   // Merge partial settings with current settings
+  // Strategy: Explicitly handle known base fields, then merge in any additional
+  // fields from partialSettings (e.g., Pro's productivity settings)
   const updatedSettings: UserSettings = {
+    ...fileData.settings, // Start with existing to preserve unknown fields
+    ...partialSettings, // Apply partial updates (shallow merge for top-level keys)
+    // Then explicitly handle known base fields with deep merging
     data: {
       autoBackup: {
         enabled:
@@ -156,10 +161,6 @@ async function updateSettings(
       popoverHoverOpen:
         partialSettings.general?.popoverHoverOpen ?? fileData.settings.general.popoverHoverOpen,
     },
-    // Future settings will be merged here when implemented:
-    // appearance: { ... },
-    // data: { ... },
-    // productivity: { ... },
   }
 
   // Update the data file with new settings

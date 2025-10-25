@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createStore } from "jotai";
 import { v4 as uuidv4 } from "uuid";
-import { createTaskId } from "@tasktrove/types";
+import { createTaskId } from "@tasktrove/types/id";
 import {
   focusTimerStateAtom,
   activeFocusTimerAtom,

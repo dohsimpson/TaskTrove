@@ -3,9 +3,8 @@ import {
   createTaskId,
   createProjectId,
   createLabelId,
-  type Task,
-  type ViewState,
-} from "@tasktrove/types";
+} from "@tasktrove/types/id";
+import { type Task, type ViewState } from "@tasktrove/types/core";
 
 type ActiveFilters = NonNullable<ViewState["activeFilters"]>;
 

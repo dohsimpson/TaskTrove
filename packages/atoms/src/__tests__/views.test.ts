@@ -14,8 +14,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { ViewState, ViewStates } from "@tasktrove/types";
-import { createProjectId, createLabelId } from "@tasktrove/types";
+import type { ViewState, ViewStates } from "@tasktrove/types/core";
+import { createProjectId, createLabelId } from "@tasktrove/types/id";
 import { DEFAULT_VIEW_STATE } from "@tasktrove/types/defaults";
 import { migrateViewStates, getViewStateOrDefault } from "../ui/views";
 

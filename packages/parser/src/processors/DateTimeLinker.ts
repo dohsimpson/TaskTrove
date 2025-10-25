@@ -1,5 +1,5 @@
 import type { Processor } from "./base/Processor";
-import type { ExtractionResult, ParserContext } from "../types";
+import type { ExtractionResult, ParserContext } from "@tasktrove/parser/types";
 
 const MAX_DISTANCE = 20; // Maximum characters between date and time to consider them related
 

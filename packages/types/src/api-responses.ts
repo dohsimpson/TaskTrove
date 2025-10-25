@@ -10,18 +10,18 @@ import {
   ProjectIdSchema,
   LabelIdSchema,
   GroupIdSchema,
-} from "#id";
-import { ProjectSchema, LabelSchema, UserSchema } from "#core";
+} from "./id";
+import { ProjectSchema, LabelSchema, UserSchema } from "./core";
 import {
   TaskSerializationSchema,
   ProjectSerializationSchema,
   LabelSerializationSchema,
   UserSerializationSchema,
-} from "#serialization";
-import { ProjectGroupSchema, LabelGroupSchema, GroupSchema } from "#group";
-import { UserSettingsSchema } from "#settings";
-import { ApiErrorCodeSchema } from "#api-errors";
-import { DataFileSerializationSchema } from "#data-file";
+} from "./serialization";
+import { ProjectGroupSchema, LabelGroupSchema, GroupSchema } from "./group";
+import { UserSettingsSchema } from "./settings";
+import { ApiErrorCodeSchema } from "./api-errors";
+import { DataFileSerializationSchema } from "./data-file";
 
 // =============================================================================
 // BASE RESPONSE SCHEMAS
@@ -182,9 +182,7 @@ export const DeleteGroupResponseSchema = ApiResponseSchema.extend({
 /**
  * Initial setup response schema
  */
-export const InitialSetupResponseSchema = ApiResponseSchema.extend({
-  user: UserSchema,
-});
+export const InitialSetupResponseSchema = ApiResponseSchema;
 
 // =============================================================================
 // GET ENDPOINT RESPONSE SCHEMAS

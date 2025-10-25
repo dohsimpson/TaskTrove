@@ -4,7 +4,7 @@
  * Multi-user team collaboration types and team management.
  */
 
-import type { UserId, TeamId } from "#id";
+import type { UserId, TeamId } from "./id";
 
 /**
  * Team member information

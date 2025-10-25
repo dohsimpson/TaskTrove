@@ -7,13 +7,8 @@
  * CRITICAL: This file must have ZERO dependencies on atom files to break circular dependencies.
  */
 
-import type {
-  Task,
-  ViewState,
-  ProjectId,
-  TaskPriority,
-  LabelId,
-} from "@tasktrove/types";
+import type { Task, ViewState, TaskPriority } from "@tasktrove/types/core";
+import type { ProjectId, LabelId } from "@tasktrove/types/id";
 
 // =============================================================================
 // FILTER CONFIGURATION

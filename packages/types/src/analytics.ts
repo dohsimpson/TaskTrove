@@ -4,7 +4,7 @@
  * Productivity metrics, trends, and analytics data structures.
  */
 
-import type { ProjectId, TaskId } from "#id";
+import type { ProjectId, TaskId } from "./id";
 
 /**
  * Overall productivity metrics for a given time period

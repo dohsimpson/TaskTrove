@@ -1,14 +1,12 @@
 import { atom } from "jotai";
+import type { GroupId, ProjectId } from "@tasktrove/types/id";
+import type { ProjectGroup, LabelGroup } from "@tasktrove/types/group";
+import { isGroup } from "@tasktrove/types/group";
 import type {
-  GroupId,
-  ProjectGroup,
-  LabelGroup,
-  ProjectId,
   CreateGroupRequest,
-  UpdateProjectGroupRequest,
   DeleteGroupRequest,
-} from "@tasktrove/types";
-import { isGroup } from "@tasktrove/types";
+  UpdateProjectGroupRequest,
+} from "@tasktrove/types/api-requests";
 import {
   ROOT_LABEL_GROUP_ID,
   ROOT_PROJECT_GROUP_ID,

@@ -20,8 +20,8 @@ import { projectsAtom } from "../data/base/atoms";
 import { updateProjectsMutationAtom } from "../mutations/projects";
 import { deleteProjectAtom } from "../core/projects";
 import { DEFAULT_UUID } from "@tasktrove/constants";
-import type { Project } from "@tasktrove/types";
-import { createTaskId, createGroupId } from "@tasktrove/types";
+import type { Project } from "@tasktrove/types/core";
+import { createTaskId, createGroupId } from "@tasktrove/types/id";
 import {
   TEST_PROJECT_ID_1,
   TEST_PROJECT_ID_2,

@@ -213,6 +213,7 @@ vi.mock("@tasktrove/atoms/data/base/atoms", () => ({
   }),
   dataFileAtom: createMockAtom("dataFileAtom", {}),
   userAtom: createMockAtom("userAtom", null),
+  usersAtom: createMockAtom("usersAtom", []),
   taskByIdAtom: createMockAtom("taskByIdAtom", new Map()),
 }))
 

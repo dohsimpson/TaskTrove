@@ -42,6 +42,9 @@ export function LoginForm({
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
+  // Compute whether username change should be disabled (when username is pre-filled)
+  const usernameChangeDisabled = isUsernameRequired && username !== ""
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
@@ -167,7 +170,7 @@ export function LoginForm({
                         placeholder={t("setup.usernamePlaceholder", "Username")}
                         value={username}
                         onChange={(e) => onUsernameChange(e.target.value)}
-                        disabled={isLoading}
+                        disabled={isLoading || usernameChangeDisabled}
                         className={error ? "border-red-500" : ""}
                         autoFocus={true}
                       />

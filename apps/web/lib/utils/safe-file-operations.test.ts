@@ -6,21 +6,25 @@ import {
   safeWriteJsonFile,
   safeReadDataFile,
   safeWriteDataFile,
+  safeWriteUserFile,
   saveBase64ToAvatarFile,
 } from "./safe-file-operations"
-import { type DataFile } from "@/lib/types"
+import { type DataFile, type UserFile, UserFileSchema } from "@tasktrove/types/data-file"
+import { createUserId } from "@tasktrove/types/id"
 import {
   TEST_TASK_ID_1,
   TEST_PROJECT_ID_1,
   TEST_LABEL_ID_1,
   TEST_GROUP_ID_1,
 } from "@tasktrove/types/test-constants"
+
+const TEST_USER_ID_1 = createUserId("550e8400-e29b-41d4-a716-446655440000")
 import {
   DEFAULT_PROJECT_GROUP,
   DEFAULT_LABEL_GROUP,
   DEFAULT_USER_SETTINGS,
   DEFAULT_USER,
-} from "@/lib/types"
+} from "@tasktrove/types/defaults"
 
 // Mock fs/promises
 vi.mock("fs/promises", () => ({
@@ -70,7 +74,16 @@ describe("safe-file-operations", () => {
   const testFilePath = "/test/path/test-file.json"
 
   beforeEach(() => {
+    // Clear call history and reset implementations
     vi.clearAllMocks()
+    mockFs.readFile.mockReset()
+    mockFs.writeFile.mockReset()
+    mockFs.mkdir.mockReset()
+
+    // Set default successful implementations
+    mockFs.readFile.mockResolvedValue("")
+    mockFs.writeFile.mockResolvedValue(undefined)
+    mockFs.mkdir.mockResolvedValue(undefined)
   })
 
   afterEach(() => {
@@ -491,6 +504,240 @@ describe("safe-file-operations", () => {
 
       // Should have made 5 read calls
       expect(mockFs.readFile).toHaveBeenCalledTimes(5)
+    })
+  })
+
+  describe("safeWriteUserFile", () => {
+    const testUserData: UserFile = {
+      user: {
+        id: TEST_USER_ID_1,
+        username: "testuser",
+        password: "hashedpassword123",
+      },
+    }
+
+    const existingDataFile = {
+      tasks: [
+        {
+          id: TEST_TASK_ID_1,
+          title: "Existing Task",
+          completed: false,
+          priority: 1,
+          labels: [],
+          subtasks: [],
+          comments: [],
+          createdAt: "2024-01-15T10:00:00Z",
+          recurringMode: "dueDate",
+          projectId: TEST_PROJECT_ID_1,
+        },
+      ],
+      projects: [
+        {
+          id: TEST_PROJECT_ID_1,
+          name: "Existing Project",
+          slug: "existing-project",
+          color: "#FF0000",
+          sections: [],
+        },
+      ],
+      labels: [
+        {
+          id: TEST_LABEL_ID_1,
+          name: "Existing Label",
+          slug: "existing-label",
+          color: "#00FF00",
+        },
+      ],
+      projectGroups: DEFAULT_PROJECT_GROUP,
+      labelGroups: DEFAULT_LABEL_GROUP,
+      settings: DEFAULT_USER_SETTINGS,
+      user: {
+        id: TEST_USER_ID_1,
+        username: "olduser",
+        password: "oldpassword",
+      },
+    }
+
+    it("should update only the user field and preserve all other fields", async () => {
+      mockFs.readFile.mockResolvedValue(JSON.stringify(existingDataFile))
+      mockFs.writeFile.mockResolvedValue(undefined)
+
+      const result = await safeWriteUserFile({
+        filePath: testFilePath,
+        data: testUserData,
+        schema: UserFileSchema,
+      })
+
+      expect(result).toBe(true)
+      expect(mockFs.readFile).toHaveBeenCalledWith(testFilePath, "utf-8")
+      expect(mockFs.writeFile).toHaveBeenCalledTimes(1)
+
+      // Parse the written data
+      const callArgs = mockFs.writeFile.mock.calls[0]
+      expect(callArgs).toBeDefined()
+      const writtenData = JSON.parse(String(callArgs?.[1]))
+
+      // Verify user field was updated
+      expect(writtenData.user).toEqual(testUserData.user)
+
+      // Verify all other fields were preserved
+      expect(writtenData.tasks).toHaveLength(1)
+      expect(writtenData.projects).toHaveLength(1)
+      expect(writtenData.labels).toHaveLength(1)
+      expect(writtenData.projectGroups).toBeDefined()
+      expect(writtenData.labelGroups).toBeDefined()
+      expect(writtenData.settings).toBeDefined()
+    })
+
+    it("should preserve extra fields not in the schema", async () => {
+      const dataWithExtraFields = {
+        ...existingDataFile,
+        customField: "custom value",
+        anotherField: { nested: "data" },
+      }
+
+      mockFs.readFile.mockResolvedValue(JSON.stringify(dataWithExtraFields))
+      mockFs.writeFile.mockResolvedValue(undefined)
+
+      const result = await safeWriteUserFile({
+        filePath: testFilePath,
+        data: testUserData,
+        schema: UserFileSchema,
+      })
+
+      expect(result).toBe(true)
+
+      const callArgs = mockFs.writeFile.mock.calls[0]
+      expect(callArgs).toBeDefined()
+      const writtenData = JSON.parse(String(callArgs?.[1]))
+
+      // Verify user field was updated
+      expect(writtenData.user).toEqual(testUserData.user)
+
+      // Verify extra fields were preserved
+      expect(writtenData.customField).toBe("custom value")
+      expect(writtenData.anotherField).toEqual({ nested: "data" })
+    })
+
+    it("should fail when user data validation fails", async () => {
+      const invalidUserData = {
+        user: {
+          username: 123, // Should be string
+          displayName: "Test User",
+          email: "invalid-email", // Invalid email format
+          avatar: null,
+        },
+      }
+
+      const result = await safeWriteUserFile({
+        filePath: testFilePath,
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        data: invalidUserData as unknown as UserFile,
+        schema: UserFileSchema,
+      })
+
+      expect(result).toBe(false)
+      expect(mockFs.readFile).not.toHaveBeenCalled()
+      expect(mockFs.writeFile).not.toHaveBeenCalled()
+    })
+
+    it("should fail when file read fails", async () => {
+      mockFs.readFile.mockRejectedValue(new Error("ENOENT: file not found"))
+
+      const result = await safeWriteUserFile({
+        filePath: testFilePath,
+        data: testUserData,
+        schema: UserFileSchema,
+      })
+
+      expect(result).toBe(false)
+      expect(mockFs.writeFile).not.toHaveBeenCalled()
+    })
+
+    it("should fail when JSON parsing fails", async () => {
+      mockFs.readFile.mockResolvedValue("invalid json {")
+
+      const result = await safeWriteUserFile({
+        filePath: testFilePath,
+        data: testUserData,
+        schema: UserFileSchema,
+      })
+
+      expect(result).toBe(false)
+      expect(mockFs.writeFile).not.toHaveBeenCalled()
+    })
+
+    it("should fail when file write fails", async () => {
+      mockFs.readFile.mockResolvedValue(JSON.stringify(existingDataFile))
+      mockFs.writeFile.mockRejectedValue(new Error("EACCES: permission denied"))
+
+      const result = await safeWriteUserFile({
+        filePath: testFilePath,
+        data: testUserData,
+        schema: UserFileSchema,
+      })
+
+      expect(result).toBe(false)
+    })
+
+    it("should use default file path when none provided", async () => {
+      mockFs.readFile.mockResolvedValue(JSON.stringify(existingDataFile))
+      mockFs.writeFile.mockResolvedValue(undefined)
+
+      await safeWriteUserFile({
+        data: testUserData,
+        schema: UserFileSchema,
+      })
+
+      expect(mockFs.readFile).toHaveBeenCalledWith(expect.stringContaining("data.json"), "utf-8")
+    })
+
+    it("should handle concurrent updates via mutex", async () => {
+      const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+      mockFs.readFile.mockImplementation(async () => {
+        await delay(10)
+        return JSON.stringify(existingDataFile)
+      })
+      mockFs.writeFile.mockResolvedValue(undefined)
+
+      // Start multiple write operations concurrently
+      const userData1: UserFile = {
+        user: {
+          id: TEST_USER_ID_1,
+          username: "user1",
+          password: "pass1",
+        },
+      }
+      const userData2: UserFile = {
+        user: {
+          id: TEST_USER_ID_1,
+          username: "user2",
+          password: "pass2",
+        },
+      }
+      const userData3: UserFile = {
+        user: {
+          id: TEST_USER_ID_1,
+          username: "user3",
+          password: "pass3",
+        },
+      }
+
+      const promises = [
+        safeWriteUserFile({ filePath: testFilePath, data: userData1, schema: UserFileSchema }),
+        safeWriteUserFile({ filePath: testFilePath, data: userData2, schema: UserFileSchema }),
+        safeWriteUserFile({ filePath: testFilePath, data: userData3, schema: UserFileSchema }),
+      ]
+
+      const results = await Promise.all(promises)
+
+      // All operations should succeed
+      expect(results).toEqual([true, true, true])
+
+      // Should have called readFile and writeFile 3 times each (once per operation)
+      expect(mockFs.readFile).toHaveBeenCalledTimes(3)
+      expect(mockFs.writeFile).toHaveBeenCalledTimes(3)
     })
   })
 

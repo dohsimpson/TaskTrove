@@ -12,8 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useTranslation } from "@tasktrove/i18n"
 import { showUserProfileDialogAtom, closeUserProfileDialogAtom } from "@tasktrove/atoms/ui/dialogs"
 import { userAtom } from "@tasktrove/atoms/data/base/atoms"
-import type { UpdateUserRequest } from "@tasktrove/types"
-import { createAvatarBase64 } from "@tasktrove/types"
+import type { UpdateUserRequest } from "@tasktrove/types/api-requests"
+import { createAvatarBase64 } from "@tasktrove/types/constants"
 import { encodeFileToBase64, isSupportedAvatarMimeType, getAvatarApiUrl } from "@tasktrove/utils"
 
 export function UserProfileDialog() {

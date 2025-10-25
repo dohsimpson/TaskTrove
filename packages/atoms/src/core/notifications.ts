@@ -1,15 +1,15 @@
 "use client";
 
 import { atom } from "jotai";
+import type { TaskId } from "@tasktrove/types/id";
 import type {
-  TaskId,
   ScheduledNotification,
-  ScheduledNotificationSet,
   NotificationPermissionStatus,
-  NotificationSettings,
   Task,
-} from "@tasktrove/types";
-import { createTaskId } from "@tasktrove/types";
+} from "@tasktrove/types/core";
+import type { ScheduledNotificationSet } from "@tasktrove/types/utils";
+import type { NotificationSettings } from "@tasktrove/types/settings";
+import { createTaskId } from "@tasktrove/types/id";
 import { settingsAtom } from "@tasktrove/atoms/data/base/atoms";
 import { safeSetTimeout } from "@tasktrove/utils";
 import {

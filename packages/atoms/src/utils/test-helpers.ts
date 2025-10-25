@@ -8,15 +8,15 @@
 
 import { createStore, type Atom } from "jotai";
 import { v4 as uuidv4 } from "uuid";
-import type { Task, Project, Label } from "@tasktrove/types";
+import type { Task, Project, Label } from "@tasktrove/types/core";
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
 import {
-  INBOX_PROJECT_ID,
   createTaskId,
   createSubtaskId,
-  createSectionId,
   createLabelId,
   createProjectId,
-} from "@tasktrove/types";
+  createSectionId,
+} from "@tasktrove/types/id";
 import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
 
 // =============================================================================

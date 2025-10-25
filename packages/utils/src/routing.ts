@@ -1,16 +1,14 @@
 import slugify from "slugify";
+import { Project, Label } from "@tasktrove/types/core";
 import {
-  Project,
-  Label,
   ProjectId,
-  LabelId,
   ProjectIdSchema,
+  LabelId,
   LabelIdSchema,
-  ProjectGroup,
-  LabelGroup,
   GroupId,
   GroupIdSchema,
-} from "@tasktrove/types";
+} from "@tasktrove/types/id";
+import { ProjectGroup, LabelGroup } from "@tasktrove/types/group";
 
 // Simple MurmurHash3 implementation for generating fixed-length hashes
 function murmurHash3(text: string): string {

@@ -1,5 +1,5 @@
-import type { Extractor } from "../base/Extractor";
-import type { ExtractionResult, ParserContext } from "../../types";
+import type { Extractor } from "@tasktrove/parser/extractors/base";
+import type { ExtractionResult, ParserContext } from "@tasktrove/parser/types";
 import {
   addDays,
   addWeeks,

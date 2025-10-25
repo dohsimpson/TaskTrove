@@ -7,8 +7,9 @@ import { expect, describe, it, beforeEach } from "vitest";
 import { atom } from "jotai";
 import { createStore } from "jotai";
 import { addDays, isToday, isTomorrow, isThisWeek } from "date-fns";
-import type { Task, ViewState } from "@tasktrove/types";
-import { INBOX_PROJECT_ID, createTaskId } from "@tasktrove/types";
+import type { Task, ViewState } from "@tasktrove/types/core";
+import { createTaskId } from "@tasktrove/types/id";
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,

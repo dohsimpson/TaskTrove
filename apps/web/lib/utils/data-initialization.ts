@@ -3,9 +3,7 @@ import { DEFAULT_DATA_FILE_PATH } from "@tasktrove/constants"
 import { checkDataFile } from "@/lib/startup-checks"
 import tutorialData from "@/lib/constants/tutorial-data.json"
 import { log } from "./logger"
-import { safeReadJsonFile } from "./safe-file-operations"
-import { UserSchema } from "@tasktrove/types"
-import { z } from "zod"
+import { safeReadUserFile } from "@/lib/utils/safe-file-operations"
 
 /**
  * Low-level function to write tutorial data to the data file.
@@ -50,6 +48,18 @@ export async function initializeDataFileIfNeeded(
   }
 }
 
+function checkPasswordSetupNeededForUser(user: { password: string } | undefined) {
+  if (!user) {
+    log.debug("User data invalid, password setup needed")
+    return true
+  }
+
+  // Check if password is empty
+  const needsSetup = !user.password || user.password === ""
+  log.debug(`Password setup needed: ${needsSetup}`)
+  return needsSetup
+}
+
 /**
  * Checks if password setup is needed by reading only the user field from the data file.
  * Returns true if password is empty or data file doesn't exist.
@@ -60,39 +70,31 @@ export async function initializeDataFileIfNeeded(
  * @returns Promise<boolean> - true if password setup is needed, false if password is already set
  */
 export async function checkPasswordSetupNeeded(): Promise<boolean> {
-  try {
-    // Try to read just the user field from the data file
-    // We use safeReadJsonFile instead of safeReadDataFile because we don't need
-    // the entire data file to be valid, just the user.password field
-    const fileData = await safeReadJsonFile<{ user?: unknown }>({
-      filePath: DEFAULT_DATA_FILE_PATH,
-      schema: z.object({
-        user: z.unknown().optional(),
-      }),
-    })
+  // Try to read just the user field from the data file
+  // We use safeReadJsonFile instead of safeReadDataFile because we don't need
+  // the entire data file to be valid, just the user.password field
+  const userFileData = await safeReadUserFile({ filePath: DEFAULT_DATA_FILE_PATH })
 
-    // If file doesn't exist or can't be read, password setup is needed
-    if (!fileData || !fileData.user) {
-      log.debug("Data file not found or user field missing, password setup needed")
+  // If file doesn't exist or can't be read, password setup is needed
+  if (!userFileData) {
+    log.debug("Data file not found or user field missing, password setup needed")
+    return true
+  }
+
+  // check if user is an array or an object
+  if (Array.isArray(userFileData.user)) {
+    const users = userFileData.user
+    if (users.length === 0) {
+      log.debug("No users found in data file, password setup needed")
       return true
+    } else {
+      const user = users[0]
+      return checkPasswordSetupNeededForUser(user)
     }
-
-    // Validate the user object structure
-    const userResult = UserSchema.safeParse(fileData.user)
-    if (!userResult.success) {
-      log.debug("User data invalid, password setup needed")
-      return true
-    }
-
-    // Check if password is empty
-    const needsSetup = !userResult.data.password || userResult.data.password === ""
-    log.debug(`Password setup needed: ${needsSetup}`)
-    return needsSetup
-  } catch (error) {
-    log.error(
-      `Error checking password setup status: ${error instanceof Error ? error.message : String(error)}`,
-    )
-    // If we can't read the file, assume setup is needed
+  } else if (userFileData.user instanceof Object) {
+    return checkPasswordSetupNeededForUser(userFileData.user)
+  } else {
+    log.debug("User data invalid, password setup needed")
     return true
   }
 }

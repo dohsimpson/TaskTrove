@@ -1,4 +1,4 @@
-import type { Task } from "@tasktrove/types";
+import type { Task } from "@tasktrove/types/core";
 
 /**
  * Formats time in seconds to human readable format (e.g., "1h", "30m", "1h 30m")

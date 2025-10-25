@@ -15,15 +15,18 @@ import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import type { Project, Label, ProjectGroup } from "@tasktrove/types";
+import type { ProjectGroup } from "@tasktrove/types/group";
+import type { Project, Label } from "@tasktrove/types/core";
 import {
   INBOX_PROJECT_ID,
-  ALL_PROJECT_ID,
   TODAY_PROJECT_ID,
+  ALL_PROJECT_ID,
+} from "@tasktrove/types/constants";
+import {
   createGroupId,
   createProjectId,
   createLabelId,
-} from "@tasktrove/types";
+} from "@tasktrove/types/id";
 import {
   resolveProject,
   resolveLabel,

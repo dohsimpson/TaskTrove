@@ -1,5 +1,6 @@
 import { atom } from "jotai";
-import type { Task, TaskId } from "@tasktrove/types";
+import type { Task } from "@tasktrove/types/core";
+import type { TaskId } from "@tasktrove/types/id";
 
 /**
  * Pomodoro timer state atoms for TaskTrove

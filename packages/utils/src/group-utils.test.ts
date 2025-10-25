@@ -5,8 +5,8 @@ import {
   getAllGroupsFlat,
   resolveGroup,
 } from "./group-utils";
-import type { ProjectGroup } from "@tasktrove/types";
-import { createGroupId, createProjectId } from "@tasktrove/types";
+import type { ProjectGroup } from "@tasktrove/types/group";
+import { createGroupId, createProjectId } from "@tasktrove/types/id";
 
 // Test data setup
 const TEST_GROUP_ID_1 = createGroupId("550e8400-e29b-41d4-a716-446655440001");

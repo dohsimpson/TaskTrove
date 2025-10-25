@@ -4,8 +4,8 @@
 
 import { describe, it, expect } from "vitest";
 import { sortTasksByViewState } from "./view-sorting";
-import type { Task, ViewState } from "@tasktrove/types";
-import { createTaskId, createProjectId } from "@tasktrove/types";
+import type { Task, ViewState } from "@tasktrove/types/core";
+import { createTaskId, createProjectId } from "@tasktrove/types/id";
 
 describe("sortTasksByViewState", () => {
   const baseViewState: ViewState = {

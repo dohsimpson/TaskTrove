@@ -8,16 +8,20 @@
  * so they use createMutation directly instead of createEntityMutation.
  */
 
+import { type User } from "@tasktrove/types/core";
 import {
-  type User,
   type UpdateUserRequest,
+  UserUpdateSerializationSchema,
+} from "@tasktrove/types/api-requests";
+import {
   type UpdateUserResponse,
   UpdateUserResponseSchema,
-  UserUpdateSerializationSchema,
+} from "@tasktrove/types/api-responses";
+import {
   type AvatarFilePath,
   createAvatarFilePath,
   API_ROUTES,
-} from "@tasktrove/types";
+} from "@tasktrove/types/constants";
 import { DEFAULT_USER } from "@tasktrove/types/defaults";
 import { USER_QUERY_KEY } from "@tasktrove/constants";
 import { clearNullValues } from "@tasktrove/utils";

@@ -1,6 +1,6 @@
 import { startOfDay } from "date-fns";
 import type { Processor } from "./base/Processor";
-import type { ExtractionResult, ParserContext } from "../types";
+import type { ExtractionResult, ParserContext } from "@tasktrove/parser/types";
 
 export class TimeToDateProcessor implements Processor {
   readonly name = "time-to-date-processor";

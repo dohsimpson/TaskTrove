@@ -1,7 +1,10 @@
-import type { DataFile, VersionString, Json } from "@/lib/types"
-import { createVersionString, DataFileSchema } from "@/lib/types"
+import type { DataFile } from "@tasktrove/types/data-file"
+import type { VersionString } from "@tasktrove/types/id"
+import type { Json } from "@tasktrove/types/constants"
+import { DataFileSchema } from "@tasktrove/types/data-file"
+import { createVersionString } from "@tasktrove/types/id"
 import { DEFAULT_UUID, DEFAULT_SECTION_NAME, DEFAULT_SECTION_COLOR } from "@tasktrove/constants"
-import { DEFAULT_USER_SETTINGS, DEFAULT_USER } from "@/lib/types"
+import { DEFAULT_USER_SETTINGS, DEFAULT_USER } from "@tasktrove/types/defaults"
 import { cleanupAllDanglingTasks } from "@tasktrove/types/utils"
 import { getAppVersion } from "@/lib/utils/version"
 

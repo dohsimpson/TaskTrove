@@ -13,14 +13,11 @@ import { labelAtoms } from "../core/labels";
 import { viewAtoms } from "../ui/views";
 import { dialogAtoms } from "../ui/dialogs";
 import { selectionAtoms } from "../ui/selection";
-import type {
-  Task,
-  Project,
-  Label,
-  CreateTaskRequest,
-  TaskId,
-} from "@tasktrove/types";
-import { INBOX_PROJECT_ID, createTaskId } from "@tasktrove/types";
+import type { Task, Project, Label } from "@tasktrove/types/core";
+import type { CreateTaskRequest } from "@tasktrove/types/api-requests";
+import type { TaskId } from "@tasktrove/types/id";
+import { createTaskId } from "@tasktrove/types/id";
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
 import {
   TEST_TASK_ID_1,
   TEST_PROJECT_ID_1,

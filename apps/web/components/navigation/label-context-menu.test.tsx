@@ -6,7 +6,7 @@ import { LabelContextMenu } from "./label-context-menu"
 import { labelAtoms } from "@tasktrove/atoms/core/labels"
 import { startEditingLabelAtom } from "@tasktrove/atoms/ui/navigation"
 import { TEST_LABEL_ID_1 } from "@tasktrove/types/test-constants"
-import { createLabelId } from "@tasktrove/types"
+import { createLabelId } from "@tasktrove/types/id"
 
 // Mock component interfaces
 interface MockButtonProps {

@@ -42,6 +42,7 @@ describe("useDebouncedParse", () => {
       .mockReturnValueOnce(false) // nlpEnabledAtom
       .mockReturnValueOnce([]) // labelsAtom
       .mockReturnValueOnce([]) // visibleProjectsAtom
+      .mockReturnValueOnce([]) // usersAtom
 
     const { result } = renderHook(() => useDebouncedParse("hello world"), { wrapper })
 
@@ -58,6 +59,7 @@ describe("useDebouncedParse", () => {
       .mockReturnValueOnce(true) // nlpEnabledAtom
       .mockReturnValueOnce([{ name: "urgent" }]) // labelsAtom
       .mockReturnValueOnce([{ name: "work" }]) // visibleProjectsAtom
+      .mockReturnValueOnce([]) // usersAtom
 
     const mockParsedResult = {
       title: "hello",
@@ -85,6 +87,7 @@ describe("useDebouncedParse", () => {
       {
         projects: [{ name: "work" }],
         labels: [{ name: "urgent" }],
+        users: [],
       },
     )
   })
@@ -95,6 +98,7 @@ describe("useDebouncedParse", () => {
       .mockReturnValueOnce(true) // nlpEnabledAtom
       .mockReturnValueOnce([]) // labelsAtom
       .mockReturnValueOnce([]) // visibleProjectsAtom
+      .mockReturnValueOnce([]) // usersAtom
 
     const { result } = renderHook(() => useDebouncedParse(""), { wrapper })
 
@@ -111,6 +115,7 @@ describe("useDebouncedParse", () => {
       .mockReturnValueOnce(true) // nlpEnabledAtom
       .mockReturnValueOnce([]) // labelsAtom
       .mockReturnValueOnce([]) // visibleProjectsAtom
+      .mockReturnValueOnce([]) // usersAtom
 
     const { result } = renderHook(() => useDebouncedParse("   "), { wrapper })
 
@@ -160,6 +165,7 @@ describe("useDebouncedParse", () => {
     expect(parseEnhancedNaturalLanguage).toHaveBeenCalledWith("final", new Set(), {
       projects: [],
       labels: [],
+      users: [],
     })
   })
 
@@ -169,6 +175,7 @@ describe("useDebouncedParse", () => {
       .mockReturnValueOnce(true) // nlpEnabledAtom
       .mockReturnValueOnce([]) // labelsAtom
       .mockReturnValueOnce([]) // visibleProjectsAtom
+      .mockReturnValueOnce([]) // usersAtom
 
     const { parseEnhancedNaturalLanguage } = await import(
       "@/lib/utils/enhanced-natural-language-parser"
@@ -194,6 +201,7 @@ describe("useDebouncedParse", () => {
       {
         projects: [],
         labels: [],
+        users: [],
       },
     )
   })

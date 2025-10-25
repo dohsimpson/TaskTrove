@@ -26,13 +26,10 @@ import {
   sectionDialogContextAtom,
   projectGroupDialogContextAtom,
 } from "@tasktrove/atoms/ui/dialogs";
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
+import { ProjectIdSchema } from "@tasktrove/types/id";
 import {
-  INBOX_PROJECT_ID,
-  ProjectIdSchema,
   GroupIdSchema,
-  type Project,
-  type Label,
-  type ProjectGroup,
   type ProjectId,
   type LabelId,
   type GroupId,
@@ -40,7 +37,9 @@ import {
   type StandardViewId,
   createProjectId,
   createGroupId,
-} from "@tasktrove/types";
+} from "@tasktrove/types/id";
+import { type Project, type Label } from "@tasktrove/types/core";
+import { type ProjectGroup } from "@tasktrove/types/group";
 import { DEFAULT_GROUP_COLOR, DEFAULT_ROUTE } from "@tasktrove/constants";
 import { projectsAtom, labelsAtom } from "@tasktrove/atoms/data/base/atoms";
 import { allGroupsAtom } from "@tasktrove/atoms/core/groups";

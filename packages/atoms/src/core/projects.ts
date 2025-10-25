@@ -15,13 +15,9 @@ import {
   namedAtom,
   withErrorHandling,
 } from "@tasktrove/atoms/utils/atom-helpers";
-import type {
-  Project,
-  ProjectId,
-  GroupId,
-  ProjectSection,
-  UpdateProjectRequest,
-} from "@tasktrove/types";
+import type { Project, ProjectSection } from "@tasktrove/types/core";
+import type { ProjectId, GroupId } from "@tasktrove/types/id";
+import type { UpdateProjectRequest } from "@tasktrove/types/api-requests";
 import {
   DEFAULT_INBOX_NAME,
   DEFAULT_INBOX_COLOR,
@@ -29,11 +25,9 @@ import {
   DEFAULT_SECTION_NAME,
   DEFAULT_SECTION_COLOR,
 } from "@tasktrove/constants";
-import {
-  INBOX_PROJECT_ID,
-  createGroupId,
-  ProjectIdSchema,
-} from "@tasktrove/types";
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
+import { createGroupId } from "@tasktrove/types/id";
+import { ProjectIdSchema } from "@tasktrove/types/id";
 import { projectsAtom } from "@tasktrove/atoms/data/base/atoms";
 import {
   updateProjectsMutationAtom,

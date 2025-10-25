@@ -235,6 +235,7 @@ export const UserUpdateSerializationSchema = UpdateUserRequestSchema;
  * Schema for initial setup request - setting password for first time
  */
 export const InitialSetupRequestSchema = z.object({
+  username: z.string().optional(),
   password: z.string().min(1, "Password is required"),
 });
 

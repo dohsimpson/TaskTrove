@@ -1,23 +1,22 @@
 import { atom } from "jotai";
 import { isToday } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
+import { Task, TaskComment, Project, User } from "@tasktrove/types/core";
 import {
-  Task,
-  TaskComment,
   TaskId,
   GroupId,
   ViewId,
   ProjectId,
-  Project,
-  INBOX_PROJECT_ID,
   createTaskId,
   createProjectId,
   createCommentId,
+} from "@tasktrove/types/id";
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
+import {
   UpdateTaskRequest,
   CreateTaskRequest,
-  CommentUpdateRequest,
-  User,
-} from "@tasktrove/types";
+} from "@tasktrove/types/api-requests";
+import { CommentUpdateRequest } from "@tasktrove/types/api-requests";
 import { getDefaultSectionId } from "@tasktrove/types/defaults";
 import {
   DEFAULT_TASK_PRIORITY,

@@ -1,4 +1,4 @@
-import type { ExtractionResult, ParserContext } from "../types";
+import type { ExtractionResult, ParserContext } from "@tasktrove/parser/types";
 
 export interface Pattern<T = string> {
   pattern: RegExp;

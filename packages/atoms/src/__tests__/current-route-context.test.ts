@@ -17,7 +17,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createStore } from "jotai";
 import { currentRouteContextAtom, setPathnameAtom } from "../ui/navigation";
-import { createGroupId } from "@tasktrove/types";
+import { createGroupId } from "@tasktrove/types/id";
 
 // Test constants for project groups
 const TEST_GROUP_ID_1 = createGroupId("550e8400-e29b-41d4-a716-446655440001");

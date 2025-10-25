@@ -2,8 +2,10 @@
  * Utility functions for working with project groups
  */
 
-import type { ProjectGroup, GroupId, ProjectId } from "@tasktrove/types";
-import { isGroup, GroupIdSchema } from "@tasktrove/types";
+import type { ProjectGroup } from "@tasktrove/types/group";
+import type { GroupId, ProjectId } from "@tasktrove/types/id";
+import { isGroup } from "@tasktrove/types/group";
+import { GroupIdSchema } from "@tasktrove/types/id";
 
 // Helper function to validate if a string is a valid GroupId
 function isValidGroupId(id: string): id is GroupId {

@@ -2,26 +2,22 @@ import { NextResponse } from "next/server"
 import {
   DeleteGroupRequestSchema,
   CreateGroupRequestSchema,
-  DataFileSerializationSchema,
   GroupUpdateUnionSchema,
   BulkGroupUpdateSchema,
-  createGroupId,
-  ApiErrorCode,
-} from "@tasktrove/types"
+} from "@tasktrove/types/api-requests"
+import { DataFileSerializationSchema } from "@tasktrove/types/data-file"
+import { createGroupId } from "@tasktrove/types/id"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
+import type { ProjectGroup, LabelGroup, Group } from "@tasktrove/types/group"
 import type {
-  ProjectGroup,
-  LabelGroup,
   CreateGroupResponse,
   UpdateGroupResponse,
   DeleteGroupResponse,
-  ErrorResponse,
-  GroupUpdateUnion,
-  BulkGroupUpdate,
-  GroupId,
   GetGroupsResponse,
-  Group,
-  ProjectId,
-} from "@tasktrove/types"
+} from "@tasktrove/types/api-responses"
+import type { GroupUpdateUnion, BulkGroupUpdate } from "@tasktrove/types/api-requests"
+import type { ErrorResponse } from "@tasktrove/types/api-responses"
+import type { GroupId, ProjectId } from "@tasktrove/types/id"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { v4 as uuidv4 } from "uuid"

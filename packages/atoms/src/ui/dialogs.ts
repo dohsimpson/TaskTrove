@@ -1,14 +1,11 @@
 import { atom } from "jotai";
 import type React from "react";
+import type { LabelId, ProjectId, GroupId, TaskId } from "@tasktrove/types/id";
+import type { Task } from "@tasktrove/types/core";
 import type {
-  LabelId,
-  ProjectId,
-  GroupId,
-  Task,
-  TaskId,
   CreateTaskRequest,
   UpdateTaskRequest,
-} from "@tasktrove/types";
+} from "@tasktrove/types/api-requests";
 import { clearNullValues } from "@tasktrove/utils";
 import { selectedTaskIdAtom, setSelectedTaskIdAtom } from "./selection";
 

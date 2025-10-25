@@ -8,8 +8,12 @@ import {
   removeTaskFromSection,
   taskOrderingUtils,
 } from "./ordering";
-import type { Task, Project, ProjectSection } from "@tasktrove/types";
-import { createTaskId, createProjectId, createGroupId } from "@tasktrove/types";
+import type { Task, Project, ProjectSection } from "@tasktrove/types/core";
+import {
+  createTaskId,
+  createProjectId,
+  createGroupId,
+} from "@tasktrove/types/id";
 import { v4 as uuidv4 } from "uuid";
 
 // Helper function to safely get element at specific index

@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server"
-import {
-  User,
-  InitialSetupResponse,
-  ErrorResponse,
-  InitialSetupRequestSchema,
-  ApiErrorCode,
-} from "@tasktrove/types"
+import { User } from "@tasktrove/types/core"
+import { InitialSetupResponse } from "@tasktrove/types/api-responses"
+import { InitialSetupRequestSchema } from "@tasktrove/types/api-requests"
+import { ErrorResponse } from "@tasktrove/types/api-responses"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import {
@@ -34,7 +32,7 @@ async function initialSetup(
     return validation.error
   }
 
-  const { password } = validation.data
+  const { password, username } = validation.data
 
   // Read current data file to check existing password
   let fileData = await withFileOperationLogging(
@@ -92,9 +90,10 @@ async function initialSetup(
     )
   }
 
-  // Update user with the new password (keeping existing username and avatar)
+  // Update user with the new password (keeping existing username and avatar unless username is provided)
   const updatedUser: User = {
     ...fileData.user,
+    ...(username && { username }),
     password: hashedPassword,
   }
 
@@ -131,7 +130,6 @@ async function initialSetup(
 
   const response: InitialSetupResponse = {
     success: true,
-    user: updatedUser,
   }
 
   return NextResponse.json(response)

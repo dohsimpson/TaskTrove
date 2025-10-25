@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
+import { CreateTaskRequestSchema } from "./api-requests";
 import {
-  CreateTaskRequestSchema,
   buildRRule,
   parseRRule,
   CommonRRules,
   RRuleFrequency,
   RRuleWeekday,
-} from "./index";
+} from "./constants";
 
 describe("RRULE Validation", () => {
   describe("Valid RRULE patterns", () => {

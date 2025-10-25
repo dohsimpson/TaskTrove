@@ -16,12 +16,10 @@ import {
   LabelAnalytics,
   TimeOfDayData,
   FocusSession,
-  TimePeriod,
-  Task,
-  Project,
-  Label,
-  createTaskId,
-} from "@tasktrove/types";
+} from "@tasktrove/types/analytics";
+import { TimePeriod } from "@tasktrove/types/utils";
+import { Task, Project, Label } from "@tasktrove/types/core";
+import { createTaskId } from "@tasktrove/types/id";
 
 /**
  * Analytics atoms for TaskTrove Jotai migration

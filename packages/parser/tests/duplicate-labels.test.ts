@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { TaskParser } from "../src/TaskParser";
+import { TaskParser } from "../src/core/parser";
 import type { ParserContext } from "../src/types";
 
 describe("Duplicate Label Handling", () => {

@@ -53,6 +53,7 @@ import {
 } from "@tasktrove/atoms/ui/navigation"
 import { useTranslation } from "@tasktrove/i18n"
 import { getMainNavItems } from "@/components/navigation/main-nav-items"
+import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
 
 export function SidebarNav() {
   // Translation setup
@@ -128,13 +129,31 @@ export function SidebarNav() {
           <SidebarMenu>
             {mainNavItems.map((item) => (
               <SidebarMenuItem key={item.id}>
-                <SidebarMenuButton asChild isActive={pathname === item.href}>
-                  <Link href={item.href}>
-                    {item.icon}
-                    <span>{item.label}</span>
-                    <SidebarMenuBadge>{item.count}</SidebarMenuBadge>
-                  </Link>
-                </SidebarMenuButton>
+                {item.comingSoon ? (
+                  <ComingSoonWrapper
+                    disabled={true}
+                    featureName={item.featureName || item.label}
+                    proOnly={item.proOnly}
+                  >
+                    <SidebarMenuButton isActive={false}>
+                      {item.icon}
+                      <span>{item.label}</span>
+                      {item.count !== undefined && (
+                        <SidebarMenuBadge>{item.count}</SidebarMenuBadge>
+                      )}
+                    </SidebarMenuButton>
+                  </ComingSoonWrapper>
+                ) : (
+                  <SidebarMenuButton asChild isActive={pathname === item.href}>
+                    <Link href={item.href}>
+                      {item.icon}
+                      <span>{item.label}</span>
+                      {item.count !== undefined && (
+                        <SidebarMenuBadge>{item.count}</SidebarMenuBadge>
+                      )}
+                    </Link>
+                  </SidebarMenuButton>
+                )}
               </SidebarMenuItem>
             ))}
           </SidebarMenu>

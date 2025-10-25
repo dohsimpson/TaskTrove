@@ -19,27 +19,17 @@ import {
   settingsQueryAtom,
   userQueryAtom,
 } from "@tasktrove/atoms/data/base/query";
+import type { Task, Project, Label, User } from "@tasktrove/types/core";
+import type { TaskId } from "@tasktrove/types/id";
 import type {
-  Task,
-  TaskId,
-  Project,
-  Label,
   UserSettings,
-  UpdateTaskRequest,
   PartialUserSettings,
+} from "@tasktrove/types/settings";
+import type {
+  UpdateTaskRequest,
   UpdateUserRequest,
-  User,
-} from "@tasktrove/types";
-import {
-  DEFAULT_AUTO_BACKUP_ENABLED,
-  DEFAULT_BACKUP_TIME,
-  DEFAULT_MAX_BACKUPS,
-} from "@tasktrove/constants";
-import {
-  DEFAULT_NOTIFICATION_SETTINGS,
-  DEFAULT_GENERAL_SETTINGS,
-  DEFAULT_USER,
-} from "@tasktrove/types/defaults";
+} from "@tasktrove/types/api-requests";
+import { DEFAULT_USER, DEFAULT_USER_SETTINGS } from "@tasktrove/types/defaults";
 import {
   log,
   namedAtom,
@@ -197,17 +187,7 @@ export const settingsAtom = atom(
       return query.data;
     }
     // Return default settings if loading or error
-    const defaultSettings: UserSettings = {
-      data: {
-        autoBackup: {
-          enabled: DEFAULT_AUTO_BACKUP_ENABLED,
-          backupTime: DEFAULT_BACKUP_TIME,
-          maxBackups: DEFAULT_MAX_BACKUPS,
-        },
-      },
-      notifications: DEFAULT_NOTIFICATION_SETTINGS,
-      general: DEFAULT_GENERAL_SETTINGS,
-    };
+    const defaultSettings: UserSettings = DEFAULT_USER_SETTINGS;
     return defaultSettings;
   },
   async (get, set, partialSettings: PartialUserSettings) => {
@@ -258,3 +238,11 @@ export const userAtom = atom(
   },
 );
 userAtom.debugLabel = "userAtom";
+
+export const usersAtom = namedAtom(
+  "usersAtom",
+  atom((get): User[] => {
+    const user = get(userAtom);
+    return [user];
+  }),
+);

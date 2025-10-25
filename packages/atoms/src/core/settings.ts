@@ -13,7 +13,10 @@ import { recordOperationAtom } from "@tasktrove/atoms/core/history";
 import { settingsAtom } from "@tasktrove/atoms/data/base/atoms";
 import { settingsQueryAtom } from "@tasktrove/atoms/data/base/query";
 import { updateSettingsMutationAtom } from "@tasktrove/atoms/mutations/settings";
-import type { UserSettings, PartialUserSettings } from "@tasktrove/types";
+import type {
+  UserSettings,
+  PartialUserSettings,
+} from "@tasktrove/types/settings";
 import {
   DEFAULT_AUTO_BACKUP_ENABLED,
   DEFAULT_BACKUP_TIME,

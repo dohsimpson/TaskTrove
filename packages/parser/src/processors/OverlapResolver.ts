@@ -1,5 +1,5 @@
 import type { Processor } from "./base/Processor";
-import type { ExtractionResult, ParserContext } from "../types";
+import type { ExtractionResult, ParserContext } from "@tasktrove/parser/types";
 
 export class OverlapResolver implements Processor {
   readonly name = "overlap-resolver";

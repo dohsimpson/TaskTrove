@@ -3,13 +3,15 @@ import {
   ProjectGroupSchema,
   LabelGroupSchema,
   GroupSchema,
+  type ProjectGroup,
+  type LabelGroup,
+} from "./group";
+import {
   createTaskId,
   createProjectId,
   createLabelId,
   createGroupId,
-  type ProjectGroup,
-  type LabelGroup,
-} from "./index";
+} from "./id";
 
 /**
  * Group Schema Tests

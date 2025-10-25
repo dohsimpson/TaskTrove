@@ -13,7 +13,8 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { createStore } from "jotai";
-import { INBOX_PROJECT_ID, createProjectId } from "@tasktrove/types";
+import { createProjectId } from "@tasktrove/types/id";
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
 
 // Test constants - defined locally since they're test-only
 const TEST_PROJECT_ID_1 = createProjectId(

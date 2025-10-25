@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { createStore } from "jotai";
-import type { Task } from "@tasktrove/types";
-import { createLabelId } from "@tasktrove/types";
+import type { Task } from "@tasktrove/types/core";
+import { createLabelId } from "@tasktrove/types/id";
 
 // Test constants - defined locally since they're test-only
 const TEST_LABEL_ID_1 = createLabelId("12345678-1234-4234-8234-123456789abc");

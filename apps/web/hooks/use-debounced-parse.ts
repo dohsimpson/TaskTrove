@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useAtomValue } from "jotai"
 import { nlpEnabledAtom } from "@tasktrove/atoms/ui/dialogs"
-import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { labelsAtom, usersAtom } from "@tasktrove/atoms/data/base/atoms"
 import { visibleProjectsAtom } from "@tasktrove/atoms/core/projects"
 import {
   parseEnhancedNaturalLanguage,
@@ -30,6 +30,7 @@ export function useDebouncedParse(
   const enabled = useAtomValue(nlpEnabledAtom)
   const labels = useAtomValue(labelsAtom) || []
   const projects = useAtomValue(visibleProjectsAtom) || []
+  const users = useAtomValue(usersAtom) || []
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -43,6 +44,7 @@ export function useDebouncedParse(
           parseEnhancedNaturalLanguage(text, disabledSections, {
             projects: projects.map((p) => ({ name: p.name })),
             labels: labels.map((l) => ({ name: l.name })),
+            users: users.map((u) => ({ username: u.username })),
           }),
         )
       } else {
@@ -51,7 +53,7 @@ export function useDebouncedParse(
     }, delay)
 
     return () => clearTimeout(timer)
-  }, [text, delay, disabledSections, enabled, labels, projects])
+  }, [text, delay, disabledSections, enabled, labels, projects, users])
 
   return parsed
 }

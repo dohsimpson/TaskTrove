@@ -8,21 +8,23 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
+import { type Label } from "@tasktrove/types/core";
 import {
-  type Label,
   type CreateLabelRequest,
+  type DeleteLabelRequest,
+  LabelCreateSerializationSchema,
+  LabelUpdateArraySerializationSchema,
+  LabelDeleteSerializationSchema,
+} from "@tasktrove/types/api-requests";
+import {
   type CreateLabelResponse,
   CreateLabelResponseSchema,
-  LabelCreateSerializationSchema,
   type UpdateLabelResponse,
   UpdateLabelResponseSchema,
-  LabelUpdateArraySerializationSchema,
-  type DeleteLabelRequest,
   type DeleteLabelResponse,
   DeleteLabelResponseSchema,
-  LabelDeleteSerializationSchema,
-  createLabelId,
-} from "@tasktrove/types";
+} from "@tasktrove/types/api-responses";
+import { createLabelId } from "@tasktrove/types/id";
 import { DEFAULT_LABEL_COLORS } from "@tasktrove/constants";
 import { createSafeLabelNameSlug } from "@tasktrove/utils/routing";
 import { createEntityMutation } from "./entity-factory";

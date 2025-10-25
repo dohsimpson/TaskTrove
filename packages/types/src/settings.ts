@@ -6,7 +6,7 @@
 
 import { z } from "zod";
 import { STANDARD_VIEW_IDS } from "@tasktrove/constants";
-import { ProjectIdSchema } from "#id";
+import { ProjectIdSchema } from "./id";
 
 // =============================================================================
 // DATA SETTINGS

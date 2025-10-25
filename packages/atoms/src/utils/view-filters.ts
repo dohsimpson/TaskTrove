@@ -5,7 +5,8 @@
  * to apply viewState filters (showCompleted, showOverdue, search, activeFilters)
  */
 
-import type { Task, ViewState, ViewId } from "@tasktrove/types";
+import type { Task, ViewState } from "@tasktrove/types/core";
+import type { ViewId } from "@tasktrove/types/id";
 import {
   filterTasks,
   viewStateToFilterConfig,

@@ -6,8 +6,8 @@
 
 import { z } from "zod";
 import { parse, isValid, parseISO, format } from "date-fns";
-import { createProjectId } from "#id";
-import type { ProjectId, LabelId, GroupId } from "#id";
+import { createProjectId } from "./id";
+import type { ProjectId, LabelId, GroupId } from "./id";
 import {
   AVATAR_DATA_URL_REGEX,
   DEFAULT_AVATAR_DIR,

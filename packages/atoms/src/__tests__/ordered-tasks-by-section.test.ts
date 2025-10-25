@@ -10,13 +10,14 @@ import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
 import { expect, describe, it, beforeEach } from "vitest";
 import { atom } from "jotai";
 import { createStore } from "jotai";
-import type { Task, Project, ProjectSection, GroupId } from "@tasktrove/types";
+import type { Task, Project, ProjectSection } from "@tasktrove/types/core";
+import type { GroupId } from "@tasktrove/types/id";
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
 import {
-  INBOX_PROJECT_ID,
   createTaskId,
   createProjectId,
   createGroupId,
-} from "@tasktrove/types";
+} from "@tasktrove/types/id";
 import { DEFAULT_UUID } from "@tasktrove/constants";
 import { getDefaultSectionId } from "@tasktrove/types/defaults";
 

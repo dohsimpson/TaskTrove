@@ -5,8 +5,13 @@ import {
   calculateLabelTaskCounts,
   calculateViewCounts,
 } from "./counts";
-import type { Task, Project, Label, ProjectId } from "@tasktrove/types";
-import { createTaskId, createProjectId, createLabelId } from "@tasktrove/types";
+import type { Task, Project, Label } from "@tasktrove/types/core";
+import type { ProjectId } from "@tasktrove/types/id";
+import {
+  createTaskId,
+  createProjectId,
+  createLabelId,
+} from "@tasktrove/types/id";
 
 // =============================================================================
 // TEST CONSTANTS

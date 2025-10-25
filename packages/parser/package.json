@@ -2,14 +2,55 @@
   "name": "@tasktrove/parser",
   "version": "0.1.0",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "exports": {
+    "./types": {
+      "pro": "./src/types.pro.ts",
+      "default": "./src/types.ts"
+    },
+    "./core/parser": {
+      "pro": "./src/core/parser.pro.ts",
+      "default": "./src/core/parser.ts"
+    },
+    "./ParserResult": "./src/ParserResult.ts",
+    "./PluginSystem": "./src/PluginSystem.ts",
+    "./extractors/base": "./src/extractors/base/Extractor.ts",
+    "./extractors/priority": "./src/extractors/priority/PriorityExtractor.ts",
+    "./extractors/tags/project": "./src/extractors/tags/ProjectExtractor.ts",
+    "./extractors/tags/label": "./src/extractors/tags/LabelExtractor.ts",
+    "./extractors/tags/assignee": {
+      "pro": "./src/extractors/tags/AssigneeExtractor.pro.ts"
+    },
+    "./extractors/date": "./src/extractors/date/DateExtractor.ts",
+    "./extractors/date/weekday": "./src/extractors/date/WeekdayExtractor.ts",
+    "./extractors/date/duration": "./src/extractors/date/DurationDateExtractor.ts",
+    "./extractors/time": "./src/extractors/time/TimeExtractor.ts",
+    "./extractors/recurring": "./src/extractors/recurring/RecurringExtractor.ts",
+    "./extractors/estimation": "./src/extractors/estimation/EstimationExtractor.ts",
+    "./extractors/duration": "./src/extractors/duration/DurationExtractor.ts",
+    "./processors/base": "./src/processors/base/Processor.ts",
+    "./processors/overlap": "./src/processors/OverlapResolver.ts",
+    "./processors/last-occurrence": "./src/processors/LastOccurrenceSelector.ts",
+    "./processors/time-to-date": "./src/processors/TimeToDateProcessor.ts",
+    "./processors/datetime-splitter": "./src/processors/DateTimeSplitter.ts",
+    "./processors/datetime-linker": "./src/processors/DateTimeLinker.ts",
+    "./processors/text-cleaner": "./src/processors/TextCleaner.ts",
+    "./utils/recurring-anchor": "./src/utils/RecurringAnchorExtractor.ts",
+    "./utils/pattern-matcher": "./src/utils/PatternMatcher.ts"
+  },
   "scripts": {
+    "cli": "node --import tsx --no-warnings src/cli.ts",
+    "cli:pro": "node --import tsx --no-warnings src/cli.pro.ts",
     "typecheck:base": "tsgo --noEmit",
     "typecheck:pro": "tsgo --project tsconfig.pro.json --noEmit",
     "typecheck": "pnpm typecheck:base && (test -f tsconfig.pro.json && pnpm typecheck:pro || true)",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "check": "pnpm typecheck && pnpm test",
+    "check:pro": "pnpm typecheck:pro && pnpm test:pro",
+    "test:base": "vitest run --reporter=dot --no-coverage",
+    "test:pro": "vitest run --reporter=dot --no-coverage --config vitest.config.pro.ts",
+    "test": "pnpm test:base && (test -f vitest.config.pro.ts && pnpm test:pro:safe || true)",
+    "test:pro:safe": "vitest run --reporter=dot --no-coverage --config vitest.config.pro.ts --passWithNoTests",
+    "test:watch": "vitest --watch",
+    "test:watch:pro": "vitest --watch --config vitest.config.pro.ts"
   },
   "dependencies": {
     "@tasktrove/types": "workspace:*",
@@ -18,6 +59,7 @@
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest-config": "workspace:*",
+    "tsx": "catalog:",
     "vitest": "catalog:"
   }
 }

@@ -1,4 +1,4 @@
-import type { ViewState, GlobalViewOptions } from "./index";
+import type { ViewState, GlobalViewOptions } from "./core";
 import type { GroupId } from "./id";
 import type { User, ProjectSection, Project } from "./core";
 import type { ProjectGroup, LabelGroup } from "./group";
@@ -22,6 +22,7 @@ import {
   DEFAULT_SECTION_NAME,
   DEFAULT_SECTION_COLOR,
 } from "@tasktrove/constants";
+import { UserSettings } from "@tasktrove/types/settings";
 
 /**
  * Default ROOT project group for empty data files
@@ -146,7 +147,7 @@ export const DEFAULT_GLOBAL_VIEW_OPTIONS: GlobalViewOptions = {
 /**
  * Default user settings structure
  */
-export const DEFAULT_USER_SETTINGS = {
+export const DEFAULT_USER_SETTINGS: UserSettings = {
   data: {
     autoBackup: {
       enabled: DEFAULT_AUTO_BACKUP_ENABLED,

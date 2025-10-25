@@ -3,66 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "imports": {
-    "#index": {
-      "pro": "./src/index.pro.ts",
-      "default": "./src/index.ts"
-    },
-    "#core": {
-      "pro": "./src/core.pro.ts",
-      "default": "./src/core.ts"
-    },
-    "#constants": {
-      "pro": "./src/constants.pro.ts",
-      "default": "./src/constants.ts"
-    },
-    "#defaults": {
-      "pro": "./src/defaults.pro.ts",
-      "default": "./src/defaults.ts"
-    },
-    "#utils": {
-      "pro": "./src/utils.pro.ts",
-      "default": "./src/utils.ts"
-    },
-    "#test-constants": {
-      "pro": "./src/test-constants.pro.ts",
-      "default": "./src/test-constants.ts"
-    },
-    "#serialization": {
-      "pro": "./src/serialization.pro.ts",
-      "default": "./src/serialization.ts"
-    },
-    "#api-requests": {
-      "pro": "./src/api-requests.pro.ts",
-      "default": "./src/api-requests.ts"
-    },
-    "#api-responses": {
-      "pro": "./src/api-responses.pro.ts",
-      "default": "./src/api-responses.ts"
-    },
-    "#data-file": {
-      "pro": "./src/data-file.pro.ts",
-      "default": "./src/data-file.ts"
-    },
-    "#id": "./src/id.ts",
-    "#validators": "./src/validators.ts",
-    "#group": "./src/group.ts",
-    "#settings": "./src/settings.ts",
-    "#analytics": "./src/analytics.ts",
-    "#team": "./src/team.ts",
-    "#notifications": "./src/notifications.ts",
-    "#voice-commands": "./src/voice-commands.ts",
-    "#api-errors": "./src/api-errors.ts"
-  },
   "exports": {
-    ".": {
-      "pro": "./src/index.pro.ts",
-      "default": "./src/index.ts"
-    },
     "./defaults": {
       "pro": "./src/defaults.pro.ts",
       "default": "./src/defaults.ts"
     },
+    "./defaults.base": "./src/defaults.ts",
     "./utils": {
       "pro": "./src/utils.pro.ts",
       "default": "./src/utils.ts"
@@ -83,7 +29,10 @@
     },
     "./core.pro": "./src/core.pro.ts",
     "./group": "./src/group.ts",
-    "./settings": "./src/settings.ts",
+    "./settings": {
+      "pro": "./src/settings.pro.ts",
+      "default": "./src/settings.ts"
+    },
     "./serialization": {
       "pro": "./src/serialization.pro.ts",
       "default": "./src/serialization.ts"
@@ -100,10 +49,16 @@
       "pro": "./src/data-file.pro.ts",
       "default": "./src/data-file.ts"
     },
+    "./data-file.base": "./src/data-file.ts",
     "./analytics": "./src/analytics.ts",
     "./team": "./src/team.ts",
     "./notifications": "./src/notifications.ts",
-    "./voice-commands": "./src/voice-commands.ts"
+    "./voice-commands": "./src/voice-commands.ts",
+    "./api-errors": "./src/api-errors.ts",
+    "./reward-levels": {
+      "pro": "./src/reward-levels.pro.ts",
+      "default": "./src/reward-levels.ts"
+    }
   },
   "scripts": {
     "lint": "eslint .",

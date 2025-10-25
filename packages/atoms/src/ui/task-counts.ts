@@ -10,7 +10,7 @@
 
 import { atom } from "jotai";
 import { atomFamily } from "jotai/utils";
-import type { ProjectId, LabelId, ViewId } from "@tasktrove/types";
+import type { ProjectId, LabelId, ViewId } from "@tasktrove/types/id";
 import { projectsAtom, labelsAtom } from "@tasktrove/atoms/data/base/atoms";
 import {
   activeTasksAtom,

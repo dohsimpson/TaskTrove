@@ -2,17 +2,20 @@ import { describe, it, expect } from "vitest";
 import type { ZodObject, ZodRawShape } from "zod";
 import {
   TaskSchema,
-  TaskSerializationSchema,
   TaskCommentSchema,
-  TaskCommentSerializationSchema,
   UserSchema,
-  UserSerializationSchema,
   ProjectSchema,
-  ProjectSerializationSchema,
   LabelSchema,
+} from "../core";
+import {
+  TaskSerializationSchema,
+  TaskCommentSerializationSchema,
+  UserSerializationSchema,
+  ProjectSerializationSchema,
   LabelSerializationSchema,
-  DataFileSchema,
-  DataFileSerializationSchema,
+} from "../serialization";
+import { DataFileSchema, DataFileSerializationSchema } from "../data-file";
+import {
   CreateTaskRequestSchema,
   TaskCreateSerializationSchema,
   UpdateTaskRequestSchema,
@@ -33,7 +36,7 @@ import {
   ProjectDeleteSerializationSchema,
   DeleteLabelRequestSchema,
   LabelDeleteSerializationSchema,
-} from "../index";
+} from "../api-requests";
 
 /**
  * Asserts that two schemas have identical field names

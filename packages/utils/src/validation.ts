@@ -1,11 +1,11 @@
 import { z } from "zod";
+import type { ProjectId } from "@tasktrove/types/id";
+import type { Task } from "@tasktrove/types/core";
 import type {
-  ProjectId,
-  Task,
   CreateTaskRequest,
   UpdateTaskRequest,
-} from "@tasktrove/types";
-import { INBOX_PROJECT_ID } from "@tasktrove/types";
+} from "@tasktrove/types/api-requests";
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
 import { clearNullValues } from "./object-utils";
 
 /**

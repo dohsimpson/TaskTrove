@@ -6,7 +6,7 @@
  */
 
 import { saltAndHashPassword, parseAvatarDataUrl } from "@tasktrove/utils"
-import { createAvatarFilePath, type AvatarFilePath } from "@tasktrove/types"
+import { createAvatarFilePath, type AvatarFilePath } from "@tasktrove/types/constants"
 import { saveBase64ToAvatarFile } from "./safe-file-operations"
 
 /**

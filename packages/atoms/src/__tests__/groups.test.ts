@@ -21,8 +21,9 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createStore } from "jotai";
-import type { ProjectGroup, DataFileSerialization } from "@tasktrove/types";
-import { createGroupId, createProjectId } from "@tasktrove/types";
+import type { ProjectGroup } from "@tasktrove/types/group";
+import type { DataFileSerialization } from "@tasktrove/types/data-file";
+import { createGroupId, createProjectId } from "@tasktrove/types/id";
 import {
   allGroupsAtom,
   labelGroupsAtom,

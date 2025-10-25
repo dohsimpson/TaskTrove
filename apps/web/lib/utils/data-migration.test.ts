@@ -1,4 +1,4 @@
-import { DEFAULT_PROJECT_SECTION } from "@/lib/types"
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/consistent-type-assertions */
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import {
@@ -13,9 +13,14 @@ import {
   v070Migration,
   v080Migration,
 } from "./data-migration"
-import type { Json } from "@/lib/types"
-import { createVersionString, createProjectId, createLabelId, DataFileSchema } from "@/lib/types"
-import { DEFAULT_EMPTY_DATA_FILE, DEFAULT_USER_SETTINGS, DEFAULT_USER } from "@/lib/types"
+import type { Json } from "@tasktrove/types/constants"
+import { createVersionString, createProjectId, createLabelId } from "@tasktrove/types/id"
+import { DataFileSchema } from "@tasktrove/types/data-file"
+import {
+  DEFAULT_EMPTY_DATA_FILE,
+  DEFAULT_USER_SETTINGS,
+  DEFAULT_USER,
+} from "@tasktrove/types/defaults"
 import { DEFAULT_UUID, DEFAULT_SECTION_NAME, DEFAULT_SECTION_COLOR } from "@tasktrove/constants"
 import { getAppVersion } from "@/lib/utils/version"
 import {

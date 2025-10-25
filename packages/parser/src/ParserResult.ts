@@ -1,4 +1,4 @@
-import type { ParsedTask } from "./types";
+import type { ParsedTask } from "@tasktrove/parser/types";
 
 export class ParserResult {
   constructor(public readonly parsed: ParsedTask) {}

@@ -18,8 +18,12 @@ import {
   viewStateToFilterConfig,
   type FilterConfig,
 } from "./filters";
-import type { Task, ViewState } from "@tasktrove/types";
-import { createTaskId, createProjectId, createLabelId } from "@tasktrove/types";
+import type { Task, ViewState } from "@tasktrove/types/core";
+import {
+  createTaskId,
+  createProjectId,
+  createLabelId,
+} from "@tasktrove/types/id";
 
 // =============================================================================
 // TEST FIXTURES

@@ -1,7 +1,8 @@
 import { atom } from "jotai";
 import { tasksAtom } from "@tasktrove/atoms/data/base/atoms";
 import { resetSidePanelStateAtom } from "@tasktrove/atoms/ui/views";
-import { type TaskId, type Task } from "@tasktrove/types";
+import { type TaskId } from "@tasktrove/types/id";
+import { type Task } from "@tasktrove/types/core";
 
 /**
  * Simplified Selection State Management Atoms

@@ -6,6 +6,7 @@ import { Zap } from "lucide-react"
 // import { ComingSoonTooltip } from "@/components/ui/coming-soon-tooltip"
 import { ComingSoonModal } from "@/components/ui/coming-soon-modal"
 import { cn } from "@/lib/utils"
+import { isPro } from "@/lib/utils/env"
 
 interface ModalCustomization {
   title?: string
@@ -25,6 +26,7 @@ interface ComingSoonWrapperProps {
   modalProps?: ModalCustomization
   tooltipSide?: "top" | "bottom" | "left" | "right"
   hideLightningIcon?: boolean
+  proOnly?: boolean
 }
 
 export function ComingSoonWrapper({
@@ -36,11 +38,17 @@ export function ComingSoonWrapper({
   modalProps,
   // tooltipSide = "top",
   hideLightningIcon = false,
+  proOnly = false,
 }: ComingSoonWrapperProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   if (!disabled) {
     return <>{children}</>
+  }
+
+  // If this is a Pro-only feature and we're NOT in Pro, hide it completely
+  if (proOnly && !isPro()) {
+    return null
   }
 
   const handleClick = (e: React.MouseEvent) => {
@@ -76,6 +84,7 @@ export function ComingSoonWrapper({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         featureName={featureName}
+        proOnly={proOnly}
         {...modalProps}
       />
     </>

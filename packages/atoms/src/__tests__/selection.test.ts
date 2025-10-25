@@ -14,7 +14,7 @@ import {
   TEST_TASK_ID_2,
   TEST_TASK_ID_3,
 } from "../utils/test-helpers";
-import type { TaskId } from "@tasktrove/types";
+import type { TaskId } from "@tasktrove/types/id";
 
 // Helper functions for derived logic
 const hasSelectedTasks = (store: ReturnType<typeof createStore>) => {

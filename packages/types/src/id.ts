@@ -109,3 +109,25 @@ export const createSectionId = (id: string): SectionId =>
 export const createGroupId = (id: string): GroupId => GroupIdSchema.parse(id);
 export const createVersionString = (version: string): VersionString =>
   VersionStringSchema.parse(version);
+
+// =============================================================================
+// VIEW IDS
+// =============================================================================
+
+/**
+ * Standard view identifiers for built-in views
+ * Examples: "all", "inbox", "today", "upcoming", "completed", "calendar"
+ */
+export type StandardViewId =
+  | "all"
+  | "inbox"
+  | "today"
+  | "upcoming"
+  | "completed"
+  | "calendar";
+
+/**
+ * View identifier - can be a standard view ID, project slug, label slug, or custom view
+ * This is a broader type that includes StandardViewId plus dynamic identifiers
+ */
+export type ViewId = string;

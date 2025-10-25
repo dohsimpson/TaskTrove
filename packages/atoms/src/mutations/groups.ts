@@ -12,27 +12,27 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
+import { type ProjectGroup, type LabelGroup } from "@tasktrove/types/group";
+import { type GroupId, createGroupId } from "@tasktrove/types/id";
 import {
-  type ProjectGroup,
-  type LabelGroup,
-  type GroupId,
   type CreateGroupRequest,
-  type CreateGroupResponse,
-  CreateGroupResponseSchema,
-  CreateGroupRequestSchema,
-  type UpdateProjectGroupRequest,
-  type UpdateGroupResponse,
-  UpdateProjectGroupRequestSchema,
-  UpdateGroupResponseSchema,
   type DeleteGroupRequest,
-  type DeleteGroupResponse,
-  DeleteGroupResponseSchema,
-  DeleteGroupRequestSchema,
+  type UpdateProjectGroupRequest,
   type BulkGroupUpdate,
+  CreateGroupRequestSchema,
+  UpdateProjectGroupRequestSchema,
+  DeleteGroupRequestSchema,
   BulkGroupUpdateSchema,
-  createGroupId,
-  API_ROUTES,
-} from "@tasktrove/types";
+} from "@tasktrove/types/api-requests";
+import {
+  type CreateGroupResponse,
+  type UpdateGroupResponse,
+  type DeleteGroupResponse,
+  CreateGroupResponseSchema,
+  UpdateGroupResponseSchema,
+  DeleteGroupResponseSchema,
+} from "@tasktrove/types/api-responses";
+import { API_ROUTES } from "@tasktrove/types/constants";
 import {
   DEFAULT_PROJECT_GROUP,
   DEFAULT_LABEL_GROUP,

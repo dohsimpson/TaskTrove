@@ -17,8 +17,9 @@ import { createStore } from "jotai";
 import { v4 as uuidv4 } from "uuid";
 import { overdueTasksAtom } from "../data/tasks/filters";
 import { queryClientAtom } from "../data/base/query";
-import type { Task } from "@tasktrove/types";
-import { createTaskId, INBOX_PROJECT_ID } from "@tasktrove/types";
+import type { Task } from "@tasktrove/types/core";
+import { createTaskId } from "@tasktrove/types/id";
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
 import { TASKS_QUERY_KEY } from "@tasktrove/constants";
 import { QueryClient } from "@tanstack/react-query";
 

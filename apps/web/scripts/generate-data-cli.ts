@@ -14,19 +14,13 @@ import type {
   Label,
   Subtask,
   ProjectSection,
-  ProjectGroup,
-  LabelGroup,
-  DataFile,
-  DataFileSerialization,
   User,
-  UserSettings,
   TaskPriority,
-  TaskId,
-  ProjectId,
-  LabelId,
-  SubtaskId,
-  GroupId,
-} from "@tasktrove/types"
+} from "@tasktrove/types/core"
+import type { ProjectGroup, LabelGroup } from "@tasktrove/types/group"
+import type { DataFile, DataFileSerialization } from "@tasktrove/types/data-file"
+import type { UserSettings } from "@tasktrove/types/settings"
+import type { TaskId, ProjectId, LabelId, SubtaskId, GroupId } from "@tasktrove/types/id"
 
 import {
   createTaskId,
@@ -35,9 +29,9 @@ import {
   createSubtaskId,
   createGroupId,
   createVersionString,
-  DataFileSchema,
-  DataFileSerializationSchema,
-} from "@tasktrove/types"
+} from "@tasktrove/types/id"
+import { DataFileSchema } from "@tasktrove/types/data-file"
+import { DataFileSerializationSchema } from "@tasktrove/types/data-file"
 import { DEFAULT_EMPTY_DATA_FILE } from "@tasktrove/types/defaults"
 
 // =============================================================================

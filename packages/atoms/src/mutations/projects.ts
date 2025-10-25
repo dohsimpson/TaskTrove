@@ -8,23 +8,24 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
+import { type Project } from "@tasktrove/types/core";
 import {
-  type Project,
   type CreateProjectRequest,
+  type DeleteProjectRequest,
+  ProjectCreateSerializationSchema,
+  type ProjectUpdateUnion,
+  ProjectUpdateArraySerializationSchema,
+  ProjectDeleteSerializationSchema,
+} from "@tasktrove/types/api-requests";
+import {
   type CreateProjectResponse,
   CreateProjectResponseSchema,
-  ProjectCreateSerializationSchema,
   type UpdateProjectResponse,
-  type ProjectUpdateUnion,
   UpdateProjectResponseSchema,
-  ProjectUpdateArraySerializationSchema,
-  type DeleteProjectRequest,
   type DeleteProjectResponse,
   DeleteProjectResponseSchema,
-  ProjectDeleteSerializationSchema,
-  createProjectId,
-  createGroupId,
-} from "@tasktrove/types";
+} from "@tasktrove/types/api-responses";
+import { createProjectId, createGroupId } from "@tasktrove/types/id";
 import { DEFAULT_PROJECT_COLORS, DEFAULT_UUID } from "@tasktrove/constants";
 import { createSafeProjectNameSlug } from "@tasktrove/utils/routing";
 import { createEntityMutation } from "./entity-factory";

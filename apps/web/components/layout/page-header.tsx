@@ -36,6 +36,7 @@ import { useTheme } from "next-themes"
 import { useTranslation } from "@tasktrove/i18n"
 import { OnlineStatus } from "@/components/layout/online-status"
 import { RewardsBadge } from "@/components/layout/rewards-badge"
+import { NotificationsBadge } from "@/components/layout/notifications-badge"
 // import { ToolbarUndoRedo } from "@/components/history/undo-redo-buttons"
 
 interface PageHeaderProps {
@@ -245,6 +246,9 @@ export function PageHeader({
 
           {/* Rewards Badge - Shows points and level (Pro only) */}
           <RewardsBadge />
+
+          {/* Notifications Badge - Coming soon (Pro only) */}
+          <NotificationsBadge />
 
           {/* View Options Popover - Uses atoms directly */}
           <ViewOptionsPopover onAdvancedSearch={onAdvancedSearch} />

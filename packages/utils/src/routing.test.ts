@@ -7,14 +7,13 @@ import {
   resolveLabel,
   resolveProjectGroup,
 } from "./routing";
+import { Project, Label } from "@tasktrove/types/core";
+import { ProjectGroup } from "@tasktrove/types/group";
 import {
-  Project,
-  Label,
-  ProjectGroup,
   createProjectId,
   createLabelId,
   createGroupId,
-} from "@tasktrove/types";
+} from "@tasktrove/types/id";
 
 // Test constants
 const TEST_PROJECT_ID_1 = createProjectId(

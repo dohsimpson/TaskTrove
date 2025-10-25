@@ -10,7 +10,7 @@ interface PermissionCheckResult {
   details?: string
 }
 
-interface DataFileCheckResult {
+export interface DataFileCheckResult {
   exists: boolean
   needsInitialization?: boolean
   needsMigration?: boolean

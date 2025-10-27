@@ -266,9 +266,9 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
   // Render main calendar content
   const renderCalendarContent = () => (
     <div className="h-full flex flex-col px-2">
-      <div className="flex-1 flex flex-col min-h-0">
-        {/* Calendar Header */}
-        <div className="flex items-center justify-between px-3 pt-4">
+      {/* Sticky Calendar Header */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/50 flex-shrink-0">
+        <div className="flex items-center justify-between px-3 pt-4 pb-3">
           {/* Current Month/Year with Dropdowns */}
           <div className="flex items-center gap-2">
             <Select value={currentDate.getMonth().toString()} onValueChange={handleMonthChange}>
@@ -331,10 +331,9 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
           </div>
         </div>
 
-        {/* Calendar Grid */}
-        <div className="flex-1 flex flex-col px-3 py-2 min-h-0">
-          {/* Day Headers */}
-          <div className="grid grid-cols-7 gap-0.5 lg:gap-1 mb-2 flex-shrink-0">
+        {/* Sticky Day Headers */}
+        <div className="px-3 pb-2">
+          <div className="grid grid-cols-7 gap-0.5 lg:gap-1">
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
               <div
                 key={day}
@@ -344,9 +343,14 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
               </div>
             ))}
           </div>
+        </div>
+      </div>
 
+      {/* Scrollable Calendar Grid */}
+      <div className="flex-1 overflow-auto">
+        <div className="flex flex-col px-3 py-2">
           {/* Calendar Days */}
-          <div className="grid grid-cols-7 gap-0.5 lg:gap-1 flex-1 min-h-0">
+          <div className="grid grid-cols-7 gap-0.5 lg:gap-1">
             {calendarDays.map((day) => {
               const dayTasks = getTasksForDate(day)
               const isSelected = selectedDate ? isSameDay(day, selectedDate) : false

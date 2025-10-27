@@ -833,8 +833,10 @@ describe("CalendarView", () => {
     it("has responsive padding on calendar section", () => {
       render(<CalendarView {...defaultProps} />)
 
-      const calendarSection = document.querySelector(".flex-1.flex.flex-col")
-      expect(calendarSection).toHaveClass("flex-1", "flex", "flex-col", "min-h-0")
+      // The structure has changed with sticky header - check for the scrollable calendar grid container
+      const scrollableGrid = document.querySelector(".flex-1.overflow-auto")
+      expect(scrollableGrid).toBeInTheDocument()
+      expect(scrollableGrid).toHaveClass("flex-1", "overflow-auto")
     })
 
     it("applies responsive sizing to navigation buttons", () => {
@@ -1221,6 +1223,103 @@ describe("CalendarView", () => {
         "data-drop-class-name",
         "ring-2 ring-primary/50 bg-primary/5",
       )
+    })
+  })
+
+  describe("Sticky Calendar Header", () => {
+    it("renders calendar header with sticky positioning classes", () => {
+      render(<CalendarView {...defaultProps} />)
+
+      // Find the sticky header container
+      const stickyHeader = document.querySelector(".sticky.top-0.z-10")
+      expect(stickyHeader).toBeInTheDocument()
+
+      // Verify it has the correct backdrop blur and background classes
+      expect(stickyHeader).toHaveClass(
+        "sticky",
+        "top-0",
+        "z-10",
+        "bg-background/95",
+        "backdrop-blur",
+        "supports-[backdrop-filter]:bg-background/60",
+        "border-b",
+        "border-border/50",
+        "flex-shrink-0",
+      )
+    })
+
+    it("keeps calendar header elements within sticky container", () => {
+      render(<CalendarView {...defaultProps} />)
+
+      // Verify header elements are within the sticky container
+      const stickyHeader = document.querySelector(".sticky.top-0.z-10")
+      expect(stickyHeader).toBeInTheDocument()
+
+      // Month/Year dropdowns should be inside sticky header
+      expect(stickyHeader).toHaveTextContent("January")
+      expect(stickyHeader).toHaveTextContent("2025")
+
+      // Navigation buttons should be inside sticky header
+      const prevButton = screen.getByTestId("chevron-left").closest("button")
+      const nextButton = screen.getByTestId("chevron-right").closest("button")
+      const todayButton = screen.getByText("Today")
+
+      expect(stickyHeader?.contains(prevButton)).toBe(true)
+      expect(stickyHeader?.contains(nextButton)).toBe(true)
+      expect(stickyHeader?.contains(todayButton)).toBe(true)
+    })
+
+    it("keeps day headers within sticky container", () => {
+      render(<CalendarView {...defaultProps} />)
+
+      // Find the sticky header container
+      const stickyHeader = document.querySelector(".sticky.top-0.z-10")
+      expect(stickyHeader).toBeInTheDocument()
+
+      // Day headers should be inside the sticky header
+      const dayHeaders = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+      dayHeaders.forEach((day) => {
+        const dayElement = screen.getByText(day)
+        expect(stickyHeader?.contains(dayElement)).toBe(true)
+      })
+    })
+
+    it("separates calendar grid from sticky header with scrollable container", () => {
+      render(<CalendarView {...defaultProps} />)
+
+      // Find the scrollable calendar grid container
+      const scrollableGrid = document.querySelector(".flex-1.overflow-auto")
+      expect(scrollableGrid).toBeInTheDocument()
+
+      // Calendar grid should exist
+      const calendarGrid = document.querySelector(".grid.grid-cols-7")
+      expect(calendarGrid).toBeInTheDocument()
+
+      // Calendar days should be in the scrollable container (not in sticky header)
+      const calendarDay = screen.getByTestId("droppable-calendar-day-2024-12-29")
+      const stickyHeader = document.querySelector(".sticky.top-0.z-10")
+      expect(stickyHeader?.contains(calendarDay)).toBe(false)
+      expect(scrollableGrid?.contains(calendarDay)).toBe(true)
+    })
+
+    it("maintains proper layout structure with sticky header", () => {
+      render(<CalendarView {...defaultProps} />)
+
+      // Main container should have flex layout
+      const mainContainer = document.querySelector(".h-full.flex.flex-col")
+      expect(mainContainer).toHaveClass("h-full", "flex", "flex-col")
+
+      // Sticky header should be flex-shrink-0 (not shrinkable)
+      const stickyHeader = document.querySelector(".sticky.top-0.z-10")
+      expect(stickyHeader).toHaveClass("flex-shrink-0")
+
+      // Scrollable grid should be flex-1 (takes remaining space)
+      const scrollableGrid = document.querySelector(".flex-1.overflow-auto")
+      expect(scrollableGrid).toHaveClass("flex-1")
+
+      // Proper nesting: main -> sticky header + scrollable grid
+      expect(mainContainer?.contains(stickyHeader)).toBe(true)
+      expect(mainContainer?.contains(scrollableGrid)).toBe(true)
     })
   })
 })

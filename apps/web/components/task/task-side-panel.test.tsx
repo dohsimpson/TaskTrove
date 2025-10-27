@@ -380,6 +380,7 @@ vi.mock("@/components/ui/progress", () => ({
 
 describe("TaskSidePanel", () => {
   const mockUpdateTask = vi.fn()
+  const mockToggleTask = vi.fn()
   const mockOnClose = vi.fn()
 
   const mockTask = {
@@ -495,6 +496,7 @@ describe("TaskSidePanel", () => {
     mockJotai.useSetAtom.mockImplementation((atom) => {
       const label = String(atom?.debugLabel ?? "")
       if (label === "updateTaskAtom") return mockUpdateTask
+      if (label === "toggleTaskAtom") return mockToggleTask
       if (label === "addCommentAtom") return mockAddComment
       if (label === "addLabelAtom") return mockAddLabel
       return vi.fn()
@@ -556,12 +558,7 @@ describe("TaskSidePanel", () => {
     }
     await userEvent.click(checkbox)
 
-    expect(mockUpdateTask).toHaveBeenCalledWith({
-      updateRequest: {
-        id: "task-1",
-        completed: true,
-      },
-    })
+    expect(mockToggleTask).toHaveBeenCalledWith("task-1")
   })
 
   it("handles close button click", async () => {
@@ -1212,12 +1209,7 @@ describe("TaskSidePanel", () => {
         }
         await userEvent.click(mobileCheckbox)
 
-        expect(mockUpdateTask).toHaveBeenCalledWith({
-          updateRequest: {
-            id: "task-1",
-            completed: true,
-          },
-        })
+        expect(mockToggleTask).toHaveBeenCalledWith("task-1")
 
         vi.clearAllMocks()
 
@@ -1232,12 +1224,7 @@ describe("TaskSidePanel", () => {
         }
         await userEvent.click(desktopCheckbox)
 
-        expect(mockUpdateTask).toHaveBeenCalledWith({
-          updateRequest: {
-            id: "task-1",
-            completed: true,
-          },
-        })
+        expect(mockToggleTask).toHaveBeenCalledWith("task-1")
       })
     })
 

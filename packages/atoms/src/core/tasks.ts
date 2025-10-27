@@ -291,27 +291,23 @@ deleteTaskAtom.debugLabel = "deleteTaskAtom";
  * Plays completion sound when task is marked as completed
  * History tracking enabled and tracks operation for undo/redo
  */
-export const toggleTaskAtom = atom(null, (get, set, taskId: TaskId) => {
+export const toggleTaskAtom = atom(null, async (get, set, taskId: TaskId) => {
   try {
-    const tasks = get(tasksAtom); // Get current tasks from base atom
-    const task = tasks.find((t: Task) => t.id === taskId);
+    const taskById = get(taskByIdAtom); // Get O(1) task lookup
+    const task = taskById.get(taskId);
 
     if (!task) return;
 
     const wasCompleted = task.completed;
     const willBeCompleted = !wasCompleted;
 
-    const updatedTasks = tasks.map((task: Task) =>
-      task.id === taskId
-        ? {
-            ...task,
-            completed: willBeCompleted,
-            status: willBeCompleted ? "completed" : "active",
-          }
-        : task,
-    );
-
-    set(tasksAtom, updatedTasks);
+    // Use updateTaskAtom for efficient API call with minimal payload
+    await set(updateTaskAtom, {
+      updateRequest: {
+        id: taskId,
+        completed: willBeCompleted,
+      },
+    });
 
     // Record the operation for undo/redo feedback
     const actionText = willBeCompleted ? "Completed" : "Uncompleted";
@@ -323,8 +319,14 @@ export const toggleTaskAtom = atom(null, (get, set, taskId: TaskId) => {
       // This provides instant, satisfying feedback perfect for todos
       set(playSoundAtom, { soundType: "bellClear" });
     }
+
+    log.info(
+      { taskId, completed: willBeCompleted, module: "tasks" },
+      `Task ${willBeCompleted ? "completed" : "uncompleted"}`,
+    );
   } catch (error) {
     handleAtomError(error, "toggleTaskAtom");
+    throw error; // Re-throw so the UI can handle the error
   }
 });
 toggleTaskAtom.debugLabel = "toggleTaskAtom";

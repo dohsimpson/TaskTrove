@@ -30,7 +30,7 @@ import { CommentContent } from "./comment-content"
 import { TaskActionsMenu } from "./task-actions-menu"
 import { TaskDebugBadge } from "@/components/debug"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
-import { updateTaskAtom, deleteTaskAtom } from "@tasktrove/atoms/core/tasks"
+import { updateTaskAtom, deleteTaskAtom, toggleTaskAtom } from "@tasktrove/atoms/core/tasks"
 import { projectsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { selectedTaskAtom } from "@tasktrove/atoms/ui/selection"
 import { addCommentAtom } from "@tasktrove/atoms/core/tasks"
@@ -57,6 +57,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
 
   // Atom actions
   const updateTask = useSetAtom(updateTaskAtom)
+  const toggleTask = useSetAtom(toggleTaskAtom)
   const addComment = useSetAtom(addCommentAtom)
   const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
   const deleteTask = useSetAtom(deleteTaskAtom)
@@ -336,9 +337,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
             <div className="flex items-center gap-3">
               <TaskCheckbox
                 checked={task.completed}
-                onCheckedChange={(checked) =>
-                  updateTask({ updateRequest: { id: task.id, completed: !!checked } })
-                }
+                onCheckedChange={() => toggleTask(task.id)}
                 className="flex-shrink-0"
               />
               <div className="flex-1 flex items-center gap-2 min-w-0 truncate">
@@ -406,9 +405,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
           <div className="flex items-center gap-3">
             <TaskCheckbox
               checked={task.completed}
-              onCheckedChange={(checked) =>
-                updateTask({ updateRequest: { id: task.id, completed: !!checked } })
-              }
+              onCheckedChange={() => toggleTask(task.id)}
               className="flex-shrink-0"
             />
             <div className="flex-1 flex items-center gap-2 min-w-0 truncate">

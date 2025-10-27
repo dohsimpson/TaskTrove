@@ -27,7 +27,7 @@ export function LanguageProviderWrapper({
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">TaskTrove</h1>
-            <p className="text-muted-foreground">Loading translations...</p>
+            <p className="text-muted-foreground">Almost ready...</p>
           </div>
         </div>
       }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useCallback } from "react"
 import { useAtom, useAtomValue } from "jotai"
 import { selectedTasksAtom, multiSelectDraggingAtom } from "@tasktrove/atoms/ui/selection"
 import { DraggableItem } from "@/components/ui/drag-drop"
@@ -28,38 +28,48 @@ export function DraggableTaskElement({ taskId, children }: DraggableTaskElementP
   const isMulti = selectedTasks.length > 0
   const [multiSelectDragging, setMultiSelectDragging] = useAtom(multiSelectDraggingAtom)
 
-  // Sync multiSelectDragging with isDragging when isMulti
-  useEffect(() => {
+  // Check if this specific task is selected
+  const isThisTaskSelected = selectedTasks.includes(taskId)
+
+  // Handle drag start/stop with proper multi-select state management
+  const handleDragStart = useCallback(() => {
+    setIsDragging(true)
+    // If dragging a selected task, enable global multi-select dragging state
     if (isMulti) {
-      setMultiSelectDragging(isDragging)
+      setMultiSelectDragging(true)
     }
-  }, [isMulti, isDragging, setMultiSelectDragging])
+  }, [isMulti, setMultiSelectDragging])
+
+  const handleDrop = useCallback(() => {
+    setIsDragging(false)
+    // Always clear multi-select dragging state when drop completes
+    if (isMulti) {
+      setMultiSelectDragging(false)
+    }
+  }, [isMulti, setMultiSelectDragging])
+
+  // Show drag style if:
+  // 1. This task is being directly dragged, OR
+  // 2. A multi-select drag is happening AND this task is selected
+  const shouldShowDragStyle = isDragging || (multiSelectDragging && isThisTaskSelected)
 
   return (
-    <DraggableItem
-      id={taskId}
-      index={0} // Index managed by parent list
-      mode="list"
-      getData={() => ({
-        ids: isMulti ? selectedTasks : [taskId],
-        taskId,
-      })}
-      onDragStart={() => setIsDragging(true)}
-      onDrop={() => setIsDragging(false)}
-      className="relative"
-      dragClassName={isDragging || multiSelectDragging ? "opacity-50" : ""}
-    >
-      <div data-testid={`draggable-task-${taskId}`}>
-        {children}
-        {isDragging && isMulti && (
-          <div
-            className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs font-medium shadow-lg z-10"
-            style={{ pointerEvents: "none" }}
-          >
-            {selectedTasks.length}
-          </div>
-        )}
-      </div>
-    </DraggableItem>
+    <div className={shouldShowDragStyle ? "opacity-30 scale-95 transition-all" : ""}>
+      <DraggableItem
+        id={taskId}
+        index={0} // Index managed by parent list
+        mode="list"
+        getData={() => ({
+          ids: isMulti ? selectedTasks : [taskId],
+          taskId,
+        })}
+        onDragStart={handleDragStart}
+        onDrop={handleDrop}
+        className="relative"
+        badgeCount={isMulti ? selectedTasks.length : undefined}
+      >
+        <div data-testid={`draggable-task-${taskId}`}>{children}</div>
+      </DraggableItem>
+    </div>
   )
 }

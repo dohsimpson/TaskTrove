@@ -187,8 +187,9 @@ export function VirtualizedTaskList({
                   }}
                   exit={{ opacity: 0, scale: 0.98 }}
                   transition={{
-                    opacity: { duration: 0.15, ease: "easeInOut" },
-                    scale: { duration: 0.15, ease: "easeInOut" },
+                    opacity: { duration: 0.08, ease: "easeInOut" },
+                    scale: { duration: 0.08, ease: "easeInOut" },
+                    layout: { duration: 0.12, ease: [0.4, 0, 0.2, 1] },
                   }}
                   transformTemplate={(_transforms, generatedTransform) =>
                     `translateY(${start}px) ${generatedTransform}`

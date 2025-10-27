@@ -1,5 +1,6 @@
 import { useRef, useCallback } from "react"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { motion, AnimatePresence } from "motion/react"
 import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
 import type { Task, TaskId } from "@/lib/types"
 import { TaskItem } from "./task-item"
@@ -111,51 +112,112 @@ export function VirtualizedTaskList({
           position: "relative",
         }}
       >
-        {itemsToRender.map(({ task, index, start }) => {
-          if (!task) return null
+        {isTest ? (
+          // In test mode, skip AnimatePresence to avoid duplicate elements during transitions
+          itemsToRender.map(({ task, index }) => {
+            if (!task) return null
 
-          const taskItem = (
-            <DraggableTaskElement key={task.id} taskId={task.id}>
-              <TaskItem
-                taskId={task.id}
-                variant={variant}
-                className="cursor-pointer mb-2 mx-2"
-                showProjectBadge={true}
-                sortedTaskIds={sortedTaskIds}
-              />
-            </DraggableTaskElement>
-          )
+            const taskItem = (
+              <DraggableTaskElement key={task.id} taskId={task.id}>
+                <TaskItem
+                  taskId={task.id}
+                  variant={variant}
+                  className="cursor-pointer mb-2 mx-2"
+                  showProjectBadge={true}
+                  sortedTaskIds={sortedTaskIds}
+                />
+              </DraggableTaskElement>
+            )
 
-          // Use task ID + index as key to force remount when tasks reorder
-          // This triggers virtualizer.measureElement for moved items
-          return (
-            <div
-              key={`${task.id}-${index}`}
-              data-index={index}
-              ref={isTest ? undefined : virtualizer.measureElement}
-              style={{
-                position: isTest ? "relative" : "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                transform: isTest ? undefined : `translateY(${start}px)`,
-              }}
-            >
-              {enableDropTargets && onDropTaskToListItem ? (
-                <DropTargetElement
-                  key={task.id}
-                  id={task.id}
-                  options={{ type: "list-item", indicator: { lineGap: "8px" } }}
-                  onDrop={onDropTaskToListItem}
+            return (
+              <div
+                key={`${task.id}-${index}`}
+                data-index={index}
+                style={{
+                  position: "relative",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                }}
+              >
+                {enableDropTargets && onDropTaskToListItem ? (
+                  <DropTargetElement
+                    key={task.id}
+                    id={task.id}
+                    options={{ type: "list-item", indicator: { lineGap: "8px" } }}
+                    onDrop={onDropTaskToListItem}
+                  >
+                    {taskItem}
+                  </DropTargetElement>
+                ) : (
+                  taskItem
+                )}
+              </div>
+            )
+          })
+        ) : (
+          <AnimatePresence mode="popLayout">
+            {itemsToRender.map(({ task, index, start }) => {
+              if (!task) return null
+
+              const taskItem = (
+                <DraggableTaskElement key={task.id} taskId={task.id}>
+                  <TaskItem
+                    taskId={task.id}
+                    variant={variant}
+                    className="cursor-pointer mb-2 mx-2"
+                    showProjectBadge={true}
+                    sortedTaskIds={sortedTaskIds}
+                  />
+                </DraggableTaskElement>
+              )
+
+              // Use unstable key (task.id + index) to force remeasurement when tasks reorder
+              // layoutId provides smooth animations even when components remount
+              return (
+                <motion.div
+                  key={`${task.id}-${index}`}
+                  layoutId={task.id}
+                  data-index={index}
+                  ref={virtualizer.measureElement}
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{
+                    opacity: 1,
+                    scale: 1,
+                  }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{
+                    opacity: { duration: 0.15, ease: "easeInOut" },
+                    scale: { duration: 0.15, ease: "easeInOut" },
+                  }}
+                  transformTemplate={(_transforms, generatedTransform) =>
+                    `translateY(${start}px) ${generatedTransform}`
+                  }
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    willChange: "transform",
+                  }}
                 >
-                  {taskItem}
-                </DropTargetElement>
-              ) : (
-                taskItem
-              )}
-            </div>
-          )
-        })}
+                  {enableDropTargets && onDropTaskToListItem ? (
+                    <DropTargetElement
+                      key={task.id}
+                      id={task.id}
+                      options={{ type: "list-item", indicator: { lineGap: "8px" } }}
+                      onDrop={onDropTaskToListItem}
+                    >
+                      {taskItem}
+                    </DropTargetElement>
+                  ) : (
+                    taskItem
+                  )}
+                </motion.div>
+              )
+            })}
+          </AnimatePresence>
+        )}
       </div>
     </div>
   )

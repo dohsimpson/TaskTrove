@@ -103,7 +103,7 @@ catalog:
   linkifyjs: ^4.3.2
   lint-staged: ^16.2.0
   lucide-react: ^0.544.0
-  motion: ^12.23.18
+  motion: ^12.23.24
   next: ^15.5.6
   next-logger: ^5.0.1
   next-themes: ^0.4.6

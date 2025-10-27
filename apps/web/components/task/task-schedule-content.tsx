@@ -1036,8 +1036,8 @@ export function TaskScheduleContent({
               />
 
               {/* Time Selector */}
-              <div className="px-3 pb-3">
-                <div className="flex gap-1 items-center">
+              <div className="px-2 pb-3">
+                <div className="flex gap-1.5 items-center justify-center text-sm">
                   <Input
                     type="number"
                     min="1"
@@ -1064,9 +1064,9 @@ export function TaskScheduleContent({
                         setSelectedHour("12")
                       }
                     }}
-                    className="w-16 text-center [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="w-10 h-8 text-center text-sm px-1 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
-                  <span className="text-sm font-medium">:</span>
+                  <span className="text-sm font-medium px-0.5">:</span>
                   <Input
                     type="number"
                     min="0"
@@ -1093,10 +1093,10 @@ export function TaskScheduleContent({
                       }
                       setSelectedMinute(finalValue)
                     }}
-                    className="w-16 text-center [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="w-10 h-8 text-center text-sm px-1 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <Select value={selectedAmPm} onValueChange={setSelectedAmPm}>
-                    <SelectTrigger className="w-18 [&>svg]:w-3 [&>svg]:h-3">
+                    <SelectTrigger className="w-14 !h-8 text-sm px-2 [&>svg]:w-3 [&>svg]:h-3">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1104,7 +1104,12 @@ export function TaskScheduleContent({
                       <SelectItem value="PM">PM</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button onClick={handleTimeUpdate} disabled={!selectedHour || !selectedMinute}>
+                  <Button
+                    onClick={handleTimeUpdate}
+                    disabled={!selectedHour || !selectedMinute}
+                    size="sm"
+                    className="h-8 px-3 text-sm max-w-20 truncate"
+                  >
                     {t("schedule.set", "Set")}
                   </Button>
                 </div>

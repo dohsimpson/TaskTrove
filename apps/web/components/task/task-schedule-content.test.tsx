@@ -692,6 +692,35 @@ describe("TaskScheduleContent", () => {
       // Check that PM is selected in the dropdown
       expect(screen.getByText("PM")).toBeInTheDocument()
     })
+
+    it("should have consistent height for all time picker controls", () => {
+      renderWithTasks(
+        [mockTask],
+        <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
+      )
+
+      // Get all time picker controls
+      const hourInput = screen.getAllByRole("spinbutton")[0]
+      const minuteInput = screen.getAllByRole("spinbutton")[1]
+      // Get the AM/PM selector - it's the third combobox (after month and year dropdowns)
+      const amPmTrigger = screen.getAllByRole("combobox")[2]
+      const setButton = screen.getByRole("button", { name: "Set" })
+
+      if (!hourInput || !minuteInput || !amPmTrigger) {
+        throw new Error("Expected to find hour, minute, and AM/PM controls")
+      }
+
+      // All controls should have h-8 class (32px height)
+      // Check that the inputs have w-10 and h-8
+      expect(hourInput.className).toContain("h-8")
+      expect(minuteInput.className).toContain("h-8")
+
+      // Check that AM/PM trigger has !h-8 (important height override)
+      expect(amPmTrigger.className).toContain("!h-8")
+
+      // Check that Set button has h-8
+      expect(setButton.className).toContain("h-8")
+    })
   })
 
   describe("Status Display", () => {

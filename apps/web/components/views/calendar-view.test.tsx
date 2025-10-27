@@ -863,11 +863,14 @@ describe("CalendarView", () => {
       const calendarDay = screen.getByTestId("droppable-calendar-day-2024-12-29")
       expect(calendarDay).toBeInTheDocument()
 
-      // Verify the calendar day has some height-related classes (the exact classes may be on child elements)
+      // Verify the calendar day has height-related classes or flex layout for height management
       const hasHeightClasses =
         calendarDay.className.includes("h-") ||
+        calendarDay.className.includes("flex-1") ||
         calendarDay.innerHTML.includes("min-h-") ||
-        calendarDay.querySelector('[class*="min-h-"]') !== null
+        calendarDay.innerHTML.includes("flex-1") ||
+        calendarDay.querySelector('[class*="min-h-"]') !== null ||
+        calendarDay.querySelector('[class*="flex-1"]') !== null
       expect(hasHeightClasses || calendarDay.style.minHeight).toBeTruthy()
     })
 

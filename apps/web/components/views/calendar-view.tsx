@@ -26,6 +26,7 @@ import {
   isSameMonth,
   isToday,
   addDays,
+  addMonths,
 } from "date-fns"
 import { TaskItem } from "@/components/task/task-item"
 import { SelectionToolbar } from "@/components/task/selection-toolbar"
@@ -56,6 +57,7 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
   const { t } = useTranslation("task")
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
+  const [calendarViewMode, setCalendarViewMode] = useState<"month" | "week">("month")
   const [alwaysShow6Rows] = useState(true) // TODO: Extract to view settings when needed
 
   // Panel width state (global, persisted in localStorage)
@@ -218,12 +220,20 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
   // Generate calendar grid with proper week alignment
   const monthStart = startOfMonth(currentDate)
   const monthEnd = endOfMonth(currentDate)
-  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 }) // Start on Sunday
 
-  // Choose calendar end based on layout preference
-  const calendarEnd = alwaysShow6Rows
-    ? addDays(calendarStart, 41) // Always show exactly 42 days (6 weeks)
-    : endOfWeek(monthEnd, { weekStartsOn: 0 }) // Dynamic layout based on month
+  // Calculate calendar start based on view mode
+  const calendarStart =
+    calendarViewMode === "week"
+      ? startOfWeek(currentDate, { weekStartsOn: 0 }) // Start of current week
+      : startOfWeek(monthStart, { weekStartsOn: 0 }) // Start on Sunday
+
+  // Choose calendar end based on view mode and layout preference
+  const calendarEnd =
+    calendarViewMode === "week"
+      ? endOfWeek(currentDate, { weekStartsOn: 0 }) // End of current week
+      : alwaysShow6Rows
+        ? addDays(calendarStart, 41) // Always show exactly 42 days (6 weeks)
+        : endOfWeek(monthEnd, { weekStartsOn: 0 }) // Dynamic layout based on month
 
   const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd })
 
@@ -263,14 +273,54 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
     setCurrentDate(new Date(year, currentDate.getMonth(), 1))
   }
 
+  // Handle navigation based on view mode
+  const handlePrevious = () => {
+    if (calendarViewMode === "week") {
+      // Navigate to previous week (subtract 7 days)
+      setCurrentDate(addDays(currentDate, -7))
+    } else {
+      // Navigate to previous month
+      setCurrentDate(addMonths(currentDate, -1))
+    }
+  }
+
+  const handleNext = () => {
+    if (calendarViewMode === "week") {
+      // Navigate to next week (add 7 days)
+      setCurrentDate(addDays(currentDate, 7))
+    } else {
+      // Navigate to next month
+      setCurrentDate(addMonths(currentDate, 1))
+    }
+  }
+
   // Render main calendar content
   const renderCalendarContent = () => (
     <div className="h-full flex flex-col px-2">
       {/* Sticky Calendar Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/50 flex-shrink-0">
         <div className="flex items-center justify-between px-3 pt-4 pb-3">
-          {/* Current Month/Year with Dropdowns */}
-          <div className="flex items-center gap-2">
+          {/* Calendar View Toggle */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant={calendarViewMode === "month" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCalendarViewMode("month")}
+            >
+              Month
+            </Button>
+            <Button
+              variant={calendarViewMode === "week" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCalendarViewMode("week")}
+            >
+              Week
+            </Button>
+          </div>
+
+          {/* Month/Year Selectors and Navigation Controls */}
+          <div className="flex items-center gap-1 lg:gap-2">
+            {/* Current Month/Year with Dropdowns */}
             <Select value={currentDate.getMonth().toString()} onValueChange={handleMonthChange}>
               <SelectTrigger className="w-auto h-auto border border-input bg-background px-3 py-2 text-lg lg:text-xl font-semibold hover:bg-accent/50 focus:ring-2 focus:ring-ring rounded-md">
                 <SelectValue />
@@ -296,61 +346,76 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
                 ))}
               </SelectContent>
             </Select>
-          </div>
 
-          {/* Navigation Controls */}
-          <div className="flex items-center gap-1 lg:gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 lg:w-10"
-              onClick={() =>
-                setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))
-              }
-            >
-              <ChevronLeft className="h-3 w-3 lg:h-4 lg:w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs lg:text-sm"
-              onClick={() => setCurrentDate(new Date())}
-            >
-              Today
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 lg:w-10"
-              onClick={() =>
-                setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))
-              }
-            >
-              <ChevronRight className="h-3 w-3 lg:h-4 lg:w-4" />
-            </Button>
+            {/* Navigation Controls */}
+            <div className="flex items-center gap-1 lg:gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 lg:w-10"
+                onClick={handlePrevious}
+              >
+                <ChevronLeft className="h-3 w-3 lg:h-4 lg:w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs lg:text-sm"
+                onClick={() => setCurrentDate(new Date())}
+              >
+                Today
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 lg:w-10"
+                onClick={handleNext}
+              >
+                <ChevronRight className="h-3 w-3 lg:h-4 lg:w-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Sticky Day Headers */}
         <div className="px-3 pb-2">
           <div className="grid grid-cols-7 gap-0.5 lg:gap-1">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-              <div
-                key={day}
-                className="p-1 lg:p-2 text-center text-xs lg:text-sm font-medium text-muted-foreground"
-              >
-                {day}
-              </div>
-            ))}
+            {calendarViewMode === "week"
+              ? // Week view: Show actual dates with month numbers
+                calendarDays.slice(0, 7).map((day) => (
+                  <div
+                    key={day.toISOString()}
+                    className="p-1.5 lg:p-2 text-center flex flex-col items-center justify-center space-y-0.5"
+                  >
+                    {/* Month and Day on same row */}
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <span className="text-xs">{format(day, "MMM")}</span>
+                      <span className="text-sm font-semibold text-primary">{format(day, "d")}</span>
+                    </div>
+                    {/* Weekday on its own row */}
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {format(day, "EEE")}
+                    </div>
+                  </div>
+                ))
+              : // Month view: Show just weekday names
+                ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                  <div
+                    key={day}
+                    className="p-1 lg:p-2 text-center text-xs lg:text-sm font-medium text-muted-foreground"
+                  >
+                    {day}
+                  </div>
+                ))}
           </div>
         </div>
       </div>
 
       {/* Scrollable Calendar Grid */}
       <div className="flex-1 overflow-auto">
-        <div className="flex flex-col px-3 py-2">
+        <div className="flex flex-col px-3 py-2 h-full">
           {/* Calendar Days */}
-          <div className="grid grid-cols-7 gap-0.5 lg:gap-1">
+          <div className="grid grid-cols-7 gap-0.5 lg:gap-1 flex-1">
             {calendarDays.map((day) => {
               const dayTasks = getTasksForDate(day)
               const isSelected = selectedDate ? isSameDay(day, selectedDate) : false
@@ -371,53 +436,76 @@ export function CalendarView({ tasks, onDateClick, droppableId, project }: Calen
                     type: "calendar-day",
                     date: dayId,
                   })}
+                  className="flex flex-1"
                 >
                   <div
-                    className={`min-h-16 lg:min-h-24 h-full p-0.5 lg:p-1 border border-border cursor-pointer hover:bg-muted/50 transition-colors ${
-                      isSelected ? "ring-2 ring-foreground" : ""
-                    } ${isTodayDate ? "bg-muted" : ""} ${!isCurrentMonth ? "opacity-40" : ""}`}
+                    className={`
+                      flex flex-1 flex-col overflow-hidden p-0.5 lg:p-1 border border-border cursor-pointer hover:bg-muted/50 transition-colors
+                      ${isSelected ? "ring-2 ring-foreground" : ""}
+                      ${isTodayDate ? "bg-muted" : ""}
+                      ${!isCurrentMonth ? "opacity-40" : ""}
+                      ${calendarViewMode === "week" ? "flex flex-col h-full" : ""}
+                    `}
                     onClick={() => {
                       setSelectedDate(day)
                       onDateClick(day)
                     }}
                   >
+                    {calendarViewMode === "week" ? (
+                      // Week view: No date number needed (shown in header)
+                      <div className="h-4" />
+                    ) : (
+                      // Month view: Show date number
+                      <div
+                        className={`
+                          text-xs lg:text-sm font-medium mb-0.5 lg:mb-1
+                          ${
+                            isTodayDate
+                              ? "text-primary"
+                              : isCurrentMonth
+                                ? "text-foreground"
+                                : "text-muted-foreground"
+                          }
+                        `}
+                      >
+                        {format(day, "d")}
+                      </div>
+                    )}
                     <div
-                      className={`text-xs lg:text-sm font-medium mb-0.5 lg:mb-1 ${
-                        isTodayDate
-                          ? "text-primary"
-                          : isCurrentMonth
-                            ? "text-foreground"
-                            : "text-muted-foreground"
+                      className={`flex-1 overflow-hidden ${
+                        calendarViewMode === "week"
+                          ? "flex flex-col space-y-0.5 lg:space-y-1"
+                          : "space-y-0.5 lg:space-y-1"
                       }`}
                     >
-                      {format(day, "d")}
-                    </div>
-                    <div className="space-y-0.5 lg:space-y-1 overflow-hidden">
                       {isCurrentMonth &&
-                        dayTasks.slice(0, 3).map((task, index) => (
-                          <DraggableWrapper
-                            key={task.id}
-                            dragId={task.id}
-                            index={index}
-                            getData={() => ({
-                              type: "draggable-item",
-                              dragId: task.id,
-                              taskId: task.id,
-                              fromCalendarDay: dayId,
-                            })}
-                          >
-                            <TaskItem
-                              taskId={task.id}
-                              variant="calendar"
-                              showProjectBadge={false}
-                            />
-                          </DraggableWrapper>
-                        ))}
-                      {isCurrentMonth && dayTasks.length > 3 && (
-                        <div className="text-xs text-muted-foreground text-center">
-                          +{dayTasks.length - 3}
-                        </div>
-                      )}
+                        dayTasks
+                          .slice(0, calendarViewMode === "week" ? 5 : 3)
+                          .map((task, index) => (
+                            <DraggableWrapper
+                              key={task.id}
+                              dragId={task.id}
+                              index={index}
+                              getData={() => ({
+                                type: "draggable-item",
+                                dragId: task.id,
+                                taskId: task.id,
+                                fromCalendarDay: dayId,
+                              })}
+                            >
+                              <TaskItem
+                                taskId={task.id}
+                                variant="calendar"
+                                showProjectBadge={false}
+                              />
+                            </DraggableWrapper>
+                          ))}
+                      {isCurrentMonth &&
+                        dayTasks.length > (calendarViewMode === "week" ? 5 : 3) && (
+                          <div className="text-xs text-muted-foreground text-center">
+                            +{dayTasks.length - (calendarViewMode === "week" ? 5 : 3)}
+                          </div>
+                        )}
                     </div>
                   </div>
                 </DropTargetWrapper>

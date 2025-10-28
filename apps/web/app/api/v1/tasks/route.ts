@@ -347,10 +347,12 @@ async function updateTasks(
     const update = updateMap.get(task.id)
     if (!update) return task
 
-    // Create the updated task and ensure null values are converted to undefined
     const updatedTask = { ...task, ...update }
 
-    // Clean null values using utility function
+    if (update.completed === true && task.recurring) {
+      updatedTask.recurring = undefined
+    }
+
     return clearNullValues(updatedTask)
   })
 

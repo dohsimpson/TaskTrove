@@ -131,6 +131,57 @@ describe("API Route - Recurring Tasks Integration", () => {
     )
   })
 
+  it("should clear recurring fields from completed task when generating next instance", async () => {
+    const originalTask = createMockTask()
+    const nextInstance = createMockTask({
+      id: createTaskId("550e8400-e29b-41d4-a716-446655440000"),
+      dueDate: new Date("2024-01-16T09:00:00.000Z"),
+      completed: false,
+      completedAt: undefined,
+    })
+
+    const mockDataFile = createMockDataFile([originalTask])
+
+    mockReadDataFile.mockResolvedValue(mockDataFile)
+    mockProcessRecurringTaskCompletion.mockReturnValue(nextInstance)
+
+    const request = new NextRequest("http://localhost:3000/api/tasks", {
+      method: "PATCH",
+      body: JSON.stringify([
+        {
+          id: originalTask.id,
+          completed: true,
+        },
+      ]),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    const response = await PATCH(request)
+
+    expect(response.status).toBe(200)
+
+    // Verify the completed task has recurring fields cleared
+    const writeCall = mockWriteDataFile.mock.calls[0]
+    if (!writeCall || !writeCall[0]) {
+      throw new Error("Expected mockWriteDataFile to have been called")
+    }
+    const savedData = writeCall[0].data
+    const completedTask = savedData.tasks.find((t: Task) => t.id === originalTask.id)
+
+    expect(completedTask).toBeDefined()
+    expect(completedTask?.completed).toBe(true)
+    expect(completedTask?.recurring).toBeUndefined()
+    expect(completedTask?.recurringMode).toBe("dueDate")
+
+    const newTask = savedData.tasks.find((t: Task) => t.id === nextInstance.id)
+    expect(newTask).toBeDefined()
+    expect(newTask?.completed).toBe(false)
+    expect(newTask?.recurring).toBe("RRULE:FREQ=DAILY")
+    expect(newTask?.recurringMode).toBe("dueDate")
+  })
+
   it("should handle multiple recurring tasks completion in single request", async () => {
     const task1 = createMockTask({
       id: createTaskId("550e8400-e29b-41d4-a716-446655440001"),

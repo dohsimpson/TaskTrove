@@ -26,5 +26,5 @@ export {
   overdueTasksAtom,
   completedTasksAtom,
   projectGroupTasksAtom,
-  baseFilteredTasksForViewAtom,
+  baseFilteredTasksAtom,
 } from "./filters";

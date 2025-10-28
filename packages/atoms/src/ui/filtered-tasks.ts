@@ -8,7 +8,7 @@
 import { atom } from "jotai";
 import { atomFamily } from "jotai/utils";
 import type { ViewId } from "@tasktrove/types/id";
-import { baseFilteredTasksForViewAtom } from "@tasktrove/atoms/data/tasks/filters";
+import { baseFilteredTasksAtom } from "@tasktrove/atoms/data/tasks/filters";
 import {
   currentViewAtom,
   currentViewStateAtom,
@@ -22,12 +22,15 @@ import { sortTasksByViewState } from "@tasktrove/atoms/utils/view-sorting";
 /**
  * UI-filtered tasks for a specific view
  * Applies UI preferences (showCompleted, showOverdue, search, activeFilters) on top of base filtered tasks
+ *
+ * Note: This still uses atomFamily for caching view-specific UI state,
+ * but now reads from the simplified baseFilteredTasksAtom
  */
 export const uiFilteredTasksForViewAtom = atomFamily((viewId: ViewId) =>
   atom((get) => {
     try {
-      // Start with base filtered tasks (view-specific logic only)
-      const baseTasks = get(baseFilteredTasksForViewAtom(viewId));
+      // Start with base filtered tasks (now route-reactive, not parameterized)
+      const baseTasks = get(baseFilteredTasksAtom);
 
       // Get UI preferences for this view
       const viewStates = get(viewStatesAtom);

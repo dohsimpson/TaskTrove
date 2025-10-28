@@ -462,7 +462,7 @@ import {
   calendarTasksAtom,
   overdueTasksAtom,
   completedTasksAtom,
-  baseFilteredTasksForViewAtom,
+  baseFilteredTasksAtom,
 } from "@tasktrove/atoms/data/tasks/filters";
 
 // Note: taskByIdAtom moved to data/base/atoms.ts to avoid circular dependency
@@ -496,7 +496,7 @@ export const todayOnlyAtom = namedAtom(
  * or refactored to use uiFilteredTasksForViewAtom from ui/filtered-tasks.ts
  *
  * For now, commented out to eliminate circular dependencies.
- * Components should use baseFilteredTasksForViewAtom directly or create
+ * Components should use baseFilteredTasksAtom directly or create
  * a new UI-layer atom that uses uiFilteredTasksForViewAtom.
  */
 // export const taskCountsAtom = atom((get) => {
@@ -569,7 +569,7 @@ export const completedTasksTodayAtom = namedAtom(
 
 /**
  * Comprehensive filtered tasks atom - Layer 2: UI-specific filtering
- * Uses baseFilteredTasksForViewAtom as foundation, then applies UI-only filters
+ * Uses baseFilteredTasksAtom as foundation, then applies UI-only filters
  * Only handles search, advanced filters, and sorting
  */
 /**
@@ -577,7 +577,7 @@ export const completedTasksTodayAtom = namedAtom(
  * This atom has UI dependencies and belongs in the UI layer
  *
  * The filteredTasksAtom applies UI-specific filters (showCompleted, showOverdue, search, activeFilters)
- * on top of the base filtered tasks from baseFilteredTasksForViewAtom.
+ * on top of the base filtered tasks from baseFilteredTasksAtom.
  *
  * Import from: @tasktrove/atoms/ui/filtered-tasks
  */
@@ -1151,7 +1151,7 @@ export const taskAtoms = {
     taskById: taskByIdAtom,
     // Note: taskCountsAtom disabled (has UI dependencies, needs refactoring)
     completedTasksToday: completedTasksTodayAtom,
-    baseFilteredTasksForView: baseFilteredTasksForViewAtom,
+    baseFilteredTasksForView: baseFilteredTasksAtom,
     // Note: filteredTasksAtom moved to ui/filtered-tasks.ts (UI-dependent)
     getTasksForView: getTasksForViewAtom,
     orderedTasksByProject: orderedTasksByProjectAtom,

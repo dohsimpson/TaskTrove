@@ -4,10 +4,9 @@
  */
 
 import { atom } from "jotai";
-import { atomFamily } from "jotai/utils";
 import { isToday, isPast, isFuture } from "date-fns";
 import type { Task } from "@tasktrove/types/core";
-import type { ViewId, GroupId } from "@tasktrove/types/id";
+import type { GroupId } from "@tasktrove/types/id";
 import { LabelIdSchema, GroupIdSchema } from "@tasktrove/types/id";
 import { shouldTaskBeInInbox } from "@tasktrove/utils";
 import { collectProjectIdsFromGroup } from "@tasktrove/utils/group-utils";
@@ -219,7 +218,12 @@ export const projectGroupTasksAtom = namedAtom(
 // =============================================================================
 
 /**
- * Base filtered tasks for a specific view - CORE BUSINESS LOGIC ONLY
+ * Base filtered tasks for the current route - CORE BUSINESS LOGIC ONLY
+ *
+ * SIMPLIFIED ARCHITECTURE:
+ * - Single atom (not atomFamily) that reactively depends on routeContext
+ * - Switches on routeContext.routeType for clean, consistent filtering
+ * - All route types (standard/project/label/projectgroup) handled uniformly
  *
  * This atom contains ONLY view-specific filtering logic (inbox, today, upcoming, etc.)
  * It does NOT apply UI preferences like showCompleted or showOverdue.
@@ -227,66 +231,78 @@ export const projectGroupTasksAtom = namedAtom(
  * For UI-filtered tasks that respect user preferences, use uiFilteredTasksForViewAtom
  * from ui/filtered-tasks.ts
  */
-export const baseFilteredTasksForViewAtom = atomFamily((viewId: ViewId) =>
+export const baseFilteredTasksAtom = namedAtom(
+  "baseFilteredTasksAtom",
   atom((get) => {
     try {
       const routeContext = get(currentRouteContextAtom);
+      const activeTasks = get(activeTasksAtom);
 
-      // Get base tasks for the specified view - PURE VIEW LOGIC ONLY
-      let result: Task[];
-      switch (viewId) {
-        case "today":
-          // Today view includes overdue tasks by default (business logic)
-          result = get(todayTasksAtom);
-          break;
-        case "upcoming":
-          result = get(upcomingTasksAtom);
-          break;
-        case "inbox":
-          result = get(inboxTasksAtom);
-          break;
-        case "completed":
-          result = get(completedTasksAtom);
-          break;
-        case "all":
-          result = get(activeTasksAtom);
-          break;
-        default: {
-          // Use route context to determine if this is a project or label view
-          const activeTasks = get(activeTasksAtom);
-
-          if (routeContext.routeType === "project") {
-            result = activeTasks.filter(
-              (task: Task) => task.projectId === routeContext.viewId,
-            );
-          } else if (routeContext.routeType === "label") {
-            try {
-              const labelId = LabelIdSchema.parse(viewId);
-              result = activeTasks.filter((task: Task) =>
-                task.labels.includes(labelId),
-              );
-            } catch {
-              result = [];
-            }
-          } else if (routeContext.routeType === "projectgroup") {
-            try {
-              const groupId = GroupIdSchema.parse(routeContext.viewId);
-              const getProjectGroupTasks = get(projectGroupTasksAtom);
-              result = getProjectGroupTasks(groupId);
-            } catch {
-              result = [];
-            }
-          } else {
-            result = activeTasks;
+      // Switch on route type for clean, consistent filtering
+      switch (routeContext.routeType) {
+        case "standard": {
+          // Standard views: today, inbox, upcoming, completed, all
+          switch (routeContext.viewId) {
+            case "today":
+              return get(todayTasksAtom);
+            case "upcoming":
+              return get(upcomingTasksAtom);
+            case "inbox":
+              return get(inboxTasksAtom);
+            case "completed":
+              return get(completedTasksAtom);
+            case "all":
+              return activeTasks;
+            default:
+              // Unknown standard view, return all active tasks
+              return activeTasks;
           }
-          break;
         }
-      }
 
-      // Do NOT apply showCompleted or showOverdue here - that's UI layer responsibility
-      return result;
+        case "project": {
+          // Filter tasks by project ID
+          return activeTasks.filter(
+            (task: Task) => task.projectId === routeContext.viewId,
+          );
+        }
+
+        case "label": {
+          // Filter tasks by label ID
+          try {
+            const labelId = LabelIdSchema.parse(routeContext.viewId);
+            return activeTasks.filter((task: Task) =>
+              task.labels.includes(labelId),
+            );
+          } catch {
+            return [];
+          }
+        }
+
+        case "projectgroup": {
+          // Filter tasks by project group - inline logic for consistency
+          try {
+            const groupId = GroupIdSchema.parse(routeContext.viewId);
+            const groups = get(allGroupsAtom);
+
+            // Get all project IDs from this group and its nested groups
+            const projectIds = collectProjectIdsFromGroup(groups, groupId);
+
+            // Return all tasks from these projects
+            return activeTasks.filter(
+              (task: Task) =>
+                task.projectId && projectIds.includes(task.projectId),
+            );
+          } catch {
+            return [];
+          }
+        }
+
+        default:
+          // Unknown route type, return all active tasks
+          return activeTasks;
+      }
     } catch (error) {
-      handleAtomError(error, `baseFilteredTasksForViewAtom(${viewId})`);
+      handleAtomError(error, "baseFilteredTasksAtom");
       return [];
     }
   }),

@@ -18,6 +18,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createStore } from "jotai";
 import { filteredTasksAtom } from "../ui/filtered-tasks";
 import { currentViewAtom, updateViewStateAtom } from "../ui/views";
+import { setPathnameAtom } from "../ui/navigation";
 import { queryClientAtom } from "../data/base/query";
 import type { Task } from "@tasktrove/types/core";
 import { createTaskId } from "@tasktrove/types/id";
@@ -118,7 +119,8 @@ beforeEach(() => {
 describe("Completed View Filtering Fix", () => {
   describe("Core Bug Fix", () => {
     it("should show completed tasks in completed view even when showCompleted is false", () => {
-      // Set up completed view
+      // Set up completed view - must set pathname for route-reactive filtering
+      store.set(setPathnameAtom, "/completed");
       store.set(currentViewAtom, "completed");
 
       // Set showCompleted to false (this was causing the bug)
@@ -139,7 +141,8 @@ describe("Completed View Filtering Fix", () => {
     });
 
     it("should show completed tasks in completed view when showCompleted is true", () => {
-      // Set up completed view
+      // Set up completed view - must set pathname for route-reactive filtering
+      store.set(setPathnameAtom, "/completed");
       store.set(currentViewAtom, "completed");
 
       // Set showCompleted to true

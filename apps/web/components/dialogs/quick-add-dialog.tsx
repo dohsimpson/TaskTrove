@@ -200,7 +200,8 @@ export function QuickAddDialog() {
         }
 
         // Safely convert Task to CreateTaskRequest by filtering out invalid fields
-        const copyData = taskToCreateTaskRequest(taskWithNewIds)
+        // Omit trackingId when copying to create a new tracking group for the duplicated task
+        const copyData = taskToCreateTaskRequest({ task: taskWithNewIds, omit: ["trackingId"] })
 
         updates = copyData
         setInput(taskToCopy.title) // Also set the input field

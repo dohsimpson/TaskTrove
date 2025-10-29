@@ -78,6 +78,7 @@ export {
   resolveProject,
   resolveLabel,
   isValidProjectId,
+  getApiBasePath,
 } from "./routing";
 export {
   findGroupById,

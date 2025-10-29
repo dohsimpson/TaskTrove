@@ -9,41 +9,49 @@ import { getDefaultSectionId } from "./defaults";
  * Safely converts a Task to a CreateTaskRequest by removing fields that shouldn't be included.
  * Uses Zod validation to ensure the result conforms to CreateTaskRequestSchema.
  *
- * @param task - The task to convert
+ * @param options - Options object
+ * @param options.task - The task to convert
+ * @param options.omit - Optional array of field names to exclude from the result
  * @returns A validated CreateTaskRequest object
  * @throws Error if the resulting data doesn't conform to CreateTaskRequestSchema
  */
-export function taskToCreateTaskRequest(task: Task): CreateTaskRequest {
-  // Extract only the fields that are valid for CreateTaskRequest, filtering out undefined values
-  const taskData: Record<string, unknown> = {
-    title: task.title,
-  };
+export function taskToCreateTaskRequest(options: {
+  task: Task;
+  omit?: (keyof Task)[];
+}): CreateTaskRequest {
+  const { task, omit = [] } = options;
+  const omitSet = new Set(omit);
 
-  // Only include defined optional fields
-  if (task.description !== undefined) {
-    taskData.description = task.description;
+  // Fields that should always be excluded when converting Task to CreateTaskRequest
+  // These are managed by the system and shouldn't be copied
+  const excludedFields = new Set<keyof Task>([
+    "id",
+    "createdAt",
+    "completedAt",
+    "completed",
+  ]);
+
+  // Build the task data dynamically by iterating over all task properties
+  const taskData: Record<string, unknown> = {};
+
+  for (const key in task) {
+    if (Object.prototype.hasOwnProperty.call(task, key)) {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Safe: key is guaranteed to be keyof Task from for...in loop
+      const typedKey = key as keyof Task;
+
+      // Skip if field is in excluded list or omit list
+      if (excludedFields.has(typedKey) || omitSet.has(typedKey)) {
+        continue;
+      }
+
+      const value = task[typedKey];
+
+      // Only include defined values (skip undefined to keep request clean)
+      if (value !== undefined) {
+        taskData[key] = value;
+      }
+    }
   }
-  if (task.dueDate !== undefined) {
-    taskData.dueDate = task.dueDate;
-  }
-  if (task.dueTime !== undefined) {
-    taskData.dueTime = task.dueTime;
-  }
-  if (task.projectId !== undefined) {
-    taskData.projectId = task.projectId;
-  }
-  if (task.recurring !== undefined) {
-    taskData.recurring = task.recurring;
-  }
-  if (task.estimation !== undefined) {
-    taskData.estimation = task.estimation;
-  }
-  // always truth values here
-  taskData.labels = task.labels;
-  taskData.subtasks = task.subtasks;
-  taskData.comments = task.comments;
-  taskData.recurringMode = task.recurringMode;
-  taskData.priority = task.priority;
 
   // Validate with Zod schema to ensure type safety
   const result = CreateTaskRequestSchema.safeParse(taskData);

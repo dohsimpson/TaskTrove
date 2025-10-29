@@ -23,7 +23,7 @@ const MIME_TYPES: Record<string, string> = {
 }
 
 /**
- * GET /api/assets/[...path]
+ * GET /api/v1/assets/[...path]
  *
  * Serves asset files from the data/assets directory.
  * Supports any file type with appropriate MIME type detection.
@@ -116,9 +116,10 @@ function createAssetHandler(path: string[]) {
   return withApiVersion(
     withAuthentication(
       withApiLogging((request: EnhancedRequest) => serveAsset(request, path), {
-        endpoint: API_ROUTES.ASSETS,
+        endpoint: API_ROUTES.V1_ASSETS,
         module: "api-v1-assets",
       }),
+      { allowApiToken: true },
     ),
   )
 }

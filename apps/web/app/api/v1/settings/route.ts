@@ -22,7 +22,7 @@ import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
 
 /**
- * GET /api/settings
+ * GET /api/v1/settings
  *
  * Fetches only user settings data with metadata.
  * Returns settings object with count, timestamp, and version information.
@@ -88,15 +88,16 @@ export const GET = withApiVersion(
   withMutexProtection(
     withAuthentication(
       withApiLogging(getSettings, {
-        endpoint: "/api/settings",
+        endpoint: "/api/v1/settings",
         module: "api-v1-settings",
       }),
+      { allowApiToken: true },
     ),
   ),
 )
 
 /**
- * PATCH /api/settings
+ * PATCH /api/v1/settings
  *
  * Updates user settings by merging provided settings with existing ones.
  * Supports partial updates for any category of settings.
@@ -208,9 +209,10 @@ export const PATCH = withApiVersion(
   withMutexProtection(
     withAuthentication(
       withApiLogging(updateSettings, {
-        endpoint: "/api/settings",
+        endpoint: "/api/v1/settings",
         module: "api-v1-settings",
       }),
+      { allowApiToken: true },
     ),
   ),
 )

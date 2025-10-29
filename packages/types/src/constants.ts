@@ -433,21 +433,21 @@ export function createApiRoute(path: string): ApiRoute {
  * All available API routes - single source of truth for route paths
  */
 export const API_ROUTES = {
-  // v1 routes (actually in v1/ directory)
+  // v1 routes (actually in v1/ directory) - support bearer token authentication
   V1_TASKS: createApiRoute("/api/v1/tasks"),
   V1_PROJECTS: createApiRoute("/api/v1/projects"),
   V1_LABELS: createApiRoute("/api/v1/labels"),
   V1_GROUPS: createApiRoute("/api/v1/groups"),
+  V1_SETTINGS: createApiRoute("/api/v1/settings"),
+  V1_USER: createApiRoute("/api/v1/user"),
+  V1_ASSETS: createApiRoute("/api/v1/assets/[...path]"),
 
-  // Root-level routes (NOT in v1/ directory)
-  SETTINGS: createApiRoute("/api/settings"),
-  USER: createApiRoute("/api/user"),
+  // Root-level routes (NOT in v1/ directory) - session-only authentication
   HEALTH: createApiRoute("/api/health"),
   BACKUP: createApiRoute("/api/backup"),
   IMPORT: createApiRoute("/api/import"),
   DATA_INITIALIZE: createApiRoute("/api/data/initialize"),
   DATA_MIGRATE: createApiRoute("/api/data/migrate"),
-  ASSETS: createApiRoute("/api/assets/[...path]"),
   INITIAL_SETUP: createApiRoute("/api/initial-setup"),
   AUTH: createApiRoute("/api/auth/[...nextauth]"),
   NOT_FOUND: createApiRoute("/api/[...notFound]"),

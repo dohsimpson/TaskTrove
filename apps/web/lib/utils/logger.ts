@@ -1,6 +1,7 @@
 // Simple console-based logger
-const isDevelopment = process.env.NODE_ENV === "development"
-const isDebugEnabled = isDevelopment || process.env.DEBUG === "true"
+import { isDev } from "./env"
+
+const isDebugEnabled = isDev() || process.env.DEBUG === "true"
 
 // Sanitize object to remove circular references and DOM elements
 const sanitizeObject = (obj: unknown, seen = new WeakSet()): unknown => {

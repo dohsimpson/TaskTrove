@@ -91,6 +91,8 @@ describe("/api/data/initialize", () => {
 
       const request = new NextRequest("http://localhost:3000/api/data/initialize", {
         method: "POST",
+        body: JSON.stringify({}),
+        headers: { "Content-Type": "application/json" },
       })
 
       const response = await POST(request)
@@ -113,6 +115,8 @@ describe("/api/data/initialize", () => {
 
       const request = new NextRequest("http://localhost:3000/api/data/initialize", {
         method: "POST",
+        body: JSON.stringify({}),
+        headers: { "Content-Type": "application/json" },
       })
 
       const response = await POST(request)
@@ -149,6 +153,8 @@ describe("/api/data/initialize", () => {
 
       const request = new NextRequest("http://localhost:3000/api/data/initialize", {
         method: "POST",
+        body: JSON.stringify({}),
+        headers: { "Content-Type": "application/json" },
       })
 
       const response = await POST(request)
@@ -168,6 +174,8 @@ describe("/api/data/initialize", () => {
 
       const request = new NextRequest("http://localhost:3000/api/data/initialize", {
         method: "POST",
+        body: JSON.stringify({}),
+        headers: { "Content-Type": "application/json" },
       })
 
       const response = await POST(request)
@@ -190,6 +198,8 @@ describe("/api/data/initialize", () => {
 
       const request = new NextRequest("http://localhost:3000/api/data/initialize", {
         method: "POST",
+        body: JSON.stringify({}),
+        headers: { "Content-Type": "application/json" },
       })
 
       const response = await POST(request)

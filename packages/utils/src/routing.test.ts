@@ -6,6 +6,7 @@ import {
   resolveProject,
   resolveLabel,
   resolveProjectGroup,
+  getApiBasePath,
 } from "./routing";
 import { Project, Label } from "@tasktrove/types/core";
 import { ProjectGroup } from "@tasktrove/types/group";
@@ -616,6 +617,158 @@ describe("routing utilities", () => {
 
       expect(result1?.name).toBe("Project Group");
       expect(result2?.name).toBe("Project Group Two");
+    });
+  });
+});
+
+describe("getApiBasePath", () => {
+  describe("catch-all segments [...param]", () => {
+    it("should remove catch-all segment at the end", () => {
+      expect(getApiBasePath("/api/v1/assets/[...path]")).toBe("/api/v1/assets");
+    });
+
+    it("should handle multiple path segments before catch-all", () => {
+      expect(getApiBasePath("/api/v1/files/documents/[...path]")).toBe(
+        "/api/v1/files/documents",
+      );
+    });
+
+    it("should handle catch-all with descriptive names", () => {
+      expect(getApiBasePath("/api/resources/[...slug]")).toBe("/api/resources");
+    });
+  });
+
+  describe("optional catch-all segments [[...param]]", () => {
+    it("should remove optional catch-all segment at the end", () => {
+      expect(getApiBasePath("/api/pages/[[...slug]]")).toBe("/api/pages");
+    });
+
+    it("should handle nested paths with optional catch-all", () => {
+      expect(getApiBasePath("/api/v1/content/[[...path]]")).toBe(
+        "/api/v1/content",
+      );
+    });
+  });
+
+  describe("single dynamic segments [param]", () => {
+    it("should remove single dynamic segment", () => {
+      expect(getApiBasePath("/api/users/[id]")).toBe("/api/users");
+    });
+
+    it("should remove single dynamic segment with descriptive name", () => {
+      expect(getApiBasePath("/api/posts/[slug]")).toBe("/api/posts");
+    });
+
+    it("should handle dynamic segment in the middle of path", () => {
+      expect(getApiBasePath("/api/users/[id]/profile")).toBe(
+        "/api/users/profile",
+      );
+    });
+
+    it("should handle multiple single dynamic segments", () => {
+      expect(getApiBasePath("/api/posts/[slug]/comments/[commentId]")).toBe(
+        "/api/posts/comments",
+      );
+    });
+  });
+
+  describe("mixed dynamic segments", () => {
+    it("should handle single and catch-all segments together", () => {
+      expect(getApiBasePath("/api/users/[id]/files/[...path]")).toBe(
+        "/api/users/files",
+      );
+    });
+
+    it("should handle multiple types of dynamic segments", () => {
+      expect(
+        getApiBasePath(
+          "/api/projects/[projectId]/tasks/[taskId]/files/[...path]",
+        ),
+      ).toBe("/api/projects/tasks/files");
+    });
+
+    it("should handle optional catch-all with other segments", () => {
+      expect(getApiBasePath("/api/posts/[id]/content/[[...slug]]")).toBe(
+        "/api/posts/content",
+      );
+    });
+  });
+
+  describe("routes without dynamic segments", () => {
+    it("should return the route unchanged when no dynamic segments", () => {
+      expect(getApiBasePath("/api/v1/tasks")).toBe("/api/v1/tasks");
+    });
+
+    it("should return simple routes unchanged", () => {
+      expect(getApiBasePath("/api/health")).toBe("/api/health");
+    });
+
+    it("should handle nested static routes", () => {
+      expect(getApiBasePath("/api/v1/users/profile/settings")).toBe(
+        "/api/v1/users/profile/settings",
+      );
+    });
+  });
+
+  describe("edge cases", () => {
+    it("should handle route with trailing slash", () => {
+      expect(getApiBasePath("/api/v1/assets/[...path]/")).toBe(
+        "/api/v1/assets",
+      );
+    });
+
+    it("should handle root-level dynamic segment", () => {
+      expect(getApiBasePath("/api/[version]/tasks")).toBe("/api/tasks");
+    });
+
+    it("should handle empty dynamic segment names", () => {
+      expect(getApiBasePath("/api/users/[]/profile")).toBe(
+        "/api/users/profile",
+      );
+    });
+
+    it("should handle special characters in dynamic segment names", () => {
+      expect(getApiBasePath("/api/files/[file-id]")).toBe("/api/files");
+    });
+
+    it("should handle underscores in dynamic segment names", () => {
+      expect(getApiBasePath("/api/users/[user_id]")).toBe("/api/users");
+    });
+  });
+
+  describe("real-world API_ROUTES examples", () => {
+    it("should extract base from V1_ASSETS route", () => {
+      // API_ROUTES.V1_ASSETS = "/api/v1/assets/[...path]"
+      expect(getApiBasePath("/api/v1/assets/[...path]")).toBe("/api/v1/assets");
+    });
+
+    it("should handle static routes like V1_TASKS", () => {
+      // API_ROUTES.V1_TASKS = "/api/v1/tasks"
+      expect(getApiBasePath("/api/v1/tasks")).toBe("/api/v1/tasks");
+    });
+
+    it("should handle auth routes with dynamic segments", () => {
+      // API_ROUTES.AUTH = "/api/auth/[...nextauth]"
+      expect(getApiBasePath("/api/auth/[...nextauth]")).toBe("/api/auth");
+    });
+
+    it("should handle not found catch-all route", () => {
+      // API_ROUTES.NOT_FOUND = "/api/[...notFound]"
+      expect(getApiBasePath("/api/[...notFound]")).toBe("/api");
+    });
+  });
+
+  describe("consistency and idempotency", () => {
+    it("should be idempotent - applying twice gives same result", () => {
+      const input = "/api/v1/assets/[...path]";
+      const result1 = getApiBasePath(input);
+      const result2 = getApiBasePath(result1);
+      expect(result1).toBe(result2);
+    });
+
+    it("should not modify already-processed paths", () => {
+      const basePath = "/api/v1/assets";
+      expect(getApiBasePath(basePath)).toBe(basePath);
     });
   });
 });

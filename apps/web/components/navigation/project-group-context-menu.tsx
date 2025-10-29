@@ -1,7 +1,10 @@
 "use client"
 
 import { useAtomValue, useSetAtom } from "jotai"
+import { Users } from "lucide-react"
 import { EntityContextMenu } from "@/components/ui/custom/entity-context-menu"
+import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { deleteProjectsAtom } from "@tasktrove/atoms/core/projects"
 import {
   projectGroupsAtom,
@@ -87,6 +90,18 @@ export function ProjectGroupContextMenu({
       onColorChange={handleColorChange}
       open={open}
       onOpenChange={onOpenChange}
+      renderAdditionalMenuItems={() => (
+        <ComingSoonWrapper disabled={true} featureName="Group member management" proOnly={true}>
+          <DropdownMenuItem
+            onSelect={(e) => {
+              e.preventDefault()
+            }}
+          >
+            <Users className="h-3 w-3 mr-2" />
+            Members
+          </DropdownMenuItem>
+        </ComingSoonWrapper>
+      )}
     />
   )
 }

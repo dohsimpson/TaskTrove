@@ -6,6 +6,8 @@ import {
   SUPPORTED_AVATAR_MIME_TYPES,
   AVATAR_DATA_URL_REGEX,
 } from "@tasktrove/constants";
+import { API_ROUTES } from "@tasktrove/types/constants";
+import { getApiBasePath } from "./routing";
 
 // Re-export constants for convenience
 export { SUPPORTED_AVATAR_MIME_TYPES, AVATAR_DATA_URL_REGEX };
@@ -131,7 +133,8 @@ export async function encodeFileToDataUrl(
 /**
  * Converts an avatar file path to the correct API URL
  * @param avatarPath - The avatar file path (e.g., "data/assets/avatar/uuid.png" or "/data/assets/avatar/uuid.png")
- * @returns The correct API URL (e.g., "/api/assets/avatar/uuid.png") or the original string if it's a data URL or already an API URL
+ * @returns The correct API URL (e.g., "/api/v1/assets/avatar/uuid.png") or the original string if it's a data URL or already an API URL
+ * @note Uses API_ROUTES.V1_ASSETS from @tasktrove/types/constants
  */
 export function getAvatarApiUrl(
   avatarPath: string | undefined | null,
@@ -146,8 +149,12 @@ export function getAvatarApiUrl(
     return avatarPath;
   }
 
+  // Get the base assets API path from API_ROUTES.V1_ASSETS constant
+  const assetsBasePath = getApiBasePath(API_ROUTES.V1_ASSETS);
+
   // If it's already an API URL, return as-is
-  if (avatarPath.startsWith("/api/assets/")) {
+  // Check against API_ROUTES.V1_ASSETS base path
+  if (avatarPath.startsWith(assetsBasePath + "/")) {
     return avatarPath;
   }
 
@@ -175,6 +182,6 @@ export function getAvatarApiUrl(
     normalizedPath = normalizedPath.substring(7); // Remove "assets/"
   }
 
-  // Construct the API URL
-  return `/api/assets/${normalizedPath}`;
+  // Construct the API URL using API_ROUTES.V1_ASSETS constant
+  return `${assetsBasePath}/${normalizedPath}`;
 }

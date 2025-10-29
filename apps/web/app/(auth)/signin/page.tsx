@@ -1,5 +1,5 @@
 import { LoginPage } from "@/components/auth/login-page"
-import { EnsureUserFile } from "@/components/auth/ensure-user-file"
+import { PermissionChecker } from "@/components/startup/permission-checker"
 import { checkPasswordSetupNeeded } from "@/lib/utils/data-initialization"
 
 // Force dynamic rendering to prevent build-time file access by checkPasswordSetupNeeded
@@ -9,8 +9,9 @@ export default async function SignIn() {
   const needsPasswordSetup = await checkPasswordSetupNeeded()
 
   return (
-    <EnsureUserFile>
+    <>
+      <PermissionChecker />
       <LoginPage needsPasswordSetup={needsPasswordSetup} />
-    </EnsureUserFile>
+    </>
   )
 }

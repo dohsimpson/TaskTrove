@@ -5,8 +5,9 @@ import { withMutexProtection } from "@/lib/utils/api-mutex"
 import { withApiVersion } from "@/lib/middleware/api-version"
 import { writeInitialDataFile } from "@/lib/utils/data-initialization"
 import { withApiLogging, type EnhancedRequest } from "@/lib/middleware/api-logger"
-import { withAuthentication } from "@/lib/middleware/auth"
 import { ApiErrorCode, ErrorResponse, API_ROUTES } from "@/lib/types"
+import { DataInitializeRequestSchema } from "@tasktrove/types/api-requests"
+import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 
 async function initializeData(request: EnhancedRequest) {
   // Validate origin first
@@ -22,6 +23,30 @@ async function initializeData(request: EnhancedRequest) {
     }
     return NextResponse.json<ErrorResponse>(errorResponse, { status: 403 })
   }
+
+  // Validate request body
+  const validation = await validateRequestBody(request, DataInitializeRequestSchema)
+  if (!validation.success) {
+    return validation.error
+  }
+
+  const { authSecret } = validation.data
+
+  // Verify AUTH_SECRET if it's configured
+  const configuredAuthSecret = process.env.AUTH_SECRET
+  if (configuredAuthSecret) {
+    // If AUTH_SECRET is set, require it to match
+    if (authSecret !== configuredAuthSecret) {
+      return createErrorResponse(
+        "Invalid authentication secret",
+        "The provided authentication secret does not match the configured AUTH_SECRET",
+        403,
+        ApiErrorCode.AUTHENTICATION_REQUIRED,
+      )
+    }
+  }
+  // If no AUTH_SECRET is configured, allow initialization without secret
+
   try {
     // Check if data file already exists
     const dataFileCheck = await checkDataFile()
@@ -58,11 +83,9 @@ async function initializeData(request: EnhancedRequest) {
 
 export const POST = withApiVersion(
   withMutexProtection(
-    withAuthentication(
-      withApiLogging(initializeData, {
-        endpoint: API_ROUTES.DATA_INITIALIZE,
-        module: "api-v1-data-initialize",
-      }),
-    ),
+    withApiLogging(initializeData, {
+      endpoint: API_ROUTES.DATA_INITIALIZE,
+      module: "api-v1-data-initialize",
+    }),
   ),
 )

@@ -15,6 +15,16 @@ interface UserAvatarProps {
    * If false, shows User icon instead.
    */
   showInitials?: boolean
+  /**
+   * Custom icon to display in the avatar fallback.
+   * If provided, this takes precedence over initials/User icon.
+   */
+  icon?: React.ReactNode
+  /**
+   * Background color for the avatar when using custom icon.
+   * Defaults to the username-based consistent color if not specified.
+   */
+  iconBackgroundColor?: string
 }
 
 /**
@@ -43,7 +53,7 @@ const iconSizes = {
 
 /**
  * User avatar component with automatic fallback to initials or icon
- * Supports avatar images, initials with consistent colors, and icon fallback
+ * Supports avatar images, initials with consistent colors, custom icons, and icon fallback
  */
 export function UserAvatar({
   username,
@@ -51,19 +61,18 @@ export function UserAvatar({
   size = "md",
   className,
   showInitials = true,
+  icon,
+  iconBackgroundColor,
 }: UserAvatarProps) {
   const avatarUrl = avatar ? getAvatarApiUrl(avatar) : undefined
-  const backgroundColor = getConsistentColor(username)
+  const backgroundColor = iconBackgroundColor ?? getConsistentColor(username)
   const initials = getUserInitials(username)
 
   return (
     <Avatar className={`${sizeClasses[size]} ${className || ""}`}>
       {avatarUrl && <AvatarImage src={avatarUrl} alt={username} />}
-      <AvatarFallback
-        className="rounded-full text-white font-semibold"
-        style={showInitials ? { backgroundColor } : undefined}
-      >
-        {showInitials ? initials : <User className={iconSizes[size]} />}
+      <AvatarFallback className="rounded-full text-white font-semibold" style={{ backgroundColor }}>
+        {icon ? icon : showInitials ? initials : <User className={iconSizes[size]} />}
       </AvatarFallback>
     </Avatar>
   )

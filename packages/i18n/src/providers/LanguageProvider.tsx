@@ -11,6 +11,7 @@ import { initReactI18next } from "react-i18next";
 import i18next from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import type { I18nConfig, Language } from "../types";
+import resourcesToBackend from "i18next-resources-to-backend";
 
 /**
  * Language context type
@@ -164,8 +165,6 @@ export function LanguageProvider<
   // Throw a promise on first render if i18next isn't ready
   if (!i18next.isInitialized && !initPromise) {
     initPromise = (async () => {
-      const resourcesToBackend = (await import("i18next-resources-to-backend"))
-        .default;
       const resourceBackend = resourcesToBackend(config.resourceLoader);
 
       const i18nBuilder = config.cookieName

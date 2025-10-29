@@ -7,7 +7,6 @@ import {
   CURRENT_API_VERSION,
   SUPPORTED_API_VERSIONS,
 } from "@/lib/middleware/api-version"
-import { withAuthentication } from "@/lib/middleware/auth"
 import { API_ROUTES } from "@/lib/types"
 
 async function healthCheck() {
@@ -84,11 +83,9 @@ async function healthCheck() {
 
 export const GET = withApiVersion(
   withMutexProtection(
-    withAuthentication(
-      withApiLogging(healthCheck, {
-        endpoint: API_ROUTES.HEALTH,
-        module: "api-v1-health",
-      }),
-    ),
+    withApiLogging(healthCheck, {
+      endpoint: API_ROUTES.HEALTH,
+      module: "api-v1-health",
+    }),
   ),
 )

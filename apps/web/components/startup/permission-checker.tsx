@@ -6,6 +6,9 @@ import { StartupAlert } from "./startup-alert"
 import { API_ROUTES } from "@/lib/types"
 import { useAtomValue } from "jotai"
 import { queryClientAtom } from "@tasktrove/atoms/data/base/query"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
 
 interface HealthCheckResponse {
   status: "healthy" | "error" | "needs_initialization" | "needs_migration"
@@ -32,6 +35,7 @@ export function PermissionChecker() {
   const [isChecking, setIsChecking] = useState(true)
   const [isProcessing, setIsProcessing] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [authSecret, setAuthSecret] = useState("")
   const queryClient = useAtomValue(queryClientAtom)
 
   const checkHealth = async () => {
@@ -57,7 +61,7 @@ export function PermissionChecker() {
       const response = await fetch(API_ROUTES.DATA_INITIALIZE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ authSecret: authSecret || undefined }),
       })
 
       const data = await response.json()
@@ -66,18 +70,27 @@ export function PermissionChecker() {
         // Invalidate all queries to refresh data after initialization
         queryClient.invalidateQueries()
         await checkHealth()
+        setAuthSecret("") // Clear secret after successful initialization
       } else {
+        const errorMessage = data.message || "Failed to initialize data file"
         setHealthStatus({
           status: "error",
-          message: data.message || "Failed to initialize data file",
+          message: errorMessage,
           timestamp: new Date().toISOString(),
+        })
+        toast.error("Initialization Failed", {
+          description: errorMessage,
         })
       }
     } catch (error) {
+      const errorMessage = `Failed to initialize data file: ${error instanceof Error ? error.message : String(error)}`
       setHealthStatus({
         status: "error",
-        message: `Failed to initialize data file: ${error instanceof Error ? error.message : String(error)}`,
+        message: errorMessage,
         timestamp: new Date().toISOString(),
+      })
+      toast.error("Initialization Failed", {
+        description: errorMessage,
       })
     } finally {
       setIsProcessing(false)
@@ -219,12 +232,27 @@ export function PermissionChecker() {
             confirmDialog: {
               title: "Confirm Data Initialization",
               description: (
-                <div>
-                  This will create a new data file for TaskTrove. If you have existing TaskTrove
-                  data, it may be permanently overwritten and cannot be recovered.
-                  <br />
-                  <br />
-                  Are you sure you want to continue?
+                <div className="space-y-4">
+                  <p>
+                    This will create a new data file for TaskTrove. If you have existing TaskTrove
+                    data, it may be permanently overwritten and cannot be recovered.
+                  </p>
+                  <div className="space-y-2">
+                    <Label htmlFor="auth-secret">AUTH_SECRET (if configured)</Label>
+                    <Input
+                      id="auth-secret"
+                      type="password"
+                      placeholder="Enter your AUTH_SECRET"
+                      value={authSecret}
+                      onChange={(e) => setAuthSecret(e.target.value)}
+                      className="font-mono"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      If you have set an AUTH_SECRET environment variable, enter it here to
+                      authorize initialization. Leave blank if AUTH_SECRET is not configured.
+                    </p>
+                  </div>
+                  <p className="font-semibold">Are you sure you want to continue?</p>
                 </div>
               ),
               confirmLabel: "Initialize Data File",

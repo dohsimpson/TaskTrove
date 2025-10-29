@@ -267,7 +267,7 @@ async function fetchSettings(): Promise<UserSettings> {
   }
 
   const response = await fetchAndValidate(
-    API_ROUTES.SETTINGS,
+    API_ROUTES.V1_SETTINGS,
     GetSettingsResponseSchema,
     "settings",
   );
@@ -283,7 +283,7 @@ async function fetchUser(): Promise<User> {
   }
 
   const response = await fetchAndValidate(
-    API_ROUTES.USER,
+    API_ROUTES.V1_USER,
     GetUserResponseSchema,
     "user",
   );

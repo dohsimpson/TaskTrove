@@ -315,3 +315,41 @@ export function resolveLabelGroup(
   if (!labelGroups) return null;
   return searchLabelGroupInTree(labelGroups, idOrSlug);
 }
+
+/**
+ * Extracts the base path from a Next.js API route by removing dynamic segments.
+ *
+ * Handles all Next.js dynamic route patterns:
+ * - `[param]` - Single dynamic segment
+ * - `[...param]` - Catch-all segment
+ * - `[[...param]]` - Optional catch-all segment
+ *
+ * @param apiRoute - The full API route path (e.g., "/api/v1/assets/[...path]")
+ * @returns The base path without dynamic segments (e.g., "/api/v1/assets")
+ *
+ * @example
+ * ```typescript
+ * getApiBasePath("/api/v1/assets/[...path]")
+ * // Returns: "/api/v1/assets"
+ *
+ * getApiBasePath("/api/users/[id]")
+ * // Returns: "/api/users"
+ *
+ * getApiBasePath("/api/posts/[slug]/comments")
+ * // Returns: "/api/posts/comments"
+ *
+ * getApiBasePath("/api/v1/tasks")
+ * // Returns: "/api/v1/tasks" (no dynamic segments)
+ * ```
+ */
+export function getApiBasePath(apiRoute: string): string {
+  // Remove all Next.js dynamic segment patterns:
+  // - [param] - Single dynamic segment
+  // - [...param] - Catch-all segment
+  // - [[...param]] - Optional catch-all segment
+  return apiRoute
+    .replace(/\/\[\[\.\.\..*?\]\]/g, "") // Remove [[...param]]
+    .replace(/\/\[\.\.\..*?\]/g, "") // Remove [...param]
+    .replace(/\/\[.*?\]/g, "") // Remove [param]
+    .replace(/\/$/, ""); // Remove trailing slash if present
+}

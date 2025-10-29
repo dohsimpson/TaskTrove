@@ -240,6 +240,14 @@ export const InitialSetupRequestSchema = z.object({
 });
 
 /**
+ * Schema for data file initialization request
+ * Requires AUTH_SECRET verification to prevent unauthorized initialization
+ */
+export const DataInitializeRequestSchema = z.object({
+  authSecret: z.string().optional(),
+});
+
+/**
  * Schema for updating user settings
  */
 export const UpdateSettingsRequestSchema = z.object({
@@ -428,6 +436,7 @@ export type LabelUpdateUnion = z.infer<typeof LabelUpdateUnionSchema>;
 export type UpdateUserRequest = z.infer<typeof UpdateUserRequestSchema>;
 export type UpdateSettingsRequest = z.infer<typeof UpdateSettingsRequestSchema>;
 export type InitialSetupRequest = z.infer<typeof InitialSetupRequestSchema>;
+export type DataInitializeRequest = z.infer<typeof DataInitializeRequestSchema>;
 export type CommentUpdateRequest = z.infer<typeof CommentUpdateRequestSchema>;
 
 // Group update types

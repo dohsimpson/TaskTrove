@@ -70,7 +70,10 @@
     "./ui/filtered-tasks": "./src/ui/filtered-tasks.ts",
     "./ui/user-settings-atom": "./src/ui/user-settings-atom.ts",
     "./ui/focus-timer": "./src/ui/focus-timer.ts",
-    "./ui/dialogs": "./src/ui/dialogs.ts",
+    "./ui/dialogs": {
+      "pro": "./src/ui/dialogs.pro.ts",
+      "default": "./src/ui/dialogs.ts"
+    },
     "./ui/keyboard-context": "./src/ui/keyboard-context.ts",
     "./ui/pomodoro": "./src/ui/pomodoro.ts",
     "./ui/app-refresh": "./src/ui/app-refresh.ts",

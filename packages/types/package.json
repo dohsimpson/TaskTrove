@@ -22,7 +22,10 @@
       "pro": "./src/constants.pro.ts",
       "default": "./src/constants.ts"
     },
-    "./validators": "./src/validators.ts",
+    "./validators": {
+      "pro": "./src/validators.pro.ts",
+      "default": "./src/validators.ts"
+    },
     "./core": {
       "pro": "./src/core.pro.ts",
       "default": "./src/core.ts"

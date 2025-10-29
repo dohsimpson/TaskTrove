@@ -5,6 +5,7 @@ import {
   isValidAvatarDataUrl,
   parseAvatarDataUrl,
   isSupportedAvatarMimeType,
+  getAvatarApiUrl,
 } from "./file";
 
 describe("Avatar validation utilities", () => {
@@ -173,6 +174,118 @@ describe("Avatar validation utilities", () => {
       // The array is still mutable at runtime but TypeScript prevents modification
       expect(Array.isArray(SUPPORTED_AVATAR_MIME_TYPES)).toBe(true);
       expect(SUPPORTED_AVATAR_MIME_TYPES.length).toBe(5);
+    });
+  });
+});
+
+describe("getAvatarApiUrl", () => {
+  describe("null/undefined handling", () => {
+    it("should return undefined for null input", () => {
+      expect(getAvatarApiUrl(null)).toBeUndefined();
+    });
+
+    it("should return undefined for undefined input", () => {
+      expect(getAvatarApiUrl(undefined)).toBeUndefined();
+    });
+  });
+
+  describe("data URL handling", () => {
+    it("should return data URLs unchanged", () => {
+      const dataUrl =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
+      expect(getAvatarApiUrl(dataUrl)).toBe(dataUrl);
+    });
+
+    it("should handle JPEG data URLs", () => {
+      const dataUrl =
+        "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAA==";
+      expect(getAvatarApiUrl(dataUrl)).toBe(dataUrl);
+    });
+  });
+
+  describe("API URL handling", () => {
+    it("should return existing v1 API URLs unchanged", () => {
+      const apiUrl = "/api/v1/assets/avatars/user123.png";
+      expect(getAvatarApiUrl(apiUrl)).toBe(apiUrl);
+    });
+
+    it("should return nested v1 API URLs unchanged", () => {
+      const apiUrl = "/api/v1/assets/avatars/subfolder/user456.jpg";
+      expect(getAvatarApiUrl(apiUrl)).toBe(apiUrl);
+    });
+  });
+
+  describe("external URL handling", () => {
+    it("should return http URLs unchanged", () => {
+      const httpUrl = "http://example.com/avatar.png";
+      expect(getAvatarApiUrl(httpUrl)).toBe(httpUrl);
+    });
+
+    it("should return https URLs unchanged", () => {
+      const httpsUrl = "https://example.com/avatar.png";
+      expect(getAvatarApiUrl(httpsUrl)).toBe(httpsUrl);
+    });
+  });
+
+  describe("file path conversion using API_ROUTES constant", () => {
+    it("should convert file path to v1 API URL", () => {
+      const filePath = "data/assets/avatars/user123.png";
+      const result = getAvatarApiUrl(filePath);
+      expect(result).toBe("/api/v1/assets/avatars/user123.png");
+    });
+
+    it("should handle file path with leading slash", () => {
+      const filePath = "/data/assets/avatars/user123.png";
+      const result = getAvatarApiUrl(filePath);
+      expect(result).toBe("/api/v1/assets/avatars/user123.png");
+    });
+
+    it("should handle path without data prefix", () => {
+      const filePath = "assets/avatars/user123.png";
+      const result = getAvatarApiUrl(filePath);
+      expect(result).toBe("/api/v1/assets/avatars/user123.png");
+    });
+
+    it("should handle path without assets prefix", () => {
+      const filePath = "avatars/user123.png";
+      const result = getAvatarApiUrl(filePath);
+      expect(result).toBe("/api/v1/assets/avatars/user123.png");
+    });
+
+    it("should handle simple filename", () => {
+      const filePath = "user123.png";
+      const result = getAvatarApiUrl(filePath);
+      expect(result).toBe("/api/v1/assets/user123.png");
+    });
+
+    it("should handle nested subdirectories", () => {
+      const filePath = "data/assets/avatars/team/project/user123.png";
+      const result = getAvatarApiUrl(filePath);
+      expect(result).toBe("/api/v1/assets/avatars/team/project/user123.png");
+    });
+  });
+
+  describe("API version consistency", () => {
+    it("should use v1 API endpoint (not legacy /api/assets/)", () => {
+      const filePath = "data/assets/avatars/user123.png";
+      const result = getAvatarApiUrl(filePath);
+
+      // Should use v1 prefix
+      expect(result).toContain("/api/v1/assets/");
+
+      // Should NOT use legacy non-versioned prefix
+      expect(result).not.toContain("/api/assets/avatars/");
+      expect(result).not.toMatch(/^\/api\/assets\/[^v]/);
+    });
+
+    it("should maintain consistency with API_ROUTES.V1_ASSETS constant", () => {
+      // This test ensures the function derives its path from the constant
+      // If API_ROUTES.V1_ASSETS changes, this test will catch it
+      const filePath = "avatars/user.png";
+      const result = getAvatarApiUrl(filePath);
+
+      // Should start with the v1 assets base path
+      expect(result).toMatch(/^\/api\/v1\/assets\//);
     });
   });
 });

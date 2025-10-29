@@ -196,6 +196,8 @@ export const TaskSchema = z.object({
   recurringMode: z.union([z.literal("dueDate"), z.literal("completedAt")]),
   /** Task estimation in seconds */
   estimation: z.number().optional(),
+  /** Tracking ID for linking tasks */
+  trackingId: TaskIdSchema.optional(),
 });
 
 /**

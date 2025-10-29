@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { TaskTroveLogo } from "@/components/ui/custom/tasktrove-logo"
 import { TaskTroveIcon } from "@/components/ui/custom/tasktrove-icon"
 import { useTranslation } from "@tasktrove/i18n"
+import { API_ROUTES } from "@tasktrove/types/constants"
 
 export interface LoginFormProps {
   needsPasswordSetup: boolean
@@ -70,7 +71,7 @@ export function LoginForm({
       setIsLoading(true)
       try {
         // Set up password using initial-setup endpoint
-        const response = await fetch("/api/initial-setup", {
+        const response = await fetch(API_ROUTES.INITIAL_SETUP, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -103,7 +103,7 @@ export function getDefaultEntityRoute(entity: string): string {
     case "group":
       return API_ROUTES.V1_GROUPS;
     case "setting":
-      return API_ROUTES.SETTINGS;
+      return API_ROUTES.V1_SETTINGS;
     default:
       throw new Error(`Unknown entity "${entity}" provided`);
   }

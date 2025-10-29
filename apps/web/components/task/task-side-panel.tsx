@@ -28,6 +28,7 @@ import { SubtaskContent } from "./subtask-content"
 import { LabelContent } from "./label-content"
 import { CommentContent } from "./comment-content"
 import { TaskActionsMenu } from "./task-actions-menu"
+import { TaskCompletionHistory } from "@/components/task/task-completion-history"
 import { TaskDebugBadge } from "@/components/debug"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
 import { updateTaskAtom, deleteTaskAtom, toggleTaskAtom } from "@tasktrove/atoms/core/tasks"
@@ -232,6 +233,9 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
           multiline={true}
         />
       </div>
+
+      {/* Task Completion History Section */}
+      <TaskCompletionHistory task={task} />
 
       {/* Subtasks Section */}
       <div className="space-y-3">

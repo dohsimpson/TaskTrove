@@ -135,9 +135,11 @@ async function createTask(
   }
 
   // Apply defaults for fields that weren't provided and generate required fields
+  const newTaskId = createTaskId(uuidv4())
   const newTask: Task = {
     ...validation.data,
-    id: createTaskId(uuidv4()),
+    id: newTaskId,
+    trackingId: validation.data.trackingId ?? newTaskId,
     completed: DEFAULT_TASK_COMPLETED,
     priority: validation.data.priority ?? DEFAULT_TASK_PRIORITY,
     labels: validation.data.labels ?? DEFAULT_TASK_LABELS,

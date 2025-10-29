@@ -959,6 +959,24 @@ describe("generateNextTaskInstance", () => {
     }
   })
 
+  it("should preserve trackingId in next instance", () => {
+    const trackingId = createTaskId("550e8400-e29b-41d4-a716-446655440099")
+    const taskWithTrackingId: Task = {
+      ...baseTask,
+      trackingId,
+    }
+
+    const nextTask = generateNextTaskInstance(taskWithTrackingId)
+
+    expect(nextTask).not.toBeNull()
+    if (nextTask) {
+      // trackingId should be preserved so all recurring instances share the same tracking group
+      expect(nextTask.trackingId).toBe(trackingId)
+      // But the task ID itself should be different
+      expect(nextTask.id).not.toBe(taskWithTrackingId.id)
+    }
+  })
+
   it("should generate new creation date for next instance", () => {
     const nextTask = generateNextTaskInstance(baseTask)
     if (nextTask) {

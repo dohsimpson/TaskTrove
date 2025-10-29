@@ -81,7 +81,7 @@ function TimeEstimationTrigger({ task, className }: { task: Task; className?: st
   return (
     <span
       className={cn(
-        "flex items-center gap-1 cursor-pointer",
+        "flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors",
         hasTime
           ? "hover:opacity-100 text-foreground"
           : "text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
@@ -152,7 +152,7 @@ function FocusTimerTrigger({ taskId, className }: { taskId: TaskId; className?: 
       <span
         onClick={handleStartClick}
         className={cn(
-          "flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
+          "flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
           className,
         )}
         title={t("focusTimer.start", "Start focus timer")}
@@ -167,7 +167,9 @@ function FocusTimerTrigger({ taskId, className }: { taskId: TaskId; className?: 
     <div className={cn("flex items-center gap-1", className)}>
       <span
         onClick={handlePauseResumeClick}
-        className={cn("cursor-pointer text-muted-foreground hover:text-foreground")}
+        className={cn(
+          "cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors",
+        )}
         title={
           isThisTaskRunning
             ? t("focusTimer.pause", "Pause timer")
@@ -178,7 +180,7 @@ function FocusTimerTrigger({ taskId, className }: { taskId: TaskId; className?: 
       </span>
       <span
         onClick={handleStopClick}
-        className="cursor-pointer text-muted-foreground hover:text-foreground text-red-500"
+        className="cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors text-red-500"
         title={t("focusTimer.stop", "Stop timer")}
       >
         <Square className="h-3 w-3" />
@@ -558,12 +560,12 @@ export function TaskItem({
                     recurring={task.recurring}
                     completed={task.completed}
                     variant="compact"
-                    className="cursor-pointer hover:opacity-100 text-xs flex-shrink-0"
+                    className="cursor-pointer hover:bg-accent transition-colors hover:opacity-100 text-xs flex-shrink-0"
                   />
                 </TaskSchedulePopover>
               ) : (
                 <TaskSchedulePopover taskId={task.id}>
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground transition-colors opacity-70 hover:opacity-100">
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
                     <Calendar className="h-3 w-3" />
                   </span>
                 </TaskSchedulePopover>
@@ -574,7 +576,7 @@ export function TaskItem({
                 <PriorityPopover task={task}>
                   <Flag
                     className={cn(
-                      "h-3 w-3 flex-shrink-0 cursor-pointer hover:opacity-100",
+                      "h-3 w-3 flex-shrink-0 cursor-pointer hover:bg-accent transition-colors hover:opacity-100",
                       task.priority === 1
                         ? "text-red-500"
                         : task.priority === 2
@@ -585,7 +587,7 @@ export function TaskItem({
                 </PriorityPopover>
               ) : (
                 <PriorityPopover task={task}>
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground transition-colors opacity-70 hover:opacity-100">
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
                     <Flag className="h-3 w-3" />
                   </span>
                 </PriorityPopover>
@@ -593,7 +595,7 @@ export function TaskItem({
 
               {/* Subtasks */}
               <SubtaskPopover task={task}>
-                <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
+                <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors">
                   <CheckSquare className="h-3 w-3" />
                   {task.subtasks.length > 0 && (
                     <>
@@ -609,7 +611,7 @@ export function TaskItem({
                 task={task}
                 onAddComment={(content) => addComment({ taskId: task.id, content })}
               >
-                <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
+                <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors">
                   <MessageSquare className="h-3 w-3" />
                   {task.comments.length > 0 && task.comments.length}
                 </span>
@@ -622,7 +624,7 @@ export function TaskItem({
                   onAddLabel={handleAddLabel}
                   onRemoveLabel={handleRemoveLabel}
                 >
-                  <div className="flex items-center gap-1 cursor-pointer">
+                  <div className="flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors">
                     {getLabelsFromIds(task.labels)
                       .slice(0, labelsExpanded ? task.labels.length : 1)
                       .map((label) => (
@@ -664,7 +666,7 @@ export function TaskItem({
                   onAddLabel={handleAddLabel}
                   onRemoveLabel={handleRemoveLabel}
                 >
-                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors opacity-70 hover:opacity-100">
+                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
                     <Tag className="h-3 w-3" />
                   </span>
                 </LabelManagementPopover>
@@ -673,7 +675,7 @@ export function TaskItem({
               {/* Project Badge */}
               {showProjectBadge && taskProject && (
                 <ProjectPopover task={task}>
-                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
+                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors">
                     <Folder
                       className="h-3 w-3 flex-shrink-0"
                       style={{ color: taskProject.color }}
@@ -685,7 +687,7 @@ export function TaskItem({
 
               {showProjectBadge && !taskProject && allProjects.length > 0 && (
                 <ProjectPopover task={task}>
-                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors opacity-70 hover:opacity-100">
+                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
                     <Folder className="h-3 w-3" />
                   </span>
                 </ProjectPopover>
@@ -693,7 +695,7 @@ export function TaskItem({
 
               {/* Assignees */}
               {isPro() && (
-                <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors opacity-70 hover:opacity-100">
+                <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
                   <AssigneeManagementPopover task={task}>
                     <Users className="h-3 w-3" />
                   </AssigneeManagementPopover>
@@ -834,12 +836,12 @@ export function TaskItem({
                   dueTime={task.dueTime}
                   recurring={task.recurring}
                   completed={task.completed}
-                  className="cursor-pointer hover:opacity-100"
+                  className="cursor-pointer hover:bg-accent transition-colors hover:opacity-100"
                 />
               </TaskSchedulePopover>
             ) : (
               <TaskSchedulePopover taskId={task.id}>
-                <span className="flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
+                <span className="flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
                   <Calendar className="h-3 w-3" />
                 </span>
               </TaskSchedulePopover>
@@ -850,7 +852,7 @@ export function TaskItem({
               <PriorityPopover task={task}>
                 <Flag
                   className={cn(
-                    "h-3 w-3 cursor-pointer hover:opacity-100",
+                    "h-3 w-3 cursor-pointer hover:bg-accent transition-colors hover:opacity-100",
                     getPriorityColor(task.priority),
                   )}
                 />
@@ -858,7 +860,7 @@ export function TaskItem({
             ) : (
               <PriorityPopover task={task}>
                 <span className="flex items-center opacity-70 hover:opacity-100">
-                  <Flag className="h-3 w-3 cursor-pointer text-muted-foreground hover:text-foreground" />
+                  <Flag className="h-3 w-3 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors" />
                 </span>
               </PriorityPopover>
             )}
@@ -875,7 +877,7 @@ export function TaskItem({
                   >
                     <span
                       key={label.id}
-                      className="px-1.5 py-0.5 rounded text-xs flex items-center gap-1 hover:opacity-100"
+                      className="px-1.5 py-0.5 rounded text-xs flex items-center gap-1 hover:bg-accent transition-colors hover:opacity-100 cursor-pointer"
                       style={{
                         backgroundColor: label.color,
                         color: getContrastColor(label.color),
@@ -895,7 +897,7 @@ export function TaskItem({
                   >
                     <Badge
                       variant="outline"
-                      className="text-xs px-1.5 py-0.5 cursor-pointer hover:opacity-100"
+                      className="text-xs px-1.5 py-0.5 cursor-pointer hover:bg-accent transition-colors hover:opacity-100"
                     >
                       +{taskLabels.length - 2}
                     </Badge>
@@ -909,13 +911,13 @@ export function TaskItem({
                 onRemoveLabel={handleRemoveLabel}
                 className="flex items-center"
               >
-                <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
+                <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
                   <Tag className="h-3 w-3" />
                 </span>
               </LabelManagementPopover>
             )}
             {isPro() && (
-              <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
+              <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
                 <AssigneeManagementPopover task={task}>
                   <span className="flex items-center gap-1">
                     <Users className="h-3 w-3" />
@@ -933,14 +935,14 @@ export function TaskItem({
             {/* Subtasks - show if present or on hover */}
             {task.subtasks.length > 0 ? (
               <SubtaskPopover task={task}>
-                <span className="flex items-center gap-1 cursor-pointer hover:opacity-100 text-foreground">
+                <span className="flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors hover:opacity-100 text-foreground">
                   <CheckSquare className="h-3 w-3" />
                   {task.subtasks.filter((s: Subtask) => s.completed).length}/{task.subtasks.length}
                 </span>
               </SubtaskPopover>
             ) : (
               <SubtaskPopover task={task}>
-                <span className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
+                <span className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
                   <CheckSquare className="h-3 w-3" />
                 </span>
               </SubtaskPopover>
@@ -952,7 +954,7 @@ export function TaskItem({
                 task={task}
                 onAddComment={(content) => addComment({ taskId: task.id, content })}
               >
-                <span className="flex items-center gap-1 cursor-pointer hover:opacity-100 text-foreground">
+                <span className="flex items-center gap-1 cursor-pointer hover:opacity-100 text-foreground hover:bg-accent transition-colors">
                   <MessageSquare className="h-3 w-3" />
                   {task.comments.length}
                 </span>
@@ -962,7 +964,7 @@ export function TaskItem({
                 task={task}
                 onAddComment={(content) => addComment({ taskId: task.id, content })}
               >
-                <span className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
+                <span className="flex items-center cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
                   <MessageSquare className="h-3 w-3" />
                 </span>
               </CommentManagementPopover>
@@ -1206,7 +1208,10 @@ export function TaskItem({
                     recurring={task.recurring}
                     completed={task.completed}
                     variant="default"
-                    className={cn("cursor-pointer hover:opacity-100", METADATA_COLUMN_WIDTH)}
+                    className={cn(
+                      "cursor-pointer hover:bg-accent transition-colors hover:opacity-100",
+                      METADATA_COLUMN_WIDTH,
+                    )}
                   />
                 </TaskSchedulePopover>,
               )
@@ -1216,7 +1221,7 @@ export function TaskItem({
                 <TaskSchedulePopover key="due-date" taskId={task.id}>
                   <span
                     className={cn(
-                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
+                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
                     )}
                   >
@@ -1235,7 +1240,7 @@ export function TaskItem({
                 <PriorityPopover key="priority" task={task}>
                   <span
                     className={cn(
-                      "flex items-center gap-1 cursor-pointer hover:opacity-100",
+                      "flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
                       getPriorityTextColor(task.priority),
                     )}
@@ -1250,7 +1255,7 @@ export function TaskItem({
                 <PriorityPopover key="priority-hover" task={task}>
                   <span
                     className={cn(
-                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
+                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
                     )}
                   >
@@ -1270,7 +1275,7 @@ export function TaskItem({
                 {task.subtasks.length > 0 ? (
                   <span
                     className={cn(
-                      "flex items-center gap-1 cursor-pointer hover:opacity-100 text-foreground",
+                      "flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors hover:opacity-100 text-foreground",
                       METADATA_COLUMN_WIDTH,
                     )}
                   >
@@ -1280,7 +1285,7 @@ export function TaskItem({
                 ) : (
                   <span
                     className={cn(
-                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground whitespace-nowrap opacity-70 hover:opacity-100",
+                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors whitespace-nowrap opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
                     )}
                   >
@@ -1307,7 +1312,7 @@ export function TaskItem({
                 >
                   <span
                     className={cn(
-                      "flex items-center gap-1 cursor-pointer hover:opacity-100 text-foreground",
+                      "flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors hover:opacity-100 text-foreground",
                       METADATA_COLUMN_WIDTH,
                     )}
                   >
@@ -1326,7 +1331,7 @@ export function TaskItem({
                 >
                   <span
                     className={cn(
-                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground whitespace-nowrap opacity-70 hover:opacity-100",
+                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors whitespace-nowrap opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
                     )}
                   >
@@ -1350,7 +1355,7 @@ export function TaskItem({
                   onAddLabel={handleAddLabel}
                   onRemoveLabel={handleRemoveLabel}
                 >
-                  <span className="flex items-center gap-1 cursor-pointer">
+                  <span className="flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors">
                     {taskLabels.map((label) => (
                       <span
                         key={label.id}
@@ -1376,7 +1381,7 @@ export function TaskItem({
                   onAddLabel={handleAddLabel}
                   onRemoveLabel={handleRemoveLabel}
                 >
-                  <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100">
+                  <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
                     <Tag className="h-3 w-3" />
                     <TruncatedMetadataText showOnHover className="text-xs">
                       {t("actions.addLabel", "Add label")}
@@ -1393,7 +1398,7 @@ export function TaskItem({
                   <ProjectPopover key="project" task={task}>
                     <span
                       className={cn(
-                        "flex items-center gap-1 cursor-pointer hover:opacity-100",
+                        "flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors hover:opacity-100",
                         METADATA_COLUMN_WIDTH,
                       )}
                     >
@@ -1411,7 +1416,7 @@ export function TaskItem({
                   <ProjectPopover key="project-hover" task={task}>
                     <span
                       className={cn(
-                        "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
+                        "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
                         METADATA_COLUMN_WIDTH,
                       )}
                     >
@@ -1440,7 +1445,7 @@ export function TaskItem({
               rightMetadataItems.push(
                 <span
                   className={cn(
-                    "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
+                    "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
                     METADATA_COLUMN_WIDTH,
                   )}
                 >

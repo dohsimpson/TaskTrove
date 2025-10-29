@@ -125,9 +125,9 @@ describe("ProjectGroupItem", () => {
       </SidebarProvider>,
     )
 
-    // Projects within groups should have ml-6 class (24px margin) on the div containing the project content
-    const projectDiv = screen.getByText("Project 1").parentElement
-    expect(projectDiv).toHaveClass("ml-6")
+    // Projects within groups should have ml-6 class (24px margin) on the button element
+    const projectButton = screen.getByText("Project 1").closest("button")
+    expect(projectButton).toHaveClass("ml-6")
   })
 
   it("renders context menu when visible", () => {

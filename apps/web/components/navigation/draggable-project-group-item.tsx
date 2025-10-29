@@ -9,7 +9,7 @@ import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { useSidebarDragDrop } from "@/hooks/use-sidebar-drag-drop"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
-import { DraggableProjectItem } from "./draggable-project-item"
+import { DraggableProjectItem } from "@/components/navigation/draggable-project-item"
 import { DraggableSidebarGroup, DropTargetSidebarGroup } from "./drag-drop"
 import { projectTaskCountsAtom } from "@tasktrove/atoms/ui/task-counts"
 import {

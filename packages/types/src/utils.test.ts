@@ -6,6 +6,7 @@ import {
   createSubtaskId,
   createCommentId,
   createUserId,
+  createLabelId,
 } from "./id";
 import { CreateTaskRequestSchema } from "./api-requests";
 
@@ -30,7 +31,7 @@ describe("taskToCreateTaskRequest", () => {
       estimation: 3600,
     });
 
-    const result = taskToCreateTaskRequest(task);
+    const result = taskToCreateTaskRequest({ task });
 
     // Should be a valid CreateTaskRequest
     expect(CreateTaskRequestSchema.safeParse(result).success).toBe(true);
@@ -68,7 +69,7 @@ describe("taskToCreateTaskRequest", () => {
       recurringMode: "dueDate",
     });
 
-    const result = taskToCreateTaskRequest(task);
+    const result = taskToCreateTaskRequest({ task });
 
     expect(CreateTaskRequestSchema.safeParse(result).success).toBe(true);
     expect(result).toEqual({
@@ -107,7 +108,7 @@ describe("taskToCreateTaskRequest", () => {
       recurringMode: "dueDate",
     });
 
-    const result = taskToCreateTaskRequest(task);
+    const result = taskToCreateTaskRequest({ task });
 
     expect(CreateTaskRequestSchema.safeParse(result).success).toBe(true);
     expect(result).toMatchObject({
@@ -145,8 +146,78 @@ describe("taskToCreateTaskRequest", () => {
     // Mutate the priority to an invalid value (bypassing TypeScript checks)
     Object.assign(task, { priority: 0 });
 
-    expect(() => taskToCreateTaskRequest(task)).toThrow(
+    expect(() => taskToCreateTaskRequest({ task })).toThrow(
       "Failed to convert Task to CreateTaskRequest",
     );
+  });
+
+  it("should copy trackingId when not omitted", () => {
+    const trackingId = createTaskId("550e8400-e29b-41d4-a716-446655440001");
+    const task = TaskSchema.parse({
+      id: createTaskId("550e8400-e29b-41d4-a716-446655440000"),
+      title: "Task with trackingId",
+      completed: false,
+      priority: 1,
+      labels: [],
+      subtasks: [],
+      comments: [],
+      createdAt: new Date("2024-01-10T10:00:00.000Z"),
+      recurringMode: "dueDate",
+      trackingId,
+    });
+
+    const result = taskToCreateTaskRequest({ task });
+
+    expect(result.trackingId).toBe(trackingId);
+  });
+
+  it("should omit trackingId when explicitly omitted", () => {
+    const trackingId = createTaskId("550e8400-e29b-41d4-a716-446655440001");
+    const task = TaskSchema.parse({
+      id: createTaskId("550e8400-e29b-41d4-a716-446655440000"),
+      title: "Task with trackingId",
+      completed: false,
+      priority: 1,
+      labels: [],
+      subtasks: [],
+      comments: [],
+      createdAt: new Date("2024-01-10T10:00:00.000Z"),
+      recurringMode: "dueDate",
+      trackingId,
+    });
+
+    const result = taskToCreateTaskRequest({ task, omit: ["trackingId"] });
+
+    expect(result.trackingId).toBeUndefined();
+  });
+
+  it("should omit multiple fields when specified", () => {
+    const task = TaskSchema.parse({
+      id: createTaskId("550e8400-e29b-41d4-a716-446655440000"),
+      title: "Task with multiple fields",
+      description: "Test description",
+      completed: false,
+      priority: 1,
+      labels: [createLabelId("550e8400-e29b-41d4-a716-446655440010")],
+      subtasks: [],
+      comments: [],
+      dueDate: new Date("2024-02-01"),
+      createdAt: new Date("2024-01-10T10:00:00.000Z"),
+      recurringMode: "dueDate",
+      trackingId: createTaskId("550e8400-e29b-41d4-a716-446655440001"),
+    });
+
+    const result = taskToCreateTaskRequest({
+      task,
+      omit: ["trackingId", "dueDate", "description"],
+    });
+
+    expect(result.trackingId).toBeUndefined();
+    expect(result.dueDate).toBeUndefined();
+    expect(result.description).toBeUndefined();
+    expect(result.title).toBe("Task with multiple fields");
+    expect(result.labels).toEqual([
+      createLabelId("550e8400-e29b-41d4-a716-446655440010"),
+    ]);
   });
 });

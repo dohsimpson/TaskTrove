@@ -167,6 +167,7 @@ export const taskCountsAtom = atom((get) => {
       today: get(taskCountForViewAtom("today")),
       upcoming: get(taskCountForViewAtom("upcoming")),
       calendar: get(taskCountForViewAtom("calendar")),
+      habits: get(taskCountForViewAtom("habits")),
       overdue: get(taskCountForViewAtom("today")), // overdue is shown in today view
       completed: completedTasks.length,
       all: get(taskCountForViewAtom("all")),
@@ -180,6 +181,7 @@ export const taskCountsAtom = atom((get) => {
       today: 0,
       upcoming: 0,
       calendar: 0,
+      habits: 0,
       overdue: 0,
       completed: 0,
       all: 0,

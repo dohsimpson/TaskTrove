@@ -222,6 +222,15 @@ export function QuickAddDialog() {
           updates.dueDate = today
         }
 
+        // If in habits view, set daily recurrence with auto-rollover mode and today's due date
+        if (routeContext.viewId === "habits") {
+          const today = new Date()
+          today.setHours(0, 0, 0, 0) // Set to start of day
+          updates.dueDate = today
+          updates.recurring = "RRULE:FREQ=DAILY"
+          updates.recurringMode = "autoRollover"
+        }
+
         const proUpdates = getProViewUpdates(routeContext, users, currentUserId)
         Object.assign(updates, proUpdates)
       }

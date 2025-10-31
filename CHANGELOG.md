@@ -1,5 +1,39 @@
 # tasktrove
 
+## 0.9.0
+
+### Features
+
+🎉 Feature - Add Habit view and auto rollover recurrence mode
+🎉 Feature - Add week time grid mode inside calendar view
+🎉 Feature - Use Inter for font family
+🎉 Feature - Add Halloween theme with pumpkin logo and spooky avatars.
+
+### Minor Changes
+
+🎉 Feature - Add enhanced task parsing with support for complex recurring patterns
+🎉 Feature - Add Escape key support to clear task selection.
+🎉 Feature - Add focus task button in side panel with route context awareness.
+🎉 Feature - Task side panel show settings is now global rather than per view.
+🎉 Feature - Add grip vertical button to task side panel for dragging.
+🎉 Feature - Migrate API routes to v1 versioning with improved authentication.
+🎉 Feature - Simplify task filtering to fix projectgroup switching issues.
+🎉 Feature - Make calendar header sticky when scrolling.
+🎉 Feature - Remove global focus ring and outline styling.
+
+### Patch Changes
+
+🐛 Bug - Clear recurring pattern from completed tasks.
+🐛 Bug - Prevent time picker overflow on small screens.
+🐛 Bug - Fix GroupDropIndicator in kanban not expanding fully.
+🐛 Bug - Prevent placeholder text from being editable in EditableDiv.
+🐛 Bug - Auto-populate due date when creating task in today view.
+🐛 Bug - Prevent scroll to top on subtasks.
+🐛 Bug - Wire up close button handlers in comment and subtask popovers.
+🐛 Bug - Focus Discard button in unsaved changes confirmation dialog.
+🐛 Bug - Remove font-medium from highlighted tokens to fix Inter font misalignment.
+🐛 Bug - Update i18n loading message to be more user-friendly.
+
 ## 0.8.0
 
 ### Features

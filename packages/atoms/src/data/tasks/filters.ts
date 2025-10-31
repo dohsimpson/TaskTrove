@@ -6,6 +6,7 @@
 import { atom } from "jotai";
 import { isToday, isPast, isFuture } from "date-fns";
 import type { Task } from "@tasktrove/types/core";
+import { getEffectiveDueDate } from "@tasktrove/utils";
 import type { GroupId } from "@tasktrove/types/id";
 import { LabelIdSchema, GroupIdSchema } from "@tasktrove/types/id";
 import { shouldTaskBeInInbox } from "@tasktrove/utils";
@@ -83,15 +84,16 @@ export const todayTasksAtom = namedAtom(
         get(appRefreshTriggerAtom); // Subscribe to refresh events
 
         return activeTasks.filter((task: Task) => {
-          if (!task.dueDate) return false;
+          const effectiveDueDate = getEffectiveDueDate(task);
+          if (!effectiveDueDate) return false;
 
           // Always include tasks due exactly today
-          if (isToday(task.dueDate)) {
+          if (isToday(effectiveDueDate)) {
             return true;
           }
 
           // Include overdue tasks (past but not today)
-          if (isPast(task.dueDate) && !isToday(task.dueDate)) {
+          if (isPast(effectiveDueDate) && !isToday(effectiveDueDate)) {
             return true;
           }
 
@@ -116,9 +118,10 @@ export const upcomingTasksAtom = namedAtom(
         const activeTasks = get(activeTasksAtom);
         get(appRefreshTriggerAtom); // Subscribe to refresh events
         return activeTasks.filter((task: Task) => {
-          if (!task.dueDate) return false;
+          const effectiveDueDate = getEffectiveDueDate(task);
+          if (!effectiveDueDate) return false;
           // Upcoming = future tasks that are not today (i.e. tomorrow onwards)
-          return isFuture(task.dueDate) && !isToday(task.dueDate);
+          return isFuture(effectiveDueDate) && !isToday(effectiveDueDate);
         });
       },
       "upcomingTasksAtom",
@@ -156,8 +159,9 @@ export const overdueTasksAtom = namedAtom(
       () => {
         const activeTasks = get(activeTasksAtom);
         return activeTasks.filter((task: Task) => {
-          if (!task.dueDate) return false;
-          return isPast(task.dueDate) && !isToday(task.dueDate);
+          const effectiveDueDate = getEffectiveDueDate(task);
+          if (!effectiveDueDate) return false;
+          return isPast(effectiveDueDate) && !isToday(effectiveDueDate);
         });
       },
       "overdueTasksAtom",
@@ -179,6 +183,28 @@ export const completedTasksAtom = namedAtom(
         return activeTasks.filter((task: Task) => task.completed);
       },
       "completedTasksAtom",
+      [],
+    ),
+  ),
+);
+
+/**
+ * Auto-rollover tasks (recurring tasks that never appear overdue)
+ * Filters active tasks with recurringMode: "autoRollover" - tasks that never appear overdue
+ * Perfect for tracking habits and routines
+ */
+export const autoRolloverTasksAtom = namedAtom(
+  "autoRolloverTasksAtom",
+  atom((get) =>
+    withErrorHandling(
+      () => {
+        const activeTasks = get(activeTasksAtom);
+        return activeTasks.filter(
+          (task: Task) =>
+            task.recurringMode === "autoRollover" && !task.completed,
+        );
+      },
+      "autoRolloverTasksAtom",
       [],
     ),
   ),
@@ -241,7 +267,7 @@ export const baseFilteredTasksAtom = namedAtom(
       // Switch on route type for clean, consistent filtering
       switch (routeContext.routeType) {
         case "standard": {
-          // Standard views: today, inbox, upcoming, completed, all
+          // Standard views: today, inbox, upcoming, completed, all, habits
           switch (routeContext.viewId) {
             case "today":
               return get(todayTasksAtom);
@@ -251,6 +277,8 @@ export const baseFilteredTasksAtom = namedAtom(
               return get(inboxTasksAtom);
             case "completed":
               return get(completedTasksAtom);
+            case "habits":
+              return get(autoRolloverTasksAtom);
             case "all":
               return activeTasks;
             default:

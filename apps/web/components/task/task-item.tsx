@@ -549,6 +549,7 @@ export function TaskItem({
                     dueDate={task.dueDate}
                     dueTime={task.dueTime}
                     recurring={task.recurring}
+                    recurringMode={task.recurringMode}
                     completed={task.completed}
                     variant="compact"
                     className="cursor-pointer hover:bg-accent transition-colors hover:opacity-100 text-xs flex-shrink-0"
@@ -827,6 +828,7 @@ export function TaskItem({
                   dueDate={task.dueDate}
                   dueTime={task.dueTime}
                   recurring={task.recurring}
+                  recurringMode={task.recurringMode}
                   completed={task.completed}
                   className="cursor-pointer hover:bg-accent transition-colors hover:opacity-100"
                 />
@@ -1201,6 +1203,7 @@ export function TaskItem({
                     dueDate={task.dueDate}
                     dueTime={task.dueTime}
                     recurring={task.recurring}
+                    recurringMode={task.recurringMode}
                     completed={task.completed}
                     variant="default"
                     className={cn(

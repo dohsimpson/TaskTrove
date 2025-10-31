@@ -135,7 +135,8 @@ const createSubtask = (taskTitle: string, subtaskIndex: number): Subtask => ({
 const createTask = (index: number, projectId: ProjectId, labelIds: LabelId[]): Task => {
   const title = generateTitle("Task", index)
   const completed = Math.random() > 0.6
-  const recurringMode: "dueDate" | "completedAt" = Math.random() > 0.5 ? "dueDate" : "completedAt"
+  const recurringMode: "dueDate" | "completedAt" | "autoRollover" =
+    Math.random() > 0.66 ? "dueDate" : Math.random() > 0.33 ? "completedAt" : "autoRollover"
   const subtasksCount = Math.floor(Math.random() * 4) + 1
 
   // Safely select a label or use empty array if no labels exist

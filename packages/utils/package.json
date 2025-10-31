@@ -56,6 +56,7 @@
     "date-fns": "latest",
     "slugify": "catalog:",
     "tailwind-merge": "catalog:",
+    "uuid": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -65,6 +66,7 @@
     "@testing-library/jest-dom": "catalog:",
     "@types/bcryptjs": "catalog:",
     "@types/node": "catalog:",
+    "@types/uuid": "catalog:",
     "@typescript/native-preview": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",

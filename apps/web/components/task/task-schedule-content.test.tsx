@@ -12,7 +12,7 @@ import { TaskScheduleContent } from "./task-schedule-content"
 import type { Task } from "@/lib/types"
 import { INBOX_PROJECT_ID } from "@/lib/types"
 import { TEST_TASK_ID_1 } from "@tasktrove/types/test-constants"
-import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
+import { calculateNextDueDate } from "@tasktrove/utils"
 import userEvent from "@testing-library/user-event"
 
 // Mock the shared hook
@@ -118,9 +118,18 @@ vi.mock("date-fns", () => ({
 }))
 
 // Mock the recurring task processor
-vi.mock("@/lib/utils/recurring-task-processor", () => ({
+vi.mock("@tasktrove/utils", () => ({
   calculateNextDueDate: vi.fn(() => new Date()),
   getRecurringReferenceDate: vi.fn((dueDate) => dueDate),
+  clearNullValues: vi.fn((obj) => {
+    const result: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(obj)) {
+      if (value !== null) {
+        result[key] = value
+      }
+    }
+    return result
+  }),
 }))
 
 // Mock the CommonRRules and related functions
@@ -2034,6 +2043,62 @@ describe("TaskScheduleContent", () => {
 
       // Test passes if calendar renders without throwing errors
       // The specific year validation is implicit in successful rendering
+    })
+  })
+
+  describe("Auto-Rollover Recurring Mode", () => {
+    it("should render auto-rollover option and allow selection", () => {
+      const taskWithRecurring = {
+        ...mockTask,
+        recurring: "RRULE:FREQ=DAILY",
+        recurringMode: "dueDate" as const,
+      }
+
+      renderWithTasks(
+        [taskWithRecurring],
+        <TaskScheduleContent
+          taskId={taskWithRecurring.id}
+          onClose={mockOnClose}
+          defaultTab="recurring"
+        />,
+      )
+
+      // Check that all three recurring mode options are rendered
+      expect(screen.getByRole("button", { name: "Due date" })).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: "Adaptive" })).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: "Auto-rollover" })).toBeInTheDocument()
+
+      // Click on auto-rollover option
+      fireEvent.click(screen.getByRole("button", { name: "Auto-rollover" }))
+
+      // Verify update was called with autoRollover mode
+      expect(mockUpdateTasks).toHaveBeenCalledWith([
+        expect.objectContaining({
+          id: TEST_TASK_ID_1,
+          recurringMode: "autoRollover",
+        }),
+      ])
+    })
+
+    it("should show auto-rollover as selected when task has autoRollover mode", () => {
+      const taskWithAutoRollover = {
+        ...mockTask,
+        recurring: "RRULE:FREQ=DAILY",
+        recurringMode: "autoRollover" as const,
+      }
+
+      renderWithTasks(
+        [taskWithAutoRollover],
+        <TaskScheduleContent
+          taskId={taskWithAutoRollover.id}
+          onClose={mockOnClose}
+          defaultTab="recurring"
+        />,
+      )
+
+      // Auto-rollover button should be the selected one (has primary background)
+      const autoRolloverButton = screen.getByRole("button", { name: "Auto-rollover" })
+      expect(autoRolloverButton).toHaveClass("bg-primary")
     })
   })
 })

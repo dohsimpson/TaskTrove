@@ -32,10 +32,7 @@ import { format, addDays } from "date-fns"
 import type { CreateTaskRequest, Task, TaskId } from "@/lib/types"
 import { formatTaskDateTime } from "@/lib/utils/task-date-formatter"
 import { CommonRRules, buildRRule, RRuleFrequency, RRuleWeekday, parseRRule } from "@/lib/types"
-import {
-  calculateNextDueDate,
-  getRecurringReferenceDate,
-} from "@/lib/utils/recurring-task-processor"
+import { calculateNextDueDate, getRecurringReferenceDate } from "@tasktrove/utils"
 import { useAtomValue, useSetAtom } from "jotai"
 import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@tasktrove/atoms/ui/dialogs"
@@ -641,7 +638,7 @@ export function TaskScheduleContent({
       // Use same logic as task completion for determining reference date
       const referenceDate = getRecurringReferenceDate(
         task.dueDate,
-        task.recurringMode,
+        task.recurringMode || "dueDate",
         new Date(), // Use current date as the "action date" for skip
       )
       nextDueDate = calculateNextDueDate(task.recurring, referenceDate, false)
@@ -1774,13 +1771,36 @@ export function TaskScheduleContent({
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {t("recurring.calculateNextFrom", "Calculate next due date from")}
                   </label>
-                  <HelpPopover content="Choose how the next due date is calculated: 'Due date' always calculates from the original due date. 'Adaptive' adjusts to your actual timing - if you complete after the due date, it calculates from your completion date (i.e. today), but if you completed before due, it calculates based on your due date. Examples: Overdue weekly task, completed on Tuesday → scheduled to next Tuesday. Weekly task due this Friday, completed early on Tuesday → scheduled to next Friday." />
+                  <HelpPopover
+                    content={
+                      <div>
+                        <p className="font-medium text-foreground mb-2">
+                          Choose how the next due date is calculated:
+                        </p>
+                        <ul className="space-y-1 text-sm">
+                          <li>
+                            <strong>Due date</strong>: Always calculates from the original due date
+                          </li>
+                          <li>
+                            <strong>Adaptive</strong>: Adjusts to your actual timing - calculates
+                            from completion date if completed after due date, otherwise uses due
+                            date
+                          </li>
+                          <li>
+                            <strong>Auto-rollover</strong>: Automatically rolls overdue tasks
+                            forward so they never appear as overdue - perfect for habits and
+                            routines
+                          </li>
+                        </ul>
+                      </div>
+                    }
+                  />
                 </div>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-3 gap-1">
                   <Button
-                    variant={task.recurringMode !== "completedAt" ? "default" : "outline"}
+                    variant={task.recurringMode === "dueDate" ? "default" : "outline"}
                     size="sm"
-                    className="flex-1 text-xs"
+                    className="text-xs"
                     onClick={() => {
                       const updates: { recurringMode: "dueDate" } = { recurringMode: "dueDate" }
                       if (!taskId) {
@@ -1797,7 +1817,7 @@ export function TaskScheduleContent({
                   <Button
                     variant={task.recurringMode === "completedAt" ? "default" : "outline"}
                     size="sm"
-                    className="flex-1 text-xs"
+                    className="text-xs"
                     onClick={() => {
                       const updates: { recurringMode: "completedAt" } = {
                         recurringMode: "completedAt",
@@ -1812,6 +1832,25 @@ export function TaskScheduleContent({
                     }}
                   >
                     {t("recurring.adaptive", "Adaptive")}
+                  </Button>
+                  <Button
+                    variant={task.recurringMode === "autoRollover" ? "default" : "outline"}
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => {
+                      const updates: { recurringMode: "autoRollover" } = {
+                        recurringMode: "autoRollover",
+                      }
+                      if (!taskId) {
+                        updateQuickAddTask({ updateRequest: updates })
+                      } else if (Array.isArray(taskId)) {
+                        updateTasks(taskId.map((id) => ({ id, ...updates })))
+                      } else {
+                        updateTasks([{ id: taskId, ...updates }])
+                      }
+                    }}
+                  >
+                    {t("recurring.autoRollover", "Auto-rollover")}
                   </Button>
                 </div>
               </div>

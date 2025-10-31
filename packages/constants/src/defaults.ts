@@ -123,6 +123,7 @@ export const STANDARD_VIEW_IDS = [
   "upcoming",
   "completed",
   "calendar",
+  "habits",
   // "analytics",
   // "search",
   // "shortcuts",
@@ -172,6 +173,11 @@ export const STANDARD_VIEW_METADATA: Record<
     title: "Calendar",
     description: "View tasks in calendar format",
     iconType: "calendar" as const,
+  },
+  habits: {
+    title: "Habits",
+    description: "Track your habits and routines",
+    iconType: "habits" as const,
   },
   // analytics: {
   //   title: "Analytics",

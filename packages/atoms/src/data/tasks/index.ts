@@ -25,6 +25,7 @@ export {
   calendarTasksAtom,
   overdueTasksAtom,
   completedTasksAtom,
+  autoRolloverTasksAtom,
   projectGroupTasksAtom,
   baseFilteredTasksAtom,
 } from "./filters";

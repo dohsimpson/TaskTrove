@@ -11,8 +11,17 @@ vi.mock("@/lib/utils/safe-file-operations", () => ({
 }))
 
 // Mock the recurring task processor
-vi.mock("@/lib/utils/recurring-task-processor", () => ({
+vi.mock("@tasktrove/utils", () => ({
   processRecurringTaskCompletion: vi.fn(),
+  clearNullValues: vi.fn((obj: Record<string, unknown>) => {
+    const result: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(obj)) {
+      if (value !== null) {
+        result[key] = value
+      }
+    }
+    return result
+  }),
 }))
 
 // Mock UUID generation
@@ -21,7 +30,7 @@ vi.mock("uuid", () => ({
 }))
 
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
-import { processRecurringTaskCompletion } from "@/lib/utils/recurring-task-processor"
+import { processRecurringTaskCompletion } from "@tasktrove/utils"
 import { logBusinessEvent } from "@/lib/middleware/api-logger"
 import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types"
 

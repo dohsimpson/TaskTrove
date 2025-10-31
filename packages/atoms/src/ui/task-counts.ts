@@ -15,6 +15,7 @@ import {
   upcomingTasksAtom,
   inboxTasksAtom,
   calendarTasksAtom,
+  autoRolloverTasksAtom,
 } from "@tasktrove/atoms/data/tasks/filters";
 
 import { handleAtomError } from "@tasktrove/atoms/utils/atom-helpers";
@@ -41,6 +42,8 @@ function getBaseFilteredTasksForView(viewId: ViewId, get: Getter): Task[] {
       return get(calendarTasksAtom);
     } else if (viewId === "completed") {
       return get(completedTasksAtom);
+    } else if (viewId === "habits") {
+      return get(autoRolloverTasksAtom);
     } else {
       // Check if viewId is a project ID
       const projects = get(projectsAtom);

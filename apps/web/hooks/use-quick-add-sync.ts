@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react"
 import type { SetStateAction } from "jotai"
 import { isValidPriority } from "@/lib/types"
 import { convertTimeToHHMMSS, type ParsedTask } from "@/lib/utils/enhanced-natural-language-parser"
-import { calculateNextDueDate } from "@/lib/utils/recurring-task-processor"
+import { calculateNextDueDate } from "@tasktrove/utils"
 
 interface UseQuickAddSyncParams {
   parsed: ParsedTask | null

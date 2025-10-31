@@ -195,7 +195,11 @@ export const TaskSchema = z.object({
   /** Recurring pattern using RRULE format (RFC 5545) */
   recurring: z.string().optional().superRefine(validateRRule),
   /** Mode for calculating next due date in recurring tasks (defaults to "dueDate") */
-  recurringMode: z.union([z.literal("dueDate"), z.literal("completedAt")]),
+  recurringMode: z.union([
+    z.literal("dueDate"),
+    z.literal("completedAt"),
+    z.literal("autoRollover"),
+  ]),
   /** Task estimation in seconds */
   estimation: z.number().optional(),
   /** Tracking ID for linking tasks */

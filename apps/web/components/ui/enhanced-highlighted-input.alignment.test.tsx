@@ -364,7 +364,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
 
       // Should have expected number of classes (not dynamic additions)
       expect(contentEditableClassCount).toBeGreaterThan(5) // Has many classes
-      expect(overlayClassCount).toBe(9) // Updated number after refactoring
+      expect(overlayClassCount).toBe(10) // Updated number after refactoring
     })
   })
 

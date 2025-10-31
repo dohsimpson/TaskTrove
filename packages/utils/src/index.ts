@@ -46,6 +46,12 @@ export * from "./date-filter-utils";
 // Task date formatter utilities
 export * from "./task-date-formatter";
 
+// Effective due date utilities for auto-rollover recurring tasks
+export * from "./effective-due-date";
+
+// Recurring task processor utilities
+export * from "./recurring-task-processor";
+
 // Object manipulation utilities
 export * from "./object-utils";
 

@@ -39,9 +39,11 @@ import {
   DEFAULT_RECURRING_MODE,
 } from "@tasktrove/constants"
 import { getDefaultSectionId } from "@tasktrove/types/defaults"
-import { processRecurringTaskCompletion } from "@/lib/utils/recurring-task-processor"
+import { processRecurringTaskCompletion } from "@tasktrove/utils"
+import { getEffectiveDueDate } from "@tasktrove/utils"
 import { addTaskToSection, removeTaskFromSection } from "@tasktrove/atoms/data/tasks/ordering"
 import { clearNullValues } from "@tasktrove/utils"
+import { log } from "@/lib/utils/logger"
 
 /**
  * GET /api/v1/tasks
@@ -360,38 +362,81 @@ async function updateTasks(
 
   // Process recurring tasks - generate next instances for completed recurring tasks
   const recurringInstances: Task[] = []
-  console.log("Processing updates:", updates.length)
+  const completedTaskUpdates = new Map<string, Partial<Task>>()
+  log.debug({ module: "TasksAPI", count: updates.length }, "Processing updates")
   for (const update of updates) {
     const originalTask = taskMap.get(update.id)
     if (!originalTask) continue
-    console.log("Update:", update, "Original task:", originalTask.title)
+    log.debug(
+      {
+        module: "TasksAPI",
+        update,
+        originalTaskTitle: originalTask.title,
+      },
+      "Processing task update",
+    )
 
     // Check if this update completes a recurring task
     if (update.completed === true && originalTask.completed === false) {
-      console.log("Processing recurring task completion:", {
-        taskId: originalTask.id,
-        title: originalTask.title,
-        recurring: originalTask.recurring,
-        dueDate: originalTask.dueDate,
-        hasRecurring: !!originalTask.recurring,
-        hasDueDate: !!originalTask.dueDate,
-      })
+      log.debug(
+        {
+          module: "TasksAPI",
+          taskId: originalTask.id,
+          title: originalTask.title,
+          recurring: originalTask.recurring,
+          dueDate: originalTask.dueDate,
+          hasRecurring: !!originalTask.recurring,
+          hasDueDate: !!originalTask.dueDate,
+        },
+        "Processing recurring task completion",
+      )
 
       // Create completed task with current timestamp for recurring processing
       try {
         const completedTask = { ...originalTask, completed: true, completedAt: new Date() }
+
+        // For auto-rollover tasks, use the effective due date as the "real" due date
+        if (originalTask.recurringMode === "autoRollover") {
+          log.debug(
+            {
+              module: "TasksAPI",
+              taskId: originalTask.id,
+              originalDueDate: originalTask.dueDate?.toISOString(),
+              recurringMode: originalTask.recurringMode,
+              effectiveDueDate: getEffectiveDueDate(originalTask)?.toISOString(),
+            },
+            "Auto-rollover task completion",
+          )
+
+          const effectiveDueDate = getEffectiveDueDate(originalTask)
+          if (effectiveDueDate) {
+            log.debug(
+              {
+                module: "TasksAPI",
+                from: completedTask.dueDate?.toISOString(),
+                to: effectiveDueDate.toISOString(),
+              },
+              "Updating completed task due date",
+            )
+            completedTask.dueDate = effectiveDueDate
+            // Store the effective due date update to be applied later
+            completedTaskUpdates.set(originalTask.id, { dueDate: effectiveDueDate })
+          }
+        }
+
         const nextInstance = processRecurringTaskCompletion(completedTask)
 
-        console.log(
-          "Next instance result:",
+        log.debug(
           nextInstance
             ? {
-                id: nextInstance.id,
-                title: nextInstance.title,
-                dueDate: nextInstance.dueDate,
-                recurring: nextInstance.recurring,
+                module: "TasksAPI",
+                nextInstanceId: nextInstance.id,
+                nextInstanceTitle: nextInstance.title,
+                nextInstanceDueDate: nextInstance.dueDate,
+                nextInstanceRecurring: nextInstance.recurring,
               }
-            : "No instance created",
+            : { module: "TasksAPI", result: "No instance created" },
+          "Next instance result",
         )
 
         if (nextInstance) {
@@ -430,8 +475,17 @@ async function updateTasks(
     }
   }
 
+  // Apply effective due date updates to completed tasks
+  const finalUpdatedTasks = updatedTasks.map((task) => {
+    const effectiveUpdate = completedTaskUpdates.get(task.id)
+    if (effectiveUpdate) {
+      return { ...task, ...effectiveUpdate }
+    }
+    return task
+  })
+
   // Combine updated tasks with new recurring instances
-  const allTasks = [...updatedTasks, ...recurringInstances]
+  const allTasks = [...finalUpdatedTasks, ...recurringInstances]
 
   // Update the file data with all tasks
   const updatedFileData = {

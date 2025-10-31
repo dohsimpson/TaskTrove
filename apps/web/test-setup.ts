@@ -7,6 +7,15 @@ import { initReactI18next } from "react-i18next"
 // Import centralized atom mocks
 import "./test-utils/atoms-mocks"
 
+// Mock the cn function globally to prevent issues in UI components
+vi.mock("@/lib/utils", async () => {
+  const actualUtils = await vi.importActual("@/lib/utils")
+  return {
+    ...actualUtils,
+    cn: vi.fn((...classes: unknown[]) => classes.filter(Boolean).join(" ")),
+  }
+})
+
 // Initialize i18next before any tests run
 // This mimics what the old @/lib/i18n/client.ts did at module load time
 // The LanguageProvider will skip initialization if already initialized

@@ -36,5 +36,11 @@
       "dependsOn": ["transit"]
     }
   },
-  "globalPassThroughEnv": ["PORT", "NODE_ENV", "AUTH_SECRET", "DEBUG"]
+  "globalPassThroughEnv": [
+    "PORT",
+    "NODE_ENV",
+    "AUTH_SECRET",
+    "DEBUG",
+    "ENABLE_HALLOWEEN_THEME"
+  ]
 }

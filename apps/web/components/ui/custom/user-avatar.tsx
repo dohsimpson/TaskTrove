@@ -4,6 +4,7 @@ import { User } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getAvatarApiUrl } from "@tasktrove/utils"
 import { getConsistentColor } from "@tasktrove/utils/color-utils"
+import { useHalloween } from "@/app/contexts/halloween-context"
 
 interface UserAvatarProps {
   username?: string
@@ -52,8 +53,29 @@ const iconSizes = {
 } as const
 
 /**
+ * Get spooky emoji for Halloween theme
+ */
+function getSpookyEmoji(): string {
+  const spookyEmojis: readonly string[] = [
+    "👻",
+    "🎃",
+    "🦇",
+    "🕷️",
+    "🕸️",
+    "💀",
+    "🧛",
+    "🧟",
+    "🦴",
+    "⚰️",
+  ]
+  const randomIndex = Math.floor(Math.random() * spookyEmojis.length)
+  return spookyEmojis[randomIndex] || "👻"
+}
+
+/**
  * User avatar component with automatic fallback to initials or icon
  * Supports avatar images, initials with consistent colors, custom icons, and icon fallback
+ * Shows spooky emoji during Halloween theme when no custom avatar is set
  */
 export function UserAvatar({
   username,
@@ -64,15 +86,31 @@ export function UserAvatar({
   icon,
   iconBackgroundColor,
 }: UserAvatarProps) {
+  const { isHalloweenEnabled } = useHalloween()
+
   const avatarUrl = avatar ? getAvatarApiUrl(avatar) : undefined
   const backgroundColor = iconBackgroundColor ?? getConsistentColor(username)
   const initials = getUserInitials(username)
 
+  // 🎃 Show spooky emoji during Halloween when no custom avatar is set
+  const showSpookyEmoji = isHalloweenEnabled && !avatar
+
   return (
     <Avatar className={`${sizeClasses[size]} ${className || ""}`}>
       {avatarUrl && <AvatarImage src={avatarUrl} alt={username} />}
-      <AvatarFallback className="rounded-full text-white font-semibold" style={{ backgroundColor }}>
-        {icon ? icon : showInitials ? initials : <User className={iconSizes[size]} />}
+      <AvatarFallback
+        className="rounded-full text-white font-semibold"
+        style={showInitials && !showSpookyEmoji && !icon ? { backgroundColor } : undefined}
+      >
+        {showSpookyEmoji ? (
+          <span className="text-lg">{getSpookyEmoji()}</span>
+        ) : icon ? (
+          icon
+        ) : showInitials ? (
+          initials
+        ) : (
+          <User className={iconSizes[size]} />
+        )}
       </AvatarFallback>
     </Avatar>
   )

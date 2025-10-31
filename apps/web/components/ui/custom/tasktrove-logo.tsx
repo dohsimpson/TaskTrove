@@ -1,6 +1,7 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 import { FlickerText } from "./flicker-text"
+import { useHalloween } from "@/app/contexts/halloween-context"
 
 interface TaskTroveLogoProps {
   className?: string
@@ -33,6 +34,11 @@ export const getLogoUnderlineStyle = () =>
   )
 
 export function TaskTroveLogo({ className, size = "md", badge }: TaskTroveLogoProps) {
+  const { isHalloweenEnabled } = useHalloween()
+
+  // 🎃 Replace "O" with pumpkin emoji when Halloween theme is enabled
+  const displayText = isHalloweenEnabled ? "TaskTr🎃ve" : "TaskTrove"
+
   return (
     <h1
       className={cn(
@@ -42,7 +48,7 @@ export function TaskTroveLogo({ className, size = "md", badge }: TaskTroveLogoPr
       )}
     >
       <FlickerText className={cn(getLogoFontStyle(), getLogoUnderlineStyle())}>
-        TaskTrove
+        {displayText}
       </FlickerText>
       {badge}
     </h1>

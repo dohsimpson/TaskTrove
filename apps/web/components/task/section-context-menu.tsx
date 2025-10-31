@@ -12,6 +12,7 @@ import {
 import { isValidProjectId } from "@/lib/utils/routing"
 import type { Project, ProjectSection, GroupId } from "@/lib/types"
 import { getDefaultSectionId } from "@tasktrove/types/defaults"
+import { FALLBACK_COLOR } from "@tasktrove/constants"
 
 interface SectionContextMenuProps {
   sectionId: GroupId
@@ -106,7 +107,7 @@ export function SectionContextMenu({
       id={sectionId}
       entityType="section"
       entityName={section.name}
-      entityColor={section.color || "#808080"}
+      entityColor={section.color || FALLBACK_COLOR}
       isVisible={isVisible}
       showDeleteOption={showDeleteOption}
       showSetAsDefaultOption={showSetAsDefaultOption}

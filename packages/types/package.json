@@ -54,7 +54,6 @@
     },
     "./data-file.base": "./src/data-file.ts",
     "./analytics": "./src/analytics.ts",
-    "./team": "./src/team.ts",
     "./notifications": "./src/notifications.ts",
     "./voice-commands": "./src/voice-commands.ts",
     "./api-errors": "./src/api-errors.ts",

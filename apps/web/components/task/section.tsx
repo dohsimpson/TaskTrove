@@ -14,6 +14,7 @@ import { applyViewStateFilters } from "@tasktrove/atoms/utils/view-filters"
 import { sortTasksByViewState } from "@tasktrove/atoms/utils/view-sorting"
 import type { ProjectId, GroupId, Task, TaskId, Project } from "@/lib/types"
 import { createTaskId } from "@/lib/types"
+import { FALLBACK_COLOR } from "@tasktrove/constants"
 import { EditableSectionHeader } from "./editable-section-header"
 import { getDefaultSectionId } from "@tasktrove/types/defaults"
 import { VirtualizedTaskList } from "./virtualized-task-list"
@@ -308,7 +309,7 @@ export function Section({
         projectId,
         sectionId,
         newSectionName: trimmedName,
-        newSectionColor: section.color || "#808080",
+        newSectionColor: section.color || FALLBACK_COLOR,
       })
     }
     stopEditingSection()
@@ -332,7 +333,7 @@ export function Section({
     <EditableSectionHeader
       sectionId={sectionId}
       sectionName={section.name}
-      sectionColor={section.color || "#808080"}
+      sectionColor={section.color || FALLBACK_COLOR}
       taskCount={tasks.length}
       isDefaultSection={isDefaultSection}
       onSaveEdit={handleSaveEdit}

@@ -240,15 +240,3 @@ export function isValidViewMode(
 export function isValidSortDirection(value: unknown): value is "asc" | "desc" {
   return typeof value === "string" && ["asc", "desc"].includes(value);
 }
-
-/**
- * Type guard to check if a value is a valid team role
- */
-export function isValidTeamRole(
-  value: unknown,
-): value is "owner" | "admin" | "member" | "viewer" {
-  return (
-    typeof value === "string" &&
-    ["owner", "admin", "member", "viewer"].includes(value)
-  );
-}

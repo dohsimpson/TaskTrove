@@ -6,6 +6,11 @@ import { TEST_COMMENT_ID_1, TEST_SUBTASK_ID_1 } from "@tasktrove/types/test-cons
 import { createTaskId, createUserId } from "@/lib/types"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 
+// Mock keyboard shortcuts hook
+vi.mock("@/hooks/use-keyboard-shortcuts", () => ({
+  useKeyboardShortcuts: vi.fn(),
+}))
+
 // Mock state
 let mockSelectedTaskIds: string[]
 let mockAllTasks: Task[]
@@ -123,6 +128,55 @@ describe("SelectionToolbar", () => {
     fireEvent.click(cancelButton)
 
     expect(mockClearSelection).toHaveBeenCalledOnce()
+  })
+
+  it("registers Escape key handler to clear selection", async () => {
+    const { useKeyboardShortcuts } = await import("@/hooks/use-keyboard-shortcuts")
+    const mockHook = vi.mocked(useKeyboardShortcuts)
+
+    render(<SelectionToolbar />)
+
+    // Verify the hook was called with correct parameters
+    expect(mockHook).toHaveBeenCalledWith(
+      expect.objectContaining({
+        Escape: expect.any(Function),
+      }),
+      expect.objectContaining({
+        componentId: "selection-toolbar",
+        priority: 30,
+        excludeDialogs: true,
+        enabled: true,
+      }),
+    )
+
+    // Test the Escape handler function
+    const escapeHandler = mockHook.mock.calls[0]?.[0]?.Escape
+    expect(escapeHandler).toBeDefined()
+
+    // Call the Escape handler with a mock keyboard event
+    const mockEvent = new KeyboardEvent("keydown", { key: "Escape" })
+    escapeHandler?.(mockEvent)
+
+    // Verify clearSelection was called
+    expect(mockClearSelection).toHaveBeenCalledOnce()
+  })
+
+  it("disables keyboard handler when no tasks are selected", async () => {
+    const { useKeyboardShortcuts } = await import("@/hooks/use-keyboard-shortcuts")
+    const mockHook = vi.mocked(useKeyboardShortcuts)
+    mockSelectedTaskIds = []
+
+    render(<SelectionToolbar />)
+
+    // Hook should not be called with enabled: true when no selection
+    // The component returns null early, so hook might not be called at all
+    // or called with enabled: false
+    const calls = mockHook.mock.calls
+    if (calls.length > 0) {
+      expect(calls[0]?.[1]).toMatchObject({
+        enabled: false,
+      })
+    }
   })
 
   describe("Bulk operations", () => {

@@ -173,12 +173,21 @@ vi.mock("@tasktrove/atoms/ui/selection", () => ({
   selectedTaskIdAtom: createMockAtom("selectedTaskIdAtom"),
   selectedTasksAtom: createMockAtom("selectedTasksAtom"),
   selectedTaskAtom: createMockAtom("selectedTaskAtom"),
+  selectedTaskRouteContextAtom: createMockAtom("selectedTaskRouteContextAtom"),
   setSelectedTaskIdAtom: createMockAtom("setSelectedTaskIdAtom"),
   lastSelectedTaskAtom: createMockAtom("lastSelectedTaskAtom"),
   selectRangeAtom: createMockAtom("selectRangeAtom"),
   toggleTaskSelectionAtom: createMockAtom("toggleTaskSelectionAtom"),
   clearSelectedTasksAtom: createMockAtom("clearSelectedTasksAtom"),
   multiSelectDraggingAtom: createMockAtom("multiSelectDraggingAtom"),
+}))
+
+/**
+ * Mock @tasktrove/atoms/ui/scroll-to-task
+ */
+vi.mock("@tasktrove/atoms/ui/scroll-to-task", () => ({
+  scrollToTaskAtom: createMockAtom("scrollToTaskAtom"),
+  scrollToTaskActionAtom: createMockAtom("scrollToTaskActionAtom"),
 }))
 
 /**

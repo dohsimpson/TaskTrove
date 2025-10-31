@@ -337,6 +337,113 @@ export const COLOR_OPTIONS = [
 ] as const;
 
 // =============================================================================
+// SEMANTIC COLOR CONSTANTS - TIER 2
+// =============================================================================
+
+/**
+ * Semantic color constants that reference the core palette (DEFAULT_COLOR_PALETTE).
+ * This ensures single source of truth and makes global color changes easier.
+ *
+ * Architecture:
+ * - TIER 1: DEFAULT_COLOR_PALETTE (core) - foundational 10 colors
+ * - TIER 2: Semantic constants below - reference Tier 1 by index
+ * - TIER 3: GRAY_COLORS - neutral colors
+ * - TIER 4: IMPORT_PRIORITY_COLORS - external system mapping
+ * - TIER 5: THEME_COLORS - brand/PWA specific
+ */
+
+// Index mapping for reference:
+// [0] = "#ef4444" (red)
+// [1] = "#f59e0b" (amber)
+// [2] = "#3b82f6" (blue)
+// [3] = "#8b5cf6" (violet)
+// [4] = "#10b981" (emerald)
+// [5] = "#f97316" (orange)
+// [6] = "#06b6d4" (cyan)
+// [7] = "#84cc16" (lime)
+// [8] = "#ec4899" (pink)
+// [9] = "#6366f1" (indigo)
+
+/** Chart colors for productivity metrics - references core palette */
+export const CHART_COLORS = {
+  /** Tasks completed metric (emerald) */
+  completed: DEFAULT_COLOR_PALETTE[4],
+  /** Tasks created metric (blue) */
+  created: DEFAULT_COLOR_PALETTE[2],
+  /** Focus time metric (amber) */
+  focusTime: DEFAULT_COLOR_PALETTE[1],
+  /** Productivity score metric (violet) */
+  productivityScore: DEFAULT_COLOR_PALETTE[3],
+  /** Grid line color for charts (gray-200 - unique) */
+  gridLine: "#e5e7eb",
+} as const;
+
+/** UI state and status indicator colors - references core palette */
+export const UI_STATE_COLORS = {
+  /** Error/alert state (pure red - unique for visibility) */
+  error: "#ff0000",
+  /** Warning state (amber) */
+  warning: DEFAULT_COLOR_PALETTE[1],
+  /** Success/completed state (emerald) */
+  success: DEFAULT_COLOR_PALETTE[4],
+  /** Info/informational state (blue) */
+  info: DEFAULT_COLOR_PALETTE[2],
+} as const;
+
+// =============================================================================
+// GRAY/NEUTRAL COLORS - TIER 3
+// =============================================================================
+
+/** Consolidated neutral/gray colors for consistent use */
+export const GRAY_COLORS = {
+  /** Default gray for fallbacks and neutral elements (gray-500) */
+  default: "#6b7280",
+  /** Light gray for subtle backgrounds and borders (gray-200) */
+  light: "#e5e7eb",
+} as const;
+
+// =============================================================================
+// IMPORT/PARSER COLORS - TIER 4
+// =============================================================================
+
+/**
+ * Priority color mapping for external task imports (Todoist, TickTick, etc.)
+ * Uses darker shade variants to distinguish from core palette and preserve
+ * source system semantics during import.
+ */
+export const IMPORT_PRIORITY_COLORS = {
+  /** High priority (red-600) - darker than core red for visual distinction */
+  1: "#dc2626",
+  /** Medium-high priority (orange-600) */
+  2: "#ea580c",
+  /** Medium priority (amber-600) */
+  3: "#d97706",
+  /** Low/no priority (gray-500) */
+  4: "#6b7280",
+} as const;
+
+// =============================================================================
+// THEME & BRAND COLORS - TIER 5
+// =============================================================================
+
+/** Application theme colors for PWA manifest and branding */
+export const THEME_COLORS = {
+  /** PWA manifest background color (dark) */
+  pwaBackground: "#1b1b1b",
+  /** PWA manifest theme color (dark) */
+  pwaTheme: "#1b1b1b",
+  /** Navigation user icon fill color (near-black) */
+  navIconFill: "#1f1f1f",
+} as const;
+
+// =============================================================================
+// FALLBACK COLORS
+// =============================================================================
+
+/** Fallback color for entities without a specific color (gray-500) */
+export const FALLBACK_COLOR = GRAY_COLORS.default;
+
+// =============================================================================
 // TEXT PLACEHOLDERS
 // =============================================================================
 

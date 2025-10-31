@@ -112,7 +112,7 @@ describe("useKeyboardShortcuts", () => {
       expect(mockSetActiveComponent).toHaveBeenCalledWith("test-component")
     })
 
-    it("does not register when enabled is false", () => {
+    it("registers handler but disables functionality when enabled is false", () => {
       const mockHandler = vi.fn()
       const shortcuts = { "Cmd+N": mockHandler }
 
@@ -122,25 +122,58 @@ describe("useKeyboardShortcuts", () => {
         }),
       )
 
-      expect(mockRegisterHandler).not.toHaveBeenCalled()
+      // Handler should still be registered but disabled internally
+      expect(mockRegisterHandler).toHaveBeenCalled()
+
+      const firstCall = mockRegisterHandler.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected mockRegisterHandler to have been called with handler")
+      }
+      const registeredHandler = firstCall[0]
+      const mockEvent = new KeyboardEvent("keydown", { key: "n", metaKey: true })
+      const mockContext = {}
+
+      // Handler should return false when disabled
+      const result = registeredHandler.handler(mockEvent, mockContext)
+      expect(result).toBe(false)
+      expect(mockHandler).not.toHaveBeenCalled()
     })
 
-    it("re-registers when shortcuts change", () => {
+    it("updates shortcuts without re-registering handler", () => {
       const mockHandler = vi.fn()
       let shortcuts: Record<string, (event: KeyboardEvent) => void> = { "Cmd+N": mockHandler }
 
-      const { rerender } = renderHook(({ shortcuts }) => useKeyboardShortcuts(shortcuts), {
+      const { rerender, unmount } = renderHook(({ shortcuts }) => useKeyboardShortcuts(shortcuts), {
         initialProps: { shortcuts },
       })
 
       expect(mockRegisterHandler).toHaveBeenCalledTimes(1)
 
-      // Change shortcuts
+      // Change shortcuts - should update handler function without re-registering
       shortcuts = { Escape: mockHandler }
       rerender({ shortcuts })
 
+      // Handler should still be registered only once
+      expect(mockRegisterHandler).toHaveBeenCalledTimes(1)
+
+      // Verify shortcuts were updated by checking the handler
+      const firstCall = mockRegisterHandler.mock.calls[0]
+      if (!firstCall || !firstCall[0]) {
+        throw new Error("Expected mockRegisterHandler to have been called with handler")
+      }
+      const registeredHandler = firstCall[0]
+
+      // Should now handle Escape instead of Cmd+N
+      const escapeEvent = new KeyboardEvent("keydown", { key: "Escape" })
+      const mockContext = {}
+      const result = registeredHandler.handler(escapeEvent, mockContext)
+
+      expect(result).toBe(true)
+      expect(mockHandler).toHaveBeenCalledWith(escapeEvent)
+
+      // Cleanup to verify unregistration
+      unmount()
       expect(mockUnregisterHandler).toHaveBeenCalledTimes(1)
-      expect(mockRegisterHandler).toHaveBeenCalledTimes(2)
     })
 
     it("handles event properly when shortcut matches", () => {

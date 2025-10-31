@@ -296,10 +296,19 @@ export const setViewOptionsAtom = atom(
   null,
   (get, set, updates: Partial<ViewState>) => {
     const currentView = get(currentViewAtom);
-    set(updateViewStateAtom, { viewId: currentView, updates });
 
-    // Sync with task panel atoms when showSidePanel is updated
+    // Handle showSidePanel globally instead of per-view
+    const filteredUpdates = { ...updates };
     if ("showSidePanel" in updates) {
+      // Update global showSidePanel
+      set(updateGlobalViewOptionsAtom, {
+        showSidePanel: updates.showSidePanel,
+      });
+
+      // Remove showSidePanel from per-view updates
+      delete filteredUpdates.showSidePanel;
+
+      // Sync with task panel atoms when showSidePanel is updated
       if (updates.showSidePanel) {
         // When enabling side panel, open task panel with first task if available
         const allTasks = get(tasksAtom);
@@ -313,6 +322,14 @@ export const setViewOptionsAtom = atom(
         set(showTaskPanelAtom, false);
         set(setSelectedTaskIdAtom, null);
       }
+    }
+
+    // Apply remaining updates to current view (if any)
+    if (Object.keys(filteredUpdates).length > 0) {
+      set(updateViewStateAtom, {
+        viewId: currentView,
+        updates: filteredUpdates,
+      });
     }
   },
 );
@@ -457,8 +474,14 @@ updateGlobalViewOptionsAtom.debugLabel = "updateGlobalViewOptionsAtom";
 export const currentViewStateAtom = atom<ViewState>((get) => {
   const currentView = get(currentViewAtom);
   const viewStates = get(viewStatesAtom);
+  const baseViewState = viewStates[currentView] ?? DEFAULT_VIEW_STATE;
 
-  return viewStates[currentView] ?? DEFAULT_VIEW_STATE;
+  // Patch showSidePanel from global atom
+  const globalShowSidePanel = get(globalShowSidePanelAtom);
+  return {
+    ...baseViewState,
+    showSidePanel: globalShowSidePanel,
+  };
 });
 currentViewStateAtom.debugLabel = "currentViewStateAtom";
 
@@ -624,6 +647,15 @@ export const sidePanelWidthAtom = atom<number>((get) => {
 sidePanelWidthAtom.debugLabel = "sidePanelWidthAtom";
 
 /**
+ * Global side panel visibility (applies across all views)
+ * Used to control side panel visibility globally
+ */
+export const globalShowSidePanelAtom = atom<boolean>((get) => {
+  return get(globalViewOptionsAtom).showSidePanel;
+});
+globalShowSidePanelAtom.debugLabel = "globalShowSidePanelAtom";
+
+/**
  * People panel owner section collapse state
  * Used for PeopleContent component owner section
  */
@@ -701,8 +733,7 @@ export const toggleTaskPanelWithViewStateAtom = atom(
   (get, set, task: Task) => {
     const isCurrentlyOpen = get(showTaskPanelAtom);
     const currentTaskId = get(selectedTaskIdAtom);
-    const currentViewState = get(currentViewStateAtom);
-    const currentView = get(currentViewAtom);
+    const globalShowSidePanel = get(globalShowSidePanelAtom);
 
     if (isCurrentlyOpen && currentTaskId === task.id) {
       // If panel is open with the same task, close it completely
@@ -712,11 +743,8 @@ export const toggleTaskPanelWithViewStateAtom = atom(
       set(setSelectedTaskIdAtom, task.id);
       set(showTaskPanelAtom, true);
       // Enable side panel view option if not already enabled
-      if (!currentViewState.showSidePanel) {
-        set(updateViewStateAtom, {
-          viewId: currentView,
-          updates: { showSidePanel: true },
-        });
+      if (!globalShowSidePanel) {
+        set(updateGlobalViewOptionsAtom, { showSidePanel: true });
       }
     }
   },
@@ -729,17 +757,12 @@ toggleTaskPanelWithViewStateAtom.debugLabel =
  * Used when entering selection mode or when panel needs to be fully closed
  */
 export const resetSidePanelStateAtom = atom(null, (get, set) => {
-  const currentView = get(currentViewAtom);
-
   // Close the panel completely
   set(showTaskPanelAtom, false);
   set(setSelectedTaskIdAtom, null);
 
   // Also disable side panel view option to ensure panel fully closes
-  set(updateViewStateAtom, {
-    viewId: currentView,
-    updates: { showSidePanel: false },
-  });
+  set(updateGlobalViewOptionsAtom, { showSidePanel: false });
 });
 resetSidePanelStateAtom.debugLabel = "resetSidePanelStateAtom";
 
@@ -789,6 +812,7 @@ export const viewAtoms = {
   compactView: compactViewAtom,
   collapsedSections: collapsedSectionsAtom,
   sidePanelWidth: sidePanelWidthAtom,
+  globalShowSidePanel: globalShowSidePanelAtom,
   peopleOwnerCollapsed: peopleOwnerCollapsedAtom,
   peopleAssigneesCollapsed: peopleAssigneesCollapsedAtom,
   // Filter state

@@ -3,6 +3,7 @@
 import React from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { v4 as uuidv4 } from "uuid"
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -25,6 +26,7 @@ import {
   XCircle,
   Plus,
   Folder,
+  GripVertical,
 } from "lucide-react"
 import { selectedTasksAtom, clearSelectedTasksAtom } from "@tasktrove/atoms/ui/selection"
 import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
@@ -74,6 +76,22 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
 
   // Selection actions
   const clearSelection = useSetAtom(clearSelectedTasksAtom)
+
+  // Register Escape key to clear selection - hook now handles unstable dependencies gracefully
+  useKeyboardShortcuts(
+    {
+      Escape: () => {
+        clearSelection()
+        return true
+      },
+    },
+    {
+      componentId: "selection-toolbar",
+      priority: 30, // High priority - selection clearing is important
+      excludeDialogs: true, // Don't interfere with open dialogs
+      enabled: hasSelection, // Only active when there are selected tasks
+    },
+  )
 
   // Don't render if no tasks are selected
   if (!hasSelection) {
@@ -199,11 +217,17 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
 
   return (
     <>
-      <div className={cn("flex items-center justify-between pb-3 mb-3 border-b", className)}>
+      <div
+        className={cn(
+          "sticky top-0 z-20 bg-background flex items-center justify-between py-3",
+          className,
+        )}
+      >
         <div className="flex items-center gap-3">
           {/* Draggable selection count - reuses DraggableTaskElement for multi-select drag, passing a placeholder ID */}
           <DraggableTaskElement taskId={createTaskId(DEFAULT_UUID)}>
-            <div className="flex items-center gap-2 px-2 py-1 rounded cursor-move hover:bg-muted/50 transition-colors border-1 bg-muted/5">
+            <div className="flex items-center gap-2 px-2 py-1 rounded cursor-grab hover:bg-muted/50 transition-colors border-1 bg-muted/5">
+              <GripVertical className="h-3 w-3 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">
                 {selectedTasks.length} selected
               </span>

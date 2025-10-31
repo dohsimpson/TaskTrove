@@ -13,6 +13,7 @@ import {
 } from "@tasktrove/atoms/core/groups"
 import { startEditingGroupAtom } from "@tasktrove/atoms/ui/navigation"
 import { createProjectId, type GroupId, type ProjectId } from "@/lib/types"
+import { DEFAULT_PROJECT_COLORS } from "@tasktrove/constants"
 
 interface ProjectGroupContextMenuProps {
   groupId: GroupId
@@ -83,7 +84,7 @@ export function ProjectGroupContextMenu({
       id={groupId}
       entityType="group"
       entityName={projectGroup.name}
-      entityColor={projectGroup.color || "#3b82f6"}
+      entityColor={projectGroup.color || DEFAULT_PROJECT_COLORS[0]}
       isVisible={isVisible}
       onEdit={handleEdit}
       onDelete={handleDelete}

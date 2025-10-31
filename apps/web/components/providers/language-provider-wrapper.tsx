@@ -1,6 +1,5 @@
 "use client"
 
-import { Suspense } from "react"
 import { LanguageProvider } from "@tasktrove/i18n"
 import { i18nConfig, type AppLanguage } from "@/lib/i18n/config"
 
@@ -22,19 +21,8 @@ export function LanguageProviderWrapper({
   initialLanguage,
 }: LanguageProviderWrapperProps) {
   return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">TaskTrove</h1>
-            <p className="text-muted-foreground">Almost ready...</p>
-          </div>
-        </div>
-      }
-    >
-      <LanguageProvider config={i18nConfig} initialLanguage={initialLanguage}>
-        {children}
-      </LanguageProvider>
-    </Suspense>
+    <LanguageProvider config={i18nConfig} initialLanguage={initialLanguage}>
+      {children}
+    </LanguageProvider>
   )
 }

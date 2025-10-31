@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
-import { COLOR_OPTIONS } from "@tasktrove/constants"
+import { ColorPicker } from "./color-picker"
 import { cn } from "@/lib/utils"
 
 interface ColorPickerFloatingProps {
@@ -24,6 +24,7 @@ interface ColorPickerFloatingProps {
  * A floating color picker component that can be opened programmatically.
  * Renders in a portal and positions itself relative to an anchor element.
  * Used when color picker needs to be triggered from context menus or other programmatic actions.
+ * This is a wrapper around the base ColorPicker component that adds floating/portal behavior.
  */
 export function ColorPickerFloating({
   selectedColor,
@@ -69,14 +70,19 @@ export function ColorPickerFloating({
     // Close on click outside
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target
-      if (
-        floatingRef.current &&
-        target &&
-        target instanceof Node &&
-        !floatingRef.current.contains(target)
-      ) {
-        onClose()
+      if (!target || !(target instanceof Node)) return
+
+      // Don't close if clicking inside the floating picker
+      if (floatingRef.current?.contains(target)) return
+
+      // Don't close if clicking inside a popover (custom color picker)
+      if (target instanceof Element) {
+        const isInsidePopover = target.closest('[role="dialog"]')
+        if (isInsidePopover) return
       }
+
+      // Close if clicking truly outside
+      onClose()
     }
 
     document.addEventListener("keydown", handleEscape)
@@ -105,26 +111,13 @@ export function ColorPickerFloating({
       )}
       style={{ position: "fixed" }}
     >
-      <div className="space-y-2">
-        <div className="text-sm font-medium">Select Color</div>
-        <div className="grid grid-cols-6 gap-2">
-          {COLOR_OPTIONS.map((color) => (
-            <button
-              key={color.value}
-              type="button"
-              className={`w-7 h-7 rounded-full border-2 transition-all hover:scale-110 ${
-                selectedColor === color.value
-                  ? "border-foreground ring-2 ring-offset-2 ring-foreground/20"
-                  : "border-border hover:border-foreground/50"
-              }`}
-              style={{ backgroundColor: color.value }}
-              onClick={() => handleColorSelect(color.value)}
-              title={color.name}
-              aria-label={`Select ${color.name} color`}
-            />
-          ))}
-        </div>
-      </div>
+      <ColorPicker
+        selectedColor={selectedColor}
+        onColorSelect={handleColorSelect}
+        size="sm"
+        label="Select Color"
+        layout="grid"
+      />
     </div>,
     document.body,
   )

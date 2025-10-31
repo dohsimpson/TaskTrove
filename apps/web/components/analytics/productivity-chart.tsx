@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { TimePeriod } from "@/lib/types"
+import { CHART_COLORS } from "@tasktrove/constants"
 import {
   LineChart,
   Line,
@@ -45,10 +46,10 @@ export function ProductivityChart({
   metric = "completed",
 }: ProductivityChartProps) {
   const metricConfig = {
-    completed: { color: "#10b981", label: "Tasks Completed" },
-    created: { color: "#3b82f6", label: "Tasks Created" },
-    focusTime: { color: "#f59e0b", label: "Focus Time (min)" },
-    productivityScore: { color: "#8b5cf6", label: "Productivity Score" },
+    completed: { color: CHART_COLORS.completed, label: "Tasks Completed" },
+    created: { color: CHART_COLORS.created, label: "Tasks Created" },
+    focusTime: { color: CHART_COLORS.focusTime, label: "Focus Time (min)" },
+    productivityScore: { color: CHART_COLORS.productivityScore, label: "Productivity Score" },
   }
 
   const config = metricConfig[metric]
@@ -107,7 +108,7 @@ export function ProductivityChart({
                   dataKey="date"
                   className="text-gray-600 dark:text-gray-400"
                   tick={{ fontSize: 12 }}
-                  tickLine={{ stroke: "#e5e7eb" }}
+                  tickLine={{ stroke: CHART_COLORS.gridLine }}
                 />
                 <YAxis className="text-gray-600 dark:text-gray-400" tick={{ fontSize: 12 }} />
                 <Tooltip content={<CustomTooltip />} />
@@ -130,7 +131,7 @@ export function ProductivityChart({
                   dataKey="date"
                   className="text-gray-600 dark:text-gray-400"
                   tick={{ fontSize: 12 }}
-                  tickLine={{ stroke: "#e5e7eb" }}
+                  tickLine={{ stroke: CHART_COLORS.gridLine }}
                 />
                 <YAxis className="text-gray-600 dark:text-gray-400" tick={{ fontSize: 12 }} />
                 <Tooltip content={<CustomTooltip />} />

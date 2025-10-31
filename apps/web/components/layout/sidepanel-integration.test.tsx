@@ -5,8 +5,12 @@ import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@/test-utils"
 import { Provider, createStore } from "jotai"
-import { currentViewAtom, currentViewStateAtom, viewStatesAtom } from "@tasktrove/atoms/ui/views"
-import { updateViewStateAtom } from "@tasktrove/atoms/ui/views"
+import {
+  currentViewAtom,
+  currentViewStateAtom,
+  globalViewOptionsAtom,
+  setViewOptionsAtom,
+} from "@tasktrove/atoms/ui/views"
 import type { ViewId } from "@/lib/types"
 import { mockUseToast, mockNextThemes } from "@/test-utils"
 
@@ -20,7 +24,7 @@ mockUseToast()
 const TestSidePanelComponent: React.FC<{ initialView?: ViewId }> = ({ initialView = "inbox" }) => {
   const [currentView, setCurrentView] = useAtom(currentViewAtom)
   const [currentViewState] = useAtom(currentViewStateAtom)
-  const updateViewState = useSetAtom(updateViewStateAtom)
+  const setViewOptions = useSetAtom(setViewOptionsAtom)
 
   // Set the initial view on mount
   React.useEffect(() => {
@@ -28,7 +32,7 @@ const TestSidePanelComponent: React.FC<{ initialView?: ViewId }> = ({ initialVie
   }, [initialView, setCurrentView])
 
   const handleShowSidePanelChange = (show: boolean) => {
-    updateViewState({ viewId: currentView, updates: { showSidePanel: show } })
+    setViewOptions({ showSidePanel: show })
   }
 
   return (
@@ -105,7 +109,7 @@ describe("SidePanel Integration", () => {
     })
   })
 
-  it("should maintain separate side panel state per view", async () => {
+  it("should maintain global side panel state across views", async () => {
     const store = createStore()
     render(
       <Provider store={store}>
@@ -130,18 +134,12 @@ describe("SidePanel Integration", () => {
       expect(screen.getByTestId("current-view")).toHaveTextContent("today")
     })
 
-    // Today view should have default state (false)
-    await waitFor(() => {
-      expect(screen.getByTestId("show-side-panel")).toHaveTextContent("false")
-    })
-
-    // Set today view side panel to true
-    fireEvent.click(screen.getByTestId("show-side-panel-true"))
+    // Today view should have the global state (true)
     await waitFor(() => {
       expect(screen.getByTestId("show-side-panel")).toHaveTextContent("true")
     })
 
-    // Switch back to inbox - should remember the true state
+    // Switch back to inbox - should reflect the global state change
     fireEvent.click(screen.getByTestId("switch-to-inbox"))
     await waitFor(() => {
       expect(screen.getByTestId("current-view")).toHaveTextContent("inbox")
@@ -151,46 +149,33 @@ describe("SidePanel Integration", () => {
     })
   })
 
-  it("should update currentViewStateAtom when side panel is toggled", async () => {
+  it("should update global showSidePanel when side panel is toggled", async () => {
     const store = createStore()
     // Initialize the store with a specific view
     store.set(currentViewAtom, "today")
-    // Initialize view states with the today view
-    store.set(viewStatesAtom, {
-      today: {
-        viewMode: "list" as const,
-        sortBy: "created",
-        sortDirection: "desc" as const,
-        showCompleted: false,
-        showOverdue: false,
-        searchQuery: "",
-        showSidePanel: false,
-        compactView: false,
-        collapsedSections: [],
-        activeFilters: { labels: null },
-      },
+    // Initialize global view options with default values
+    store.set(globalViewOptionsAtom, {
+      sidePanelWidth: 25,
+      showSidePanel: false,
+      peopleOwnerCollapsed: false,
+      peopleAssigneesCollapsed: false,
     })
 
     const TestComponent: React.FC = () => {
       const [currentView] = useAtom(currentViewAtom)
       const [currentViewState] = useAtom(currentViewStateAtom)
-      const [viewStates] = useAtom(viewStatesAtom)
-      const updateViewState = useSetAtom(updateViewStateAtom)
+      const [globalViewOptions] = useAtom(globalViewOptionsAtom)
+      const setViewOptions = useSetAtom(setViewOptionsAtom)
 
       const handleToggle = () => {
-        updateViewState({
-          viewId: currentView,
-          updates: { showSidePanel: !currentViewState.showSidePanel },
-        })
+        setViewOptions({ showSidePanel: !currentViewState.showSidePanel })
       }
 
       return (
         <div>
           <div data-testid="current-view">{currentView}</div>
           <div data-testid="current-side-panel">{String(currentViewState.showSidePanel)}</div>
-          <div data-testid="view-states-test">
-            {String(viewStates["today"]?.showSidePanel ?? false)}
-          </div>
+          <div data-testid="global-side-panel">{String(globalViewOptions.showSidePanel)}</div>
           <button data-testid="toggle-button" onClick={handleToggle}>
             Toggle
           </button>
@@ -207,14 +192,15 @@ describe("SidePanel Integration", () => {
     // Should start with today and false side panel
     expect(screen.getByTestId("current-view")).toHaveTextContent("today")
     expect(screen.getByTestId("current-side-panel")).toHaveTextContent("false")
+    expect(screen.getByTestId("global-side-panel")).toHaveTextContent("false")
 
-    // Toggle and check both currentViewState and viewStates are updated
+    // Toggle and check both currentViewState (patched) and globalViewOptions are updated
     fireEvent.click(screen.getByTestId("toggle-button"))
     await waitFor(() => {
       expect(screen.getByTestId("current-side-panel")).toHaveTextContent("true")
     })
     await waitFor(() => {
-      expect(screen.getByTestId("view-states-test")).toHaveTextContent("true")
+      expect(screen.getByTestId("global-side-panel")).toHaveTextContent("true")
     })
 
     // Toggle back
@@ -223,7 +209,7 @@ describe("SidePanel Integration", () => {
       expect(screen.getByTestId("current-side-panel")).toHaveTextContent("false")
     })
     await waitFor(() => {
-      expect(screen.getByTestId("view-states-test")).toHaveTextContent("false")
+      expect(screen.getByTestId("global-side-panel")).toHaveTextContent("false")
     })
   })
 })

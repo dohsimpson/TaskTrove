@@ -40,6 +40,7 @@ import {
   resetCopyTaskAtom,
 } from "@tasktrove/atoms/ui/dialogs"
 import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
+import { DEFAULT_COLOR_PALETTE } from "@tasktrove/constants"
 import { TaskSchedulePopover } from "@/components/task/task-schedule-popover"
 import { LabelManagementPopover } from "@/components/task/label-management-popover"
 import { ProjectPopover } from "@/components/task/project-popover"
@@ -363,19 +364,8 @@ export function QuickAddDialog() {
 
       let labelId: LabelId | undefined
       if (!existingLabel) {
-        const colors = [
-          "#ef4444",
-          "#f59e0b",
-          "#3b82f6",
-          "#8b5cf6",
-          "#10b981",
-          "#f97316",
-          "#06b6d4",
-          "#84cc16",
-          "#ec4899",
-          "#6366f1",
-        ]
-        const randomColor = colors[Math.floor(Math.random() * colors.length)]
+        const randomColor =
+          DEFAULT_COLOR_PALETTE[Math.floor(Math.random() * DEFAULT_COLOR_PALETTE.length)]
 
         // Wait for the real label ID from the server
         // Use addLabelAndWaitForRealId to disable optimistic updates and get the real ID immediately

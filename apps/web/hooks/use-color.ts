@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { DEFAULT_PROJECT_COLORS } from "@tasktrove/constants"
 
 /**
  * Custom hook to get the computed color from CSS variables
@@ -7,7 +8,7 @@ import { useEffect, useState } from "react"
  * to RGB color strings that can be used with charting libraries like Recharts.
  *
  * @param cssVariable - The CSS variable to resolve (e.g., "hsl(var(--primary))", "var(--accent)")
- * @param fallback - Fallback color if the variable cannot be resolved (default: "#3b82f6")
+ * @param fallback - Fallback color if the variable cannot be resolved (default: DEFAULT_PROJECT_COLORS[0])
  * @returns The computed RGB color string (e.g., "rgb(59, 130, 246)")
  *
  * @example
@@ -15,8 +16,8 @@ import { useEffect, useState } from "react"
  * const accentColor = useColor("var(--accent)", "#10b981");
  * <Line stroke={primaryColor} />
  */
-export function useColor(cssVariable: string, fallback = "#3b82f6"): string {
-  const [color, setColor] = useState(fallback)
+export function useColor(cssVariable: string, fallback = DEFAULT_PROJECT_COLORS[0]): string {
+  const [color, setColor] = useState<string>(fallback)
 
   useEffect(() => {
     // Create a temporary element to compute the actual color value
@@ -39,9 +40,9 @@ export function useColor(cssVariable: string, fallback = "#3b82f6"): string {
 
 /**
  * Convenience hook to get the primary color
- * @param fallback - Fallback color (default: "#3b82f6")
+ * @param fallback - Fallback color (default: DEFAULT_PROJECT_COLORS[0])
  * @returns The computed primary color
  */
-export function usePrimaryColor(fallback = "#3b82f6"): string {
+export function usePrimaryColor(fallback = DEFAULT_PROJECT_COLORS[0]): string {
   return useColor("hsl(var(--primary))", fallback)
 }

@@ -1,8 +1,10 @@
 import { atom } from "jotai";
 import { tasksAtom } from "@tasktrove/atoms/data/base/atoms";
 import { resetSidePanelStateAtom } from "@tasktrove/atoms/ui/views";
+import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation";
 import { type TaskId } from "@tasktrove/types/id";
 import { type Task } from "@tasktrove/types/core";
+import { type RouteContext } from "@tasktrove/atoms/ui/navigation";
 
 /**
  * Simplified Selection State Management Atoms
@@ -30,6 +32,7 @@ selectedTaskIdAtom.debugLabel = "selectedTaskIdAtom";
 /**
  * Helper atom to set selected task ID and clear bulk selection
  * Use this instead of directly setting selectedTaskIdAtom
+ * Also captures the current route context for potential navigation back
  */
 export const setSelectedTaskIdAtom = atom(
   null,
@@ -37,9 +40,16 @@ export const setSelectedTaskIdAtom = atom(
     // Set the selected task ID
     set(selectedTaskIdAtom, taskId);
 
-    // If setting a task (not null), clear bulk selection
+    // If setting a task (not null), capture route context and clear bulk selection
     if (taskId !== null) {
+      // Capture the current route context when task is selected
+      const routeContext = get(currentRouteContextAtom);
+      set(selectedTaskRouteContextAtom, routeContext);
+
       set(clearSelectedTasksAtom);
+    } else {
+      // Clear route context when task is deselected
+      set(selectedTaskRouteContextAtom, null);
     }
   },
 );
@@ -80,6 +90,13 @@ lastSelectedTaskAtom.debugLabel = "lastSelectedTaskAtom";
  */
 export const multiSelectDraggingAtom = atom<boolean>(false);
 multiSelectDraggingAtom.debugLabel = "multiSelectDraggingAtom";
+
+/**
+ * Route Context when task was selected - Stores the route context at the time of task selection
+ * This allows us to navigate back to the original route when needed (e.g., for focus functionality)
+ */
+export const selectedTaskRouteContextAtom = atom<RouteContext | null>(null);
+selectedTaskRouteContextAtom.debugLabel = "selectedTaskRouteContextAtom";
 
 // =============================================================================
 // SELECTION ACTION ATOMS
@@ -215,6 +232,7 @@ export const selectionAtoms = {
   selectedTask: selectedTaskAtom,
   selectedTasks: selectedTasksAtom,
   lastSelectedTask: lastSelectedTaskAtom,
+  selectedTaskRouteContext: selectedTaskRouteContextAtom,
   multiSelectDragging: multiSelectDraggingAtom,
   ...selectionActionAtoms,
 } as const;

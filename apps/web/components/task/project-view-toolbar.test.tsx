@@ -117,6 +117,7 @@ describe("ProjectViewToolbar", () => {
     mockJotai.useAtomValue.mockImplementation((atom) => {
       const label = String(atom?.debugLabel ?? "")
       if (label === "currentRouteContextAtom") return mockRouteContext
+      if (label === "selectedTasksAtom") return []
       return undefined
     })
   })

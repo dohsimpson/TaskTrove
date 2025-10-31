@@ -1,10 +1,18 @@
-/* eslint-disable react/prop-types */
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
 import { useTranslation } from "@tasktrove/i18n"
-import { X, Calendar, Flag, Folder, AlertTriangle, Users } from "lucide-react"
+import {
+  X,
+  Calendar,
+  Flag,
+  Folder,
+  AlertTriangle,
+  Users,
+  Crosshair,
+  GripVertical,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
@@ -33,7 +41,9 @@ import { TaskDebugBadge } from "@/components/debug"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
 import { updateTaskAtom, deleteTaskAtom, toggleTaskAtom } from "@tasktrove/atoms/core/tasks"
 import { projectsAtom } from "@tasktrove/atoms/data/base/atoms"
-import { selectedTaskAtom } from "@tasktrove/atoms/ui/selection"
+import { selectedTaskAtom, selectedTaskRouteContextAtom } from "@tasktrove/atoms/ui/selection"
+import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
+import { scrollToTaskActionAtom } from "@tasktrove/atoms/ui/scroll-to-task"
 import { addCommentAtom } from "@tasktrove/atoms/core/tasks"
 import { log } from "@/lib/utils/logger"
 import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
@@ -41,85 +51,104 @@ import { addLabelAndWaitForRealIdAtom } from "@tasktrove/atoms/core/labels"
 import { type LabelId, Task } from "@/lib/types"
 import { getDueDateTextColor, getPriorityTextColor } from "@/lib/color-utils"
 import { DEFAULT_COLOR_PALETTE } from "@tasktrove/constants"
+import { useRouter } from "next/navigation"
+import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
+import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview"
 
 // Constants
 const SIDE_PANEL_WIDTH = 320 // 320px = w-80 in Tailwind
 
-interface TaskSidePanelProps {
-  isOpen: boolean
-  onClose: () => void
-  variant?: "overlay" | "resizable"
+// Custom draggable component for side panel task dragging
+function SidePanelDragHandle({
+  taskId,
+  taskTitle,
+  children,
+}: {
+  taskId: string
+  taskTitle: string
+  children: React.ReactNode
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const element = ref.current
+    if (!element) return
+
+    return draggable({
+      element,
+      getInitialData: () => ({
+        type: "list-item",
+        id: taskId,
+        ids: [taskId],
+        index: 0,
+        rect: element.getBoundingClientRect(),
+      }),
+      onGenerateDragPreview: ({ nativeSetDragImage }) => {
+        setCustomNativeDragPreview({
+          nativeSetDragImage,
+          render: ({ container }) => {
+            // Create a custom task-like preview
+            const preview = document.createElement("div")
+            preview.className =
+              "bg-background border border-border rounded-lg shadow-lg p-3 flex items-center gap-2 min-w-[200px] max-w-[300px]"
+            preview.style.transform = "rotate(2deg)"
+
+            // Add grip icon using textContent for safety
+            const grip = document.createElement("div")
+            grip.textContent = "⋮⋮"
+            grip.className = "text-muted-foreground flex-shrink-0 text-xs"
+
+            // Add task title
+            const title = document.createElement("div")
+            title.textContent = taskTitle
+            title.className = "text-sm font-medium text-foreground truncate flex-1"
+
+            preview.appendChild(grip)
+            preview.appendChild(title)
+
+            container.appendChild(preview)
+          },
+        })
+      },
+    })
+  }, [taskId, taskTitle])
+
+  return <div ref={ref}>{children}</div>
 }
 
-export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSidePanelProps) {
+// Helper functions
+const isOverdue = (date: Date) => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const checkDate = new Date(date)
+  checkDate.setHours(0, 0, 0, 0)
+  return checkDate < today
+}
+
+// Shared task panel content component
+interface TaskPanelContentProps {
+  task: Task
+  className?: string
+  autoSave: (updates: Partial<Task>) => void
+  onAddComment: (content: string) => void
+  onAddLabel: (labelName?: string) => void
+  onRemoveLabel: (labelId: LabelId) => void
+  getTaskProject: () => { id: string; name: string; color: string } | null
+}
+
+function TaskPanelContent({
+  task,
+  className = "",
+  autoSave,
+  onAddComment,
+  onAddLabel,
+  onRemoveLabel,
+  getTaskProject,
+}: TaskPanelContentProps) {
   const isMobile = useIsMobile()
-  const [isAutoSaving, setIsAutoSaving] = useState(false)
   const { t } = useTranslation("task")
 
-  // Atom actions
-  const updateTask = useSetAtom(updateTaskAtom)
-  const toggleTask = useSetAtom(toggleTaskAtom)
-  const addComment = useSetAtom(addCommentAtom)
-  const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
-  const deleteTask = useSetAtom(deleteTaskAtom)
-
-  // Atom values
-  const task = useAtomValue(selectedTaskAtom)
-  const allLabels = useAtomValue(labelsAtom)
-  const allProjects = useAtomValue(projectsAtom)
-
-  // Context menu - always visible in side panel
-  const [actionsMenuOpen, setActionsMenuOpen] = useState(false)
-
-  // clean up states when side panel is closed
-  useEffect(() => {
-    if (!isOpen) {
-      setActionsMenuOpen(false)
-    }
-  }, [isOpen])
-
-  // Auto-save with debouncing
-  const debouncedSave = useDebouncedCallback((updates: Partial<Task>) => {
-    if (!task) return
-    log.debug({ module: "tasks", taskId: task.id, updates }, "Auto-saving task updates")
-    updateTask({ updateRequest: { id: task.id, ...updates } })
-    setIsAutoSaving(false)
-  }, 500)
-
-  const autoSave = useCallback(
-    (updates: Partial<Task>) => {
-      setIsAutoSaving(true)
-      debouncedSave(updates)
-    },
-    [debouncedSave],
-  )
-
-  // Helper functions
-
-  const isOverdue = (date: Date) => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const checkDate = new Date(date)
-    checkDate.setHours(0, 0, 0, 0)
-    return checkDate < today
-  }
-
-  // Get project information for this task
-  const getTaskProject = () => {
-    if (!task?.projectId || !allProjects.length) return null
-    return allProjects.find((project) => project.id === task.projectId) || null
-  }
-
-  // Task panel shortcuts are now handled by the unified keyboard system
-  // in main-layout-wrapper.tsx to ensure proper context management
-
-  // Shared task panel content component
-  interface TaskPanelContentProps {
-    task: Task
-    className?: string
-  }
-
-  const TaskPanelContent = ({ task, className = "" }: TaskPanelContentProps) => (
+  return (
     <div className={cn("space-y-4", className)}>
       {/* Debug Badge */}
       <TaskDebugBadge task={task} />
@@ -242,7 +271,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
         <h3 className="text-sm text-foreground font-bold">
           {t("sidePanel.subtasks.title", "Subtasks")}
         </h3>
-        <SubtaskContent task={task} mode="inline" />
+        <SubtaskContent task={task} mode="inline" scrollToBottomKey={1} />
       </div>
 
       {/* Tags/Labels Section */}
@@ -252,41 +281,8 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
         </h3>
         <LabelContent
           task={task}
-          onAddLabel={async (labelName) => {
-            const labelToAdd = labelName?.trim()
-            if (labelToAdd) {
-              const existingLabel = allLabels.find(
-                (label) => label.name.toLowerCase() === labelToAdd.toLowerCase(),
-              )
-
-              let labelId: LabelId | undefined
-              if (!existingLabel) {
-                const randomColor =
-                  DEFAULT_COLOR_PALETTE[Math.floor(Math.random() * DEFAULT_COLOR_PALETTE.length)]
-
-                // Wait for the real label ID from the server
-                labelId = await addLabelAndWaitForRealId({
-                  name: labelToAdd,
-                  slug: labelToAdd.toLowerCase().replace(/\s+/g, "-"),
-                  color: randomColor,
-                })
-              } else {
-                labelId = existingLabel.id
-              }
-
-              // Guard against undefined labelId
-              if (!labelId) return
-
-              if (!task.labels.includes(labelId)) {
-                const updatedLabels = [...task.labels, labelId]
-                autoSave({ labels: updatedLabels })
-              }
-            }
-          }}
-          onRemoveLabel={(labelIdToRemove) => {
-            const updatedLabels = task.labels.filter((labelId) => labelId !== labelIdToRemove)
-            autoSave({ labels: updatedLabels })
-          }}
+          onAddLabel={onAddLabel}
+          onRemoveLabel={onRemoveLabel}
           mode="inline"
         />
       </div>
@@ -296,11 +292,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
         <h3 className="text-sm text-foreground font-bold">
           {t("sidePanel.comments.title", "Comments")}
         </h3>
-        <CommentContent
-          task={task}
-          onAddComment={(content) => addComment({ taskId: task.id, content })}
-          mode="inline"
-        />
+        <CommentContent task={task} onAddComment={onAddComment} mode="inline" />
       </div>
 
       {/* Attachments feature removed */}
@@ -326,6 +318,127 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
       )}
     </div>
   )
+}
+
+interface TaskSidePanelProps {
+  isOpen: boolean
+  onClose: () => void
+  variant?: "overlay" | "resizable"
+}
+
+export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSidePanelProps) {
+  const isMobile = useIsMobile()
+  const [isAutoSaving, setIsAutoSaving] = useState(false)
+  const { t } = useTranslation("task")
+
+  // Atom actions
+  const updateTask = useSetAtom(updateTaskAtom)
+  const toggleTask = useSetAtom(toggleTaskAtom)
+  const addComment = useSetAtom(addCommentAtom)
+  const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
+  const deleteTask = useSetAtom(deleteTaskAtom)
+  const scrollToTask = useSetAtom(scrollToTaskActionAtom)
+
+  // Router and route context
+  const router = useRouter()
+  const selectedTaskRouteContext = useAtomValue(selectedTaskRouteContextAtom)
+  const currentRouteContext = useAtomValue(currentRouteContextAtom)
+
+  // Atom values
+  const task = useAtomValue(selectedTaskAtom)
+  const allLabels = useAtomValue(labelsAtom)
+  const allProjects = useAtomValue(projectsAtom)
+
+  // Context menu - always visible in side panel
+  const [actionsMenuOpen, setActionsMenuOpen] = useState(false)
+
+  // clean up states when side panel is closed
+  useEffect(() => {
+    if (!isOpen) {
+      setActionsMenuOpen(false)
+    }
+  }, [isOpen])
+
+  // Auto-save with debouncing
+  const debouncedSave = useDebouncedCallback((updates: Partial<Task>) => {
+    if (!task) return
+    log.debug({ module: "tasks", taskId: task.id, updates }, "Auto-saving task updates")
+    updateTask({ updateRequest: { id: task.id, ...updates } })
+    setIsAutoSaving(false)
+  }, 500)
+
+  const autoSave = useCallback(
+    (updates: Partial<Task>) => {
+      setIsAutoSaving(true)
+      debouncedSave(updates)
+    },
+    [debouncedSave],
+  )
+
+  // Get project information for this task
+  const getTaskProject = useCallback(() => {
+    if (!task?.projectId || !allProjects.length) return null
+    return allProjects.find((project) => project.id === task.projectId) || null
+  }, [task?.projectId, allProjects])
+
+  // Handle adding labels
+  const handleAddLabel = useCallback(
+    async (labelName?: string) => {
+      if (!task) return
+      const labelToAdd = labelName?.trim()
+      if (labelToAdd) {
+        const existingLabel = allLabels.find(
+          (label) => label.name.toLowerCase() === labelToAdd.toLowerCase(),
+        )
+
+        let labelId: LabelId | undefined
+        if (!existingLabel) {
+          const randomColor =
+            DEFAULT_COLOR_PALETTE[Math.floor(Math.random() * DEFAULT_COLOR_PALETTE.length)]
+
+          // Wait for the real label ID from the server
+          labelId = await addLabelAndWaitForRealId({
+            name: labelToAdd,
+            slug: labelToAdd.toLowerCase().replace(/\s+/g, "-"),
+            color: randomColor,
+          })
+        } else {
+          labelId = existingLabel.id
+        }
+
+        // Guard against undefined labelId
+        if (!labelId) return
+
+        if (!task.labels.includes(labelId)) {
+          const updatedLabels = [...task.labels, labelId]
+          autoSave({ labels: updatedLabels })
+        }
+      }
+    },
+    [task, allLabels, addLabelAndWaitForRealId, autoSave],
+  )
+
+  // Handle removing labels
+  const handleRemoveLabel = useCallback(
+    (labelIdToRemove: LabelId) => {
+      if (!task) return
+      const updatedLabels = task.labels.filter((labelId) => labelId !== labelIdToRemove)
+      autoSave({ labels: updatedLabels })
+    },
+    [task, autoSave],
+  )
+
+  // Handle adding comments
+  const handleAddComment = useCallback(
+    (content: string) => {
+      if (!task) return
+      addComment({ taskId: task.id, content })
+    },
+    [task, addComment],
+  )
+
+  // Task panel shortcuts are now handled by the unified keyboard system
+  // in main-layout-wrapper.tsx to ensure proper context management
 
   if (!isOpen || !task) return null
 
@@ -338,7 +451,18 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
             <DrawerTitle className="sr-only">
               {t("sidePanel.title", "Task Details: {{- title}}", { title: task.title })}
             </DrawerTitle>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              {/* Drag handle for mobile */}
+              <SidePanelDragHandle taskId={task.id} taskTitle={task.title}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 flex-shrink-0 cursor-grab hover:bg-muted/50"
+                  title="Drag task"
+                >
+                  <GripVertical className="h-4 w-4" />
+                </Button>
+              </SidePanelDragHandle>
               <TaskCheckbox
                 checked={task.completed}
                 onCheckedChange={() => toggleTask(task.id)}
@@ -356,25 +480,56 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
                 />
                 {/* Favorite feature removed */}
               </div>
-              <TaskActionsMenu
-                task={task}
-                isVisible={true}
-                onDeleteClick={() => deleteTask(task.id)}
-                isSubTask={false}
-                open={actionsMenuOpen}
-                onOpenChange={setActionsMenuOpen}
-              />
-              <DrawerClose asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-                  <X className="h-4 w-4" />
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    // Navigate back to original route if needed
+                    if (
+                      selectedTaskRouteContext &&
+                      selectedTaskRouteContext.pathname !== currentRouteContext.pathname
+                    ) {
+                      router.push(selectedTaskRouteContext.pathname)
+                      // Wait for route to load and virtual list to render
+                      setTimeout(() => scrollToTask(task.id), 300)
+                    } else {
+                      // Same route, scroll immediately
+                      scrollToTask(task.id)
+                    }
+                  }}
+                  className="h-8 w-8 flex-shrink-0"
+                  title="Focus on task in list"
+                >
+                  <Crosshair className="h-4 w-4" />
                 </Button>
-              </DrawerClose>
+                <TaskActionsMenu
+                  task={task}
+                  isVisible={true}
+                  onDeleteClick={() => deleteTask(task.id)}
+                  isSubTask={false}
+                  open={actionsMenuOpen}
+                  onOpenChange={setActionsMenuOpen}
+                />
+                <DrawerClose asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </DrawerClose>
+              </div>
             </div>
           </DrawerHeader>
 
           <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
             <div className="p-4">
-              <TaskPanelContent task={task} />
+              <TaskPanelContent
+                task={task}
+                autoSave={autoSave}
+                onAddComment={handleAddComment}
+                onAddLabel={handleAddLabel}
+                onRemoveLabel={handleRemoveLabel}
+                getTaskProject={getTaskProject}
+              />
             </div>
           </div>
 
@@ -405,8 +560,19 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
     >
       {/* Fixed Header */}
       <div className="flex-shrink-0 border-b border-border/50 bg-background/95 backdrop-blur-sm">
-        <div className="p-4">
-          <div className="flex items-center gap-3">
+        <div className="py-4 px-1">
+          <div className="flex items-center gap-1">
+            {/* Drag handle for desktop */}
+            <SidePanelDragHandle taskId={task.id} taskTitle={task.title}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 flex-shrink-0 cursor-grab hover:bg-muted/50"
+                title="Drag task"
+              >
+                <GripVertical className="h-4 w-4" />
+              </Button>
+            </SidePanelDragHandle>
             <TaskCheckbox
               checked={task.completed}
               onCheckedChange={() => toggleTask(task.id)}
@@ -424,25 +590,61 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
               />
               {/* Favorite feature removed */}
             </div>
-            <TaskActionsMenu
-              task={task}
-              isVisible={true}
-              onDeleteClick={() => deleteTask(task.id)}
-              isSubTask={false}
-              open={actionsMenuOpen}
-              onOpenChange={setActionsMenuOpen}
-            />
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 flex-shrink-0">
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  // Navigate back to original route if needed
+                  if (
+                    selectedTaskRouteContext &&
+                    selectedTaskRouteContext.pathname !== currentRouteContext.pathname
+                  ) {
+                    router.push(selectedTaskRouteContext.pathname)
+                    // Wait for route to load and virtual list to render
+                    setTimeout(() => scrollToTask(task.id), 300)
+                  } else {
+                    // Same route, scroll immediately
+                    scrollToTask(task.id)
+                  }
+                }}
+                className="h-8 w-8 flex-shrink-0"
+                title="Focus on task in list"
+              >
+                <Crosshair className="h-4 w-4" />
+              </Button>
+              <TaskActionsMenu
+                task={task}
+                isVisible={true}
+                onDeleteClick={() => deleteTask(task.id)}
+                isSubTask={false}
+                open={actionsMenuOpen}
+                onOpenChange={setActionsMenuOpen}
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="h-8 w-8 flex-shrink-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-        <div className="p-4 pb-6">
-          <TaskPanelContent task={task} />
+        <div className="p-3 pb-6">
+          <TaskPanelContent
+            task={task}
+            autoSave={autoSave}
+            onAddComment={handleAddComment}
+            onAddLabel={handleAddLabel}
+            onRemoveLabel={handleRemoveLabel}
+            getTaskProject={getTaskProject}
+          />
         </div>
       </div>
 

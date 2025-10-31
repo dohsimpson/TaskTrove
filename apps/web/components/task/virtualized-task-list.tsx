@@ -1,4 +1,5 @@
-import { useRef, useCallback } from "react"
+import { useRef, useCallback, useEffect } from "react"
+import { useAtomValue, useSetAtom } from "jotai"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { motion, AnimatePresence } from "motion/react"
 import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
@@ -7,6 +8,7 @@ import { TaskItem } from "./task-item"
 import { DropTargetElement } from "./project-sections-view-helper"
 import { DraggableTaskElement } from "./draggable-task-element"
 import { VirtualizationDebugBadge } from "@/components/debug/virtualization-debug-badge"
+import { scrollToTaskAtom } from "@tasktrove/atoms/ui/scroll-to-task"
 
 interface VirtualizedTaskListProps {
   tasks: Task[]
@@ -50,6 +52,10 @@ export function VirtualizedTaskList({
 }: VirtualizedTaskListProps) {
   const parentRef = useRef<HTMLDivElement>(null)
 
+  // Scroll-to-task functionality
+  const scrollToTaskId = useAtomValue(scrollToTaskAtom)
+  const setScrollToTaskId = useSetAtom(scrollToTaskAtom)
+
   // Check if we're in test environment
   const isTest = typeof process !== "undefined" && process.env.NODE_ENV === "test"
 
@@ -85,6 +91,42 @@ export function VirtualizedTaskList({
     estimateSize: () => 50,
     overscan: 5,
   })
+
+  // Scroll to task when requested
+  useEffect(() => {
+    if (!scrollToTaskId) return
+
+    const taskIndex = sortedTasks.findIndex((task) => task?.id === scrollToTaskId)
+    if (taskIndex === -1) {
+      console.error(
+        `Task with ID ${scrollToTaskId} not found in current view. Available tasks: ${sortedTasks.length}`,
+      )
+      setScrollToTaskId(null)
+      return
+    }
+
+    // Scroll to the task in virtual list
+    virtualizer.scrollToIndex(taskIndex, {
+      align: "center",
+      behavior: "smooth",
+    })
+
+    // Wait a bit for scroll to complete, then highlight
+    const timer = setTimeout(() => {
+      const taskElement = document.querySelector(`[data-task-id="${scrollToTaskId}"]`)
+      if (taskElement) {
+        // Add highlight effect
+        taskElement.classList.add("ring-2", "ring-primary", "animate-pulse")
+        setTimeout(() => {
+          taskElement.classList.remove("ring-2", "ring-primary", "animate-pulse")
+        }, 2000)
+      }
+      // Clear the scroll-to-task atom
+      setScrollToTaskId(null)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [scrollToTaskId, sortedTasks, virtualizer, setScrollToTaskId])
 
   // In test environment, render all items to make them available for queries
   const itemsToRender = isTest

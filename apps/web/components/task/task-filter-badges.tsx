@@ -9,6 +9,7 @@ import {
 } from "@tasktrove/atoms/ui/views"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { FALLBACK_COLOR } from "@tasktrove/constants"
 import { type Project, type Label, type ProjectId } from "@/lib/types"
 import { getPresetLabel, getCustomRangeLabel } from "@/lib/utils/date-filter-utils"
 import { useTranslation } from "@tasktrove/i18n"
@@ -105,12 +106,12 @@ export function TaskFilterBadges({ className }: TaskFilterBadgesProps) {
 
   const getProjectColor = (projectId: ProjectId) => {
     const project = allProjects.find((p: Project) => p.id === projectId)
-    return project?.color || "#6b7280"
+    return project?.color || FALLBACK_COLOR
   }
 
   const getLabelColor = (labelName: string) => {
     const label = allLabels.find((l: Label) => l.name === labelName)
-    return label?.color || "#6b7280"
+    return label?.color || FALLBACK_COLOR
   }
 
   return (

@@ -42,11 +42,6 @@ export const CommentIdSchema = z.uuid().brand("CommentId");
 export const UserIdSchema = z.uuid().brand("UserId");
 
 /**
- * Team ID - string type that must be a UUID
- */
-export const TeamIdSchema = z.uuid().brand("TeamId");
-
-/**
  * Voice Command ID - string type that must be a UUID
  */
 export const VoiceCommandIdSchema = z.uuid().brand("VoiceCommandId");
@@ -79,7 +74,6 @@ export type LabelId = z.infer<typeof LabelIdSchema>;
 export type SubtaskId = z.infer<typeof SubtaskIdSchema>;
 export type CommentId = z.infer<typeof CommentIdSchema>;
 export type UserId = z.infer<typeof UserIdSchema>;
-export type TeamId = z.infer<typeof TeamIdSchema>;
 export type VoiceCommandId = z.infer<typeof VoiceCommandIdSchema>;
 export type SectionId = z.infer<typeof SectionIdSchema>;
 export type GroupId = z.infer<typeof GroupIdSchema>;
@@ -101,7 +95,6 @@ export const createSubtaskId = (id: string): SubtaskId =>
 export const createCommentId = (id: string): CommentId =>
   CommentIdSchema.parse(id);
 export const createUserId = (id: string): UserId => UserIdSchema.parse(id);
-export const createTeamId = (id: string): TeamId => TeamIdSchema.parse(id);
 export const createVoiceCommandId = (id: string): VoiceCommandId =>
   VoiceCommandIdSchema.parse(id);
 export const createSectionId = (id: string): SectionId =>

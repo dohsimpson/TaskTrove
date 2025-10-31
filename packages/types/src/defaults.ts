@@ -140,6 +140,7 @@ export const DEFAULT_VIEW_STATE: ViewState = {
  */
 export const DEFAULT_GLOBAL_VIEW_OPTIONS: GlobalViewOptions = {
   sidePanelWidth: SIDE_PANEL_WIDTH_DEFAULT,
+  showSidePanel: DEFAULT_SHOW_SIDE_PANEL,
   peopleOwnerCollapsed: false,
   peopleAssigneesCollapsed: false,
 };

@@ -129,39 +129,33 @@ async function updateSettings(
     )
   }
 
-  // Merge partial settings with current settings
-  // Strategy: Explicitly handle known base fields, then merge in any additional
-  // fields from partialSettings (e.g., Pro's productivity settings)
+  // Merge partial settings with current settings using conditional spreading.
+  // This preserves all existing fields (including Pro variants like 'productivity')
+  // while deep-merging only the nested objects that were provided in the update.
   const updatedSettings: UserSettings = {
-    ...fileData.settings, // Start with existing to preserve unknown fields
-    ...partialSettings, // Apply partial updates (shallow merge for top-level keys)
-    // Then explicitly handle known base fields with deep merging
-    data: {
-      autoBackup: {
-        enabled:
-          partialSettings.data?.autoBackup?.enabled ?? fileData.settings.data.autoBackup.enabled,
-        backupTime:
-          partialSettings.data?.autoBackup?.backupTime ??
-          fileData.settings.data.autoBackup.backupTime,
-        maxBackups:
-          partialSettings.data?.autoBackup?.maxBackups ??
-          fileData.settings.data.autoBackup.maxBackups,
+    ...fileData.settings, // Preserve all existing fields
+    ...(partialSettings.data && {
+      data: {
+        ...fileData.settings.data,
+        ...partialSettings.data,
+        autoBackup: {
+          ...fileData.settings.data.autoBackup,
+          ...partialSettings.data.autoBackup,
+        },
       },
-    },
-    notifications: {
-      enabled: partialSettings.notifications?.enabled ?? fileData.settings.notifications.enabled,
-      requireInteraction:
-        partialSettings.notifications?.requireInteraction ??
-        fileData.settings.notifications.requireInteraction,
-    },
-    general: {
-      startView: partialSettings.general?.startView ?? fileData.settings.general.startView,
-      soundEnabled: partialSettings.general?.soundEnabled ?? fileData.settings.general.soundEnabled,
-      linkifyEnabled:
-        partialSettings.general?.linkifyEnabled ?? fileData.settings.general.linkifyEnabled,
-      popoverHoverOpen:
-        partialSettings.general?.popoverHoverOpen ?? fileData.settings.general.popoverHoverOpen,
-    },
+    }),
+    ...(partialSettings.notifications && {
+      notifications: {
+        ...fileData.settings.notifications,
+        ...partialSettings.notifications,
+      },
+    }),
+    ...(partialSettings.general && {
+      general: {
+        ...fileData.settings.general,
+        ...partialSettings.general,
+      },
+    }),
   }
 
   // Update the data file with new settings

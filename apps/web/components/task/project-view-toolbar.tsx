@@ -12,8 +12,10 @@ import {
   openSectionDialogAtom,
   currentRouteContextAtom,
 } from "@tasktrove/atoms/ui/navigation"
+import { selectedTasksAtom } from "@tasktrove/atoms/ui/selection"
 import { isValidProjectId } from "@/lib/utils/routing"
 import { createProjectId } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
 interface ProjectViewToolbarProps {
   className?: string
@@ -28,10 +30,14 @@ export function ProjectViewToolbar({ className }: ProjectViewToolbarProps) {
   const openQuickAddAction = useSetAtom(openQuickAddAtom)
   const openSectionDialog = useSetAtom(openSectionDialogAtom)
   const routeContext = useAtomValue(currentRouteContextAtom)
+  const selectedTaskIds = useAtomValue(selectedTasksAtom)
 
   // Check if we're in a project context to show Add Section button
   const isProjectContext = isValidProjectId(routeContext.viewId)
   const projectId = isProjectContext ? createProjectId(routeContext.viewId) : undefined
+
+  // Adjust sticky position based on whether SelectionToolbar is visible
+  const hasSelection = selectedTaskIds.length > 0
 
   const handleAddSection = () => {
     if (projectId) {
@@ -40,7 +46,13 @@ export function ProjectViewToolbar({ className }: ProjectViewToolbarProps) {
   }
 
   return (
-    <div className={className}>
+    <div
+      className={cn(
+        "sticky z-10 bg-background py-3",
+        hasSelection ? "top-14 pt-0" : "top-0",
+        className,
+      )}
+    >
       <div className="flex items-center gap-2">
         <TaskFilterControls />
         <TaskSearchInput />

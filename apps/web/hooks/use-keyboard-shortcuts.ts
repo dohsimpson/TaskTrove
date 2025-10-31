@@ -21,7 +21,11 @@ import {
   unregisterKeyboardHandlerAtom,
   setActiveComponentAtom,
 } from "@tasktrove/atoms/ui/keyboard-context"
-import type { KeyboardHandler, KeyboardHandlerContext } from "@tasktrove/atoms/ui/keyboard-context"
+import type {
+  KeyboardHandler,
+  KeyboardHandlerContext,
+  KeyboardContext,
+} from "@tasktrove/atoms/ui/keyboard-context"
 import { matchesShortcut } from "@/hooks/use-global-keyboard-manager"
 
 interface ShortcutOptions extends Omit<KeyboardHandlerContext, "priority"> {
@@ -62,25 +66,15 @@ export function useKeyboardShortcuts(
   const unregisterHandler = useSetAtom(unregisterKeyboardHandlerAtom)
   const setActiveComponent = useSetAtom(setActiveComponentAtom)
 
-  // Generate stable handler ID
+  // Generate stable handler ID that only changes on componentId change
   const handlerId = useMemo(
     () => `component-${options.componentId || "anonymous"}-${uuidv4()}`,
     [options.componentId],
   )
 
-  useEffect(() => {
-    // Skip registration if disabled
-    if (options.enabled === false) {
-      return
-    }
-
-    // Set active component for context tracking
-    if (options.componentId) {
-      setActiveComponent(options.componentId)
-    }
-
-    // Create keyboard handler
-    const handler: KeyboardHandler = {
+  // Memoize base handler creation - always create but allow dynamic enabling
+  const baseHandler = useMemo(() => {
+    return {
       id: handlerId,
       shortcuts: Object.keys(shortcuts),
       context: {
@@ -94,7 +88,12 @@ export function useKeyboardShortcuts(
         requiresElement: options.requiresElement,
         priority: options.priority || 0,
       },
-      handler: (event, context) => {
+      handler: (event: KeyboardEvent, context: KeyboardContext) => {
+        // Don't handle if disabled
+        if (options.enabled === false) {
+          return false
+        }
+
         // Find matching shortcut
         const matchingShortcut = Object.keys(shortcuts).find((shortcut) =>
           matchesShortcut(shortcut, event),
@@ -108,20 +107,10 @@ export function useKeyboardShortcuts(
 
         return false
       },
-    }
-
-    // Register the handler
-    registerHandler(handler)
-
-    // Cleanup function
-    return () => {
-      unregisterHandler(handlerId)
-      if (options.componentId) {
-        setActiveComponent(null)
-      }
-    }
+    } as KeyboardHandler
   }, [
-    shortcuts,
+    handlerId,
+    // Only include options that affect the handler registration context
     options.componentId,
     options.requiresView,
     options.requiresDialog,
@@ -131,12 +120,61 @@ export function useKeyboardShortcuts(
     options.requiresFocus,
     options.requiresElement,
     options.priority,
+    // Note: shortcuts and enabled are NOT in dependencies - they're handled separately below
+  ])
+
+  useEffect(() => {
+    // Set active component for context tracking if enabled
+    if (options.enabled !== false && options.componentId) {
+      setActiveComponent(options.componentId)
+    }
+
+    // Always register the handler - it will handle enabled/disabled internally
+    registerHandler(baseHandler)
+
+    // Cleanup function
+    return () => {
+      unregisterHandler(handlerId)
+      if (options.componentId) {
+        setActiveComponent(null)
+      }
+    }
+  }, [
+    baseHandler,
     options.enabled,
+    options.componentId,
     handlerId,
     registerHandler,
     unregisterHandler,
     setActiveComponent,
   ])
+
+  // Update handler function when shortcuts change, without re-registering
+  useEffect(() => {
+    // Update shortcuts list
+    baseHandler.shortcuts = Object.keys(shortcuts)
+
+    // Update the handler function reference without re-registering
+    baseHandler.handler = (event: KeyboardEvent, context: KeyboardContext) => {
+      // Don't handle if disabled
+      if (options.enabled === false) {
+        return false
+      }
+
+      // Find matching shortcut
+      const matchingShortcut = Object.keys(shortcuts).find((shortcut) =>
+        matchesShortcut(shortcut, event),
+      )
+
+      if (matchingShortcut && shortcuts[matchingShortcut]) {
+        const result = shortcuts[matchingShortcut](event)
+        // Return true if handler explicitly returns true, or if it doesn't return false
+        return result !== false
+      }
+
+      return false
+    }
+  }, [shortcuts, baseHandler, options.enabled])
 }
 
 /**

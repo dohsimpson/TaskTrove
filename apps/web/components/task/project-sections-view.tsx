@@ -20,7 +20,11 @@ import {
 } from "@tasktrove/atoms/ui/views"
 import { selectedTaskAtom } from "@tasktrove/atoms/ui/selection"
 import { sidePanelWidthAtom } from "@tasktrove/atoms/ui/views"
-import { SIDE_PANEL_WIDTH_MIN, SIDE_PANEL_WIDTH_MAX } from "@tasktrove/constants"
+import {
+  SIDE_PANEL_WIDTH_MIN,
+  SIDE_PANEL_WIDTH_MAX,
+  DEFAULT_SECTION_COLOR,
+} from "@tasktrove/constants"
 import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
 import type { Task, Project, ProjectSection } from "@/lib/types"
 import { createGroupId } from "@/lib/types"
@@ -102,7 +106,7 @@ export function ProjectSectionsView({
   const [isAddingSection, setIsAddingSection] = useState(false)
   const [addingSectionPosition, setAddingSectionPosition] = useState<number | undefined>(undefined)
   const [newSectionName, setNewSectionName] = useState("")
-  const [newSectionColor, setNewSectionColor] = useState("#3b82f6")
+  const [newSectionColor, setNewSectionColor] = useState(DEFAULT_SECTION_COLOR)
   // Panel width state (global, persisted in localStorage)
   const sidePanelWidth = useAtomValue(sidePanelWidthAtom)
   const updateGlobalViewOptions = useSetAtom(updateGlobalViewOptionsAtom)
@@ -139,7 +143,7 @@ export function ProjectSectionsView({
           position: addingSectionPosition,
         })
         setNewSectionName("")
-        setNewSectionColor("#3b82f6")
+        setNewSectionColor(DEFAULT_SECTION_COLOR)
         setIsAddingSection(false)
         setAddingSectionPosition(undefined)
       } catch (error) {
@@ -189,7 +193,7 @@ export function ProjectSectionsView({
     // When supportsSections is false, always render as a flat list
     if (!supportsSections) {
       return (
-        <div className="px-4 py-3">
+        <div className="px-4">
           {/* Centered Content Container */}
           <div className="flex justify-center">
             <div className="w-full max-w-screen-2xl">
@@ -214,7 +218,7 @@ export function ProjectSectionsView({
 
     // Sectioned view
     return (
-      <div className="px-4 py-3">
+      <div className="px-4">
         {/* Centered Content Container */}
         <div className="flex justify-center">
           <div className="w-full max-w-screen-2xl">

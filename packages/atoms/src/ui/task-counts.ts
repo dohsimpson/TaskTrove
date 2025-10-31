@@ -1,37 +1,98 @@
 /**
- * UI-specific task count atoms
- *
- * These atoms live in the UI layer because they depend on UI state (viewStatesAtom).
- * They use pure count functions from utils/counts.ts for the actual calculation logic.
- *
- * Previously, these were in core/projects.ts and core/labels.ts, which created
- * circular dependencies (core importing from ui).
+ * UI-specific task count atoms.
  */
 
-import { atom } from "jotai";
+import { atom, type Getter } from "jotai";
 import { atomFamily } from "jotai/utils";
-import type { ProjectId, LabelId, ViewId } from "@tasktrove/types/id";
+import type { Task, Project } from "@tasktrove/types/core";
+import type { ViewId, ProjectId, LabelId } from "@tasktrove/types/id";
+import { LabelIdSchema, GroupIdSchema } from "@tasktrove/types/id";
 import { projectsAtom, labelsAtom } from "@tasktrove/atoms/data/base/atoms";
 import {
   activeTasksAtom,
   completedTasksAtom,
+  todayTasksAtom,
+  upcomingTasksAtom,
+  inboxTasksAtom,
+  calendarTasksAtom,
 } from "@tasktrove/atoms/data/tasks/filters";
-import {
-  viewStatesAtom,
-  getViewStateOrDefault,
-} from "@tasktrove/atoms/ui/views";
-import { uiFilteredTasksForViewAtom } from "@tasktrove/atoms/ui/filtered-tasks";
-import { applyViewStateFilters } from "@tasktrove/atoms/utils/view-filters";
+
 import { handleAtomError } from "@tasktrove/atoms/utils/atom-helpers";
+import { allGroupsAtom } from "@tasktrove/atoms/core/groups";
+import { collectProjectIdsFromGroup } from "@tasktrove/utils/group-utils";
 
 /**
- * Get task count for any view
- * Leverages uiFilteredTasksForViewAtom which already handles all filtering
+ * Pure function to get base filtered tasks for any view (without UI preferences).
+ */
+function getBaseFilteredTasksForView(viewId: ViewId, get: Getter): Task[] {
+  try {
+    const activeTasks = get(activeTasksAtom);
+
+    // Determine view type based on viewId pattern
+    if (viewId === "all") {
+      return activeTasks;
+    } else if (viewId === "inbox") {
+      return get(inboxTasksAtom);
+    } else if (viewId === "today") {
+      return get(todayTasksAtom);
+    } else if (viewId === "upcoming") {
+      return get(upcomingTasksAtom);
+    } else if (viewId === "calendar") {
+      return get(calendarTasksAtom);
+    } else if (viewId === "completed") {
+      return get(completedTasksAtom);
+    } else {
+      // Check if viewId is a project ID
+      const projects = get(projectsAtom);
+      const matchingProject = projects.find((p: Project) => p.id === viewId);
+      if (matchingProject) {
+        const projectTasks = activeTasks.filter(
+          (task: Task) => task.projectId === viewId,
+        );
+        return projectTasks;
+      }
+
+      // Check if viewId is a label ID
+      try {
+        const labelId = LabelIdSchema.parse(viewId);
+        const labelTasks = activeTasks.filter((task: Task) =>
+          task.labels.includes(labelId),
+        );
+        return labelTasks;
+      } catch {
+        // Not a valid label ID
+      }
+
+      // Check if viewId is a project group ID
+      try {
+        const groupId = GroupIdSchema.parse(viewId);
+        const groups = get(allGroupsAtom);
+        const projectIds = collectProjectIdsFromGroup(groups, groupId);
+        const groupTasks = activeTasks.filter(
+          (task: Task) => task.projectId && projectIds.includes(task.projectId),
+        );
+        return groupTasks;
+      } catch {
+        // Not a valid group ID
+      }
+
+      // Default: return all active tasks for unknown view types
+      return activeTasks;
+    }
+  } catch (error) {
+    handleAtomError(error, `getBaseFilteredTasksForView(${viewId})`);
+    return [];
+  }
+}
+
+/**
+ * Get task count for any view (base filtering only, no UI preferences).
  */
 export const taskCountForViewAtom = atomFamily((viewId: ViewId) =>
   atom((get) => {
     try {
-      return get(uiFilteredTasksForViewAtom(viewId)).length;
+      const filteredTasks = getBaseFilteredTasksForView(viewId, get);
+      return filteredTasks.length;
     } catch (error) {
       handleAtomError(error, `taskCountForViewAtom(${viewId})`);
       return 0;
@@ -40,30 +101,19 @@ export const taskCountForViewAtom = atomFamily((viewId: ViewId) =>
 );
 
 /**
- * UI-specific atom for project task counts
- * Respects per-project view state settings (showCompleted, showOverdue, filters, etc.)
- * Uses the same filtering logic as the main view to ensure counts match what users see
+ * UI-specific atom for project task counts.
  */
 export const projectTaskCountsAtom = atom<Record<ProjectId, number>>((get) => {
   try {
     const projects = get(projectsAtom);
     const tasks = get(activeTasksAtom);
-    const viewStates = get(viewStatesAtom);
-
     const counts: Record<ProjectId, number> = {};
 
     for (const project of projects) {
       const projectTasks = tasks.filter((t) => t.projectId === project.id);
-      const viewState = getViewStateOrDefault(viewStates, project.id);
 
-      // Use the same filtering logic as the main view to ensure counts match exactly
-      const filteredTasks = applyViewStateFilters(
-        projectTasks,
-        viewState,
-        project.id,
-      );
-
-      counts[project.id] = filteredTasks.length;
+      // Use base filtering only (no UI preferences) for sidebar counts.
+      counts[project.id] = projectTasks.length;
     }
 
     return counts;
@@ -75,30 +125,19 @@ export const projectTaskCountsAtom = atom<Record<ProjectId, number>>((get) => {
 projectTaskCountsAtom.debugLabel = "projectTaskCountsAtom";
 
 /**
- * UI-specific atom for label task counts
- * Respects per-label view state settings (showCompleted, showOverdue, filters, etc.)
- * Uses the same filtering logic as the main view to ensure counts match what users see
+ * UI-specific atom for label task counts.
  */
 export const labelTaskCountsAtom = atom<Record<LabelId, number>>((get) => {
   try {
     const labels = get(labelsAtom);
     const tasks = get(activeTasksAtom);
-    const viewStates = get(viewStatesAtom);
-
     const counts: Record<LabelId, number> = {};
 
     for (const label of labels) {
       const labelTasks = tasks.filter((t) => t.labels.includes(label.id));
-      const viewState = getViewStateOrDefault(viewStates, label.id);
 
-      // Use the same filtering logic as the main view to ensure counts match exactly
-      const filteredTasks = applyViewStateFilters(
-        labelTasks,
-        viewState,
-        label.id,
-      );
-
-      counts[label.id] = filteredTasks.length;
+      // Use base filtering only (no UI preferences) for sidebar counts.
+      counts[label.id] = labelTasks.length;
     }
 
     return counts;
@@ -110,12 +149,7 @@ export const labelTaskCountsAtom = atom<Record<LabelId, number>>((get) => {
 labelTaskCountsAtom.debugLabel = "labelTaskCountsAtom";
 
 /**
- * UI-specific atom for task view counts
- * Returns counts for all standard views (inbox, today, upcoming, etc.)
- * Respects per-view showCompleted settings from viewStates
- *
- * REFACTORED: Simplified to delegate to taskCountForViewAtom
- * All filtering logic is handled by uiFilteredTasksForViewAtom
+ * UI-specific atom for task view counts.
  */
 export const taskCountsAtom = atom((get) => {
   try {

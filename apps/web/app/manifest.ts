@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next"
+import { THEME_COLORS } from "@tasktrove/constants"
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -8,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     scope: "/",
     display: "standalone",
-    background_color: "#1b1b1b",
-    theme_color: "#1b1b1b",
+    background_color: THEME_COLORS.pwaBackground,
+    theme_color: THEME_COLORS.pwaTheme,
     icons: [
       {
         src: "/web-app-manifest-192x192.png",

@@ -43,6 +43,7 @@ import { AssigneeManagementPopover } from "@/components/task/assignee-management
 import { AssigneeBadges } from "@/components/task/assignee-badges"
 import { deleteTaskAtom, updateTaskAtom, toggleTaskAtom } from "@tasktrove/atoms/core/tasks"
 import { tasksAtom, labelsAtom, projectsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { DEFAULT_COLOR_PALETTE } from "@tasktrove/constants"
 import {
   startFocusTimerAtom,
   pauseFocusTimerAtom,
@@ -466,19 +467,8 @@ export function TaskItem({
       let labelId: LabelId | undefined
       if (!existingLabel) {
         // Create new label with a default color
-        const colors = [
-          "#ef4444",
-          "#f59e0b",
-          "#3b82f6",
-          "#8b5cf6",
-          "#10b981",
-          "#f97316",
-          "#06b6d4",
-          "#84cc16",
-          "#ec4899",
-          "#6366f1",
-        ]
-        const randomColor = colors[Math.floor(Math.random() * colors.length)]
+        const randomColor =
+          DEFAULT_COLOR_PALETTE[Math.floor(Math.random() * DEFAULT_COLOR_PALETTE.length)]
 
         // Wait for the real label ID from the server
         labelId = await addLabelAndWaitForRealId({
@@ -519,6 +509,7 @@ export function TaskItem({
         onMouseLeave={() => setIsHovered(false)}
         className={cn("group/task", className)}
         data-task-focused={isSelected}
+        data-task-id={task.id}
       >
         <div className="p-2">
           {/* Single row layout - simplified for non-mobile only */}
@@ -745,6 +736,7 @@ export function TaskItem({
         onMouseLeave={() => setIsHovered(false)}
         className={cn("group/task", className)}
         data-task-focused={isSelected}
+        data-task-id={task.id}
       >
         {/* Header with title, priority, and key metadata */}
         <div className="flex items-start justify-between mb-2">
@@ -988,6 +980,7 @@ export function TaskItem({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={cn("group/task text-xs", className)}
+        data-task-id={task.id}
       >
         <div className="flex items-center gap-1 min-w-0">
           <LinkifiedText as="span" className="truncate text-xs flex-1">
@@ -999,8 +992,8 @@ export function TaskItem({
     )
   }
 
-  // Subtask variant render - minimal layout for subtasks (non-mobile only)
-  if (variant === "subtask" && !isMobile) {
+  // Subtask variant render - minimal layout for subtasks (mobile and desktop)
+  if (variant === "subtask") {
     // Get current subtask's estimation from parent
     const parent = parentTask || quickAddTask
     const currentSubtask = parent.subtasks?.find((s) => String(s.id) === String(taskId))
@@ -1013,6 +1006,7 @@ export function TaskItem({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={cn("group/task flex items-center", className)}
+        data-task-id={task.id}
       >
         {/* Drag handle for subtasks */}
         <div className="flex items-center mr-2 cursor-grab active:cursor-grabbing">
@@ -1097,6 +1091,7 @@ export function TaskItem({
       onMouseLeave={() => setIsHovered(false)}
       className={className}
       data-task-focused={isSelected}
+      data-task-id={task.id}
     >
       {/* Main Layout - Flex with proper alignment */}
       <div className="flex gap-2 sm:gap-3">

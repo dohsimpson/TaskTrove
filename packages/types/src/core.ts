@@ -154,6 +154,8 @@ export const ViewStatesSchema = z.record(z.string(), ViewStateSchema);
  */
 export const GlobalViewOptionsSchema = z.object({
   sidePanelWidth: z.number().min(20).max(80),
+  /** Whether to show the side panel globally */
+  showSidePanel: z.boolean(),
   /** People panel owner section collapse state */
   peopleOwnerCollapsed: z.boolean(),
   /** People panel assignees section collapse state */

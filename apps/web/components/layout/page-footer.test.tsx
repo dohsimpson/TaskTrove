@@ -6,7 +6,8 @@ import { PageFooter } from "./page-footer"
 // Mock the atoms instead of importing them
 vi.mock("@/lib/atoms", () => ({
   completedTasksTodayAtom: { toString: () => "completedTasksTodayAtom" },
-  uiFilteredTasksForViewAtom: vi.fn(() => ({ toString: () => "uiFilteredTasksForViewAtom" })),
+  taskCountsAtom: { toString: () => "taskCountsAtom" },
+  todayTasksAtom: { toString: () => "todayTasksAtom" },
   toggleTaskAtom: { toString: () => "toggleTaskAtom" },
   toggleTaskPanelWithViewStateAtom: { toString: () => "toggleTaskPanelWithViewStateAtom" },
   // Focus timer atoms
@@ -185,6 +186,50 @@ describe("PageFooter Popover Tests", () => {
     },
   ]
 
+  // Mock tasks with completed task in the middle to test sorting
+  const mockUnsortedDueTodayTasks: Task[] = [
+    {
+      id: TEST_TASK_ID_1,
+      title: "Active Task 1",
+      completed: false,
+      dueDate: new Date(),
+      createdAt: new Date(),
+      description: "",
+      priority: 1,
+      labels: [],
+      subtasks: [],
+      comments: [],
+      recurringMode: "dueDate",
+    },
+    {
+      id: TEST_TASK_ID_2,
+      title: "Completed Task Middle",
+      completed: true,
+      dueDate: new Date(),
+      completedAt: new Date(),
+      createdAt: new Date(),
+      description: "",
+      priority: 1,
+      labels: [],
+      subtasks: [],
+      comments: [],
+      recurringMode: "dueDate",
+    },
+    {
+      id: TEST_TASK_ID_3,
+      title: "Active Task 2",
+      completed: false,
+      dueDate: new Date(),
+      createdAt: new Date(),
+      description: "",
+      priority: 1,
+      labels: [],
+      subtasks: [],
+      comments: [],
+      recurringMode: "dueDate",
+    },
+  ]
+
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -213,6 +258,7 @@ describe("PageFooter Popover Tests", () => {
     // Mock the atom values
     mockUseAtomValue
       .mockReturnValueOnce(mockCompletedTasks) // completedTasksTodayAtom
+      .mockReturnValueOnce({ today: 0 }) // taskCountsAtom
       .mockReturnValueOnce([]) // todayTasksAtom
       // Focus timer atoms
       .mockReturnValueOnce(null) // activeFocusTimerAtom
@@ -255,6 +301,7 @@ describe("PageFooter Popover Tests", () => {
     // Mock the atom values
     mockUseAtomValue
       .mockReturnValueOnce([]) // completedTasksTodayAtom
+      .mockReturnValueOnce({ today: 3 }) // taskCountsAtom (should match mockDueTodayTasks.length)
       .mockReturnValueOnce(mockDueTodayTasks) // todayTasksAtom
       // Focus timer atoms
       .mockReturnValueOnce(null) // activeFocusTimerAtom
@@ -296,12 +343,69 @@ describe("PageFooter Popover Tests", () => {
     expect(checkboxes[2]).toBeChecked()
   })
 
+  it("should show tasks in correct order with completed tasks at bottom in footer", async () => {
+    const { mockUseAtomValue } = await setupMocks()
+    // Mock the atom values with unsorted tasks (completed task in middle)
+    mockUseAtomValue
+      .mockReturnValueOnce([]) // completedTasksTodayAtom
+      .mockReturnValueOnce({ today: 3 }) // taskCountsAtom
+      .mockReturnValueOnce(mockUnsortedDueTodayTasks) // todayTasksAtom (unsorted)
+      // Focus timer atoms
+      .mockReturnValueOnce(null) // activeFocusTimerAtom
+      .mockReturnValueOnce("stopped") // focusTimerStatusAtom
+      .mockReturnValueOnce(null) // activeFocusTaskAtom
+      .mockReturnValueOnce("0:00") // focusTimerDisplayAtom
+
+    render(<PageFooter />)
+
+    // Open the due today popover
+    const dueButton = screen.getByRole("button", { name: /due today/i })
+    fireEvent.click(dueButton)
+
+    // Wait for popover content to appear
+    await waitFor(() => {
+      expect(screen.getByText("Due Today")).toBeInTheDocument()
+    })
+
+    // Get all checkboxes in the order they appear in the DOM
+    const allCheckboxes = screen.getAllByTestId("task-checkbox")
+    expect(allCheckboxes).toHaveLength(3)
+
+    // Check that tasks are ordered with active tasks first, completed tasks at bottom
+    // First two should be active (not completed)
+    expect(allCheckboxes[0]).not.toBeChecked()
+    expect(allCheckboxes[1]).not.toBeChecked()
+
+    // Third should be completed (at bottom)
+    expect(allCheckboxes[2]).toBeChecked()
+
+    // Verify that all completed tasks come after all active tasks
+    const firstCompletedIndex = allCheckboxes.findIndex(
+      (checkbox) => checkbox instanceof HTMLInputElement && checkbox.checked,
+    )
+    const activeCheckboxes = allCheckboxes.filter(
+      (checkbox) => checkbox instanceof HTMLInputElement && !checkbox.checked,
+    )
+
+    // All active checkboxes should have indices less than the first completed checkbox
+    activeCheckboxes.forEach((checkbox) => {
+      const activeIndex = allCheckboxes.indexOf(checkbox)
+      expect(activeIndex).toBeLessThan(firstCompletedIndex)
+    })
+
+    // Verify the text content exists for all tasks
+    expect(screen.getByText("Active Task 1")).toBeInTheDocument()
+    expect(screen.getByText("Active Task 2")).toBeInTheDocument()
+    expect(screen.getByText("Completed Task Middle")).toBeInTheDocument()
+  })
+
   it("should toggle task panel when clicking on a task in the footer", async () => {
     const { mockUseAtomValue } = await setupMocks()
 
     // Mock the atom values
     mockUseAtomValue
       .mockReturnValueOnce([]) // completedTasksTodayAtom
+      .mockReturnValueOnce({ today: 3 }) // taskCountsAtom
       .mockReturnValueOnce(mockDueTodayTasks) // todayTasksAtom
       // Focus timer atoms
       .mockReturnValueOnce(null) // activeFocusTimerAtom
@@ -339,6 +443,7 @@ describe("PageFooter Popover Tests", () => {
     // Mock the atom values
     mockUseAtomValue
       .mockReturnValueOnce([]) // completedTasksTodayAtom
+      .mockReturnValueOnce({ today: 3 }) // taskCountsAtom
       .mockReturnValueOnce(mockDueTodayTasks) // todayTasksAtom
       // Focus timer atoms
       .mockReturnValueOnce(null) // activeFocusTimerAtom

@@ -26,7 +26,13 @@
       "none": "Nenhum (nível raiz)",
       "placeholder": "Selecionar {{type}}"
     },
-    "title": "Adicionar novo {{type}}"
+    "title": "Adicionar novo {{type}}",
+    "types": {
+      "label": "Etiqueta",
+      "project": "Projeto",
+      "projectGroup": "Grupo de Projetos",
+      "section": "Seção"
+    }
   },
   "common": {
     "cancel": "Cancelar"
@@ -44,11 +50,10 @@
       "description": "Tem certeza de que deseja excluir este item?",
       "title": "Excluir item"
     },
-    "deleteContainedResources": "Também excluir recursos contidos",
     "group": {
       "confirm": "Excluir grupo",
-      "description": "Tem certeza de que deseja excluir \"{{- name}}\"? Esta ação não pode ser desfeita.",
       "deleteContainedResources": "Também excluir todos os projetos e tarefas neste grupo",
+      "description": "Tem certeza de que deseja excluir \"{{- name}}\"? Esta ação não pode ser desfeita.",
       "title": "Excluir grupo"
     },
     "history": {
@@ -63,8 +68,8 @@
     },
     "project": {
       "confirm": "Excluir projeto",
-      "description": "Tem certeza de que deseja excluir \"{{- name}}\"? Esta ação não pode ser desfeita.",
       "deleteContainedResources": "Também excluir todas as tarefas neste projeto",
+      "description": "Tem certeza de que deseja excluir \"{{- name}}\"? Esta ação não pode ser desfeita.",
       "title": "Excluir projeto"
     },
     "section": {
@@ -103,6 +108,7 @@
     }
   },
   "quickAdd": {
+    "addingTask": "Adicionando",
     "addTask": "Adicionar tarefa",
     "buttons": {
       "comments": "Comentários",
@@ -113,6 +119,7 @@
       "section": "Seção",
       "subtasks": "Subtarefas"
     },
+    "copyTitle": "Duplicar Tarefa",
     "description": {
       "placeholder": "Descrição"
     },
@@ -129,6 +136,10 @@
       "openMenu": "Abrir menu de configurações"
     },
     "categories": {
+      "appearance": {
+        "description": "Temas, cores e preferências visuais",
+        "title": "Aparência"
+      },
       "data": {
         "description": "Importar/exportar, backups",
         "title": "Dados e Armazenamento"
@@ -145,6 +156,11 @@
     "description": "Configurar ajustes e preferências da aplicação TaskTrove",
     "title": "Configurações"
   },
+  "unsavedConfirmation": {
+    "confirm": "Descartar Alterações",
+    "description": "Você tem alterações não salvas que serão perdidas se fechar este diálogo. Tem certeza de que deseja continuar?",
+    "title": "Descartar alterações não salvas?"
+  },
   "userProfile": {
     "changeAvatar": "Alterar Avatar",
     "confirmPassword": {
@@ -154,7 +170,7 @@
     },
     "errors": {
       "fileSizeLimit": "Tamanho do arquivo do avatar deve ser menor que 5MB",
-      "invalidFileType": "Selecione um arquivo de imagem válido",
+      "invalidFileType": "Selecione um arquivo de imagem válido (PNG, JPEG, GIF ou WebP)",
       "passwordMismatch": "Senhas não coincidem",
       "updateFailed": "Falha ao atualizar perfil",
       "usernameRequired": "Nome de usuário é obrigatório"
@@ -163,9 +179,11 @@
       "label": "Senha",
       "placeholder": "Deixe em branco para manter a senha atual"
     },
+    "removeAvatar": "Remover Avatar",
     "save": "Salvar Alterações",
     "saving": "Salvando...",
     "title": "Editar Perfil",
+    "uploadAvatar": "Fazer Upload de Avatar",
     "username": {
       "label": "Nome de Usuário",
       "placeholder": "Digite seu nome de usuário"

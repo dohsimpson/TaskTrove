@@ -26,7 +26,13 @@
       "none": "Aucun (niveau racine)",
       "placeholder": "Sélectionner {{type}}"
     },
-    "title": "Ajouter nouveau {{type}}"
+    "title": "Ajouter nouveau {{type}}",
+    "types": {
+      "label": "Étiquette",
+      "project": "Projet",
+      "projectGroup": "Groupe de projets",
+      "section": "Section"
+    }
   },
   "common": {
     "cancel": "Annuler"
@@ -44,11 +50,10 @@
       "description": "Êtes-vous sûr de vouloir supprimer cet élément ?",
       "title": "Supprimer l'élément"
     },
-    "deleteContainedResources": "Supprimer aussi les ressources contenues",
     "group": {
       "confirm": "Supprimer le groupe",
-      "description": "Êtes-vous sûr de vouloir supprimer \"{{- name}}\" ? Cette action ne peut pas être annulée.",
       "deleteContainedResources": "Supprimer aussi tous les projets et tâches de ce groupe",
+      "description": "Êtes-vous sûr de vouloir supprimer \"{{- name}}\" ? Cette action ne peut pas être annulée.",
       "title": "Supprimer le groupe"
     },
     "history": {
@@ -63,8 +68,8 @@
     },
     "project": {
       "confirm": "Supprimer le projet",
-      "description": "Êtes-vous sûr de vouloir supprimer \"{{- name}}\" ? Cette action ne peut pas être annulée.",
       "deleteContainedResources": "Supprimer aussi toutes les tâches de ce projet",
+      "description": "Êtes-vous sûr de vouloir supprimer \"{{- name}}\" ? Cette action ne peut pas être annulée.",
       "title": "Supprimer le projet"
     },
     "section": {
@@ -103,6 +108,7 @@
     }
   },
   "quickAdd": {
+    "addingTask": "Ajout en cours",
     "addTask": "Ajouter tâche",
     "buttons": {
       "comments": "Commentaires",
@@ -113,6 +119,7 @@
       "section": "Section",
       "subtasks": "Sous-tâches"
     },
+    "copyTitle": "Dupliquer la tâche",
     "description": {
       "placeholder": "Description"
     },
@@ -129,6 +136,10 @@
       "openMenu": "Ouvrir le menu des paramètres"
     },
     "categories": {
+      "appearance": {
+        "description": "Thèmes, couleurs et préférences visuelles",
+        "title": "Apparence"
+      },
       "data": {
         "description": "Import/export, sauvegardes",
         "title": "Données et Stockage"
@@ -144,6 +155,11 @@
     },
     "description": "Configurer les paramètres et préférences de l'application TaskTrove",
     "title": "Paramètres"
+  },
+  "unsavedConfirmation": {
+    "confirm": "Annuler les modifications",
+    "description": "Vous avez des modifications non sauvegardées qui seront perdues si vous fermez cette boîte de dialogue. Voulez-vous continuer ?",
+    "title": "Annuler les modifications non sauvegardées ?"
   },
   "userProfile": {
     "changeAvatar": "Changer l'Avatar",
@@ -163,9 +179,11 @@
       "label": "Mot de Passe",
       "placeholder": "Laissez vide pour conserver le mot de passe actuel"
     },
+    "removeAvatar": "Supprimer l'avatar",
     "save": "Enregistrer les Modifications",
     "saving": "Enregistrement...",
     "title": "Modifier le Profil",
+    "uploadAvatar": "Télécharger un avatar",
     "username": {
       "label": "Nom d'Utilisateur",
       "placeholder": "Saisissez votre nom d'utilisateur"

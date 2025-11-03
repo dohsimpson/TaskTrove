@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { formatDistanceToNow, format } from "date-fns"
 import type { TaskComment } from "@/lib/types"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
+import { LinkifiedText } from "@/components/ui/custom/linkified-text"
 import { CommentUserDisplay } from "@/components/task/comment-user-display"
 import { CommentReactions } from "@/components/task/comment-reactions"
 import { AddReactionButton } from "@/components/task/add-reaction-button"
@@ -70,9 +71,12 @@ export function CommentItem({
             />
           ) : (
             <>
-              <p className="text-sm text-gray-600 dark:text-gray-300 break-words leading-relaxed">
+              <LinkifiedText
+                as="p"
+                className="text-sm text-gray-600 dark:text-gray-300 break-words leading-relaxed"
+              >
                 {comment.content}
-              </p>
+              </LinkifiedText>
               <CommentReactions comment={comment} />
             </>
           )}

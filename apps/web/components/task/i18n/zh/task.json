@@ -1,11 +1,12 @@
 {
   "actions": {
+    "addAssignees": "添加执行者",
     "addComment": "添加评论",
     "addDate": "添加日期",
     "addLabel": "添加标签",
-    "addLabels": "添加标签",
     "addPriority": "添加优先级",
     "addProject": "添加项目",
+    "addSection": "添加分区",
     "addSubtask": "添加子任务",
     "addTask": "添加任务"
   },
@@ -13,54 +14,12 @@
     "addAnotherComment": "添加另一条评论...",
     "addComment": "添加评论",
     "addComments": "添加评论...",
-    "commentCount_one": "{{count}} 条评论",
-    "commentCount_many": "{{count}} 条评论",
     "commentCount_other": "{{count}} 条评论",
-    "title_one": "评论",
-    "title_many": "评论",
-    "title_other": "评论"
+    "title": "评论",
+    "title_other": "评论（{{count}}）"
   },
-  "emptyStates": {
-    "all": {
-      "description": "此视图显示您在所有项目中的所有任务。创建您的第一个任务开始使用 TaskTrove。",
-      "title": "未找到任务"
-    },
-    "analytics": {
-      "description": "跟踪您的生产力和任务完成模式。",
-      "title": "分析仪表板"
-    },
-    "completed": {
-      "description": "您已完成的任务将出现在这里。完成一些任务来查看您的进度并庆祝您的成就！",
-      "title": "尚未完成任务"
-    },
-    "fallback": {
-      "description": "创建您的第一个任务开始使用。",
-      "title": "未找到任务"
-    },
-    "inbox": {
-      "description": "这是您所有新任务的默认收集点。当您创建任务而不指定项目时，它会出现在这里。",
-      "title": "您的收件箱是空的"
-    },
-    "label": {
-      "description": "标记有此标签的任务将出现在这里。使用标签对相关任务进行分类并快速查找。",
-      "title": "没有带 {{labelName}} 标签的任务"
-    },
-    "project": {
-      "description": "此项目是空的。添加任务来组织您的工作并跟踪特定目标的进度。",
-      "title": "{{projectName}} 中没有任务"
-    },
-    "search": {
-      "description": "按标题、描述或标签查找任务。",
-      "title": "搜索结果"
-    },
-    "today": {
-      "description": "今天截止的任务将出现在这里。为您的任务设置截止日期，以保持日常目标的进度。",
-      "title": "今天没有安排任务"
-    },
-    "upcoming": {
-      "description": "未来截止的任务显示在这里，帮助您提前计划并为即将到来的事情做准备。",
-      "title": "没有即将到来的任务"
-    }
+  "common": {
+    "confirm": "确认"
   },
   "filters": {
     "activeOnly": "仅活跃任务",
@@ -71,7 +30,6 @@
     "completedOnly": "仅已完成任务",
     "customRange": "自定义范围",
     "dueDate": "截止日期",
-    "filter": "筛选",
     "filterTasks": "筛选任务",
     "fromDate": "开始日期",
     "labels": "标签",
@@ -79,14 +37,6 @@
     "next7Days": "未来7天",
     "noLabels": "无标签",
     "noPriority": "无优先级",
-    "presets": {
-      "noDueDate": "无截止日期",
-      "nextWeek": "下周",
-      "overdue": "逾期",
-      "thisWeek": "本周",
-      "today": "今天",
-      "tomorrow": "明天"
-    },
     "priority": "优先级",
     "priority1": "优先级 1",
     "priority2": "优先级 2",
@@ -120,7 +70,10 @@
     "taskTitle": "输入任务标题..."
   },
   "priority": {
-    "noPriority": "无优先级"
+    "noPriority": "无优先级",
+    "priority1": "优先级 1",
+    "priority2": "优先级 2",
+    "priority3": "优先级 3"
   },
   "project": {
     "noProject": "无项目（收件箱）"
@@ -128,6 +81,7 @@
   "recurring": {
     "adaptive": "自适应",
     "apply": "应用",
+    "autoRollover": "自动延期",
     "calculateNextFrom": "计算下一个截止日期基于",
     "createCustomPattern": "创建自定义重复模式",
     "current": "当前：",
@@ -174,12 +128,6 @@
     "tomorrow": "明天"
   },
   "sidePanel": {
-    "attachments": {
-      "count_one": "{{count}} 个附件",
-      "count_many": "{{count}} 个附件",
-      "count_other": "{{count}} 个附件",
-      "title": "附件"
-    },
     "autoSave": {
       "saving": "保存中..."
     },
@@ -197,12 +145,14 @@
     },
     "dueDate": {
       "placeholder": "添加截止日期",
-      "title": "截止日期",
       "today": "今天",
       "tomorrow": "明天"
     },
     "labels": {
       "title": "标签"
+    },
+    "scheduling": {
+      "title": "日程安排"
     },
     "shortcuts": {
       "close": "关闭",
@@ -221,5 +171,28 @@
     "addSubtask": "添加子任务",
     "addSubtasks": "添加子任务...",
     "title": "子任务"
+  },
+  "task": {
+    "noSearchResults": "未找到任务",
+    "noTasksAvailable": "没有可用任务",
+    "searchPlaceholder": "搜索任务...",
+    "selectedCount_other": "已选择 {{count}} 个"
+  },
+  "timeEstimation": {
+    "calculatedFromSubtasks": "从子任务计算",
+    "clear": "清除",
+    "customDuration": "自定义时长",
+    "done": "完成",
+    "errors": {
+      "hourNumber": "必须是数字（0-99）",
+      "hourRange": "小时必须在0-99之间",
+      "minuteNumber": "必须是数字（0-59）",
+      "minuteRange": "分钟必须在0-59之间"
+    },
+    "helpText": "估计此任务完成所需的时间。这有助于规划和跟踪您的生产力。",
+    "helpTextSubtasks": "此估计是从子任务估计的总和计算的。在此处设置直接估计将覆盖计算值。",
+    "hour": "小时",
+    "minute": "分钟",
+    "title": "时间估计"
   }
 }

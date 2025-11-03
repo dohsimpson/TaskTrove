@@ -3,30 +3,23 @@
     "newVersion": "新版本：{{version}}",
     "updateTo": "更新到 {{version}}"
   },
-  "mainNav": {
-    "allTasks": "所有任务",
-    "calendar": "日历",
-    "completed": "已完成",
-    "inbox": "收件箱",
-    "today": "今天",
-    "upcoming": "即将到来"
-  },
   "quickActions": {
     "add": "添加",
     "search": "搜索"
   },
   "sections": {
     "labels": "标签",
-
     "projects": "项目"
   },
   "userMenu": {
     "about": "关于",
     "community": "社区",
     "github": "Github",
+    "installApp": "安装应用",
     "reportBug": "报告错误",
     "settings": "设置",
     "shortcuts": "快捷键",
+    "signOut": "退出登录",
     "upgradeToPro": "升级到专业版"
   }
 }

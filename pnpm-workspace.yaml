@@ -95,6 +95,7 @@ catalog:
   i18next-browser-languagedetector: ^8.2.0
   i18next-parser: ^9.3.0
   i18next-resources-to-backend: ^1.2.1
+  i18next-cli: ^1.19.3
   input-otp: ^1.4.2
   jotai: ^2.14.0
   jotai-devtools: ^0.13.0

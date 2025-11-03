@@ -1,4 +1,11 @@
 {
+  "appearance": {
+    "colorScheme": {
+      "description": "Sélectionner clair, sombre ou suivre les préférences du système",
+      "label": "Choisissez votre schéma de couleurs",
+      "title": "Schéma de couleurs"
+    }
+  },
   "data": {
     "autoBackup": {
       "backupTime": {
@@ -65,6 +72,15 @@
     }
   },
   "general": {
+    "apiToken": {
+      "description": "Générer un jeton API pour un accès programmatique. Utilisez ce jeton dans l'en-tête d'autorisation comme 'Bearer VOTRE_JETON' pour authentifier les requêtes API.",
+      "generate": "Générer un jeton",
+      "label": "Jeton API",
+      "regenerate": "Régénérer le jeton",
+      "revoke": "Révoquer le jeton",
+      "title": "API",
+      "viewDocs": "Voir la documentation API"
+    },
     "audio": {
       "soundEffects": {
         "description": "Jouer des sons pour l'achèvement de tâches, les notifications et autres interactions",
@@ -76,44 +92,6 @@
       "description": "Choisir la page à voir lors de la première ouverture de TaskTrove",
       "label": "Afficher lors de l'ouverture de TaskTrove",
       "title": "Page par défaut"
-    },
-    "startView": {
-      "all": {
-        "description": "Voir toutes vos tâches en un seul endroit",
-        "label": "Toutes les tâches"
-      },
-      "calendar": {
-        "description": "Voir les tâches au format calendrier",
-        "label": "Calendrier"
-      },
-      "completed": {
-        "description": "Examiner les tâches terminées",
-        "label": "Terminées"
-      },
-      "inbox": {
-        "description": "Commencer avec les tâches non organisées",
-        "label": "Boîte de réception"
-      },
-      "labels": {
-        "description": "Organiser les tâches avec des étiquettes",
-        "label": "Étiquettes"
-      },
-      "lastViewed": {
-        "description": "Retourner à votre dernière page active",
-        "label": "Dernière vue"
-      },
-      "projects": {
-        "description": "Gérer et organiser les projets",
-        "label": "Projets"
-      },
-      "today": {
-        "description": "Se concentrer sur les tâches d'aujourd'hui",
-        "label": "Aujourd'hui"
-      },
-      "upcoming": {
-        "description": "Voir ce qui arrive ensuite",
-        "label": "À venir"
-      }
     },
     "language": {
       "description": "Sélectionner la langue d'affichage de l'application",
@@ -133,6 +111,32 @@
         "label": "Ouverture au survol"
       },
       "title": "Popover"
+    },
+    "startView": {
+      "all": {
+        "description": "Voir toutes vos tâches en un seul endroit",
+        "label": "Toutes les tâches"
+      },
+      "completed": {
+        "description": "Examiner les tâches terminées",
+        "label": "Terminées"
+      },
+      "inbox": {
+        "description": "Commencer avec les tâches non organisées",
+        "label": "Boîte de réception"
+      },
+      "lastViewed": {
+        "description": "Retourner à votre dernière page active",
+        "label": "Dernière vue"
+      },
+      "today": {
+        "description": "Se concentrer sur les tâches d'aujourd'hui",
+        "label": "Aujourd'hui"
+      },
+      "upcoming": {
+        "description": "Voir ce qui arrive ensuite",
+        "label": "À venir"
+      }
     }
   },
   "notifications": {

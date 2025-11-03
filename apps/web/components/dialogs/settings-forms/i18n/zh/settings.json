@@ -1,4 +1,11 @@
 {
+  "appearance": {
+    "colorScheme": {
+      "description": "选择亮色、暗色或跟随系统偏好",
+      "label": "选择您的配色方案",
+      "title": "配色方案"
+    }
+  },
   "data": {
     "autoBackup": {
       "backupTime": {
@@ -8,8 +15,8 @@
       "description": "自动创建任务和项目的备份文件。",
       "dockerNotice": {
         "description": "在 Docker 环境中，备份文件保存在容器内的 /app/data/backups 目录。确保挂载卷以持久化备份。",
-        "guide": "",
-        "title": "Docker 环境"
+        "guide": "查看备份设置指南",
+        "title": "Docker 用户："
       },
       "enable": {
         "description": "定期自动备份您的数据",
@@ -21,7 +28,7 @@
       "maxBackups": {
         "description": "旧备份将被自动删除",
         "label": "保留备份的最大数量",
-        "noLimit": ""
+        "noLimit": "无限制"
       },
       "title": "自动备份"
     },
@@ -48,15 +55,9 @@
         "success": {
           "alreadyExisted": "{{items}} 已存在",
           "imported": "已导入 {{items}}",
-          "labels_one": "{{count}} 个标签",
-          "labels_many": "{{count}} 个标签",
           "labels_other": "{{count}} 个标签",
           "noNewItems": "没有新项目",
-          "projects_one": "{{count}} 个项目",
-          "projects_many": "{{count}} 个项目",
           "projects_other": "{{count}} 个项目",
-          "tasks_one": "{{count}} 个任务",
-          "tasks_many": "{{count}} 个任务",
           "tasks_other": "{{count}} 个任务",
           "title": "导入成功！"
         },
@@ -65,6 +66,15 @@
     }
   },
   "general": {
+    "apiToken": {
+      "description": "生成 API 令牌以进行编程访问。在授权标头中使用此令牌作为 'Bearer YOUR_TOKEN' 来验证 API 请求。",
+      "generate": "生成令牌",
+      "label": "API 令牌",
+      "regenerate": "重新生成令牌",
+      "revoke": "撤销令牌",
+      "title": "API",
+      "viewDocs": "查看 API 文档"
+    },
     "audio": {
       "soundEffects": {
         "description": "为任务完成、通知和其他交互播放声音",
@@ -76,44 +86,6 @@
       "description": "选择首次打开 TaskTrove 时要看到的页面",
       "label": "打开 TaskTrove 时显示",
       "title": "默认页面"
-    },
-    "startView": {
-      "all": {
-        "description": "在一个地方查看您的所有任务",
-        "label": "所有任务"
-      },
-      "calendar": {
-        "description": "以日历格式查看任务",
-        "label": "日历"
-      },
-      "completed": {
-        "description": "查看已完成的任务",
-        "label": "已完成"
-      },
-      "inbox": {
-        "description": "从未整理的任务开始",
-        "label": "收件箱"
-      },
-      "labels": {
-        "description": "使用标签整理任务",
-        "label": "标签"
-      },
-      "lastViewed": {
-        "description": "返回到您的上次活跃页面",
-        "label": "上次查看"
-      },
-      "projects": {
-        "description": "管理和组织项目",
-        "label": "项目"
-      },
-      "today": {
-        "description": "专注于今天的任务",
-        "label": "今天"
-      },
-      "upcoming": {
-        "description": "查看即将到来的任务",
-        "label": "即将到来"
-      }
     },
     "language": {
       "description": "选择应用程序的显示语言",
@@ -133,6 +105,32 @@
         "label": "悬停打开"
       },
       "title": "弹出窗口"
+    },
+    "startView": {
+      "all": {
+        "description": "在一个地方查看您的所有任务",
+        "label": "所有任务"
+      },
+      "completed": {
+        "description": "查看已完成的任务",
+        "label": "已完成"
+      },
+      "inbox": {
+        "description": "从未整理的任务开始",
+        "label": "收件箱"
+      },
+      "lastViewed": {
+        "description": "返回到您的上次活跃页面",
+        "label": "上次查看"
+      },
+      "today": {
+        "description": "专注于今天的任务",
+        "label": "今天"
+      },
+      "upcoming": {
+        "description": "查看即将到来的任务",
+        "label": "即将到来"
+      }
     }
   },
   "notifications": {

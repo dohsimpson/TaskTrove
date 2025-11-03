@@ -138,6 +138,11 @@ vi.mock("@/components/task/task-schedule-popover", () => ({
     ) : null,
 }))
 
+// Mock PermissionChecker since it uses useSession
+vi.mock("@/components/startup/permission-checker", () => ({
+  PermissionChecker: () => null,
+}))
+
 // Import after mocking
 import { MainContent } from "./main-content"
 

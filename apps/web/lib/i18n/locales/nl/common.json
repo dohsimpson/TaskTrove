@@ -1,78 +1,53 @@
 {
-  "app": {
-    "name": "TaskTrove",
-    "description": "Uw persoonlijke taakbeheerder"
+  "emptyStates": {
+    "all": {
+      "description": "Deze weergave toont al je taken in alle projecten. Maak je eerste taak om te beginnen met TaskTrove.",
+      "title": "Geen taken gevonden"
+    },
+    "analytics": {
+      "description": "Volg je productiviteit en taakvoltooiingspatronen.",
+      "title": "Analytics Dashboard"
+    },
+    "completed": {
+      "description": "Voltooide taken verschijnen hier. Voltooi wat taken om je voortgang te zien en je successen te vieren!",
+      "title": "Nog geen voltooide taken"
+    },
+    "fallback": {
+      "description": "Maak je eerste taak om te beginnen.",
+      "title": "Geen taken gevonden"
+    },
+    "inbox": {
+      "description": "Dit is je standaard verzamelpunt voor alle nieuwe taken. Wanneer je een taak aanmaakt zonder een project op te geven, komt deze hier terecht.",
+      "title": "Je inbox is leeg"
+    },
+    "label": {
+      "description": "Taken met dit label verschijnen hier. Gebruik labels om taken te categoriseren en gerelateerde taken snel te vinden.",
+      "title": "Geen taken met {{labelName}} label"
+    },
+    "project": {
+      "description": "Dit project is leeg. Voeg taken toe om je werk te organiseren en voortgang te volgen op specifieke doelen.",
+      "title": "Geen taken in {{projectName}}"
+    },
+    "search": {
+      "description": "Vind taken op titel, beschrijving of labels.",
+      "title": "Zoekresultaten"
+    },
+    "today": {
+      "description": "Taken met vandaag als vervaldatum verschijnen hier. Stel vervaldatums in op je taken om op koers te blijven met je dagelijkse doelen.",
+      "title": "Niets gepland voor vandaag"
+    },
+    "upcoming": {
+      "description": "Taken met toekomstige vervaldatums verschijnen hier, zodat je vooruit kunt plannen en je kunt voorbereiden op wat komt.",
+      "title": "Geen aankomende taken"
+    }
   },
-  "navigation": {
-    "today": "Vandaag",
-    "upcoming": "Binnenkort",
-    "all": "Alle taken",
-    "completed": "Voltooid",
-    "projects": "Projecten",
-    "labels": "Labels",
-    "inbox": "Inbox",
+  "mainNav": {
+    "allTasks": "Alle taken",
     "calendar": "Kalender",
-    "analytics": "Analyse",
-    "profile": "Profiel"
-  },
-  "tasks": {
-    "task": "Taak",
-    "tasks": "Taken",
-    "addTask": "Taak toevoegen",
-    "editTask": "Taak bewerken",
-    "deleteTask": "Taak verwijderen",
-    "completeTask": "Taak voltooien",
-    "uncompleteTask": "Markeer als niet voltooid",
-    "title": "Titel",
-    "description": "Beschrijving",
-    "dueDate": "Vervaldatum",
-    "priority": "Prioriteit",
-    "project": "Project",
-    "labels": "Labels",
-    "noTasks": "Geen taken gevonden",
-    "filter": "Taken filteren"
-  },
-  "projects": {
-    "project": "Project",
-    "projects": "Projecten",
-    "addProject": "Project toevoegen",
-    "editProject": "Project bewerken",
-    "deleteProject": "Project verwijderen",
-    "projectName": "Projectnaam",
-    "projectDescription": "Projectbeschrijving",
-    "noProjects": "Geen projecten gevonden"
-  },
-  "labels": {
-    "label": "Label",
-    "labels": "Labels",
-    "addLabel": "Label toevoegen",
-    "editLabel": "Label bewerken",
-    "deleteLabel": "Label verwijderen",
-    "labelName": "Labelnaam",
-    "labelColor": "Labelkleur",
-    "noLabels": "Geen labels gevonden"
-  },
-  "common": {
-    "save": "Opslaan",
-    "cancel": "Annuleren",
-    "delete": "Verwijderen",
-    "edit": "Bewerken",
-    "add": "Toevoegen",
-    "close": "Sluiten",
-    "confirm": "Bevestigen",
-    "loading": "Laden...",
-    "error": "Fout",
-    "success": "Succes",
-    "warning": "Waarschuwing",
-    "info": "Informatie"
-  },
-  "settings": {
-    "settings": "Instellingen",
-    "general": "Algemeen",
-    "appearance": "Uiterlijk",
-    "language": "Taal",
-    "languageDescription": "Kies uw voorkeurstaal voor de interface",
-    "theme": "Thema",
-    "notifications": "Meldingen"
+    "completed": "Voltooid",
+    "habits": "Gewoontes",
+    "inbox": "Inbox",
+    "today": "Vandaag",
+    "upcoming": "Aankomend"
   }
 }

@@ -26,7 +26,13 @@
       "none": "Nessuno (livello radice)",
       "placeholder": "Seleziona {{type}}"
     },
-    "title": "Aggiungi nuovo {{type}}"
+    "title": "Aggiungi nuovo {{type}}",
+    "types": {
+      "label": "Etichetta",
+      "project": "Progetto",
+      "projectGroup": "Gruppo di progetti",
+      "section": "Sezione"
+    }
   },
   "common": {
     "cancel": "Annulla"
@@ -44,11 +50,10 @@
       "description": "Sei sicuro di voler eliminare questo elemento?",
       "title": "Elimina elemento"
     },
-    "deleteContainedResources": "Elimina anche le risorse contenute",
     "group": {
       "confirm": "Elimina gruppo",
-      "description": "Sei sicuro di voler eliminare \"{{- name}}\"? Questa azione non può essere annullata.",
       "deleteContainedResources": "Elimina anche tutti i progetti e compiti in questo gruppo",
+      "description": "Sei sicuro di voler eliminare \"{{- name}}\"? Questa azione non può essere annullata.",
       "title": "Elimina gruppo"
     },
     "history": {
@@ -63,8 +68,8 @@
     },
     "project": {
       "confirm": "Elimina progetto",
-      "description": "Sei sicuro di voler eliminare \"{{- name}}\"? Questa azione non può essere annullata.",
       "deleteContainedResources": "Elimina anche tutti i compiti in questo progetto",
+      "description": "Sei sicuro di voler eliminare \"{{- name}}\"? Questa azione non può essere annullata.",
       "title": "Elimina progetto"
     },
     "section": {
@@ -103,6 +108,7 @@
     }
   },
   "quickAdd": {
+    "addingTask": "Aggiunta in corso",
     "addTask": "Aggiungi attività",
     "buttons": {
       "comments": "Commenti",
@@ -113,6 +119,7 @@
       "section": "Sezione",
       "subtasks": "Sottoattività"
     },
+    "copyTitle": "Duplica attività",
     "description": {
       "placeholder": "Descrizione"
     },
@@ -129,6 +136,10 @@
       "openMenu": "Apri menu impostazioni"
     },
     "categories": {
+      "appearance": {
+        "description": "Temi, colori e preferenze visive",
+        "title": "Aspetto"
+      },
       "data": {
         "description": "Importa/esporta, backup",
         "title": "Dati e Archiviazione"
@@ -144,6 +155,11 @@
     },
     "description": "Configura impostazioni e preferenze dell'applicazione TaskTrove",
     "title": "Impostazioni"
+  },
+  "unsavedConfirmation": {
+    "confirm": "Annulla le modifiche",
+    "description": "Hai modifiche non salvate che verranno perse se chiudi questa finestra di dialogo. Vuoi continuare?",
+    "title": "Annullare le modifiche non salvate?"
   },
   "userProfile": {
     "changeAvatar": "Cambia Avatar",
@@ -163,9 +179,11 @@
       "label": "Password",
       "placeholder": "Lascia vuoto per mantenere la password attuale"
     },
+    "removeAvatar": "Rimuovi avatar",
     "save": "Salva Modifiche",
     "saving": "Salvando...",
     "title": "Modifica Profilo",
+    "uploadAvatar": "Carica avatar",
     "username": {
       "label": "Nome Utente",
       "placeholder": "Inserisci il tuo nome utente"

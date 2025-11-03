@@ -1,4 +1,11 @@
 {
+  "appearance": {
+    "colorScheme": {
+      "description": "Wählen Sie Hell, Dunkel oder folgen Sie der Systemeinstellung",
+      "label": "Wählen Sie Ihr Farbschema",
+      "title": "Farbschema"
+    }
+  },
   "data": {
     "autoBackup": {
       "backupTime": {
@@ -49,14 +56,11 @@
           "alreadyExisted": "{{items}} existierten bereits",
           "imported": "{{items}} importiert",
           "labels_one": "{{count}} Etikett",
-          "labels_many": "{{count}} Etiketten",
           "labels_other": "{{count}} Etiketten",
           "noNewItems": "Keine neuen Elemente",
           "projects_one": "{{count}} Projekt",
-          "projects_many": "{{count}} Projekte",
           "projects_other": "{{count}} Projekte",
           "tasks_one": "{{count}} Aufgabe",
-          "tasks_many": "{{count}} Aufgaben",
           "tasks_other": "{{count}} Aufgaben",
           "title": "Import erfolgreich!"
         },
@@ -65,6 +69,15 @@
     }
   },
   "general": {
+    "apiToken": {
+      "description": "API-Token für programmatischen Zugriff generieren. Verwenden Sie dieses Token im Authorization-Header als 'Bearer YOUR_TOKEN', um API-Anfragen zu authentifizieren.",
+      "generate": "Token generieren",
+      "label": "API-Token",
+      "regenerate": "Token neu generieren",
+      "revoke": "Token widerrufen",
+      "title": "API",
+      "viewDocs": "API-Dokumentation anzeigen"
+    },
     "audio": {
       "soundEffects": {
         "description": "Töne für Aufgabenabschluss, Benachrichtigungen und andere Interaktionen abspielen",
@@ -76,44 +89,6 @@
       "description": "Wählen Sie die Seite, die beim ersten Öffnen von TaskTrove angezeigt werden soll",
       "label": "Beim Öffnen von TaskTrove anzeigen",
       "title": "Standardseite"
-    },
-    "startView": {
-      "all": {
-        "description": "Alle Ihre Aufgaben an einem Ort anzeigen",
-        "label": "Alle Aufgaben"
-      },
-      "calendar": {
-        "description": "Aufgaben im Kalenderformat anzeigen",
-        "label": "Kalender"
-      },
-      "completed": {
-        "description": "Abgeschlossene Aufgaben überprüfen",
-        "label": "Abgeschlossen"
-      },
-      "inbox": {
-        "description": "Mit unorganisierten Aufgaben beginnen",
-        "label": "Posteingang"
-      },
-      "labels": {
-        "description": "Aufgaben mit Etiketten organisieren",
-        "label": "Etiketten"
-      },
-      "lastViewed": {
-        "description": "Zurück zu Ihrer letzten aktiven Seite",
-        "label": "Zuletzt angezeigt"
-      },
-      "projects": {
-        "description": "Projekte verwalten und organisieren",
-        "label": "Projekte"
-      },
-      "today": {
-        "description": "Fokus auf heutige Aufgaben",
-        "label": "Heute"
-      },
-      "upcoming": {
-        "description": "Sehen, was als nächstes kommt",
-        "label": "Anstehend"
-      }
     },
     "language": {
       "description": "Anzeigesprache der Anwendung auswählen",
@@ -133,6 +108,32 @@
         "label": "Hover-Öffnung"
       },
       "title": "Popovers"
+    },
+    "startView": {
+      "all": {
+        "description": "Alle Ihre Aufgaben an einem Ort anzeigen",
+        "label": "Alle Aufgaben"
+      },
+      "completed": {
+        "description": "Abgeschlossene Aufgaben überprüfen",
+        "label": "Abgeschlossen"
+      },
+      "inbox": {
+        "description": "Mit unorganisierten Aufgaben beginnen",
+        "label": "Posteingang"
+      },
+      "lastViewed": {
+        "description": "Zurück zu Ihrer letzten aktiven Seite",
+        "label": "Zuletzt angezeigt"
+      },
+      "today": {
+        "description": "Fokus auf heutige Aufgaben",
+        "label": "Heute"
+      },
+      "upcoming": {
+        "description": "Sehen, was als nächstes kommt",
+        "label": "Anstehend"
+      }
     }
   },
   "notifications": {

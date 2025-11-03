@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -51,8 +51,15 @@ export function DeleteConfirmDialog({
   const { t } = useTranslation("dialogs")
   const [deleteContainedResources, setDeleteContainedResources] = useState(false)
 
-  // Show checkbox for groups and projects only
-  const shouldShowCheckbox = entityType === "group" || entityType === "project"
+  useEffect(() => {
+    if (!open) {
+      setDeleteContainedResources(false)
+    }
+  }, [open])
+
+  // Show checkbox for groups, projects, and sections
+  const shouldShowCheckbox =
+    entityType === "group" || entityType === "project" || entityType === "section"
 
   // Get translated title based on entity type
   const getTitle = () => {
@@ -187,10 +194,15 @@ export function DeleteConfirmDialog({
                       "delete.project.deleteContainedResources",
                       "Also delete all tasks in this project",
                     )
-                  : t(
-                      "delete.group.deleteContainedResources",
-                      "Also delete all projects and tasks in this group",
-                    )}
+                  : entityType === "group"
+                    ? t(
+                        "delete.group.deleteContainedResources",
+                        "Also delete all projects and tasks in this group",
+                      )
+                    : t(
+                        "delete.section.deleteContainedResources",
+                        "Also delete all tasks in this section",
+                      )}
               </label>
             </div>
           </div>

@@ -7,6 +7,7 @@ import { useTranslation } from "@tasktrove/i18n"
 import { TaskFilterControls } from "./task-filter-controls"
 import { TaskFilterBadges } from "./task-filter-badges"
 import { TaskSearchInput } from "./task-search-input"
+import { TaskSortControls } from "./task-sort-controls"
 import {
   openQuickAddAtom,
   openSectionDialogAtom,
@@ -32,11 +33,8 @@ export function ProjectViewToolbar({ className }: ProjectViewToolbarProps) {
   const routeContext = useAtomValue(currentRouteContextAtom)
   const selectedTaskIds = useAtomValue(selectedTasksAtom)
 
-  // Check if we're in a project context to show Add Section button
   const isProjectContext = isValidProjectId(routeContext.viewId)
   const projectId = isProjectContext ? createProjectId(routeContext.viewId) : undefined
-
-  // Adjust sticky position based on whether SelectionToolbar is visible
   const hasSelection = selectedTaskIds.length > 0
 
   const handleAddSection = () => {
@@ -53,29 +51,34 @@ export function ProjectViewToolbar({ className }: ProjectViewToolbarProps) {
         className,
       )}
     >
-      <div className="flex items-center gap-2">
-        <TaskFilterControls />
-        <TaskSearchInput />
-        {isProjectContext && (
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-1 flex-wrap items-center gap-2">
+          <TaskFilterControls />
+          <TaskSortControls />
+          <TaskSearchInput />
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {isProjectContext && (
+            <Button
+              onClick={handleAddSection}
+              variant="outline"
+              size="sm"
+              className="shadow-sm shrink-0"
+            >
+              <FolderPlus className="h-4 w-4 mr-1.5" />
+              {t("actions.addSection", "Add Section")}
+            </Button>
+          )}
           <Button
-            onClick={handleAddSection}
-            variant="outline"
+            onClick={() => openQuickAddAction()}
+            variant="default"
             size="sm"
-            className="shadow-sm shrink-0 ml-auto"
+            className="shadow-sm shrink-0"
           >
-            <FolderPlus className="h-4 w-4 mr-1.5" />
-            {t("actions.addSection", "Add Section")}
+            <Plus className="h-4 w-4 mr-1.5" />
+            {t("actions.addTask", "Add Task")}
           </Button>
-        )}
-        <Button
-          onClick={() => openQuickAddAction()}
-          variant="default"
-          size="sm"
-          className={`shadow-sm shrink-0 ${!isProjectContext ? "ml-auto" : ""}`}
-        >
-          <Plus className="h-4 w-4 mr-1.5" />
-          {t("actions.addTask", "Add Task")}
-        </Button>
+        </div>
       </div>
       <TaskFilterBadges />
     </div>

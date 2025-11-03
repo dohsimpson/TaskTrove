@@ -57,7 +57,7 @@ import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
 
 export function SidebarNav() {
   // Translation setup
-  const { t } = useTranslation("navigation")
+  const { t } = useTranslation(["navigation", "common"])
 
   // Get data from atoms instead of props
   const [projects] = useAtom(projectsAtom)

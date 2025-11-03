@@ -1,3 +1,5 @@
+import "server-only"
+
 import { headers } from "next/headers"
 import { fallbackLng, type Language, isValidLanguage } from "./settings"
 

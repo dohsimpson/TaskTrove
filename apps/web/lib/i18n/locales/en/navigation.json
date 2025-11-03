@@ -1,0 +1,25 @@
+{
+  "footer": {
+    "newVersion": "new version: {{version}}",
+    "updateTo": "Update to {{version}}"
+  },
+  "quickActions": {
+    "add": "Add",
+    "search": "Search"
+  },
+  "sections": {
+    "labels": "Labels",
+    "projects": "Projects"
+  },
+  "userMenu": {
+    "about": "About",
+    "community": "Community",
+    "github": "Github",
+    "installApp": "Install App",
+    "reportBug": "Report Bug",
+    "settings": "Settings",
+    "shortcuts": "Shortcuts",
+    "signOut": "Sign out",
+    "upgradeToPro": "Upgrade to Pro"
+  }
+}

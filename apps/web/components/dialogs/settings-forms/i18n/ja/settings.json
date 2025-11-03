@@ -1,4 +1,11 @@
 {
+  "appearance": {
+    "colorScheme": {
+      "description": "ライト、ダーク、またはシステム設定に従うカラーテーマを選択",
+      "label": "カラーテーマを選択",
+      "title": "カラーテーマ"
+    }
+  },
   "data": {
     "autoBackup": {
       "backupTime": {
@@ -48,15 +55,9 @@
         "success": {
           "alreadyExisted": "{{items}}は既に存在していました",
           "imported": "{{items}}をインポートしました",
-          "labels_one": "{{count}}個のラベル",
-          "labels_many": "{{count}}個のラベル",
           "labels_other": "{{count}}個のラベル",
           "noNewItems": "新しいアイテムはありません",
-          "projects_one": "{{count}}個のプロジェクト",
-          "projects_many": "{{count}}個のプロジェクト",
           "projects_other": "{{count}}個のプロジェクト",
-          "tasks_one": "{{count}}個のタスク",
-          "tasks_many": "{{count}}個のタスク",
           "tasks_other": "{{count}}個のタスク",
           "title": "インポート成功！"
         },
@@ -65,6 +66,15 @@
     }
   },
   "general": {
+    "apiToken": {
+      "description": "プログラムによるアクセスのためのAPIトークンを生成します。このトークンを認証ヘッダーに'Bearer YOUR_TOKEN'として使用してAPIリクエストを認証します。",
+      "generate": "トークンを生成",
+      "label": "APIトークン",
+      "regenerate": "トークンを再生成",
+      "revoke": "トークンを無効化",
+      "title": "API",
+      "viewDocs": "APIドキュメントを表示"
+    },
     "audio": {
       "soundEffects": {
         "description": "タスク完了、通知、その他の操作のサウンドを再生します",
@@ -76,44 +86,6 @@
       "description": "TaskTroveを初めて開いたときに表示するページを選択",
       "label": "TaskTroveを開いたときに表示",
       "title": "デフォルトページ"
-    },
-    "startView": {
-      "all": {
-        "description": "すべてのタスクを一か所で表示",
-        "label": "すべてのタスク"
-      },
-      "calendar": {
-        "description": "タスクをカレンダー形式で表示",
-        "label": "カレンダー"
-      },
-      "completed": {
-        "description": "完了したタスクを確認",
-        "label": "完了"
-      },
-      "inbox": {
-        "description": "整理されていないタスクから開始",
-        "label": "受信ボックス"
-      },
-      "labels": {
-        "description": "ラベルでタスクを整理",
-        "label": "ラベル"
-      },
-      "lastViewed": {
-        "description": "最後にアクティブだったページに戻る",
-        "label": "最後に表示"
-      },
-      "projects": {
-        "description": "プロジェクトを管理・整理",
-        "label": "プロジェクト"
-      },
-      "today": {
-        "description": "今日のタスクに集中",
-        "label": "今日"
-      },
-      "upcoming": {
-        "description": "次に予定されていることを確認",
-        "label": "予定"
-      }
     },
     "language": {
       "description": "アプリケーションの表示言語を選択",
@@ -133,6 +105,32 @@
         "label": "ホバーで開く"
       },
       "title": "ポップオーバー"
+    },
+    "startView": {
+      "all": {
+        "description": "すべてのタスクを一か所で表示",
+        "label": "すべてのタスク"
+      },
+      "completed": {
+        "description": "完了したタスクを確認",
+        "label": "完了"
+      },
+      "inbox": {
+        "description": "整理されていないタスクから開始",
+        "label": "受信ボックス"
+      },
+      "lastViewed": {
+        "description": "最後にアクティブだったページに戻る",
+        "label": "最後に表示"
+      },
+      "today": {
+        "description": "今日のタスクに集中",
+        "label": "今日"
+      },
+      "upcoming": {
+        "description": "次に予定されていることを確認",
+        "label": "予定"
+      }
     }
   },
   "notifications": {

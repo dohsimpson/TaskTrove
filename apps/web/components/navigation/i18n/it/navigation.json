@@ -3,30 +3,23 @@
     "newVersion": "Nuova versione: {{version}}",
     "updateTo": "Aggiorna a {{version}}"
   },
-  "mainNav": {
-    "allTasks": "Tutte le attività",
-    "calendar": "Calendario",
-    "completed": "Completate",
-    "inbox": "Posta in arrivo",
-    "today": "Oggi",
-    "upcoming": "Prossime"
-  },
   "quickActions": {
     "add": "Aggiungi",
     "search": "Cerca"
   },
   "sections": {
     "labels": "Etichette",
-
     "projects": "Progetti"
   },
   "userMenu": {
     "about": "Informazioni",
     "community": "Comunità",
     "github": "Github",
+    "installApp": "Installa l'applicazione",
     "reportBug": "Segnala bug",
     "settings": "Impostazioni",
     "shortcuts": "Scorciatoie",
+    "signOut": "Disconnetti",
     "upgradeToPro": "Passa a Pro"
   }
 }

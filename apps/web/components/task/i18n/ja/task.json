@@ -1,11 +1,12 @@
 {
   "actions": {
+    "addAssignees": "担当者を追加",
     "addComment": "コメントを追加",
     "addDate": "日付を追加",
     "addLabel": "ラベルを追加",
-    "addLabels": "ラベルを追加",
     "addPriority": "優先度を追加",
     "addProject": "プロジェクトを追加",
+    "addSection": "セクションを追加",
     "addSubtask": "サブタスクを追加",
     "addTask": "タスクを追加"
   },
@@ -13,54 +14,12 @@
     "addAnotherComment": "別のコメントを追加...",
     "addComment": "コメントを追加",
     "addComments": "コメントを追加...",
-    "commentCount_one": "{{count}} コメント",
-    "commentCount_many": "{{count}} コメント",
     "commentCount_other": "{{count}} コメント",
-    "title_one": "コメント",
-    "title_many": "コメント",
-    "title_other": "コメント"
+    "title": "コメント",
+    "title_other": "コメント ({{count}})"
   },
-  "emptyStates": {
-    "all": {
-      "description": "この画面は全プロジェクトのタスクを表示します。TaskTroveを始めるために、最初のタスクを作成しましょう。",
-      "title": "タスクが見つかりません"
-    },
-    "analytics": {
-      "description": "生産性とタスクの完了パターンを追跡できます。",
-      "title": "分析ダッシュボード"
-    },
-    "completed": {
-      "description": "完了したタスクがここに表示されます。いくつかのタスクを完了して、進捗を確認し、達成を祝いましょう！",
-      "title": "まだ完了したタスクはありません"
-    },
-    "fallback": {
-      "description": "最初のタスクを作成して始めましょう。",
-      "title": "タスクが見つかりません"
-    },
-    "inbox": {
-      "description": "これは新しいタスクのデフォルトの収集場所です。プロジェクトを指定せずにタスクを作成すると、ここに表示されます。",
-      "title": "受信箱は空です"
-    },
-    "label": {
-      "description": "このラベルが付いたタスクがここに表示されます。ラベルを使って関連タスクを分類し、素早く見つけましょう。",
-      "title": "{{labelName}} ラベルのタスクがありません"
-    },
-    "project": {
-      "description": "このプロジェクトは空です。タスクを追加して作業を整理し、特定の目標の進捗を追跡しましょう。",
-      "title": "{{projectName}} にタスクがありません"
-    },
-    "search": {
-      "description": "タイトル、説明、ラベルでタスクを検索できます。",
-      "title": "検索結果"
-    },
-    "today": {
-      "description": "今日が期限のタスクがここに表示されます。タスクに期限を設定して、日々の目標に遅れないようにしましょう。",
-      "title": "今日の予定はありません"
-    },
-    "upcoming": {
-      "description": "将来の期限が設定されたタスクがここに表示され、事前の計画と予定の準備に役立ちます。",
-      "title": "予定されたタスクはありません"
-    }
+  "common": {
+    "confirm": "確認"
   },
   "filters": {
     "activeOnly": "アクティブのみ",
@@ -71,7 +30,6 @@
     "completedOnly": "完了のみ",
     "customRange": "カスタム範囲",
     "dueDate": "期限",
-    "filter": "フィルター",
     "filterTasks": "タスクをフィルター",
     "fromDate": "開始日",
     "labels": "ラベル",
@@ -79,14 +37,6 @@
     "next7Days": "今後7日",
     "noLabels": "ラベルなし",
     "noPriority": "優先度なし",
-    "presets": {
-      "noDueDate": "期限なし",
-      "nextWeek": "来週",
-      "overdue": "期限切れ",
-      "thisWeek": "今週",
-      "today": "今日",
-      "tomorrow": "明日"
-    },
     "priority": "優先度",
     "priority1": "優先度 1",
     "priority2": "優先度 2",
@@ -120,7 +70,10 @@
     "taskTitle": "タスクのタイトルを入力..."
   },
   "priority": {
-    "noPriority": "優先度なし"
+    "noPriority": "優先度なし",
+    "priority1": "優先度 1",
+    "priority2": "優先度 2",
+    "priority3": "優先度 3"
   },
   "project": {
     "noProject": "プロジェクトなし (受信箱)"
@@ -128,6 +81,7 @@
   "recurring": {
     "adaptive": "適応的",
     "apply": "適用",
+    "autoRollover": "自動ロールオーバー",
     "calculateNextFrom": "次の期限を計算するタイミング",
     "createCustomPattern": "カスタム繰り返しパターンを作成",
     "current": "現在:",
@@ -174,12 +128,6 @@
     "tomorrow": "明日"
   },
   "sidePanel": {
-    "attachments": {
-      "count_one": "{{count}} 添付ファイル",
-      "count_many": "{{count}} 添付ファイル",
-      "count_other": "{{count}} 添付ファイル",
-      "title": "添付ファイル"
-    },
     "autoSave": {
       "saving": "保存中..."
     },
@@ -197,12 +145,14 @@
     },
     "dueDate": {
       "placeholder": "期限を追加",
-      "title": "期限",
       "today": "今日",
       "tomorrow": "明日"
     },
     "labels": {
       "title": "ラベル"
+    },
+    "scheduling": {
+      "title": "スケジュール設定"
     },
     "shortcuts": {
       "close": "閉じる",
@@ -221,5 +171,28 @@
     "addSubtask": "サブタスクを追加",
     "addSubtasks": "サブタスクを追加...",
     "title": "サブタスク"
+  },
+  "task": {
+    "noSearchResults": "タスクが見つかりません",
+    "noTasksAvailable": "利用可能なタスクがありません",
+    "searchPlaceholder": "タスクを検索...",
+    "selectedCount_other": "{{count}} 件選択中"
+  },
+  "timeEstimation": {
+    "calculatedFromSubtasks": "サブタスクから計算",
+    "clear": "クリア",
+    "customDuration": "カスタム期間",
+    "done": "完了",
+    "errors": {
+      "hourNumber": "数値である必要があります (0-99)",
+      "hourRange": "時間は0-99の範囲である必要があります",
+      "minuteNumber": "数値である必要があります (0-59)",
+      "minuteRange": "分は0-59の範囲である必要があります"
+    },
+    "helpText": "このタスクの完了にかかる時間を見積もってください。これにより、計画や生産性の追跡に役立ちます。",
+    "helpTextSubtasks": "この見積もりはサブタスクの見積もりの合計から計算されます。ここで直接見積もりを設定すると、計算された値が上書きされます。",
+    "hour": "時間",
+    "minute": "分",
+    "title": "時間見積もり"
   }
 }

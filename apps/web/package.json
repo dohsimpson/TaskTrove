@@ -1,6 +1,6 @@
 {
   "name": "web",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -18,16 +18,11 @@
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
     "check": "tsgo --noEmit && pnpm lint && pnpm test",
-    "i18n:extract:dialogs": "i18next-parser --config i18next-parser-dialogs.config.js",
-    "i18n:extract:dialogs:watch": "i18next-parser --config i18next-parser-dialogs.config.js --watch",
-    "i18n:extract:settings": "i18next-parser --config i18next-parser-settings.config.js",
-    "i18n:extract:settings:watch": "i18next-parser --config i18next-parser-settings.config.js --watch",
-    "i18n:extract:layout": "i18next-parser --config i18next-parser-layout.config.js",
-    "i18n:extract:layout:watch": "i18next-parser --config i18next-parser-layout.config.js --watch",
-    "i18n:extract:navigation": "i18next-parser --config i18next-parser-navigation.config.js",
-    "i18n:extract:navigation:watch": "i18next-parser --config i18next-parser-navigation.config.js --watch",
-    "i18n:extract:task": "i18next-parser --config i18next-parser-task.config.js",
-    "i18n:extract:task:watch": "i18next-parser --config i18next-parser-task.config.js --watch",
+    "i18n:extract": "i18next-cli extract --config i18next.config.ts",
+    "i18n:extract:watch": "i18next-cli extract --config i18next.config.ts --watch",
+    "i18n:status": "i18next-cli status --config i18next.config.ts",
+    "i18n:types": "i18next-cli types --config i18next.config.ts",
+    "i18n:lint": "i18next-cli lint --config i18next.config.ts",
     "generate-data": "tsx scripts/generate-data-cli.ts"
   },
   "dependencies": {
@@ -143,7 +138,7 @@
     "esbuild": "catalog:",
     "eslint": "catalog:",
     "happy-dom": "catalog:",
-    "i18next-parser": "catalog:",
+    "i18next-cli": "catalog:",
     "jotai-devtools": "catalog:",
     "jsdom": "catalog:",
     "pino-pretty": "catalog:",

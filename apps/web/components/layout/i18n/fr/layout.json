@@ -48,6 +48,48 @@
     "currentTheme": "Thème actuel : {{theme}}. Cliquez pour changer de thème.",
     "openSidebar": "Ouvrir la barre latérale"
   },
+  "standardViews": {
+    "all": {
+      "description": "Voir toutes vos tâches en un seul endroit",
+      "title": "Toutes les tâches"
+    },
+    "calendar": {
+      "description": "Voir les tâches au format calendrier",
+      "title": "Calendrier"
+    },
+    "completed": {
+      "description": "Examiner les tâches terminées",
+      "title": "Terminées"
+    },
+    "habits": {
+      "description": "Suivez vos habitudes et routines",
+      "title": "Habitudes"
+    },
+    "inbox": {
+      "description": "Commencer avec les tâches non organisées",
+      "title": "Boîte de réception"
+    },
+    "labels": {
+      "description": "Organiser les tâches avec des étiquettes",
+      "title": "Étiquettes"
+    },
+    "not-found": {
+      "description": "La ressource demandée n'a pas été trouvée",
+      "title": "Non trouvé"
+    },
+    "projects": {
+      "description": "Gérer et organiser les projets",
+      "title": "Projets"
+    },
+    "today": {
+      "description": "Se concentrer sur les tâches d'aujourd'hui",
+      "title": "Aujourd'hui"
+    },
+    "upcoming": {
+      "description": "Voir ce qui arrive ensuite",
+      "title": "À venir"
+    }
+  },
   "viewOptions": {
     "displayOptions": {
       "compact": {
@@ -101,49 +143,11 @@
     },
     "sort": {
       "direction": {
-        "changeToAsc": "Changer en croissant",
-        "changeToDesc": "Changer en décroissant"
+        "asc": "Croissant",
+        "desc": "Décroissant",
+        "label": "Direction du tri"
       },
-      "help": {
-        "createdDate": {
-          "description": "Trier par heure de création de la tâche",
-          "label": "Date de création :"
-        },
-        "default": {
-          "description": "Afficher les tâches dans l'ordre naturel, tâches terminées en bas",
-          "label": "Par défaut (non trié) :"
-        },
-        "description": "Choisissez comment organiser vos tâches :",
-        "dueDate": {
-          "description": "Trier toutes les tâches par date d'échéance, mélangeant terminées et non terminées",
-          "label": "Date d'échéance :"
-        },
-        "priority": {
-          "description": "Trier par priorité (1=plus haute, 4=plus basse)",
-          "label": "Priorité :"
-        },
-        "status": {
-          "description": "Grouper par statut d'achèvement, puis par colonne kanban",
-          "label": "Statut :"
-        },
-        "tip": "Astuce : Utilisez les boutons fléchés pour basculer entre croissant et décroissant",
-        "title": {
-          "description": "Trier par nom de tâche par ordre alphabétique",
-          "label": "Titre :"
-        }
-      },
-      "label": "Tri",
-      "options": {
-        "createdAt": "Date de création",
-        "default": "Par défaut (non trié)",
-        "dueDate": "Date d'échéance",
-        "priority": "Priorité",
-        "status": "Statut",
-        "title": "Titre"
-      },
-      "placeholder": "Sélectionner une option de tri",
-      "sortBy": "Trier par",
-      "title": "Options de tri"
+      "label": "Tri"
     },
     "title": "Options d'affichage",
     "viewMode": {
@@ -152,40 +156,6 @@
       "kanbanTooltip": "Uniquement pour les projets",
       "label": "Mode d'affichage",
       "list": "Liste"
-    }
-  },
-  "standardViews": {
-    "all": {
-      "description": "Voir toutes vos tâches en un seul endroit",
-      "title": "Toutes les tâches"
-    },
-    "calendar": {
-      "description": "Voir les tâches au format calendrier",
-      "title": "Calendrier"
-    },
-    "completed": {
-      "description": "Examiner les tâches terminées",
-      "title": "Terminées"
-    },
-    "inbox": {
-      "description": "Commencer avec les tâches non organisées",
-      "title": "Boîte de réception"
-    },
-    "labels": {
-      "description": "Organiser les tâches avec des étiquettes",
-      "title": "Étiquettes"
-    },
-    "projects": {
-      "description": "Gérer et organiser les projets",
-      "title": "Projets"
-    },
-    "today": {
-      "description": "Se concentrer sur les tâches d'aujourd'hui",
-      "title": "Aujourd'hui"
-    },
-    "upcoming": {
-      "description": "Voir ce qui arrive ensuite",
-      "title": "À venir"
     }
   }
 }

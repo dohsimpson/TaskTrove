@@ -48,6 +48,48 @@
     "currentTheme": "Huidig thema: {{theme}}. Klik om door thema's te bladeren.",
     "openSidebar": "Zijpaneel openen"
   },
+  "standardViews": {
+    "all": {
+      "description": "Bekijk al je taken op één plek",
+      "title": "Alle taken"
+    },
+    "calendar": {
+      "description": "Bekijk taken in kalenderformaat",
+      "title": "Kalender"
+    },
+    "completed": {
+      "description": "Bekijk voltooide taken",
+      "title": "Voltooid"
+    },
+    "habits": {
+      "description": "Volg en beheer je dagelijkse gewoontes",
+      "title": "Gewoontes"
+    },
+    "inbox": {
+      "description": "Begin met ongeorganiseerde taken",
+      "title": "Inbox"
+    },
+    "labels": {
+      "description": "Organiseer taken met labels",
+      "title": "Labels"
+    },
+    "not-found": {
+      "description": "De pagina die je zoekt bestaat niet",
+      "title": "Pagina niet gevonden"
+    },
+    "projects": {
+      "description": "Beheer en organiseer projecten",
+      "title": "Projecten"
+    },
+    "today": {
+      "description": "Focus op vandaag's taken",
+      "title": "Vandaag"
+    },
+    "upcoming": {
+      "description": "Zie wat er op komst is",
+      "title": "Aankomend"
+    }
+  },
   "viewOptions": {
     "displayOptions": {
       "compact": {
@@ -101,49 +143,11 @@
     },
     "sort": {
       "direction": {
-        "changeToAsc": "Wijzigen naar oplopend",
-        "changeToDesc": "Wijzigen naar aflopend"
+        "asc": "Oplopend",
+        "desc": "Aflopend",
+        "label": "Sorteerrichting"
       },
-      "help": {
-        "createdDate": {
-          "description": "Sorteren op tijdstip van taakaanmaak",
-          "label": "Aanmaakdatum:"
-        },
-        "default": {
-          "description": "Taken in natuurlijke volgorde tonen, voltooide taken onderaan",
-          "label": "Standaard (ongesorteerd):"
-        },
-        "description": "Kies hoe je taken wilt organiseren:",
-        "dueDate": {
-          "description": "Alle taken sorteren op vervaldatum, voltooide en onvoltooide door elkaar",
-          "label": "Vervaldatum:"
-        },
-        "priority": {
-          "description": "Sorteren op prioriteit (1=hoogste, 4=laagste)",
-          "label": "Prioriteit:"
-        },
-        "status": {
-          "description": "Groeperen op voltooiingsstatus, daarna op kanbankolom",
-          "label": "Status:"
-        },
-        "tip": "Tip: Gebruik de pijlknoppen om te wisselen tussen oplopend en aflopend",
-        "title": {
-          "description": "Alfabetisch sorteren op taaknaam",
-          "label": "Titel:"
-        }
-      },
-      "label": "Sorteren",
-      "options": {
-        "createdAt": "Aanmaakdatum",
-        "default": "Standaard (ongesorteerd)",
-        "dueDate": "Vervaldatum",
-        "priority": "Prioriteit",
-        "status": "Status",
-        "title": "Titel"
-      },
-      "placeholder": "Selecteer sorteeroptie",
-      "sortBy": "Sorteren op",
-      "title": "Sorteeropties"
+      "label": "Sorteren"
     },
     "title": "Weergave-opties",
     "viewMode": {
@@ -152,40 +156,6 @@
       "kanbanTooltip": "Alleen beschikbaar voor projecten",
       "label": "Weergavemodus",
       "list": "Lijst"
-    }
-  },
-  "standardViews": {
-    "all": {
-      "description": "Bekijk al je taken op één plek",
-      "title": "Alle taken"
-    },
-    "calendar": {
-      "description": "Bekijk taken in kalenderformaat",
-      "title": "Kalender"
-    },
-    "completed": {
-      "description": "Bekijk voltooide taken",
-      "title": "Voltooid"
-    },
-    "inbox": {
-      "description": "Begin met ongeorganiseerde taken",
-      "title": "Inbox"
-    },
-    "labels": {
-      "description": "Organiseer taken met labels",
-      "title": "Labels"
-    },
-    "projects": {
-      "description": "Beheer en organiseer projecten",
-      "title": "Projecten"
-    },
-    "today": {
-      "description": "Focus op vandaag's taken",
-      "title": "Vandaag"
-    },
-    "upcoming": {
-      "description": "Zie wat er op komst is",
-      "title": "Aankomend"
     }
   }
 }

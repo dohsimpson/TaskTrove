@@ -16,17 +16,8 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
   Settings2,
   Calendar,
-  ArrowUpNarrowWide,
-  ArrowDownWideNarrow,
   Columns3,
   ListTodo,
   SidebarOpen,
@@ -173,9 +164,20 @@ export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps
             {t("viewOptions.viewMode.label", "View Mode")}
           </Label>
           <div className="grid grid-cols-3 gap-1">
-            {(
-              ["list", "kanban", "calendar"] satisfies readonly ("list" | "kanban" | "calendar")[]
-            ).map((mode) => {
+            {[
+              {
+                mode: "list" as const,
+                label: t("viewOptions.viewMode.list", "List"),
+              },
+              {
+                mode: "kanban" as const,
+                label: t("viewOptions.viewMode.kanban", "Kanban"),
+              },
+              {
+                mode: "calendar" as const,
+                label: t("viewOptions.viewMode.calendar", "Calendar"),
+              },
+            ].map(({ mode, label }) => {
               const disabled =
                 (mode === "kanban" && isKanbanDisabled()) ||
                 (mode === "calendar" && isCalendarDisabled())
@@ -190,7 +192,7 @@ export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps
                   className="justify-center capitalize cursor-pointer"
                 >
                   {getViewModeIcon(mode)}
-                  <span className="ml-1">{t(`viewOptions.viewMode.${mode}`, mode)}</span>
+                  <span className="ml-1">{label}</span>
                 </Button>
               )
 
@@ -339,141 +341,6 @@ export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps
               onCheckedChange={(checked) => setViewOptions({ compactView: checked })}
               className="cursor-pointer"
             />
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Sort Section */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label className="text-sm font-medium">{t("viewOptions.sort.label", "Sort")}</Label>
-            <HelpPopover
-              title={t("viewOptions.sort.title", "Sorting Options")}
-              content={
-                <div className="space-y-3">
-                  <p>
-                    {t("viewOptions.sort.help.description", "Choose how to organize your tasks:")}
-                  </p>
-                  <ul className="list-disc pl-4 space-y-1">
-                    <li>
-                      <strong>
-                        {t("viewOptions.sort.help.default.label", "Default (Unsorted):")}
-                      </strong>{" "}
-                      {t(
-                        "viewOptions.sort.help.default.description",
-                        "Shows tasks in their natural order with completed tasks at the bottom",
-                      )}
-                    </li>
-                    <li>
-                      <strong>{t("viewOptions.sort.help.dueDate.label", "Due Date:")}</strong>{" "}
-                      {t(
-                        "viewOptions.sort.help.dueDate.description",
-                        "Sorts all tasks by due date, mixing completed and incomplete",
-                      )}
-                    </li>
-                    <li>
-                      <strong>{t("viewOptions.sort.help.priority.label", "Priority:")}</strong>{" "}
-                      {t(
-                        "viewOptions.sort.help.priority.description",
-                        "Orders by priority level (1=highest, 4=lowest)",
-                      )}
-                    </li>
-                    <li>
-                      <strong>{t("viewOptions.sort.help.title.label", "Title:")}</strong>{" "}
-                      {t(
-                        "viewOptions.sort.help.title.description",
-                        "Alphabetical sorting by task name",
-                      )}
-                    </li>
-                    <li>
-                      <strong>
-                        {t("viewOptions.sort.help.createdDate.label", "Created Date:")}
-                      </strong>{" "}
-                      {t(
-                        "viewOptions.sort.help.createdDate.description",
-                        "Orders by when tasks were created",
-                      )}
-                    </li>
-                    <li>
-                      <strong>{t("viewOptions.sort.help.status.label", "Status:")}</strong>{" "}
-                      {t(
-                        "viewOptions.sort.help.status.description",
-                        "Groups by completion status, then by kanban column",
-                      )}
-                    </li>
-                  </ul>
-                  <div className="mt-3 p-2 bg-muted rounded-md">
-                    <p className="text-sm text-muted-foreground">
-                      💡{" "}
-                      {t(
-                        "viewOptions.sort.help.tip",
-                        "Tip: Use the arrow button to toggle between ascending and descending order",
-                      )}
-                    </p>
-                  </div>
-                </div>
-              }
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="sort-by" className="text-xs text-muted-foreground">
-              {t("viewOptions.sort.sortBy", "Sort by")}
-            </Label>
-            <div className="flex gap-2">
-              <Select
-                value={viewState.sortBy}
-                onValueChange={(sortBy) => setViewOptions({ sortBy })}
-              >
-                <SelectTrigger className="h-8 flex-1 cursor-pointer">
-                  <SelectValue
-                    placeholder={t("viewOptions.sort.placeholder", "Select sort option")}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="default" className="cursor-pointer">
-                    {t("viewOptions.sort.options.default", "Default (Unsorted)")}
-                  </SelectItem>
-                  <SelectItem value="dueDate" className="cursor-pointer">
-                    {t("viewOptions.sort.options.dueDate", "Due Date")}
-                  </SelectItem>
-                  <SelectItem value="priority" className="cursor-pointer">
-                    {t("viewOptions.sort.options.priority", "Priority")}
-                  </SelectItem>
-                  <SelectItem value="title" className="cursor-pointer">
-                    {t("viewOptions.sort.options.title", "Title")}
-                  </SelectItem>
-                  <SelectItem value="createdAt" className="cursor-pointer">
-                    {t("viewOptions.sort.options.createdAt", "Created Date")}
-                  </SelectItem>
-                  <SelectItem value="status" className="cursor-pointer">
-                    {t("viewOptions.sort.options.status", "Status")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 px-2 cursor-pointer"
-                onClick={() =>
-                  setViewOptions({
-                    sortDirection: viewState.sortDirection === "asc" ? "desc" : "asc",
-                  })
-                }
-                title={
-                  viewState.sortDirection === "asc"
-                    ? t("viewOptions.sort.direction.changeToDesc", "Change to Descending")
-                    : t("viewOptions.sort.direction.changeToAsc", "Change to Ascending")
-                }
-              >
-                {viewState.sortDirection === "asc" ? (
-                  <ArrowUpNarrowWide className="h-3 w-3" />
-                ) : (
-                  <ArrowDownWideNarrow className="h-3 w-3" />
-                )}
-              </Button>
-            </div>
           </div>
         </div>
       </div>

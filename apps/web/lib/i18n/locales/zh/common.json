@@ -1,78 +1,53 @@
 {
-  "app": {
-    "name": "TaskTrove",
-    "description": "您的个人任务管理助手"
+  "emptyStates": {
+    "all": {
+      "description": "此视图显示您所有项目中的所有任务。创建您的第一个任务以开始使用 TaskTrove。",
+      "title": "未找到任务"
+    },
+    "analytics": {
+      "description": "跟踪您的生产力及任务完成模式。",
+      "title": "分析仪表板"
+    },
+    "completed": {
+      "description": "您已完成的任务将出现在这里。完成一些任务以查看您的进度并庆祝您的胜利！",
+      "title": "尚未完成任何任务"
+    },
+    "fallback": {
+      "description": "创建您的第一个任务以开始。",
+      "title": "未找到任务"
+    },
+    "inbox": {
+      "description": "这是您所有新任务的默认收集点。当您在不指定项目的情况下创建任务时，它会出现在这里。",
+      "title": "您的收件箱为空"
+    },
+    "label": {
+      "description": "带有此标签的任务将出现在这里。使用标签来分类并快速查找相关任务。",
+      "title": "没有带有 {{labelName}} 标签的任务"
+    },
+    "project": {
+      "description": "此项目为空。添加任务以组织您的工作并跟踪特定目标的进度。",
+      "title": "{{projectName}} 中没有任务"
+    },
+    "search": {
+      "description": "按标题、描述或标签查找任务。",
+      "title": "搜索结果"
+    },
+    "today": {
+      "description": "今天到期的任务将出现在这里。在您的任务上设置截止日期以保持日常目标的进度。",
+      "title": "今天没有安排"
+    },
+    "upcoming": {
+      "description": "具有未来截止日期的任务显示在这里，帮助您提前规划并准备下一步的工作。",
+      "title": "没有即将到来的任务"
+    }
   },
-  "navigation": {
-    "today": "今天",
-    "upcoming": "即将到来",
-    "all": "所有任务",
-    "completed": "已完成",
-    "projects": "项目",
-    "labels": "标签",
-    "inbox": "收件箱",
+  "mainNav": {
+    "allTasks": "所有任务",
     "calendar": "日历",
-    "analytics": "分析",
-    "profile": "个人资料"
-  },
-  "tasks": {
-    "task": "任务",
-    "tasks": "任务",
-    "addTask": "添加任务",
-    "editTask": "编辑任务",
-    "deleteTask": "删除任务",
-    "completeTask": "完成任务",
-    "uncompleteTask": "标记为未完成",
-    "title": "标题",
-    "description": "描述",
-    "dueDate": "截止日期",
-    "priority": "优先级",
-    "project": "项目",
-    "labels": "标签",
-    "noTasks": "未找到任务",
-    "filter": "筛选任务"
-  },
-  "projects": {
-    "project": "项目",
-    "projects": "项目",
-    "addProject": "添加项目",
-    "editProject": "编辑项目",
-    "deleteProject": "删除项目",
-    "projectName": "项目名称",
-    "projectDescription": "项目描述",
-    "noProjects": "未找到项目"
-  },
-  "labels": {
-    "label": "标签",
-    "labels": "标签",
-    "addLabel": "添加标签",
-    "editLabel": "编辑标签",
-    "deleteLabel": "删除标签",
-    "labelName": "标签名称",
-    "labelColor": "标签颜色",
-    "noLabels": "未找到标签"
-  },
-  "common": {
-    "save": "保存",
-    "cancel": "取消",
-    "delete": "删除",
-    "edit": "编辑",
-    "add": "添加",
-    "close": "关闭",
-    "confirm": "确认",
-    "loading": "加载中...",
-    "error": "错误",
-    "success": "成功",
-    "warning": "警告",
-    "info": "信息"
-  },
-  "settings": {
-    "settings": "设置",
-    "general": "常规",
-    "appearance": "外观",
-    "language": "语言",
-    "languageDescription": "选择您偏好的界面语言",
-    "theme": "主题",
-    "notifications": "通知"
+    "completed": "已完成",
+    "habits": "习惯",
+    "inbox": "收件箱",
+    "today": "今天",
+    "upcoming": "即将到来"
   }
 }

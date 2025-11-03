@@ -1,4 +1,11 @@
 {
+  "appearance": {
+    "colorScheme": {
+      "description": "Kies tussen licht, donker of automatisch thema",
+      "label": "Kleurenschema",
+      "title": "Kleurenschema"
+    }
+  },
   "data": {
     "autoBackup": {
       "backupTime": {
@@ -21,7 +28,7 @@
       "maxBackups": {
         "description": "Oudere back-ups worden automatisch verwijderd",
         "label": "Maximum aantal back-ups om te behouden",
-        "noLimit": ""
+        "noLimit": "Geen limiet"
       },
       "title": "Automatische back-up"
     },
@@ -49,14 +56,11 @@
           "alreadyExisted": "{{items}} bestonden al",
           "imported": "{{items}} geïmporteerd",
           "labels_one": "{{count}} label",
-          "labels_many": "{{count}} labels",
           "labels_other": "{{count}} labels",
           "noNewItems": "Geen nieuwe items",
           "projects_one": "{{count}} project",
-          "projects_many": "{{count}} projecten",
           "projects_other": "{{count}} projecten",
           "tasks_one": "{{count}} taak",
-          "tasks_many": "{{count}} taken",
           "tasks_other": "{{count}} taken",
           "title": "Import succesvol!"
         },
@@ -65,6 +69,15 @@
     }
   },
   "general": {
+    "apiToken": {
+      "description": "API token voor externe applicatie-integraties",
+      "generate": "Token genereren",
+      "label": "API Token",
+      "regenerate": "Token opnieuw genereren",
+      "revoke": "Token intrekken",
+      "title": "API Token",
+      "viewDocs": "Documentatie bekijken"
+    },
     "audio": {
       "soundEffects": {
         "description": "Geluiden afspelen voor voltooide taken, notificaties en andere interacties",
@@ -76,44 +89,6 @@
       "description": "Kies de pagina om te tonen bij het voor het eerst openen van TaskTrove",
       "label": "Tonen bij openen van TaskTrove",
       "title": "Standaardpagina"
-    },
-    "startView": {
-      "all": {
-        "description": "Bekijk al je taken op één plek",
-        "label": "Alle taken"
-      },
-      "calendar": {
-        "description": "Bekijk taken in kalenderformaat",
-        "label": "Kalender"
-      },
-      "completed": {
-        "description": "Bekijk voltooide taken",
-        "label": "Voltooid"
-      },
-      "inbox": {
-        "description": "Begin met ongeorganiseerde taken",
-        "label": "Inbox"
-      },
-      "labels": {
-        "description": "Organiseer taken met labels",
-        "label": "Labels"
-      },
-      "lastViewed": {
-        "description": "Keer terug naar je laatst actieve pagina",
-        "label": "Laatst bekeken"
-      },
-      "projects": {
-        "description": "Beheer en organiseer projecten",
-        "label": "Projecten"
-      },
-      "today": {
-        "description": "Focus op vandaag's taken",
-        "label": "Vandaag"
-      },
-      "upcoming": {
-        "description": "Zie wat er op komst is",
-        "label": "Aankomend"
-      }
     },
     "language": {
       "description": "Selecteer de weergavetaal van de applicatie",
@@ -133,6 +108,32 @@
         "label": "Openen bij hover"
       },
       "title": "Popovers"
+    },
+    "startView": {
+      "all": {
+        "description": "Bekijk al je taken op één plek",
+        "label": "Alle taken"
+      },
+      "completed": {
+        "description": "Bekijk voltooide taken",
+        "label": "Voltooid"
+      },
+      "inbox": {
+        "description": "Begin met ongeorganiseerde taken",
+        "label": "Inbox"
+      },
+      "lastViewed": {
+        "description": "Keer terug naar je laatst actieve pagina",
+        "label": "Laatst bekeken"
+      },
+      "today": {
+        "description": "Focus op vandaag's taken",
+        "label": "Vandaag"
+      },
+      "upcoming": {
+        "description": "Zie wat er op komst is",
+        "label": "Aankomend"
+      }
     }
   },
   "notifications": {

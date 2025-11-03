@@ -26,7 +26,13 @@
       "none": "无（根级别）",
       "placeholder": "选择{{type}}"
     },
-    "title": "添加新{{type}}"
+    "title": "添加新{{type}}",
+    "types": {
+      "label": "标签",
+      "project": "项目",
+      "projectGroup": "项目组",
+      "section": "分区"
+    }
   },
   "common": {
     "cancel": "取消"
@@ -34,8 +40,6 @@
   "delete": {
     "bulk": {
       "confirm": "删除任务",
-      "description_one": "您确定要删除 {{count}} 个项目吗？",
-      "description_many": "您确定要删除 {{count}} 个项目吗？",
       "description_other": "您确定要删除 {{count}} 个项目吗？",
       "title": "删除任务"
     },
@@ -44,11 +48,10 @@
       "description": "您确定要删除此项目吗？",
       "title": "删除项目"
     },
-    "deleteContainedResources": "同时删除包含的资源",
     "group": {
       "confirm": "删除组",
-      "description": "您确定要删除\"{{- name}}\"吗？此操作无法撤销。",
       "deleteContainedResources": "同时删除此组中的所有项目和任务",
+      "description": "您确定要删除\"{{- name}}\"吗？此操作无法撤销。",
       "title": "删除组"
     },
     "history": {
@@ -63,8 +66,8 @@
     },
     "project": {
       "confirm": "删除项目",
-      "description": "您确定要删除\"{{- name}}\"吗？此操作无法撤销。",
       "deleteContainedResources": "同时删除此项目中的所有任务",
+      "description": "您确定要删除\"{{- name}}\"吗？此操作无法撤销。",
       "title": "删除项目"
     },
     "section": {
@@ -103,6 +106,7 @@
     }
   },
   "quickAdd": {
+    "addingTask": "添加中",
     "addTask": "添加任务",
     "buttons": {
       "comments": "评论",
@@ -113,6 +117,7 @@
       "section": "分区",
       "subtasks": "子任务"
     },
+    "copyTitle": "复制任务",
     "description": {
       "placeholder": "描述"
     },
@@ -129,6 +134,10 @@
       "openMenu": "打开设置菜单"
     },
     "categories": {
+      "appearance": {
+        "description": "主题、颜色和视觉偏好设置",
+        "title": "外观"
+      },
       "data": {
         "description": "导入/导出，备份",
         "title": "数据和存储"
@@ -144,6 +153,11 @@
     },
     "description": "配置 TaskTrove 应用程序设置和首选项",
     "title": "设置"
+  },
+  "unsavedConfirmation": {
+    "confirm": "放弃更改",
+    "description": "您有未保存的更改，如果关闭此对话框将会丢失。您确定要继续吗？",
+    "title": "放弃未保存的更改？"
   },
   "userProfile": {
     "changeAvatar": "更改头像",
@@ -163,9 +177,11 @@
       "label": "密码",
       "placeholder": "留空以保持当前密码"
     },
+    "removeAvatar": "移除头像",
     "save": "保存更改",
     "saving": "保存中...",
     "title": "编辑个人资料",
+    "uploadAvatar": "上传头像",
     "username": {
       "label": "用户名",
       "placeholder": "输入您的用户名"

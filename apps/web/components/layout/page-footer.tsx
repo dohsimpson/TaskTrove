@@ -2,9 +2,11 @@
 
 import { useAtomValue, useSetAtom } from "jotai"
 import { CheckCircle, Calendar } from "lucide-react"
-import { uiFilteredTasksForViewAtom } from "@tasktrove/atoms/ui/filtered-tasks"
+import { taskListForViewAtom } from "@tasktrove/atoms/ui/task-counts"
 import { toggleTaskAtom, completedTasksTodayAtom } from "@tasktrove/atoms/core/tasks"
 import { toggleTaskPanelWithViewStateAtom } from "@tasktrove/atoms/ui/views"
+import { selectedTaskRouteContextOverrideAtom } from "@tasktrove/atoms/ui/selection"
+import type { RouteContext } from "@tasktrove/atoms/ui/navigation"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { Button } from "@/components/ui/button"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
@@ -21,13 +23,16 @@ function TaskListContent({
   tasks,
   title,
   icon,
+  routeContextOverride,
 }: {
   tasks: Task[]
   title: string
   icon: React.ReactNode
+  routeContextOverride?: RouteContext
 }) {
   const toggleTask = useSetAtom(toggleTaskAtom)
   const toggleTaskPanel = useSetAtom(toggleTaskPanelWithViewStateAtom)
+  const setRouteContextOverride = useSetAtom(selectedTaskRouteContextOverrideAtom)
 
   // Translation setup
   const { t } = useTranslation("layout")
@@ -46,6 +51,8 @@ function TaskListContent({
     ) {
       return
     }
+    // Set an override for the route context if provided so focus actions work correctly
+    setRouteContextOverride(routeContextOverride ?? null)
     // Use atom action to open task panel
     toggleTaskPanel(task)
   }
@@ -106,11 +113,23 @@ function TaskListContent({
 export function PageFooter({ className }: PageFooterProps) {
   // Task counts - using the same filtered atom as the "today" view for consistency
   const completedTasksToday = useAtomValue(completedTasksTodayAtom)
-  const todayTasks = useAtomValue(uiFilteredTasksForViewAtom("today"))
+  const todayTasks = useAtomValue(taskListForViewAtom("today"))
   const dueTodayCount = todayTasks.length
 
   // Translation setup
   const { t } = useTranslation("layout")
+
+  const todayRouteContext: RouteContext = {
+    pathname: "/today",
+    viewId: "today",
+    routeType: "standard",
+  }
+
+  const completedRouteContext: RouteContext = {
+    pathname: "/completed",
+    viewId: "completed",
+    routeType: "standard",
+  }
 
   return (
     <div
@@ -124,6 +143,7 @@ export function PageFooter({ className }: PageFooterProps) {
               tasks={Array.isArray(completedTasksToday) ? completedTasksToday : []}
               title={t("footer.completedToday", "Completed Today")}
               icon={<CheckCircle className="h-4 w-4" />}
+              routeContextOverride={completedRouteContext}
             />
           }
           className="w-80 p-0"
@@ -149,6 +169,7 @@ export function PageFooter({ className }: PageFooterProps) {
               tasks={todayTasks}
               title={t("footer.dueToday", "Due Today")}
               icon={<Calendar className="h-4 w-4" />}
+              routeContextOverride={todayRouteContext}
             />
           }
           className="w-80 p-0"

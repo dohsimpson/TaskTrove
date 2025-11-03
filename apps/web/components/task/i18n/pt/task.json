@@ -1,11 +1,12 @@
 {
   "actions": {
+    "addAssignees": "Adicionar responsáveis",
     "addComment": "Adicionar comentário",
     "addDate": "Adicionar data",
     "addLabel": "Adicionar etiqueta",
-    "addLabels": "Adicionar etiquetas",
     "addPriority": "Adicionar prioridade",
     "addProject": "Adicionar projeto",
+    "addSection": "Adicionar Seção",
     "addSubtask": "Adicionar subtarefa",
     "addTask": "Adicionar Tarefa"
   },
@@ -16,51 +17,13 @@
     "commentCount_one": "{{count}} comentário",
     "commentCount_many": "{{count}} comentários",
     "commentCount_other": "{{count}} comentários",
+    "title": "Comentários",
     "title_one": "Comentário",
     "title_many": "Comentários",
     "title_other": "Comentários"
   },
-  "emptyStates": {
-    "all": {
-      "description": "Esta visualização mostra todas as suas tarefas em todos os projetos. Crie sua primeira tarefa para começar com o TaskTrove.",
-      "title": "Nenhuma tarefa encontrada"
-    },
-    "analytics": {
-      "description": "Acompanhe sua produtividade e padrões de conclusão de tarefas.",
-      "title": "Painel de Análise"
-    },
-    "completed": {
-      "description": "As tarefas que você terminar aparecerão aqui. Complete algumas tarefas para ver seu progresso e celebrar suas conquistas!",
-      "title": "Ainda não há tarefas concluídas"
-    },
-    "fallback": {
-      "description": "Crie sua primeira tarefa para começar.",
-      "title": "Nenhuma tarefa encontrada"
-    },
-    "inbox": {
-      "description": "Este é seu ponto de coleta padrão para todas as novas tarefas. Quando você cria uma tarefa sem especificar um projeto, ela aparece aqui.",
-      "title": "Sua caixa de entrada está vazia"
-    },
-    "label": {
-      "description": "As tarefas marcadas com esta etiqueta aparecerão aqui. Use etiquetas para categorizar e encontrar rapidamente tarefas relacionadas.",
-      "title": "Não há tarefas com a etiqueta {{labelName}}"
-    },
-    "project": {
-      "description": "Este projeto está vazio. Adicione tarefas para organizar seu trabalho e acompanhar o progresso em objetivos específicos.",
-      "title": "Não há tarefas em {{projectName}}"
-    },
-    "search": {
-      "description": "Encontre tarefas por título, descrição ou etiquetas.",
-      "title": "Resultados da Busca"
-    },
-    "today": {
-      "description": "As tarefas com data de vencimento de hoje aparecerão aqui. Defina datas de vencimento em suas tarefas para se manter em dia com seus objetivos diários.",
-      "title": "Nada programado para hoje"
-    },
-    "upcoming": {
-      "description": "As tarefas com datas de vencimento futuras aparecem aqui, ajudando você a planejar com antecedência e se preparar para o que está por vir.",
-      "title": "Não há tarefas próximas"
-    }
+  "common": {
+    "confirm": "Confirmar"
   },
   "filters": {
     "activeOnly": "Apenas ativas",
@@ -71,7 +34,6 @@
     "completedOnly": "Apenas concluídas",
     "customRange": "Intervalo personalizado",
     "dueDate": "Data limite",
-    "filter": "Filtrar",
     "filterTasks": "Filtrar Tarefas",
     "fromDate": "DATA INÍCIO",
     "labels": "Etiquetas",
@@ -79,14 +41,6 @@
     "next7Days": "Próximos 7 dias",
     "noLabels": "Sem etiquetas",
     "noPriority": "Sem prioridade",
-    "presets": {
-      "noDueDate": "Sem data de vencimento",
-      "nextWeek": "Próxima semana",
-      "overdue": "Vencidas",
-      "thisWeek": "Esta semana",
-      "today": "Hoje",
-      "tomorrow": "Amanhã"
-    },
     "priority": "Prioridade",
     "priority1": "Prioridade 1",
     "priority2": "Prioridade 2",
@@ -120,7 +74,10 @@
     "taskTitle": "Digite o título da tarefa..."
   },
   "priority": {
-    "noPriority": "Sem prioridade"
+    "noPriority": "Sem prioridade",
+    "priority1": "Prioridade 1",
+    "priority2": "Prioridade 2",
+    "priority3": "Prioridade 3"
   },
   "project": {
     "noProject": "Sem projeto (Caixa de entrada)"
@@ -128,6 +85,7 @@
   "recurring": {
     "adaptive": "Adaptativo",
     "apply": "Aplicar",
+    "autoRollover": "Repassamento automático",
     "calculateNextFrom": "Calcular próxima data de vencimento a partir de",
     "createCustomPattern": "Criar padrão de recorrência personalizado",
     "current": "Atual:",
@@ -174,12 +132,6 @@
     "tomorrow": "Amanhã"
   },
   "sidePanel": {
-    "attachments": {
-      "count_one": "{{count}} anexo",
-      "count_many": "{{count}} anexos",
-      "count_other": "{{count}} anexos",
-      "title": "Anexos"
-    },
     "autoSave": {
       "saving": "Salvando..."
     },
@@ -197,12 +149,14 @@
     },
     "dueDate": {
       "placeholder": "Adicionar data de vencimento",
-      "title": "Data de vencimento",
       "today": "Hoje",
       "tomorrow": "Amanhã"
     },
     "labels": {
       "title": "Etiquetas"
+    },
+    "scheduling": {
+      "title": "Agendamento"
     },
     "shortcuts": {
       "close": "Fechar",
@@ -221,5 +175,30 @@
     "addSubtask": "Adicionar subtarefa",
     "addSubtasks": "Adicionar subtarefas...",
     "title": "Subtarefas"
+  },
+  "task": {
+    "noSearchResults": "Nenhuma tarefa encontrada",
+    "noTasksAvailable": "Nenhuma tarefa disponível",
+    "searchPlaceholder": "Buscar tarefas...",
+    "selectedCount_one": "{{count}} selecionada",
+    "selectedCount_many": "{{count}} selecionadas",
+    "selectedCount_other": "{{count}} selecionadas"
+  },
+  "timeEstimation": {
+    "calculatedFromSubtasks": "Calculado a partir das subtarefas",
+    "clear": "Limpar",
+    "customDuration": "Duração Personalizada",
+    "done": "Concluído",
+    "errors": {
+      "hourNumber": "Deve ser um número (0-99)",
+      "hourRange": "As horas devem estar entre 0-99",
+      "minuteNumber": "Deve ser um número (0-59)",
+      "minuteRange": "Os minutos devem estar entre 0-59"
+    },
+    "helpText": "Estime quanto tempo esta tarefa levará para ser concluída. Isso ajuda no planejamento e acompanhamento da sua produtividade.",
+    "helpTextSubtasks": "Esta estimativa é calculada a partir da soma das estimativas das subtarefas. Definir uma estimativa direta aqui sobrescreverá o valor calculado.",
+    "hour": "Hora",
+    "minute": "Minuto",
+    "title": "Estimativa de Tempo"
   }
 }

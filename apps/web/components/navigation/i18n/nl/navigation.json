@@ -3,30 +3,23 @@
     "newVersion": "Nieuwe versie: {{version}}",
     "updateTo": "Update naar {{version}}"
   },
-  "mainNav": {
-    "allTasks": "Alle taken",
-    "calendar": "Kalender",
-    "completed": "Voltooid",
-    "inbox": "Inbox",
-    "today": "Vandaag",
-    "upcoming": "Binnenkort"
-  },
   "quickActions": {
     "add": "Toevoegen",
     "search": "Zoeken"
   },
   "sections": {
     "labels": "Labels",
-
     "projects": "Projecten"
   },
   "userMenu": {
     "about": "Over",
     "community": "Gemeenschap",
     "github": "Github",
+    "installApp": "App installeren",
     "reportBug": "Bug melden",
     "settings": "Instellingen",
     "shortcuts": "Snelkoppelingen",
+    "signOut": "Uitloggen",
     "upgradeToPro": "Upgrade naar Pro"
   }
 }

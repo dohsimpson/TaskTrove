@@ -75,6 +75,15 @@ export function BaseDialog<T, R = void>({
 
   const isValid = customValidation ? customValidation(name, description, context) : !!name.trim()
 
+  const typeLabels = {
+    project: t("baseDialog.types.project", "Project"),
+    label: t("baseDialog.types.label", "Label"),
+    section: t("baseDialog.types.section", "Section"),
+    projectGroup: t("baseDialog.types.projectGroup", "Project Group"),
+  } as const
+
+  const capitalizedType = typeLabels[type]
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -104,8 +113,6 @@ export function BaseDialog<T, R = void>({
     setSelectedParentId("")
     closeDialog()
   }
-
-  const capitalizedType = t(`baseDialog.${type}`, type.charAt(0).toUpperCase() + type.slice(1))
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>

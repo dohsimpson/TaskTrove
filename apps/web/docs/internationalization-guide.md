@@ -19,10 +19,11 @@ This document provides a comprehensive guide for implementing internationalizati
 
 **Key Principles:**
 
-- **Colocated**: Translation files live next to component code (`component/i18n/{lang}/namespace.json`)
-- **Inline defaults**: English text visible in code via `t('key', 'default value')` pattern
-- **Automated extraction**: Use i18next-parser to generate translation files from code
-- **Fallback behavior**: Missing translations fall back to inline English defaults
+- **Colocated**: Feature translations live beside their components (`component/i18n/{lang}/{namespace}.json`)
+- **English source of truth**: `apps/web/lib/i18n/locales/en/{namespace}.json` is generated from inline defaults and ships to translators as the canonical catalog
+- **Inline defaults**: Components still render readable English via `t('key', 'default value')`
+- **Automated tooling**: `i18next-cli` extracts keys, lints for hard-coded text, and generates TypeScript types
+- **Deterministic fallbacks**: Missing translations resolve to the English JSON, then to inline defaults
 
 **Benefits:**
 
@@ -51,83 +52,72 @@ components/
 
 ### Translation Loading Strategy
 
-**English = Inline Defaults (No Files Needed):**
-Since we use `t('key', 'default value')`, English translations live in the code. No English translation files are generated or needed - this eliminates duplication and makes English the single source of truth.
+**English = Centralized JSON:**
+`apps/web/lib/i18n/locales/en/{namespace}.json` is generated automatically by `i18next-cli extract` and treated as the primary catalog for translators.
 
-**Non-English = Translation Files:**
+**Non-English = Colocated Overrides:**
 
 - Primary: Colocated translations (`@/components/{feature}/i18n/{lang}/{namespace}.json`)
-- Fallback: Main translations (`@/lib/i18n/locales/{lang}/{namespace}.json`)
-- Ultimate fallback: Inline defaults from code
+- Fallback: Shared translations (`@/lib/i18n/locales/{lang}/{namespace}.json`)
+- Ultimate fallback: Inline defaults emitted in code
 
 ## Tool Selection
 
-### ✅ Recommended: i18next-parser
+### ✅ Recommended: i18next-cli
 
-**Why i18next-parser over i18next-scanner:**
+`i18next-cli` is the single entry point for extraction, linting, syncing, and type generation.
 
-- ✅ **Native TypeScript support** (.ts/.tsx files)
-- ✅ **3x more popular** (417k vs 137k weekly downloads)
-- ✅ **Active maintenance** (updated 7 months ago vs 1 year)
-- ✅ **Better React integration** with comprehensive JSX lexer
+- ✅ **One config** (`apps/web/i18next.config.ts`) shared across extract, lint, sync, and type commands
+- ✅ **SWC-powered** parser understands modern TypeScript/React patterns (hooks, `keyPrefix`, `getFixedT`, etc.)
+- ✅ **First-class lint rules** for catching stray strings (`pnpm --filter web i18n:lint`)
+- ✅ **Type generation** (`pnpm --filter web i18n:types`) keeps autocomplete aligned with actual JSON
+- ✅ **Namespace-aware output** so colocated directories stay untouched for English while translators work in non-English locales
 
-### ❌ Avoid: i18next-scanner
+### ❌ Avoid: Legacy per-namespace parsers
 
-- ❌ No native TypeScript support
-- ❌ Requires additional packages for .tsx files
-- ❌ Less active maintenance
+- ❌ Multiple configs to maintain
+- ❌ Hard to keep namespaces consistent across apps
+- ❌ No built-in linting or type generation
 
 ## Implementation Process
 
-### Step 1: Install Dependencies
+### Step 1: Install Dependencies (already in the repo)
+
+`i18next-cli` is declared as a dev dependency in `apps/web/package.json`. Run the workspace install as usual:
 
 ```bash
-pnpm add -D i18next-parser
+pnpm install
 ```
 
-### Step 2: Create Parser Configuration
+### Step 2: Review the Toolkit Configuration
 
-Create `i18next-parser-{scope}.config.js`:
+`apps/web/i18next.config.ts` is the canonical configuration. Highlights:
 
-```javascript
-// Example: i18next-parser-components.config.js
-export default {
-  input: [
-    "components/**/*.{ts,tsx}",
-    "!components/**/*.test.{ts,tsx}",
-    "!components/**/*.spec.{ts,tsx}",
-  ],
-  output: "components/$DIR/i18n/$LOCALE/$NAMESPACE.json",
-  locales: ["zh"], // Only generate non-English files (English uses inline defaults)
-  defaultNamespace: "component",
-  lexers: {
-    ts: ["JsxLexer"],
-    tsx: ["JsxLexer"],
-  },
-  defaultValue: function (locale, namespace, key, value) {
-    // English files not generated - inline defaults used instead
-    // For non-English: return undefined to omit keys (allows fallback to inline defaults)
-    return undefined
-  },
-  keepRemoved: false,
-  sort: true,
-  jsonIndent: 2,
-  lineEnding: "\n",
-  nsSeparator: ":",
-  keySeparator: ".",
-  options: {
-    func: {
-      list: ["t", "i18n.t"],
-      extensions: [".ts", ".tsx"],
-    },
-    trans: {
-      component: "Trans",
-      i18nKey: "i18nKey",
-      extensions: [".ts", ".tsx"],
-    },
-  },
-}
+- `extract.input` covers `app`, `components`, `hooks`, `lib`, and `providers`
+- `output` routes English resources to `lib/i18n/locales/en/*` and localized strings to colocated folders
+- `ignoredAttributes` / `ignoredTags` prevent Tailwind or ARIA props from being mistaken for user-facing copy
+- `types` emits `apps/web/types/i18next.d.ts` and `resources.d.ts`
+
+### Step 3: Run Extraction / Types / Status
+
+```bash
+# Generate or update translation JSON (keeps English files in sync with code defaults)
+pnpm --filter web run i18n:extract --sync-primary
+
+# Mirror the workflow for the pro surface
+pnpm --filter web.pro run i18n:extract --sync-primary
+
+# Generate type-safe bindings for `t` and `useTranslation`
+pnpm --filter web i18n:types
+
+# Inspect namespace completeness
+pnpm --filter web i18n:status
+
+# Catch hard-coded strings before they land in PRs
+pnpm --filter web i18n:lint
 ```
+
+The extractor writes `lib/i18n/locales/en/*.json` based on the inline defaults, so treat those files as generated artifacts—edit the English text in code, then rerun the sync command to refresh the JSON.
 
 ### Step 3: Update i18n Infrastructure
 
@@ -192,13 +182,11 @@ const description = t("delete.task.description", 'Are you sure you want to delet
 
 ### Step 5: Generate Translation Files
 
-```bash
-pnpm i18n:extract:components
-```
+Run the extractor (`pnpm --filter web run i18n:extract --sync-primary`, and the pro variant) whenever you add or change copy. This keeps both the English JSON and the locale scaffolding up to date.
 
 ### Step 6: Add Translations
 
-Edit the generated non-English files to add translations. English uses inline defaults - no files needed!
+Edit only the non-English files manually. English strings come from the code defaults and are written to `lib/i18n/locales/en/*.json` by the extractor.
 
 ### Step 7: Fix Unit Tests
 
@@ -241,34 +229,33 @@ const AllTheProviders = ({ children, ... }) => (
 
 ## Common Errors and Prevention
 
-### 1. English File Redundancy (Optimization)
+### 1. Manually Editing English JSON
 
-**Problem:** Generating English translation files duplicates inline defaults.
+**Problem:** Updating `lib/i18n/locales/en/*.json` directly causes drift between the generated English catalog and the inline defaults that live in code.
 
-**❌ Redundant:**
+**❌ Risky:**
 
-```typescript
-// Code
-t("delete.task.title", "Delete Task")
-
-// English file (unnecessary duplication!)
+```json
+// apps/web/lib/i18n/locales/en/dialogs.json
 {
   "delete": {
     "task": {
-      "title": "Delete Task"
+      "title": "Delete Task Forever" // Edited here only
     }
   }
 }
 ```
 
-**✅ Optimized:**
+```typescript
+// apps/web/components/dialogs/delete-confirm-dialog.tsx
+const title = t("dialogs:delete.task.title", "Delete Task") // Inline default not updated
+```
+
+**✅ Recommended:** Change the inline default value, then rerun the extractor with `--sync-primary` so the English JSON is regenerated from code.
 
 ```typescript
-// Code (single source of truth)
-t("delete.task.title", "Delete Task")
-
-// No English file needed - inline defaults used
-// Only generate non-English files
+const title = t("dialogs:delete.task.title", "Delete Task Forever")
+// Afterwards: pnpm --filter web run i18n:extract --sync-primary
 ```
 
 **Benefits:**
@@ -840,9 +827,9 @@ components/
 **Example:**
 
 ```bash
-pnpm i18n:extract:tasks
-pnpm i18n:extract:navigation
-pnpm i18n:extract:dialogs
+pnpm --filter web run i18n:extract --sync-primary
+pnpm --filter web i18n:lint
+pnpm --filter web i18n:status
 ```
 
 ### Performance Considerations
@@ -858,13 +845,16 @@ pnpm i18n:extract:dialogs
 ```json
 {
   "scripts": {
-    "i18n:extract:{scope}": "i18next-parser --config i18next-parser-{scope}.config.js",
-    "i18n:extract:{scope}:watch": "i18next-parser --config i18next-parser-{scope}.config.js --watch",
-    "i18n:extract:all": "npm-run-all i18n:extract:*",
-    "i18n:check": "npm run i18n:extract:all && git diff --exit-code components/*/i18n/"
+    "i18n:extract": "i18next-cli extract --config i18next.config.ts",
+    "i18n:extract:watch": "i18next-cli extract --config i18next.config.ts --watch",
+    "i18n:status": "i18next-cli status --config i18next.config.ts",
+    "i18n:types": "i18next-cli types --config i18next.config.ts",
+    "i18n:lint": "i18next-cli lint --config i18next.config.ts"
   }
 }
 ```
+
+> ℹ️ Append extractor flags directly when using `pnpm run`, e.g. `pnpm --filter web run i18n:extract --sync-primary --ci`.
 
 ### CI/CD Integration
 
@@ -880,11 +870,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - name: Extract translations
-        run: pnpm i18n:extract:all
+        run: pnpm --filter web run i18n:extract --sync-primary --ci
       - name: Check for changes
         run: |
-          if ! git diff --exit-code components/*/i18n/; then
-            echo "Translation files are out of sync. Run 'pnpm i18n:extract:all' locally."
+          if ! git diff --exit-code components/*/i18n/ lib/i18n/locales/; then
+            echo "Translation files are out of sync. Run 'pnpm --filter web run i18n:extract --sync-primary' locally."
             exit 1
           fi
 ```
@@ -897,10 +887,10 @@ jobs:
 . "$(dirname -- "$0")/_/husky.sh"
 
 # Extract translations
-pnpm i18n:extract:all
+pnpm --filter web run i18n:extract --sync-primary
 
 # Add any updated translation files
-git add components/*/i18n/
+git add components/*/i18n/ lib/i18n/locales/
 
 # Continue with other checks
 pnpm typecheck

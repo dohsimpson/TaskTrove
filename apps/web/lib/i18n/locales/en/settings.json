@@ -1,0 +1,178 @@
+{
+  "appearance": {
+    "colorScheme": {
+      "description": "Select light, dark, or follow system preference",
+      "label": "Choose your color scheme",
+      "title": "Color Scheme"
+    }
+  },
+  "data": {
+    "autoBackup": {
+      "backupTime": {
+        "description": "Time to run daily backup (24-hour format)",
+        "label": "Backup Time"
+      },
+      "description": "Automatically backup your data daily to protect against data loss.",
+      "dockerNotice": {
+        "description": "You must mount the backups directory as a volume to access backup files:",
+        "guide": "See backup setup guide",
+        "title": "Docker Users:"
+      },
+      "enable": {
+        "description": "Creates a zip backup of your data daily at the configured time",
+        "label": "Enable Auto Backup"
+      },
+      "manualBackup": {
+        "button": "Trigger Manual Backup Now"
+      },
+      "maxBackups": {
+        "description": "Older backups will be automatically deleted",
+        "label": "Maximum Backups to Keep",
+        "noLimit": "No limit"
+      },
+      "title": "Auto Backup"
+    },
+    "taskImport": {
+      "description": "Import tasks from other task management applications.",
+      "step1": {
+        "description": "Click your task management service below to open the import assistant. Follow the instructions to export and convert your data to TaskTrove format.",
+        "title": "Step 1: Export Your Data"
+      },
+      "step2": {
+        "description": "After using the import assistant above, you'll download a JSON file. Upload that file here to import your tasks, projects, and labels into TaskTrove.",
+        "important": {
+          "description": "Only upload the JSON file you downloaded from the import assistant. Regular exports from other apps won't work.",
+          "title": "Important:"
+        },
+        "title": "Step 2: Upload Converted File"
+      },
+      "title": "Task Import",
+      "upload": {
+        "button": "Upload JSON File",
+        "error": {
+          "title": "Import failed"
+        },
+        "success": {
+          "alreadyExisted": "{{items}} already existed",
+          "imported": "{{items}} imported",
+          "labels_one": "{{count}} labels",
+          "labels_other": "{{count}} labels",
+          "noNewItems": "No new items",
+          "projects_one": "{{count}} projects",
+          "projects_other": "{{count}} projects",
+          "tasks_one": "{{count}} tasks",
+          "tasks_other": "{{count}} tasks",
+          "title": "Import successful!"
+        },
+        "uploading": "Uploading..."
+      }
+    }
+  },
+  "general": {
+    "apiToken": {
+      "description": "Generate an API token for programmatic access. Use this token in the Authorization header as 'Bearer YOUR_TOKEN' to authenticate API requests.",
+      "generate": "Generate Token",
+      "label": "API Token",
+      "regenerate": "Regenerate Token",
+      "revoke": "Revoke Token",
+      "title": "API",
+      "viewDocs": "View API Documentation"
+    },
+    "audio": {
+      "soundEffects": {
+        "description": "Play sounds for task completions, notifications, and other interactions",
+        "label": "Sound Effects"
+      },
+      "title": "Audio"
+    },
+    "defaultPage": {
+      "description": "Choose which page you want to see when you first open TaskTrove",
+      "label": "When you open TaskTrove, show",
+      "title": "Default Page"
+    },
+    "language": {
+      "description": "Select the display language for the application",
+      "label": "Language",
+      "title": "Language"
+    },
+    "links": {
+      "autoConvert": {
+        "description": "Automatically convert URLs in task titles to clickable links",
+        "label": "Auto-convert URLs to Links"
+      },
+      "title": "Links"
+    },
+    "popovers": {
+      "hoverOpen": {
+        "description": "Allow popovers to open when you hover over them, in addition to clicking",
+        "label": "Open on Hover"
+      },
+      "title": "Popovers"
+    },
+    "startView": {
+      "all": {
+        "description": "View all your tasks in one place",
+        "label": "All Tasks"
+      },
+      "completed": {
+        "description": "Review completed tasks",
+        "label": "Completed"
+      },
+      "inbox": {
+        "description": "Start with unorganized tasks",
+        "label": "Inbox"
+      },
+      "lastViewed": {
+        "description": "Return to your last active page",
+        "label": "Last Viewed"
+      },
+      "today": {
+        "description": "Focus on today's tasks",
+        "label": "Today"
+      },
+      "upcoming": {
+        "description": "See what's coming up next",
+        "label": "Upcoming"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "notificationsBlocked": {
+        "manualInstructions": "The browser didn't show a permission dialog. To enable notifications, click the 🔒 icon in your address bar or go to browser settings → Privacy & Security → Site Settings → Notifications, then refresh the page.",
+        "retryInstructions": "Try the \"Retry\" button first. If that doesn't work, you'll need to enable notifications manually in your browser settings.",
+        "title": "Notifications Blocked"
+      },
+      "secureConnectionRequired": {
+        "description": "Notifications require a secure connection (HTTPS) or localhost. Please access this site via HTTPS or run it on localhost to enable notification features.",
+        "title": "Secure Connection Required"
+      }
+    },
+    "general": {
+      "enableNotifications": {
+        "description": "Turn all notifications on or off",
+        "label": "Enable Notifications"
+      },
+      "requireInteraction": {
+        "description": "Notifications stay visible until you interact with them",
+        "label": "Require User Interaction"
+      },
+      "title": "General Settings"
+    },
+    "permissionStatus": {
+      "blocked": "Blocked",
+      "browserNotifications": "Browser Notifications",
+      "browserSettingsTooltip": "Browser may require manual settings change",
+      "enable": "Enable",
+      "enabled": "Enabled",
+      "notEnabled": "Not enabled",
+      "requesting": "Requesting",
+      "requiresHttps": "Notification requires HTTPS",
+      "retry": "Retry",
+      "retryTooltip": "Try requesting permission again",
+      "testNotification": "Test Notification",
+      "title": "Permission Status",
+      "tryAgain": "Try Again"
+    }
+  }
+}

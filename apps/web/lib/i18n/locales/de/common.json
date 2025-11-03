@@ -1,78 +1,53 @@
 {
-  "app": {
-    "name": "TaskTrove",
-    "description": "Ihr persönlicher Aufgabenverwaltungsbegleiter"
+  "emptyStates": {
+    "all": {
+      "description": "Diese Ansicht zeigt alle Ihre Aufgaben in allen Projekten. Erstellen Sie Ihre erste Aufgabe, um mit TaskTrove zu beginnen.",
+      "title": "Keine Aufgaben gefunden"
+    },
+    "analytics": {
+      "description": "Verfolgen Sie Ihre Produktivität und Aufgabenabschlussmuster.",
+      "title": "Analytics-Dashboard"
+    },
+    "completed": {
+      "description": "Abgeschlossene Aufgaben erscheinen hier. Schließen Sie einige Aufgaben ab, um Ihren Fortschritt zu sehen und Ihre Erfolge zu feiern!",
+      "title": "Noch keine abgeschlossenen Aufgaben"
+    },
+    "fallback": {
+      "description": "Erstellen Sie Ihre erste Aufgabe, um zu beginnen.",
+      "title": "Keine Aufgaben gefunden"
+    },
+    "inbox": {
+      "description": "Dies ist Ihr Standardsammelpunkt für alle neuen Aufgaben. Wenn Sie eine Aufgabe erstellen, ohne ein Projekt anzugeben, landet sie hier.",
+      "title": "Ihr Posteingang ist leer"
+    },
+    "label": {
+      "description": "Aufgaben mit diesem Label erscheinen hier. Verwenden Sie Labels, um Aufgaben zu kategorisieren und verwandte Aufgaben schnell zu finden.",
+      "title": "Keine Aufgaben mit {{labelName}}-Label"
+    },
+    "project": {
+      "description": "Dieses Projekt ist leer. Fügen Sie Aufgaben hinzu, um Ihre Arbeit zu organisieren und den Fortschritt bei bestimmten Zielen zu verfolgen.",
+      "title": "Keine Aufgaben in {{projectName}}"
+    },
+    "search": {
+      "description": "Finden Sie Aufgaben nach Titel, Beschreibung oder Labels.",
+      "title": "Suchergebnisse"
+    },
+    "today": {
+      "description": "Aufgaben mit dem heutigen Fälligkeitsdatum erscheinen hier. Legen Sie Fälligkeitsdaten für Ihre Aufgaben fest, um mit Ihren täglichen Zielen auf Kurs zu bleiben.",
+      "title": "Heute nichts geplant"
+    },
+    "upcoming": {
+      "description": "Aufgaben mit zukünftigen Fälligkeitsdaten werden hier angezeigt und helfen Ihnen, im Voraus zu planen und sich auf das Kommende vorzubereiten.",
+      "title": "Keine anstehenden Aufgaben"
+    }
   },
-  "navigation": {
-    "today": "Heute",
-    "upcoming": "Bevorstehend",
-    "all": "Alle Aufgaben",
-    "completed": "Erledigt",
-    "projects": "Projekte",
-    "labels": "Etiketten",
-    "inbox": "Posteingang",
+  "mainNav": {
+    "allTasks": "Alle Aufgaben",
     "calendar": "Kalender",
-    "analytics": "Analysen",
-    "profile": "Profil"
-  },
-  "tasks": {
-    "task": "Aufgabe",
-    "tasks": "Aufgaben",
-    "addTask": "Aufgabe hinzufügen",
-    "editTask": "Aufgabe bearbeiten",
-    "deleteTask": "Aufgabe löschen",
-    "completeTask": "Aufgabe abschließen",
-    "uncompleteTask": "Als unvollständig markieren",
-    "title": "Titel",
-    "description": "Beschreibung",
-    "dueDate": "Fälligkeitsdatum",
-    "priority": "Priorität",
-    "project": "Projekt",
-    "labels": "Etiketten",
-    "noTasks": "Keine Aufgaben gefunden",
-    "filter": "Aufgaben filtern"
-  },
-  "projects": {
-    "project": "Projekt",
-    "projects": "Projekte",
-    "addProject": "Projekt hinzufügen",
-    "editProject": "Projekt bearbeiten",
-    "deleteProject": "Projekt löschen",
-    "projectName": "Projektname",
-    "projectDescription": "Projektbeschreibung",
-    "noProjects": "Keine Projekte gefunden"
-  },
-  "labels": {
-    "label": "Etikett",
-    "labels": "Etiketten",
-    "addLabel": "Etikett hinzufügen",
-    "editLabel": "Etikett bearbeiten",
-    "deleteLabel": "Etikett löschen",
-    "labelName": "Etikettname",
-    "labelColor": "Etikettfarbe",
-    "noLabels": "Keine Etiketten gefunden"
-  },
-  "common": {
-    "save": "Speichern",
-    "cancel": "Abbrechen",
-    "delete": "Löschen",
-    "edit": "Bearbeiten",
-    "add": "Hinzufügen",
-    "close": "Schließen",
-    "confirm": "Bestätigen",
-    "loading": "Laden...",
-    "error": "Fehler",
-    "success": "Erfolg",
-    "warning": "Warnung",
-    "info": "Information"
-  },
-  "settings": {
-    "settings": "Einstellungen",
-    "general": "Allgemein",
-    "appearance": "Erscheinungsbild",
-    "language": "Sprache",
-    "languageDescription": "Wählen Sie Ihre bevorzugte Sprache für die Benutzeroberfläche",
-    "theme": "Thema",
-    "notifications": "Benachrichtigungen"
+    "completed": "Abgeschlossen",
+    "habits": "Gewohnheiten",
+    "inbox": "Posteingang",
+    "today": "Heute",
+    "upcoming": "Anstehend"
   }
 }

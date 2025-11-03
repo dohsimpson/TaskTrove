@@ -1,78 +1,53 @@
 {
-  "app": {
-    "name": "TaskTrove",
-    "description": "あなた専用のタスク管理ツール"
+  "emptyStates": {
+    "all": {
+      "description": "このビューにはすべてのプロジェクトのタスクが表示されます。最初のタスクを作成してTaskTroveを始めましょう。",
+      "title": "タスクが見つかりません"
+    },
+    "analytics": {
+      "description": "生産性とタスク完了のパターンを追跡します。",
+      "title": "分析ダッシュボード"
+    },
+    "completed": {
+      "description": "完了したタスクがここに表示されます。タスクを完了して進捗を確認し、達成を祝いましょう！",
+      "title": "まだ完了したタスクがありません"
+    },
+    "fallback": {
+      "description": "最初のタスクを作成して始めましょう。",
+      "title": "タスクが見つかりません"
+    },
+    "inbox": {
+      "description": "これはすべての新しいタスクのデフォルト収集ポイントです。プロジェクトを指定せずにタスクを作成すると、ここに保存されます。",
+      "title": "受信トレイは空です"
+    },
+    "label": {
+      "description": "このラベルでタグ付けされたタスクがここに表示されます。ラベルを使用してタスクを分類し、関連タスクを素早く見つけましょう。",
+      "title": "{{labelName}}ラベルのタスクがありません"
+    },
+    "project": {
+      "description": "このプロジェクトは空です。タスクを追加して作業を整理し、特定の目標の進捗を追跡しましょう。",
+      "title": "{{projectName}}にタスクがありません"
+    },
+    "search": {
+      "description": "タイトル、説明、またはラベルでタスクを検索します。",
+      "title": "検索結果"
+    },
+    "today": {
+      "description": "今日期限のタスクがここに表示されます。タスクに期限を設定して、毎日の目標を追跡しましょう。",
+      "title": "今日の予定はありません"
+    },
+    "upcoming": {
+      "description": "未来の期限があるタスクがここに表示され、先の計画と準備に役立ちます。",
+      "title": "今後のタスクがありません"
+    }
   },
-  "navigation": {
-    "today": "今日",
-    "upcoming": "予定",
-    "all": "すべてのタスク",
-    "completed": "完了済み",
-    "projects": "プロジェクト",
-    "labels": "ラベル",
-    "inbox": "受信トレイ",
+  "mainNav": {
+    "allTasks": "すべてのタスク",
     "calendar": "カレンダー",
-    "analytics": "分析",
-    "profile": "プロフィール"
-  },
-  "tasks": {
-    "task": "タスク",
-    "tasks": "タスク",
-    "addTask": "タスクを追加",
-    "editTask": "タスクを編集",
-    "deleteTask": "タスクを削除",
-    "completeTask": "タスクを完了",
-    "uncompleteTask": "未完了にする",
-    "title": "タイトル",
-    "description": "説明",
-    "dueDate": "期限",
-    "priority": "優先度",
-    "project": "プロジェクト",
-    "labels": "ラベル",
-    "noTasks": "タスクが見つかりません",
-    "filter": "フィルター"
-  },
-  "projects": {
-    "project": "プロジェクト",
-    "projects": "プロジェクト",
-    "addProject": "プロジェクトを追加",
-    "editProject": "プロジェクトを編集",
-    "deleteProject": "プロジェクトを削除",
-    "projectName": "プロジェクト名",
-    "projectDescription": "プロジェクトの説明",
-    "noProjects": "プロジェクトが見つかりません"
-  },
-  "labels": {
-    "label": "ラベル",
-    "labels": "ラベル",
-    "addLabel": "ラベルを追加",
-    "editLabel": "ラベルを編集",
-    "deleteLabel": "ラベルを削除",
-    "labelName": "ラベル名",
-    "labelColor": "ラベルの色",
-    "noLabels": "ラベルが見つかりません"
-  },
-  "common": {
-    "save": "保存",
-    "cancel": "キャンセル",
-    "delete": "削除",
-    "edit": "編集",
-    "add": "追加",
-    "close": "閉じる",
-    "confirm": "確認",
-    "loading": "読み込み中...",
-    "error": "エラー",
-    "success": "成功",
-    "warning": "警告",
-    "info": "情報"
-  },
-  "settings": {
-    "settings": "設定",
-    "general": "一般",
-    "appearance": "外観",
-    "language": "言語",
-    "languageDescription": "インターフェースの言語を選択してください",
-    "theme": "テーマ",
-    "notifications": "通知"
+    "completed": "完了",
+    "habits": "習慣",
+    "inbox": "受信トレイ",
+    "today": "今日",
+    "upcoming": "今後"
   }
 }

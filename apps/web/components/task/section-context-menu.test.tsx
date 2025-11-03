@@ -1,10 +1,13 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { screen } from "@/test-utils"
+import { act } from "@testing-library/react"
+import { waitFor } from "@/test-utils"
 import { render } from "@/test-utils/render-with-providers"
 import { SectionContextMenu } from "./section-context-menu"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
-import { pathnameAtom } from "@tasktrove/atoms/ui/navigation"
+import { projectsAtom as baseProjectsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { currentRouteContextAtom, pathnameAtom } from "@tasktrove/atoms/ui/navigation"
+import { useAtomValue } from "jotai"
 import { createGroupId } from "@/lib/types"
 import { TEST_PROJECT_ID_1 } from "@tasktrove/types/test-constants"
 
@@ -39,14 +42,6 @@ interface MockDropdownTriggerProps {
   asChild?: boolean
 }
 
-interface MockDeleteDialogProps {
-  open?: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: () => void
-  entityType?: string
-  entityName?: string
-}
-
 // Mock all UI components
 vi.mock("@/components/ui/button", () => ({
   Button: ({ children, className, onClick, ...props }: MockButtonProps) => (
@@ -55,6 +50,9 @@ vi.mock("@/components/ui/button", () => ({
     </button>
   ),
 }))
+
+const mockEntityContextMenu = vi.fn()
+let capturedOnDelete: ((deleteContainedResources?: boolean) => void) | undefined
 
 vi.mock("@/components/ui/custom/context-menu-dropdown", () => ({
   ContextMenuDropdown: ({ children, open }: MockDropdownProps) => (
@@ -85,15 +83,37 @@ vi.mock("@/components/dialogs/delete-confirm-dialog", () => ({
     onConfirm,
     entityType,
     entityName,
-  }: MockDeleteDialogProps) => (
+  }: {
+    open?: boolean
+    onOpenChange: (open: boolean) => void
+    onConfirm: (deleteContainedResources?: boolean) => void
+    entityType?: string
+    entityName?: string
+  }) => (
     <div data-testid="delete-dialog" data-open={open}>
       <span>
         Delete {entityType}: {entityName}
       </span>
-      <button onClick={onConfirm}>Confirm</button>
+      <button onClick={() => onConfirm(false)} data-testid="confirm-without-resources">
+        Confirm without deleting contained tasks
+      </button>
+      <button onClick={() => onConfirm(true)} data-testid="confirm-with-resources">
+        Confirm and delete contained tasks
+      </button>
       <button onClick={() => onOpenChange(false)}>Cancel</button>
     </div>
   ),
+}))
+
+vi.mock("@/components/ui/custom/entity-context-menu", () => ({
+  EntityContextMenu: (props: {
+    onDelete: (deleteContainedResources?: boolean) => void
+    entityName: string
+  }) => {
+    mockEntityContextMenu(props)
+    capturedOnDelete = props.onDelete
+    return <div data-testid="entity-context-menu">Entity: {props.entityName}</div>
+  },
 }))
 
 vi.mock("lucide-react", () => ({
@@ -103,7 +123,30 @@ vi.mock("lucide-react", () => ({
   Palette: () => <span data-testid="palette-icon" />,
 }))
 
+const removeSectionPayloads: Array<{
+  projectId: string
+  sectionId: string
+  deleteTasks?: boolean
+}> = []
+
+type SectionContextMenuTestProps = React.ComponentProps<typeof SectionContextMenu>
+
+function RemoveSectionObserver() {
+  const value = useAtomValue(projectAtoms.actions.removeSection)
+
+  React.useEffect(() => {
+    if (value) {
+      removeSectionPayloads.push(value)
+    }
+  }, [value])
+
+  return null
+}
+
 describe("SectionContextMenu", () => {
+  const testSectionId = createGroupId("00000000-0000-4000-8000-000000000001")
+  const defaultSectionId = createGroupId("00000000-0000-0000-0000-000000000000")
+
   const mockProject = {
     id: TEST_PROJECT_ID_1,
     name: "Test Project",
@@ -111,7 +154,7 @@ describe("SectionContextMenu", () => {
     color: "#ff0000",
     sections: [
       {
-        id: "00000000-0000-4000-8000-000000000001",
+        id: testSectionId,
         name: "Test Section",
         slug: "test-section",
         type: "section" as const,
@@ -119,119 +162,89 @@ describe("SectionContextMenu", () => {
         color: "#blue",
       },
       {
-        id: "00000000-0000-0000-0000-000000000000",
+        id: defaultSectionId,
         name: "Default Section",
         slug: "default-section",
         type: "section" as const,
         items: [],
         color: "#gray",
+        isDefault: true,
       },
     ],
   }
 
   const defaultProps = {
-    sectionId: createGroupId("12345678-1234-4234-8234-123456789abc"),
+    sectionId: testSectionId,
     isVisible: true,
-  }
+  } satisfies Pick<SectionContextMenuTestProps, "sectionId" | "isVisible">
 
   const defaultAtomValues: Array<[unknown, unknown]> = [
     [projectAtoms.projects, [mockProject]],
+    [baseProjectsAtom, [mockProject]],
     [pathnameAtom, `/projects/${TEST_PROJECT_ID_1}`],
+    [
+      currentRouteContextAtom,
+      {
+        routeType: "project",
+        view: "project",
+        viewId: TEST_PROJECT_ID_1,
+      },
+    ],
   ]
 
   beforeEach(() => {
     vi.clearAllMocks()
+    capturedOnDelete = undefined
+    removeSectionPayloads.length = 0
   })
 
-  it("renders context menu trigger when visible", () => {
-    const { container } = render(<SectionContextMenu {...defaultProps} />, {
-      initialAtomValues: defaultAtomValues,
-    })
-
-    const allElements = container.querySelectorAll("*")
-    const hasContent = allElements.length > 1
-
-    if (hasContent) {
-      expect(screen.getByTestId("dropdown-trigger")).toBeInTheDocument()
-      expect(screen.getByTestId("more-horizontal-icon")).toBeInTheDocument()
-    } else {
-      expect(screen.queryByTestId("dropdown-trigger")).not.toBeInTheDocument()
-    }
-  })
-
-  it("hides context menu trigger when not visible", () => {
-    const { container } = render(<SectionContextMenu {...defaultProps} isVisible={false} />, {
-      initialAtomValues: defaultAtomValues,
-    })
-
-    const allElements = container.querySelectorAll("*")
-    const hasContent = allElements.length > 1
-
-    if (hasContent) {
-      const trigger = screen.getByTestId("dropdown-trigger")
-      const button = trigger.querySelector("button")
-      expect(button).toHaveClass("opacity-0")
-    } else {
-      expect(screen.queryByTestId("dropdown-trigger")).not.toBeInTheDocument()
-    }
-  })
-
-  it("returns null when section is not found", () => {
+  const renderMenu = (props?: Partial<SectionContextMenuTestProps>) =>
     render(
-      <SectionContextMenu
-        sectionId={createGroupId("99999999-9999-4999-8999-999999999999")}
-        isVisible={true}
-      />,
+      <>
+        <RemoveSectionObserver />
+        <SectionContextMenu {...defaultProps} {...props} />
+      </>,
       {
         initialAtomValues: defaultAtomValues,
       },
     )
 
-    expect(screen.queryByTestId("dropdown-trigger")).not.toBeInTheDocument()
-    expect(screen.queryByTestId("dropdown-menu")).not.toBeInTheDocument()
+  it("captures delete handler for valid section", () => {
+    renderMenu()
+
+    expect(mockEntityContextMenu).toHaveBeenCalled()
+    expect(typeof capturedOnDelete).toBe("function")
   })
 
-  it("shows delete option when section is not default section", () => {
-    const { container } = render(<SectionContextMenu {...defaultProps} open={true} />, {
-      initialAtomValues: defaultAtomValues,
+  it("calls removeSection without deleting tasks when user keeps tasks", async () => {
+    renderMenu()
+
+    act(() => {
+      capturedOnDelete?.(false)
     })
 
-    const allElements = container.querySelectorAll("*")
-    const hasContent = allElements.length > 1
-
-    if (hasContent) {
-      const deleteItems = screen
-        .getAllByTestId("dropdown-item")
-        .filter((item) => item.textContent?.includes("Delete section"))
-      expect(deleteItems).toHaveLength(1)
-    } else {
-      expect(screen.queryByTestId("dropdown-item")).not.toBeInTheDocument()
-    }
+    await waitFor(() => {
+      expect(removeSectionPayloads.at(-1)).toEqual({
+        projectId: TEST_PROJECT_ID_1,
+        sectionId: testSectionId,
+        deleteTasks: false,
+      })
+    })
   })
 
-  it("hides delete option when section is default section", () => {
-    // Use DEFAULT_UUID for this test
-    const { container } = render(
-      <SectionContextMenu
-        sectionId={createGroupId("00000000-0000-0000-0000-000000000000")}
-        isVisible={true}
-        open={true}
-      />,
-      {
-        initialAtomValues: defaultAtomValues,
-      },
-    )
+  it("calls removeSection with deleteTasks=true when user deletes contained tasks", async () => {
+    renderMenu()
 
-    const allElements = container.querySelectorAll("*")
-    const hasContent = allElements.length > 1
+    act(() => {
+      capturedOnDelete?.(true)
+    })
 
-    if (hasContent) {
-      const deleteItems = screen
-        .getAllByTestId("dropdown-item")
-        .filter((item) => item.textContent?.includes("Delete section"))
-      expect(deleteItems).toHaveLength(0)
-    } else {
-      expect(screen.queryByTestId("dropdown-item")).not.toBeInTheDocument()
-    }
+    await waitFor(() => {
+      expect(removeSectionPayloads.at(-1)).toEqual({
+        projectId: TEST_PROJECT_ID_1,
+        sectionId: testSectionId,
+        deleteTasks: true,
+      })
+    })
   })
 })

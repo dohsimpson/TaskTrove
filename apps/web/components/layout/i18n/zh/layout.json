@@ -48,6 +48,48 @@
     "currentTheme": "当前主题：{{theme}}。点击切换主题。",
     "openSidebar": "打开侧边栏"
   },
+  "standardViews": {
+    "all": {
+      "description": "在一个地方查看您的所有任务",
+      "title": "所有任务"
+    },
+    "calendar": {
+      "description": "以日历格式查看任务",
+      "title": "日历"
+    },
+    "completed": {
+      "description": "查看已完成的任务",
+      "title": "已完成"
+    },
+    "habits": {
+      "description": "跟踪您的习惯和例程",
+      "title": "习惯"
+    },
+    "inbox": {
+      "description": "从未整理的任务开始",
+      "title": "收件箱"
+    },
+    "labels": {
+      "description": "使用标签整理任务",
+      "title": "标签"
+    },
+    "not-found": {
+      "description": "请求的资源无法找到",
+      "title": "未找到"
+    },
+    "projects": {
+      "description": "管理和组织项目",
+      "title": "项目"
+    },
+    "today": {
+      "description": "专注于今天的任务",
+      "title": "今天"
+    },
+    "upcoming": {
+      "description": "查看即将到来的任务",
+      "title": "即将到来"
+    }
+  },
   "viewOptions": {
     "displayOptions": {
       "compact": {
@@ -101,49 +143,11 @@
     },
     "sort": {
       "direction": {
-        "changeToAsc": "更改为升序",
-        "changeToDesc": "更改为降序"
+        "asc": "升序",
+        "desc": "降序",
+        "label": "排序方向"
       },
-      "help": {
-        "createdDate": {
-          "description": "按任务创建时间排序",
-          "label": "创建日期："
-        },
-        "default": {
-          "description": "以自然顺序显示任务，已完成任务在底部",
-          "label": "默认（未排序）："
-        },
-        "description": "选择如何组织您的任务：",
-        "dueDate": {
-          "description": "按截止日期对所有任务进行排序，混合已完成和未完成任务",
-          "label": "截止日期："
-        },
-        "priority": {
-          "description": "按优先级排序（1=最高，4=最低）",
-          "label": "优先级："
-        },
-        "status": {
-          "description": "按完成状态分组，然后按看板列",
-          "label": "状态："
-        },
-        "tip": "提示：使用箭头按钮在升序和降序之间切换",
-        "title": {
-          "description": "按任务名称字母顺序排序",
-          "label": "标题："
-        }
-      },
-      "label": "排序",
-      "options": {
-        "createdAt": "创建日期",
-        "default": "默认（未排序）",
-        "dueDate": "截止日期",
-        "priority": "优先级",
-        "status": "状态",
-        "title": "标题"
-      },
-      "placeholder": "选择排序选项",
-      "sortBy": "排序方式",
-      "title": "排序选项"
+      "label": "排序"
     },
     "title": "视图选项",
     "viewMode": {
@@ -152,40 +156,6 @@
       "kanbanTooltip": "仅适用于项目",
       "label": "视图模式",
       "list": "列表"
-    }
-  },
-  "standardViews": {
-    "all": {
-      "description": "在一个地方查看您的所有任务",
-      "title": "所有任务"
-    },
-    "calendar": {
-      "description": "以日历格式查看任务",
-      "title": "日历"
-    },
-    "completed": {
-      "description": "查看已完成的任务",
-      "title": "已完成"
-    },
-    "inbox": {
-      "description": "从未整理的任务开始",
-      "title": "收件箱"
-    },
-    "labels": {
-      "description": "使用标签整理任务",
-      "title": "标签"
-    },
-    "projects": {
-      "description": "管理和组织项目",
-      "title": "项目"
-    },
-    "today": {
-      "description": "专注于今天的任务",
-      "title": "今天"
-    },
-    "upcoming": {
-      "description": "查看即将到来的任务",
-      "title": "即将到来"
     }
   }
 }

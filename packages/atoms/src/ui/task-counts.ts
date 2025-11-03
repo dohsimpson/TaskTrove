@@ -23,65 +23,71 @@ import { allGroupsAtom } from "@tasktrove/atoms/core/groups";
 import { collectProjectIdsFromGroup } from "@tasktrove/utils/group-utils";
 
 /**
+ * Builds a resolver that returns the filtered task list for any base view.
+ * This excludes completed tasks for every view except the dedicated completed view.
+ */
+export function createBaseViewResolver(
+  get: Getter,
+): (viewId: ViewId) => Task[] {
+  const allTasks = get(activeTasksAtom);
+  const incompleteTasks = allTasks.filter((task: Task) => !task.completed);
+  const completedTasks = allTasks.filter((task: Task) => task.completed);
+  const filterIncomplete = (tasks: Task[]) =>
+    tasks.filter((task: Task) => !task.completed);
+
+  const standardResolvers: Record<string, () => Task[]> = {
+    all: () => incompleteTasks,
+    inbox: () => filterIncomplete(get(inboxTasksAtom)),
+    today: () => filterIncomplete(get(todayTasksAtom)),
+    upcoming: () => filterIncomplete(get(upcomingTasksAtom)),
+    calendar: () => filterIncomplete(get(calendarTasksAtom)),
+    completed: () => completedTasks,
+    habits: () => filterIncomplete(get(autoRolloverTasksAtom)),
+  };
+
+  return (viewId: ViewId) => {
+    const resolver = standardResolvers[viewId];
+    if (resolver) {
+      return resolver();
+    }
+
+    const projects = get(projectsAtom);
+    const matchingProject = projects.find((p: Project) => p.id === viewId);
+    if (matchingProject) {
+      return incompleteTasks.filter((task: Task) => task.projectId === viewId);
+    }
+
+    try {
+      const labelId = LabelIdSchema.parse(viewId);
+      return incompleteTasks.filter((task: Task) =>
+        task.labels.includes(labelId),
+      );
+    } catch {
+      // Not a valid label ID
+    }
+
+    try {
+      const groupId = GroupIdSchema.parse(viewId);
+      const groups = get(allGroupsAtom);
+      const projectIds = collectProjectIdsFromGroup(groups, groupId);
+      return incompleteTasks.filter(
+        (task: Task) => task.projectId && projectIds.includes(task.projectId),
+      );
+    } catch {
+      // Not a valid group ID
+    }
+
+    return incompleteTasks;
+  };
+}
+
+/**
  * Pure function to get base filtered tasks for any view (without UI preferences).
  */
 function getBaseFilteredTasksForView(viewId: ViewId, get: Getter): Task[] {
   try {
-    const activeTasks = get(activeTasksAtom);
-
-    // Determine view type based on viewId pattern
-    if (viewId === "all") {
-      return activeTasks;
-    } else if (viewId === "inbox") {
-      return get(inboxTasksAtom);
-    } else if (viewId === "today") {
-      return get(todayTasksAtom);
-    } else if (viewId === "upcoming") {
-      return get(upcomingTasksAtom);
-    } else if (viewId === "calendar") {
-      return get(calendarTasksAtom);
-    } else if (viewId === "completed") {
-      return get(completedTasksAtom);
-    } else if (viewId === "habits") {
-      return get(autoRolloverTasksAtom);
-    } else {
-      // Check if viewId is a project ID
-      const projects = get(projectsAtom);
-      const matchingProject = projects.find((p: Project) => p.id === viewId);
-      if (matchingProject) {
-        const projectTasks = activeTasks.filter(
-          (task: Task) => task.projectId === viewId,
-        );
-        return projectTasks;
-      }
-
-      // Check if viewId is a label ID
-      try {
-        const labelId = LabelIdSchema.parse(viewId);
-        const labelTasks = activeTasks.filter((task: Task) =>
-          task.labels.includes(labelId),
-        );
-        return labelTasks;
-      } catch {
-        // Not a valid label ID
-      }
-
-      // Check if viewId is a project group ID
-      try {
-        const groupId = GroupIdSchema.parse(viewId);
-        const groups = get(allGroupsAtom);
-        const projectIds = collectProjectIdsFromGroup(groups, groupId);
-        const groupTasks = activeTasks.filter(
-          (task: Task) => task.projectId && projectIds.includes(task.projectId),
-        );
-        return groupTasks;
-      } catch {
-        // Not a valid group ID
-      }
-
-      // Default: return all active tasks for unknown view types
-      return activeTasks;
-    }
+    const resolveViewTasks = createBaseViewResolver(get);
+    return resolveViewTasks(viewId);
   } catch (error) {
     handleAtomError(error, `getBaseFilteredTasksForView(${viewId})`);
     return [];
@@ -104,12 +110,26 @@ export const taskCountForViewAtom = atomFamily((viewId: ViewId) =>
 );
 
 /**
+ * Get task list for any view using base filtering (matches task count logic).
+ */
+export const taskListForViewAtom = atomFamily((viewId: ViewId) =>
+  atom((get) => {
+    try {
+      return getBaseFilteredTasksForView(viewId, get);
+    } catch (error) {
+      handleAtomError(error, `taskListForViewAtom(${viewId})`);
+      return [];
+    }
+  }),
+);
+
+/**
  * UI-specific atom for project task counts.
  */
 export const projectTaskCountsAtom = atom<Record<ProjectId, number>>((get) => {
   try {
     const projects = get(projectsAtom);
-    const tasks = get(activeTasksAtom);
+    const tasks = get(activeTasksAtom).filter((task: Task) => !task.completed);
     const counts: Record<ProjectId, number> = {};
 
     for (const project of projects) {
@@ -133,7 +153,7 @@ projectTaskCountsAtom.debugLabel = "projectTaskCountsAtom";
 export const labelTaskCountsAtom = atom<Record<LabelId, number>>((get) => {
   try {
     const labels = get(labelsAtom);
-    const tasks = get(activeTasksAtom);
+    const tasks = get(activeTasksAtom).filter((task: Task) => !task.completed);
     const counts: Record<LabelId, number> = {};
 
     for (const label of labels) {
@@ -158,11 +178,13 @@ export const taskCountsAtom = atom((get) => {
   try {
     // Raw counts (not view-specific, always show all active/completed)
     const activeTasks = get(activeTasksAtom);
+    const incompleteTasks = activeTasks.filter((task) => !task.completed);
     const completedTasks = get(completedTasksAtom);
+    const allCount = get(taskCountForViewAtom("all"));
 
     // Standard view counts (all respect per-view showCompleted settings via uiFilteredTasksForViewAtom)
     return {
-      total: activeTasks.length,
+      total: allCount,
       inbox: get(taskCountForViewAtom("inbox")),
       today: get(taskCountForViewAtom("today")),
       upcoming: get(taskCountForViewAtom("upcoming")),
@@ -170,8 +192,8 @@ export const taskCountsAtom = atom((get) => {
       habits: get(taskCountForViewAtom("habits")),
       overdue: get(taskCountForViewAtom("today")), // overdue is shown in today view
       completed: completedTasks.length,
-      all: get(taskCountForViewAtom("all")),
-      active: activeTasks.filter((task) => !task.completed).length,
+      all: allCount,
+      active: incompleteTasks.length,
     };
   } catch (error) {
     handleAtomError(error, "taskCountsAtom");

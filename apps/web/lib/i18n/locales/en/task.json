@@ -1,0 +1,201 @@
+{
+  "actions": {
+    "addAssignees": "Add assignees",
+    "addComment": "Add comment",
+    "addDate": "Add date",
+    "addLabel": "Add label",
+    "addPriority": "Add priority",
+    "addProject": "Add project",
+    "addSection": "Add Section",
+    "addSubtask": "Add subtask",
+    "addTask": "Add task"
+  },
+  "comments": {
+    "addAnotherComment": "Add another comment...",
+    "addComment": "Add Comment",
+    "addComments": "Add comments...",
+    "commentCount_one": "{{count}} comments",
+    "commentCount_other": "{{count}} comments",
+    "title": "Comments",
+    "title_one": "Comments ({{count}})",
+    "title_other": "Comments ({{count}})"
+  },
+  "common": {
+    "confirm": "Confirm"
+  },
+  "filters": {
+    "activeOnly": "Active only",
+    "allTasks": "All tasks",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "clearAll": "Clear all",
+    "completedOnly": "Completed only",
+    "customRange": "Custom Range",
+    "dueDate": "Due Date",
+    "filterTasks": "Filter Tasks",
+    "fromDate": "FROM DATE",
+    "labels": "Labels",
+    "next30Days": "Next 30 days",
+    "next7Days": "Next 7 days",
+    "noLabels": "No labels",
+    "noPriority": "No priority",
+    "priority": "Priority",
+    "priority1": "Priority 1",
+    "priority2": "Priority 2",
+    "priority3": "Priority 3",
+    "projects": "Projects",
+    "selectEndDate": "Select end date",
+    "selectStartDate": "Select start date",
+    "status": "Status",
+    "toDate": "TO DATE"
+  },
+  "focusTimer": {
+    "noActiveTimer": "No active focus timer",
+    "pause": "Pause timer",
+    "paused": "Paused",
+    "ready": "Ready",
+    "resume": "Resume timer",
+    "running": "Running",
+    "start": "Start focus timer",
+    "startTimer": "Start Timer",
+    "stop": "Stop timer",
+    "stopped": "Stopped",
+    "task": "Task:",
+    "title": "Focus Timer"
+  },
+  "labels": {
+    "createLabel": "Create \"{{name}}\"",
+    "searchPlaceholder": "Search or create labels..."
+  },
+  "placeholders": {
+    "addDescription": "Add description...",
+    "taskTitle": "Enter task title..."
+  },
+  "priority": {
+    "noPriority": "No priority",
+    "priority1": "Priority 1",
+    "priority2": "Priority 2",
+    "priority3": "Priority 3"
+  },
+  "project": {
+    "noProject": "No Project (Inbox)"
+  },
+  "recurring": {
+    "adaptive": "Adaptive",
+    "apply": "Apply",
+    "autoRollover": "Auto-rollover",
+    "calculateNextFrom": "Calculate next due date from",
+    "createCustomPattern": "Create a custom recurring pattern",
+    "current": "Current:",
+    "daily": "Daily",
+    "day": "day",
+    "days": "days",
+    "dueDate": "Due date",
+    "every": "Every",
+    "interval": "Interval",
+    "lastDay": "Last day",
+    "month": "month",
+    "monthly": "Monthly",
+    "months": "months",
+    "of": "of",
+    "on": "on",
+    "selectDateInYear": "Select date in the year",
+    "selectDaysOfMonth": "Select days of the month",
+    "selectDaysOfWeek": "Select days of the week",
+    "selectedDates": "Selected dates:",
+    "setDailyInterval": "Set daily interval",
+    "the": "the",
+    "week": "week",
+    "weekdays": "Weekdays",
+    "weekends": "Weekends",
+    "weekly": "Weekly",
+    "weeks": "weeks",
+    "year": "year",
+    "yearly": "Yearly",
+    "years": "years"
+  },
+  "schedule": {
+    "clear": "Clear",
+    "clearTime": "Clear Time",
+    "due": "Due:",
+    "examplePrefix": "e.g.,",
+    "hideCalendar": "Hide calendar & time",
+    "nextWeek": "Next Week",
+    "recurring": "Recurring",
+    "set": "Set",
+    "showCalendar": "Show calendar & time",
+    "skip": "Skip",
+    "title": "Schedule",
+    "today": "Today",
+    "tomorrow": "Tomorrow"
+  },
+  "sidePanel": {
+    "autoSave": {
+      "saving": "Saving..."
+    },
+    "category": {
+      "priority": "Priority",
+      "project": "Project",
+      "title": "Category"
+    },
+    "comments": {
+      "title": "Comments"
+    },
+    "description": {
+      "placeholder": "Add description...",
+      "title": "Description"
+    },
+    "dueDate": {
+      "placeholder": "Due Date",
+      "today": "Today",
+      "tomorrow": "Tomorrow"
+    },
+    "labels": {
+      "title": "Labels"
+    },
+    "scheduling": {
+      "title": "Scheduling"
+    },
+    "shortcuts": {
+      "close": "Close",
+      "toggle": "Toggle"
+    },
+    "subtasks": {
+      "title": "Subtasks"
+    },
+    "taskTitle": {
+      "placeholder": "Task title..."
+    },
+    "title": "Task Details: {{- title}}"
+  },
+  "subtasks": {
+    "addAnotherSubtask": "Add another subtask...",
+    "addSubtask": "Add Subtask",
+    "addSubtasks": "Add subtasks...",
+    "title": "Subtasks"
+  },
+  "task": {
+    "noSearchResults": "No tasks found",
+    "noTasksAvailable": "No tasks available",
+    "searchPlaceholder": "Search tasks...",
+    "selectedCount_one": "{{count}} selected",
+    "selectedCount_other": "{{count}} selected"
+  },
+  "timeEstimation": {
+    "calculatedFromSubtasks": "Calculated from subtasks",
+    "clear": "Clear",
+    "customDuration": "Custom Duration",
+    "done": "Done",
+    "errors": {
+      "hourNumber": "Must be a number (0-99)",
+      "hourRange": "Hours must be between 0-99",
+      "minuteNumber": "Must be a number (0-59)",
+      "minuteRange": "Minutes must be between 0-59"
+    },
+    "helpText": "Estimate how long this task will take to complete. This helps with planning and tracking your productivity.",
+    "helpTextSubtasks": "This estimation is calculated from the sum of subtask estimations. Setting a direct estimation here will override the calculated value.",
+    "hour": "Hour",
+    "minute": "Minute",
+    "title": "Time Estimation"
+  }
+}

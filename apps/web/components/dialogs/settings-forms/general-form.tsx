@@ -76,16 +76,53 @@ export function GeneralForm() {
     label: string
     description: string
     icon: React.ComponentType<{ className?: string }>
-  }> = Object.entries(START_VIEW_METADATA)
-    .filter(([key]) => key in ICON_MAP) // Only include views in the icon map
-    .map(([key, metadata]) => ({
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      value: key as StandardViewId | "lastViewed",
-      label: t(`general.startView.${key}.label`, metadata.title),
-      description: t(`general.startView.${key}.description`, metadata.description),
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      icon: ICON_MAP[key as keyof typeof ICON_MAP],
-    }))
+  }> = [
+    {
+      value: "all",
+      icon: ICON_MAP.all,
+      label: t("general.startView.all.label", START_VIEW_METADATA.all.title),
+      description: t("general.startView.all.description", START_VIEW_METADATA.all.description),
+    },
+    {
+      value: "inbox",
+      icon: ICON_MAP.inbox,
+      label: t("general.startView.inbox.label", START_VIEW_METADATA.inbox.title),
+      description: t("general.startView.inbox.description", START_VIEW_METADATA.inbox.description),
+    },
+    {
+      value: "today",
+      icon: ICON_MAP.today,
+      label: t("general.startView.today.label", START_VIEW_METADATA.today.title),
+      description: t("general.startView.today.description", START_VIEW_METADATA.today.description),
+    },
+    {
+      value: "upcoming",
+      icon: ICON_MAP.upcoming,
+      label: t("general.startView.upcoming.label", START_VIEW_METADATA.upcoming.title),
+      description: t(
+        "general.startView.upcoming.description",
+        START_VIEW_METADATA.upcoming.description,
+      ),
+    },
+    {
+      value: "completed",
+      icon: ICON_MAP.completed,
+      label: t("general.startView.completed.label", START_VIEW_METADATA.completed.title),
+      description: t(
+        "general.startView.completed.description",
+        START_VIEW_METADATA.completed.description,
+      ),
+    },
+    {
+      value: "lastViewed",
+      icon: ICON_MAP.lastViewed,
+      label: t("general.startView.lastViewed.label", START_VIEW_METADATA.lastViewed.title),
+      description: t(
+        "general.startView.lastViewed.description",
+        START_VIEW_METADATA.lastViewed.description,
+      ),
+    },
+  ]
 
   // Separate standard views from lastViewed
   const standardViewOptions = allStartViewOptions.filter((option) => option.value !== "lastViewed")

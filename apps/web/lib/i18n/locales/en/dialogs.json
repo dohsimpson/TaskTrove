@@ -1,0 +1,191 @@
+{
+  "about": {
+    "by": "by",
+    "description": "Information about TaskTrove application version and developer",
+    "madeWith": "made with",
+    "sponsorMe": "Sponsor Me",
+    "starOnGitHub": "Star on GitHub",
+    "title": "About TaskTrove"
+  },
+  "baseDialog": {
+    "buttons": {
+      "add": "Add {{type}}"
+    },
+    "color": {
+      "label": "Color"
+    },
+    "description": {
+      "label": "Description (optional)",
+      "placeholder": "Enter {{type}} description"
+    },
+    "name": {
+      "label": "{{type}} Name",
+      "placeholder": "Enter {{type}} name"
+    },
+    "parent": {
+      "none": "None (Root Level)",
+      "placeholder": "Select {{type}}"
+    },
+    "title": "Add New {{type}}",
+    "types": {
+      "label": "Label",
+      "project": "Project",
+      "projectGroup": "Project Group",
+      "section": "Section"
+    }
+  },
+  "common": {
+    "cancel": "Cancel"
+  },
+  "delete": {
+    "bulk": {
+      "confirm": "Delete Tasks",
+      "description_one": "Are you sure you want to delete {{count}} task{{s}}? This action cannot be undone.",
+      "description_other": "Are you sure you want to delete {{count}} task{{s}}? This action cannot be undone.",
+      "title": "Delete Tasks"
+    },
+    "default": {
+      "confirm": "Delete",
+      "description": "Are you sure you want to delete this item?",
+      "title": "Delete Item"
+    },
+    "group": {
+      "confirm": "Delete Group",
+      "deleteContainedResources": "Also delete all projects and tasks in this group",
+      "description": "Are you sure you want to delete \"{{- name}}\"? This action cannot be undone.",
+      "title": "Delete Group"
+    },
+    "history": {
+      "confirm": "Clear History",
+      "description": "This will permanently clear all undo/redo history for tasks, projects, and labels. This action cannot be undone.",
+      "title": "Clear All History"
+    },
+    "label": {
+      "confirm": "Delete Label",
+      "description": "Are you sure you want to delete \"{{- name}}\"? This action cannot be undone.",
+      "title": "Delete Label"
+    },
+    "project": {
+      "confirm": "Delete Project",
+      "deleteContainedResources": "Also delete all tasks in this project",
+      "description": "Are you sure you want to delete \"{{- name}}\"? This action cannot be undone.",
+      "title": "Delete Project"
+    },
+    "section": {
+      "confirm": "Delete Section",
+      "description": "Are you sure you want to delete \"{{- name}}\"? This action cannot be undone.",
+      "title": "Delete Section"
+    },
+    "task": {
+      "confirm": "Delete",
+      "description": "Are you sure you want to delete \"{{- name}}\"? This action cannot be undone.",
+      "title": "Delete Task"
+    }
+  },
+  "logout": {
+    "cancel": "Cancel",
+    "confirm": "Sign Out",
+    "confirmMessage": "Are you sure you want to sign out? You will need to sign in again to access your tasks.",
+    "confirmTitle": "Sign Out"
+  },
+  "projectDialog": {
+    "buttons": {
+      "add": "Add {{type}}"
+    },
+    "color": {
+      "label": "Color"
+    },
+    "group": "Group",
+    "name": {
+      "label": "{{type}} Name",
+      "placeholder": "Enter {{type}} name"
+    },
+    "project": "Project",
+    "title": "Add New {{type}}",
+    "type": {
+      "label": "Type"
+    }
+  },
+  "quickAdd": {
+    "addingTask": "Adding",
+    "addTask": "Add task",
+    "buttons": {
+      "comments": "Comments",
+      "date": "Date",
+      "label": "Label",
+      "priority": "Priority",
+      "project": "Project",
+      "section": "Section",
+      "subtasks": "Subtasks"
+    },
+    "copyTitle": "Duplicate Task",
+    "description": {
+      "placeholder": "Description"
+    },
+    "smartParsing": {
+      "help": "Smart Parsing is an experimental feature that automatically detects and extracts task details from your input. It can identify priorities (P1-P4), due dates (tomorrow, next week, etc.), project names (#project), labels (@label), and recurring patterns (daily, weekly).",
+      "label": "Smart Parsing"
+    },
+    "title": "Quick Add Task"
+  },
+  "settings": {
+    "accessibility": {
+      "closeMenu": "Close menu",
+      "closeSettings": "Close settings",
+      "openMenu": "Open settings menu"
+    },
+    "categories": {
+      "appearance": {
+        "description": "Themes, colors, and visual preferences",
+        "title": "Appearance"
+      },
+      "data": {
+        "description": "Import/export, backups",
+        "title": "Data & Storage"
+      },
+      "general": {
+        "description": "Default page, basic preferences",
+        "title": "General"
+      },
+      "notifications": {
+        "description": "Notification settings",
+        "title": "Notifications"
+      }
+    },
+    "description": "Configure TaskTrove application settings and preferences",
+    "title": "Settings"
+  },
+  "unsavedConfirmation": {
+    "confirm": "Discard Changes",
+    "description": "You have unsaved changes that will be lost if you close this dialog. Are you sure you want to continue?",
+    "title": "Discard unsaved changes?"
+  },
+  "userProfile": {
+    "changeAvatar": "Change Avatar",
+    "confirmPassword": {
+      "label": "Confirm Password",
+      "mismatch": "Passwords do not match",
+      "placeholder": "Re-enter your password"
+    },
+    "errors": {
+      "fileSizeLimit": "Avatar file size must be under 5MB",
+      "invalidFileType": "Please select a valid image file (PNG, JPEG, GIF, or WebP)",
+      "passwordMismatch": "Passwords do not match",
+      "updateFailed": "Failed to update profile",
+      "usernameRequired": "Username is required"
+    },
+    "password": {
+      "label": "Password",
+      "placeholder": "Leave blank to keep current password"
+    },
+    "removeAvatar": "Remove Avatar",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "title": "Edit Profile",
+    "uploadAvatar": "Upload Avatar",
+    "username": {
+      "label": "Username",
+      "placeholder": "Enter your username"
+    }
+  }
+}

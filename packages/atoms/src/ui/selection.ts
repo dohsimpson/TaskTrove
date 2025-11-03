@@ -34,6 +34,12 @@ selectedTaskIdAtom.debugLabel = "selectedTaskIdAtom";
  * Use this instead of directly setting selectedTaskIdAtom
  * Also captures the current route context for potential navigation back
  */
+export const selectedTaskRouteContextOverrideAtom = atom<RouteContext | null>(
+  null,
+);
+selectedTaskRouteContextOverrideAtom.debugLabel =
+  "selectedTaskRouteContextOverrideAtom";
+
 export const setSelectedTaskIdAtom = atom(
   null,
   (get, set, taskId: TaskId | null) => {
@@ -42,14 +48,22 @@ export const setSelectedTaskIdAtom = atom(
 
     // If setting a task (not null), capture route context and clear bulk selection
     if (taskId !== null) {
-      // Capture the current route context when task is selected
-      const routeContext = get(currentRouteContextAtom);
-      set(selectedTaskRouteContextAtom, routeContext);
+      const overrideRouteContext = get(selectedTaskRouteContextOverrideAtom);
+
+      if (overrideRouteContext) {
+        set(selectedTaskRouteContextAtom, overrideRouteContext);
+        set(selectedTaskRouteContextOverrideAtom, null);
+      } else {
+        // Capture the current route context when task is selected
+        const routeContext = get(currentRouteContextAtom);
+        set(selectedTaskRouteContextAtom, routeContext);
+      }
 
       set(clearSelectedTasksAtom);
     } else {
       // Clear route context when task is deselected
       set(selectedTaskRouteContextAtom, null);
+      set(selectedTaskRouteContextOverrideAtom, null);
     }
   },
 );
@@ -233,6 +247,7 @@ export const selectionAtoms = {
   selectedTasks: selectedTasksAtom,
   lastSelectedTask: lastSelectedTaskAtom,
   selectedTaskRouteContext: selectedTaskRouteContextAtom,
+  selectedTaskRouteContextOverride: selectedTaskRouteContextOverrideAtom,
   multiSelectDragging: multiSelectDraggingAtom,
   ...selectionActionAtoms,
 } as const;

@@ -10,7 +10,7 @@ export default async function SignIn() {
 
   return (
     <>
-      <PermissionChecker />
+      <PermissionChecker showMigrationDialog={false} />
       <LoginPage needsPasswordSetup={needsPasswordSetup} />
     </>
   )

@@ -1,11 +1,12 @@
 {
   "actions": {
+    "addAssignees": "Aggiungi responsabili",
     "addComment": "Aggiungi commento",
     "addDate": "Aggiungi data",
     "addLabel": "Aggiungi etichetta",
-    "addLabels": "Aggiungi etichette",
     "addPriority": "Aggiungi priorità",
     "addProject": "Aggiungi progetto",
+    "addSection": "Aggiungi sezione",
     "addSubtask": "Aggiungi sottoattività",
     "addTask": "Aggiungi Attività"
   },
@@ -16,51 +17,13 @@
     "commentCount_one": "{{count}} commento",
     "commentCount_many": "{{count}} commenti",
     "commentCount_other": "{{count}} commenti",
+    "title": "Commenti",
     "title_one": "Commento",
     "title_many": "Commenti",
     "title_other": "Commenti"
   },
-  "emptyStates": {
-    "all": {
-      "description": "Questa vista mostra tutte le tue attività in tutti i progetti. Crea la tua prima attività per iniziare con TaskTrove.",
-      "title": "Nessuna attività trovata"
-    },
-    "analytics": {
-      "description": "Traccia la tua produttività e i modelli di completamento delle attività.",
-      "title": "Dashboard Analisi"
-    },
-    "completed": {
-      "description": "Le attività che hai completato appariranno qui. Completa alcune attività per vedere i tuoi progressi e celebrare i tuoi risultati!",
-      "title": "Nessuna attività completata ancora"
-    },
-    "fallback": {
-      "description": "Crea la tua prima attività per iniziare.",
-      "title": "Nessuna attività trovata"
-    },
-    "inbox": {
-      "description": "Questo è il tuo punto di raccolta predefinito per tutte le nuove attività. Quando crei un'attività senza specificare un progetto, finisce qui.",
-      "title": "La tua posta in arrivo è vuota"
-    },
-    "label": {
-      "description": "Le attività etichettate con questa etichetta appariranno qui. Usa le etichette per categorizzare e trovare rapidamente attività correlate.",
-      "title": "Nessuna attività con l'etichetta {{labelName}}"
-    },
-    "project": {
-      "description": "Questo progetto è vuoto. Aggiungi attività per organizzare il tuo lavoro e monitorare i progressi su obiettivi specifici.",
-      "title": "Nessuna attività in {{projectName}}"
-    },
-    "search": {
-      "description": "Trova attività per titolo, descrizione o etichette.",
-      "title": "Risultati di Ricerca"
-    },
-    "today": {
-      "description": "Le attività con scadenza oggi appariranno qui. Imposta le scadenze sulle tue attività per rimanere in pista con i tuoi obiettivi giornalieri.",
-      "title": "Niente programmato per oggi"
-    },
-    "upcoming": {
-      "description": "Le attività con scadenze future appaiono qui, aiutandoti a pianificare in anticipo e prepararti per quello che verrà.",
-      "title": "Nessuna attività in arrivo"
-    }
+  "common": {
+    "confirm": "Conferma"
   },
   "filters": {
     "activeOnly": "Solo attive",
@@ -71,7 +34,6 @@
     "completedOnly": "Solo completate",
     "customRange": "Intervallo personalizzato",
     "dueDate": "Scadenza",
-    "filter": "Filtra",
     "filterTasks": "Filtra Attività",
     "fromDate": "DATA INIZIO",
     "labels": "Etichette",
@@ -79,14 +41,6 @@
     "next7Days": "Prossimi 7 giorni",
     "noLabels": "Senza etichette",
     "noPriority": "Nessuna priorità",
-    "presets": {
-      "noDueDate": "Nessuna scadenza",
-      "nextWeek": "Prossima settimana",
-      "overdue": "In ritardo",
-      "thisWeek": "Questa settimana",
-      "today": "Oggi",
-      "tomorrow": "Domani"
-    },
     "priority": "Priorità",
     "priority1": "Priorità 1",
     "priority2": "Priorità 2",
@@ -120,7 +74,10 @@
     "taskTitle": "Inserisci il titolo dell'attività..."
   },
   "priority": {
-    "noPriority": "Nessuna priorità"
+    "noPriority": "Nessuna priorità",
+    "priority1": "Priorità 1",
+    "priority2": "Priorità 2",
+    "priority3": "Priorità 3"
   },
   "project": {
     "noProject": "Nessun progetto (Posta in arrivo)"
@@ -128,6 +85,7 @@
   "recurring": {
     "adaptive": "Adattivo",
     "apply": "Applica",
+    "autoRollover": "Report automatico",
     "calculateNextFrom": "Calcola prossima scadenza da",
     "createCustomPattern": "Crea modello di ricorrenza personalizzato",
     "current": "Attuale:",
@@ -174,12 +132,6 @@
     "tomorrow": "Domani"
   },
   "sidePanel": {
-    "attachments": {
-      "count_one": "{{count}} allegato",
-      "count_many": "{{count}} allegati",
-      "count_other": "{{count}} allegati",
-      "title": "Allegati"
-    },
     "autoSave": {
       "saving": "Salvataggio in corso..."
     },
@@ -197,12 +149,14 @@
     },
     "dueDate": {
       "placeholder": "Aggiungi scadenza",
-      "title": "Scadenza",
       "today": "Oggi",
       "tomorrow": "Domani"
     },
     "labels": {
       "title": "Etichette"
+    },
+    "scheduling": {
+      "title": "Programmazione"
     },
     "shortcuts": {
       "close": "Chiudi",
@@ -221,5 +175,30 @@
     "addSubtask": "Aggiungi sottoattività",
     "addSubtasks": "Aggiungi sottoattività...",
     "title": "Sottoattività"
+  },
+  "task": {
+    "noSearchResults": "Nessuna attività trovata",
+    "noTasksAvailable": "Nessuna attività disponibile",
+    "searchPlaceholder": "Cerca attività...",
+    "selectedCount_one": "{{count}} selezionato",
+    "selectedCount_many": "{{count}} selezionati",
+    "selectedCount_other": "{{count}} selezionati"
+  },
+  "timeEstimation": {
+    "calculatedFromSubtasks": "Calcolato dalle sottoattività",
+    "clear": "Cancella",
+    "customDuration": "Durata personalizzata",
+    "done": "Fatto",
+    "errors": {
+      "hourNumber": "Deve essere un numero (0-99)",
+      "hourRange": "Le ore devono essere comprese tra 0-99",
+      "minuteNumber": "Deve essere un numero (0-59)",
+      "minuteRange": "I minuti devono essere compresi tra 0-59"
+    },
+    "helpText": "Stima il tempo necessario per completare questa attività. Questo aiuta nella pianificazione e nel monitoraggio della tua produttività.",
+    "helpTextSubtasks": "Questa stima è calcolata dalla somma delle stime delle sottoattività. Impostare una stima diretta qui sostituirà il valore calcolato.",
+    "hour": "Ora",
+    "minute": "Minuto",
+    "title": "Stima del tempo"
   }
 }

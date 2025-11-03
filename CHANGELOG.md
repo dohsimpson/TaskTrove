@@ -1,5 +1,21 @@
 # tasktrove
 
+## 0.9.1
+
+### Features
+
+🎉 Feature - Add linkify functionality to task comments.
+🎉 Feature - Enhance section deletion with task deletion option.
+
+### Minor Changes
+
+🎉 Feature - Move sort controls from view options to toolbar for better UX.
+
+### Patch Changes
+
+🐛 Bug - Ensure consistent task filtering in count atoms.
+🐛 Bug - Remove UI filtering in task count atoms.
+
 ## 0.9.0
 
 ### Features

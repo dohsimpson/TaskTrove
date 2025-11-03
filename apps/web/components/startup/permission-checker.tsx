@@ -30,7 +30,11 @@ interface HealthCheckResponse {
   timestamp: string
 }
 
-export function PermissionChecker() {
+interface PermissionCheckerProps {
+  showMigrationDialog?: boolean
+}
+
+export function PermissionChecker({ showMigrationDialog = true }: PermissionCheckerProps) {
   const [healthStatus, setHealthStatus] = useState<HealthCheckResponse | null>(null)
   const [isChecking, setIsChecking] = useState(true)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -144,8 +148,12 @@ export function PermissionChecker() {
     return null
   }
 
-  // Show migration prompt
-  if (healthStatus?.status === "needs_migration" && healthStatus.migrationInfo) {
+  // Show migration prompt (if enabled and available)
+  if (
+    showMigrationDialog &&
+    healthStatus?.status === "needs_migration" &&
+    healthStatus.migrationInfo
+  ) {
     return (
       <StartupAlert
         icon={DatabaseBackup}

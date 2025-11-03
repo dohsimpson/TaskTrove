@@ -172,6 +172,27 @@ vi.mock("@/components/ui/custom/editable-div", () => ({
   },
 }))
 
+// Mock LinkifiedText component
+vi.mock("@/components/ui/custom/linkified-text", () => ({
+  LinkifiedText: ({
+    as: Component = "span",
+    children,
+    className,
+    ...props
+  }: {
+    as?: "h1" | "h2" | "h3" | "h4" | "p" | "div" | "span"
+    children: React.ReactNode
+    className?: string
+    [key: string]: unknown
+  }) => {
+    return (
+      <Component className={className} data-testid="linkified-text" {...props}>
+        {children}
+      </Component>
+    )
+  },
+}))
+
 // Mock utility functions
 vi.mock("@/lib/utils", () => ({
   cn: (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(" "),
@@ -439,6 +460,21 @@ describe("CommentContent", () => {
       const timestampElement = container.querySelector(".cursor-pointer")
       expect(timestampElement).toBeInTheDocument()
       expect(timestampElement).toHaveClass("cursor-pointer")
+    })
+
+    it("renders comments with URL content using LinkifiedText", () => {
+      const commentWithUrl = createMockComment({
+        content: "Check out https://example.com for more info",
+      })
+      const task = createMockTask({ comments: [commentWithUrl] })
+
+      render(<CommentContent task={task} />)
+
+      // Should render the comment content
+      expect(screen.getByText("Check out https://example.com for more info")).toBeInTheDocument()
+
+      // Should use LinkifiedText component (verified by data-testid)
+      expect(screen.getByTestId("linkified-text")).toBeInTheDocument()
     })
   })
 

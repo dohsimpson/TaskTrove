@@ -27,8 +27,6 @@ function ViewOptionsPopoverComponent({ onAdvancedSearch, className }: ViewOption
     // Check if any view option deviates from default
     const isNonDefault =
       viewState.viewMode !== "list" ||
-      viewState.sortBy !== "default" ||
-      viewState.sortDirection !== "asc" ||
       viewState.showCompleted !== false ||
       viewState.searchQuery !== "" ||
       viewState.showSidePanel !== false ||

@@ -29,16 +29,7 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Calendar } from "@/components/ui/calendar"
-import {
-  Filter,
-  ChevronDown,
-  Calendar as CalendarIcon,
-  Flag,
-  Folder,
-  Circle,
-  Clock,
-  X,
-} from "lucide-react"
+import { Filter, Calendar as CalendarIcon, Flag, Folder, Circle, Clock, X } from "lucide-react"
 import { AssigneeFilterSection } from "@/components/task/assignee-filter-section"
 import { OwnerFilterSection } from "@/components/task/owner-filter-section"
 
@@ -258,30 +249,18 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant={hasActiveFilters ? "default" : "outline"}
+          variant="ghost"
           size="sm"
-          className={cn(
-            "relative transition-all duration-200 hover:shadow-md",
-            hasActiveFilters && "bg-primary/10 border-primary/20 text-primary hover:bg-primary/15",
-            className,
-          )}
+          className={cn("relative h-9 w-9 p-0", className)}
+          aria-label={t("filters.filterTasks", { defaultValue: "Filter Tasks" })}
         >
-          <Filter className={cn("h-4 w-4", hasActiveFilters && "text-primary")} />
+          <Filter className="h-4 w-4" />
           {hasActiveFilters && (
-            <Badge
-              variant="default"
-              className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs bg-primary text-primary-foreground shadow-sm"
-            >
-              {activeFilterCount}
-            </Badge>
+            <span
+              className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-foreground"
+              data-testid="filter-indicator-dot"
+            />
           )}
-          <ChevronDown
-            className={cn(
-              "h-3 w-3 ml-1 transition-transform duration-200",
-              isOpen && "rotate-180",
-              hasActiveFilters && "text-primary",
-            )}
-          />
         </Button>
       </PopoverTrigger>
 
@@ -297,6 +276,11 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
             {t("filters.filterTasks", "Filter Tasks")}
           </h3>
           {hasActiveFilters && (
+            <Badge variant="secondary" className="ml-auto">
+              {activeFilterCount}
+            </Badge>
+          )}
+          {hasActiveFilters && (
             <Button
               variant="ghost"
               size="sm"
@@ -304,7 +288,7 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                 clearFilters()
                 setIsOpen(false)
               }}
-              className="h-auto px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors ml-auto"
+              className="ml-2 h-auto px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
             >
               {t("filters.clearAll", "Clear all")}
             </Button>

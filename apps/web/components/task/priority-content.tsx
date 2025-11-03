@@ -37,9 +37,15 @@ export function PriorityContent({ task, className, onPrioritySelect }: PriorityC
     }
   }
 
+  const priorityLabels: Record<number, string> = {
+    1: t("priority.priority1", "Priority 1"),
+    2: t("priority.priority2", "Priority 2"),
+    3: t("priority.priority3", "Priority 3"),
+    4: t("priority.noPriority", "No priority"),
+  }
+
   const getPriorityLabel = (priority: number): string => {
-    if (priority === 4) return t("priority.noPriority", "No priority")
-    return t(`priority.priority${priority}`, `Priority ${priority}`)
+    return priorityLabels[priority] ?? t("priority.noPriority", "No priority")
   }
 
   const priorities = [

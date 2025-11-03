@@ -48,6 +48,48 @@
     "currentTheme": "Tema atual: {{theme}}. Clique para alternar temas.",
     "openSidebar": "Abrir barra lateral"
   },
+  "standardViews": {
+    "all": {
+      "description": "Ver todas as suas tarefas em um lugar",
+      "title": "Todas as tarefas"
+    },
+    "calendar": {
+      "description": "Ver tarefas em formato de calendário",
+      "title": "Calendário"
+    },
+    "completed": {
+      "description": "Revisar tarefas concluídas",
+      "title": "Concluídas"
+    },
+    "habits": {
+      "description": "Acompanhe seus hábitos e rotinas",
+      "title": "Hábitos"
+    },
+    "inbox": {
+      "description": "Começar com tarefas não organizadas",
+      "title": "Caixa de entrada"
+    },
+    "labels": {
+      "description": "Organizar tarefas com etiquetas",
+      "title": "Etiquetas"
+    },
+    "not-found": {
+      "description": "O recurso solicitado não foi encontrado",
+      "title": "Não Encontrado"
+    },
+    "projects": {
+      "description": "Gerenciar e organizar projetos",
+      "title": "Projetos"
+    },
+    "today": {
+      "description": "Focar nas tarefas de hoje",
+      "title": "Hoje"
+    },
+    "upcoming": {
+      "description": "Ver o que vem a seguir",
+      "title": "Próximas"
+    }
+  },
   "viewOptions": {
     "displayOptions": {
       "compact": {
@@ -101,49 +143,11 @@
     },
     "sort": {
       "direction": {
-        "changeToAsc": "Alterar para ascendente",
-        "changeToDesc": "Alterar para descendente"
+        "asc": "Ascendente",
+        "desc": "Descendente",
+        "label": "Direção da Ordenação"
       },
-      "help": {
-        "createdDate": {
-          "description": "Ordenar por tempo de criação da tarefa",
-          "label": "Data de criação:"
-        },
-        "default": {
-          "description": "Mostrar tarefas em ordem natural, tarefas concluídas embaixo",
-          "label": "Padrão (sem ordenação):"
-        },
-        "description": "Escolha como organizar suas tarefas:",
-        "dueDate": {
-          "description": "Ordenar todas as tarefas por data de vencimento, misturando concluídas e não concluídas",
-          "label": "Data de vencimento:"
-        },
-        "priority": {
-          "description": "Ordenar por prioridade (1=mais alta, 4=mais baixa)",
-          "label": "Prioridade:"
-        },
-        "status": {
-          "description": "Agrupar por status de conclusão, depois por coluna kanban",
-          "label": "Status:"
-        },
-        "tip": "Dica: Use os botões de seta para alternar entre ascendente e descendente",
-        "title": {
-          "description": "Ordenar por nome da tarefa alfabeticamente",
-          "label": "Título:"
-        }
-      },
-      "label": "Ordenar",
-      "options": {
-        "createdAt": "Data de criação",
-        "default": "Padrão (sem ordenação)",
-        "dueDate": "Data de vencimento",
-        "priority": "Prioridade",
-        "status": "Status",
-        "title": "Título"
-      },
-      "placeholder": "Selecionar opção de ordenação",
-      "sortBy": "Ordenar por",
-      "title": "Opções de ordenação"
+      "label": "Ordenar"
     },
     "title": "Opções de vista",
     "viewMode": {
@@ -152,40 +156,6 @@
       "kanbanTooltip": "Apenas para projetos",
       "label": "Modo de vista",
       "list": "Lista"
-    }
-  },
-  "standardViews": {
-    "all": {
-      "description": "Ver todas as suas tarefas em um lugar",
-      "title": "Todas as tarefas"
-    },
-    "calendar": {
-      "description": "Ver tarefas em formato de calendário",
-      "title": "Calendário"
-    },
-    "completed": {
-      "description": "Revisar tarefas concluídas",
-      "title": "Concluídas"
-    },
-    "inbox": {
-      "description": "Começar com tarefas não organizadas",
-      "title": "Caixa de entrada"
-    },
-    "labels": {
-      "description": "Organizar tarefas com etiquetas",
-      "title": "Etiquetas"
-    },
-    "projects": {
-      "description": "Gerenciar e organizar projetos",
-      "title": "Projetos"
-    },
-    "today": {
-      "description": "Focar nas tarefas de hoje",
-      "title": "Hoje"
-    },
-    "upcoming": {
-      "description": "Ver o que vem a seguir",
-      "title": "Próximas"
     }
   }
 }

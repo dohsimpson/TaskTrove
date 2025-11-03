@@ -1,4 +1,11 @@
 {
+  "appearance": {
+    "colorScheme": {
+      "description": "Selecione claro, escuro ou seguir preferência do sistema",
+      "label": "Escolha seu esquema de cores",
+      "title": "Esquema de Cores"
+    }
+  },
   "data": {
     "autoBackup": {
       "backupTime": {
@@ -65,6 +72,15 @@
     }
   },
   "general": {
+    "apiToken": {
+      "description": "Gere um token de API para acesso programático. Use este token no cabeçalho Authorization como 'Bearer SEU_TOKEN' para autenticar requisições de API.",
+      "generate": "Gerar Token",
+      "label": "Token de API",
+      "regenerate": "Regenerar Token",
+      "revoke": "Revogar Token",
+      "title": "API",
+      "viewDocs": "Ver Documentação da API"
+    },
     "audio": {
       "soundEffects": {
         "description": "Reproduzir sons para completar tarefas, notificações e outras interações",
@@ -76,44 +92,6 @@
       "description": "Escolher a página a ser exibida ao abrir o TaskTrove pela primeira vez",
       "label": "Mostrar ao abrir o TaskTrove",
       "title": "Página padrão"
-    },
-    "startView": {
-      "all": {
-        "description": "Ver todas as suas tarefas em um lugar",
-        "label": "Todas as tarefas"
-      },
-      "calendar": {
-        "description": "Ver tarefas em formato de calendário",
-        "label": "Calendário"
-      },
-      "completed": {
-        "description": "Revisar tarefas concluídas",
-        "label": "Concluídas"
-      },
-      "inbox": {
-        "description": "Começar com tarefas não organizadas",
-        "label": "Caixa de entrada"
-      },
-      "labels": {
-        "description": "Organizar tarefas com etiquetas",
-        "label": "Etiquetas"
-      },
-      "lastViewed": {
-        "description": "Retornar à sua última página ativa",
-        "label": "Última visualizada"
-      },
-      "projects": {
-        "description": "Gerenciar e organizar projetos",
-        "label": "Projetos"
-      },
-      "today": {
-        "description": "Focar nas tarefas de hoje",
-        "label": "Hoje"
-      },
-      "upcoming": {
-        "description": "Ver o que vem a seguir",
-        "label": "Próximas"
-      }
     },
     "language": {
       "description": "Selecionar o idioma de exibição da aplicação",
@@ -133,6 +111,32 @@
         "label": "Abertura ao passar o mouse"
       },
       "title": "Popovers"
+    },
+    "startView": {
+      "all": {
+        "description": "Ver todas as suas tarefas em um lugar",
+        "label": "Todas as tarefas"
+      },
+      "completed": {
+        "description": "Revisar tarefas concluídas",
+        "label": "Concluídas"
+      },
+      "inbox": {
+        "description": "Começar com tarefas não organizadas",
+        "label": "Caixa de entrada"
+      },
+      "lastViewed": {
+        "description": "Retornar à sua última página ativa",
+        "label": "Última visualizada"
+      },
+      "today": {
+        "description": "Focar nas tarefas de hoje",
+        "label": "Hoje"
+      },
+      "upcoming": {
+        "description": "Ver o que vem a seguir",
+        "label": "Próximas"
+      }
     }
   },
   "notifications": {

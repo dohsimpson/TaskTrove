@@ -26,7 +26,13 @@
       "none": "Keine (Wurzelebene)",
       "placeholder": "{{type}} auswählen"
     },
-    "title": "Neue {{type}} hinzufügen"
+    "title": "Neue {{type}} hinzufügen",
+    "types": {
+      "label": "Etikett",
+      "project": "Projekt",
+      "projectGroup": "Projektgruppe",
+      "section": "Bereich"
+    }
   },
   "common": {
     "cancel": "Abbrechen"
@@ -35,7 +41,6 @@
     "bulk": {
       "confirm": "Aufgaben löschen",
       "description_one": "Sind Sie sicher, dass Sie {{count}} Element löschen möchten?",
-      "description_many": "Sind Sie sicher, dass Sie {{count}} Elemente löschen möchten?",
       "description_other": "Sind Sie sicher, dass Sie {{count}} Elemente löschen möchten?",
       "title": "Aufgaben löschen"
     },
@@ -44,11 +49,10 @@
       "description": "Sind Sie sicher, dass Sie dieses Element löschen möchten?",
       "title": "Element löschen"
     },
-    "deleteContainedResources": "Auch enthaltene Ressourcen löschen",
     "group": {
       "confirm": "Gruppe löschen",
-      "description": "Sind Sie sicher, dass Sie \"{{- name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
       "deleteContainedResources": "Auch alle Projekte und Aufgaben in dieser Gruppe löschen",
+      "description": "Sind Sie sicher, dass Sie \"{{- name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
       "title": "Gruppe löschen"
     },
     "history": {
@@ -63,8 +67,8 @@
     },
     "project": {
       "confirm": "Projekt löschen",
-      "description": "Sind Sie sicher, dass Sie \"{{- name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
       "deleteContainedResources": "Auch alle Aufgaben in diesem Projekt löschen",
+      "description": "Sind Sie sicher, dass Sie \"{{- name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
       "title": "Projekt löschen"
     },
     "section": {
@@ -103,6 +107,7 @@
     }
   },
   "quickAdd": {
+    "addingTask": "Hinzufügen",
     "addTask": "Aufgabe hinzufügen",
     "buttons": {
       "comments": "Kommentare",
@@ -113,6 +118,7 @@
       "section": "Bereich",
       "subtasks": "Unteraufgaben"
     },
+    "copyTitle": "Aufgabe duplizieren",
     "description": {
       "placeholder": "Beschreibung"
     },
@@ -129,6 +135,10 @@
       "openMenu": "Einstellungsmenü öffnen"
     },
     "categories": {
+      "appearance": {
+        "description": "Designs, Farben und visuelle Präferenzen",
+        "title": "Erscheinungsbild"
+      },
       "data": {
         "description": "Import/Export, Backups",
         "title": "Daten & Speicher"
@@ -144,6 +154,11 @@
     },
     "description": "TaskTrove-Anwendungseinstellungen und -präferenzen konfigurieren",
     "title": "Einstellungen"
+  },
+  "unsavedConfirmation": {
+    "confirm": "Änderungen verwerfen",
+    "description": "Sie haben nicht gespeicherte Änderungen, die verloren gehen, wenn Sie dieses Dialogfenster schließen. Sind Sie sicher, dass Sie fortfahren möchten?",
+    "title": "Nicht gespeicherte Änderungen verwerfen?"
   },
   "userProfile": {
     "changeAvatar": "Avatar ändern",
@@ -163,9 +178,11 @@
       "label": "Passwort",
       "placeholder": "Leer lassen, um aktuelles Passwort beizubehalten"
     },
+    "removeAvatar": "Avatar entfernen",
     "save": "Änderungen speichern",
     "saving": "Speichern...",
     "title": "Profil bearbeiten",
+    "uploadAvatar": "Avatar hochladen",
     "username": {
       "label": "Benutzername",
       "placeholder": "Ihren Benutzernamen eingeben"

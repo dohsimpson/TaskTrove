@@ -1,78 +1,53 @@
 {
-  "app": {
-    "name": "TaskTrove",
-    "description": "Votre compagnon personnel de gestion des tâches"
+  "emptyStates": {
+    "all": {
+      "description": "Cette vue affiche toutes vos tâches dans tous les projets. Créez votre première tâche pour commencer avec TaskTrove.",
+      "title": "Aucune tâche trouvée"
+    },
+    "analytics": {
+      "description": "Suivez votre productivité et vos habitudes de complétion de tâches.",
+      "title": "Tableau de bord analytique"
+    },
+    "completed": {
+      "description": "Les tâches que vous avez terminées apparaîtront ici. Complétez quelques tâches pour voir vos progrès et célébrer vos réussites !",
+      "title": "Aucune tâche complétée pour le moment"
+    },
+    "fallback": {
+      "description": "Créez votre première tâche pour commencer.",
+      "title": "Aucune tâche trouvée"
+    },
+    "inbox": {
+      "description": "Ceci est votre point de collecte par défaut pour toutes les nouvelles tâches. Lorsque vous créez une tâche sans spécifier de projet, elle atterrit ici.",
+      "title": "Votre boîte de réception est vide"
+    },
+    "label": {
+      "description": "Les tâches étiquetées avec cette étiquette apparaîtront ici. Utilisez les étiquettes pour catégoriser et trouver rapidement les tâches connexes.",
+      "title": "Aucune tâche avec l'étiquette {{labelName}}"
+    },
+    "project": {
+      "description": "Ce projet est vide. Ajoutez des tâches pour organiser votre travail et suivre les progrès sur des objectifs spécifiques.",
+      "title": "Aucune tâche dans {{projectName}}"
+    },
+    "search": {
+      "description": "Trouvez des tâches par titre, description ou étiquettes.",
+      "title": "Résultats de recherche"
+    },
+    "today": {
+      "description": "Les tâches avec la date d'échéance d'aujourd'hui apparaîtront ici. Définissez des dates d'échéance sur vos tâches pour rester sur la bonne voie avec vos objectifs quotidiens.",
+      "title": "Rien de prévu pour aujourd'hui"
+    },
+    "upcoming": {
+      "description": "Les tâches avec des dates d'échéance futures s'affichent ici, vous aidant à planifier à l'avance et à vous préparer pour ce qui vient ensuite.",
+      "title": "Aucune tâche à venir"
+    }
   },
-  "navigation": {
-    "today": "Aujourd'hui",
-    "upcoming": "À venir",
-    "all": "Toutes les tâches",
-    "completed": "Terminées",
-    "projects": "Projets",
-    "labels": "Étiquettes",
-    "inbox": "Boîte de réception",
+  "mainNav": {
+    "allTasks": "Toutes les tâches",
     "calendar": "Calendrier",
-    "analytics": "Analytique",
-    "profile": "Profil"
-  },
-  "tasks": {
-    "task": "Tâche",
-    "tasks": "Tâches",
-    "addTask": "Ajouter une tâche",
-    "editTask": "Modifier la tâche",
-    "deleteTask": "Supprimer la tâche",
-    "completeTask": "Terminer la tâche",
-    "uncompleteTask": "Marquer comme incomplète",
-    "title": "Titre",
-    "description": "Description",
-    "dueDate": "Date d'échéance",
-    "priority": "Priorité",
-    "project": "Projet",
-    "labels": "Étiquettes",
-    "noTasks": "Aucune tâche trouvée",
-    "filter": "Filtrer les tâches"
-  },
-  "projects": {
-    "project": "Projet",
-    "projects": "Projets",
-    "addProject": "Ajouter un projet",
-    "editProject": "Modifier le projet",
-    "deleteProject": "Supprimer le projet",
-    "projectName": "Nom du projet",
-    "projectDescription": "Description du projet",
-    "noProjects": "Aucun projet trouvé"
-  },
-  "labels": {
-    "label": "Étiquette",
-    "labels": "Étiquettes",
-    "addLabel": "Ajouter une étiquette",
-    "editLabel": "Modifier l'étiquette",
-    "deleteLabel": "Supprimer l'étiquette",
-    "labelName": "Nom de l'étiquette",
-    "labelColor": "Couleur de l'étiquette",
-    "noLabels": "Aucune étiquette trouvée"
-  },
-  "common": {
-    "save": "Enregistrer",
-    "cancel": "Annuler",
-    "delete": "Supprimer",
-    "edit": "Modifier",
-    "add": "Ajouter",
-    "close": "Fermer",
-    "confirm": "Confirmer",
-    "loading": "Chargement...",
-    "error": "Erreur",
-    "success": "Succès",
-    "warning": "Avertissement",
-    "info": "Information"
-  },
-  "settings": {
-    "settings": "Paramètres",
-    "general": "Général",
-    "appearance": "Apparence",
-    "language": "Langue",
-    "languageDescription": "Choisissez votre langue préférée pour l'interface",
-    "theme": "Thème",
-    "notifications": "Notifications"
+    "completed": "Complétées",
+    "habits": "Habitudes",
+    "inbox": "Boîte de réception",
+    "today": "Aujourd'hui",
+    "upcoming": "À venir"
   }
 }

@@ -1,4 +1,11 @@
 {
+  "appearance": {
+    "colorScheme": {
+      "description": "Seleziona chiaro, scuro o segui le preferenze di sistema",
+      "label": "Scegli il tuo schema colori",
+      "title": "Schema colori"
+    }
+  },
   "data": {
     "autoBackup": {
       "backupTime": {
@@ -65,6 +72,15 @@
     }
   },
   "general": {
+    "apiToken": {
+      "description": "Genera un token API per accesso programmatico. Usa questo token nell'header di autorizzazione come 'Bearer TUO_TOKEN' per autenticare le richieste API.",
+      "generate": "Genera token",
+      "label": "Token API",
+      "regenerate": "Rigenera token",
+      "revoke": "Revoca token",
+      "title": "API",
+      "viewDocs": "Vedi documentazione API"
+    },
     "audio": {
       "soundEffects": {
         "description": "Riproduci suoni per completamento attività, notifiche e altre interazioni",
@@ -76,44 +92,6 @@
       "description": "Scegli la pagina da mostrare quando apri TaskTrove per la prima volta",
       "label": "Mostra all'apertura di TaskTrove",
       "title": "Pagina predefinita"
-    },
-    "startView": {
-      "all": {
-        "description": "Visualizza tutte le tue attività in un posto",
-        "label": "Tutte le attività"
-      },
-      "calendar": {
-        "description": "Visualizza le attività in formato calendario",
-        "label": "Calendario"
-      },
-      "completed": {
-        "description": "Rivedi le attività completate",
-        "label": "Completate"
-      },
-      "inbox": {
-        "description": "Inizia con attività non organizzate",
-        "label": "Posta in arrivo"
-      },
-      "labels": {
-        "description": "Organizza le attività con etichette",
-        "label": "Etichette"
-      },
-      "lastViewed": {
-        "description": "Torna alla tua ultima pagina attiva",
-        "label": "Ultima visualizzazione"
-      },
-      "projects": {
-        "description": "Gestisci e organizza progetti",
-        "label": "Progetti"
-      },
-      "today": {
-        "description": "Concentrati sulle attività di oggi",
-        "label": "Oggi"
-      },
-      "upcoming": {
-        "description": "Vedi cosa c'è in arrivo",
-        "label": "Prossime"
-      }
     },
     "language": {
       "description": "Seleziona la lingua di visualizzazione dell'applicazione",
@@ -133,6 +111,32 @@
         "label": "Apertura al passaggio del mouse"
       },
       "title": "Popover"
+    },
+    "startView": {
+      "all": {
+        "description": "Visualizza tutte le tue attività in un posto",
+        "label": "Tutte le attività"
+      },
+      "completed": {
+        "description": "Rivedi le attività completate",
+        "label": "Completate"
+      },
+      "inbox": {
+        "description": "Inizia con attività non organizzate",
+        "label": "Posta in arrivo"
+      },
+      "lastViewed": {
+        "description": "Torna alla tua ultima pagina attiva",
+        "label": "Ultima visualizzazione"
+      },
+      "today": {
+        "description": "Concentrati sulle attività di oggi",
+        "label": "Oggi"
+      },
+      "upcoming": {
+        "description": "Vedi cosa c'è in arrivo",
+        "label": "Prossime"
+      }
     }
   },
   "notifications": {

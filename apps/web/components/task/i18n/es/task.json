@@ -1,11 +1,12 @@
 {
   "actions": {
+    "addAssignees": "Añadir asignados",
     "addComment": "Añadir comentario",
     "addDate": "Añadir fecha",
     "addLabel": "Añadir etiqueta",
-    "addLabels": "Añadir etiquetas",
     "addPriority": "Añadir prioridad",
     "addProject": "Añadir proyecto",
+    "addSection": "Añadir sección",
     "addSubtask": "Añadir subtarea",
     "addTask": "Añadir Tarea"
   },
@@ -16,51 +17,13 @@
     "commentCount_one": "{{count}} comentario",
     "commentCount_many": "{{count}} comentarios",
     "commentCount_other": "{{count}} comentarios",
+    "title": "Comentarios",
     "title_one": "Comentario",
     "title_many": "Comentarios",
     "title_other": "Comentarios"
   },
-  "emptyStates": {
-    "all": {
-      "description": "Esta vista muestra todas tus tareas en todos los proyectos. Crea tu primera tarea para comenzar con TaskTrove.",
-      "title": "No se encontraron tareas"
-    },
-    "analytics": {
-      "description": "Rastrea tu productividad y patrones de finalización de tareas.",
-      "title": "Panel de Análisis"
-    },
-    "completed": {
-      "description": "Las tareas que hayas terminado aparecerán aquí. ¡Completa algunas tareas para ver tu progreso y celebrar tus logros!",
-      "title": "Aún no hay tareas completadas"
-    },
-    "fallback": {
-      "description": "Crea tu primera tarea para comenzar.",
-      "title": "No se encontraron tareas"
-    },
-    "inbox": {
-      "description": "Este es tu punto de recolección predeterminado para todas las tareas nuevas. Cuando creas una tarea sin especificar un proyecto, aparece aquí.",
-      "title": "Tu bandeja de entrada está vacía"
-    },
-    "label": {
-      "description": "Las tareas etiquetadas con esta etiqueta aparecerán aquí. Usa etiquetas para categorizar y encontrar rápidamente tareas relacionadas.",
-      "title": "No hay tareas con la etiqueta {{labelName}}"
-    },
-    "project": {
-      "description": "Este proyecto está vacío. Agrega tareas para organizar tu trabajo y hacer seguimiento del progreso en objetivos específicos.",
-      "title": "No hay tareas en {{projectName}}"
-    },
-    "search": {
-      "description": "Encuentra tareas por título, descripción o etiquetas.",
-      "title": "Resultados de Búsqueda"
-    },
-    "today": {
-      "description": "Las tareas con fecha de vencimiento de hoy aparecerán aquí. Establece fechas de vencimiento en tus tareas para mantenerte al día con tus objetivos diarios.",
-      "title": "Nada programado para hoy"
-    },
-    "upcoming": {
-      "description": "Las tareas con fechas de vencimiento futuras aparecen aquí, ayudándote a planificar con anticipación y prepararte para lo que viene.",
-      "title": "No hay tareas próximas"
-    }
+  "common": {
+    "confirm": "Confirmar"
   },
   "filters": {
     "activeOnly": "Solo activas",
@@ -71,7 +34,6 @@
     "completedOnly": "Solo completadas",
     "customRange": "Rango personalizado",
     "dueDate": "Fecha límite",
-    "filter": "Filtrar",
     "filterTasks": "Filtrar Tareas",
     "fromDate": "FECHA INICIO",
     "labels": "Etiquetas",
@@ -79,14 +41,6 @@
     "next7Days": "Próximos 7 días",
     "noLabels": "Sin etiquetas",
     "noPriority": "Sin prioridad",
-    "presets": {
-      "noDueDate": "Sin fecha límite",
-      "nextWeek": "Próxima semana",
-      "overdue": "Atrasadas",
-      "thisWeek": "Esta semana",
-      "today": "Hoy",
-      "tomorrow": "Mañana"
-    },
     "priority": "Prioridad",
     "priority1": "Prioridad 1",
     "priority2": "Prioridad 2",
@@ -120,7 +74,10 @@
     "taskTitle": "Ingresar título de la tarea..."
   },
   "priority": {
-    "noPriority": "Sin prioridad"
+    "noPriority": "Sin prioridad",
+    "priority1": "Prioridad Alta",
+    "priority2": "Prioridad Media",
+    "priority3": "Prioridad Baja"
   },
   "project": {
     "noProject": "Sin proyecto (Bandeja de entrada)"
@@ -128,6 +85,7 @@
   "recurring": {
     "adaptive": "Adaptativo",
     "apply": "Aplicar",
+    "autoRollover": "Desplazamiento automático",
     "calculateNextFrom": "Calcular próxima fecha de vencimiento desde",
     "createCustomPattern": "Crear patrón de recurrencia personalizado",
     "current": "Actual:",
@@ -174,12 +132,6 @@
     "tomorrow": "Mañana"
   },
   "sidePanel": {
-    "attachments": {
-      "count_one": "{{count}} archivo adjunto",
-      "count_many": "{{count}} archivos adjuntos",
-      "count_other": "{{count}} archivos adjuntos",
-      "title": "Archivos adjuntos"
-    },
     "autoSave": {
       "saving": "Guardando..."
     },
@@ -197,12 +149,14 @@
     },
     "dueDate": {
       "placeholder": "Agregar fecha de vencimiento",
-      "title": "Fecha de vencimiento",
       "today": "Hoy",
       "tomorrow": "Mañana"
     },
     "labels": {
       "title": "Etiquetas"
+    },
+    "scheduling": {
+      "title": "Programación"
     },
     "shortcuts": {
       "close": "Cerrar",
@@ -221,5 +175,30 @@
     "addSubtask": "Agregar subtarea",
     "addSubtasks": "Agregar subtareas...",
     "title": "Subtareas"
+  },
+  "task": {
+    "noSearchResults": "No se encontraron resultados",
+    "noTasksAvailable": "No hay tareas disponibles",
+    "searchPlaceholder": "Buscar tareas...",
+    "selectedCount_one": "{{count}} seleccionado",
+    "selectedCount_many": "{{count}} seleccionados",
+    "selectedCount_other": "{{count}} seleccionados"
+  },
+  "timeEstimation": {
+    "calculatedFromSubtasks": "Calculado desde subtareas",
+    "clear": "Limpiar",
+    "customDuration": "Duración personalizada",
+    "done": "Hecho",
+    "errors": {
+      "hourNumber": "El valor de la hora debe ser un número",
+      "hourRange": "El valor de la hora debe estar entre 0 y 23",
+      "minuteNumber": "El valor del minuto debe ser un número",
+      "minuteRange": "El valor del minuto debe estar entre 0 y 59"
+    },
+    "helpText": "Estimar el tiempo necesario para completar esta tarea",
+    "helpTextSubtasks": "El tiempo total incluye la estimación de esta tarea más todas las subtareas",
+    "hour": "Hora",
+    "minute": "Minuto",
+    "title": "Estimación de Tiempo"
   }
 }

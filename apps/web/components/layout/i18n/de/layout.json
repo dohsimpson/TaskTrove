@@ -48,6 +48,48 @@
     "currentTheme": "Aktuelles Design: {{theme}}. Klicken zum Wechseln des Designs.",
     "openSidebar": "Seitenleiste öffnen"
   },
+  "standardViews": {
+    "all": {
+      "description": "Alle Ihre Aufgaben an einem Ort anzeigen",
+      "title": "Alle Aufgaben"
+    },
+    "calendar": {
+      "description": "Aufgaben im Kalenderformat anzeigen",
+      "title": "Kalender"
+    },
+    "completed": {
+      "description": "Abgeschlossene Aufgaben überprüfen",
+      "title": "Abgeschlossen"
+    },
+    "habits": {
+      "description": "Ihre Gewohnheiten und Routinen verfolgen",
+      "title": "Gewohnheiten"
+    },
+    "inbox": {
+      "description": "Mit unorganisierten Aufgaben beginnen",
+      "title": "Posteingang"
+    },
+    "labels": {
+      "description": "Aufgaben mit Etiketten organisieren",
+      "title": "Etiketten"
+    },
+    "not-found": {
+      "description": "Die angeforderte Ressource konnte nicht gefunden werden",
+      "title": "Nicht gefunden"
+    },
+    "projects": {
+      "description": "Projekte verwalten und organisieren",
+      "title": "Projekte"
+    },
+    "today": {
+      "description": "Fokus auf heutige Aufgaben",
+      "title": "Heute"
+    },
+    "upcoming": {
+      "description": "Sehen, was als nächstes kommt",
+      "title": "Anstehend"
+    }
+  },
   "viewOptions": {
     "displayOptions": {
       "compact": {
@@ -101,49 +143,11 @@
     },
     "sort": {
       "direction": {
-        "changeToAsc": "Zu aufsteigend ändern",
-        "changeToDesc": "Zu absteigend ändern"
+        "asc": "Aufsteigend",
+        "desc": "Absteigend",
+        "label": "Sortierrichtung"
       },
-      "help": {
-        "createdDate": {
-          "description": "Nach Aufgabenerstellungszeit sortieren",
-          "label": "Erstellungsdatum:"
-        },
-        "default": {
-          "description": "Aufgaben in natürlicher Reihenfolge anzeigen, abgeschlossene Aufgaben unten",
-          "label": "Standard (unsortiert):"
-        },
-        "description": "Wählen Sie, wie Ihre Aufgaben organisiert werden sollen:",
-        "dueDate": {
-          "description": "Alle Aufgaben nach Fälligkeitsdatum sortieren, abgeschlossene und unabgeschlossene gemischt",
-          "label": "Fälligkeitsdatum:"
-        },
-        "priority": {
-          "description": "Nach Priorität sortieren (1=höchste, 4=niedrigste)",
-          "label": "Priorität:"
-        },
-        "status": {
-          "description": "Nach Abschlussstatus gruppieren, dann nach Kanban-Spalte",
-          "label": "Status:"
-        },
-        "tip": "Tipp: Verwenden Sie die Pfeil-Schaltflächen, um zwischen aufsteigend und absteigend zu wechseln",
-        "title": {
-          "description": "Nach Aufgabennamen alphabetisch sortieren",
-          "label": "Titel:"
-        }
-      },
-      "label": "Sortierung",
-      "options": {
-        "createdAt": "Erstellungsdatum",
-        "default": "Standard (unsortiert)",
-        "dueDate": "Fälligkeitsdatum",
-        "priority": "Priorität",
-        "status": "Status",
-        "title": "Titel"
-      },
-      "placeholder": "Sortieroption auswählen",
-      "sortBy": "Sortieren nach",
-      "title": "Sortieroptionen"
+      "label": "Sortierung"
     },
     "title": "Anzeigeoptionen",
     "viewMode": {
@@ -152,40 +156,6 @@
       "kanbanTooltip": "Nur für Projekte",
       "label": "Anzeigemodus",
       "list": "Liste"
-    }
-  },
-  "standardViews": {
-    "all": {
-      "description": "Alle Ihre Aufgaben an einem Ort anzeigen",
-      "title": "Alle Aufgaben"
-    },
-    "calendar": {
-      "description": "Aufgaben im Kalenderformat anzeigen",
-      "title": "Kalender"
-    },
-    "completed": {
-      "description": "Abgeschlossene Aufgaben überprüfen",
-      "title": "Abgeschlossen"
-    },
-    "inbox": {
-      "description": "Mit unorganisierten Aufgaben beginnen",
-      "title": "Posteingang"
-    },
-    "labels": {
-      "description": "Aufgaben mit Etiketten organisieren",
-      "title": "Etiketten"
-    },
-    "projects": {
-      "description": "Projekte verwalten und organisieren",
-      "title": "Projekte"
-    },
-    "today": {
-      "description": "Fokus auf heutige Aufgaben",
-      "title": "Heute"
-    },
-    "upcoming": {
-      "description": "Sehen, was als nächstes kommt",
-      "title": "Anstehend"
     }
   }
 }

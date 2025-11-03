@@ -42,6 +42,14 @@ vi.mock("./task-search-input", () => ({
   ),
 }))
 
+vi.mock("./task-sort-controls", () => ({
+  TaskSortControls: ({ className }: { className?: string }) => (
+    <div data-testid="task-sort-controls" className={className}>
+      <span>Sort Controls</span>
+    </div>
+  ),
+}))
+
 // Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 vi.mock("@/lib/atoms", () => ({
@@ -81,7 +89,79 @@ vi.mock("@/components/ui/button", () => ({
 vi.mock("lucide-react", () => ({
   Plus: () => <svg data-testid="plus-icon">Plus Icon</svg>,
   FolderPlus: () => <svg data-testid="folder-plus-icon">FolderPlus Icon</svg>,
+  ArrowUpNarrowWide: () => <svg data-testid="arrow-up-icon">ArrowUp Icon</svg>,
+  ArrowDownWideNarrow: () => <svg data-testid="arrow-down-icon">ArrowDown Icon</svg>,
 }))
+
+type SelectContextValue = { onValueChange?: (value: string) => void }
+
+vi.mock("@/components/ui/select", () => {
+  const SelectContext = React.createContext<SelectContextValue>({})
+
+  const Select = ({
+    children,
+    onValueChange,
+  }: {
+    children: React.ReactNode
+    onValueChange?: (value: string) => void
+  }) => (
+    <SelectContext.Provider value={{ onValueChange }}>
+      <div data-testid="select">{children}</div>
+    </SelectContext.Provider>
+  )
+
+  const SelectTrigger = ({
+    children,
+    className,
+    ...props
+  }: {
+    children: React.ReactNode
+    className?: string
+  }) => (
+    <button data-testid="select-trigger" className={className} {...props}>
+      {children}
+    </button>
+  )
+
+  const SelectValue = ({ placeholder }: { placeholder?: string }) => (
+    <span data-testid="select-value">{placeholder}</span>
+  )
+
+  const SelectContent = ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="select-content">{children}</div>
+  )
+
+  const SelectItem = ({
+    children,
+    value,
+    className,
+  }: {
+    children: React.ReactNode
+    value: string
+    className?: string
+  }) => {
+    const { onValueChange } = React.useContext(SelectContext)
+    return (
+      <div
+        role="option"
+        data-testid={`select-item-${value}`}
+        data-value={value}
+        className={className}
+        onClick={() => onValueChange?.(value)}
+      >
+        {children}
+      </div>
+    )
+  }
+
+  return {
+    Select,
+    SelectTrigger,
+    SelectValue,
+    SelectContent,
+    SelectItem,
+  }
+})
 
 // Mock routing utils
 vi.mock("@/lib/utils/routing", () => ({
@@ -133,6 +213,7 @@ describe("ProjectViewToolbar", () => {
       expect(screen.getByTestId("task-filter-controls")).toBeInTheDocument()
       expect(screen.getByTestId("task-search-input")).toBeInTheDocument()
       expect(screen.getByTestId("task-filter-badges")).toBeInTheDocument()
+      expect(screen.getByTestId("task-sort-controls")).toBeInTheDocument()
       expect(screen.getByText("Add Task")).toBeInTheDocument()
       expect(screen.getByTestId("plus-icon")).toBeInTheDocument()
     })
@@ -144,10 +225,10 @@ describe("ProjectViewToolbar", () => {
         </TestWrapper>,
       )
 
-      // The className is applied to the outermost container
       const filterControls = screen.getByTestId("task-filter-controls")
-      const flexContainer = filterControls.parentElement // Inner flex div
-      const toolbar = flexContainer?.parentElement // Outer container with className
+      const toolbar = filterControls.closest("div.sticky")
+      expect(toolbar).not.toBeNull()
+      if (!toolbar) return
       expect(toolbar).toHaveClass("custom-class")
     })
 
@@ -161,7 +242,7 @@ describe("ProjectViewToolbar", () => {
       const addTaskButton = screen.getByText("Add Task")
       expect(addTaskButton).toHaveAttribute("data-variant", "default")
       expect(addTaskButton).toHaveAttribute("data-size", "sm")
-      expect(addTaskButton).toHaveClass("shadow-sm", "shrink-0", "ml-auto")
+      expect(addTaskButton).toHaveClass("shadow-sm", "shrink-0")
     })
 
     it("does not show Add Section button in non-project context", () => {
@@ -199,12 +280,12 @@ describe("ProjectViewToolbar", () => {
       const addSectionButton = screen.getByText("Add Section")
       expect(addSectionButton).toHaveAttribute("data-variant", "outline")
       expect(addSectionButton).toHaveAttribute("data-size", "sm")
-      expect(addSectionButton).toHaveClass("shadow-sm", "shrink-0", "ml-auto")
+      expect(addSectionButton).toHaveClass("shadow-sm", "shrink-0")
     })
   })
 
   describe("Layout", () => {
-    it("positions filter controls and search input on the left", () => {
+    it("groups filters, search, and sort together", () => {
       render(
         <TestWrapper>
           <ProjectViewToolbar />
@@ -213,15 +294,15 @@ describe("ProjectViewToolbar", () => {
 
       const filterControls = screen.getByTestId("task-filter-controls")
       const searchInput = screen.getByTestId("task-search-input")
+      const sortControls = screen.getByTestId("task-sort-controls")
       const addTaskButton = screen.getByText("Add Task")
 
-      // Filter controls and search should be in the same flex container
-      const flexContainer = filterControls.parentElement
-      expect(flexContainer).toContainElement(searchInput)
-      expect(flexContainer).toContainElement(addTaskButton)
+      const leftGroup = filterControls.parentElement
+      expect(leftGroup).toContainElement(searchInput)
+      expect(leftGroup).toContainElement(sortControls)
 
-      // Add Task button should have ml-auto class to push it right
-      expect(addTaskButton).toHaveClass("ml-auto")
+      const rightGroup = addTaskButton.parentElement
+      expect(rightGroup).not.toBe(leftGroup)
     })
 
     it("places filter badges below the main row", () => {
@@ -234,13 +315,13 @@ describe("ProjectViewToolbar", () => {
       const filterBadges = screen.getByTestId("task-filter-badges")
       const filterControls = screen.getByTestId("task-filter-controls")
 
-      // Filter badges should not be in the same flex container as the controls
       const flexContainer = filterControls.parentElement
       expect(flexContainer).not.toContainElement(filterBadges)
 
-      // They should be siblings in the main container
-      const mainContainer = flexContainer?.parentElement
-      expect(mainContainer).toContainElement(filterBadges)
+      const rootContainer = filterControls.closest("div.sticky")
+      expect(rootContainer).not.toBeNull()
+      if (!rootContainer) return
+      expect(rootContainer).toContainElement(filterBadges)
     })
 
     it("uses correct flex layout classes", () => {
@@ -381,10 +462,10 @@ describe("ProjectViewToolbar", () => {
         </TestWrapper>,
       )
 
-      // The className is applied to the outermost container
       const filterControls = screen.getByTestId("task-filter-controls")
-      const flexContainer = filterControls.parentElement // Inner flex div
-      const container = flexContainer?.parentElement // Outer container with className
+      const container = filterControls.closest("div.sticky")
+      expect(container).not.toBeNull()
+      if (!container) return
       expect(container).toHaveClass("test-class")
     })
 
@@ -409,7 +490,7 @@ describe("ProjectViewToolbar", () => {
       )
 
       const addTaskButton = screen.getByText("Add Task")
-      expect(addTaskButton).toHaveClass("shadow-sm", "shrink-0", "ml-auto")
+      expect(addTaskButton).toHaveClass("shadow-sm", "shrink-0")
     })
 
     it("applies correct classes to Add Task button in project context", () => {

@@ -174,6 +174,7 @@ vi.mock("@tasktrove/atoms/ui/selection", () => ({
   selectedTasksAtom: createMockAtom("selectedTasksAtom"),
   selectedTaskAtom: createMockAtom("selectedTaskAtom"),
   selectedTaskRouteContextAtom: createMockAtom("selectedTaskRouteContextAtom"),
+  selectedTaskRouteContextOverrideAtom: createMockAtom("selectedTaskRouteContextOverrideAtom"),
   setSelectedTaskIdAtom: createMockAtom("setSelectedTaskIdAtom"),
   lastSelectedTaskAtom: createMockAtom("lastSelectedTaskAtom"),
   selectRangeAtom: createMockAtom("selectRangeAtom"),
@@ -417,6 +418,12 @@ vi.mock("@tasktrove/atoms/ui/task-counts", () => ({
   projectTaskCountsAtom: createMockAtom("projectTaskCountsAtom", {}),
   labelTaskCountsAtom: createMockAtom("labelTaskCountsAtom", {}),
   viewCountsAtom: createMockAtom("viewCountsAtom", {}),
+  taskCountForViewAtom: vi.fn((viewId: string) =>
+    createMockAtom(`taskCountForViewAtom(${viewId})`, 0),
+  ),
+  taskListForViewAtom: vi.fn((viewId: string) =>
+    createMockAtom(`taskListForViewAtom(${viewId})`, []),
+  ),
 }))
 
 // Export helper for tests that need to create custom atoms

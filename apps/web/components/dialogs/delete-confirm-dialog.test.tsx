@@ -46,6 +46,26 @@ vi.mock("@/components/ui/button", () => ({
   ),
 }))
 
+vi.mock("@/components/ui/checkbox", () => ({
+  Checkbox: ({
+    id,
+    checked = false,
+    onCheckedChange,
+  }: {
+    id?: string
+    checked?: boolean
+    onCheckedChange?: (checked: boolean) => void
+  }) => (
+    <input
+      type="checkbox"
+      id={id}
+      checked={checked}
+      onChange={(event) => onCheckedChange?.(event.target.checked)}
+      data-testid="checkbox"
+    />
+  ),
+}))
+
 // Mock next-themes
 mockNextThemes()
 
@@ -227,6 +247,42 @@ describe("DeleteConfirmDialog", () => {
     })
   })
 
+  describe("Section Deletion", () => {
+    it("shows delete contained tasks checkbox for sections", () => {
+      render(
+        <DeleteConfirmDialog
+          open={true}
+          onOpenChange={mockOnOpenChange}
+          onConfirm={mockOnConfirm}
+          entityType="section"
+          entityName="Backlog"
+        />,
+      )
+
+      expect(screen.getByLabelText("Also delete all tasks in this section")).toBeInTheDocument()
+    })
+
+    it("passes deleteContainedResources flag when checkbox is checked", () => {
+      render(
+        <DeleteConfirmDialog
+          open={true}
+          onOpenChange={mockOnOpenChange}
+          onConfirm={mockOnConfirm}
+          entityType="section"
+          entityName="Backlog"
+        />,
+      )
+
+      const checkbox = screen.getByLabelText("Also delete all tasks in this section")
+      fireEvent.click(checkbox)
+
+      const confirmButton = screen.getByTestId("button")
+      fireEvent.click(confirmButton)
+
+      expect(mockOnConfirm).toHaveBeenCalledWith(true)
+    })
+  })
+
   describe("Custom Props", () => {
     it("displays custom message when provided", () => {
       const customMessage = "This is a custom deletion message."
@@ -304,7 +360,15 @@ describe("DeleteConfirmDialog", () => {
 
   describe("Type Safety", () => {
     it("accepts all valid entity types", () => {
-      const entityTypes: DeleteEntityType[] = ["task", "project", "label", "history", "bulk"]
+      const entityTypes: DeleteEntityType[] = [
+        "task",
+        "project",
+        "label",
+        "section",
+        "group",
+        "history",
+        "bulk",
+      ]
 
       entityTypes.forEach((entityType) => {
         const { unmount } = render(

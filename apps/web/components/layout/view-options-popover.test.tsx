@@ -1,7 +1,18 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor, act } from "@/test-utils"
+vi.mock("jotai", async () => {
+  const actual = await vi.importActual<typeof import("jotai")>("jotai")
+  return {
+    ...actual,
+    useAtomValue: vi.fn(actual.useAtomValue),
+  }
+})
+
+import * as jotaiExports from "jotai"
 import { Provider } from "jotai"
+import { currentViewStateAtom } from "@tasktrove/atoms/ui/views"
+import { DEFAULT_VIEW_STATE } from "@tasktrove/types/defaults"
 import { mockUseToast, mockNextThemes } from "@/test-utils"
 import { ViewOptionsPopover } from "./view-options-popover"
 
@@ -253,11 +264,11 @@ describe("ViewOptionsPopover", () => {
     expect(switches.length).toBeGreaterThanOrEqual(3) // Completed tasks, side panel, compact view
   })
 
-  it("renders sort controls", () => {
+  it("does not render sort controls", () => {
     renderWithJotai(<ViewOptionsPopover />)
 
-    expect(screen.getByTestId("select")).toBeInTheDocument()
-    expect(screen.getByTestId("select-value")).toBeInTheDocument()
+    expect(screen.queryByTestId("select")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("select-value")).not.toBeInTheDocument()
   })
 
   it("calls onAdvancedSearch when advanced search button is clicked", () => {
@@ -294,6 +305,31 @@ describe("ViewOptionsPopover", () => {
     expect(dotIndicator).not.toBeInTheDocument()
   })
 
+  const withDebugLabel = (value: unknown): value is { debugLabel?: string } =>
+    typeof value === "object" && value !== null && "debugLabel" in value
+
+  it("does not show dot indicator when only sorting differs", async () => {
+    const sortOnlyState = { ...DEFAULT_VIEW_STATE, sortBy: "priority" }
+    const actualModule = await vi.importActual<typeof import("jotai")>("jotai")
+    const useAtomValueMock = vi.mocked(jotaiExports.useAtomValue)
+    useAtomValueMock.mockImplementation((atom) => {
+      if (withDebugLabel(atom) && atom.debugLabel === currentViewStateAtom.debugLabel) {
+        return sortOnlyState
+      }
+      return actualModule.useAtomValue(atom)
+    })
+
+    renderWithJotai(<ViewOptionsPopover />)
+
+    await waitFor(() => {
+      const buttons = screen.getAllByRole("button")
+      expect(buttons.length).toBeGreaterThanOrEqual(1)
+    })
+
+    expect(screen.queryByTestId("view-indicator-dot")).not.toBeInTheDocument()
+    useAtomValueMock.mockImplementation(actualModule.useAtomValue)
+  })
+
   it("shows dot indicator when view options deviate from default", () => {
     // This test would need proper Jotai state setup to test non-default states
     // For now, we test the component structure
@@ -323,10 +359,10 @@ describe("ViewOptionsPopover", () => {
       expect(switchElement).not.toBeDisabled()
     })
 
-    // Test select dropdown trigger exists and is interactive
-    const selectTrigger = screen.getByTestId("select-trigger")
-    expect(selectTrigger).toBeInTheDocument()
-    expect(selectTrigger).not.toBeDisabled()
+    const viewModeButtons = screen.getAllByRole("button", { name: /list|kanban|calendar/i })
+    expect(viewModeButtons.length).toBeGreaterThanOrEqual(3)
+    const enabledButtons = viewModeButtons.filter((button) => !button.hasAttribute("disabled"))
+    expect(enabledButtons.length).toBeGreaterThanOrEqual(1)
   })
 
   it("triggers hover handlers on mouse events", async () => {

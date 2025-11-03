@@ -26,7 +26,13 @@
       "none": "なし (ルートレベル)",
       "placeholder": "{{type}}を選択"
     },
-    "title": "新しい{{type}}を追加"
+    "title": "新しい{{type}}を追加",
+    "types": {
+      "label": "ラベル",
+      "project": "プロジェクト",
+      "projectGroup": "プロジェクトグループ",
+      "section": "セクション"
+    }
   },
   "common": {
     "cancel": "キャンセル"
@@ -34,9 +40,7 @@
   "delete": {
     "bulk": {
       "confirm": "タスクを削除",
-      "description_one": "{{count}}個の要素を削除してもよろしいですか？",
-      "description_many": "{{count}}個の要素を削除してもよろしいですか？",
-      "description_other": "{{count}}個の要素を削除してもよろしいですか？",
+      "description_other": "{{count}}個のタスクを削除してもよろしいですか？この操作は元に戻せません。",
       "title": "タスクを削除"
     },
     "default": {
@@ -44,11 +48,10 @@
       "description": "この要素を削除してもよろしいですか？",
       "title": "要素を削除"
     },
-    "deleteContainedResources": "含まれるリソースも削除",
     "group": {
       "confirm": "グループを削除",
-      "description": "\"{{- name}}\"を削除してもよろしいですか？この操作は元に戻せません。",
       "deleteContainedResources": "このグループ内のすべてのプロジェクトとタスクも削除",
+      "description": "\"{{- name}}\"を削除してもよろしいですか？この操作は元に戻せません。",
       "title": "グループを削除"
     },
     "history": {
@@ -63,8 +66,8 @@
     },
     "project": {
       "confirm": "プロジェクトを削除",
-      "description": "\"{{- name}}\"を削除してもよろしいですか？この操作は元に戻せません。",
       "deleteContainedResources": "このプロジェクトのすべてのタスクも削除",
+      "description": "\"{{- name}}\"を削除してもよろしいですか？この操作は元に戻せません。",
       "title": "プロジェクトを削除"
     },
     "section": {
@@ -103,6 +106,7 @@
     }
   },
   "quickAdd": {
+    "addingTask": "追加中",
     "addTask": "タスクを追加",
     "buttons": {
       "comments": "コメント",
@@ -113,6 +117,7 @@
       "section": "セクション",
       "subtasks": "サブタスク"
     },
+    "copyTitle": "タスクを複製",
     "description": {
       "placeholder": "説明"
     },
@@ -129,6 +134,10 @@
       "openMenu": "設定メニューを開く"
     },
     "categories": {
+      "appearance": {
+        "description": "テーマ、色、視覚的な設定",
+        "title": "外観"
+      },
       "data": {
         "description": "インポート/エクスポート、バックアップ",
         "title": "データとストレージ"
@@ -142,8 +151,13 @@
         "title": "通知"
       }
     },
-    "description": "カスタマイズ、アクセシビリティ、他の設定",
+    "description": "TaskTroveアプリケーションの設定と環境設定を構成します",
     "title": "設定"
+  },
+  "unsavedConfirmation": {
+    "confirm": "変更を破棄",
+    "description": "保存されていない変更があります。このダイアログを閉じると変更が失われます。続行してもよろしいですか？",
+    "title": "保存されていない変更を破棄しますか？"
   },
   "userProfile": {
     "changeAvatar": "アバターを変更",
@@ -163,9 +177,11 @@
       "label": "パスワード",
       "placeholder": "現在のパスワードを保持する場合は空白のままにしてください"
     },
+    "removeAvatar": "アバターを削除",
     "save": "変更を保存",
     "saving": "保存中...",
     "title": "プロフィールを編集",
+    "uploadAvatar": "アバターをアップロード",
     "username": {
       "label": "ユーザー名",
       "placeholder": "ユーザー名を入力してください"

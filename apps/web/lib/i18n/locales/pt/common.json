@@ -1,78 +1,53 @@
 {
-  "app": {
-    "name": "TaskTrove",
-    "description": "Seu companheiro pessoal de gerenciamento de tarefas"
+  "emptyStates": {
+    "all": {
+      "description": "Esta visualização mostra todas as suas tarefas em todos os projetos. Crie sua primeira tarefa para começar com o TaskTrove.",
+      "title": "Nenhuma tarefa encontrada"
+    },
+    "analytics": {
+      "description": "Acompanhe sua produtividade e padrões de conclusão de tarefas.",
+      "title": "Painel de Análises"
+    },
+    "completed": {
+      "description": "As tarefas que você concluiu aparecerão aqui. Complete algumas tarefas para ver seu progresso e celebrar suas conquistas!",
+      "title": "Nenhuma tarefa concluída ainda"
+    },
+    "fallback": {
+      "description": "Crie sua primeira tarefa para começar.",
+      "title": "Nenhuma tarefa encontrada"
+    },
+    "inbox": {
+      "description": "Este é seu ponto de coleta padrão para todas as novas tarefas. Quando você cria uma tarefa sem especificar um projeto, ela vai para aqui.",
+      "title": "Sua Caixa de Entrada está vazia"
+    },
+    "label": {
+      "description": "Tarefas marcadas com esta etiqueta aparecerão aqui. Use etiquetas para categorizar e encontrar rapidamente tarefas relacionadas.",
+      "title": "Nenhuma tarefa com a etiqueta {{labelName}}"
+    },
+    "project": {
+      "description": "Este projeto está vazio. Adicione tarefas para organizar seu trabalho e acompanhar o progresso em metas específicas.",
+      "title": "Nenhuma tarefa em {{projectName}}"
+    },
+    "search": {
+      "description": "Encontre tarefas por título, descrição ou etiquetas.",
+      "title": "Resultados da Busca"
+    },
+    "today": {
+      "description": "Tarefas com data de vencimento para hoje aparecerão aqui. Defina datas de vencimento em suas tarefas para manter o foco em suas metas diárias.",
+      "title": "Nada agendado para hoje"
+    },
+    "upcoming": {
+      "description": "Tarefas com datas de vencimento futuras aparecem aqui, ajudando você a planejar e se preparar para o que vem por aí.",
+      "title": "Nenhuma tarefa futura"
+    }
   },
-  "navigation": {
-    "today": "Hoje",
-    "upcoming": "Próximas",
-    "all": "Todas as Tarefas",
-    "completed": "Concluídas",
-    "projects": "Projetos",
-    "labels": "Etiquetas",
-    "inbox": "Caixa de Entrada",
+  "mainNav": {
+    "allTasks": "Todas as Tarefas",
     "calendar": "Calendário",
-    "analytics": "Análises",
-    "profile": "Perfil"
-  },
-  "tasks": {
-    "task": "Tarefa",
-    "tasks": "Tarefas",
-    "addTask": "Adicionar tarefa",
-    "editTask": "Editar tarefa",
-    "deleteTask": "Excluir tarefa",
-    "completeTask": "Concluir tarefa",
-    "uncompleteTask": "Marcar como incompleta",
-    "title": "Título",
-    "description": "Descrição",
-    "dueDate": "Data de vencimento",
-    "priority": "Prioridade",
-    "project": "Projeto",
-    "labels": "Etiquetas",
-    "noTasks": "Nenhuma tarefa encontrada",
-    "filter": "Filtrar tarefas"
-  },
-  "projects": {
-    "project": "Projeto",
-    "projects": "Projetos",
-    "addProject": "Adicionar projeto",
-    "editProject": "Editar projeto",
-    "deleteProject": "Excluir projeto",
-    "projectName": "Nome do projeto",
-    "projectDescription": "Descrição do projeto",
-    "noProjects": "Nenhum projeto encontrado"
-  },
-  "labels": {
-    "label": "Etiqueta",
-    "labels": "Etiquetas",
-    "addLabel": "Adicionar etiqueta",
-    "editLabel": "Editar etiqueta",
-    "deleteLabel": "Excluir etiqueta",
-    "labelName": "Nome da etiqueta",
-    "labelColor": "Cor da etiqueta",
-    "noLabels": "Nenhuma etiqueta encontrada"
-  },
-  "common": {
-    "save": "Salvar",
-    "cancel": "Cancelar",
-    "delete": "Excluir",
-    "edit": "Editar",
-    "add": "Adicionar",
-    "close": "Fechar",
-    "confirm": "Confirmar",
-    "loading": "Carregando...",
-    "error": "Erro",
-    "success": "Sucesso",
-    "warning": "Aviso",
-    "info": "Informação"
-  },
-  "settings": {
-    "settings": "Configurações",
-    "general": "Geral",
-    "appearance": "Aparência",
-    "language": "Idioma",
-    "languageDescription": "Escolha seu idioma preferido para a interface",
-    "theme": "Tema",
-    "notifications": "Notificações"
+    "completed": "Concluídas",
+    "habits": "Hábitos",
+    "inbox": "Caixa de Entrada",
+    "today": "Hoje",
+    "upcoming": "Próximas"
   }
 }

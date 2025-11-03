@@ -1,66 +1,27 @@
 {
   "actions": {
+    "addAssignees": "Zuständige hinzufügen",
     "addComment": "Kommentar hinzufügen",
     "addDate": "Datum hinzufügen",
-    "addLabel": "Label hinzufügen",
-    "addLabels": "Labels hinzufügen",
+    "addLabel": "Etikett hinzufügen",
     "addPriority": "Priorität hinzufügen",
     "addProject": "Projekt hinzufügen",
+    "addSection": "Bereich hinzufügen",
     "addSubtask": "Unteraufgabe hinzufügen",
-    "addTask": "Aufgabe Hinzufügen"
+    "addTask": "Aufgabe hinzufügen"
   },
   "comments": {
     "addAnotherComment": "Einen weiteren Kommentar hinzufügen...",
     "addComment": "Kommentar hinzufügen",
     "addComments": "Kommentare hinzufügen...",
     "commentCount_one": "{{count}} Kommentar",
-    "commentCount_many": "{{count}} Kommentare",
     "commentCount_other": "{{count}} Kommentare",
-    "title_one": "Kommentar",
-    "title_many": "Kommentare",
-    "title_other": "Kommentare"
+    "title": "Kommentare",
+    "title_one": "Kommentare ({{count}})",
+    "title_other": "Kommentare ({{count}})"
   },
-  "emptyStates": {
-    "all": {
-      "description": "Diese Ansicht zeigt alle Ihre Aufgaben in allen Projekten. Erstellen Sie Ihre erste Aufgabe, um mit TaskTrove zu beginnen.",
-      "title": "Keine Aufgaben gefunden"
-    },
-    "analytics": {
-      "description": "Verfolgen Sie Ihre Produktivität und Aufgabenabschlussmuster.",
-      "title": "Analytics Dashboard"
-    },
-    "completed": {
-      "description": "Aufgaben, die Sie abgeschlossen haben, erscheinen hier. Schließen Sie einige Aufgaben ab, um Ihren Fortschritt zu sehen und Ihre Erfolge zu feiern!",
-      "title": "Noch keine abgeschlossenen Aufgaben"
-    },
-    "fallback": {
-      "description": "Erstellen Sie Ihre erste Aufgabe, um zu beginnen.",
-      "title": "Keine Aufgaben gefunden"
-    },
-    "inbox": {
-      "description": "Dies ist Ihr Standard-Sammelpunkt für alle neuen Aufgaben. Wenn Sie eine Aufgabe erstellen, ohne ein Projekt anzugeben, landet sie hier.",
-      "title": "Ihr Posteingang ist leer"
-    },
-    "label": {
-      "description": "Aufgaben mit diesem Etikett erscheinen hier. Verwenden Sie Etiketten, um verwandte Aufgaben zu kategorisieren und schnell zu finden.",
-      "title": "Keine Aufgaben mit dem Etikett {{labelName}}"
-    },
-    "project": {
-      "description": "Dieses Projekt ist leer. Fügen Sie Aufgaben hinzu, um Ihre Arbeit zu organisieren und den Fortschritt bei bestimmten Zielen zu verfolgen.",
-      "title": "Keine Aufgaben in {{projectName}}"
-    },
-    "search": {
-      "description": "Finden Sie Aufgaben nach Titel, Beschreibung oder Etiketten.",
-      "title": "Suchergebnisse"
-    },
-    "today": {
-      "description": "Aufgaben mit heutigem Fälligkeitsdatum erscheinen hier. Setzen Sie Fälligkeitsdaten für Ihre Aufgaben, um mit Ihren täglichen Zielen auf Kurs zu bleiben.",
-      "title": "Nichts für heute geplant"
-    },
-    "upcoming": {
-      "description": "Aufgaben mit zukünftigen Fälligkeitsdaten erscheinen hier und helfen Ihnen, vorausschauend zu planen und sich auf das Kommende vorzubereiten.",
-      "title": "Keine anstehenden Aufgaben"
-    }
+  "common": {
+    "confirm": "Bestätigen"
   },
   "filters": {
     "activeOnly": "Nur aktive",
@@ -71,7 +32,6 @@
     "completedOnly": "Nur abgeschlossen",
     "customRange": "Benutzerdefinierter Bereich",
     "dueDate": "Fälligkeitsdatum",
-    "filter": "Filtern",
     "filterTasks": "Aufgaben Filtern",
     "fromDate": "STARTDATUM",
     "labels": "Etiketten",
@@ -79,14 +39,6 @@
     "next7Days": "Nächste 7 Tage",
     "noLabels": "Keine Etiketten",
     "noPriority": "Keine Priorität",
-    "presets": {
-      "noDueDate": "Kein Fälligkeitsdatum",
-      "nextWeek": "Nächste Woche",
-      "overdue": "Überfällig",
-      "thisWeek": "Diese Woche",
-      "today": "Heute",
-      "tomorrow": "Morgen"
-    },
     "priority": "Priorität",
     "priority1": "Priorität 1",
     "priority2": "Priorität 2",
@@ -120,7 +72,10 @@
     "taskTitle": "Aufgabentitel eingeben..."
   },
   "priority": {
-    "noPriority": "Keine Priorität"
+    "noPriority": "Keine Priorität",
+    "priority1": "Priorität 1",
+    "priority2": "Priorität 2",
+    "priority3": "Priorität 3"
   },
   "project": {
     "noProject": "Kein Projekt (Eingang)"
@@ -128,6 +83,7 @@
   "recurring": {
     "adaptive": "Anpassungsfähig",
     "apply": "Anwenden",
+    "autoRollover": "Automatische Übertragung",
     "calculateNextFrom": "Nächstes Fälligkeitsdatum berechnen von",
     "createCustomPattern": "Benutzerdefiniertes Wiederholungsmuster erstellen",
     "current": "Aktuell:",
@@ -174,12 +130,6 @@
     "tomorrow": "Morgen"
   },
   "sidePanel": {
-    "attachments": {
-      "count_one": "{{count}} Anhang",
-      "count_many": "{{count}} Anhänge",
-      "count_other": "{{count}} Anhänge",
-      "title": "Anhänge"
-    },
     "autoSave": {
       "saving": "Speichern..."
     },
@@ -197,12 +147,14 @@
     },
     "dueDate": {
       "placeholder": "Fälligkeitsdatum hinzufügen",
-      "title": "Fälligkeitsdatum",
       "today": "Heute",
       "tomorrow": "Morgen"
     },
     "labels": {
       "title": "Etiketten"
+    },
+    "scheduling": {
+      "title": "Zeitplanung"
     },
     "shortcuts": {
       "close": "Schließen",
@@ -221,5 +173,29 @@
     "addSubtask": "Unteraufgabe hinzufügen",
     "addSubtasks": "Unteraufgaben hinzufügen...",
     "title": "Unteraufgaben"
+  },
+  "task": {
+    "noSearchResults": "Keine Aufgaben gefunden",
+    "noTasksAvailable": "Keine Aufgaben verfügbar",
+    "searchPlaceholder": "Aufgaben suchen...",
+    "selectedCount_one": "{{count}} ausgewählt",
+    "selectedCount_other": "{{count}} ausgewählt"
+  },
+  "timeEstimation": {
+    "calculatedFromSubtasks": "Aus Unteraufgaben berechnet",
+    "clear": "Löschen",
+    "customDuration": "Benutzerdefinierte Dauer",
+    "done": "Fertig",
+    "errors": {
+      "hourNumber": "Muss eine Zahl sein (0-99)",
+      "hourRange": "Stunden müssen zwischen 0-99 liegen",
+      "minuteNumber": "Muss eine Zahl sein (0-59)",
+      "minuteRange": "Minuten müssen zwischen 0-59 liegen"
+    },
+    "helpText": "Schätzen Sie, wie lange diese Aufgabe zur completion benötigen wird. Dies hilft bei der Planung und verfolgung Ihrer Produktivität.",
+    "helpTextSubtasks": "Diese Schätzung wird aus der Summe der Unteraufgaben-Schätzungen berechnet. Eine direkte Schätzung hier überschreibt den berechneten Wert.",
+    "hour": "Stunde",
+    "minute": "Minute",
+    "title": "Zeitschätzung"
   }
 }

@@ -1,11 +1,12 @@
 {
   "actions": {
+    "addAssignees": "Ajouter des responsables",
     "addComment": "Ajouter un commentaire",
     "addDate": "Ajouter une date",
     "addLabel": "Ajouter une étiquette",
-    "addLabels": "Ajouter des étiquettes",
     "addPriority": "Ajouter une priorité",
     "addProject": "Ajouter un projet",
+    "addSection": "Ajouter une section",
     "addSubtask": "Ajouter une sous-tâche",
     "addTask": "Ajouter une Tâche"
   },
@@ -16,51 +17,13 @@
     "commentCount_one": "{{count}} commentaire",
     "commentCount_many": "{{count}} commentaires",
     "commentCount_other": "{{count}} commentaires",
+    "title": "Commentaires",
     "title_one": "Commentaire",
     "title_many": "Commentaires",
     "title_other": "Commentaires"
   },
-  "emptyStates": {
-    "all": {
-      "description": "Cette vue affiche toutes vos tâches dans tous les projets. Créez votre première tâche pour commencer avec TaskTrove.",
-      "title": "Aucune tâche trouvée"
-    },
-    "analytics": {
-      "description": "Suivez votre productivité et vos modèles d'achèvement des tâches.",
-      "title": "Tableau de Bord Analytique"
-    },
-    "completed": {
-      "description": "Les tâches que vous avez terminées apparaîtront ici. Terminez quelques tâches pour voir vos progrès et célébrer vos réussites !",
-      "title": "Aucune tâche terminée pour le moment"
-    },
-    "fallback": {
-      "description": "Créez votre première tâche pour commencer.",
-      "title": "Aucune tâche trouvée"
-    },
-    "inbox": {
-      "description": "C'est votre point de collecte par défaut pour toutes les nouvelles tâches. Lorsque vous créez une tâche sans spécifier de projet, elle atterrit ici.",
-      "title": "Votre boîte de réception est vide"
-    },
-    "label": {
-      "description": "Les tâches étiquetées avec cette étiquette apparaîtront ici. Utilisez les étiquettes pour catégoriser et trouver rapidement les tâches liées.",
-      "title": "Aucune tâche avec l'étiquette {{labelName}}"
-    },
-    "project": {
-      "description": "Ce projet est vide. Ajoutez des tâches pour organiser votre travail et suivre les progrès sur des objectifs spécifiques.",
-      "title": "Aucune tâche dans {{projectName}}"
-    },
-    "search": {
-      "description": "Trouvez des tâches par titre, description ou étiquettes.",
-      "title": "Résultats de Recherche"
-    },
-    "today": {
-      "description": "Les tâches avec la date d'échéance d'aujourd'hui apparaîtront ici. Définissez des dates d'échéance sur vos tâches pour rester sur la bonne voie avec vos objectifs quotidiens.",
-      "title": "Rien de prévu pour aujourd'hui"
-    },
-    "upcoming": {
-      "description": "Les tâches avec des dates d'échéance futures apparaissent ici, vous aidant à planifier à l'avance et à vous préparer pour ce qui arrive.",
-      "title": "Aucune tâche à venir"
-    }
+  "common": {
+    "confirm": "Confirmer"
   },
   "filters": {
     "activeOnly": "Actives seulement",
@@ -71,7 +34,6 @@
     "completedOnly": "Terminées seulement",
     "customRange": "Plage personnalisée",
     "dueDate": "Date d'échéance",
-    "filter": "Filtrer",
     "filterTasks": "Filtrer les Tâches",
     "fromDate": "DATE DÉBUT",
     "labels": "Étiquettes",
@@ -79,14 +41,6 @@
     "next7Days": "7 prochains jours",
     "noLabels": "Sans étiquettes",
     "noPriority": "Aucune priorité",
-    "presets": {
-      "noDueDate": "Aucune échéance",
-      "nextWeek": "Semaine prochaine",
-      "overdue": "En retard",
-      "thisWeek": "Cette semaine",
-      "today": "Aujourd'hui",
-      "tomorrow": "Demain"
-    },
     "priority": "Priorité",
     "priority1": "Priorité 1",
     "priority2": "Priorité 2",
@@ -120,7 +74,10 @@
     "taskTitle": "Saisir le titre de la tâche..."
   },
   "priority": {
-    "noPriority": "Aucune priorité"
+    "noPriority": "Aucune priorité",
+    "priority1": "Priorité 1",
+    "priority2": "Priorité 2",
+    "priority3": "Priorité 3"
   },
   "project": {
     "noProject": "Aucun projet (Boîte de réception)"
@@ -128,6 +85,7 @@
   "recurring": {
     "adaptive": "Adaptatif",
     "apply": "Appliquer",
+    "autoRollover": "Report automatique",
     "calculateNextFrom": "Calculer la prochaine échéance à partir de",
     "createCustomPattern": "Créer un modèle de récurrence personnalisé",
     "current": "Actuel :",
@@ -174,12 +132,6 @@
     "tomorrow": "Demain"
   },
   "sidePanel": {
-    "attachments": {
-      "count_one": "{{count}} pièce jointe",
-      "count_many": "{{count}} pièces jointes",
-      "count_other": "{{count}} pièces jointes",
-      "title": "Pièces jointes"
-    },
     "autoSave": {
       "saving": "Sauvegarde en cours..."
     },
@@ -197,12 +149,14 @@
     },
     "dueDate": {
       "placeholder": "Ajouter une date d'échéance",
-      "title": "Date d'échéance",
       "today": "Aujourd'hui",
       "tomorrow": "Demain"
     },
     "labels": {
       "title": "Étiquettes"
+    },
+    "scheduling": {
+      "title": "Planification"
     },
     "shortcuts": {
       "close": "Fermer",
@@ -221,5 +175,30 @@
     "addSubtask": "Ajouter une sous-tâche",
     "addSubtasks": "Ajouter des sous-tâches...",
     "title": "Sous-tâches"
+  },
+  "task": {
+    "noSearchResults": "Aucune tâche trouvée",
+    "noTasksAvailable": "Aucune tâche disponible",
+    "searchPlaceholder": "Rechercher des tâches...",
+    "selectedCount_one": "{{count}} sélectionné",
+    "selectedCount_many": "{{count}} sélectionnés",
+    "selectedCount_other": "{{count}} sélectionnés"
+  },
+  "timeEstimation": {
+    "calculatedFromSubtasks": "Calculé à partir des sous-tâches",
+    "clear": "Effacer",
+    "customDuration": "Durée personnalisée",
+    "done": "Terminé",
+    "errors": {
+      "hourNumber": "Doit être un nombre (0-99)",
+      "hourRange": "Les heures doivent être comprises entre 0-99",
+      "minuteNumber": "Doit être un nombre (0-59)",
+      "minuteRange": "Les minutes doivent être comprises entre 0-59"
+    },
+    "helpText": "Estimez le temps nécessaire pour compléter cette tâche. Cela aide à la planification et au suivi de votre productivité.",
+    "helpTextSubtasks": "Cette estimation est calculée à partir de la somme des estimations des sous-tâches. Définir une estimation directe ici remplacera la valeur calculée.",
+    "hour": "Heure",
+    "minute": "Minute",
+    "title": "Estimation du temps"
   }
 }

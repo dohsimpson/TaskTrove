@@ -48,6 +48,48 @@
     "currentTheme": "현재 테마: {{theme}}. 테마를 전환하려면 클릭하세요.",
     "openSidebar": "사이드바 열기"
   },
+  "standardViews": {
+    "all": {
+      "description": "모든 작업을 한 곳에서 보기",
+      "title": "모든 작업"
+    },
+    "calendar": {
+      "description": "작업을 달력 형식으로 보기",
+      "title": "달력"
+    },
+    "completed": {
+      "description": "완료된 작업 검토",
+      "title": "완료됨"
+    },
+    "habits": {
+      "description": "습관과 루틴 추적",
+      "title": "습관"
+    },
+    "inbox": {
+      "description": "정리되지 않은 작업부터 시작",
+      "title": "받은편지함"
+    },
+    "labels": {
+      "description": "레이블로 작업 정리",
+      "title": "레이블"
+    },
+    "not-found": {
+      "description": "요청한 리소스를 찾을 수 없습니다",
+      "title": "찾을 수 없음"
+    },
+    "projects": {
+      "description": "프로젝트 관리 및 정리",
+      "title": "프로젝트"
+    },
+    "today": {
+      "description": "오늘의 작업에 집중",
+      "title": "오늘"
+    },
+    "upcoming": {
+      "description": "다음에 올 일들 보기",
+      "title": "예정된 작업"
+    }
+  },
   "viewOptions": {
     "displayOptions": {
       "compact": {
@@ -101,49 +143,11 @@
     },
     "sort": {
       "direction": {
-        "changeToAsc": "오름차순으로 변경",
-        "changeToDesc": "내림차순으로 변경"
+        "asc": "",
+        "desc": "",
+        "label": ""
       },
-      "help": {
-        "createdDate": {
-          "description": "작업 생성 시간 기준으로 정렬",
-          "label": "생성일:"
-        },
-        "default": {
-          "description": "작업을 자연 순서로 표시, 완료된 작업은 하단에",
-          "label": "기본값 (정렬 안함):"
-        },
-        "description": "작업을 어떻게 정리할지 선택하세요:",
-        "dueDate": {
-          "description": "모든 작업을 마감일 기준으로 정렬, 완료/미완료 혼합",
-          "label": "마감일:"
-        },
-        "priority": {
-          "description": "우선순위 기준으로 정렬 (1=최고, 4=최저)",
-          "label": "우선순위:"
-        },
-        "status": {
-          "description": "완료 상태별로 그룹화 후 칸반 열별로 정렬",
-          "label": "상태:"
-        },
-        "tip": "팁: 화살표 버튼을 사용하여 오름차순과 내림차순 간 전환",
-        "title": {
-          "description": "작업 이름 기준으로 알파벳 순으로 정렬",
-          "label": "제목:"
-        }
-      },
-      "label": "정렬",
-      "options": {
-        "createdAt": "생성일",
-        "default": "기본값 (정렬 안함)",
-        "dueDate": "마감일",
-        "priority": "우선순위",
-        "status": "상태",
-        "title": "제목"
-      },
-      "placeholder": "정렬 옵션 선택",
-      "sortBy": "정렬 기준",
-      "title": "정렬 옵션"
+      "label": "정렬"
     },
     "title": "보기 옵션",
     "viewMode": {
@@ -152,40 +156,6 @@
       "kanbanTooltip": "프로젝트 전용",
       "label": "보기 모드",
       "list": "목록"
-    }
-  },
-  "standardViews": {
-    "all": {
-      "description": "모든 작업을 한 곳에서 보기",
-      "title": "모든 작업"
-    },
-    "calendar": {
-      "description": "작업을 달력 형식으로 보기",
-      "title": "달력"
-    },
-    "completed": {
-      "description": "완료된 작업 검토",
-      "title": "완료됨"
-    },
-    "inbox": {
-      "description": "정리되지 않은 작업부터 시작",
-      "title": "받은편지함"
-    },
-    "labels": {
-      "description": "레이블로 작업 정리",
-      "title": "레이블"
-    },
-    "projects": {
-      "description": "프로젝트 관리 및 정리",
-      "title": "프로젝트"
-    },
-    "today": {
-      "description": "오늘의 작업에 집중",
-      "title": "오늘"
-    },
-    "upcoming": {
-      "description": "다음에 올 일들 보기",
-      "title": "예정된 작업"
     }
   }
 }

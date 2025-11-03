@@ -3,30 +3,23 @@
     "newVersion": "새 버전: {{version}}",
     "updateTo": "{{version}}으로 업데이트"
   },
-  "mainNav": {
-    "allTasks": "모든 작업",
-    "calendar": "캘린더",
-    "completed": "완료됨",
-    "inbox": "받은편지함",
-    "today": "오늘",
-    "upcoming": "예정됨"
-  },
   "quickActions": {
     "add": "추가",
     "search": "검색"
   },
   "sections": {
     "labels": "라벨",
-
     "projects": "프로젝트"
   },
   "userMenu": {
     "about": "정보",
     "community": "커뮤니티",
     "github": "Github",
+    "installApp": "앱 설치",
     "reportBug": "버그 신고",
     "settings": "설정",
     "shortcuts": "단축키",
+    "signOut": "로그아웃",
     "upgradeToPro": "Pro로 업그레이드"
   }
 }

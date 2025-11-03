@@ -48,6 +48,48 @@
     "currentTheme": "Tema attuale: {{theme}}. Fai clic per cambiare tema.",
     "openSidebar": "Apri barra laterale"
   },
+  "standardViews": {
+    "all": {
+      "description": "Visualizza tutte le tue attività in un posto",
+      "title": "Tutte le attività"
+    },
+    "calendar": {
+      "description": "Visualizza le attività in formato calendario",
+      "title": "Calendario"
+    },
+    "completed": {
+      "description": "Rivedi le attività completate",
+      "title": "Completate"
+    },
+    "habits": {
+      "description": "Segui le tue abitudini e routine",
+      "title": "Abitudini"
+    },
+    "inbox": {
+      "description": "Inizia con attività non organizzate",
+      "title": "Posta in arrivo"
+    },
+    "labels": {
+      "description": "Organizza le attività con etichette",
+      "title": "Etichette"
+    },
+    "not-found": {
+      "description": "La risorsa richiesta non è stata trovata",
+      "title": "Non trovato"
+    },
+    "projects": {
+      "description": "Gestisci e organizza progetti",
+      "title": "Progetti"
+    },
+    "today": {
+      "description": "Concentrati sulle attività di oggi",
+      "title": "Oggi"
+    },
+    "upcoming": {
+      "description": "Vedi cosa c'è in arrivo",
+      "title": "Prossime"
+    }
+  },
   "viewOptions": {
     "displayOptions": {
       "compact": {
@@ -101,49 +143,11 @@
     },
     "sort": {
       "direction": {
-        "changeToAsc": "Cambia in crescente",
-        "changeToDesc": "Cambia in decrescente"
+        "asc": "Crescente",
+        "desc": "Decrescente",
+        "label": "Direzione ordinamento"
       },
-      "help": {
-        "createdDate": {
-          "description": "Ordina per tempo di creazione dell'attività",
-          "label": "Data di creazione:"
-        },
-        "default": {
-          "description": "Mostra attività in ordine naturale, attività completate in basso",
-          "label": "Predefinito (non ordinato):"
-        },
-        "description": "Scegli come organizzare le tue attività:",
-        "dueDate": {
-          "description": "Ordina tutte le attività per scadenza, mescolando completate e non completate",
-          "label": "Scadenza:"
-        },
-        "priority": {
-          "description": "Ordina per priorità (1=più alta, 4=più bassa)",
-          "label": "Priorità:"
-        },
-        "status": {
-          "description": "Raggruppa per stato di completamento, poi per colonna kanban",
-          "label": "Stato:"
-        },
-        "tip": "Suggerimento: Usa i pulsanti freccia per alternare tra crescente e decrescente",
-        "title": {
-          "description": "Ordina per nome attività alfabeticamente",
-          "label": "Titolo:"
-        }
-      },
-      "label": "Ordina",
-      "options": {
-        "createdAt": "Data di creazione",
-        "default": "Predefinito (non ordinato)",
-        "dueDate": "Scadenza",
-        "priority": "Priorità",
-        "status": "Stato",
-        "title": "Titolo"
-      },
-      "placeholder": "Seleziona opzione di ordinamento",
-      "sortBy": "Ordina per",
-      "title": "Opzioni di ordinamento"
+      "label": "Ordina"
     },
     "title": "Opzioni di vista",
     "viewMode": {
@@ -152,40 +156,6 @@
       "kanbanTooltip": "Solo per progetti",
       "label": "Modalità di vista",
       "list": "Lista"
-    }
-  },
-  "standardViews": {
-    "all": {
-      "description": "Visualizza tutte le tue attività in un posto",
-      "title": "Tutte le attività"
-    },
-    "calendar": {
-      "description": "Visualizza le attività in formato calendario",
-      "title": "Calendario"
-    },
-    "completed": {
-      "description": "Rivedi le attività completate",
-      "title": "Completate"
-    },
-    "inbox": {
-      "description": "Inizia con attività non organizzate",
-      "title": "Posta in arrivo"
-    },
-    "labels": {
-      "description": "Organizza le attività con etichette",
-      "title": "Etichette"
-    },
-    "projects": {
-      "description": "Gestisci e organizza progetti",
-      "title": "Progetti"
-    },
-    "today": {
-      "description": "Concentrati sulle attività di oggi",
-      "title": "Oggi"
-    },
-    "upcoming": {
-      "description": "Vedi cosa c'è in arrivo",
-      "title": "Prossime"
     }
   }
 }

@@ -48,6 +48,48 @@
     "currentTheme": "現在のテーマ: {{theme}}。クリックしてテーマを変更。",
     "openSidebar": "サイドバーを開く"
   },
+  "standardViews": {
+    "all": {
+      "description": "すべてのタスクを一か所で表示",
+      "title": "すべてのタスク"
+    },
+    "calendar": {
+      "description": "タスクをカレンダー形式で表示",
+      "title": "カレンダー"
+    },
+    "completed": {
+      "description": "完了したタスクを確認",
+      "title": "完了"
+    },
+    "habits": {
+      "description": "習慣やルーティンを追跡",
+      "title": "習慣"
+    },
+    "inbox": {
+      "description": "整理されていないタスクから開始",
+      "title": "受信ボックス"
+    },
+    "labels": {
+      "description": "ラベルでタスクを整理",
+      "title": "ラベル"
+    },
+    "not-found": {
+      "description": "要求されたリソースが見つかりませんでした",
+      "title": "見つかりません"
+    },
+    "projects": {
+      "description": "プロジェクトを管理・整理",
+      "title": "プロジェクト"
+    },
+    "today": {
+      "description": "今日のタスクに集中",
+      "title": "今日"
+    },
+    "upcoming": {
+      "description": "次に予定されていることを確認",
+      "title": "予定"
+    }
+  },
   "viewOptions": {
     "displayOptions": {
       "compact": {
@@ -101,49 +143,11 @@
     },
     "sort": {
       "direction": {
-        "changeToAsc": "昇順に変更",
-        "changeToDesc": "降順に変更"
+        "asc": "昇順",
+        "desc": "降順",
+        "label": "ソート順"
       },
-      "help": {
-        "createdDate": {
-          "description": "タスクの作成時刻でソートします",
-          "label": "作成日:"
-        },
-        "default": {
-          "description": "タスクを自然な順序で表示し、完了タスクを下に表示します",
-          "label": "デフォルト (ソートなし):"
-        },
-        "description": "タスクの組織方法を選択してください:",
-        "dueDate": {
-          "description": "すべてのタスクを期限でソートし、完了と未完了を混合して表示します",
-          "label": "期限:"
-        },
-        "priority": {
-          "description": "優先度でソートします (1=最高、 4=最低)",
-          "label": "優先度:"
-        },
-        "status": {
-          "description": "完了ステータスでグループ化し、次にカンバンコラムでグループ化します",
-          "label": "ステータス:"
-        },
-        "tip": "ヒント: 矢印ボタンで昇順と降順を切り替えられます",
-        "title": {
-          "description": "タスク名でアルファベット順にソートします",
-          "label": "タイトル:"
-        }
-      },
-      "label": "ソート",
-      "options": {
-        "createdAt": "作成日",
-        "default": "デフォルト",
-        "dueDate": "期限日",
-        "priority": "優先度",
-        "status": "ステータス",
-        "title": "タイトル"
-      },
-      "placeholder": "ソート順を選択",
-      "sortBy": "並び替え",
-      "title": "ソート"
+      "label": "ソート"
     },
     "title": "表示オプション",
     "viewMode": {
@@ -152,40 +156,6 @@
       "kanbanTooltip": "プロジェクトのみ",
       "label": "表示モード",
       "list": "リスト"
-    }
-  },
-  "standardViews": {
-    "all": {
-      "description": "すべてのタスクを一か所で表示",
-      "title": "すべてのタスク"
-    },
-    "calendar": {
-      "description": "タスクをカレンダー形式で表示",
-      "title": "カレンダー"
-    },
-    "completed": {
-      "description": "完了したタスクを確認",
-      "title": "完了"
-    },
-    "inbox": {
-      "description": "整理されていないタスクから開始",
-      "title": "受信ボックス"
-    },
-    "labels": {
-      "description": "ラベルでタスクを整理",
-      "title": "ラベル"
-    },
-    "projects": {
-      "description": "プロジェクトを管理・整理",
-      "title": "プロジェクト"
-    },
-    "today": {
-      "description": "今日のタスクに集中",
-      "title": "今日"
-    },
-    "upcoming": {
-      "description": "次に予定されていることを確認",
-      "title": "予定"
     }
   }
 }

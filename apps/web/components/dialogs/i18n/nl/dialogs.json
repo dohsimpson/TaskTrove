@@ -26,7 +26,13 @@
       "none": "Geen (rootniveau)",
       "placeholder": "{{type}} selecteren"
     },
-    "title": "Nieuwe {{type}} toevoegen"
+    "title": "Nieuwe {{type}} toevoegen",
+    "types": {
+      "label": "Label",
+      "project": "Project",
+      "projectGroup": "Projectgroep",
+      "section": "Sectie"
+    }
   },
   "common": {
     "cancel": "Annuleren"
@@ -35,7 +41,6 @@
     "bulk": {
       "confirm": "Taken verwijderen",
       "description_one": "Weet je zeker dat je {{count}} item wilt verwijderen?",
-      "description_many": "Weet je zeker dat je {{count}} items wilt verwijderen?",
       "description_other": "Weet je zeker dat je {{count}} items wilt verwijderen?",
       "title": "Taken verwijderen"
     },
@@ -44,11 +49,10 @@
       "description": "Weet je zeker dat je dit item wilt verwijderen?",
       "title": "Item verwijderen"
     },
-    "deleteContainedResources": "Ook ingesloten bronnen verwijderen",
     "group": {
       "confirm": "Groep verwijderen",
-      "description": "Weet je zeker dat je \"{{- name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
       "deleteContainedResources": "Ook alle projecten en taken in deze groep verwijderen",
+      "description": "Weet je zeker dat je \"{{- name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
       "title": "Groep verwijderen"
     },
     "history": {
@@ -63,8 +67,8 @@
     },
     "project": {
       "confirm": "Project verwijderen",
-      "description": "Weet je zeker dat je \"{{- name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
       "deleteContainedResources": "Ook alle taken in dit project verwijderen",
+      "description": "Weet je zeker dat je \"{{- name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
       "title": "Project verwijderen"
     },
     "section": {
@@ -103,6 +107,7 @@
     }
   },
   "quickAdd": {
+    "addingTask": "Taak toevoegen",
     "addTask": "Taak toevoegen",
     "buttons": {
       "comments": "Opmerkingen",
@@ -113,6 +118,7 @@
       "section": "Sectie",
       "subtasks": "Subtaken"
     },
+    "copyTitle": "Titel kopiëren",
     "description": {
       "placeholder": "Beschrijving"
     },
@@ -129,6 +135,10 @@
       "openMenu": "Instellingenmenu openen"
     },
     "categories": {
+      "appearance": {
+        "description": "Thema's, lettertypen, weergave voorkeuren",
+        "title": "Uiterlijk"
+      },
       "data": {
         "description": "Importeren/exporteren, back-ups",
         "title": "Gegevens & Opslag"
@@ -144,6 +154,11 @@
     },
     "description": "TaskTrove applicatie-instellingen en voorkeuren configureren",
     "title": "Instellingen"
+  },
+  "unsavedConfirmation": {
+    "confirm": "Wijzigingen verwerpen",
+    "description": "Er zijn niet-opgeslagen wijzigingen. Weet je zeker dat je wilt doorgaan zonder op te slaan?",
+    "title": "Niet-opgeslagen wijzigingen"
   },
   "userProfile": {
     "changeAvatar": "Avatar wijzigen",
@@ -163,9 +178,11 @@
       "label": "Wachtwoord",
       "placeholder": "Laat leeg om huidig wachtwoord te behouden"
     },
+    "removeAvatar": "Avatar verwijderen",
     "save": "Wijzigingen opslaan",
     "saving": "Opslaan...",
     "title": "Profiel bewerken",
+    "uploadAvatar": "Avatar uploaden",
     "username": {
       "label": "Gebruikersnaam",
       "placeholder": "Voer je gebruikersnaam in"

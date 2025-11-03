@@ -16,7 +16,7 @@ import {
   withErrorHandling,
 } from "@tasktrove/atoms/utils/atom-helpers";
 import type { Project, ProjectSection } from "@tasktrove/types/core";
-import type { ProjectId, GroupId } from "@tasktrove/types/id";
+import type { ProjectId, GroupId, TaskId } from "@tasktrove/types/id";
 import type { UpdateProjectRequest } from "@tasktrove/types/api-requests";
 import {
   DEFAULT_INBOX_NAME,
@@ -28,12 +28,14 @@ import {
 import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
 import { createGroupId } from "@tasktrove/types/id";
 import { ProjectIdSchema } from "@tasktrove/types/id";
+import { getDefaultSectionId } from "@tasktrove/types/defaults";
 import { projectsAtom } from "@tasktrove/atoms/data/base/atoms";
 import {
   updateProjectsMutationAtom,
   createProjectMutationAtom,
   deleteProjectMutationAtom,
 } from "@tasktrove/atoms/mutations/projects";
+import { deleteTasksAtom } from "@tasktrove/atoms/core/tasks";
 import { recordOperationAtom } from "@tasktrove/atoms/core/history";
 import { log } from "@tasktrove/atoms/utils/atom-helpers";
 import { clearNullValues } from "@tasktrove/utils";
@@ -503,14 +505,27 @@ addProjectSectionAtom.debugLabel = "addProjectSectionAtom";
  */
 export const removeProjectSectionAtom = atom(
   null,
-  async (get, set, data: { projectId: ProjectId; sectionId: GroupId }) => {
+  async (
+    get,
+    set,
+    data: { projectId: ProjectId; sectionId: GroupId; deleteTasks?: boolean },
+  ) => {
     try {
       const projects = get(projectsAtom);
       const project = projects.find((p: Project) => p.id === data.projectId);
       const section = project?.sections.find((s) => s.id === data.sectionId);
 
-      if (section && section.items.length > 0) {
-        throw new Error("Cannot remove section with tasks. Move tasks first.");
+      if (!project || !section) {
+        throw new Error("Section not found");
+      }
+
+      const sectionTaskIds = section.items.filter((id): id is TaskId =>
+        Boolean(id),
+      );
+      const shouldDeleteTasks = data.deleteTasks === true;
+
+      if (sectionTaskIds.length > 0 && shouldDeleteTasks) {
+        await set(deleteTasksAtom, sectionTaskIds);
       }
 
       const updatedProjects = projects.map((project: Project) => {
@@ -526,13 +541,53 @@ export const removeProjectSectionAtom = atom(
           const sectionToRemove = project.sections.find(
             (s) => s.id === data.sectionId,
           );
-          if (sectionToRemove?.isDefault) {
+          if (!sectionToRemove) {
+            throw new Error("Section not found");
+          }
+          if (sectionToRemove.isDefault) {
             throw new Error("Cannot remove the default section");
+          }
+
+          let sections = project.sections;
+
+          if (sectionToRemove.items.length > 0 && !shouldDeleteTasks) {
+            const defaultSectionId = getDefaultSectionId(project);
+
+            if (!defaultSectionId) {
+              throw new Error("Unable to resolve default section for project");
+            }
+
+            if (defaultSectionId === data.sectionId) {
+              throw new Error("Cannot remove the default section");
+            }
+
+            const tasksToMove = sectionToRemove.items.filter(
+              (taskId): taskId is TaskId => Boolean(taskId),
+            );
+
+            sections = sections.map((section) => {
+              if (section.id === data.sectionId) {
+                return { ...section, items: [] };
+              }
+
+              if (section.id === defaultSectionId) {
+                const dedupedItems = section.items.filter(
+                  (taskId) => !tasksToMove.includes(taskId),
+                );
+
+                return {
+                  ...section,
+                  items: [...dedupedItems, ...tasksToMove],
+                };
+              }
+
+              return section;
+            });
           }
 
           return {
             ...project,
-            sections: project.sections.filter(
+            sections: sections.filter(
               (section: ProjectSection) => section.id !== data.sectionId,
             ),
           };

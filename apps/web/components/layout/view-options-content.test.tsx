@@ -219,15 +219,14 @@ describe("ViewOptionsContent", () => {
 
     expect(screen.getByText("View Mode")).toBeInTheDocument()
     expect(screen.getByText("Display Options")).toBeInTheDocument()
-    expect(screen.getByText("Sort")).toBeInTheDocument()
   })
 
   it("renders view mode buttons", () => {
     renderWithJotai(<ViewOptionsContent />)
 
-    expect(screen.getByText("list")).toBeInTheDocument()
-    expect(screen.getByText("kanban")).toBeInTheDocument()
-    expect(screen.getByText("calendar")).toBeInTheDocument()
+    expect(screen.getByText("List")).toBeInTheDocument()
+    expect(screen.getByText("Kanban")).toBeInTheDocument()
+    expect(screen.getByText("Calendar")).toBeInTheDocument()
   })
 
   it("renders display options switches", () => {
@@ -242,18 +241,11 @@ describe("ViewOptionsContent", () => {
     expect(switches.length).toBeGreaterThanOrEqual(4)
   })
 
-  it("renders sort controls", () => {
-    renderWithJotai(<ViewOptionsContent />)
-
-    expect(screen.getByText("Sort by")).toBeInTheDocument()
-    expect(screen.getByTestId("select")).toBeInTheDocument()
-  })
-
   it("renders help popovers", () => {
     renderWithJotai(<ViewOptionsContent />)
 
     const helpPopovers = screen.getAllByTestId("help-popover")
-    expect(helpPopovers.length).toBeGreaterThanOrEqual(3) // Header, Display Options, Sort
+    expect(helpPopovers.length).toBeGreaterThanOrEqual(2) // Header, Display Options
   })
 
   it("passes onAdvancedSearch prop correctly", () => {

@@ -301,8 +301,8 @@ catalogs:
       specifier: ^16.2.0
       version: 16.2.0
     lucide-react:
-      specifier: ^0.544.0
-      version: 0.544.0
+      specifier: ^0.552.0
+      version: 0.552.0
     motion:
       specifier: ^12.23.24
       version: 12.23.24
@@ -630,7 +630,7 @@ importers:
         version: 4.3.2
       lucide-react:
         specifier: 'catalog:'
-        version: 0.544.0(react@19.1.1)
+        version: 0.552.0(react@19.1.1)
       motion:
         specifier: 'catalog:'
         version: 12.23.24(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -4922,7 +4922,6 @@ packages:
     resolution: {integrity: sha512-Quz3MvAwHxVYNXsOByL7xI5EB2WYOeFswqaHIA3qOK3isRWTxiplBEocmmru6XmxDB2L7jDNYtYA4FyimoAFEw==}
     engines: {node: '>=8.17.0'}
     hasBin: true
-    bundledDependencies: []
 
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
@@ -5086,8 +5085,8 @@ packages:
     resolution: {integrity: sha512-F9ODfyqML2coTIsQpSkRHnLSZMtkU8Q+mSfcaIyKwy58u+8k5nvAYeiNhsyMARvzNcXJ9QfWVrcPsC9e9rAxtg==}
     engines: {node: 20 || >=22}
 
-  lucide-react@0.544.0:
-    resolution: {integrity: sha512-t5tS44bqd825zAW45UQxpG2CvcC4urOwn2TrwSH8u+MjeE+1NnWl6QqeQ/6NdjMqdOygyiT9p3Ev0p1NJykxjw==}
+  lucide-react@0.552.0:
+    resolution: {integrity: sha512-g9WCjmfwqbexSnZE+2cl21PCfXOcqnGeWeMTNAOGEfpPbm/ZF4YIq77Z8qWrxbu660EKuLB4nSLggoKnCb+isw==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -10572,7 +10571,7 @@ snapshots:
 
   lru-cache@11.2.2: {}
 
-  lucide-react@0.544.0(react@19.1.1):
+  lucide-react@0.552.0(react@19.1.1):
     dependencies:
       react: 19.1.1
 

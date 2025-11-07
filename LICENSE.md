@@ -32,7 +32,16 @@ to the limitations below.
 You may use or modify the software only for your own internal business purposes or for non-commercial or
 personal use. You may distribute the software or provide it to others only if you do so free of charge for
 non-commercial purposes. You may not alter, remove, or obscure any licensing, copyright, or other notices of
-the licensor in the software. Any use of the licensor’s trademarks is subject to applicable law.
+the licensor in the software.
+
+### Branding and Trademark Use
+
+You may display the official TaskTrove name and unmodified branding assets (logos, icons, wordmarks, or color
+palettes) to truthfully reference or promote the TaskTrove software (for example, saying “Built with
+TaskTrove”), so long as your use follows published TaskTrove Brand Guidelines (if any), keeps the assets
+unmodified, and does not imply the licensor’s sponsorship or endorsement. Any other modification, derivative
+work, or use that suggests affiliation requires the licensor’s prior written permission. Any additional use of
+the licensor’s trademarks is still subject to applicable law.
 
 ### Patents
 

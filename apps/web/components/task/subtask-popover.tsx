@@ -51,6 +51,9 @@ export function SubtaskPopover({
       side="bottom"
       align="start"
       className={className}
+      mobileAsDrawer
+      drawerTitle="Subtasks"
+      drawerDirection="bottom"
     >
       {children}
     </ContentPopover>

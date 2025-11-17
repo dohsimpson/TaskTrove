@@ -2,7 +2,7 @@ import type { ExtractionResult, ParserContext } from "@tasktrove/parser/types";
 
 export interface Pattern<T = string> {
   pattern: RegExp;
-  getValue: (match: RegExpMatchArray) => T;
+  getValue: (match: RegExpMatchArray) => T | null;
 }
 
 export function extractWithPatterns<T>(
@@ -14,7 +14,7 @@ export function extractWithPatterns<T>(
     // For time patterns, handle overlapping matches
     handleOverlaps?: boolean;
     // Transform the value if needed
-    transform?: (value: T, match: RegExpMatchArray) => T;
+    transform?: (value: T, match: RegExpMatchArray) => T | null;
   },
 ): ExtractionResult[] {
   const results: ExtractionResult[] = [];
@@ -74,10 +74,16 @@ export function extractWithPatterns<T>(
 
       const startIndex = match.index || 0;
       let value = getValue(match);
+      if (value === null) {
+        continue;
+      }
 
       // Apply transformation if provided
       if (options?.transform) {
         value = options.transform(value, match);
+        if (value === null) {
+          continue;
+        }
       }
 
       addResult({

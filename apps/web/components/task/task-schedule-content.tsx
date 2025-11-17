@@ -41,7 +41,6 @@ import {
   parseEnhancedNaturalLanguage,
   convertTimeToHHMMSS,
 } from "@/lib/utils/enhanced-natural-language-parser"
-import { useIsMobile } from "@/hooks/use-mobile"
 
 interface TaskScheduleContentProps {
   taskId?: TaskId | TaskId[]
@@ -72,7 +71,6 @@ export function TaskScheduleContent({
     : isMultipleTasks
       ? undefined
       : allTasks.find((t: Task) => t.id === taskId)
-  const isMobile = useIsMobile()
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(task?.dueDate)
   const [selectedMonthlyDays, setSelectedMonthlyDays] = useState<number[]>(() => {
     // Initialize with existing monthly days from task recurring pattern
@@ -225,9 +223,6 @@ export function TaskScheduleContent({
     }
     return "AM"
   })
-  const [showInlineCalendar, setShowInlineCalendar] = useState(false)
-  const alwaysShowCalendar = !isMobile
-
   // UI mode for interval configuration
   const [showIntervalConfig, setShowIntervalConfig] = useState(false)
 
@@ -336,7 +331,6 @@ export function TaskScheduleContent({
     setSelectedHour("")
     setSelectedMinute("")
     setSelectedAmPm("AM")
-    setShowInlineCalendar(false)
     setShowIntervalConfig(false)
     setNlInput("")
   }, [isNewTask, taskId, updateTasks, updateQuickAddTask])
@@ -996,123 +990,105 @@ export function TaskScheduleContent({
             </Button>
           </div>
 
-          {/* Calendar Toggle Button - only show when not always showing calendar */}
-          {!alwaysShowCalendar && (
-            <div className="mb-3">
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-sm h-8 hover:bg-gray-100 dark:hover:bg-gray-800"
-                onClick={() => setShowInlineCalendar(!showInlineCalendar)}
-              >
-                <CalendarIcon className="h-4 w-4 mr-2 text-purple-600" />
-                {showInlineCalendar
-                  ? t("schedule.hideCalendar", "Hide calendar & time")
-                  : t("schedule.showCalendar", "Show calendar & time")}
-              </Button>
-            </div>
-          )}
-
           {/* Collapsible Calendar & Time Selector */}
-          {(showInlineCalendar || alwaysShowCalendar) && (
-            <div className="mb-3 border rounded-md">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={handleCustomDateSelect}
-                fixedWeeks={false}
-                showOutsideDays={false}
-                captionLayout="dropdown"
-                // Restrict year range to reasonable bounds for task scheduling
-                // 2 years back (for overdue tasks) to 10 years forward (for long-term planning)
-                startMonth={new Date(new Date().getFullYear() - 2, 0)}
-                endMonth={new Date(new Date().getFullYear() + 10, 11)}
-                className="rounded-md border-0 w-full"
-                classNames={{
-                  week: "flex w-full mt-1",
-                }}
-              />
+          <div className="mb-3 border rounded-md">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={handleCustomDateSelect}
+              fixedWeeks={false}
+              showOutsideDays={false}
+              captionLayout="dropdown"
+              // Restrict year range to reasonable bounds for task scheduling
+              // 2 years back (for overdue tasks) to 10 years forward (for long-term planning)
+              startMonth={new Date(new Date().getFullYear() - 2, 0)}
+              endMonth={new Date(new Date().getFullYear() + 10, 11)}
+              className="rounded-md border-0 w-full"
+              classNames={{
+                week: "flex w-full mt-1",
+              }}
+            />
 
-              {/* Time Selector */}
-              <div className="px-2 pb-3">
-                <div className="flex gap-1.5 items-center justify-center text-sm">
-                  <Input
-                    type="number"
-                    min="1"
-                    max="12"
-                    value={selectedHour}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value)
-                      if (value >= 1 && value <= 12) {
-                        setSelectedHour(e.target.value)
-                        // Auto-fill minute to "00" if it's empty when hour is set
-                        if (!selectedMinute) {
-                          setSelectedMinute("00")
-                        }
-                      } else if (e.target.value === "") {
-                        setSelectedHour("")
+            {/* Time Selector */}
+            <div className="px-2 pb-3">
+              <div className="flex gap-1.5 items-center justify-center text-sm">
+                <Input
+                  type="number"
+                  min="1"
+                  max="12"
+                  value={selectedHour}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value)
+                    if (value >= 1 && value <= 12) {
+                      setSelectedHour(e.target.value)
+                      // Auto-fill minute to "00" if it's empty when hour is set
+                      if (!selectedMinute) {
+                        setSelectedMinute("00")
                       }
-                    }}
-                    onBlur={(e) => {
-                      if (e.target.value === "") return // Allow empty
-                      const value = parseInt(e.target.value)
-                      if (isNaN(value) || value < 1) {
-                        setSelectedHour("1")
-                      } else if (value > 12) {
-                        setSelectedHour("12")
-                      }
-                    }}
-                    className="w-10 h-8 text-center text-sm px-1 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                  <span className="text-sm font-medium px-0.5">:</span>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="59"
-                    value={selectedMinute}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value)
-                      if (value >= 0 && value <= 59) {
-                        setSelectedMinute(e.target.value)
-                      } else if (e.target.value === "") {
-                        setSelectedMinute("")
-                      }
-                    }}
-                    onBlur={(e) => {
-                      if (e.target.value === "") return // Allow empty
-                      const value = parseInt(e.target.value)
-                      let finalValue: string
-                      if (isNaN(value) || value < 0) {
-                        finalValue = "00"
-                      } else if (value > 59) {
-                        finalValue = "59"
-                      } else {
-                        finalValue = value.toString().padStart(2, "0")
-                      }
-                      setSelectedMinute(finalValue)
-                    }}
-                    className="w-10 h-8 text-center text-sm px-1 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                  <Select value={selectedAmPm} onValueChange={setSelectedAmPm}>
-                    <SelectTrigger className="w-14 !h-8 text-sm px-2 [&>svg]:w-3 [&>svg]:h-3">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="AM">AM</SelectItem>
-                      <SelectItem value="PM">PM</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    onClick={handleTimeUpdate}
-                    disabled={!selectedHour || !selectedMinute}
-                    size="sm"
-                    className="h-8 px-3 text-sm max-w-20 truncate"
-                  >
-                    {t("schedule.set", "Set")}
-                  </Button>
-                </div>
+                    } else if (e.target.value === "") {
+                      setSelectedHour("")
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if (e.target.value === "") return // Allow empty
+                    const value = parseInt(e.target.value)
+                    if (isNaN(value) || value < 1) {
+                      setSelectedHour("1")
+                    } else if (value > 12) {
+                      setSelectedHour("12")
+                    }
+                  }}
+                  className="w-10 h-8 text-center text-sm px-1 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <span className="text-sm font-medium px-0.5">:</span>
+                <Input
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={selectedMinute}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value)
+                    if (value >= 0 && value <= 59) {
+                      setSelectedMinute(e.target.value)
+                    } else if (e.target.value === "") {
+                      setSelectedMinute("")
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if (e.target.value === "") return // Allow empty
+                    const value = parseInt(e.target.value)
+                    let finalValue: string
+                    if (isNaN(value) || value < 0) {
+                      finalValue = "00"
+                    } else if (value > 59) {
+                      finalValue = "59"
+                    } else {
+                      finalValue = value.toString().padStart(2, "0")
+                    }
+                    setSelectedMinute(finalValue)
+                  }}
+                  className="w-10 h-8 text-center text-sm px-1 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <Select value={selectedAmPm} onValueChange={setSelectedAmPm}>
+                  <SelectTrigger className="w-14 !h-8 text-sm px-2 [&>svg]:w-3 [&>svg]:h-3">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="AM">AM</SelectItem>
+                    <SelectItem value="PM">PM</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  onClick={handleTimeUpdate}
+                  disabled={!selectedHour || !selectedMinute}
+                  size="sm"
+                  className="h-8 px-3 text-sm max-w-20 truncate"
+                >
+                  {t("schedule.set", "Set")}
+                </Button>
               </div>
             </div>
-          )}
+          </div>
 
           {task?.dueDate && (
             <div className="pt-3 mt-3 border-t">

@@ -144,20 +144,40 @@ export const updateTasksMutationAtom = createEntityMutation<
       const newTask = newTasksMap.get(task.id);
       if (!newTask) return task;
 
-      // Smart optimistic update: predict what the server will do
-      const optimisticTask = { ...task, ...newTask };
+      const sanitizedNewTask: Partial<Task> = clearNullValues({
+        ...newTask,
+      });
 
-      // If completion status is changing, predict completedAt behavior like the backend
-      if (
-        newTask.completed !== undefined &&
-        newTask.completed !== task.completed
-      ) {
-        if (newTask.completed === true && task.completed === false) {
-          // Transitioning from incomplete to complete - set completedAt
-          optimisticTask.completedAt = new Date();
-        } else if (newTask.completed === false && task.completed === true) {
-          // Transitioning from complete to incomplete - clear completedAt
-          optimisticTask.completedAt = undefined;
+      const isCompletingRecurringTask =
+        task.recurring &&
+        task.completed === false &&
+        sanitizedNewTask.completed === true;
+
+      // Smart optimistic update: predict what the server will do
+      let optimisticTask: Task;
+      if (isCompletingRecurringTask) {
+        // Server keeps the anchor task incomplete; only merge non-completion fields
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { completed, completedAt, ...rest } = sanitizedNewTask;
+        optimisticTask = { ...task, ...rest };
+      } else {
+        optimisticTask = { ...task, ...sanitizedNewTask };
+
+        // If completion status is changing, predict completedAt behavior like the backend
+        if (
+          sanitizedNewTask.completed !== undefined &&
+          sanitizedNewTask.completed !== task.completed
+        ) {
+          if (sanitizedNewTask.completed === true && task.completed === false) {
+            // Transitioning from incomplete to complete - set completedAt
+            optimisticTask.completedAt = new Date();
+          } else if (
+            sanitizedNewTask.completed === false &&
+            task.completed === true
+          ) {
+            // Transitioning from complete to incomplete - clear completedAt
+            optimisticTask.completedAt = undefined;
+          }
         }
       }
 

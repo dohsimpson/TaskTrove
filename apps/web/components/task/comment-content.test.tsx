@@ -1,6 +1,6 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest"
-import { render, screen } from "@/test-utils"
+import { render, screen, waitFor } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { CommentContent } from "./comment-content"
 import type { Task, TaskComment, CreateTaskRequest } from "@/lib/types"
@@ -76,6 +76,8 @@ vi.mock("@/components/ui/button", () => ({
       {children}
     </button>
   ),
+  buttonVariants: ({ variant }: { variant?: string } = {}) =>
+    String(variant ? `variant-${variant}` : "variant-default"),
 }))
 
 vi.mock("@/components/ui/input", () => ({
@@ -255,6 +257,42 @@ describe("CommentContent", () => {
       comments: [],
       labels: [],
     }
+  })
+
+  describe("Auto-scroll behavior", () => {
+    it("scrolls after the new comment actually renders", async () => {
+      const originalScrollTo = Element.prototype.scrollTo
+      const scrollToSpy = vi.fn()
+      Element.prototype.scrollTo = scrollToSpy
+
+      const originalRAF = window.requestAnimationFrame
+      window.requestAnimationFrame = (callback: FrameRequestCallback) => {
+        callback(0)
+        return 0
+      }
+
+      try {
+        const task = createMockTask({ comments: [] })
+        const { rerender } = render(<CommentContent task={task} />)
+
+        const user = userEvent.setup()
+        await user.type(screen.getByTestId("comment-input"), "Auto scroll comment")
+        await user.click(screen.getByTestId("comment-submit-button"))
+
+        expect(scrollToSpy).not.toHaveBeenCalled()
+
+        const updatedTask = createMockTask({
+          comments: [createMockComment({ id: TEST_COMMENT_ID_2, content: "Auto scroll comment" })],
+        })
+
+        rerender(<CommentContent task={updatedTask} />)
+
+        await waitFor(() => expect(scrollToSpy).toHaveBeenCalledTimes(1))
+      } finally {
+        Element.prototype.scrollTo = originalScrollTo
+        window.requestAnimationFrame = originalRAF
+      }
+    })
   })
 
   // Unit tests to ensure hooks are not called conditionally
@@ -745,7 +783,27 @@ describe("CommentContent", () => {
       expect(screen.getByTestId(`comment-delete-button-${commentId2}`)).toBeInTheDocument()
     })
 
-    it("deletes comment when delete button is clicked", async () => {
+    it("requires confirmation before deleting a comment", async () => {
+      const user = userEvent.setup()
+      const commentId = createCommentId("550e8400-e29b-41d4-a716-446655440010")
+      const comments = [
+        createMockComment({ id: commentId, content: "First comment" }),
+        createMockComment({ content: "Second comment" }),
+      ]
+      const task = createMockTask({ comments })
+
+      render(<CommentContent task={task} />)
+
+      const deleteButton = screen.getByTestId(`comment-delete-button-${commentId}`)
+      await user.click(deleteButton)
+      expect(mockUpdateTask).not.toHaveBeenCalled()
+
+      const confirmButton = await screen.findByRole("button", { name: "Delete Comment" })
+      await user.click(confirmButton)
+      expect(mockUpdateTask).toHaveBeenCalled()
+    })
+
+    it("deletes comment when deletion is confirmed", async () => {
       const user = userEvent.setup()
       const commentId1 = createCommentId("550e8400-e29b-41d4-a716-446655440010")
       const commentId2 = createCommentId("550e8400-e29b-41d4-a716-446655440011")
@@ -759,6 +817,8 @@ describe("CommentContent", () => {
 
       const deleteButton = screen.getByTestId(`comment-delete-button-${commentId1}`)
       await user.click(deleteButton)
+      const confirmButton = await screen.findByRole("button", { name: "Delete Comment" })
+      await user.click(confirmButton)
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {
@@ -782,6 +842,8 @@ describe("CommentContent", () => {
 
       const deleteButton = screen.getByTestId(`comment-delete-button-${commentId}`)
       await user.click(deleteButton)
+      const confirmButton = await screen.findByRole("button", { name: "Delete Comment" })
+      await user.click(confirmButton)
 
       expect(mockUpdateQuickAddTask).toHaveBeenCalledWith({
         updateRequest: {
@@ -800,6 +862,8 @@ describe("CommentContent", () => {
 
       const deleteButton = screen.getByTestId(`comment-delete-button-${commentId}`)
       await user.click(deleteButton)
+      const confirmButton = await screen.findByRole("button", { name: "Delete Comment" })
+      await user.click(confirmButton)
 
       expect(mockUpdateTask).toHaveBeenCalledWith({
         updateRequest: {

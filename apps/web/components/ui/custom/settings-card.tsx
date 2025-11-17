@@ -1,5 +1,6 @@
 import React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { ExperimentalBadge } from "./experimental-badge"
 
@@ -30,7 +31,7 @@ export function SettingsCard({
   className,
 }: SettingsCardProps) {
   return (
-    <Card className={className}>
+    <Card className={cn("w-full max-w-full overflow-x-hidden", className)}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           {Icon && <Icon className="size-5" />}
@@ -40,7 +41,7 @@ export function SettingsCard({
         </CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
-      <CardContent className="space-y-4">{children}</CardContent>
+      <CardContent className="space-y-4 min-w-0">{children}</CardContent>
     </Card>
   )
 }

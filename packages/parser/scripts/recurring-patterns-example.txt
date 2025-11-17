@@ -1,0 +1,8 @@
+# Example input for scripts/run-recurring-batch.ts
+# Format: pattern=<label>|<task text to parse>
+# Lines beginning with '#' are treated as comments.
+
+pattern=every day|Water plants every day
+pattern=ev mon, fri|Workout ev mon, fri
+pattern=every day at 9am and 9pm|Medicate every day at 9am and 9pm
+pattern=every weekend|Chores every weekend

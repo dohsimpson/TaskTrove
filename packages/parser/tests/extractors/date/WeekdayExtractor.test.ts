@@ -113,6 +113,19 @@ describe("WeekdayExtractor", () => {
     expect(sunResults[0]?.value).toEqual(getNextWeekday(referenceDate, 0));
   });
 
+  it("should not match weekdays attached to other words", () => {
+    const results = extractor.extract("planningsunday ride", context);
+
+    expect(results).toHaveLength(0);
+  });
+
+  it("should match weekdays followed by punctuation", () => {
+    const results = extractor.extract("Plan monday, review", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.match).toBe("monday");
+  });
+
   it("should return empty when no weekday found", () => {
     const results = extractor.extract("Just a task", context);
 

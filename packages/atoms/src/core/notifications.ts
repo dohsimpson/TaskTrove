@@ -20,6 +20,7 @@ import {
 import { playSoundAtom } from "@tasktrove/atoms/ui/audio";
 import { DEFAULT_UUID } from "@tasktrove/constants";
 import { DEFAULT_NOTIFICATION_SETTINGS } from "@tasktrove/types/defaults";
+import { updateSettingsAtom } from "@tasktrove/atoms/core/settings";
 
 // ====================
 // CONSTANTS
@@ -135,9 +136,6 @@ export const notificationSettingsAtom = atom(
   },
   async (get, set, updates: Partial<NotificationSettings>) => {
     // Use the core updateSettingsAtom to persist changes
-    const { updateSettingsAtom } = await import(
-      "@tasktrove/atoms/core/settings"
-    );
     await set(updateSettingsAtom, { notifications: updates });
   },
 );

@@ -253,6 +253,8 @@ describe("migrateViewStates", () => {
         "list",
         "kanban",
         "calendar",
+        "table",
+        "stats",
       ];
 
       viewModes.forEach((mode) => {

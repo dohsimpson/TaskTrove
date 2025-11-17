@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
   dropTargetForElements,
   type ElementDropTargetEventBasePayload,
@@ -19,6 +19,11 @@ import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indi
 import { DropIndicator as TreeDropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/tree-item"
 import { GroupDropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/group"
 import { cn } from "@/lib/utils"
+import {
+  beginDragIfNeeded,
+  broadcastActiveTarget,
+  subscribeActiveTarget,
+} from "@/lib/dnd/active-target-bus"
 
 export type DropTargetMode = "list-item" | "group" | "tree-item"
 export type Instruction = ListInstruction | TreeInstruction
@@ -92,12 +97,60 @@ export function DropTargetItem({
   const ref = useRef<HTMLDivElement>(null)
   const [instruction, setInstruction] = useState<Instruction | null>(null)
   const [isOver, setIsOver] = useState(false)
+  const clearInstructionRef = useRef<number | null>(null)
+  const clearInstructionTimeoutRef = useRef<number | null>(null)
+  // Subscribe to the bus to clear stale indicators when another target becomes active
+  useEffect(() => {
+    return subscribeActiveTarget(({ element }) => {
+      const myEl = ref.current
+      if (!myEl) return
+      if (element && element !== myEl) {
+        setInstruction(null)
+      }
+    })
+  }, [])
+
+  const cancelPendingClear = () => {
+    if (clearInstructionRef.current !== null && typeof window !== "undefined") {
+      window.cancelAnimationFrame(clearInstructionRef.current)
+      clearInstructionRef.current = null
+    }
+    if (clearInstructionTimeoutRef.current !== null && typeof window !== "undefined") {
+      window.clearTimeout(clearInstructionTimeoutRef.current)
+      clearInstructionTimeoutRef.current = null
+    }
+  }
+
+  const scheduleClearInstruction = useCallback(
+    ({ immediate, delay }: { immediate: boolean; delay?: number }) => {
+      cancelPendingClear()
+
+      if (immediate || typeof window === "undefined") {
+        setInstruction(null)
+        return
+      }
+
+      if (delay && delay > 0) {
+        clearInstructionTimeoutRef.current = window.setTimeout(() => {
+          setInstruction(null)
+          clearInstructionTimeoutRef.current = null
+        }, delay)
+        return
+      }
+
+      clearInstructionRef.current = window.requestAnimationFrame(() => {
+        setInstruction(null)
+        clearInstructionRef.current = null
+      })
+    },
+    [],
+  )
 
   useEffect(() => {
     const element = ref.current
     if (!element) return
 
-    return dropTargetForElements({
+    const cleanup = dropTargetForElements({
       element,
       getIsSticky: () => false,
       getData: ({ input, element: el }) => {
@@ -133,10 +186,12 @@ export function DropTargetItem({
       },
       canDrop: canDrop ? ({ source }) => canDrop(source.data) : undefined,
       onDragEnter: (args) => {
+        cancelPendingClear()
         setIsOver(true)
         onDragEnter?.(args)
       },
       onDrag: (args) => {
+        cancelPendingClear()
         const { self, location, source } = args
 
         // Only show indicator if this is the innermost target
@@ -166,19 +221,30 @@ export function DropTargetItem({
         }
 
         setInstruction(extracted)
+        beginDragIfNeeded()
+        broadcastActiveTarget(self.element)
         onDrag?.(args)
       },
       onDragLeave: (args) => {
         setIsOver(false)
-        setInstruction(null)
+        const hasOtherTargets = args.location.current.dropTargets.length > 0
+        scheduleClearInstruction({
+          immediate: !hasOtherTargets,
+          delay: hasOtherTargets ? 64 : undefined,
+        })
         onDragLeave?.(args)
       },
       onDrop: (args) => {
         setIsOver(false)
-        setInstruction(null)
+        scheduleClearInstruction({ immediate: true })
         onDrop(args)
       },
     })
+
+    return () => {
+      cleanup()
+      cancelPendingClear()
+    }
   }, [
     id,
     index,
@@ -192,6 +258,7 @@ export function DropTargetItem({
     onDragEnter,
     onDragLeave,
     onDrag,
+    scheduleClearInstruction,
   ])
 
   // Group mode: simple highlighting with GroupDropIndicator

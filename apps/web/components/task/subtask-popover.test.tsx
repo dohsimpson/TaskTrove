@@ -344,6 +344,14 @@ vi.mock("@/lib/color-utils", () => ({
   getPriorityTextColor: () => "#ffffff",
   getPriorityLabel: () => "High",
   getDueDateTextColor: () => "#000000",
+  getScheduleIcons: vi.fn(() => ({
+    hasRecurring: false,
+    hasDueDate: false,
+    isOverdue: false,
+    primaryIcon: null,
+    secondaryIcon: null,
+    showRecurringOnly: false,
+  })),
 }))
 
 vi.mock("@/hooks/use-context-menu-visibility", () => ({

@@ -58,6 +58,12 @@ export * from "./object-utils";
 // Array operation utilities
 export * from "./array-operations";
 
+// Global store utilities
+export * from "./global-store";
+
+// Version utilities
+export * from "./version";
+
 // Re-export commonly used utilities for convenience
 export { cn } from "./styling";
 export {
@@ -131,7 +137,7 @@ export type {
   TaskDateFormat,
   TaskDateFormatOptions,
 } from "./task-date-formatter";
-export { clearNullValues } from "./object-utils";
+export { clearNullValues, mergeDeep } from "./object-utils";
 export {
   reorderInArray,
   removeFromArray,

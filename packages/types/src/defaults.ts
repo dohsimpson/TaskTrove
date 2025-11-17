@@ -1,10 +1,14 @@
 import type { ViewState, GlobalViewOptions } from "./core";
-import type { GroupId } from "./id";
+import type { GroupId, VersionString } from "./id";
 import type { User, ProjectSection, Project } from "./core";
 import type { ProjectGroup, LabelGroup } from "./group";
 import type { DataFile, UserData } from "./data-file";
-import { SIDE_PANEL_WIDTH_DEFAULT } from "@tasktrove/constants";
+import {
+  SIDE_PANEL_WIDTH_DEFAULT,
+  SIDEBAR_WIDTH_PX_DEFAULT,
+} from "@tasktrove/constants";
 import { createGroupId, createUserId } from "./id";
+import { LATEST_DATA_VERSION } from "./schema-version";
 import {
   DEFAULT_UUID,
   DEFAULT_AUTO_BACKUP_ENABLED,
@@ -69,6 +73,8 @@ export const DEFAULT_LABEL_GROUP: LabelGroup = {
   items: [],
 };
 
+export const DEFAULT_DATA_VERSION: VersionString = LATEST_DATA_VERSION;
+
 /**
  * Helper Functions for Default Sections
  */
@@ -115,6 +121,7 @@ export const DEFAULT_GENERAL_SETTINGS = {
   startView: "all" as const, // Corresponds to DEFAULT_ROUTE "/all"
   soundEnabled: true,
   linkifyEnabled: true,
+  markdownEnabled: true,
   popoverHoverOpen: false,
 } as const;
 
@@ -140,6 +147,7 @@ export const DEFAULT_VIEW_STATE: ViewState = {
  */
 export const DEFAULT_GLOBAL_VIEW_OPTIONS: GlobalViewOptions = {
   sidePanelWidth: SIDE_PANEL_WIDTH_DEFAULT,
+  sideBarWidth: SIDEBAR_WIDTH_PX_DEFAULT,
   showSidePanel: DEFAULT_SHOW_SIDE_PANEL,
   peopleOwnerCollapsed: false,
   peopleAssigneesCollapsed: false,
@@ -179,4 +187,5 @@ export const DEFAULT_EMPTY_DATA_FILE: DataFile = {
   labelGroups: DEFAULT_LABEL_GROUP,
   settings: DEFAULT_USER_SETTINGS,
   user: DEFAULT_USER,
+  version: DEFAULT_DATA_VERSION,
 };

@@ -54,6 +54,9 @@ export function CommentManagementPopover({
       side="bottom"
       align="start"
       className={className}
+      mobileAsDrawer
+      drawerTitle="Comments"
+      drawerDirection="bottom"
     >
       {children}
     </ContentPopover>

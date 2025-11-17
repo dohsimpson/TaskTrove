@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useCallback } from "react"
+import { useEffect, useCallback, useRef } from "react"
 import { usePathname } from "next/navigation"
 import { useAtom, useSetAtom } from "jotai"
 // Most icons are no longer needed thanks to our atoms!
@@ -25,10 +25,11 @@ import {
   SidebarProvider,
   SidebarInset,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/custom/sidebar"
 import { TaskTroveLogo } from "@/components/ui/custom/tasktrove-logo"
 import { PageHeader } from "@/components/layout/page-header"
 import { PageFooter } from "@/components/layout/page-footer"
+import { PwaInstall } from "@/components/layout/pwa-install"
 import { QuickAddDialog } from "@/components/dialogs/quick-add-dialog"
 import { ProjectDialog } from "@/components/dialogs/project-dialog"
 import { LabelDialog } from "@/components/dialogs/label-dialog"
@@ -55,6 +56,7 @@ import {
 } from "@tasktrove/atoms/ui/navigation"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useNotificationSystem } from "@/hooks/use-notification-system"
+import { useProjectSectionGuard } from "@/hooks/debug/use-project-section-guard"
 import "@khmyznikov/pwa-install"
 
 interface MainLayoutWrapperProps {
@@ -102,6 +104,31 @@ function SidebarKeyboardHandler() {
   return null
 }
 
+function SidebarNavigationAutoCloser({ pathname }: { pathname: string | null }) {
+  const currentPath = pathname ?? ""
+  const previousPath = useRef(currentPath)
+  const { isMobile, open, setOpenMobile } = useSidebar()
+
+  useEffect(() => {
+    if (!isMobile) {
+      previousPath.current = currentPath
+      return
+    }
+
+    if (previousPath.current === currentPath) {
+      return
+    }
+
+    previousPath.current = currentPath
+
+    if (open) {
+      setOpenMobile(false)
+    }
+  }, [currentPath, isMobile, open, setOpenMobile])
+
+  return null
+}
+
 export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
   // Navigation and theme
   const pathname = usePathname()
@@ -124,6 +151,8 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
 
   // Initialize notification system following Next.js best practices
   useNotificationSystem()
+  // Development guard to detect tasks that are not tracked by project sections
+  useProjectSectionGuard()
 
   // Navigation actions using our centralized atoms
   const openSearch = useSetAtom(openSearchAtom)
@@ -611,6 +640,7 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
         }
         defaultOpen={!isMobile}
       >
+        <SidebarNavigationAutoCloser pathname={pathname} />
         <SidebarKeyboardHandler />
         <Sidebar variant={isMobile ? "floating" : "sidebar"} collapsible="offcanvas">
           <SidebarHeader className="flex items-center justify-center p-4 py-8">
@@ -643,10 +673,7 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
         <SettingsDialog />
         <UserProfileDialog />
       </SidebarProvider>
-      {/* @ts-expect-error - web component */}
-      <pwa-install manifest-url="/manifest.webmanifest" use-local-storage="true">
-        {/* @ts-expect-error - web component */}
-      </pwa-install>
+      <PwaInstall />
     </div>
     // </GestureHandler>
   )

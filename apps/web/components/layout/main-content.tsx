@@ -20,6 +20,8 @@ import { QuickCommentDialog } from "@/components/task/quick-comment-dialog"
 import { ProjectSectionsView } from "@/components/task/project-sections-view"
 import { KanbanBoard } from "@/components/views/kanban-board"
 import { CalendarView } from "@/components/views/calendar-view"
+import { TableView } from "@/components/views/table-view"
+import { StatsView } from "@/components/views/stats-view"
 import { AnalyticsDashboard } from "@/components/analytics/analytics-dashboard"
 import { TaskEmptyState } from "@/components/task/task-empty-state"
 import { PermissionChecker } from "@/components/startup/permission-checker"
@@ -63,7 +65,6 @@ export function MainContent({ onVoiceCommand }: MainContentProps): React.ReactEl
   const getDroppableId = () => {
     return `task-list-${currentView}`
   }
-
   const renderContent = () => {
     switch (currentView) {
       case "analytics":
@@ -71,13 +72,7 @@ export function MainContent({ onVoiceCommand }: MainContentProps): React.ReactEl
 
       case "calendar":
         // Calendar view always shows tasks in calendar format
-        return (
-          <CalendarView
-            tasks={filteredTasks}
-            onDateClick={() => {}}
-            droppableId={getDroppableId()}
-          />
-        )
+        return <CalendarView tasks={filteredTasks} onDateClick={() => {}} />
 
       case "voice":
         return (
@@ -145,13 +140,21 @@ export function MainContent({ onVoiceCommand }: MainContentProps): React.ReactEl
 
           case "calendar":
             return (
-              <CalendarView
+              <CalendarView tasks={filteredTasks} onDateClick={() => {}} project={projectForView} />
+            )
+
+          case "table":
+            return (
+              <TableView
                 tasks={filteredTasks}
-                onDateClick={() => {}}
-                droppableId={getDroppableId()}
                 project={projectForView}
+                routeContext={routeContext}
+                viewState={currentViewState}
               />
             )
+
+          case "stats":
+            return <StatsView />
 
           default:
             // Use ProjectSectionsView for all task views
@@ -160,6 +163,7 @@ export function MainContent({ onVoiceCommand }: MainContentProps): React.ReactEl
                 <ProjectSectionsView
                   supportsSections={supportsSections}
                   droppableId={getDroppableId()}
+                  showProjectsAsSections={routeContext.routeType === "projectgroup"}
                 />
 
                 {commentDialogTask && (

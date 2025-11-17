@@ -68,6 +68,7 @@ const DEFAULT_SETTINGS: UserSettings = {
     startView: "inbox",
     soundEnabled: true,
     linkifyEnabled: true,
+    markdownEnabled: true,
     popoverHoverOpen: false,
   },
 }

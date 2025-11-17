@@ -2,7 +2,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { NextRequest } from "next/server"
 import { PATCH } from "./route"
 import type { Task, DataFile } from "@/lib/types"
-import { createTaskId, createProjectId, createLabelId, createSubtaskId } from "@/lib/types"
+import {
+  createTaskId,
+  createProjectId,
+  createLabelId,
+  createSubtaskId,
+  createGroupId,
+} from "@/lib/types"
 
 // Mock the file operations
 vi.mock("@/lib/utils/safe-file-operations", () => ({
@@ -13,6 +19,7 @@ vi.mock("@/lib/utils/safe-file-operations", () => ({
 // Mock the recurring task processor
 vi.mock("@tasktrove/utils", () => ({
   processRecurringTaskCompletion: vi.fn(),
+  getEffectiveDueDate: vi.fn(),
   clearNullValues: vi.fn((obj: Record<string, unknown>) => {
     const result: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(obj)) {
@@ -30,47 +37,54 @@ vi.mock("uuid", () => ({
 }))
 
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
-import { processRecurringTaskCompletion } from "@tasktrove/utils"
+import { processRecurringTaskCompletion, getEffectiveDueDate } from "@tasktrove/utils"
 import { logBusinessEvent } from "@/lib/middleware/api-logger"
 import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types"
 
 const mockReadDataFile = vi.mocked(safeReadDataFile)
 const mockWriteDataFile = vi.mocked(safeWriteDataFile)
 const mockProcessRecurringTaskCompletion = vi.mocked(processRecurringTaskCompletion)
+const mockGetEffectiveDueDate = vi.mocked(getEffectiveDueDate)
 const mockLogBusinessEvent = vi.mocked(logBusinessEvent)
 
 describe("API Route - Recurring Tasks Integration", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockWriteDataFile.mockResolvedValue(true)
+    mockGetEffectiveDueDate.mockImplementation((task) =>
+      task?.dueDate ? new Date(task.dueDate) : null,
+    )
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
-  const createMockTask = (overrides: Partial<Task> = {}): Task => ({
-    id: createTaskId("550e8400-e29b-41d4-a716-446655440001"),
-    title: "Daily standup",
-    completed: false,
-    dueDate: new Date("2024-01-15T09:00:00.000Z"),
-    recurring: "RRULE:FREQ=DAILY",
-    createdAt: new Date("2024-01-01T00:00:00.000Z"),
-    priority: 2,
-    labels: [],
-    projectId: undefined,
-    subtasks: [],
-    comments: [],
-    recurringMode: "dueDate",
-    ...overrides,
-  })
+  const createMockTask = (overrides: Partial<Task> = {}): Task => {
+    const baseId = overrides.id ?? createTaskId("550e8400-e29b-41d4-a716-446655440001")
+    return {
+      id: baseId,
+      title: "Daily standup",
+      completed: false,
+      dueDate: new Date("2024-01-15T09:00:00.000Z"),
+      recurring: "RRULE:FREQ=DAILY",
+      createdAt: new Date("2024-01-01T00:00:00.000Z"),
+      priority: 2,
+      labels: [],
+      projectId: undefined,
+      subtasks: [],
+      comments: [],
+      recurringMode: "dueDate",
+      ...overrides,
+    }
+  }
 
   const createMockDataFile = (tasks: Task[]): DataFile => ({
     ...DEFAULT_EMPTY_DATA_FILE,
     tasks,
   })
 
-  it("should generate recurring task instance when completing a recurring task", async () => {
+  it("should create a history task and advance the anchor when completing a recurring task", async () => {
     const originalTask = createMockTask()
     const nextInstance = createMockTask({
       id: createTaskId("550e8400-e29b-41d4-a716-446655440000"),
@@ -103,7 +117,7 @@ describe("API Route - Recurring Tasks Integration", () => {
 
     expect(response.status).toBe(200)
     expect(responseData.success).toBe(true)
-    expect(responseData.message).toContain("1 recurring instance(s) created")
+    expect(responseData.message).toContain("1 recurring history record(s) added")
     expect(responseData.taskIds).toContain(originalTask.id)
 
     // Verify the completed task (with completedAt) was processed for recurring completion
@@ -115,32 +129,201 @@ describe("API Route - Recurring Tasks Integration", () => {
       }),
     )
 
-    // Verify both updated task and new instance were saved
-    expect(mockWriteDataFile).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          tasks: expect.arrayContaining([
-            expect.objectContaining({ id: originalTask.id, completed: true }),
-            expect.objectContaining({ id: nextInstance.id, completed: false }),
-          ]),
-        }),
-      }),
-    )
+    const writeCall = mockWriteDataFile.mock.calls[0]
+    if (!writeCall || !writeCall[0]) {
+      throw new Error("Expected mockWriteDataFile to have been called")
+    }
 
-    // Verify business event was logged
+    const savedData = writeCall[0].data
+    const anchorTask = savedData.tasks.find((t: Task) => t.id === originalTask.id)
+    const historyTaskId = createTaskId("550e8400-e29b-41d4-a716-446655440000")
+    const historyTask = savedData.tasks.find((t: Task) => t.id === historyTaskId)
+
+    expect(anchorTask).toBeDefined()
+    expect(anchorTask?.completed).toBe(false)
+    expect(anchorTask?.recurring).toBe(nextInstance.recurring)
+    expect(anchorTask?.dueDate?.toISOString()).toBe(nextInstance.dueDate?.toISOString())
+
+    expect(historyTask).toBeDefined()
+    expect(historyTask?.completed).toBe(true)
+    expect(historyTask?.recurring).toBeUndefined()
+    expect(historyTask?.trackingId).toBe(anchorTask?.trackingId)
+
     expect(mockLogBusinessEvent).toHaveBeenCalledWith(
-      "recurring_task_instance_created",
+      "recurring_task_history_created",
       expect.objectContaining({
         parentTaskId: originalTask.id,
-        newTaskId: nextInstance.id,
+        historyTaskId,
         recurringPattern: originalTask.recurring,
-        nextDueDate: nextInstance.dueDate,
       }),
       undefined,
     )
   })
 
-  it("should clear recurring fields from completed task when generating next instance", async () => {
+  it("should preserve client supplied due date when completing auto-rollover tasks to avoid timezone drift", async () => {
+    const originalTask = createMockTask({
+      recurringMode: "autoRollover",
+      dueDate: new Date("2024-01-15T09:00:00.000Z"),
+    })
+    const serverEffectiveDueDate = new Date("2024-01-15T09:00:00.000Z")
+    const clientEffectiveDueDateString = "2024-01-16"
+
+    mockGetEffectiveDueDate.mockReturnValueOnce(serverEffectiveDueDate)
+
+    const mockDataFile = createMockDataFile([originalTask])
+    mockReadDataFile.mockResolvedValue(mockDataFile)
+    mockProcessRecurringTaskCompletion.mockReturnValue(null)
+
+    const request = new NextRequest("http://localhost:3000/api/tasks", {
+      method: "PATCH",
+      body: JSON.stringify([
+        {
+          id: originalTask.id,
+          completed: true,
+          dueDate: clientEffectiveDueDateString,
+        },
+      ]),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    const response = await PATCH(request)
+
+    expect(response.status).toBe(200)
+
+    const writeArgs = mockWriteDataFile.mock.calls[0]
+    if (!writeArgs || !writeArgs[0]) {
+      throw new Error("Expected mockWriteDataFile to have been called with arguments")
+    }
+
+    const savedTasks = writeArgs[0].data.tasks
+    const updatedTask = savedTasks.find((task) => task.id === originalTask.id)
+    expect(updatedTask).toBeDefined()
+
+    if (!updatedTask) {
+      throw new Error("Expected updated task to be present in saved data")
+    }
+
+    const savedDueDate =
+      updatedTask.dueDate instanceof Date
+        ? updatedTask.dueDate.toISOString().slice(0, 10)
+        : updatedTask.dueDate
+
+    expect(savedDueDate).toBe(clientEffectiveDueDateString)
+  })
+
+  it("should place the history copy into the section that contained the completed task", async () => {
+    const projectId = createProjectId("11111111-2222-4333-8444-555555555555")
+    const sectionId = createGroupId("66666666-7777-4888-8999-aaaaaaaaaaaa")
+
+    const originalTask = createMockTask({
+      projectId,
+      id: createTaskId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"),
+    })
+
+    const nextInstance = createMockTask({
+      id: createTaskId("cccccccc-cccc-4ccc-8ccc-cccccccccccc"),
+      projectId,
+      completed: false,
+      completedAt: undefined,
+    })
+
+    const mockDataFile = {
+      ...createMockDataFile([originalTask]),
+      projects: [
+        {
+          id: projectId,
+          name: "Occasions",
+          slug: "occasions",
+          color: "#000000",
+          sections: [
+            {
+              id: sectionId,
+              name: "Birthdays",
+              slug: "birthdays",
+              type: "section" as const,
+              items: [originalTask.id],
+              isDefault: true,
+            },
+          ],
+        },
+      ],
+    }
+
+    mockReadDataFile.mockResolvedValueOnce(mockDataFile)
+    mockProcessRecurringTaskCompletion.mockReturnValue(nextInstance)
+
+    const request = new NextRequest("http://localhost:3000/api/tasks", {
+      method: "PATCH",
+      body: JSON.stringify([
+        {
+          id: originalTask.id,
+          completed: true,
+        },
+      ]),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    await PATCH(request)
+
+    const writeArgs = mockWriteDataFile.mock.calls[0]
+    if (!writeArgs || !writeArgs[0]) {
+      throw new Error("Expected mockWriteDataFile to have been called with arguments")
+    }
+
+    const savedProjects = writeArgs[0].data.projects
+    const targetProject = savedProjects.find((project) => project.id === projectId)
+    expect(targetProject).toBeDefined()
+
+    const section = targetProject?.sections.find((s) => s.id === sectionId)
+    const historyTaskId = createTaskId("550e8400-e29b-41d4-a716-446655440000")
+    expect(section).toBeDefined()
+    expect(section?.items).toContain(historyTaskId)
+  })
+
+  it("should pass client supplied due date to recurring processor when completing auto-rollover tasks", async () => {
+    const originalTask = createMockTask({
+      recurringMode: "autoRollover",
+      dueDate: new Date("2024-01-15T09:00:00.000Z"),
+    })
+    const clientEffectiveDueDateString = "2024-01-16"
+
+    const mockDataFile = createMockDataFile([originalTask])
+    mockReadDataFile.mockResolvedValue(mockDataFile)
+    mockProcessRecurringTaskCompletion.mockReturnValue(null)
+
+    const request = new NextRequest("http://localhost:3000/api/tasks", {
+      method: "PATCH",
+      body: JSON.stringify([
+        {
+          id: originalTask.id,
+          completed: true,
+          dueDate: clientEffectiveDueDateString,
+        },
+      ]),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    const response = await PATCH(request)
+    expect(response.status).toBe(200)
+
+    const callArgs = mockProcessRecurringTaskCompletion.mock.calls[0]
+    expect(callArgs).toBeDefined()
+    if (!callArgs) {
+      throw new Error("Expected processRecurringTaskCompletion to be called")
+    }
+
+    const completedTaskArg = callArgs[0]
+    expect(completedTaskArg.dueDate).toBeInstanceOf(Date)
+    expect(completedTaskArg.dueDate?.toISOString().slice(0, 10)).toBe(clientEffectiveDueDateString)
+  })
+
+  it("should clear recurring fields only on the history copy when advancing the anchor", async () => {
     const originalTask = createMockTask()
     const nextInstance = createMockTask({
       id: createTaskId("550e8400-e29b-41d4-a716-446655440000"),
@@ -171,24 +354,67 @@ describe("API Route - Recurring Tasks Integration", () => {
 
     expect(response.status).toBe(200)
 
-    // Verify the completed task has recurring fields cleared
     const writeCall = mockWriteDataFile.mock.calls[0]
     if (!writeCall || !writeCall[0]) {
       throw new Error("Expected mockWriteDataFile to have been called")
     }
     const savedData = writeCall[0].data
-    const completedTask = savedData.tasks.find((t: Task) => t.id === originalTask.id)
+    const anchorTask = savedData.tasks.find((t: Task) => t.id === originalTask.id)
+    const historyTaskId = createTaskId("550e8400-e29b-41d4-a716-446655440000")
+    const historyTask = savedData.tasks.find((t: Task) => t.id === historyTaskId)
 
-    expect(completedTask).toBeDefined()
-    expect(completedTask?.completed).toBe(true)
-    expect(completedTask?.recurring).toBeUndefined()
-    expect(completedTask?.recurringMode).toBe("dueDate")
+    expect(anchorTask).toBeDefined()
+    expect(anchorTask?.completed).toBe(false)
+    expect(anchorTask?.recurring).toBe("RRULE:FREQ=DAILY")
+    expect(anchorTask?.recurringMode).toBe("dueDate")
 
-    const newTask = savedData.tasks.find((t: Task) => t.id === nextInstance.id)
-    expect(newTask).toBeDefined()
-    expect(newTask?.completed).toBe(false)
-    expect(newTask?.recurring).toBe("RRULE:FREQ=DAILY")
-    expect(newTask?.recurringMode).toBe("dueDate")
+    expect(historyTask).toBeDefined()
+    expect(historyTask?.completed).toBe(true)
+    expect(historyTask?.recurring).toBeUndefined()
+    expect(historyTask?.recurringMode).toBe("dueDate")
+  })
+
+  it("should backfill trackingId when completing legacy recurring tasks", async () => {
+    const originalTask = createMockTask()
+    delete originalTask.trackingId
+
+    const nextInstance = createMockTask({
+      id: createTaskId("550e8400-e29b-41d4-a716-446655440010"),
+    })
+    delete nextInstance.trackingId
+
+    const mockDataFile = createMockDataFile([originalTask])
+
+    mockReadDataFile.mockResolvedValue(mockDataFile)
+    mockProcessRecurringTaskCompletion.mockReturnValue(nextInstance)
+
+    const request = new NextRequest("http://localhost:3000/api/tasks", {
+      method: "PATCH",
+      body: JSON.stringify([
+        {
+          id: originalTask.id,
+          completed: true,
+        },
+      ]),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    await PATCH(request)
+
+    const writeArgs = mockWriteDataFile.mock.calls[0]
+    if (!writeArgs || !writeArgs[0]) {
+      throw new Error("Expected mockWriteDataFile to have been called with arguments")
+    }
+
+    const savedTasks = writeArgs[0].data.tasks
+    const updatedAnchor = savedTasks.find((task: Task) => task.id === originalTask.id)
+    const historyTaskId = createTaskId("550e8400-e29b-41d4-a716-446655440000")
+    const historyTask = savedTasks.find((task: Task) => task.id === historyTaskId)
+
+    expect(updatedAnchor?.trackingId).toBe(originalTask.id)
+    expect(historyTask?.trackingId).toBe(originalTask.id)
   })
 
   it("should handle multiple recurring tasks completion in single request", async () => {
@@ -237,7 +463,7 @@ describe("API Route - Recurring Tasks Integration", () => {
 
     expect(response.status).toBe(200)
     expect(responseData.taskIds).toHaveLength(2)
-    expect(responseData.message).toContain("2 recurring instance(s) created")
+    expect(responseData.message).toContain("2 recurring history record(s) added")
 
     // Verify both tasks were processed (with completedAt timestamps)
     expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledTimes(2)
@@ -250,12 +476,12 @@ describe("API Route - Recurring Tasks Integration", () => {
 
     // Verify business events were logged for both
     expect(mockLogBusinessEvent).toHaveBeenCalledWith(
-      "recurring_task_instance_created",
+      "recurring_task_history_created",
       expect.objectContaining({ parentTaskId: task1.id }),
       undefined,
     )
     expect(mockLogBusinessEvent).toHaveBeenCalledWith(
-      "recurring_task_instance_created",
+      "recurring_task_history_created",
       expect.objectContaining({ parentTaskId: task2.id }),
       undefined,
     )
@@ -299,11 +525,20 @@ describe("API Route - Recurring Tasks Integration", () => {
       }),
     )
 
-    // Should not log recurring instance creation event
+    // Should not log recurring history creation event
     expect(mockLogBusinessEvent).not.toHaveBeenCalledWith(
-      "recurring_task_instance_created",
+      "recurring_task_history_created",
       expect.anything(),
     )
+
+    const writeArgs = mockWriteDataFile.mock.calls[0]
+    if (!writeArgs || !writeArgs[0]) {
+      throw new Error("Expected mockWriteDataFile to have been called with arguments")
+    }
+
+    const savedTasks = writeArgs[0].data.tasks
+    const savedTask = savedTasks.find((task: Task) => task.id === nonRecurringTask.id)
+    expect(savedTask?.trackingId).toBeUndefined()
   })
 
   it("should not generate instances when task is not being completed", async () => {
@@ -410,7 +645,7 @@ describe("API Route - Recurring Tasks Integration", () => {
 
     expect(response.status).toBe(200)
     expect(responseData.taskIds).toHaveLength(3)
-    expect(responseData.message).toContain("1 recurring instance(s) created")
+    expect(responseData.message).toContain("1 recurring history record(s) added")
 
     // Should only process the task that's being completed and has recurring
     expect(mockProcessRecurringTaskCompletion).toHaveBeenCalledTimes(2)
@@ -468,11 +703,11 @@ describe("API Route - Recurring Tasks Integration", () => {
       }),
     )
 
-    // No recurring instances should be created due to the error
+    // No recurring history copies should be created due to the error
     expect(responseData.taskIds).toHaveLength(1)
   })
 
-  it("should log comprehensive business events for recurring task creation", async () => {
+  it("should log comprehensive business events for recurring history creation", async () => {
     const recurringTask = createMockTask({
       recurring: "RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR",
     })
@@ -502,13 +737,15 @@ describe("API Route - Recurring Tasks Integration", () => {
 
     await PATCH(request)
 
+    const historyTaskId = createTaskId("550e8400-e29b-41d4-a716-446655440000")
     expect(mockLogBusinessEvent).toHaveBeenCalledWith(
-      "recurring_task_instance_created",
+      "recurring_task_history_created",
       {
         parentTaskId: recurringTask.id,
-        newTaskId: nextInstance.id,
+        historyTaskId,
         recurringPattern: "RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR",
         nextDueDate: nextInstance.dueDate,
+        completedAt: expect.any(Date),
       },
       undefined,
     )
@@ -519,13 +756,13 @@ describe("API Route - Recurring Tasks Integration", () => {
       expect.objectContaining({
         updatedCount: 1,
         taskIds: [recurringTask.id],
-        totalTasks: 2, // Original + next instance
+        totalTasks: 2, // Anchor + history copy
       }),
       undefined,
     )
   })
 
-  it("should preserve task metadata in generated recurring instances", async () => {
+  it("should preserve task metadata in generated history copies", async () => {
     const recurringTaskWithMetadata = createMockTask({
       priority: 4 as const,
       labels: [
@@ -588,7 +825,7 @@ describe("API Route - Recurring Tasks Integration", () => {
     // Verify that task IDs are returned correctly
     expect(responseData.taskIds).toContain(recurringTaskWithMetadata.id)
     expect(responseData.success).toBe(true)
-    expect(responseData.message).toContain("recurring instance(s) created")
+    expect(responseData.message).toContain("recurring history record(s) added")
   })
 
   it("should pass completed task with completedAt timestamp to recurring processor for recurringMode completedAt", async () => {
@@ -636,7 +873,7 @@ describe("API Route - Recurring Tasks Integration", () => {
 
     expect(response.status).toBe(200)
     expect(responseData.success).toBe(true)
-    expect(responseData.message).toContain("1 recurring instance(s) created")
+    expect(responseData.message).toContain("1 recurring history record(s) added")
 
     // CRITICAL: Verify the recurring processor receives the completed task WITH completedAt timestamp
     // This prevents the bug where originalTask (without completedAt) was passed instead
@@ -666,11 +903,12 @@ describe("API Route - Recurring Tasks Integration", () => {
     }
 
     // Verify business event logging includes the completion timestamp
+    const historyTaskId = createTaskId("550e8400-e29b-41d4-a716-446655440000")
     expect(mockLogBusinessEvent).toHaveBeenCalledWith(
-      "recurring_task_instance_created",
+      "recurring_task_history_created",
       expect.objectContaining({
         parentTaskId: originalTask.id,
-        newTaskId: nextInstance.id,
+        historyTaskId,
         recurringPattern: originalTask.recurring,
         nextDueDate: nextInstance.dueDate,
       }),

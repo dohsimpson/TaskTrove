@@ -1,19 +1,10 @@
 "use client"
 
-import dynamic from "next/dynamic"
-import { LoginFormProps } from "./login-form"
-
-// Dynamically import the LoginForm with SSR disabled
-const LoginForm = dynamic(
-  () => import("./login-form").then((mod) => ({ default: mod.LoginForm })),
-  {
-    ssr: false,
-  },
-)
+import { LoginForm, type LoginFormProps } from "./login-form"
 
 /**
- * Dynamic wrapper for LoginForm that prevents SSR
- * This is needed because LoginForm uses translation hooks that require client-side rendering
+ * Client wrapper for LoginForm to ensure it renders on the client boundary.
+ * LoginForm relies on client-only translation hooks, so keep this component client-only.
  */
 export function DynamicLoginForm(props: LoginFormProps) {
   return <LoginForm {...props} />

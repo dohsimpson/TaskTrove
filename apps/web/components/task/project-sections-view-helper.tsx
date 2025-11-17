@@ -51,7 +51,7 @@ export function DropTargetElement({
   }
 
   return (
-    <div ref={autoScrollRef} data-testid={testId} className="flex flex-1">
+    <div ref={autoScrollRef} data-testid={testId} className="flex flex-1 min-h-0">
       <DropTargetItem
         id={id}
         mode={type}
@@ -62,7 +62,7 @@ export function DropTargetElement({
           const sourceIds = Array.isArray(sourceData.ids) ? sourceData.ids : []
           return !sourceIds.includes(id)
         }}
-        className="flex-1"
+        className="flex flex-1 min-h-0"
       >
         {children}
       </DropTargetItem>

@@ -6,6 +6,15 @@ import { useDebounce } from "@uidotdev/usehooks"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { cn } from "@/lib/utils"
+import { useIsMobile } from "@/hooks/use-mobile"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer"
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 
 interface ContentPopoverProps {
   children: React.ReactNode
@@ -20,7 +29,6 @@ interface ContentPopoverProps {
   debounceDelay?: number
   onOpenAutoFocus?: (event: Event) => void
   disableOutsideInteraction?: boolean
-  asChild?: boolean
   // Collision detection and viewport constraints
   avoidCollisions?: boolean
   collisionPadding?: number | { top?: number; right?: number; bottom?: number; left?: number }
@@ -29,6 +37,11 @@ interface ContentPopoverProps {
   alignOffset?: number
   sticky?: "partial" | "always"
   hideWhenDetached?: boolean
+  // Mobile drawer fallback
+  mobileAsDrawer?: boolean
+  drawerTitle?: string
+  drawerDirection?: "bottom" | "top" | "left" | "right"
+  drawerMaxHeightClass?: string
 }
 
 export function ContentPopover({
@@ -44,7 +57,6 @@ export function ContentPopover({
   debounceDelay = 200,
   onOpenAutoFocus = (event) => event.preventDefault(),
   disableOutsideInteraction = false,
-  asChild = false,
   // Collision detection defaults
   avoidCollisions = true,
   collisionPadding = 8,
@@ -53,10 +65,27 @@ export function ContentPopover({
   alignOffset = 0,
   sticky = "partial",
   hideWhenDetached = false,
+  // Mobile drawer props
+  mobileAsDrawer = false,
+  drawerTitle,
+  drawerDirection = "bottom",
+  drawerMaxHeightClass,
 }: ContentPopoverProps) {
   const [internalHoverState, setInternalHoverState] = useState(false)
   const [hasFocusedElement, setHasFocusedElement] = useState(false)
   const settings = useAtomValue(settingsAtom)
+  const [isTouchPointer, setIsTouchPointer] = useState(false)
+  const isMobile = useIsMobile()
+
+  // Detect coarse pointer devices (mobile/tablet) and prefer click-triggered popovers
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return
+    const mq = window.matchMedia("(hover: none) and (pointer: coarse)")
+    const update = () => setIsTouchPointer(mq.matches)
+    update()
+    mq.addEventListener("change", update)
+    return () => mq.removeEventListener("change", update)
+  }, [])
 
   // Enhanced className with viewport constraints
   const enhancedClassName = cn(
@@ -65,9 +94,10 @@ export function ContentPopover({
     className,
   )
 
-  // Determine effective trigger mode: use prop if provided, otherwise use setting
-  const effectiveTriggerMode =
-    triggerMode ?? (settings.general.popoverHoverOpen ? "hover" : "click")
+  // Determine requested mode: prop overrides setting
+  const requestedMode = triggerMode ?? (settings.general.popoverHoverOpen ? "hover" : "click")
+  // Force click on touch devices for better UX
+  const effectiveTriggerMode = isTouchPointer ? "click" : requestedMode
 
   // For hover mode, use debounced state; for click mode, use external/internal open state
   const debouncedHoverState = useDebounce(internalHoverState, debounceDelay)
@@ -106,6 +136,26 @@ export function ContentPopover({
 
   // Click mode (default behavior)
   if (effectiveTriggerMode === "click") {
+    // Mobile fallback: render a Drawer when requested
+    if (isMobile && mobileAsDrawer) {
+      return (
+        <Drawer open={isOpen} onOpenChange={handleOpenChange} direction={drawerDirection}>
+          <DrawerTrigger asChild>
+            <div className={triggerClassName}>{children}</div>
+          </DrawerTrigger>
+          <DrawerContent
+            className={cn(drawerMaxHeightClass ?? "!max-h-[80vh]", "focus:outline-none")}
+          >
+            <DrawerHeader className="pb-0">
+              <VisuallyHidden>
+                <DrawerTitle>{drawerTitle ?? "Menu"}</DrawerTitle>
+              </VisuallyHidden>
+            </DrawerHeader>
+            <div className="p-2 flex-1 min-h-0 overflow-y-auto">{content}</div>
+          </DrawerContent>
+        </Drawer>
+      )
+    }
     return (
       <Popover open={isOpen} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild className={triggerClassName}>
@@ -124,7 +174,6 @@ export function ContentPopover({
           hideWhenDetached={hideWhenDetached}
           onOpenAutoFocus={onOpenAutoFocus}
           onInteractOutside={disableOutsideInteraction ? (e) => e.preventDefault() : undefined}
-          asChild={asChild}
         >
           {content}
         </PopoverContent>
@@ -192,7 +241,6 @@ export function ContentPopover({
         onBlurCapture={handleContentFocusOut}
         onOpenAutoFocus={onOpenAutoFocus}
         onInteractOutside={disableOutsideInteraction ? (e) => e.preventDefault() : undefined}
-        asChild={asChild}
       >
         {content}
       </PopoverContent>

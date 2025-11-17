@@ -5,7 +5,7 @@ import { labelsAtom, usersAtom } from "@tasktrove/atoms/data/base/atoms"
 import { visibleProjectsAtom } from "@tasktrove/atoms/core/projects"
 import {
   parseEnhancedNaturalLanguage,
-  type ParsedTask,
+  type ParsedTaskWithMatches,
 } from "@/lib/utils/enhanced-natural-language-parser"
 
 /**
@@ -23,8 +23,8 @@ export function useDebouncedParse(
   text: string,
   disabledSections: Set<string> = new Set(),
   delay: number = 0,
-): ParsedTask | null {
-  const [parsed, setParsed] = useState<ParsedTask | null>(null)
+): ParsedTaskWithMatches | null {
+  const [parsed, setParsed] = useState<ParsedTaskWithMatches | null>(null)
 
   // Get data from atoms
   const enabled = useAtomValue(nlpEnabledAtom)

@@ -77,7 +77,7 @@ export class TaskParser {
       extractionResults,
     );
 
-    return new ParserResult(parsedTask);
+    return new ParserResult(parsedTask, processedResults, extractionResults);
   }
 
   protected convertToParsedTask(

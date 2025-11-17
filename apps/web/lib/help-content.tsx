@@ -322,6 +322,78 @@ export function getHelpContent(routeContext: RouteContext): HelpContent | null {
         ),
       }
 
+    case "habits":
+      return {
+        title: "Habits",
+        content: (
+          <HelpSection>
+            <HelpDescription>
+              Stay consistent with routines powered by auto-rollover recurring tasks.
+            </HelpDescription>
+            <HelpList
+              items={[
+                "Tasks with auto-rollover recurrence appear here automatically",
+                "Great for daily, weekly, or custom cadence routines",
+                "Mark a habit complete to roll it forward to the next occurrence",
+                "Track streaks by reviewing completion history regularly",
+              ]}
+            />
+            <HelpTip variant="tip">
+              <strong>Consistency tip:</strong> Keep habits lightweight—small wins compound over
+              time.
+            </HelpTip>
+          </HelpSection>
+        ),
+      }
+
+    case "assigned-to-me":
+      return {
+        title: "Assigned to Me",
+        content: (
+          <HelpSection>
+            <HelpDescription>
+              Focus on tasks teammates delegated to you so nothing slips through.
+            </HelpDescription>
+            <HelpList
+              items={[
+                "See every task where you are listed as an assignee",
+                "Sort and filter to tackle work by priority or due date",
+                "Open a task to collaborate via comments and status updates",
+                "Reassign or handoff work when responsibilities change",
+              ]}
+            />
+            <HelpTip variant="info">
+              <strong>Collaboration tip:</strong> Add quick comments to confirm handoffs or provide
+              status updates.
+            </HelpTip>
+          </HelpSection>
+        ),
+      }
+
+    case "assigned-to-others":
+      return {
+        title: "Assigned to Others",
+        content: (
+          <HelpSection>
+            <HelpDescription>
+              Keep visibility into tasks you own but delegated to teammates.
+            </HelpDescription>
+            <HelpList
+              items={[
+                "Monitor tasks where you're the owner but someone else is assigned",
+                "Spot blockers early by reviewing due dates and comments",
+                "Jump in to assist or adjust scope when work is stuck",
+                "Use filters to focus on specific projects or teammates",
+              ]}
+            />
+            <HelpTip variant="info">
+              <strong>Leadership tip:</strong> Check in before deadlines to ensure handoffs stay on
+              track.
+            </HelpTip>
+          </HelpSection>
+        ),
+      }
+
     default:
       return null
   }

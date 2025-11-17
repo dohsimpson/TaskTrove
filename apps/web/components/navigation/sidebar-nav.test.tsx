@@ -2,7 +2,7 @@ import React from "react"
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@/test-utils"
 import { SidebarNav } from "./sidebar-nav"
-import { SidebarProvider } from "@/components/ui/sidebar"
+import { SidebarProvider } from "@/components/ui/custom/sidebar"
 import { mockNextNavigation } from "@/test-utils/mock-router"
 import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types"
 

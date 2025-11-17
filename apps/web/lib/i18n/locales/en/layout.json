@@ -50,27 +50,35 @@
   },
   "standardViews": {
     "all": {
-      "description": "View all your tasks in one place",
+      "description": "See every task across all projects and labels in one view",
       "title": "All Tasks"
     },
+    "assigned-to-me": {
+      "description": "See tasks teammates have assigned directly to you",
+      "title": "Assigned to Me"
+    },
+    "assigned-to-others": {
+      "description": "Monitor tasks you delegated to other teammates",
+      "title": "Assigned to Others"
+    },
     "calendar": {
-      "description": "View tasks in calendar format",
+      "description": "Visualize tasks with due dates on a calendar",
       "title": "Calendar"
     },
     "completed": {
-      "description": "Review completed tasks",
+      "description": "Celebrate progress with tasks you've finished",
       "title": "Completed"
     },
     "habits": {
-      "description": "Track your habits and routines",
+      "description": "Track repeating tasks and routines that auto-rollover",
       "title": "Habits"
     },
     "inbox": {
-      "description": "Start with unorganized tasks",
+      "description": "Capture new tasks that don't have a home yet",
       "title": "Inbox"
     },
     "labels": {
-      "description": "Organize tasks with labels",
+      "description": "Organize and filter tasks with custom labels",
       "title": "Labels"
     },
     "not-found": {
@@ -78,15 +86,15 @@
       "title": "Not Found"
     },
     "projects": {
-      "description": "Manage and organize projects",
+      "description": "Browse all projects and jump into dedicated views",
       "title": "Projects"
     },
     "today": {
-      "description": "Focus on today's tasks",
+      "description": "Keep up with everything scheduled for today",
       "title": "Today"
     },
     "upcoming": {
-      "description": "See what's coming up next",
+      "description": "Plan ahead with tasks scheduled for future dates",
       "title": "Upcoming"
     }
   },

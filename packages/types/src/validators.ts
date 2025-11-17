@@ -228,9 +228,10 @@ export function isValidPriority(value: unknown): value is 1 | 2 | 3 | 4 {
  */
 export function isValidViewMode(
   value: unknown,
-): value is "list" | "kanban" | "calendar" {
+): value is "list" | "kanban" | "calendar" | "table" | "stats" {
   return (
-    typeof value === "string" && ["list", "kanban", "calendar"].includes(value)
+    typeof value === "string" &&
+    ["list", "kanban", "calendar", "table", "stats"].includes(value)
   );
 }
 

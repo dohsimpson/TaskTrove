@@ -5,8 +5,7 @@
  * Import this module to access all testing functionality.
  */
 
-// Export main test runner and utilities
-export {
+import {
   resetTestEnvironment,
   createSampleData,
 } from "../__tests__/basic-integration.test";
@@ -51,6 +50,8 @@ export {
 // QUICK ACCESS FUNCTIONS
 // =============================================================================
 
+export { resetTestEnvironment, createSampleData };
+
 /**
  * Quick test runner for browser console
  * Usage: import { quickTest } from '@tasktrove/atoms/utils/test-suite'; quickTest();
@@ -66,9 +67,6 @@ export async function quickTest(): Promise<void> {
  * Usage: import { quickReset } from '@tasktrove/atoms/utils/test-suite'; quickReset();
  */
 export async function quickReset(): Promise<void> {
-  const { resetTestEnvironment } = await import(
-    "../__tests__/basic-integration.test"
-  );
   resetTestEnvironment();
 }
 
@@ -77,9 +75,6 @@ export async function quickReset(): Promise<void> {
  * Usage: import { quickSetup } from '@tasktrove/atoms/utils/test-suite'; quickSetup();
  */
 export async function quickSetup(): Promise<void> {
-  const { resetTestEnvironment, createSampleData } = await import(
-    "../__tests__/basic-integration.test"
-  );
   resetTestEnvironment();
   createSampleData();
 }

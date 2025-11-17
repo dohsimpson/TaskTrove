@@ -20,7 +20,6 @@ interface TimeEstimationPickerProps {
   open?: boolean
   setOpen?: (open: boolean) => void
   triggerMode?: "click" | "hover"
-  asChild?: boolean
   disableOutsideInteraction?: boolean
 }
 
@@ -32,7 +31,6 @@ export function TimeEstimationPicker({
   open,
   setOpen,
   triggerMode = "click",
-  asChild = false,
   disableOutsideInteraction = false,
 }: TimeEstimationPickerProps) {
   // Translation setup
@@ -223,8 +221,10 @@ export function TimeEstimationPicker({
       className="w-auto overflow-hidden p-0"
       align="start"
       triggerMode={triggerMode}
-      asChild={asChild}
       disableOutsideInteraction={disableOutsideInteraction}
+      mobileAsDrawer
+      drawerTitle="Time Estimation"
+      drawerDirection="bottom"
       content={
         <div className="p-4 space-y-4">
           <div className="space-y-2">

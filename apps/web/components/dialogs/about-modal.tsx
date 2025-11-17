@@ -12,6 +12,7 @@ import { Star, Heart } from "lucide-react"
 import { TaskTroveLogo } from "@/components/ui/custom/tasktrove-logo"
 import { getAppVersion } from "@/lib/utils/version"
 import { useTranslation } from "@tasktrove/i18n"
+import { PrivacyTermsNotice } from "@/components/legal/privacy-terms-notice"
 interface AboutModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -81,6 +82,7 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
               </Button>
             </div>
           </div>
+          <PrivacyTermsNotice className="pt-2" />
         </div>
       </DialogContent>
     </Dialog>

@@ -85,7 +85,7 @@ export const UserSchema = z.object({
  */
 export const ViewStateSchema = z.object({
   /** Current view mode */
-  viewMode: z.enum(["list", "kanban", "calendar"]),
+  viewMode: z.enum(["list", "kanban", "calendar", "table", "stats"]),
   /** Field to sort by */
   sortBy: z.string(),
   /** Sort direction */
@@ -154,6 +154,7 @@ export const ViewStatesSchema = z.record(z.string(), ViewStateSchema);
  */
 export const GlobalViewOptionsSchema = z.object({
   sidePanelWidth: z.number().min(20).max(80),
+  sideBarWidth: z.number().min(250).max(480),
   /** Whether to show the side panel globally */
   showSidePanel: z.boolean(),
   /** People panel owner section collapse state */

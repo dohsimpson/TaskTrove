@@ -1,5 +1,6 @@
 import type { Extractor } from "../base/Extractor";
 import type { ExtractionResult, ParserContext } from "../../types";
+import { buildTagPattern } from "../../utils/TagPattern";
 
 export class ProjectExtractor implements Extractor {
   readonly name = "project-extractor";
@@ -11,13 +12,29 @@ export class ProjectExtractor implements Extractor {
 
     if (context.projects && context.projects.length > 0) {
       // Use dynamic patterns based on actual project names
-      const projectNames = context.projects.map((p) =>
-        p.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-      );
-      projectRegex = new RegExp(`#(${projectNames.join("|")})`, "gi");
+      const projectNames = context.projects
+        .map((p) => p.name)
+        .filter((name): name is string => Boolean(name && name.length > 0))
+        .sort((a, b) => b.length - a.length);
+
+      if (projectNames.length > 0) {
+        projectRegex = buildTagPattern({
+          prefix: "#",
+          candidates: projectNames,
+          flags: "gi",
+        });
+      } else {
+        projectRegex = buildTagPattern({
+          prefix: "#",
+          flags: "gi",
+        });
+      }
     } else {
       // Fallback to static pattern
-      projectRegex = /#(\w+)/g;
+      projectRegex = buildTagPattern({
+        prefix: "#",
+        flags: "gi",
+      });
     }
 
     const matches = [...text.matchAll(projectRegex)];

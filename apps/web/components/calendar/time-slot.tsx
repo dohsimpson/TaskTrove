@@ -51,7 +51,7 @@ export function TimeSlot({ hour, label, tasks, date, onAddTask, onTaskDrop }: Ti
   }, [date, hour, onAddTask])
 
   return (
-    <div className="flex border-b border-border/50 min-h-[60px]">
+    <div className="flex border-b border-border/50 min-h-[50px]">
       {/* Time Label */}
       <div className="w-12 flex-shrink-0 p-1 text-right border-r border-border bg-muted/20">
         <div className="text-xs text-muted-foreground font-medium leading-tight">{label}</div>
@@ -62,7 +62,7 @@ export function TimeSlot({ hour, label, tasks, date, onAddTask, onTaskDrop }: Ti
         <CalendarAddButton
           onClick={handleAddTask}
           title="Add task to this time slot"
-          variant="time-slot"
+          placement="top-right"
         />
 
         <DropTargetWrapper

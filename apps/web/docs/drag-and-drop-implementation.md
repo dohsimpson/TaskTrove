@@ -2,303 +2,221 @@
 
 ## Overview
 
-TaskTrove uses [Atlassian's Pragmatic Drag and Drop](https://github.com/atlassian/pragmatic-drag-and-drop) library for drag and drop functionality. This guide explains the implementation patterns, shadow effects, and common pitfalls.
+TaskTrove relies on [Atlassian's Pragmatic Drag and Drop](https://github.com/atlassian/pragmatic-drag-and-drop) for all drag interactions. This document covers the core building blocks we use, how temporary sort resets work, shared drag state, testing strategies, and common pitfalls.
 
 ## Core Library Components
 
 ### Essential Imports
 
-```typescript
-// Core drag and drop adapters
+```ts
+// element adapters
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
 
-// Edge detection for precise drop positioning
+// list hitboxes
 import {
-  extractClosestEdge,
-  attachClosestEdge,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge"
-import { getReorderDestinationIndex } from "@atlaskit/pragmatic-drag-and-drop-hitbox/util/get-reorder-destination-index"
+  attachInstruction as attachListInstruction,
+  extractInstruction as extractListInstruction,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
+
+// reorder helpers
+import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder"
 ```
+
+Hitboxes attach metadata to the drop target describing where the drag is relative to the item (before/after). We mostly use the list variants, but tree and group hitboxes are available for sidebar and container-level drops.
 
 ## Architecture Components
 
-### 1. DraggableWrapper (`components/ui/draggable-wrapper.tsx`)
+### `DraggableTaskElement`
 
-Wraps any element to make it draggable:
+Location: `components/task/draggable-task-element.tsx`
 
-```typescript
-<DraggableWrapper
-  dragId={task.id}
-  index={taskIndex}
-  getData={() => ({
-    type: "task",
-    taskId: task.id,
-    sectionId: section.id,
-    projectId: task.projectId,
-  })}
->
+Wraps every task row (lists, subtasks, sidepanel) and provides:
+
+- Pragmatic `draggable` registration through our shared `DraggableItem` wrapper.
+- Multi-select support – if the dragged task is part of a selection, all selected task ids are included.
+- Integration with `useResetSortOnDrag` so the view temporarily switches to the canonical order.
+- Shared drag styling via `draggingTaskIdsAtom`, allowing virtualization re-mounts to keep the dimming effect.
+
+```tsx
+<DraggableTaskElement taskId={task.id}>
   <TaskItem taskId={task.id} />
-</DraggableWrapper>
+</DraggableTaskElement>
 ```
 
-**Key Features:**
+### `DropTargetElement`
 
-- Captures element dimensions via `getBoundingClientRect()` during drag start
-- Includes `rect` in drag data for shadow rendering
-- Manages drag state internally
+Location: `components/task/project-sections-view-helper.tsx`
 
-### 2. DropTargetWrapper (`components/ui/drop-target-wrapper.tsx`)
+Thin wrapper around `DropTargetItem` that:
 
-Creates drop zones that respond to dragged items:
+- Configures list or group drop mode.
+- Attaches hitboxes (`attachListInstruction` / `attachTreeInstruction`) as needed.
+- Normalizes innermost target detection before firing `onDrop`.
+- Adds auto-scroll support when inside a virtualized list.
 
-```typescript
-<DropTargetWrapper
-  dropTargetId={`task-${task.id}`}
-  onDrop={handleTaskDrop}
-  getData={(args) => {
-    const baseData = { type: "task-drop-target", taskId: task.id }
+Usage:
 
-    // CRITICAL: Only attach edge data when we have valid input
-    if (args?.input && args?.element && isDragInput(args.input)) {
-      return attachClosestEdge(baseData, {
-        element: args.element,
-        input: args.input,
-        allowedEdges: ["top", "bottom"],
-      })
-    }
-    return baseData
-  }}
-  onDragEnter={handleDragEnter}
-  onDrag={handleDrag}
-  onDragLeave={handleDragLeave}
+```tsx
+<DropTargetElement
+  id={task.id}
+  options={{ type: "list-item", indicator: { lineGap: "8px" } }}
+  onDrop={handleDropTaskToListItem}
 >
-  {children}
-</DropTargetWrapper>
+  <DraggableTaskElement taskId={task.id}>
+    <TaskItem taskId={task.id} />
+  </DraggableTaskElement>
+</DropTargetElement>
 ```
 
-**Event Handlers:**
+### Section-Level Handlers
 
-- `onDragEnter`: Track when drag enters
-- `onDrag`: Update during drag movement
-- `onDragLeave`: Clean up when leaving
-- `onDrop`: Handle the drop action
+Location: `components/task/section.tsx`
 
-## Shadow Effect Implementation
+Sections provide two primary drop targets:
 
-### Shadow Component (`components/ui/custom/task-shadow.tsx`)
+- `handleDropTaskToSection` → appends tasks to the end of the section when dropped onto empty space.
+- `handleDropTaskToListItem` → reorders tasks relative to the drop target (supports cross-section moves).
 
-```typescript
-export function TaskShadow({ height, className }: TaskShadowProps) {
-  return (
-    <div
-      className={cn(
-        "flex-shrink-0 rounded-md bg-muted/30 border-2 border-dashed border-muted-foreground/20",
-        className
-      )}
-      style={{ height }}
-    />
-  )
-}
-```
+Both handlers:
 
-### State Management Pattern
+1. Extract task ids either from `extractDropPayload` or `source.data.ids`.
+2. Move tasks between projects when required via `updateTasksAtom`.
+3. Update the relevant sections/projects with `updateProjectsAtom` (using `reorderItems` when available).
+4. Operate regardless of the current sort order—the temporary sort reset logic ensures state consistency.
 
-Track drag state per container (section/column):
+## Temporary Sort Reset + Shared Drag State
 
-```typescript
-const [sectionDragStates, setSectionDragStates] = useState<
-  Map<
-    string,
-    {
-      isDraggingOver: boolean
-      draggedTaskRect?: { height: number }
-      closestEdge?: "top" | "bottom"
-      targetTaskId?: string
-      isOverChildTask?: boolean
-    }
-  >
->(new Map())
-```
+### `useResetSortOnDrag`
 
-### Shadow Positioning Logic
+Location: `hooks/use-reset-sort-on-drag.ts`
 
-Three shadow positions based on drag location:
+Responsibilities:
 
-1. **Above task** - When `closestEdge === "top"`
-2. **Below task** - When `closestEdge === "bottom"`
-3. **Bottom of container** - When over container but not over any task
+1. On drag start, if the current sort is not `"default"`, record the previous sort and call `setViewOptionsAtom` with `{ sortBy: "default", sortDirection: "asc" }`.
+2. Track a global participation count so multiple components (e.g., virtualization re-renders) can join the same interaction without clobbering each other.
+3. Attach window-level `dragend`/`drop` listeners to guarantee the previous sort is restored even if components unmount mid-drag.
+4. Clear `draggingTaskIdsAtom` once the last participant completes.
 
-```typescript
-{/* Shadow above task */}
-{dragState?.targetTaskId === task.id &&
- dragState?.closestEdge === "top" && (
-  <TaskShadow height={dragState.draggedTaskRect.height} />
-)}
+The hook returns `{ applyDefaultSort, restorePreviousSort }` and is consumed by `DraggableTaskElement` and the side-panel drag handle.
 
-<TaskItem taskId={task.id} />
+### `draggingTaskIdsAtom`
 
-{/* Shadow below task */}
-{dragState?.targetTaskId === task.id &&
- dragState?.closestEdge === "bottom" && (
-  <TaskShadow height={dragState.draggedTaskRect.height} />
-)}
-```
+Location: `packages/atoms/src/ui/drag.ts`
+
+Shared atom tracking the ids currently being dragged. It powers:
+
+- Dimming and scaling the dragged rows (works across virtualization re-mounts).
+- Any future UI that needs to know the active drag payload (e.g., badge counts).
+
+The atom is cleared once the drag finalizes—either via component `restorePreviousSort` calls or the global listener in the hook.
+
+## Shadow Rendering
+
+We still use the existing `TaskShadow` and `sectionDragStates` pattern to show placeholders where items will land. The critical pieces are:
+
+- Record the dragged item height (`source.data.rect?.height`) so the shadow matches the item size.
+- Render shadows above/below target items based on `instruction.operation`.
+- Provide a fallback shadow at the bottom when hovering over a section without a target task.
+
+See `project-sections-view.tsx` for the shadow logic driven by section-level state.
 
 ## Critical Caveats and Solutions
 
-### 1. Type Safety for Drag Data
+### Type Safety for Drag Data
 
-**Problem:** Drag data from `source.data` is `Record<string, unknown>`
+Always validate the shape of `source.data`:
 
-**Solution:** Validate at runtime with proper type guards:
-
-```typescript
-// BAD - Type assertion
-const rect = source.data.rect as DOMRect // Never do this!
-
-// GOOD - Runtime validation
-const rect = source.data.rect
-if (typeof rect === "object" && rect !== null && "height" in rect) {
-  const height = rect.height
-  if (typeof height === "number") {
-    // Safe to use height
-  }
+```ts
+const maybeRect = source.data.rect
+if (typeof maybeRect === "object" && maybeRect !== null && "height" in maybeRect) {
+  const { height } = maybeRect as { height: number }
+  // safe to use height
 }
 ```
 
-### 2. Edge Detection Input Validation
+### Hitbox Input Validation
 
-**Problem:** `attachClosestEdge` requires valid `DragInputType`
+`attachListInstruction` requires a proper drag input. Use a type guard before attaching:
 
-**Solution:** Type guard for drag input:
-
-```typescript
+```ts
 function isDragInput(input: unknown): input is DragInputType {
   return (
     typeof input === "object" &&
     input !== null &&
     "altKey" in input &&
     "button" in input &&
-    "buttons" in input &&
-    "ctrlKey" in input
+    "buttons" in input
   )
 }
 ```
 
-### 3. State Cleanup on Drop
+### Nested Drop Targets
 
-**Problem:** Drag state persists after drop
+Always inspect the first entry of `location.current.dropTargets` to ensure you are handling the innermost target. This prevents processing the same drop multiple times when there are nested wrappers.
 
-**Solution:** Always clean up in drop handler:
+### Sort Order vs. Manual Reorder
 
-```typescript
-onDrop={(data) => {
-  handleTaskDrop(data)
-  setSectionDragStates(new Map())  // Clear all drag states
-}}
-```
+Never mutate section order based on UI-sort order unless the view is in `"default"` mode. Let `useResetSortOnDrag` temporarily enforce default ordering so the canonical section order is always the source of truth.
 
-### 4. Nested Drop Targets
+## Reordering Helpers
 
-**Problem:** Multiple drop targets can be active simultaneously
+To calculate the new index for reordering within the same container, prefer Atlassian's helper:
 
-**Solution:** Check innermost target first:
-
-```typescript
-const innerMost = location.current.dropTargets[0]
-const isOverChildTask = Boolean(innerMost && innerMost.data.type === "task-drop-target")
-```
-
-## Reordering Logic
-
-Use Atlassian's utility for calculating drop position:
-
-```typescript
-const closestEdgeOfTarget = extractClosestEdge(taskDropTarget.data)
-const targetIndex = getReorderDestinationIndex({
-  startIndex: sourceIndex,
+```ts
+const closestEdgeOfTarget = extractInstruction(target.data)?.operation
+const destinationIndex = getReorderDestinationIndex({
+  startIndex,
   closestEdgeOfTarget,
   indexOfTarget,
-  axis: "vertical", // or "horizontal" for kanban
+  axis: "vertical",
 })
 ```
 
-## Complete Implementation Example
+For cross-section moves, manually splice the dragged ids at the correct index and filter them out of other sections.
 
-See these files for complete implementations:
+## Testing
 
-- **Vertical list with sections:** `components/task/project-sections-view.tsx` - `renderSection` function
-- **Kanban board:** `components/views/kanban-board.tsx` - `KanbanBoard` component
-- **Drag/Drop wrappers:** `components/ui/draggable-wrapper.tsx`, `components/ui/drop-target-wrapper.tsx`
+### Polyfills
 
-## Testing Drag and Drop
+In `test-setup.ts` we polyfill DOMRect and DragEvent (pragmatic's unit testing polyfills are ESM and not currently available via pnpm). Ensure this file is listed in the Vitest `setupFiles`.
 
-Tests should mock the drag and drop behavior:
+### Patterns
 
-```typescript
-// See: components/ui/draggable-wrapper.test.tsx
-const mockDraggable = vi.fn()
-vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", () => ({
-  draggable: mockDraggable,
+- **Hook tests** (`hooks/use-reset-sort-on-drag.test.tsx`): use Jotai's `createStore()` with `<Provider>` to assert sort state transitions and shared drag id cleanup. Dispatch `window.dispatchEvent(new Event("dragend"))` to emulate global drops.
+- **Component tests** (`components/task/draggable-task-element.test.tsx`): mock `DraggableItem`, call captured `onDragStart`/`onDrop`, and verify both sort state and `draggingTaskIdsAtom`.
+- **Section tests**: mock `DropTargetElement` to capture `onDrop`, then invoke the handler with a crafted payload to validate project/task updates. (TODO: add coverage for cross-section moves and multi-select.)
+
+### Example Mock
+
+```ts
+const handlers: { onDragStart?: () => void; onDrop?: () => void } = {}
+
+vi.mock("@/components/ui/drag-drop", () => ({
+  DraggableItem: ({ onDragStart, onDrop, children }: PropsWithChildren<DraggableProps>) => {
+    handlers.onDragStart = onDragStart
+    handlers.onDrop = onDrop
+    return <div>{children}</div>
+  },
 }))
 ```
 
-## Performance Considerations
+This pattern bypasses complex DOM event simulation and keeps tests focused on business logic.
 
-1. **Use Maps for state** - O(1) lookups for drag state per container
-2. **Conditional rendering** - Only render shadows when needed
-3. **Memoize callbacks** - Prevent unnecessary re-renders
+## Performance Notes
+
+- Virtualization (`VirtualizedTaskList`) dramatically reduces DOM nodes; ensure drag wrappers integrate seamlessly with the virtualizer's measure callbacks.
+- Memoize heavy drop handlers with `useCallback`.
+- Avoid per-render Map recreation; store drag state in `useRef` or `useState` with functional updates where possible.
 
 ## External Resources
 
 - [Pragmatic Drag and Drop Documentation](https://atlassian.design/components/pragmatic-drag-and-drop)
+- [Closest Edge Reference](https://atlassian.design/components/pragmatic-drag-and-drop/packages/hitbox/closest-edge)
 - [Board with Shadows Example](https://atlassian.design/components/pragmatic-drag-and-drop/examples#board-with-shadows)
-- [Example Source Code](https://github.com/alexreardon/pragmatic-board)
-- [Closest Edge Detection](https://atlassian.design/components/pragmatic-drag-and-drop/packages/hitbox/closest-edge)
 
-## Common Patterns
+## Next Steps / TODOs
 
-### Cross-Section Movement
-
-```typescript
-if (sourceSectionId !== targetSectionId) {
-  moveTaskBetweenSections({
-    taskId,
-    projectId,
-    newSectionId: createSectionId(targetSectionId),
-    toIndex: targetIndex,
-  })
-} else {
-  reorderTaskInView({
-    taskId,
-    viewId,
-    fromIndex: sourceIndex,
-    toIndex: targetIndex,
-  })
-}
-```
-
-### Preventing Same-Position Drops
-
-```typescript
-if (sourceSectionId === targetSectionId && sourceIndex === targetIndex) {
-  return // No action needed
-}
-```
-
-## Debugging Tips
-
-1. **Log drop target data:** Add `console.log(location.current.dropTargets)` to understand target hierarchy
-2. **Visualize edges:** Temporarily add borders to show top/bottom edge detection
-3. **Check drag data:** Log `source.data` to verify all required fields are present
-4. **Monitor state changes:** Use React DevTools to watch drag state Maps
-
-## Key Takeaways
-
-- Always validate drag data at runtime
-- Clean up state on drop completion
-- Use proper type guards, never type assertions
-- Leverage Atlassian's utilities for edge detection and reordering
-- Test shadow positioning in both list and kanban views
-- Reference the working implementations in TaskTrove codebase
+- Add Section-level tests covering cross-section moves and multi-select drops.
+- Document any future custom adapters (calendar, kanban, etc.) under this guide.
+- Revisit the manual shadow state once pragmatic exposes built-in drop indicators for virtualized lists.

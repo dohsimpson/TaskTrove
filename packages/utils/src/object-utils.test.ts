@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { clearNullValues } from "./object-utils";
+import { clearNullValues, mergeDeep } from "./object-utils";
 
 describe("clearNullValues", () => {
   it("should convert null values to undefined", () => {
@@ -144,5 +144,102 @@ describe("clearNullValues", () => {
       email: undefined,
       age: 31,
     });
+  });
+});
+
+describe("mergeDeep", () => {
+  it("should return a cloned object when no partial is provided", () => {
+    const base = {
+      general: { soundEnabled: true },
+    };
+
+    const merged = mergeDeep(base);
+
+    expect(merged).toEqual(base);
+    expect(merged).not.toBe(base);
+  });
+
+  it("should merge nested objects without losing existing keys", () => {
+    const base: {
+      general: { soundEnabled: boolean; startView: string };
+      notifications: { enabled: boolean; requireInteraction: boolean };
+    } = {
+      general: { soundEnabled: true, startView: "all" },
+      notifications: { enabled: true, requireInteraction: true },
+    };
+
+    const partial: { general?: Partial<typeof base.general> } = {
+      general: { soundEnabled: false },
+    };
+
+    const result = mergeDeep(base, partial);
+
+    expect(result.general).toEqual({
+      soundEnabled: false,
+      startView: "all",
+    });
+    expect(result.notifications).toEqual(base.notifications);
+  });
+
+  it("should preserve unknown keys from the base object", () => {
+    const base: {
+      general: { soundEnabled: boolean };
+      productivity: { rewardsEnabled: boolean };
+    } = {
+      general: { soundEnabled: true },
+      productivity: { rewardsEnabled: true },
+    };
+
+    const partial: { general?: Partial<typeof base.general> } = {
+      general: { soundEnabled: false },
+    };
+
+    const result = mergeDeep(base, partial);
+
+    expect(result.productivity).toEqual({ rewardsEnabled: true });
+  });
+
+  it("should replace arrays instead of concatenating them", () => {
+    const base: { notifications: { channels: string[] } } = {
+      notifications: { channels: ["email", "push"] },
+    };
+
+    const partial: { notifications?: Partial<typeof base.notifications> } = {
+      notifications: { channels: ["push"] },
+    };
+
+    const result = mergeDeep(base, partial);
+
+    expect(result.notifications.channels).toEqual(["push"]);
+  });
+
+  it("should ignore undefined values from the partial object", () => {
+    const base: { general: { soundEnabled: boolean } } = {
+      general: { soundEnabled: true },
+    };
+
+    const partial: { general?: Partial<typeof base.general> } = {
+      general: { soundEnabled: undefined },
+    };
+
+    const result = mergeDeep(base, partial);
+
+    expect(result.general.soundEnabled).toBe(true);
+  });
+
+  it("should not mutate the base object", () => {
+    const base: { general: { soundEnabled: boolean } } = {
+      general: { soundEnabled: true },
+    };
+
+    const partial: { general?: Partial<typeof base.general> } = {
+      general: { soundEnabled: false },
+    };
+
+    const copy = JSON.parse(JSON.stringify(base));
+    const result = mergeDeep(base, partial);
+
+    expect(base).toEqual(copy);
+    expect(result.general.soundEnabled).toBe(false);
   });
 });

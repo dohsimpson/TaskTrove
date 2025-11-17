@@ -37,6 +37,9 @@ export function TaskSchedulePopover({
       className="w-72 p-0 overflow-y-auto"
       triggerClassName={className}
       align="start"
+      mobileAsDrawer
+      drawerTitle="Schedule"
+      drawerDirection="bottom"
     >
       <span data-action="schedule">{children}</span>
     </ContentPopover>

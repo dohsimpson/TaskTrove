@@ -22,6 +22,7 @@ export type DeleteEntityType =
   | "history"
   | "bulk"
   | "group"
+  | "comment"
 
 export interface DeleteConfirmDialogProps {
   open: boolean
@@ -78,6 +79,8 @@ export function DeleteConfirmDialog({
         return t("delete.bulk.title", "Delete Tasks")
       case "group":
         return t("delete.group.title", "Delete Group")
+      case "comment":
+        return t("delete.comment.title", "Delete Comment")
       default:
         return t("delete.default.title", "Delete Item")
     }
@@ -132,6 +135,11 @@ export function DeleteConfirmDialog({
           'Are you sure you want to delete "{{- name}}"? This action cannot be undone.',
           { name: entityName || "" },
         )
+      case "comment":
+        return t(
+          "delete.comment.description",
+          "Are you sure you want to delete this comment? This action cannot be undone.",
+        )
       default:
         return t("delete.default.description", "Are you sure you want to delete this item?")
     }
@@ -156,6 +164,8 @@ export function DeleteConfirmDialog({
         return t("delete.bulk.confirm", "Delete Tasks")
       case "group":
         return t("delete.group.confirm", "Delete Group")
+      case "comment":
+        return t("delete.comment.confirm", "Delete Comment")
       default:
         return t("delete.default.confirm", "Delete")
     }

@@ -1,2 +1,2 @@
 export { runBackup } from "./backup"
-export { initializeScheduler } from "./scheduler"
+export { registerBackupJob } from "./register-backup-job"

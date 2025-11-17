@@ -198,6 +198,33 @@ describe("VirtualizedTaskList", () => {
     expect(screen.getByTestId(`task-item-${TEST_TASK_ID_1}`)).toBeInTheDocument()
   })
 
+  it("places task spacing outside the drop target to keep indicators aligned", () => {
+    render(
+      <VirtualizedTaskList
+        tasks={mockTasks}
+        variant="default"
+        sortedTaskIds={sortedTaskIds}
+        enableDropTargets={true}
+        onDropTaskToListItem={() => undefined}
+      />,
+    )
+
+    const taskItems = screen.getAllByTestId(/^task-item-/)
+
+    taskItems.forEach((taskItem) => {
+      // Task item should have horizontal padding without applying bottom margin that shifts indicators
+      expect(taskItem).toHaveClass("mx-2")
+      expect(taskItem.className).not.toContain("mb-")
+
+      // Spacer element should live outside the drop target wrapper so indicators align with the card
+      const containerDiv = taskItem.closest("[data-index]")
+      const spacer = containerDiv?.lastElementChild
+      expect(spacer).not.toBeNull()
+      expect(spacer).toHaveAttribute("aria-hidden", "true")
+      expect(spacer?.classList.contains("h-2")).toBe(true)
+    })
+  })
+
   it("disables drop targets when enableDropTargets is false", () => {
     render(
       <VirtualizedTaskList

@@ -3,6 +3,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen, fireEvent } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { EnhancedHighlightedInput } from "./enhanced-highlighted-input"
+import type { ExtractionResult } from "@tasktrove/parser/types"
+
+type ComponentProps = React.ComponentProps<typeof EnhancedHighlightedInput>
 
 // Mock Lucide icons
 vi.mock("lucide-react", () => ({
@@ -28,15 +31,42 @@ vi.mock("jotai", async (importOriginal) => {
   const actual = await importOriginal<typeof import("jotai")>()
   return {
     ...actual,
-    useAtomValue: vi.fn(() => []), // Return empty arrays for labels/projects atoms
+    useAtomValue: vi.fn(() => true),
   }
 })
 
+const buildMatches = (
+  input: string,
+  segments: Array<{ type: ExtractionResult["type"]; text: string; offset?: number }>,
+): ExtractionResult[] => {
+  const matches: ExtractionResult[] = []
+
+  segments.forEach(({ type, text, offset }) => {
+    const startIndex =
+      offset !== undefined ? offset : input.toLowerCase().indexOf(text.toLowerCase())
+
+    if (startIndex === -1) {
+      throw new Error(`Segment "${text}" not found in "${input}"`)
+    }
+
+    matches.push({
+      type,
+      value: text,
+      match: input.slice(startIndex, startIndex + text.length) || text,
+      startIndex,
+      endIndex: startIndex + text.length,
+    })
+  })
+
+  return matches
+}
+
 describe("EnhancedHighlightedInput", () => {
-  const defaultProps = {
+  const defaultProps: ComponentProps = {
     value: "",
     onChange: vi.fn(),
     placeholder: "Type your task...",
+    parserMatches: [],
   }
 
   const mockAutocompleteItems = {
@@ -144,7 +174,17 @@ describe("EnhancedHighlightedInput", () => {
     })
 
     it("should not add padding to highlighted tokens to prevent text shift", () => {
-      render(<EnhancedHighlightedInput {...defaultProps} value="Test #project @label" />)
+      const value = "Test #project @label"
+      render(
+        <EnhancedHighlightedInput
+          {...defaultProps}
+          value={value}
+          parserMatches={buildMatches(value, [
+            { type: "project", text: "#project" },
+            { type: "label", text: "@label" },
+          ])}
+        />,
+      )
 
       // Find highlighted tokens
       const tokens = screen
@@ -217,7 +257,14 @@ describe("EnhancedHighlightedInput", () => {
 
   describe("Token Highlighting Consistency", () => {
     it("should highlight project tokens without shifting text", () => {
-      render(<EnhancedHighlightedInput {...defaultProps} value="Task #work project" />)
+      const value = "Task #work project"
+      render(
+        <EnhancedHighlightedInput
+          {...defaultProps}
+          value={value}
+          parserMatches={buildMatches(value, [{ type: "project", text: "#work" }])}
+        />,
+      )
 
       const overlay = screen.getByRole("combobox").parentElement?.querySelector(".absolute.inset-0")
       const projectToken = overlay?.querySelector('span[class*="bg-purple-500/20"]')
@@ -231,7 +278,14 @@ describe("EnhancedHighlightedInput", () => {
     })
 
     it("should highlight label tokens without shifting text", () => {
-      render(<EnhancedHighlightedInput {...defaultProps} value="Task @urgent label" />)
+      const value = "Task @urgent label"
+      render(
+        <EnhancedHighlightedInput
+          {...defaultProps}
+          value={value}
+          parserMatches={buildMatches(value, [{ type: "label", text: "@urgent" }])}
+        />,
+      )
 
       const overlay = screen.getByRole("combobox").parentElement?.querySelector(".absolute.inset-0")
       const labelToken = overlay?.querySelector('span[class*="bg-blue-500/20"]')
@@ -245,7 +299,19 @@ describe("EnhancedHighlightedInput", () => {
     })
 
     it("should highlight multiple token types without cumulative shift", () => {
-      render(<EnhancedHighlightedInput {...defaultProps} value="Task #work @urgent p1 today" />)
+      const value = "Task #work @urgent p1 today"
+      render(
+        <EnhancedHighlightedInput
+          {...defaultProps}
+          value={value}
+          parserMatches={buildMatches(value, [
+            { type: "project", text: "#work" },
+            { type: "label", text: "@urgent" },
+            { type: "priority", text: "p1" },
+            { type: "date", text: "today" },
+          ])}
+        />,
+      )
 
       const overlay = screen.getByRole("combobox").parentElement?.querySelector(".absolute.inset-0")
       const tokens = overlay?.querySelectorAll('span[class*="bg-"]')
@@ -319,6 +385,10 @@ describe("EnhancedHighlightedInput", () => {
         <EnhancedHighlightedInput
           {...defaultProps}
           value="Task #work @urgent active"
+          parserMatches={buildMatches("Task #work @urgent active", [
+            { type: "project", text: "#work" },
+            { type: "label", text: "@urgent" },
+          ])}
           disabledSections={disabledSections}
         />,
       )
@@ -398,7 +468,17 @@ describe("EnhancedHighlightedInput", () => {
       const initialOverlayClasses = overlay?.className
 
       // Update with token content
-      rerender(<EnhancedHighlightedInput {...defaultProps} value="Task #project @label" />)
+      const value = "Task #project @label"
+      rerender(
+        <EnhancedHighlightedInput
+          {...defaultProps}
+          value={value}
+          parserMatches={buildMatches(value, [
+            { type: "project", text: "#project" },
+            { type: "label", text: "@label" },
+          ])}
+        />,
+      )
 
       // Classes should remain unchanged
       expect(contentEditable.className).toBe(initialContentEditableClasses)
@@ -447,6 +527,34 @@ describe("EnhancedHighlightedInput", () => {
   })
 
   describe("Integration Tests", () => {
+    describe("Whitespace Preservation", () => {
+      it("keeps literal spaces when parser matches use boundary-trimmed captures", () => {
+        const value = "hello every day"
+        const parserMatches: ExtractionResult[] = [
+          {
+            type: "recurring",
+            value: "RRULE:FREQ=DAILY",
+            match: "every day", // Captured text excludes the leading space from the regex boundary
+            startIndex: value.indexOf(" every day"), // Parser still points to the leading space
+            endIndex: value.length,
+          },
+        ]
+
+        render(
+          <EnhancedHighlightedInput
+            {...defaultProps}
+            value={value}
+            parserMatches={parserMatches}
+          />,
+        )
+
+        const overlay = screen
+          .getByRole("combobox")
+          .parentElement?.querySelector(".absolute.inset-0")
+        expect(overlay?.textContent).toBe(value)
+      })
+    })
+
     it("should handle complex input scenarios without misalignment", async () => {
       const user = userEvent.setup()
       const onChange = vi.fn()

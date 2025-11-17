@@ -15,6 +15,7 @@ export * from "./visibility";
 export * from "./scheduled-timeout";
 export * from "./browser";
 export * from "./scroll";
+export * from "./caret";
 
 // Named exports for convenience
 export {

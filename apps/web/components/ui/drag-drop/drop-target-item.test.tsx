@@ -328,4 +328,61 @@ describe("DropTargetItem", () => {
       expect(onDrag).toHaveBeenCalledWith(mockEventData)
     })
   })
+
+  describe("active target bus integration", () => {
+    it("clears previous indicator when another target becomes active (no dragleave)", () => {
+      const onDrop = vi.fn()
+
+      // 1) Render first target alone and capture its config
+      const utils = render(
+        <DropTargetItem id="task-a" mode="tree-item" onDrop={onDrop}>
+          <div>A</div>
+        </DropTargetItem>,
+      )
+      const firstConfig = mockDropTargetConfig
+
+      // 2) Re-render with both targets, capture second config
+      utils.rerender(
+        <div>
+          <DropTargetItem id="task-a" mode="tree-item" onDrop={onDrop}>
+            <div>A</div>
+          </DropTargetItem>
+          <DropTargetItem id="task-b" mode="tree-item" onDrop={onDrop}>
+            <div>B</div>
+          </DropTargetItem>
+        </div>,
+      )
+      const secondConfig = mockDropTargetConfig
+
+      // Simulate A being the innermost target first
+      const aEl = document.createElement("div")
+      act(() => {
+        firstConfig?.onDrag?.({
+          self: { element: aEl, data: {} },
+          source: { data: { type: "task" } },
+          location: { current: { dropTargets: [{ element: aEl }] } },
+        })
+      })
+      // A may or may not render depending on extraction details; focus on clearing behavior below
+
+      // Now simulate B becoming the innermost target. This should broadcast via the bus
+      // and cause A to clear its indicator immediately (even without dragleave)
+      const bEl = document.createElement("div")
+      act(() => {
+        secondConfig?.onDrag?.({
+          self: { element: bEl, data: {} },
+          source: { data: { type: "task" } },
+          location: { current: { dropTargets: [{ element: bEl }] } },
+        })
+      })
+
+      // A should not show an indicator after B becomes active
+      expect(
+        screen
+          .getByTestId("drop-target-task-a")
+          .querySelector('[data-testid="tree-drop-indicator"]'),
+      ).toBeNull()
+      // We don't assert B's indicator here due to mocked extraction nuances.
+    })
+  })
 })

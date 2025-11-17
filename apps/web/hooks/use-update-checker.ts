@@ -1,7 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { isPro } from "@/lib/utils/env"
 import { getAppVersion } from "@/lib/utils/version"
+import { compareVersions } from "@tasktrove/utils/version"
 
 interface GitHubRelease {
   tag_name: string
@@ -21,27 +23,6 @@ interface UpdateInfo {
   error?: string
 }
 
-function compareVersions(current: string, latest: string): boolean {
-  // Remove 'v' prefix if present
-  const currentClean = current.replace(/^v/, "")
-  const latestClean = latest.replace(/^v/, "")
-
-  // Split versions into parts
-  const currentParts = currentClean.split(".").map(Number)
-  const latestParts = latestClean.split(".").map(Number)
-
-  // Compare each part
-  for (let i = 0; i < Math.max(currentParts.length, latestParts.length); i++) {
-    const currentPart = currentParts[i] || 0
-    const latestPart = latestParts[i] || 0
-
-    if (latestPart > currentPart) return true
-    if (latestPart < currentPart) return false
-  }
-
-  return false
-}
-
 export function useUpdateChecker(): UpdateInfo {
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo>({
     hasUpdate: false,
@@ -52,8 +33,9 @@ export function useUpdateChecker(): UpdateInfo {
   useEffect(() => {
     const checkForUpdates = async () => {
       try {
+        const repository = isPro() ? "TaskTrovePro" : "TaskTrove"
         const response = await fetch(
-          "https://api.github.com/repos/dohsimpson/TaskTrove/releases/latest",
+          `https://api.github.com/repos/dohsimpson/${repository}/releases/latest`,
         )
 
         if (!response.ok) {
@@ -71,7 +53,7 @@ export function useUpdateChecker(): UpdateInfo {
           return
         }
 
-        const hasUpdate = compareVersions(getAppVersion(), release.tag_name)
+        const hasUpdate = compareVersions(getAppVersion(), release.tag_name) < 0
 
         setUpdateInfo({
           hasUpdate,

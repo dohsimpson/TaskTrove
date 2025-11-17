@@ -10,7 +10,7 @@ import type { RouteContext } from "@tasktrove/atoms/ui/navigation"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { Button } from "@/components/ui/button"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
-import { TaskDueDate } from "@/components/ui/custom/task-due-date"
+import { TaskScheduleTrigger } from "@/components/task/task-schedule-trigger"
 import type { Task } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { FocusTimerDisplay } from "@/components/task/focus-timer-display"
@@ -83,17 +83,23 @@ function TaskListContent({
               )}
               onClick={(e) => handleTaskClick(e, task)}
             >
-              <TaskCheckbox checked={task.completed} onCheckedChange={() => toggleTask(task.id)} />
+              <TaskCheckbox
+                checked={task.completed}
+                onCheckedChange={() => toggleTask(task.id)}
+                priority={task.priority}
+              />
               <span className={`truncate flex-1 ${task.completed ? "line-through" : ""}`}>
                 {task.title}
               </span>
-              {task.dueDate && (
-                <TaskDueDate
+              {(task.dueDate || task.recurring) && (
+                <TaskScheduleTrigger
                   dueDate={task.dueDate}
                   dueTime={task.dueTime}
                   recurring={task.recurring}
+                  recurringMode={task.recurringMode}
                   completed={task.completed}
-                  className="text-xs ml-auto flex-shrink-0"
+                  variant="compact"
+                  className="ml-auto flex-shrink-0"
                 />
               )}
             </div>

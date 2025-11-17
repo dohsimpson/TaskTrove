@@ -21,8 +21,11 @@ describe("TaskDueDate", () => {
   it("should render overdue styling for past dates", () => {
     const { container } = render(<TaskDueDate dueDate={pastDate} completed={false} />)
 
-    const alertTriangleIcon = container.querySelector('[data-testid="alert-triangle-icon"]')
-    expect(alertTriangleIcon).toBeInTheDocument()
+    const span = container.querySelector("span")
+    expect(span).toHaveClass("text-red-600")
+
+    const calendarIcon = container.querySelector('[data-testid="calendar-icon"]')
+    expect(calendarIcon).toBeInTheDocument()
   })
 
   it("should not render overdue styling for completed tasks", () => {

@@ -40,17 +40,18 @@
   "scripts": {
     "cli": "node --import tsx --no-warnings src/cli.ts",
     "cli:pro": "node --import tsx --no-warnings src/cli.pro.ts",
+    "recurring:batch": "node --import tsx --no-warnings scripts/run-recurring-batch.ts",
     "typecheck:base": "tsgo --noEmit",
     "typecheck:pro": "tsgo --project tsconfig.pro.json --noEmit",
     "typecheck": "pnpm typecheck:base && (test -f tsconfig.pro.json && pnpm typecheck:pro || true)",
     "check": "pnpm typecheck && pnpm test",
     "check:pro": "pnpm typecheck:pro && pnpm test:pro",
-    "test:base": "vitest run --reporter=dot --no-coverage",
-    "test:pro": "vitest run --reporter=dot --no-coverage --config vitest.config.pro.ts",
+    "test:base": "node ../../scripts/run-vitest.mjs run --reporter=dot --no-coverage",
+    "test:pro": "node ../../scripts/run-vitest.mjs run --reporter=dot --no-coverage --config vitest.config.pro.ts",
     "test": "pnpm test:base && (test -f vitest.config.pro.ts && pnpm test:pro:safe || true)",
-    "test:pro:safe": "vitest run --reporter=dot --no-coverage --config vitest.config.pro.ts --passWithNoTests",
-    "test:watch": "vitest --watch",
-    "test:watch:pro": "vitest --watch --config vitest.config.pro.ts"
+    "test:pro:safe": "node ../../scripts/run-vitest.mjs run --reporter=dot --no-coverage --config vitest.config.pro.ts --passWithNoTests",
+    "test:watch": "node ../../scripts/run-vitest.mjs --watch",
+    "test:watch:pro": "node ../../scripts/run-vitest.mjs --watch --config vitest.config.pro.ts"
   },
   "dependencies": {
     "@tasktrove/types": "workspace:*",
@@ -59,6 +60,7 @@
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest-config": "workspace:*",
+    "@typescript/native-preview": "catalog:",
     "tsx": "catalog:",
     "vitest": "catalog:"
   }

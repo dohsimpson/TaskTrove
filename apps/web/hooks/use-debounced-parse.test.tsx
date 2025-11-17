@@ -67,6 +67,8 @@ describe("useDebouncedParse", () => {
       originalText: "hello world",
       dueDate: new Date("2024-01-15"),
       time: "9AM",
+      matches: [],
+      rawMatches: [],
     }
 
     const { parseEnhancedNaturalLanguage } = await import(
@@ -140,6 +142,8 @@ describe("useDebouncedParse", () => {
       title: "test",
       labels: [],
       originalText: "test",
+      matches: [],
+      rawMatches: [],
     })
 
     const { result, rerender } = renderHook(({ text }) => useDebouncedParse(text, new Set(), 300), {
@@ -184,6 +188,8 @@ describe("useDebouncedParse", () => {
       title: "test",
       labels: [],
       originalText: "test",
+      matches: [],
+      rawMatches: [],
     })
 
     const disabledSections = new Set(["@urgent", "#work"])
@@ -229,6 +235,8 @@ describe("useDebouncedParse", () => {
       title: "hello world",
       labels: [],
       originalText: "hello world",
+      matches: [],
+      rawMatches: [],
     }
 
     const { parseEnhancedNaturalLanguage } = await import(
@@ -257,6 +265,8 @@ describe("useDebouncedParse", () => {
       title: "hello world",
       labels: [],
       originalText: "hello world",
+      matches: [],
+      rawMatches: [],
     }
 
     const { parseEnhancedNaturalLanguage } = await import(

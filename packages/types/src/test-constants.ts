@@ -32,6 +32,7 @@ import {
   DEFAULT_PROJECT_GROUP,
   DEFAULT_LABEL_GROUP,
 } from "./defaults";
+import { LATEST_DATA_VERSION } from "./schema-version";
 
 // Test UUID constants for consistent testing (using proper UUID v4 format)
 export const TEST_TASK_ID_1: TaskId = createTaskId(
@@ -142,6 +143,7 @@ export const TEST_PROJECT_GROUP_ALL: ProjectGroup = {
 };
 
 export const TEST_GROUPS_DATA: DataFileSerialization = {
+  version: LATEST_DATA_VERSION,
   projectGroups: { ...DEFAULT_PROJECT_GROUP, items: [TEST_PROJECT_GROUP_ALL] },
   labelGroups: DEFAULT_LABEL_GROUP,
   tasks: [],

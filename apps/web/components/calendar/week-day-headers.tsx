@@ -10,46 +10,51 @@ interface WeekDayHeadersProps {
 
 export function WeekDayHeaders({ weekDays, selectedDate, onDateClick }: WeekDayHeadersProps) {
   return (
-    <div className="border-b border-border">
+    <div className="border-b border-border mt-1">
       <div className="flex">
-        {/* Time column header */}
-        <div className="w-12 border-border"></div>
+        {/* Day headers container - align with time grid using left margin */}
+        <div className="flex-1 ml-10 sm:ml-12">
+          <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
+            {weekDays.map((day) => {
+              const isTodayDate = isToday(day)
+              const isSelected = selectedDate ? isSameDay(day, selectedDate) : false
 
-        {/* Day headers container */}
-        <div className="flex-1 grid grid-cols-7 gap-0.5 lg:gap-1">
-          {weekDays.map((day) => {
-            const isTodayDate = isToday(day)
-            const isSelected = selectedDate ? isSameDay(day, selectedDate) : false
-
-            return (
-              <div
-                key={day.toISOString()}
-                className={`
-                  p-1.5 lg:p-2 text-center flex flex-col items-center justify-center space-y-0.5 cursor-pointer hover:bg-muted/50 transition-colors
+              return (
+                <div
+                  key={day.toISOString()}
+                  className={`
+                  p-1 sm:p-1.5 text-center flex flex-col items-center justify-center space-y-0.5 cursor-pointer hover:bg-muted/50 transition-colors
                   ${isSelected ? "ring-2 ring-foreground" : ""}
                   ${isTodayDate ? "bg-primary/10 border-primary/20" : ""}
                 `}
-                onClick={() => onDateClick(day)}
-              >
-                {/* Month and Day on same row */}
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <span className="text-xs">{format(day, "MMM")}</span>
-                  <span className="text-sm font-semibold text-primary">{format(day, "d")}</span>
-                </div>
-
-                {/* Weekday on its own row */}
-                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  {format(day, "EEE")}
-                </div>
-
-                {isTodayDate && (
-                  <div className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-sm inline-block">
-                    Today
+                  onClick={() => onDateClick(day)}
+                >
+                  {/* Day number; today uses filled circle like month view */}
+                  <div className="flex items-center justify-center">
+                    {isTodayDate ? (
+                      <span
+                        className="inline-flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-xs sm:text-sm"
+                        aria-label="Today"
+                      >
+                        {format(day, "d")}
+                      </span>
+                    ) : (
+                      <span className="text-xs sm:text-sm font-semibold text-primary">
+                        {format(day, "d")}
+                      </span>
+                    )}
                   </div>
-                )}
-              </div>
-            )
-          })}
+
+                  {/* Weekday on its own row */}
+                  <div className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-[0.06em] sm:tracking-wider">
+                    {format(day, "EEE")}
+                  </div>
+
+                  {/* No extra badge for today; filled circle above is sufficient */}
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react"
 import { EditableDiv } from "./editable-div"
+import { getCaretFromPoint } from "@tasktrove/dom-utils"
 
 interface ClickToEditProps {
   as?: "h1" | "h2" | "h3" | "h4" | "p" | "div" | "span"
@@ -51,10 +52,9 @@ export function ClickToEdit({
   }
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    // Capture click position using browser API
-    const range = document.caretRangeFromPoint(event.clientX, event.clientY)
-    if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
-      clickPositionRef.current = range.startOffset
+    const caret = getCaretFromPoint(event.clientX, event.clientY)
+    if (caret?.node.nodeType === Node.TEXT_NODE) {
+      clickPositionRef.current = caret.offset
     } else {
       clickPositionRef.current = cursorPosition
     }

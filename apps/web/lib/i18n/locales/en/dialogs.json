@@ -143,6 +143,10 @@
         "description": "Import/export, backups",
         "title": "Data & Storage"
       },
+      "scheduler": {
+        "description": "Review periodic background jobs",
+        "title": "Scheduler"
+      },
       "general": {
         "description": "Default page, basic preferences",
         "title": "General"

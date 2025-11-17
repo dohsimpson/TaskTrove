@@ -33,7 +33,8 @@ export function ProjectViewToolbar({ className }: ProjectViewToolbarProps) {
   const routeContext = useAtomValue(currentRouteContextAtom)
   const selectedTaskIds = useAtomValue(selectedTasksAtom)
 
-  const isProjectContext = isValidProjectId(routeContext.viewId)
+  const isProjectContext =
+    routeContext.routeType === "project" && isValidProjectId(routeContext.viewId)
   const projectId = isProjectContext ? createProjectId(routeContext.viewId) : undefined
   const hasSelection = selectedTaskIds.length > 0
 

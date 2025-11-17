@@ -1,5 +1,16 @@
 import type { Processor } from "./base/Processor";
 import type { ExtractionResult, ParserContext } from "@tasktrove/parser/types";
+import { END_BOUNDARY, ensureUnicodeFlag } from "../utils/patterns";
+
+const DURATION_SINGLE_REGEX = new RegExp(
+  `^\\s*in\\s+\\d+(?:min|h|sec|s|m|hours?)${END_BOUNDARY}`,
+  ensureUnicodeFlag("i"),
+);
+
+const DURATION_COMBO_REGEX = new RegExp(
+  `^\\s*in\\s+\\d+h\\s*\\d+m(?:in)?${END_BOUNDARY}`,
+  ensureUnicodeFlag("i"),
+);
 
 export class DateTimeSplitter implements Processor {
   readonly name = "datetime-splitter";
@@ -22,8 +33,8 @@ export class DateTimeSplitter implements Processor {
       // Check if this date came from a time-specific pattern
       const isTimePattern =
         dateResult.match &&
-        (/^\s*in\s+\d+(?:min|h|sec|s|m|hours?)\b/i.test(dateResult.match) ||
-          /^\s*in\s+\d+h\s*\d+m(?:in)?\b/i.test(dateResult.match));
+        (DURATION_SINGLE_REGEX.test(dateResult.match) ||
+          DURATION_COMBO_REGEX.test(dateResult.match));
 
       // Check if the date has a time component that's not midnight
       const hasTimeComponent =

@@ -30,7 +30,7 @@ vi.mock("@/hooks/use-context-menu-visibility", () => ({
 }))
 
 // Mock sidebar components
-vi.mock("@/components/ui/sidebar", () => ({
+vi.mock("@/components/ui/custom/sidebar", () => ({
   useSidebar: () => ({
     open: true,
     setOpen: vi.fn(),

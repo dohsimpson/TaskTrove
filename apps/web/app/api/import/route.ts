@@ -14,6 +14,7 @@ import { log } from "@/lib/utils/logger"
 import { DataFile, DataFileSchema, JsonSchema, ApiErrorCode, API_ROUTES } from "@/lib/types"
 import type { ErrorResponse, ProjectId, LabelId } from "@/lib/types"
 import { migrateDataFile, needsMigration, getMigrationInfo } from "@/lib/utils/data-migration"
+import { compareVersions } from "@tasktrove/utils/version"
 
 interface ImportResponse {
   success: boolean
@@ -111,10 +112,25 @@ async function importData(
     }
 
     // Merge import data with existing data
+    const currentVersion = currentData.version
+    const importedVersion = importData.version
+
+    const versionsMatch =
+      importedVersion && currentVersion && compareVersions(importedVersion, currentVersion) === 0
+
+    if (!versionsMatch) {
+      return createErrorResponse(
+        "Import version mismatch",
+        currentVersion && importedVersion
+          ? `Imported data version ${importedVersion} does not match current data version ${currentVersion}.`
+          : "Both the current data and the import file must include the same version.",
+        409,
+        ApiErrorCode.RESOURCE_CONFLICT,
+      )
+    }
+
     const mergedData: DataFile = {
       ...currentData,
-      // Use imported data version if it's newer or current version if same/older
-      version: importData.version,
     }
 
     let importedTasks = 0

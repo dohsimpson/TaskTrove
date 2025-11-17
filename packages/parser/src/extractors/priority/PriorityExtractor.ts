@@ -1,5 +1,6 @@
 import type { Extractor } from "../base/Extractor";
 import type { ExtractionResult, ParserContext } from "../../types";
+import { buildBoundedPattern } from "../../utils/patterns";
 
 interface PriorityPattern {
   pattern: RegExp;
@@ -8,34 +9,34 @@ interface PriorityPattern {
 
 const PRIORITY_PATTERNS: PriorityPattern[] = [
   {
-    pattern: /\b(p1)\b/gi,
+    pattern: buildBoundedPattern("(p1)"),
     level: 1,
   },
   {
-    pattern: /\b(p2)\b/gi,
+    pattern: buildBoundedPattern("(p2)"),
     level: 2,
   },
   {
-    pattern: /\b(p3)\b/gi,
+    pattern: buildBoundedPattern("(p3)"),
     level: 3,
   },
   {
-    pattern: /\b(p4)\b/gi,
+    pattern: buildBoundedPattern("(p4)"),
     level: 4,
   },
 ];
 
 const EXCLAMATION_PATTERNS: PriorityPattern[] = [
   {
-    pattern: /(?<!\!)(!!!)(?!\!)/g,
+    pattern: /(?<!\S)(!!!)(?=$|\s)/g,
     level: 1,
   },
   {
-    pattern: /(?<!\!)(!!)(?!\!)/g,
+    pattern: /(?<!\S)(!!)(?=$|\s)/g,
     level: 2,
   },
   {
-    pattern: /(?<!\!)(!)(?!\!)/g,
+    pattern: /(?<!\S)(!)(?=$|\s)/g,
     level: 3,
   },
 ];

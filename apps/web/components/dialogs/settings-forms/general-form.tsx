@@ -131,6 +131,7 @@ export function GeneralForm() {
   const currentStartView = settings.general.startView
   const currentSoundEnabled = settings.general.soundEnabled
   const currentLinkifyEnabled = settings.general.linkifyEnabled
+  const currentMarkdownEnabled = settings.general.markdownEnabled
   const currentPopoverHoverOpen = settings.general.popoverHoverOpen
 
   const handleStartViewChange = (value: StandardViewId | "lastViewed") => {
@@ -153,6 +154,14 @@ export function GeneralForm() {
     updateSettings({
       general: {
         linkifyEnabled: enabled,
+      },
+    })
+  }
+
+  const handleMarkdownEnabledChange = (enabled: boolean) => {
+    updateSettings({
+      general: {
+        markdownEnabled: enabled,
       },
     })
   }
@@ -210,8 +219,8 @@ export function GeneralForm() {
     <div className="space-y-6">
       {/* Default Landing Page */}
       <SettingsCard title={t("general.defaultPage.title", "Default Page")}>
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
+        <div className="flex items-center justify-between gap-4 min-w-0">
+          <div className="space-y-0.5 min-w-0 break-words">
             <Label htmlFor="start-view">
               {t("general.defaultPage.label", "When you open TaskTrove, show")}
             </Label>
@@ -223,7 +232,7 @@ export function GeneralForm() {
             </p>
           </div>
           <Select value={currentStartView} onValueChange={handleStartViewChange}>
-            <SelectTrigger id="start-view" className="w-auto min-w-[200px]">
+            <SelectTrigger id="start-view" className="w-auto min-w-[200px] max-w-full">
               <SelectValue>
                 {selectedOption && (
                   <div className="flex items-center gap-2">
@@ -266,15 +275,15 @@ export function GeneralForm() {
 
       {/* Language Settings */}
       <SettingsCard title={t("general.language.title", "Language")}>
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
+        <div className="flex items-center justify-between gap-4 min-w-0">
+          <div className="space-y-0.5 min-w-0 break-words">
             <Label htmlFor="language-select">{t("general.language.label", "Language")}</Label>
             <p className="text-sm text-muted-foreground">
               {t("general.language.description", "Select the display language for the application")}
             </p>
           </div>
           <Select value={i18n.resolvedLanguage || "en"} onValueChange={handleLanguageChange}>
-            <SelectTrigger id="language-select" className="w-auto min-w-[180px]">
+            <SelectTrigger id="language-select" className="w-auto min-w-[180px] max-w-full">
               <SelectValue>
                 <div className="flex items-center gap-2">
                   <Languages className="w-4 h-4" />
@@ -344,6 +353,28 @@ export function GeneralForm() {
             id="linkify-enabled"
             checked={currentLinkifyEnabled}
             onCheckedChange={handleLinkifyEnabledChange}
+          />
+        </div>
+      </SettingsCard>
+
+      {/* Markdown Settings */}
+      <SettingsCard title={t("general.markdown.title", "Markdown")}>
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="markdown-enabled">
+              {t("general.markdown.enable.label", "Enable Markdown in Descriptions")}
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              {t(
+                "general.markdown.enable.description",
+                "Render task descriptions as markdown with support for formatting, links, and lists",
+              )}
+            </p>
+          </div>
+          <Switch
+            id="markdown-enabled"
+            checked={currentMarkdownEnabled}
+            onCheckedChange={handleMarkdownEnabledChange}
           />
         </div>
       </SettingsCard>

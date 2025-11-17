@@ -3,7 +3,11 @@
 import { useState } from "react"
 import { useAtomValue } from "jotai"
 import { ChevronDown, ChevronRight, Folder, FolderOpen } from "lucide-react"
-import { SidebarMenuItem, SidebarMenuButton, SidebarMenuBadge } from "@/components/ui/sidebar"
+import {
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarMenuBadge,
+} from "@/components/ui/custom/sidebar"
 import { cn } from "@/lib/utils"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"

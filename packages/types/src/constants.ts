@@ -439,6 +439,7 @@ export const API_ROUTES = {
   V1_LABELS: createApiRoute("/api/v1/labels"),
   V1_GROUPS: createApiRoute("/api/v1/groups"),
   V1_SETTINGS: createApiRoute("/api/v1/settings"),
+  V1_SCHEDULER_JOBS: createApiRoute("/api/v1/scheduler/jobs"),
   V1_USER: createApiRoute("/api/v1/user"),
   V1_ASSETS: createApiRoute("/api/v1/assets/[...path]"),
 

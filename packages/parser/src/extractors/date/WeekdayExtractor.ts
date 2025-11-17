@@ -1,9 +1,11 @@
 import { addDays, startOfDay } from "date-fns";
 import type { Extractor } from "../base/Extractor";
 import type { ExtractionResult, ParserContext } from "../../types";
-
-const WORD_BOUNDARY_START = "(?:^|\\s)";
-const WORD_BOUNDARY_END = "(?=\\s|$)";
+import {
+  START_BOUNDARY,
+  END_BOUNDARY,
+  ensureUnicodeFlag,
+} from "../../utils/patterns";
 
 interface WeekdayPattern {
   pattern: RegExp;
@@ -21,50 +23,50 @@ const getNextWeekday = (referenceDate: Date, targetDay: number): Date => {
 const WEEKDAY_PATTERNS: WeekdayPattern[] = [
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(sunday|sun)${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}(sunday|sun)${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getWeekday: (ref) => getNextWeekday(ref, 0),
   },
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(monday|mon)${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}(monday|mon)${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getWeekday: (ref) => getNextWeekday(ref, 1),
   },
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(tuesday|tue|tues)${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}(tuesday|tue|tues)${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getWeekday: (ref) => getNextWeekday(ref, 2),
   },
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(wednesday|wed)${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}(wednesday|wed)${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getWeekday: (ref) => getNextWeekday(ref, 3),
   },
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(thursday|thu|thurs)${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}(thursday|thu|thurs)${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getWeekday: (ref) => getNextWeekday(ref, 4),
   },
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(friday|fri)${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}(friday|fri)${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getWeekday: (ref) => getNextWeekday(ref, 5),
   },
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(saturday|sat)${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}(saturday|sat)${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getWeekday: (ref) => getNextWeekday(ref, 6),
   },
@@ -74,8 +76,8 @@ const WEEKDAY_PATTERNS: WeekdayPattern[] = [
 const MODIFIED_WEEKDAY_PATTERNS: WeekdayPattern[] = [
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(this (sunday|sun|monday|mon|tuesday|tue|tues|wednesday|wed|thursday|thu|thurs|friday|fri|saturday|sat))${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}(this (sunday|sun|monday|mon|tuesday|tue|tues|wednesday|wed|thursday|thu|thurs|friday|fri|saturday|sat))${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getWeekday: (ref: Date, match?: RegExpMatchArray) => {
       if (!match) return ref;
@@ -109,8 +111,8 @@ const MODIFIED_WEEKDAY_PATTERNS: WeekdayPattern[] = [
   },
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(next (sunday|sun|monday|mon|tuesday|tue|tues|wednesday|wed|thursday|thu|thurs|friday|fri|saturday|sat))${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}(next (sunday|sun|monday|mon|tuesday|tue|tues|wednesday|wed|thursday|thu|thurs|friday|fri|saturday|sat))${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getWeekday: (ref: Date, match?: RegExpMatchArray) => {
       if (!match) return ref;

@@ -1,4 +1,3 @@
-import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/consistent-type-assertions */
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import {
@@ -6,31 +5,26 @@ import {
   needsMigration,
   getMigrationInfo,
   getLatestAvailableMigration,
-  v030Migration,
-  v040Migration,
-  v050Migration,
-  v060Migration,
-  v070Migration,
   v080Migration,
+  v0100Migration,
+  getRegisteredMigrationVersions,
 } from "./data-migration"
+import { compareVersions } from "@tasktrove/utils/version"
 import type { Json } from "@tasktrove/types/constants"
-import { createVersionString, createProjectId, createLabelId } from "@tasktrove/types/id"
-import { DataFileSchema } from "@tasktrove/types/data-file"
+import { createVersionString, createTaskId } from "@tasktrove/types/id"
 import {
   DEFAULT_EMPTY_DATA_FILE,
   DEFAULT_USER_SETTINGS,
   DEFAULT_USER,
+  DEFAULT_GENERAL_SETTINGS,
 } from "@tasktrove/types/defaults"
-import { DEFAULT_UUID, DEFAULT_SECTION_NAME, DEFAULT_SECTION_COLOR } from "@tasktrove/constants"
-import { getAppVersion } from "@/lib/utils/version"
+import { DEFAULT_UUID } from "@tasktrove/constants"
+import { LATEST_DATA_VERSION } from "@tasktrove/types/schema-version"
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
-  TEST_TASK_ID_3,
   TEST_PROJECT_ID_1,
   TEST_LABEL_ID_1,
-  TEST_SECTION_ID_1,
-  TEST_SECTION_ID_2,
 } from "@tasktrove/types/test-constants"
 
 // Don't mock package.json - let it use the real version
@@ -45,7 +39,7 @@ describe("Data Migration Utility", () => {
   }
 
   beforeEach(() => {
-    // Create generic data that needs migration (no version field = v0.2.0)
+    // Create generic legacy data (intentionally missing version for targeted tests)
     const unmigrated = {
       tasks: [],
       projects: [],
@@ -55,6 +49,11 @@ describe("Data Migration Utility", () => {
 
     mockDataFile = createJsonData(unmigrated)
     vi.clearAllMocks()
+  })
+
+  it("keeps schema version in sync with latest migration", () => {
+    const versions = getRegisteredMigrationVersions()
+    expect(versions[versions.length - 1]).toBe(LATEST_DATA_VERSION)
   })
 
   describe("migrateDataFile", () => {
@@ -75,39 +74,40 @@ describe("Data Migration Utility", () => {
       expect(result).toHaveProperty("labels")
     })
 
-    it("should migrate old data through available migration steps", () => {
-      // Test migration behavior using individual functions (version-agnostic)
-      const oldData = createJsonData({
+    it("should reject migration attempts for versions below v0.8.0", () => {
+      const legacyData = createJsonData({
         tasks: [],
         projects: [],
         labels: [],
-        ordering: { projects: [], labels: [] }, // Legacy field = needs migration
+        ordering: { projects: [], labels: [] },
+        version: "v0.7.9",
       })
 
-      // Test that old data gets transformed correctly through available migrations
-      // Step 1: v0.2.0 → v0.3.0 (groups system)
-      const afterV030 = v030Migration(oldData)
-      expect(afterV030).toHaveProperty("projectGroups")
-      expect(afterV030).toHaveProperty("labelGroups")
-      expect(afterV030).not.toHaveProperty("ordering")
+      expect(() => migrateDataFile(legacyData)).toThrow(/Minimum supported version is v0\.8\.0/)
+    })
 
-      // Step 2: v0.3.0 → v0.4.0 (settings addition)
-      const afterV040 = v040Migration(afterV030)
-      expect(afterV040).toHaveProperty("projectGroups")
-      expect(afterV040).toHaveProperty("labelGroups")
-      expect(afterV040).toHaveProperty("settings")
+    it("should migrate v0.8.0 data to the latest schema", () => {
+      const oldData = createJsonData({
+        ...DEFAULT_EMPTY_DATA_FILE,
+        version: "v0.8.0",
+        settings: {
+          ...DEFAULT_USER_SETTINGS,
+          general: {
+            ...DEFAULT_GENERAL_SETTINGS,
+            markdownEnabled: undefined,
+          },
+        },
+      })
 
-      // Final result should have all expected fields regardless of package version
-      expect(afterV040).toHaveProperty("tasks")
-      expect(afterV040).toHaveProperty("projects")
-      expect(afterV040).toHaveProperty("labels")
+      const result = migrateDataFile(oldData)
+      expect(result.version).toBe(getLatestAvailableMigration())
+      expect(result.settings.general.markdownEnabled).toBeDefined()
     })
   })
 
   describe("needsMigration", () => {
-    it("should detect when unversioned data needs migration", () => {
-      // Data without version field (treated as v0.2.0) should need migration
-      expect(needsMigration(mockDataFile)).toBe(true)
+    it("should throw when version field is missing", () => {
+      expect(() => needsMigration(mockDataFile)).toThrow(/version property/)
     })
 
     it("should detect when very old version data needs migration", () => {
@@ -143,8 +143,17 @@ describe("Data Migration Utility", () => {
   })
 
   describe("getMigrationInfo", () => {
+    it("should throw when version field is missing", () => {
+      expect(() => getMigrationInfo(mockDataFile)).toThrow(/version property/)
+    })
+
     it("should return correct info pattern for old data needing migration", () => {
-      const info = getMigrationInfo(mockDataFile)
+      const info = getMigrationInfo(
+        createJsonData({
+          ...(mockDataFile as Record<string, unknown>),
+          version: "v0.2.0",
+        }),
+      )
 
       // Should correctly identify old version
       expect(info.currentVersion).toEqual(createVersionString("v0.2.0"))
@@ -156,7 +165,7 @@ describe("Data Migration Utility", () => {
       expect(info.needsMigration).toBe(true)
 
       // Target should be higher than current
-      expect(info.targetVersion > info.currentVersion).toBe(true)
+      expect(compareVersions(info.targetVersion, info.currentVersion) > 0).toBe(true)
     })
 
     it("should return correct info pattern for future version data", () => {
@@ -184,6 +193,7 @@ describe("Data Migration Utility", () => {
         projects: [],
         labels: [],
         ordering: { projects: [], labels: [] }, // Legacy field = v0.2.0 equivalent
+        version: "v0.2.0",
       })
 
       const info = getMigrationInfo(v020Data)
@@ -196,968 +206,7 @@ describe("Data Migration Utility", () => {
 
       // Target should be valid version format and higher than v0.2.0
       expect(info.targetVersion).toMatch(/^v\d+\.\d+\.\d+$/)
-      expect(info.targetVersion > createVersionString("v0.2.0")).toBe(true)
-    })
-  })
-
-  describe("v0.3.0 Migration Function", () => {
-    it("should transform ordering.projects to projectGroups structure", () => {
-      const projectId1 = createProjectId("550e8400-e29b-41d4-a716-446655440001")
-      const projectId2 = createProjectId("550e8400-e29b-41d4-a716-446655440002")
-
-      const v020DataWithProjects = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        ordering: {
-          projects: [projectId1, projectId2],
-          labels: [],
-        },
-      })
-
-      // Test the individual v0.3.0 migration function directly
-      const result = v030Migration(v020DataWithProjects)
-
-      // Should create projectGroups with ordering data
-      expect(result).toHaveProperty("projectGroups")
-      const projectGroups = (result as any).projectGroups
-      expect(projectGroups).toEqual({
-        type: "project",
-        id: "00000000-0000-0000-0000-000000000000",
-        name: "All Projects",
-        slug: "all-projects",
-        items: [projectId1, projectId2],
-      })
-
-      // Should remove legacy ordering field
-      expect(result).not.toHaveProperty("ordering")
-    })
-
-    it("should transform ordering.labels to labelGroups structure", () => {
-      const labelId1 = createLabelId("550e8400-e29b-41d4-a716-446655440003")
-      const labelId2 = createLabelId("550e8400-e29b-41d4-a716-446655440004")
-
-      const v020DataWithLabels = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        ordering: {
-          projects: [],
-          labels: [labelId1, labelId2],
-        },
-      })
-
-      // Test the individual v0.3.0 migration function directly
-      const result = v030Migration(v020DataWithLabels)
-
-      // Should create labelGroups with ordering data
-      expect(result).toHaveProperty("labelGroups")
-      const labelGroups = (result as any).labelGroups
-      expect(labelGroups).toEqual({
-        type: "label",
-        id: "00000000-0000-0000-0000-000000000000",
-        name: "All Labels",
-        slug: "all-labels",
-        items: [labelId1, labelId2],
-      })
-
-      // Should remove legacy ordering field
-      expect(result).not.toHaveProperty("ordering")
-    })
-
-    it("should add recurringMode to existing tasks", () => {
-      const v020DataWithTasks = createJsonData({
-        tasks: [
-          {
-            id: "550e8400-e29b-41d4-a716-446655440000",
-            title: "Regular task",
-            completed: false,
-            priority: 1,
-            labels: [],
-            subtasks: [],
-            comments: [],
-            createdAt: new Date().toISOString(),
-            // Note: no recurringMode field
-          },
-          {
-            id: "550e8400-e29b-41d4-a716-446655440001",
-            title: "Recurring task",
-            completed: false,
-            priority: 2,
-            labels: [],
-            subtasks: [],
-            comments: [],
-            createdAt: new Date().toISOString(),
-            recurring: "RRULE:FREQ=DAILY;INTERVAL=1",
-            // Note: no recurringMode field
-          },
-        ],
-        projects: [],
-        labels: [],
-        ordering: { projects: [], labels: [] },
-      })
-
-      // Test the individual v0.3.0 migration function directly
-      const result = v030Migration(v020DataWithTasks)
-
-      // All tasks should have recurringMode added
-      expect(result).toHaveProperty("tasks")
-      const tasks = (result as any).tasks
-      expect(tasks).toHaveLength(2)
-      expect(tasks[0]).toEqual(
-        expect.objectContaining({
-          id: "550e8400-e29b-41d4-a716-446655440000",
-          title: "Regular task",
-          recurringMode: "dueDate", // Should be added
-        }),
-      )
-      expect(tasks[1]).toEqual(
-        expect.objectContaining({
-          id: "550e8400-e29b-41d4-a716-446655440001",
-          title: "Recurring task",
-          recurring: "RRULE:FREQ=DAILY;INTERVAL=1",
-          recurringMode: "dueDate", // Should be added
-        }),
-      )
-    })
-
-    it("should handle missing ordering field gracefully", () => {
-      const v020DataWithoutOrdering = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        // No ordering field at all
-      })
-
-      // Test the individual v0.3.0 migration function directly
-      const result = v030Migration(v020DataWithoutOrdering)
-
-      // Should create default empty groups
-      expect(result).toHaveProperty("projectGroups")
-      const projectGroups = (result as any).projectGroups
-      expect(projectGroups).toEqual({
-        type: "project",
-        id: "00000000-0000-0000-0000-000000000000",
-        name: "All Projects",
-        slug: "all-projects",
-        items: [],
-      })
-
-      expect(result).toHaveProperty("labelGroups")
-      const labelGroups = (result as any).labelGroups
-      expect(labelGroups).toEqual({
-        type: "label",
-        id: "00000000-0000-0000-0000-000000000000",
-        name: "All Labels",
-        slug: "all-labels",
-        items: [],
-      })
-
-      expect(result).not.toHaveProperty("ordering")
-    })
-
-    it("should populate groups from existing projects and labels when ordering is missing", () => {
-      const projectId1 = "550e8400-e29b-41d4-a716-446655440001"
-      const projectId2 = "550e8400-e29b-41d4-a716-446655440002"
-      const labelId1 = "660e8400-e29b-41d4-a716-446655440001"
-      const labelId2 = "660e8400-e29b-41d4-a716-446655440002"
-
-      const v020DataWithoutOrderingButWithData = createJsonData({
-        tasks: [],
-        projects: [
-          {
-            id: projectId1,
-            name: "Project 1",
-            slug: "project-1",
-            color: "#ff0000",
-            sections: [DEFAULT_PROJECT_SECTION],
-            defaultView: "list",
-          },
-          {
-            id: projectId2,
-            name: "Project 2",
-            slug: "project-2",
-            color: "#00ff00",
-            sections: [DEFAULT_PROJECT_SECTION],
-            defaultView: "list",
-          },
-        ],
-        labels: [
-          {
-            id: labelId1,
-            name: "Label 1",
-            slug: "label-1",
-            color: "#0000ff",
-          },
-          {
-            id: labelId2,
-            name: "Label 2",
-            slug: "label-2",
-            color: "#ffff00",
-          },
-        ],
-        // No ordering field
-      })
-
-      // Test the individual v0.3.0 migration function directly
-      const result = v030Migration(v020DataWithoutOrderingButWithData)
-
-      // Should create groups with IDs from existing projects and labels
-      expect(result).toHaveProperty("projectGroups")
-      const projectGroups = (result as any).projectGroups
-      expect(projectGroups).toEqual({
-        type: "project",
-        id: "00000000-0000-0000-0000-000000000000",
-        name: "All Projects",
-        slug: "all-projects",
-        items: [projectId1, projectId2],
-      })
-
-      expect(result).toHaveProperty("labelGroups")
-      const labelGroups = (result as any).labelGroups
-      expect(labelGroups).toEqual({
-        type: "label",
-        id: "00000000-0000-0000-0000-000000000000",
-        name: "All Labels",
-        slug: "all-labels",
-        items: [labelId1, labelId2],
-      })
-
-      expect(result).not.toHaveProperty("ordering")
-    })
-
-    it("should handle malformed ordering field", () => {
-      const v020DataWithMalformedOrdering = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        ordering: {
-          projects: null, // Invalid - not an array
-          labels: "invalid", // Invalid - not an array
-        },
-      })
-
-      // Test the individual v0.3.0 migration function directly
-      const result = v030Migration(v020DataWithMalformedOrdering)
-
-      // Should create default empty groups when ordering data is malformed
-      expect(result).toHaveProperty("projectGroups")
-      const projectGroups = (result as any).projectGroups
-      expect(projectGroups).toEqual({
-        type: "project",
-        id: "00000000-0000-0000-0000-000000000000",
-        name: "All Projects",
-        slug: "all-projects",
-        items: [], // Empty because ordering.projects was null
-      })
-
-      expect(result).toHaveProperty("labelGroups")
-      const labelGroups = (result as any).labelGroups
-      expect(labelGroups).toEqual({
-        type: "label",
-        id: "00000000-0000-0000-0000-000000000000",
-        name: "All Labels",
-        slug: "all-labels",
-        items: [], // Empty because ordering.labels was invalid
-      })
-    })
-
-    it("should preserve tasks that already have recurringMode", () => {
-      const v020DataWithExistingRecurringMode = createJsonData({
-        tasks: [
-          {
-            id: "550e8400-e29b-41d4-a716-446655440000",
-            title: "Task with existing recurringMode",
-            completed: false,
-            priority: 1,
-            labels: [],
-            subtasks: [],
-            comments: [],
-            createdAt: new Date().toISOString(),
-            recurringMode: "completedAt", // Already has recurringMode
-          },
-        ],
-        projects: [],
-        labels: [],
-        ordering: { projects: [], labels: [] },
-      })
-
-      // Test the individual v0.3.0 migration function directly
-      const result = v030Migration(v020DataWithExistingRecurringMode)
-
-      // Should preserve existing recurringMode
-      expect(result).toHaveProperty("tasks")
-      const tasks = (result as any).tasks
-      expect(tasks[0]).toEqual(
-        expect.objectContaining({
-          id: "550e8400-e29b-41d4-a716-446655440000",
-          recurringMode: "completedAt", // Should remain unchanged
-        }),
-      )
-    })
-
-    it("should handle comprehensive v0.2.0 to v0.3.0 transformation", () => {
-      const projectId1 = createProjectId("550e8400-e29b-41d4-a716-446655440001")
-      const labelId1 = createLabelId("550e8400-e29b-41d4-a716-446655440003")
-
-      const complexV020Data = createJsonData({
-        tasks: [
-          {
-            id: "550e8400-e29b-41d4-a716-446655440000",
-            title: "Complex task",
-            completed: false,
-            priority: 1,
-            labels: [labelId1],
-            subtasks: [],
-            comments: [],
-            createdAt: new Date().toISOString(),
-            recurring: "RRULE:FREQ=WEEKLY",
-          },
-        ],
-        projects: [
-          {
-            id: projectId1,
-            name: "Sample Project",
-            slug: "sample-project",
-            color: "#ff0000",
-            sections: [DEFAULT_PROJECT_SECTION],
-          },
-        ],
-        labels: [
-          {
-            id: labelId1,
-            name: "Important",
-            slug: "important",
-            color: "#ff0000",
-          },
-        ],
-        ordering: {
-          projects: [projectId1],
-          labels: [labelId1],
-        },
-      })
-
-      // Test the individual v0.3.0 migration function directly
-      const result = v030Migration(complexV020Data)
-
-      // Should transform all data correctly
-      expect(result).toHaveProperty("tasks")
-      const tasks = (result as any).tasks
-      expect(tasks[0]).toEqual(
-        expect.objectContaining({
-          recurringMode: "dueDate", // Added
-        }),
-      )
-
-      expect(result).toHaveProperty("projectGroups")
-      const projectGroups = (result as any).projectGroups
-      expect(projectGroups).toEqual({
-        type: "project",
-        id: "00000000-0000-0000-0000-000000000000",
-        name: "All Projects",
-        slug: "all-projects",
-        items: [projectId1],
-      })
-
-      expect(result).toHaveProperty("labelGroups")
-      const labelGroups = (result as any).labelGroups
-      expect(labelGroups).toEqual({
-        type: "label",
-        id: "00000000-0000-0000-0000-000000000000",
-        name: "All Labels",
-        slug: "all-labels",
-        items: [labelId1],
-      })
-
-      // Should preserve all original data
-      expect(tasks).toHaveLength(1)
-      expect(result).toHaveProperty("projects")
-      expect(result).toHaveProperty("labels")
-
-      // Should remove legacy field
-      expect(result).not.toHaveProperty("ordering")
-    })
-  })
-
-  describe("v0.4.0 Migration Function", () => {
-    it("should add default settings structure when missing", () => {
-      const v030DataWithoutSettings = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        projectGroups: {
-          type: "project",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Projects",
-          slug: "all-projects",
-          items: [],
-        },
-        labelGroups: {
-          type: "label",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Labels",
-          slug: "all-labels",
-          items: [],
-        },
-        version: "v0.3.0",
-      })
-
-      // Test the individual v0.4.0 migration function directly
-      const result = v040Migration(v030DataWithoutSettings)
-
-      // Should add settings field
-      expect(result).toHaveProperty("settings")
-      const settings = (result as any).settings
-      expect(settings).toEqual(DEFAULT_USER_SETTINGS)
-
-      // Should preserve all existing data
-      expect(result).toHaveProperty("tasks")
-      expect(result).toHaveProperty("projects")
-      expect(result).toHaveProperty("labels")
-      expect(result).toHaveProperty("projectGroups")
-      expect(result).toHaveProperty("labelGroups")
-    })
-
-    it("should preserve existing settings when already present", () => {
-      const customSettings = {
-        integrations: {
-          imports: {
-            supportedSources: ["ticktick", "asana"] as (
-              | "ticktick"
-              | "todoist"
-              | "asana"
-              | "trello"
-            )[],
-          },
-        },
-      }
-
-      const v030DataWithSettings = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        projectGroups: {
-          type: "project",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Projects",
-          slug: "all-projects",
-          items: [],
-        },
-        labelGroups: {
-          type: "label",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Labels",
-          slug: "all-labels",
-          items: [],
-        },
-        settings: customSettings, // Already has settings
-        version: "v0.3.0",
-      })
-
-      // Test the individual v0.4.0 migration function directly
-      const result = v040Migration(v030DataWithSettings)
-
-      // Should preserve existing settings (not overwrite with defaults)
-      expect(result).toHaveProperty("settings")
-      const settings = (result as any).settings
-      expect(settings).toEqual(customSettings)
-    })
-
-    it("should handle comprehensive v0.3.0 to v0.4.0 transformation", () => {
-      const projectId1 = createProjectId("550e8400-e29b-41d4-a716-446655440001")
-      const labelId1 = createLabelId("550e8400-e29b-41d4-a716-446655440003")
-
-      const complexV030Data = createJsonData({
-        tasks: [
-          {
-            id: "550e8400-e29b-41d4-a716-446655440000",
-            title: "Sample task with v0.3.0 structure",
-            completed: false,
-            priority: 1,
-            labels: [labelId1],
-            subtasks: [],
-            comments: [],
-            createdAt: new Date().toISOString(),
-            recurringMode: "dueDate", // v0.3.0 field
-          },
-        ],
-        projects: [
-          {
-            id: projectId1,
-            name: "Sample Project",
-            slug: "sample-project",
-            color: "#ff0000",
-            sections: [DEFAULT_PROJECT_SECTION],
-          },
-        ],
-        labels: [
-          {
-            id: labelId1,
-            name: "Important",
-            slug: "important",
-            color: "#ff0000",
-          },
-        ],
-        projectGroups: {
-          type: "project",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Projects",
-          slug: "all-projects",
-          items: [projectId1],
-        },
-        labelGroups: {
-          type: "label",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Labels",
-          slug: "all-labels",
-          items: [labelId1],
-        },
-        version: "v0.3.0",
-      })
-
-      // Test the individual v0.4.0 migration function directly
-      const result = v040Migration(complexV030Data)
-
-      // Should add settings while preserving all existing data
-      expect(result).toHaveProperty("settings")
-      expect((result as any).settings).toEqual(DEFAULT_USER_SETTINGS)
-
-      // Should preserve all v0.3.0 data structure
-      expect(result).toHaveProperty("tasks")
-      expect(result).toHaveProperty("projects")
-      expect(result).toHaveProperty("labels")
-      expect(result).toHaveProperty("projectGroups")
-      expect(result).toHaveProperty("labelGroups")
-
-      // Should preserve task data including recurringMode from v0.3.0
-      const tasks = (result as any).tasks
-      expect(tasks).toHaveLength(1)
-      expect(tasks[0]).toEqual(
-        expect.objectContaining({
-          id: "550e8400-e29b-41d4-a716-446655440000",
-          title: "Sample task with v0.3.0 structure",
-          recurringMode: "dueDate",
-        }),
-      )
-
-      // Should preserve groups structure from v0.3.0
-      const projectGroups = (result as any).projectGroups
-      expect(projectGroups.items).toEqual([projectId1])
-      const labelGroups = (result as any).labelGroups
-      expect(labelGroups.items).toEqual([labelId1])
-    })
-  })
-
-  describe("v0.7.0 Migration Function", () => {
-    it("should add user field and convert sections to items-based ordering", () => {
-      const taskId1 = TEST_TASK_ID_1
-      const taskId2 = TEST_TASK_ID_2
-      const projectId1 = TEST_PROJECT_ID_1
-      const sectionId1 = TEST_SECTION_ID_1
-
-      const v060Data = createJsonData({
-        tasks: [
-          {
-            id: taskId1,
-            title: "Task 1 in section",
-            sectionId: sectionId1, // Should be removed
-            projectId: projectId1,
-            completed: false,
-            priority: 1,
-            labels: [],
-            subtasks: [],
-            comments: [],
-            createdAt: new Date().toISOString(),
-            recurringMode: "dueDate",
-          },
-          {
-            id: taskId2,
-            title: "Task 2 unsectioned",
-            // No sectionId - should go to default section
-            projectId: projectId1,
-            completed: false,
-            priority: 2,
-            labels: [],
-            subtasks: [],
-            comments: [],
-            createdAt: new Date().toISOString(),
-            recurringMode: "dueDate",
-          },
-        ],
-        projects: [
-          {
-            id: projectId1,
-            name: "Sample Project",
-            slug: "sample-project",
-            color: "#ff0000",
-            sections: [{ id: sectionId1, name: "Section 1", color: "#00ff00" }],
-            taskOrder: [taskId1, taskId2], // Should be removed
-          },
-        ],
-        labels: [],
-        projectGroups: {
-          type: "project",
-          id: DEFAULT_UUID,
-          name: "All Projects",
-          slug: "all-projects",
-          items: [projectId1],
-        },
-        labelGroups: {
-          type: "label",
-          id: DEFAULT_UUID,
-          name: "All Labels",
-          slug: "all-labels",
-          items: [],
-        },
-        settings: {
-          data: {
-            autoBackup: {
-              enabled: false,
-              backupTime: "20:00",
-              maxBackups: 10,
-            },
-          },
-          notifications: {
-            enabled: true,
-            requireInteraction: true,
-          },
-          general: {
-            startView: "all",
-            soundEnabled: true,
-            linkifyEnabled: true,
-            popoverHoverOpen: false,
-          },
-        },
-        version: "v0.6.0",
-        // No user field - should be added
-      })
-
-      const result = v070Migration(v060Data)
-
-      // 1. User field should be added
-      expect(result).toHaveProperty("user")
-      expect((result as any).user).toEqual(DEFAULT_USER)
-
-      // 2. sectionId should be removed from all tasks
-      const tasks = (result as any).tasks
-      expect(tasks).toHaveLength(2)
-      expect(tasks[0]).not.toHaveProperty("sectionId")
-      expect(tasks[1]).not.toHaveProperty("sectionId")
-
-      // 3. taskOrder should be removed from project
-      const project = (result as any).projects[0]
-      expect(project).not.toHaveProperty("taskOrder")
-
-      // 4. Sections should have new structure
-      expect(project.sections).toHaveLength(2)
-
-      // Default section should be first
-      expect(project.sections[0]).toEqual({
-        id: DEFAULT_UUID,
-        name: DEFAULT_SECTION_NAME,
-        slug: "",
-        type: "section",
-        color: DEFAULT_SECTION_COLOR,
-        items: [taskId2],
-      })
-
-      // Named section should be second
-      expect(project.sections[1]).toEqual({
-        id: sectionId1,
-        name: "Section 1",
-        slug: "",
-        type: "section",
-        color: "#00ff00",
-        items: [taskId1],
-      })
-    })
-
-    it("should handle complex multi-section migration with preserved task order", () => {
-      const taskId1 = TEST_TASK_ID_1
-      const taskId2 = TEST_TASK_ID_2
-      const taskId3 = TEST_TASK_ID_3
-      const projectId1 = TEST_PROJECT_ID_1
-      const sectionId1 = TEST_SECTION_ID_1
-      const sectionId2 = TEST_SECTION_ID_2
-
-      const v060Data = createJsonData({
-        tasks: [
-          {
-            id: taskId1,
-            title: "Task 1 in section 1",
-            sectionId: sectionId1, // Should be removed
-            projectId: projectId1,
-            completed: false,
-            priority: 1,
-            labels: [],
-            subtasks: [],
-            comments: [],
-            createdAt: new Date().toISOString(),
-            recurringMode: "dueDate",
-          },
-          {
-            id: taskId2,
-            title: "Task 2 in section 2",
-            sectionId: sectionId2, // Should be removed
-            projectId: projectId1,
-            completed: false,
-            priority: 2,
-            labels: [],
-            subtasks: [],
-            comments: [],
-            createdAt: new Date().toISOString(),
-            recurringMode: "dueDate",
-          },
-          {
-            id: taskId3,
-            title: "Task 3 in section 1",
-            sectionId: sectionId1, // Should be removed
-            projectId: projectId1,
-            completed: false,
-            priority: 3,
-            labels: [],
-            subtasks: [],
-            comments: [],
-            createdAt: new Date().toISOString(),
-            recurringMode: "dueDate",
-          },
-        ],
-        projects: [
-          {
-            id: projectId1,
-            name: "Multi-Section Project",
-            slug: "multi-section-project",
-            color: "#0000ff",
-            sections: [
-              { id: sectionId1, name: "Section 1", color: "#ff0000" },
-              { id: sectionId2, name: "Section 2", color: "#00ff00" },
-            ],
-            taskOrder: [taskId1, taskId2, taskId3], // Order should be preserved within sections
-          },
-        ],
-        labels: [],
-        projectGroups: {
-          type: "project",
-          id: DEFAULT_UUID,
-          name: "All Projects",
-          slug: "all-projects",
-          items: [projectId1],
-        },
-        labelGroups: {
-          type: "label",
-          id: DEFAULT_UUID,
-          name: "All Labels",
-          slug: "all-labels",
-          items: [],
-        },
-        settings: {
-          data: {
-            autoBackup: {
-              enabled: true,
-              backupTime: "09:00",
-              maxBackups: 7,
-            },
-          },
-          notifications: {
-            enabled: true,
-            requireInteraction: true,
-          },
-          general: {
-            startView: "lastViewed",
-            soundEnabled: false,
-            linkifyEnabled: true,
-            popoverHoverOpen: false,
-          },
-        },
-        version: "v0.6.0",
-      })
-
-      const result = v070Migration(v060Data)
-
-      // 1. User field should be added
-      expect(result).toHaveProperty("user")
-
-      // 2. All tasks should have sectionId removed
-      const tasks = (result as any).tasks
-      expect(tasks).toHaveLength(3)
-      tasks.forEach((task: any) => {
-        expect(task).not.toHaveProperty("sectionId")
-      })
-
-      // 3. Project should have taskOrder removed
-      const project = (result as any).projects[0]
-      expect(project).not.toHaveProperty("taskOrder")
-
-      // 4. All sections should be transformed correctly
-      expect(project.sections).toHaveLength(3)
-
-      // Default section should be first (empty since all tasks have sections)
-      expect(project.sections[0]).toEqual({
-        id: DEFAULT_UUID,
-        name: DEFAULT_SECTION_NAME,
-        slug: "",
-        type: "section",
-        color: DEFAULT_SECTION_COLOR,
-        items: [],
-      })
-
-      // Section 1 should contain taskId1 and taskId3 in that order (from taskOrder)
-      expect(project.sections[1]).toEqual({
-        id: sectionId1,
-        name: "Section 1",
-        slug: "",
-        type: "section",
-        color: "#ff0000",
-        items: [taskId1, taskId3],
-      })
-
-      // Section 2 should contain taskId2
-      expect(project.sections[2]).toEqual({
-        id: sectionId2,
-        name: "Section 2",
-        slug: "",
-        type: "section",
-        color: "#00ff00",
-        items: [taskId2],
-      })
-    })
-
-    it("should consolidate tasks with no sectionId and sectionId=DEFAULT_UUID into single default section", () => {
-      const taskId1 = TEST_TASK_ID_1
-      const taskId2 = TEST_TASK_ID_2
-      const taskId3 = TEST_TASK_ID_3
-      const projectId1 = TEST_PROJECT_ID_1
-      const sectionId1 = TEST_SECTION_ID_1
-
-      const v060Data = createJsonData({
-        tasks: [
-          {
-            id: taskId1,
-            title: "Task 1 with no sectionId",
-            // No sectionId - should go to default section
-            projectId: projectId1,
-            completed: false,
-            priority: 1,
-            labels: [],
-            subtasks: [],
-            comments: [],
-            createdAt: new Date().toISOString(),
-            recurringMode: "dueDate",
-          },
-          {
-            id: taskId2,
-            title: "Task 2 with DEFAULT_UUID sectionId",
-            sectionId: DEFAULT_UUID, // Should go to default section
-            projectId: projectId1,
-            completed: false,
-            priority: 2,
-            labels: [],
-            subtasks: [],
-            comments: [],
-            createdAt: new Date().toISOString(),
-            recurringMode: "dueDate",
-          },
-          {
-            id: taskId3,
-            title: "Task 3 in regular section",
-            sectionId: sectionId1,
-            projectId: projectId1,
-            completed: false,
-            priority: 3,
-            labels: [],
-            subtasks: [],
-            comments: [],
-            createdAt: new Date().toISOString(),
-            recurringMode: "dueDate",
-          },
-        ],
-        projects: [
-          {
-            id: projectId1,
-            name: "Test Project",
-            slug: "test-project",
-            color: "#0000ff",
-            sections: [
-              { id: sectionId1, name: "Regular Section", color: "#ff0000" },
-              // Pre-existing DEFAULT_UUID section should be replaced
-              { id: DEFAULT_UUID, name: "Old Default", color: "#999999" },
-            ],
-            taskOrder: [taskId1, taskId2, taskId3],
-          },
-        ],
-        labels: [],
-        projectGroups: {
-          type: "project",
-          id: DEFAULT_UUID,
-          name: "All Projects",
-          slug: "all-projects",
-          items: [projectId1],
-        },
-        labelGroups: {
-          type: "label",
-          id: DEFAULT_UUID,
-          name: "All Labels",
-          slug: "all-labels",
-          items: [],
-        },
-        settings: {
-          data: {
-            autoBackup: {
-              enabled: true,
-              backupTime: "09:00",
-              maxBackups: 7,
-            },
-          },
-          notifications: {
-            enabled: true,
-            requireInteraction: true,
-          },
-          general: {
-            startView: "lastViewed",
-            soundEnabled: false,
-            linkifyEnabled: true,
-            popoverHoverOpen: false,
-          },
-        },
-        version: "v0.6.0",
-      })
-
-      const result = v070Migration(v060Data)
-
-      const project = (result as any).projects[0]
-
-      // Should have exactly 2 sections: default section + regular section
-      expect(project.sections).toHaveLength(2)
-
-      // Default section should be first with taskId1 and taskId2 (in order)
-      expect(project.sections[0]).toEqual({
-        id: DEFAULT_UUID,
-        name: DEFAULT_SECTION_NAME,
-        slug: "",
-        type: "section",
-        color: DEFAULT_SECTION_COLOR,
-        items: [taskId1, taskId2],
-      })
-
-      // Regular section should be second with taskId3
-      expect(project.sections[1]).toEqual({
-        id: sectionId1,
-        name: "Regular Section",
-        slug: "",
-        type: "section",
-        color: "#ff0000",
-        items: [taskId3],
-      })
-
-      // Verify no duplicate DEFAULT_UUID sections
-      const defaultSections = project.sections.filter((s: any) => s.id === DEFAULT_UUID)
-      expect(defaultSections).toHaveLength(1)
-
-      // Verify all tasks have sectionId removed
-      const tasks = (result as any).tasks
-      tasks.forEach((task: any) => {
-        expect(task).not.toHaveProperty("sectionId")
-      })
+      expect(compareVersions(info.targetVersion, createVersionString("v0.2.0")) > 0).toBe(true)
     })
   })
 
@@ -1453,6 +502,344 @@ describe("Data Migration Utility", () => {
     })
   })
 
+  describe("v0.10.0 Migration Function", () => {
+    it("should add markdownEnabled flag to general settings when missing", () => {
+      const v080DataWithoutMarkdownEnabled = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: DEFAULT_UUID,
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: DEFAULT_UUID,
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: {
+          data: {
+            autoBackup: {
+              enabled: false,
+              backupTime: "20:00",
+              maxBackups: 10,
+            },
+          },
+          notifications: {
+            enabled: true,
+            requireInteraction: true,
+          },
+          general: {
+            startView: "all",
+            soundEnabled: true,
+            linkifyEnabled: true,
+            popoverHoverOpen: false,
+            // No markdownEnabled field - should be added
+          },
+        },
+        user: DEFAULT_USER,
+        version: "v0.8.0",
+      })
+
+      const result = v0100Migration(v080DataWithoutMarkdownEnabled)
+
+      expect(result).toHaveProperty("settings")
+      const settings = (result as any).settings
+      expect(settings).toHaveProperty("general")
+      expect(settings.general).toHaveProperty(
+        "markdownEnabled",
+        DEFAULT_GENERAL_SETTINGS.markdownEnabled,
+      )
+    })
+
+    it("should preserve existing markdownEnabled flag when present", () => {
+      const v080DataWithMarkdownEnabled = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: DEFAULT_UUID,
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: DEFAULT_UUID,
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: {
+          data: {
+            autoBackup: {
+              enabled: false,
+              backupTime: "20:00",
+              maxBackups: 10,
+            },
+          },
+          notifications: {
+            enabled: true,
+            requireInteraction: true,
+          },
+          general: {
+            startView: "all",
+            soundEnabled: true,
+            linkifyEnabled: true,
+            popoverHoverOpen: false,
+            markdownEnabled: false, // Already has markdownEnabled set to false
+          },
+        },
+        user: DEFAULT_USER,
+        version: "v0.8.0",
+      })
+
+      const result = v0100Migration(v080DataWithMarkdownEnabled)
+
+      expect(result).toHaveProperty("settings")
+      const settings = (result as any).settings
+      expect(settings).toHaveProperty("general")
+      expect(settings.general).toHaveProperty("markdownEnabled", false) // Should preserve existing value
+    })
+
+    it("should restore default settings when settings are missing", () => {
+      const v080DataWithoutSettings = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: DEFAULT_UUID,
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: DEFAULT_UUID,
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        user: DEFAULT_USER,
+        // No settings field - should add complete default settings
+        version: "v0.8.0",
+      })
+
+      const result = v0100Migration(v080DataWithoutSettings)
+
+      expect(result).toHaveProperty("settings")
+      const settings = (result as any).settings
+      expect(settings).toEqual(DEFAULT_USER_SETTINGS)
+    })
+
+    it("should restore default general settings when general settings are invalid", () => {
+      const v080DataWithInvalidGeneralSettings = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: DEFAULT_UUID,
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: DEFAULT_UUID,
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: {
+          data: {
+            autoBackup: {
+              enabled: false,
+              backupTime: "20:00",
+              maxBackups: 10,
+            },
+          },
+          notifications: {
+            enabled: true,
+            requireInteraction: true,
+          },
+          general: null, // Invalid - should restore defaults
+        },
+        user: DEFAULT_USER,
+        version: "v0.8.0",
+      })
+
+      const result = v0100Migration(v080DataWithInvalidGeneralSettings)
+
+      expect(result).toHaveProperty("settings")
+      const settings = (result as any).settings
+      expect(settings).toHaveProperty("general")
+      expect(settings.general).toEqual(DEFAULT_GENERAL_SETTINGS)
+    })
+
+    it("should preserve other general settings when adding markdownEnabled", () => {
+      const v080DataWithOtherSettings = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: DEFAULT_UUID,
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: DEFAULT_UUID,
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        settings: {
+          data: {
+            autoBackup: {
+              enabled: true,
+              backupTime: "09:00",
+              maxBackups: 7,
+            },
+          },
+          notifications: {
+            enabled: false,
+            requireInteraction: false,
+          },
+          general: {
+            startView: "lastViewed",
+            soundEnabled: false,
+            linkifyEnabled: false,
+            popoverHoverOpen: true,
+            // No markdownEnabled - should be added
+          },
+        },
+        user: DEFAULT_USER,
+        version: "v0.8.0",
+      })
+
+      const result = v0100Migration(v080DataWithOtherSettings)
+
+      expect(result).toHaveProperty("settings")
+      const settings = (result as any).settings
+      expect(settings).toHaveProperty("general")
+
+      // Should preserve existing settings
+      expect(settings.general.startView).toBe("lastViewed")
+      expect(settings.general.soundEnabled).toBe(false)
+      expect(settings.general.linkifyEnabled).toBe(false)
+      expect(settings.general.popoverHoverOpen).toBe(true)
+
+      // Should add markdownEnabled with default value
+      expect(settings.general.markdownEnabled).toBe(DEFAULT_GENERAL_SETTINGS.markdownEnabled)
+    })
+
+    it("should handle missing settings object gracefully", () => {
+      const v080DataWithoutSettingsObject = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: DEFAULT_UUID,
+          name: "All Projects",
+          slug: "all-projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: DEFAULT_UUID,
+          name: "All Labels",
+          slug: "all-labels",
+          items: [],
+        },
+        user: DEFAULT_USER,
+        settings: null, // Invalid - should restore complete default settings
+        version: "v0.8.0",
+      })
+
+      const result = v0100Migration(v080DataWithoutSettingsObject)
+
+      expect(result).toHaveProperty("settings")
+      const settings = (result as any).settings
+      expect(settings).toEqual(DEFAULT_USER_SETTINGS)
+    })
+
+    it("should rebase trackingId to the active recurring anchor when group contains an incomplete task", () => {
+      const originalTrackingId = createTaskId("550e8400-e29b-41d4-a716-446655440001")
+      const activeTaskId = createTaskId("550e8400-e29b-41d4-a716-446655440002")
+      const historyTaskId = createTaskId("550e8400-e29b-41d4-a716-446655440003")
+
+      const data = createJsonData({
+        tasks: [
+          {
+            id: activeTaskId,
+            trackingId: originalTrackingId,
+            recurring: "RRULE:FREQ=DAILY",
+            completed: false,
+          },
+          {
+            id: historyTaskId,
+            trackingId: originalTrackingId,
+            completed: true,
+          },
+        ],
+        projects: [],
+        labels: [],
+        projectGroups: DEFAULT_EMPTY_DATA_FILE.projectGroups,
+        labelGroups: DEFAULT_EMPTY_DATA_FILE.labelGroups,
+        settings: DEFAULT_USER_SETTINGS,
+        user: DEFAULT_USER,
+        version: "v0.8.0",
+      })
+
+      const result = v0100Migration(data)
+      const tasks = (result as any).tasks as Array<Record<string, unknown>>
+      const updatedActive = tasks.find((task) => task.id === activeTaskId)
+      const updatedHistory = tasks.find((task) => task.id === historyTaskId)
+
+      expect(updatedActive?.trackingId).toBe(activeTaskId)
+      expect(updatedHistory?.trackingId).toBe(activeTaskId)
+    })
+
+    it("should leave trackingIds unchanged when no active recurring task exists in a group", () => {
+      const trackingId = createTaskId("550e8400-e29b-41d4-a716-446655440004")
+      const completedTaskId = createTaskId("550e8400-e29b-41d4-a716-446655440005")
+
+      const data = createJsonData({
+        tasks: [
+          {
+            id: completedTaskId,
+            trackingId,
+            completed: true,
+          },
+        ],
+        projects: [],
+        labels: [],
+        projectGroups: DEFAULT_EMPTY_DATA_FILE.projectGroups,
+        labelGroups: DEFAULT_EMPTY_DATA_FILE.labelGroups,
+        settings: DEFAULT_USER_SETTINGS,
+        user: DEFAULT_USER,
+        version: "v0.8.0",
+      })
+
+      const result = v0100Migration(data)
+      const tasks = (result as any).tasks as Array<Record<string, unknown>>
+      const completedTask = tasks.find((task) => task.id === completedTaskId)
+
+      expect(completedTask?.trackingId).toBe(trackingId)
+    })
+  })
+
   describe("Version Comparison", () => {
     it("should handle various version formats correctly", () => {
       const testCases = [
@@ -1479,344 +866,8 @@ describe("Data Migration Utility", () => {
     })
 
     it("should handle unversioned data migration scenarios", () => {
-      // Unversioned data (treated as v0.2.0) should always need migration
-      const result = needsMigration(mockDataFile)
-      expect(result).toBe(true)
-    })
-  })
-
-  describe("Safety Limits", () => {
-    it("should not exceed maximum migration steps", () => {
-      // This test verifies the safety limit is in place
-      // Test that individual migrations complete successfully
-      const v020Data = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        ordering: { projects: [], labels: [] },
-      })
-
-      // Test v0.3.0 migration completes successfully
-      const v030Result = v030Migration(v020Data)
-      expect(v030Result).toHaveProperty("projectGroups")
-      expect(v030Result).toHaveProperty("labelGroups")
-      expect(v030Result).not.toHaveProperty("ordering")
-
-      // Test v0.4.0 migration completes successfully after v0.3.0
-      const v040Result = v040Migration(v030Result)
-      expect(v040Result).toHaveProperty("settings")
-      expect(v040Result).toHaveProperty("projectGroups")
-      expect(v040Result).toHaveProperty("labelGroups")
-    })
-  })
-
-  describe("v0.5.0 Migration Function", () => {
-    it("should add general settings structure when missing", () => {
-      const v040DataWithoutGeneral = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        projectGroups: {
-          type: "project",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Projects",
-          slug: "all-projects",
-          items: [],
-        },
-        labelGroups: {
-          type: "label",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Labels",
-          slug: "all-labels",
-          items: [],
-        },
-        settings: {
-          data: {
-            autoBackup: {
-              enabled: false,
-              backupTime: "20:00",
-              maxBackups: 10,
-            },
-          },
-          notifications: {
-            enabled: true,
-            requireInteraction: true,
-          },
-          // No general settings - should be added
-        },
-        version: "v0.4.0",
-      })
-
-      const result = v050Migration(v040DataWithoutGeneral)
-
-      expect(result).toHaveProperty("settings")
-      const settings = (result as any).settings
-      expect(settings).toHaveProperty("general")
-      expect(settings.general).toEqual({
-        startView: "all",
-      })
-    })
-
-    it("should migrate behavior settings to general settings", () => {
-      const v040DataWithBehavior = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        projectGroups: {
-          type: "project",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Projects",
-          slug: "all-projects",
-          items: [],
-        },
-        labelGroups: {
-          type: "label",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Labels",
-          slug: "all-labels",
-          items: [],
-        },
-        settings: {
-          data: {
-            autoBackup: {
-              enabled: false,
-              backupTime: "20:00",
-              maxBackups: 10,
-            },
-          },
-          notifications: {
-            enabled: true,
-            requireInteraction: true,
-          },
-          behavior: {
-            startView: "lastViewed",
-          },
-        },
-        version: "v0.4.0",
-      })
-
-      const result = v050Migration(v040DataWithBehavior)
-
-      expect(result).toHaveProperty("settings")
-      const settings = (result as any).settings
-      expect(settings).toHaveProperty("general")
-      expect(settings.general).toEqual({
-        startView: "lastViewed",
-      })
-      expect(settings).not.toHaveProperty("behavior")
-    })
-
-    it("should add complete default settings when missing", () => {
-      const v040DataWithoutSettings = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        projectGroups: {
-          type: "project",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Projects",
-          slug: "all-projects",
-          items: [],
-        },
-        labelGroups: {
-          type: "label",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Labels",
-          slug: "all-labels",
-          items: [],
-        },
-        version: "v0.4.0",
-      })
-
-      const result = v050Migration(v040DataWithoutSettings)
-
-      expect(result).toHaveProperty("settings")
-      const settings = (result as any).settings
-      expect(settings).toEqual(DEFAULT_USER_SETTINGS)
-    })
-  })
-
-  describe("v0.6.0 Migration Function", () => {
-    it("should add soundEnabled, linkifyEnabled, and popoverHoverOpen fields to general settings", () => {
-      const v050DataWithoutNewFields = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        projectGroups: {
-          type: "project",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Projects",
-          slug: "all-projects",
-          items: [],
-        },
-        labelGroups: {
-          type: "label",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Labels",
-          slug: "all-labels",
-          items: [],
-        },
-        settings: {
-          data: {
-            autoBackup: {
-              enabled: false,
-              backupTime: "20:00",
-              maxBackups: 10,
-            },
-          },
-          notifications: {
-            enabled: true,
-            requireInteraction: true,
-          },
-          general: {
-            startView: "all",
-          },
-        },
-        version: "v0.5.0",
-      })
-
-      const result = v060Migration(v050DataWithoutNewFields)
-
-      expect(result).toHaveProperty("settings")
-      const settings = (result as any).settings
-      expect(settings).toHaveProperty("general")
-      expect(settings.general).toEqual({
-        startView: "all",
-        soundEnabled: true,
-        linkifyEnabled: true,
-        popoverHoverOpen: false,
-      })
-    })
-
-    it("should preserve existing soundEnabled and linkifyEnabled fields and add popoverHoverOpen", () => {
-      const v050DataWithExistingFields = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        projectGroups: {
-          type: "project",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Projects",
-          slug: "all-projects",
-          items: [],
-        },
-        labelGroups: {
-          type: "label",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Labels",
-          slug: "all-labels",
-          items: [],
-        },
-        settings: {
-          data: {
-            autoBackup: {
-              enabled: false,
-              backupTime: "20:00",
-              maxBackups: 10,
-            },
-          },
-          notifications: {
-            enabled: true,
-            requireInteraction: true,
-          },
-          general: {
-            startView: "lastViewed",
-            soundEnabled: false,
-            linkifyEnabled: false,
-          },
-        },
-        version: "v0.5.0",
-      })
-
-      const result = v060Migration(v050DataWithExistingFields)
-
-      expect(result).toHaveProperty("settings")
-      const settings = (result as any).settings
-      expect(settings).toHaveProperty("general")
-      expect(settings.general).toEqual({
-        startView: "lastViewed",
-        soundEnabled: false,
-        linkifyEnabled: false,
-        popoverHoverOpen: false,
-      })
-    })
-
-    it("should create general settings with all required fields when missing", () => {
-      const v050DataWithoutGeneralSettings = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        projectGroups: {
-          type: "project",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Projects",
-          slug: "all-projects",
-          items: [],
-        },
-        labelGroups: {
-          type: "label",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Labels",
-          slug: "all-labels",
-          items: [],
-        },
-        settings: {
-          data: {
-            autoBackup: {
-              enabled: false,
-              backupTime: "20:00",
-              maxBackups: 10,
-            },
-          },
-          notifications: {
-            enabled: true,
-            requireInteraction: true,
-          },
-          // No general settings at all
-        },
-        version: "v0.5.0",
-      })
-
-      const result = v060Migration(v050DataWithoutGeneralSettings)
-
-      expect(result).toHaveProperty("settings")
-      const settings = (result as any).settings
-      expect(settings).toHaveProperty("general")
-      expect(settings.general).toEqual({
-        startView: "all",
-        soundEnabled: true,
-        linkifyEnabled: true,
-        popoverHoverOpen: false,
-      })
-    })
-
-    it("should add complete default settings when missing", () => {
-      const v050DataWithoutSettings = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        projectGroups: {
-          type: "project",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Projects",
-          slug: "all-projects",
-          items: [],
-        },
-        labelGroups: {
-          type: "label",
-          id: "00000000-0000-0000-0000-000000000000",
-          name: "All Labels",
-          slug: "all-labels",
-          items: [],
-        },
-        version: "v0.5.0",
-      })
-
-      const result = v060Migration(v050DataWithoutSettings)
-
-      expect(result).toHaveProperty("settings")
-      const settings = (result as any).settings
-      expect(settings).toEqual(DEFAULT_USER_SETTINGS)
+      // Missing version is now a hard error (no implicit fallback)
+      expect(() => needsMigration(mockDataFile)).toThrow(/version property/)
     })
   })
 
@@ -1844,7 +895,7 @@ describe("Data Migration Utility", () => {
         },
         settings: DEFAULT_USER_SETTINGS,
         user: DEFAULT_USER,
-        version: "v7.7.7", // High version to ensure no migration needed
+        version: "v8.8.8", // High version to ensure no migration needed
       })
 
       // Should produce valid result conforming to current schema
@@ -1864,55 +915,8 @@ describe("Data Migration Utility", () => {
 
       // Migration info should reflect that no migration is needed
       const info = getMigrationInfo(currentStructureData)
-      expect(info.currentVersion).toEqual(createVersionString("v7.7.7"))
+      expect(info.currentVersion).toEqual(createVersionString("v8.8.8"))
       expect(info.needsMigration).toBe(false)
-    })
-  })
-
-  describe("Transactional Migration", () => {
-    it("should implement all-or-nothing migration behavior", () => {
-      // Test that successful individual migrations work normally
-      const v020Data = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        ordering: { projects: [], labels: [] },
-      })
-
-      // Individual migrations should complete successfully
-      const v030Result = v030Migration(v020Data)
-      expect(v030Result).toHaveProperty("projectGroups")
-      expect(v030Result).toHaveProperty("labelGroups")
-
-      const v040Result = v040Migration(v030Result)
-      expect(v040Result).toHaveProperty("settings")
-
-      // The migration system uses a transactional approach:
-      // - Either all migrations succeed and final result is returned
-      // - Or any migration fails and original data is preserved (error thrown)
-      // This ensures data integrity and prevents partial migration states
-    })
-
-    it("should preserve original data structure during successful migrations", () => {
-      // This test documents that individual migrations don't mutate input
-      const originalDataFile = createJsonData({
-        tasks: [],
-        projects: [],
-        labels: [],
-        ordering: { projects: [], labels: [] },
-      })
-
-      const originalDataCopy = JSON.parse(JSON.stringify(originalDataFile))
-
-      // Run individual migration
-      const result = v030Migration(originalDataFile)
-
-      // Migration should complete successfully
-      expect(result).toHaveProperty("projectGroups")
-      expect(result).toHaveProperty("labelGroups")
-
-      // Original data should remain unchanged (migration creates new object)
-      expect(originalDataFile).toEqual(originalDataCopy)
     })
   })
 
@@ -1931,28 +935,10 @@ describe("Data Migration Utility", () => {
       expect(() => migrateDataFile(123)).toThrow("Data file must be a JSON object")
     })
 
-    it("should handle complex error scenarios during migration", () => {
-      // Test that individual migration functions properly handle and report errors
-      // This validates the error handling infrastructure is in place
-      const validData = mockDataFile
-
-      // Individual migrations should complete successfully
-      const v030Result = v030Migration(validData)
-      expect(v030Result).toHaveProperty("projectGroups")
-      expect(v030Result).toHaveProperty("labelGroups")
-
-      const v040Result = v040Migration(v030Result)
-      expect(v040Result).toHaveProperty("settings")
-
-      // Should complete successfully with proper error handling available
-      expect(v040Result).toHaveProperty("tasks")
-      expect(v040Result).toHaveProperty("projects")
-      expect(v040Result).toHaveProperty("labels")
-    })
-
     it("should handle data with missing required fields", () => {
       // Create data with truly missing required fields that can't be fixed by migration
       const dataWithMissingFields = createJsonData({
+        version: "v0.8.0",
         // Missing tasks array entirely - this will fail schema validation
         projects: [],
         labels: [],
@@ -1969,6 +955,7 @@ describe("Data Migration Utility", () => {
     it("should throw error when migration produces malformed data", () => {
       // Test with data that has malformed structure that might break during migration
       const malformedData = createJsonData({
+        version: "v0.8.0",
         tasks: "not an array", // Invalid type
         projects: null, // Invalid type
         labels: [],
@@ -1990,143 +977,21 @@ describe("Data Migration Utility", () => {
   })
 
   describe("Complete Migration Path", () => {
-    it("should migrate v0.2.0 data file to latest version and validate schema", () => {
-      // Create a complete v0.2.0 data file (no version field means v0.2.0)
-      const v020DataFile = createJsonData({
-        tasks: [
-          {
-            id: TEST_TASK_ID_1,
-            title: "Test Task 1",
-            description: "A test task",
-            completed: false,
-            priority: 2,
-            projectId: TEST_PROJECT_ID_1,
-            sectionId: TEST_SECTION_ID_1,
-            labels: [TEST_LABEL_ID_1],
-            subtasks: [],
-            comments: [],
-            createdAt: "2024-01-01T00:00:00.000Z",
-            // Note: No recurringMode field - should be added during migration
-          },
-          {
-            id: TEST_TASK_ID_2,
-            title: "Test Task 2",
-            completed: true,
-            priority: 1,
-            projectId: TEST_PROJECT_ID_1,
-            sectionId: TEST_SECTION_ID_1,
-            labels: [],
-            subtasks: [],
-            comments: [],
-            createdAt: "2024-01-02T00:00:00.000Z",
-          },
-        ],
-        projects: [
-          {
-            id: TEST_PROJECT_ID_1,
-            name: "Test Project",
-            slug: "test-project",
-            color: "#3b82f6",
-            sections: [
-              {
-                id: TEST_SECTION_ID_1,
-                name: "Default Section",
-                color: "#6b7280",
-              },
-            ],
-            taskOrder: [TEST_TASK_ID_1, TEST_TASK_ID_2],
-          },
-        ],
-        labels: [
-          {
-            id: TEST_LABEL_ID_1,
-            name: "test-label",
-            slug: "test-label",
-            color: "#ef4444",
-          },
-        ],
-        // v0.2.0 has ordering field (legacy) instead of groups
+    it("should refuse to migrate legacy data structures older than v0.8.0", () => {
+      const legacyDataFile = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
         ordering: {
           projects: [TEST_PROJECT_ID_1],
           labels: [TEST_LABEL_ID_1],
         },
-        // No version field - indicates v0.2.0
-        // No settings field - should be added during migration
+        projectGroups: undefined,
+        labelGroups: undefined,
+        version: "v0.2.0",
       })
 
-      // Migrate to latest version
-      const migratedData = migrateDataFile(v020DataFile)
-
-      // Verify the migration succeeded and data conforms to current schema
-      expect(() => DataFileSchema.parse(migratedData)).not.toThrow()
-
-      // Verify the version matches the latest migration version
-      const latestMigrationVersion = getLatestAvailableMigration()
-      expect(latestMigrationVersion).not.toBeNull()
-      expect(migratedData.version).toBe(latestMigrationVersion)
-
-      // CRITICAL: Verify package.json version vs migration system synchronization
-      // If package.json version >= latest migration version, then DataFileSchema must parse migrated data
-      const packageVersion = createVersionString(`v${getAppVersion()}`)
-      if (latestMigrationVersion !== null && packageVersion >= latestMigrationVersion) {
-        // This ensures the current schema can handle the latest migration output
-        // If this fails, it means the migration system and schema are out of sync
-        expect(() => DataFileSchema.parse(migratedData)).not.toThrow()
-        console.log(
-          `✓ Schema synchronization verified: package v${getAppVersion()} >= migration ${latestMigrationVersion}`,
-        )
-      } else {
-        console.log(
-          `ℹ Package v${getAppVersion()} < migration ${latestMigrationVersion || "unknown"} - schema sync check skipped`,
-        )
-      }
-
-      // Verify v0.3.0 migration changes
-      expect(migratedData).toHaveProperty("projectGroups")
-      expect(migratedData).toHaveProperty("labelGroups")
-      expect(migratedData).not.toHaveProperty("ordering")
-
-      // Verify projectGroups structure
-      expect(migratedData.projectGroups).toEqual({
-        type: "project",
-        id: DEFAULT_UUID,
-        name: "All Projects",
-        slug: "all-projects",
-        items: [TEST_PROJECT_ID_1],
-      })
-
-      // Verify labelGroups structure
-      expect(migratedData.labelGroups).toEqual({
-        type: "label",
-        id: DEFAULT_UUID,
-        name: "All Labels",
-        slug: "all-labels",
-        items: [TEST_LABEL_ID_1],
-      })
-
-      // Verify recurringMode was added to all tasks
-      expect(migratedData.tasks[0]).toHaveProperty("recurringMode", "dueDate")
-      expect(migratedData.tasks[1]).toHaveProperty("recurringMode", "dueDate")
-
-      // Verify v0.4.0 migration changes
-      expect(migratedData).toHaveProperty("settings")
-      expect(migratedData.settings).toEqual(DEFAULT_USER_SETTINGS)
-
-      // Verify original data structure is preserved
-      expect(migratedData.tasks).toHaveLength(2)
-      expect(migratedData.projects).toHaveLength(1)
-      expect(migratedData.labels).toHaveLength(1)
-
-      const firstTask = migratedData.tasks[0]
-      const firstProject = migratedData.projects[0]
-      const firstLabel = migratedData.labels[0]
-      if (!firstTask || !firstProject || !firstLabel) {
-        throw new Error("Expected to find first task, project, and label")
-      }
-
-      expect(firstTask.title).toBe("Test Task 1")
-      expect(firstProject.name).toBe("Test Project")
-      expect(firstLabel.name).toBe("test-label")
+      expect(() => migrateDataFile(legacyDataFile)).toThrow(/Minimum supported version is v0\.8\.0/)
     })
   })
 })

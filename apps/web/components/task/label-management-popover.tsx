@@ -54,6 +54,9 @@ export function LabelManagementPopover({
       side="bottom"
       align="start"
       className="w-80 p-0 max-h-[400px] overflow-hidden"
+      mobileAsDrawer
+      drawerTitle="Labels"
+      drawerDirection="bottom"
     >
       <div className={className}>{children}</div>
     </ContentPopover>

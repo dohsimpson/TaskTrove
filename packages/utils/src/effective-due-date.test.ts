@@ -94,7 +94,7 @@ describe("Effective Due Date", () => {
       });
 
       const result = getEffectiveDueDate(task);
-      expect(result).toEqual(new Date("2024-01-17T00:00:00.000Z")); // Next Tuesday
+      expect(result).toEqual(new Date("2024-01-16T00:00:00.000Z")); // Next Tuesday
     });
 
     it("should return null for tasks without due dates", () => {

@@ -90,6 +90,19 @@ describe("AbsoluteDateExtractor", () => {
     expect(results[0]?.value).toEqual(startOfDay(new Date(2025, 2, 3)));
   });
 
+  it("should not match when month is attached to previous word", () => {
+    const results = extractor.extract("ReleaseJan 15 milestone", context);
+
+    expect(results).toHaveLength(0);
+  });
+
+  it("should match when punctuation follows the date", () => {
+    const results = extractor.extract("Launch Jan 15.", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.match).toBe("Jan 15");
+  });
+
   it("should return empty when no absolute date found", () => {
     const results = extractor.extract("Just a task", context);
 

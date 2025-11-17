@@ -40,7 +40,6 @@ import {
 } from "@tasktrove/constants"
 import { getDefaultSectionId } from "@tasktrove/types/defaults"
 import { processRecurringTaskCompletion } from "@tasktrove/utils"
-import { getEffectiveDueDate } from "@tasktrove/utils"
 import { addTaskToSection, removeTaskFromSection } from "@tasktrove/atoms/data/tasks/ordering"
 import { clearNullValues } from "@tasktrove/utils"
 import { log } from "@/lib/utils/logger"
@@ -141,7 +140,6 @@ async function createTask(
   const newTask: Task = {
     ...validation.data,
     id: newTaskId,
-    trackingId: validation.data.trackingId ?? newTaskId,
     completed: DEFAULT_TASK_COMPLETED,
     priority: validation.data.priority ?? DEFAULT_TASK_PRIORITY,
     labels: validation.data.labels ?? DEFAULT_TASK_LABELS,
@@ -353,16 +351,12 @@ async function updateTasks(
 
     const updatedTask = { ...task, ...update }
 
-    if (update.completed === true && task.recurring) {
-      updatedTask.recurring = undefined
-    }
-
     return clearNullValues(updatedTask)
   })
+  const updatedTaskMap = new Map(updatedTasks.map((task) => [task.id, task]))
 
-  // Process recurring tasks - generate next instances for completed recurring tasks
-  const recurringInstances: Task[] = []
-  const completedTaskUpdates = new Map<string, Partial<Task>>()
+  // Process recurring tasks - generate history copies and advance anchors
+  const recurringHistoryTasks: Task[] = []
   log.debug({ module: "TasksAPI", count: updates.length }, "Processing updates")
   for (const update of updates) {
     const originalTask = taskMap.get(update.id)
@@ -393,38 +387,27 @@ async function updateTasks(
 
       // Create completed task with current timestamp for recurring processing
       try {
-        const completedTask = { ...originalTask, completed: true, completedAt: new Date() }
+        const completionTimestamp = new Date()
+        const targetTask = updatedTaskMap.get(originalTask.id)
+        if (!targetTask) continue
 
-        // For auto-rollover tasks, use the effective due date as the "real" due date
-        if (originalTask.recurringMode === "autoRollover") {
-          log.debug(
-            {
-              module: "TasksAPI",
-              taskId: originalTask.id,
-              originalDueDate: originalTask.dueDate?.toISOString(),
-              recurringMode: originalTask.recurringMode,
-              effectiveDueDate: getEffectiveDueDate(originalTask)?.toISOString(),
-            },
-            "Auto-rollover task completion",
-          )
-
-          const effectiveDueDate = getEffectiveDueDate(originalTask)
-          if (effectiveDueDate) {
-            log.debug(
-              {
-                module: "TasksAPI",
-                from: completedTask.dueDate?.toISOString(),
-                to: effectiveDueDate.toISOString(),
-              },
-              "Updating completed task due date",
-            )
-            completedTask.dueDate = effectiveDueDate
-            // Store the effective due date update to be applied later
-            completedTaskUpdates.set(originalTask.id, { dueDate: effectiveDueDate })
-          }
+        // set trackingId if not already set, this ensures recurring tasks that do not have trackingId are backfilled
+        if (!targetTask.trackingId && targetTask.recurring) {
+          targetTask.trackingId = targetTask.id
         }
 
-        const nextInstance = processRecurringTaskCompletion(completedTask)
+        const completedSnapshot = cloneTaskSnapshot(targetTask)
+        completedSnapshot.completed = true
+        completedSnapshot.completedAt = completionTimestamp
+
+        // update due date if provided (used for recalculating auto-rollover recurrence)
+        const updatedDueDate = updateMap.get(update.id)?.dueDate
+        if (updatedDueDate) {
+          completedSnapshot.dueDate =
+            updatedDueDate instanceof Date ? updatedDueDate : new Date(updatedDueDate)
+        }
+
+        const nextInstance = processRecurringTaskCompletion(completedSnapshot)
 
         log.debug(
           nextInstance
@@ -435,24 +418,60 @@ async function updateTasks(
                 nextInstanceDueDate: nextInstance.dueDate,
                 nextInstanceRecurring: nextInstance.recurring,
               }
-            : { module: "TasksAPI", result: "No instance created" },
+            : { module: "TasksAPI", result: "No next instance" },
           "Next instance result",
         )
 
-        if (nextInstance) {
-          recurringInstances.push(nextInstance)
-
-          logBusinessEvent(
-            "recurring_task_instance_created",
-            {
-              parentTaskId: originalTask.id,
-              newTaskId: nextInstance.id,
-              recurringPattern: originalTask.recurring,
-              nextDueDate: nextInstance.dueDate,
-            },
-            request.context,
-          )
+        if (!nextInstance) {
+          // Final occurrence - keep the task completed and drop recurrence
+          targetTask.completed = true
+          targetTask.completedAt = completionTimestamp
+          targetTask.recurring = undefined
+          continue
         }
+
+        const historyTask = createHistoryTaskFromSnapshot(completedSnapshot)
+        recurringHistoryTasks.push(historyTask)
+
+        // Advance anchor task to next occurrence while preserving its original ID
+        applyNextInstanceToAnchor(targetTask, nextInstance)
+
+        const completedTaskId = createTaskId(update.id)
+        const projectIdForHistory =
+          update.projectId ?? historyTask.projectId ?? originalTask.projectId
+
+        if (projectIdForHistory) {
+          const targetProject = fileData.projects.find((p) => p.id === projectIdForHistory)
+          if (targetProject) {
+            const sectionContainingAnchor = targetProject.sections.find((section) =>
+              section.items.includes(completedTaskId),
+            )
+            const defaultSectionId = getDefaultSectionId(targetProject)
+            const targetSectionId: GroupId | null =
+              update.sectionId ?? sectionContainingAnchor?.id ?? defaultSectionId
+
+            if (targetSectionId) {
+              targetProject.sections = addTaskToSection(
+                historyTask.id,
+                targetSectionId,
+                undefined,
+                targetProject.sections,
+              )
+            }
+          }
+        }
+
+        logBusinessEvent(
+          "recurring_task_history_created",
+          {
+            parentTaskId: originalTask.id,
+            historyTaskId: historyTask.id,
+            recurringPattern: originalTask.recurring,
+            completedAt: completionTimestamp,
+            nextDueDate: nextInstance.dueDate,
+          },
+          request.context,
+        )
       } catch (error) {
         // Log the error but don't fail the entire request
         console.error("Failed to process recurring task completion:", {
@@ -475,17 +494,8 @@ async function updateTasks(
     }
   }
 
-  // Apply effective due date updates to completed tasks
-  const finalUpdatedTasks = updatedTasks.map((task) => {
-    const effectiveUpdate = completedTaskUpdates.get(task.id)
-    if (effectiveUpdate) {
-      return { ...task, ...effectiveUpdate }
-    }
-    return task
-  })
-
   // Combine updated tasks with new recurring instances
-  const allTasks = [...finalUpdatedTasks, ...recurringInstances]
+  const allTasks = [...updatedTasks, ...recurringHistoryTasks]
 
   // Update the file data with all tasks
   const updatedFileData = {
@@ -513,7 +523,7 @@ async function updateTasks(
     "tasks_updated",
     {
       updatedCount: updates.length,
-      recurringInstancesCreated: recurringInstances.length,
+      recurringHistoryCreated: recurringHistoryTasks.length,
       taskIds: updates.map((u) => u.id),
       totalTasks: updatedFileData.tasks.length,
     },
@@ -521,8 +531,8 @@ async function updateTasks(
   )
 
   const responseMessage =
-    recurringInstances.length > 0
-      ? `${updates.length} task(s) updated successfully, ${recurringInstances.length} recurring instance(s) created`
+    recurringHistoryTasks.length > 0
+      ? `${updates.length} task(s) updated successfully, ${recurringHistoryTasks.length} recurring history record(s) added`
       : `${updates.length} task(s) updated successfully`
 
   const response: UpdateTaskResponse = {
@@ -532,6 +542,32 @@ async function updateTasks(
   }
 
   return NextResponse.json<UpdateTaskResponse>(response)
+}
+
+function cloneTaskSnapshot(task: Task): Task {
+  return {
+    ...task,
+    labels: [...task.labels],
+    comments: [...task.comments],
+    subtasks: task.subtasks.map((subtask) => ({ ...subtask })),
+  }
+}
+
+function createHistoryTaskFromSnapshot(completedSnapshot: Task): Task {
+  return clearNullValues({
+    ...cloneTaskSnapshot(completedSnapshot),
+    id: createTaskId(uuidv4()),
+    completed: true,
+    recurring: undefined,
+  })
+}
+
+function applyNextInstanceToAnchor(anchorTask: Task, nextInstance: Task): void {
+  anchorTask.completed = false
+  anchorTask.completedAt = undefined
+  anchorTask.subtasks = nextInstance.subtasks.map((subtask) => ({ ...subtask }))
+  anchorTask.dueDate = nextInstance.dueDate
+  anchorTask.recurring = nextInstance.recurring
 }
 
 export const PATCH = withApiVersion(

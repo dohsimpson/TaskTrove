@@ -60,6 +60,60 @@ vi.mock("@/auth", () => ({
 
 // Only set up browser mocks if window is available (not in Node environment)
 if (typeof window !== "undefined") {
+  if (typeof window.DOMRect === "undefined") {
+    class DOMRectPolyfill implements DOMRect {
+      bottom: number
+      height: number
+      left: number
+      right: number
+      top: number
+      width: number
+      x: number
+      y: number
+
+      constructor(x = 0, y = 0, width = 0, height = 0) {
+        this.x = x
+        this.y = y
+        this.width = width
+        this.height = height
+        this.top = y
+        this.left = x
+        this.bottom = y + height
+        this.right = x + width
+      }
+
+      toJSON() {
+        return {
+          x: this.x,
+          y: this.y,
+          width: this.width,
+          height: this.height,
+          top: this.top,
+          right: this.right,
+          bottom: this.bottom,
+          left: this.left,
+        }
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(window as any).DOMRect = DOMRectPolyfill
+  }
+
+  if (typeof window.DragEvent === "undefined") {
+    class DragEventPolyfill extends Event {
+      dataTransfer: DataTransfer | null
+
+      constructor(type: string, eventInitDict?: DragEventInit) {
+        super(type, eventInitDict)
+        this.dataTransfer = eventInitDict?.dataTransfer ?? null
+      }
+    }
+
+    ;(window as unknown as { DragEvent: typeof DragEvent }).DragEvent =
+      DragEventPolyfill as unknown as typeof DragEvent
+  }
+
   // Mock window.matchMedia
   Object.defineProperty(window, "matchMedia", {
     writable: true,
@@ -73,6 +127,13 @@ if (typeof window !== "undefined") {
       removeEventListener: vi.fn(),
       dispatchEvent: vi.fn(),
     })),
+  })
+
+  // Mock window.innerWidth for useIsMobile hook
+  Object.defineProperty(window, "innerWidth", {
+    writable: true,
+    configurable: true,
+    value: 1024,
   })
 
   // Mock Web Audio API
@@ -114,9 +175,18 @@ if (typeof window !== "undefined") {
     value: window.AudioContext,
   })
 
-  // Mock document.caretRangeFromPoint for click-to-edit components
+  // Mock caret APIs used by click-to-edit components
   if (typeof document.caretRangeFromPoint === "undefined") {
     Object.defineProperty(document, "caretRangeFromPoint", {
+      value: () => null,
+      writable: true,
+    })
+  }
+  if (
+    typeof (document as Document & { caretPositionFromPoint?: unknown }).caretPositionFromPoint ===
+    "undefined"
+  ) {
+    Object.defineProperty(document, "caretPositionFromPoint", {
       value: () => null,
       writable: true,
     })

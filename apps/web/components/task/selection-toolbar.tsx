@@ -16,7 +16,6 @@ import { SimpleInputDialog } from "@/components/ui/custom/simple-input-dialog"
 import {
   CheckSquare,
   Trash2,
-  Calendar,
   Flag,
   MoreHorizontal,
   X,
@@ -34,6 +33,7 @@ import { deleteTasksAtom } from "@tasktrove/atoms/core/tasks"
 import { DeleteConfirmDialog } from "@/components/dialogs/delete-confirm-dialog"
 import { PriorityPopover } from "@/components/task/priority-popover"
 import { TaskSchedulePopover } from "@/components/task/task-schedule-popover"
+import { TaskScheduleTrigger } from "@/components/task/task-schedule-trigger"
 import { ProjectPopover } from "@/components/task/project-popover"
 import { TaskSearchDialog } from "@/components/task/task-search-dialog"
 import { cn } from "@/lib/utils"
@@ -246,8 +246,7 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
               {/* Schedule popover */}
               <TaskSchedulePopover taskId={selectedTaskIds}>
                 <Button size="sm" variant="ghost" className="h-8">
-                  <Calendar className="h-4 w-4 mr-1.5" />
-                  Schedule
+                  <TaskScheduleTrigger variant="button" fallbackLabel="Schedule" />
                 </Button>
               </TaskSchedulePopover>
 

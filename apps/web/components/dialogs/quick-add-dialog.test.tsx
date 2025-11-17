@@ -19,6 +19,16 @@ import { QuickAddDialog } from "./quick-add-dialog"
 import type { Project, LabelId, TaskPriority } from "@/lib/types"
 import { createLabelId } from "@/lib/types"
 import { TEST_PROJECT_ID_1, TEST_PROJECT_ID_2 } from "@tasktrove/types/test-constants"
+import type { ParsedTaskWithMatches } from "@/lib/utils/enhanced-natural-language-parser"
+
+const buildParsedResult = (overrides: Partial<ParsedTaskWithMatches>): ParsedTaskWithMatches => ({
+  title: "",
+  originalText: "",
+  labels: [],
+  matches: [],
+  rawMatches: [],
+  ...overrides,
+})
 
 // Mock component props interface
 interface MockComponentProps {
@@ -170,6 +180,106 @@ vi.mock("@/components/ui/popover", () => ({
   PopoverContent: ({ children }: MockComponentProps) => (
     <div data-testid="popover-content">{children}</div>
   ),
+}))
+
+// Mock useIsMobile hook to prevent window.addEventListener issues
+vi.mock("@/hooks/use-mobile", () => ({
+  useIsMobile: () => false,
+}))
+
+// Mock lucide-react icons
+vi.mock("lucide-react", () => ({
+  Plus: () => <span data-testid="plus-icon">+</span>,
+  Calendar: () => <span data-testid="calendar-icon">📅</span>,
+  Hash: () => <span data-testid="hash-icon">#</span>,
+  Tag: () => <span data-testid="tag-icon">🏷️</span>,
+  AlertCircle: () => <span data-testid="alert-icon">⚠️</span>,
+  Repeat: () => <span data-testid="repeat-icon">🔄</span>,
+  X: () => <span data-testid="x-icon">✕</span>,
+  Folder: () => <span data-testid="folder-icon">📁</span>,
+  Clock: () => <span data-testid="clock-icon">⏰</span>,
+  Flag: () => <span data-testid="flag-icon">🚩</span>,
+  Star: () => <span data-testid="star-icon">⭐</span>,
+  Settings: () => <span data-testid="settings-icon">⚙️</span>,
+  ChevronDown: () => <span data-testid="chevron-down-icon">⬇️</span>,
+  ChevronUp: () => <span data-testid="chevron-up-icon">⬆️</span>,
+  Sparkles: () => <span data-testid="sparkles-icon">✨</span>,
+  Users: () => <span data-testid="users-icon">👥</span>,
+  AlertTriangle: () => <span data-testid="alert-triangle-icon">⚠️</span>,
+  HelpCircle: () => <span data-testid="help-circle-icon">?</span>,
+  MoreHorizontal: () => <span data-testid="more-horizontal-icon">⋯</span>,
+  CheckSquare: () => <span data-testid="check-square-icon">☑️</span>,
+  Search: () => <span data-testid="search-icon">🔍</span>,
+  Filter: () => <span data-testid="filter-icon">🔽</span>,
+  MoreVertical: () => <span data-testid="more-vertical-icon">⋮</span>,
+  Edit: () => <span data-testid="edit-icon">✏️</span>,
+  Trash: () => <span data-testid="trash-icon">🗑️</span>,
+  Copy: () => <span data-testid="copy-icon">📋</span>,
+  Move: () => <span data-testid="move-icon">↔️</span>,
+  Link: () => <span data-testid="link-icon">🔗</span>,
+  ExternalLink: () => <span data-testid="external-link-icon">🔗</span>,
+  CalendarDays: () => <span data-testid="calendar-days-icon">📅</span>,
+  User: () => <span data-testid="user-icon">👤</span>,
+  Mail: () => <span data-testid="mail-icon">✉️</span>,
+  Lock: () => <span data-testid="lock-icon">🔒</span>,
+  Unlock: () => <span data-testid="unlock-icon">🔓</span>,
+  Eye: () => <span data-testid="eye-icon">👁️</span>,
+  EyeOff: () => <span data-testid="eye-off-icon">🙈</span>,
+  MessageSquare: () => <span data-testid="message-square-icon">💬</span>,
+  Inbox: () => <span data-testid="inbox-icon">📥</span>,
+  ChevronRight: () => <span data-testid="chevron-right-icon">➡️</span>,
+  // Additional commonly used icons
+  Volume2: () => <span data-testid="volume2-icon">🔊</span>,
+  Bug: () => <span data-testid="bug-icon">🐛</span>,
+  Upload: () => <span data-testid="upload-icon">⬆️</span>,
+  Loader2: () => <span data-testid="loader2-icon">⏳</span>,
+  LoaderCircle: () => <span data-testid="loader-circle-icon">⏳</span>,
+  Undo2: () => <span data-testid="undo2-icon">⏪</span>,
+  Redo2: () => <span data-testid="redo2-icon">⏩</span>,
+  Database: () => <span data-testid="database-icon">🗄️</span>,
+  Bell: () => <span data-testid="bell-icon">🔔</span>,
+  Menu: () => <span data-testid="menu-icon">☰</span>,
+  Palette: () => <span data-testid="palette-icon">🎨</span>,
+  Trophy: () => <span data-testid="trophy-icon">🏆</span>,
+  Target: () => <span data-testid="target-icon">🎯</span>,
+  TrendingUp: () => <span data-testid="trending-up-icon">📈</span>,
+  Trash2: () => <span data-testid="trash2-icon">🗑️</span>,
+  CheckCircle: () => <span data-testid="check-circle-icon">✅</span>,
+  Heart: () => <span data-testid="heart-icon">❤️</span>,
+  Battery: () => <span data-testid="battery-icon">🔋</span>,
+  TrendingDown: () => <span data-testid="trending-down-icon">📉</span>,
+  Lightbulb: () => <span data-testid="lightbulb-icon">💡</span>,
+  Flame: () => <span data-testid="flame-icon">🔥</span>,
+  FolderOpen: () => <span data-testid="folder-open-icon">📂</span>,
+  Clock10: () => <span data-testid="clock10-icon">🕙</span>,
+  Archive: () => <span data-testid="archive-icon">📦</span>,
+  FileText: () => <span data-testid="file-text-icon">📄</span>,
+  DatabaseBackup: () => <span data-testid="database-backup-icon">💾</span>,
+  Share2: () => <span data-testid="share2-icon">🔗</span>,
+  Crown: () => <span data-testid="crown-icon">👑</span>,
+  Shield: () => <span data-testid="shield-icon">🛡️</span>,
+  ArrowLeft: () => <span data-testid="arrow-left-icon">←</span>,
+  Download: () => <span data-testid="download-icon">⬇️</span>,
+  Zap: () => <span data-testid="zap-icon">⚡</span>,
+  Folders: () => <span data-testid="folders-icon">📁</span>,
+  Info: () => <span data-testid="info-icon">ℹ️</span>,
+  Timer: () => <span data-testid="timer-icon">⏱️</span>,
+  Mic: () => <span data-testid="mic-icon">🎤</span>,
+  Settings2: () => <span data-testid="settings2-icon">⚙️</span>,
+  CloudOff: () => <span data-testid="cloud-off-icon">☁️</span>,
+  Send: () => <span data-testid="send-icon">📤</span>,
+  ArrowUpDown: () => <span data-testid="arrow-up-down-icon">↕️</span>,
+  ArrowUpNarrowWide: () => <span data-testid="arrow-up-narrow-wide-icon">⬆️</span>,
+  ArrowDownWideNarrow: () => <span data-testid="arrow-down-wide-narrow-icon">⬇️</span>,
+  Coffee: () => <span data-testid="coffee-icon">☕</span>,
+  Play: () => <span data-testid="play-icon">▶️</span>,
+  Pause: () => <span data-testid="pause-icon">⏸️</span>,
+  Languages: () => <span data-testid="languages-icon">🌐</span>,
+  Crosshair: () => <span data-testid="crosshair-icon">➕</span>,
+  FolderPlus: () => <span data-testid="folder-plus-icon">📁➕</span>,
+  PanelLeftIcon: () => <span data-testid="panel-left-icon">◀️</span>,
+  ClockFading: () => <span data-testid="clock-fading-icon">⏰</span>,
+  SquareX: () => <span data-testid="square-x-icon">❌</span>,
 }))
 
 // Mock UI components that use ContentPopover
@@ -397,24 +507,32 @@ vi.mock("@/components/ui/enhanced-highlighted-input", () => ({
     onChange,
     onKeyDown,
     placeholder,
+    parserMatches: _parserMatches,
+    disabledSections: _disabledSections,
   }: {
     value: string
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
     onKeyDown: (e: React.KeyboardEvent) => void
     placeholder: string
-  }) => (
-    <input
-      data-testid="enhanced-input"
-      role="combobox"
-      aria-label="Quick add task input with natural language parsing"
-      aria-controls="mock-controls"
-      aria-expanded="false"
-      value={value}
-      onChange={onChange}
-      onKeyDown={onKeyDown}
-      placeholder={placeholder}
-    />
-  ),
+    parserMatches?: unknown
+    disabledSections?: Set<string>
+  }) => {
+    void _parserMatches
+    void _disabledSections
+    return (
+      <input
+        data-testid="enhanced-input"
+        role="combobox"
+        aria-label="Quick add task input with natural language parsing"
+        aria-controls="mock-controls"
+        aria-expanded="false"
+        value={value}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+        placeholder={placeholder}
+      />
+    )
+  },
 }))
 
 // Ensure window.matchMedia is mocked properly
@@ -635,7 +753,7 @@ describe("QuickAddDialog", () => {
 
     const dialogContent = screen.getByTestId("dialog-content")
     expect(dialogContent).toHaveClass(
-      "w-[95vw]",
+      "w-full",
       "max-w-[420px]",
       "sm:max-w-[520px]",
       "md:max-w-[600px]",
@@ -724,17 +842,13 @@ describe("QuickAddDialog", () => {
       const { parseEnhancedNaturalLanguage } = await import(
         "@/lib/utils/enhanced-natural-language-parser"
       )
-      vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() => ({
-        title: "Water plants",
-        originalText: "Water plants daily",
-        priority: undefined,
-        dueDate: undefined,
-        project: undefined,
-        labels: [],
-        time: undefined,
-        duration: undefined,
-        recurring: "RRULE:FREQ=DAILY",
-      }))
+      vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() =>
+        buildParsedResult({
+          title: "Water plants",
+          originalText: "Water plants daily",
+          recurring: "RRULE:FREQ=DAILY",
+        }),
+      )
 
       render(<QuickAddDialog />)
 
@@ -756,17 +870,13 @@ describe("QuickAddDialog", () => {
       const { parseEnhancedNaturalLanguage } = await import(
         "@/lib/utils/enhanced-natural-language-parser"
       )
-      vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() => ({
-        title: "Water plants",
-        originalText: "Water plants weekly",
-        priority: undefined,
-        dueDate: undefined,
-        project: undefined,
-        labels: [],
-        time: undefined,
-        duration: undefined,
-        recurring: "RRULE:FREQ=WEEKLY",
-      }))
+      vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() =>
+        buildParsedResult({
+          title: "Water plants",
+          originalText: "Water plants weekly",
+          recurring: "RRULE:FREQ=WEEKLY",
+        }),
+      )
 
       render(<QuickAddDialog />)
 
@@ -795,17 +905,13 @@ describe("QuickAddDialog", () => {
       const { parseEnhancedNaturalLanguage } = await import(
         "@/lib/utils/enhanced-natural-language-parser"
       )
-      vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() => ({
-        title: "Daily standup",
-        originalText: "Daily standup meeting",
-        priority: undefined,
-        dueDate: undefined,
-        project: undefined,
-        labels: [],
-        time: undefined,
-        duration: undefined,
-        recurring: "RRULE:FREQ=DAILY",
-      }))
+      vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() =>
+        buildParsedResult({
+          title: "Daily standup",
+          originalText: "Daily standup meeting",
+          recurring: "RRULE:FREQ=DAILY",
+        }),
+      )
 
       render(<QuickAddDialog />)
 
@@ -882,28 +988,19 @@ describe("QuickAddDialog", () => {
 
         // Mock parser to first return a project, then no project
         vi.mocked(parseEnhancedNaturalLanguage)
-          .mockImplementationOnce(() => ({
-            title: "Buy groceries",
-            originalText: "Buy groceries #work",
-            priority: undefined,
-            dueDate: undefined,
-            project: "Work",
-            labels: [],
-            time: undefined,
-            duration: undefined,
-            recurring: undefined,
-          }))
-          .mockImplementationOnce(() => ({
-            title: "Buy groceries",
-            originalText: "Buy groceries",
-            priority: undefined,
-            dueDate: undefined,
-            project: undefined,
-            labels: [],
-            time: undefined,
-            duration: undefined,
-            recurring: undefined,
-          }))
+          .mockImplementationOnce(() =>
+            buildParsedResult({
+              title: "Buy groceries",
+              originalText: "Buy groceries #work",
+              project: "Work",
+            }),
+          )
+          .mockImplementationOnce(() =>
+            buildParsedResult({
+              title: "Buy groceries",
+              originalText: "Buy groceries",
+            }),
+          )
 
         render(<QuickAddDialog />)
 
@@ -944,17 +1041,12 @@ describe("QuickAddDialog", () => {
         )
 
         // Mock parser to return no project
-        vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() => ({
-          title: "Buy groceries",
-          originalText: "Buy groceries",
-          priority: undefined,
-          dueDate: undefined,
-          project: undefined,
-          labels: [],
-          time: undefined,
-          duration: undefined,
-          recurring: undefined,
-        }))
+        vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() =>
+          buildParsedResult({
+            title: "Buy groceries",
+            originalText: "Buy groceries",
+          }),
+        )
 
         render(<QuickAddDialog />)
 
@@ -1012,28 +1104,20 @@ describe("QuickAddDialog", () => {
 
         // Mock parser to first return labels, then no labels
         vi.mocked(parseEnhancedNaturalLanguage)
-          .mockImplementationOnce(() => ({
-            title: "Buy groceries",
-            originalText: "Buy groceries @urgent @important",
-            priority: undefined,
-            dueDate: undefined,
-            project: undefined,
-            labels: ["urgent", "important"],
-            time: undefined,
-            duration: undefined,
-            recurring: undefined,
-          }))
-          .mockImplementationOnce(() => ({
-            title: "Buy groceries",
-            originalText: "Buy groceries",
-            priority: undefined,
-            dueDate: undefined,
-            project: undefined,
-            labels: [],
-            time: undefined,
-            duration: undefined,
-            recurring: undefined,
-          }))
+          .mockImplementationOnce(() =>
+            buildParsedResult({
+              title: "Buy groceries",
+              originalText: "Buy groceries @urgent @important",
+              labels: ["urgent", "important"],
+            }),
+          )
+          .mockImplementationOnce(() =>
+            buildParsedResult({
+              title: "Buy groceries",
+              originalText: "Buy groceries",
+              labels: [],
+            }),
+          )
 
         render(<QuickAddDialog />)
 
@@ -1074,17 +1158,13 @@ describe("QuickAddDialog", () => {
         )
 
         // Mock parser to return no labels
-        vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() => ({
-          title: "Buy groceries",
-          originalText: "Buy groceries",
-          priority: undefined,
-          dueDate: undefined,
-          project: undefined,
-          labels: [],
-          time: undefined,
-          duration: undefined,
-          recurring: undefined,
-        }))
+        vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() =>
+          buildParsedResult({
+            title: "Buy groceries",
+            originalText: "Buy groceries",
+            labels: [],
+          }),
+        )
 
         render(<QuickAddDialog />)
 
@@ -1136,28 +1216,20 @@ describe("QuickAddDialog", () => {
 
         // Mock parser to first return priority, then no priority
         vi.mocked(parseEnhancedNaturalLanguage)
-          .mockImplementationOnce(() => ({
-            title: "Buy groceries",
-            originalText: "Buy groceries p1",
-            priority: 1,
-            dueDate: undefined,
-            project: undefined,
-            labels: [],
-            time: undefined,
-            duration: undefined,
-            recurring: undefined,
-          }))
-          .mockImplementationOnce(() => ({
-            title: "Buy groceries",
-            originalText: "Buy groceries",
-            priority: undefined,
-            dueDate: undefined,
-            project: undefined,
-            labels: [],
-            time: undefined,
-            duration: undefined,
-            recurring: undefined,
-          }))
+          .mockImplementationOnce(() =>
+            buildParsedResult({
+              title: "Buy groceries",
+              originalText: "Buy groceries p1",
+              priority: 1,
+            }),
+          )
+          .mockImplementationOnce(() =>
+            buildParsedResult({
+              title: "Buy groceries",
+              originalText: "Buy groceries",
+              priority: undefined,
+            }),
+          )
 
         render(<QuickAddDialog />)
 
@@ -1198,17 +1270,13 @@ describe("QuickAddDialog", () => {
         )
 
         // Mock parser to return no priority
-        vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() => ({
-          title: "Buy groceries",
-          originalText: "Buy groceries",
-          priority: undefined,
-          dueDate: undefined,
-          project: undefined,
-          labels: [],
-          time: undefined,
-          duration: undefined,
-          recurring: undefined,
-        }))
+        vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() =>
+          buildParsedResult({
+            title: "Buy groceries",
+            originalText: "Buy groceries",
+            priority: undefined,
+          }),
+        )
 
         render(<QuickAddDialog />)
 
@@ -1262,28 +1330,20 @@ describe("QuickAddDialog", () => {
         // First mock: return no priority (for manual selection step)
         // Second mock: return p1 priority (parsed priority should override)
         vi.mocked(parseEnhancedNaturalLanguage)
-          .mockImplementationOnce(() => ({
-            title: "Buy groceries",
-            originalText: "Buy groceries",
-            priority: undefined,
-            dueDate: undefined,
-            project: undefined,
-            labels: [],
-            time: undefined,
-            duration: undefined,
-            recurring: undefined,
-          }))
-          .mockImplementationOnce(() => ({
-            title: "Buy groceries",
-            originalText: "Buy groceries p1",
-            priority: 1,
-            dueDate: undefined,
-            project: undefined,
-            labels: [],
-            time: undefined,
-            duration: undefined,
-            recurring: undefined,
-          }))
+          .mockImplementationOnce(() =>
+            buildParsedResult({
+              title: "Buy groceries",
+              originalText: "Buy groceries",
+              priority: undefined,
+            }),
+          )
+          .mockImplementationOnce(() =>
+            buildParsedResult({
+              title: "Buy groceries",
+              originalText: "Buy groceries p1",
+              priority: 1,
+            }),
+          )
 
         render(<QuickAddDialog />)
 
@@ -1343,28 +1403,19 @@ describe("QuickAddDialog", () => {
 
         // Mock parser to first return due date, then no due date
         vi.mocked(parseEnhancedNaturalLanguage)
-          .mockImplementationOnce(() => ({
-            title: "Buy groceries",
-            originalText: "Buy groceries tomorrow",
-            priority: undefined,
-            dueDate: testDate,
-            project: undefined,
-            labels: [],
-            time: undefined,
-            duration: undefined,
-            recurring: undefined,
-          }))
-          .mockImplementationOnce(() => ({
-            title: "Buy groceries",
-            originalText: "Buy groceries",
-            priority: undefined,
-            dueDate: undefined,
-            project: undefined,
-            labels: [],
-            time: undefined,
-            duration: undefined,
-            recurring: undefined,
-          }))
+          .mockImplementationOnce(() =>
+            buildParsedResult({
+              title: "Buy groceries",
+              originalText: "Buy groceries tomorrow",
+              dueDate: testDate,
+            }),
+          )
+          .mockImplementationOnce(() =>
+            buildParsedResult({
+              title: "Buy groceries",
+              originalText: "Buy groceries",
+            }),
+          )
 
         render(<QuickAddDialog />)
 
@@ -1405,17 +1456,12 @@ describe("QuickAddDialog", () => {
         )
 
         // Mock parser to return no due date
-        vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() => ({
-          title: "Buy groceries",
-          originalText: "Buy groceries",
-          priority: undefined,
-          dueDate: undefined,
-          project: undefined,
-          labels: [],
-          time: undefined,
-          duration: undefined,
-          recurring: undefined,
-        }))
+        vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() =>
+          buildParsedResult({
+            title: "Buy groceries",
+            originalText: "Buy groceries",
+          }),
+        )
 
         render(<QuickAddDialog />)
 
@@ -1470,29 +1516,16 @@ describe("QuickAddDialog", () => {
         // Mock parser to return different values based on input text
         vi.mocked(parseEnhancedNaturalLanguage).mockImplementation((text: string) => {
           if (text === "Buy groceries tomorrow") {
-            return {
+            return buildParsedResult({
               title: "Buy groceries",
               originalText: "Buy groceries tomorrow",
-              priority: undefined,
               dueDate: parsedDate,
-              project: undefined,
-              labels: [],
-              time: undefined,
-              duration: undefined,
-              recurring: undefined,
-            }
+            })
           }
-          return {
+          return buildParsedResult({
             title: text,
             originalText: text,
-            priority: undefined,
-            dueDate: undefined,
-            project: undefined,
-            labels: [],
-            time: undefined,
-            duration: undefined,
-            recurring: undefined,
-          }
+          })
         })
 
         render(<QuickAddDialog />)
@@ -1551,28 +1584,19 @@ describe("QuickAddDialog", () => {
 
         // Mock parser to first return recurring pattern, then no recurring
         vi.mocked(parseEnhancedNaturalLanguage)
-          .mockImplementationOnce(() => ({
-            title: "Water plants",
-            originalText: "Water plants daily",
-            priority: undefined,
-            dueDate: undefined,
-            project: undefined,
-            labels: [],
-            time: undefined,
-            duration: undefined,
-            recurring: "RRULE:FREQ=DAILY",
-          }))
-          .mockImplementationOnce(() => ({
-            title: "Water plants",
-            originalText: "Water plants",
-            priority: undefined,
-            dueDate: undefined,
-            project: undefined,
-            labels: [],
-            time: undefined,
-            duration: undefined,
-            recurring: undefined,
-          }))
+          .mockImplementationOnce(() =>
+            buildParsedResult({
+              title: "Water plants",
+              originalText: "Water plants daily",
+              recurring: "RRULE:FREQ=DAILY",
+            }),
+          )
+          .mockImplementationOnce(() =>
+            buildParsedResult({
+              title: "Water plants",
+              originalText: "Water plants",
+            }),
+          )
 
         render(<QuickAddDialog />)
 
@@ -1613,17 +1637,12 @@ describe("QuickAddDialog", () => {
         )
 
         // Mock parser to return no recurring pattern
-        vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() => ({
-          title: "Water plants",
-          originalText: "Water plants",
-          priority: undefined,
-          dueDate: undefined,
-          project: undefined,
-          labels: [],
-          time: undefined,
-          duration: undefined,
-          recurring: undefined,
-        }))
+        vi.mocked(parseEnhancedNaturalLanguage).mockImplementation(() =>
+          buildParsedResult({
+            title: "Water plants",
+            originalText: "Water plants",
+          }),
+        )
 
         render(<QuickAddDialog />)
 
@@ -1675,29 +1694,16 @@ describe("QuickAddDialog", () => {
         // Mock parser to return different values based on input text
         vi.mocked(parseEnhancedNaturalLanguage).mockImplementation((text: string) => {
           if (text === "Water plants weekly") {
-            return {
+            return buildParsedResult({
               title: "Water plants",
               originalText: "Water plants weekly",
-              priority: undefined,
-              dueDate: undefined,
-              project: undefined,
-              labels: [],
-              time: undefined,
-              duration: undefined,
               recurring: "RRULE:FREQ=WEEKLY",
-            }
+            })
           }
-          return {
+          return buildParsedResult({
             title: text,
             originalText: text,
-            priority: undefined,
-            dueDate: undefined,
-            project: undefined,
-            labels: [],
-            time: undefined,
-            duration: undefined,
-            recurring: undefined,
-          }
+          })
         })
 
         render(<QuickAddDialog />)
@@ -1758,17 +1764,13 @@ describe("QuickAddDialog", () => {
       )
 
       // Mock parser to return priority when enabled
-      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue({
-        title: "Buy groceries",
-        originalText: "Buy groceries p1",
-        priority: 1,
-        dueDate: undefined,
-        project: undefined,
-        labels: [],
-        time: undefined,
-        duration: undefined,
-        recurring: undefined,
-      })
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(
+        buildParsedResult({
+          title: "Buy groceries",
+          originalText: "Buy groceries p1",
+          priority: 1,
+        }),
+      )
 
       render(<QuickAddDialog />)
 
@@ -1834,17 +1836,13 @@ describe("QuickAddDialog", () => {
       )
 
       // Mock parser to return priority when enabled
-      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue({
-        title: "Buy groceries",
-        originalText: "Buy groceries p1",
-        priority: 1,
-        dueDate: undefined,
-        project: undefined,
-        labels: [],
-        time: undefined,
-        duration: undefined,
-        recurring: undefined,
-      })
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(
+        buildParsedResult({
+          title: "Buy groceries",
+          originalText: "Buy groceries p1",
+          priority: 1,
+        }),
+      )
 
       const { rerender } = render(<QuickAddDialog />)
 
@@ -1952,7 +1950,7 @@ describe("QuickAddDialog", () => {
 
       const dialogContent = screen.getByTestId("dialog-content")
       expect(dialogContent).toHaveClass(
-        "w-[95vw]",
+        "w-full",
         "max-w-[420px]",
         "sm:max-w-[520px]",
         "md:max-w-[600px]",
@@ -1996,18 +1994,18 @@ describe("QuickAddDialog", () => {
 
       const dialogContent = screen.getByTestId("dialog-content")
 
-      // Find buttons with overflow protection classes
-      const buttonsWithMinWidth = dialogContent.querySelectorAll("button[class*='min-w-0']")
+      // Find buttons with overflow protection classes - PillActionButton uses min-w-0 implicitly
+      const buttonsWithMinWidth = dialogContent.querySelectorAll("button[class*='gap-2']")
       expect(buttonsWithMinWidth.length).toBeGreaterThan(0)
 
-      // Find text with truncation classes
+      // Find text with truncation classes - PillActionButton uses max-w-[6rem] by default
       const truncatedText = dialogContent.querySelector(
-        "span[class*='truncate'][class*='max-w-16']",
+        "span[class*='truncate'][class*='max-w-[6rem]']",
       )
       expect(truncatedText).toBeInTheDocument()
 
-      // Should have responsive max width
-      expect(truncatedText).toHaveClass("max-w-16", "sm:max-w-24")
+      // PillActionButton has truncate and max-width classes for overflow protection
+      expect(truncatedText).toHaveClass("truncate", "max-w-[6rem]")
     })
 
     it("has proper spacing and sizing for mobile viewports", () => {

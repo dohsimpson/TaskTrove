@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { VIEW_CONFIG_OPTIONS } from "@tasktrove/constants"
 import {
@@ -24,10 +25,15 @@ import {
   Minimize2,
   CheckSquare,
   AlertTriangle,
+  Table,
+  ChartNoAxesCombined,
 } from "lucide-react"
 import { HelpPopover } from "@/components/ui/help-popover"
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
+import { ButtonGroup } from "@/components/ui/button-group"
+import { cn } from "@/lib/utils"
 import { useTranslation } from "@tasktrove/i18n"
+import { isPro } from "@/lib/utils/env"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 interface ViewOptionsContentProps {
   onAdvancedSearch?: () => void
 }
@@ -69,6 +75,10 @@ export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps
 
   const viewConfig = getViewConfig(currentView)
 
+  const [hoveredViewMode, setHoveredViewMode] = useState<
+    "list" | "kanban" | "calendar" | "table" | "stats" | null
+  >(null)
+
   const isKanbanDisabled = () => {
     // Kanban is only available for project views
     return routeContext.routeType !== "project"
@@ -82,7 +92,7 @@ export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps
     return viewConfig.showCompletedDisabled
   }
 
-  const getViewModeIcon = (mode: "list" | "kanban" | "calendar") => {
+  const getViewModeIcon = (mode: "list" | "kanban" | "calendar" | "table" | "stats") => {
     switch (mode) {
       case "list":
         return <ListTodo className="h-4 w-4" />
@@ -90,11 +100,15 @@ export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps
         return <Columns3 className="h-4 w-4" />
       case "calendar":
         return <Calendar className="h-4 w-4" />
+      case "table":
+        return <Table className="h-4 w-4" />
+      case "stats":
+        return <ChartNoAxesCombined className="h-4 w-4" />
     }
   }
 
   return (
-    <TooltipProvider delayDuration={0}>
+    <>
       {/* Header */}
       <div className="flex items-center gap-2 pb-3 border-b">
         <Settings2 className="h-5 w-5" />
@@ -114,10 +128,7 @@ export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps
               <ul className="list-disc pl-4 space-y-1">
                 <li>
                   <strong>{t("viewOptions.help.viewMode.label", "View Mode:")}</strong>{" "}
-                  {t(
-                    "viewOptions.help.viewMode.description",
-                    "Switch between list, kanban board, and calendar layouts",
-                  )}
+                  {t("viewOptions.help.viewMode.description", "Switch between different layouts")}
                 </li>
                 <li>
                   <strong>{t("viewOptions.help.displayOptions.label", "Display Options:")}</strong>{" "}
@@ -163,58 +174,110 @@ export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps
           <Label className="text-sm font-medium">
             {t("viewOptions.viewMode.label", "View Mode")}
           </Label>
-          <div className="grid grid-cols-3 gap-1">
-            {[
-              {
-                mode: "list" as const,
-                label: t("viewOptions.viewMode.list", "List"),
-              },
-              {
-                mode: "kanban" as const,
-                label: t("viewOptions.viewMode.kanban", "Kanban"),
-              },
-              {
-                mode: "calendar" as const,
-                label: t("viewOptions.viewMode.calendar", "Calendar"),
-              },
-            ].map(({ mode, label }) => {
-              const disabled =
-                (mode === "kanban" && isKanbanDisabled()) ||
-                (mode === "calendar" && isCalendarDisabled())
+          <TooltipProvider delayDuration={150} skipDelayDuration={300}>
+            <ButtonGroup className="w-full flex-nowrap overflow-hidden">
+              {[
+                {
+                  mode: "list" as const,
+                  label: t("viewOptions.viewMode.list", "List"),
+                },
+                {
+                  mode: "kanban" as const,
+                  label: t("viewOptions.viewMode.kanban", "Kanban"),
+                },
+                {
+                  mode: "calendar" as const,
+                  label: t("viewOptions.viewMode.calendar", "Calendar"),
+                },
+                ...(isPro()
+                  ? [
+                      {
+                        mode: "table" as const,
+                        label: t("viewOptions.viewMode.table", "Table"),
+                      },
+                      // {
+                      // mode: "stats" as const,
+                      // label: t("viewOptions.viewMode.stats", "Stats"),
+                      // },
+                    ]
+                  : []),
+              ].map(({ mode, label }) => {
+                const disabled =
+                  (mode === "kanban" && isKanbanDisabled()) ||
+                  (mode === "calendar" && isCalendarDisabled())
+                const isExpanded = hoveredViewMode === mode
+                const flexGrowValue = hoveredViewMode ? (isExpanded ? 2.8 : 0.55) : 1
+                const showKanbanTooltip = disabled && mode === "kanban"
 
-              const button = (
-                <Button
-                  key={mode}
-                  variant={viewState.viewMode === mode ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewOptions({ viewMode: mode })}
-                  disabled={disabled}
-                  className="justify-center capitalize cursor-pointer"
-                >
-                  {getViewModeIcon(mode)}
-                  <span className="ml-1">{label}</span>
-                </Button>
-              )
-
-              // Handle kanban disabled state with tooltip
-              if (mode === "kanban" && isKanbanDisabled()) {
-                return (
-                  <Tooltip key={mode}>
-                    <TooltipTrigger asChild>
-                      <div>{button}</div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>
-                        {t("viewOptions.viewMode.kanbanTooltip", "Only available for projects")}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
+                const button = (
+                  <Button
+                    key={mode}
+                    variant={viewState.viewMode === mode ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      if (disabled) return
+                      setViewOptions({ viewMode: mode })
+                    }}
+                    onMouseEnter={() => setHoveredViewMode(mode)}
+                    onMouseLeave={() => setHoveredViewMode(null)}
+                    onFocus={() => setHoveredViewMode(mode)}
+                    onBlur={() => setHoveredViewMode(null)}
+                    aria-disabled={disabled}
+                    tabIndex={disabled ? -1 : undefined}
+                    aria-label={label}
+                    title={label}
+                    data-expanded={isExpanded}
+                    data-disabled={disabled ? "true" : undefined}
+                    className={cn(
+                      "group/view-mode relative overflow-hidden px-3 py-1 justify-center capitalize shrink basis-0",
+                      "transition-[color,background,box-shadow] duration-200 ease-out",
+                      disabled &&
+                        "bg-muted text-muted-foreground border border-muted/70 cursor-not-allowed [&_svg]:text-muted-foreground [&_span[data-slot=view-label]]:text-muted-foreground",
+                    )}
+                    style={{
+                      flexGrow: flexGrowValue,
+                      flexBasis: 0,
+                      transition:
+                        "flex-grow 100ms ease, background-color 150ms ease, color 150ms ease",
+                    }}
+                  >
+                    <span className="flex items-center justify-center gap-1.5 overflow-hidden">
+                      <span className="inline-flex w-4 shrink-0 justify-center">
+                        {getViewModeIcon(mode)}
+                      </span>
+                      <span
+                        className={cn(
+                          "text-xs font-medium text-current",
+                          "whitespace-nowrap max-w-0 opacity-0 -translate-x-1",
+                          "transition-all duration-200 ease-out",
+                          "group-hover/view-mode:max-w-[200px] group-hover/view-mode:opacity-100 group-hover/view-mode:translate-x-0 group-hover/view-mode:ml-1",
+                          "group-focus-visible/view-mode:max-w-[200px] group-focus-visible/view-mode:opacity-100 group-focus-visible/view-mode:translate-x-0 group-focus-visible/view-mode:ml-1",
+                          "group-data-[expanded=true]/view-mode:max-w-[200px] group-data-[expanded=true]/view-mode:opacity-100 group-data-[expanded=true]/view-mode:translate-x-0 group-data-[expanded=true]/view-mode:ml-1",
+                          viewState.viewMode === mode && "text-primary-foreground",
+                        )}
+                        data-slot="view-label"
+                      >
+                        {label}
+                      </span>
+                    </span>
+                  </Button>
                 )
-              }
 
-              return button
-            })}
-          </div>
+                if (showKanbanTooltip) {
+                  return (
+                    <Tooltip key={mode} delayDuration={150}>
+                      <TooltipTrigger asChild>{button}</TooltipTrigger>
+                      <TooltipContent side="bottom" align="center">
+                        {t("viewOptions.viewMode.kanbanTooltip", "Only available for projects")}
+                      </TooltipContent>
+                    </Tooltip>
+                  )
+                }
+
+                return button
+              })}
+            </ButtonGroup>
+          </TooltipProvider>
         </div>
 
         <Separator />
@@ -344,6 +407,6 @@ export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps
           </div>
         </div>
       </div>
-    </TooltipProvider>
+    </>
   )
 }

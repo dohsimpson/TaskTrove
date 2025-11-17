@@ -1,5 +1,6 @@
 import type { Extractor } from "../base/Extractor";
 import type { ExtractionResult, ParserContext } from "../../types";
+import { buildBoundedPattern } from "../../utils/patterns";
 
 interface DurationPattern {
   pattern: RegExp;
@@ -9,11 +10,11 @@ interface DurationPattern {
 // "for Xh" patterns (e.g., "for 1h", "for 2h")
 const FOR_HOUR_PATTERNS: DurationPattern[] = [
   {
-    pattern: /\bfor\s+(\d+)\s*h\b/gi,
+    pattern: buildBoundedPattern("for\\s+(\\d+)\\s*h"),
     getValue: (match) => match[1] + "h",
   },
   {
-    pattern: /\bfor\s+(\d+)\s*hours?\b/gi,
+    pattern: buildBoundedPattern("for\\s+(\\d+)\\s*hours?"),
     getValue: (match) => match[1] + "h",
   },
 ];
@@ -21,11 +22,11 @@ const FOR_HOUR_PATTERNS: DurationPattern[] = [
 // "for Xm" patterns (e.g., "for 30m", "for 45min")
 const FOR_MINUTE_PATTERNS: DurationPattern[] = [
   {
-    pattern: /\bfor\s+(\d+)\s*m\b/gi,
+    pattern: buildBoundedPattern("for\\s+(\\d+)\\s*m"),
     getValue: (match) => match[1] + "m",
   },
   {
-    pattern: /\bfor\s+(\d+)\s*minutes?\b/gi,
+    pattern: buildBoundedPattern("for\\s+(\\d+)\\s*minutes?"),
     getValue: (match) => match[1] + "m",
   },
 ];
@@ -33,19 +34,19 @@ const FOR_MINUTE_PATTERNS: DurationPattern[] = [
 // Direct duration patterns (e.g., "1h", "30m")
 const DIRECT_PATTERNS: DurationPattern[] = [
   {
-    pattern: /\b(\d+)h\b/gi,
+    pattern: buildBoundedPattern("(\\d+)h"),
     getValue: (match) => match[1] + "h",
   },
   {
-    pattern: /\b(\d+)\s*hours?\b/gi,
+    pattern: buildBoundedPattern("(\\d+)\\s*hours?"),
     getValue: (match) => match[1] + "h",
   },
   {
-    pattern: /\b(\d+)m\b/gi,
+    pattern: buildBoundedPattern("(\\d+)m"),
     getValue: (match) => match[1] + "m",
   },
   {
-    pattern: /\b(\d+)\s*minutes?\b/gi,
+    pattern: buildBoundedPattern("(\\d+)\\s*minutes?"),
     getValue: (match) => match[1] + "m",
   },
 ];

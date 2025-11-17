@@ -1,30 +1,19 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useSetAtom, useAtomValue } from "jotai"
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable"
 // TaskItem is now used internally by VirtualizedTaskList
 // CompactTaskItem functionality is now integrated into TaskItem with variant="compact"
-import { TaskSidePanel } from "./task-side-panel"
 import { AddSectionDivider } from "./add-section-divider"
 import { SelectionToolbar } from "./selection-toolbar"
 import { ProjectViewToolbar } from "./project-view-toolbar"
 import { Section } from "./section"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
-import { projectsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { projectsAtom, labelsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { filteredTasksAtom } from "@tasktrove/atoms/ui/filtered-tasks"
-import {
-  currentViewStateAtom,
-  setViewOptionsAtom,
-  updateGlobalViewOptionsAtom,
-} from "@tasktrove/atoms/ui/views"
-import { selectedTaskAtom } from "@tasktrove/atoms/ui/selection"
-import { sidePanelWidthAtom } from "@tasktrove/atoms/ui/views"
-import {
-  SIDE_PANEL_WIDTH_MIN,
-  SIDE_PANEL_WIDTH_MAX,
-  DEFAULT_SECTION_COLOR,
-} from "@tasktrove/constants"
+import { currentViewStateAtom } from "@tasktrove/atoms/ui/views"
+import { DEFAULT_SECTION_COLOR } from "@tasktrove/constants"
 import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
 import type { Task, Project, ProjectSection } from "@/lib/types"
 import { createGroupId } from "@/lib/types"
@@ -33,9 +22,11 @@ import { Input } from "@/components/ui/input"
 import { ColorPicker } from "@/components/ui/custom/color-picker"
 import { X } from "lucide-react"
 import { log } from "@/lib/utils/logger"
-import { useIsMobile } from "@/hooks/use-mobile"
 import { VirtualizedTaskList } from "./virtualized-task-list"
 import { ProjectSectionDebugBadge } from "@/components/debug"
+import { ViewEmptyState } from "./view-empty-state"
+import { TaskViewSidePanelLayout } from "./task-view-side-panel-layout"
+import { useProjectGroupVirtualSections } from "./use-project-group-virtual-sections"
 
 // Constants - removed SIDE_PANEL_WIDTH since it's now handled by ResizablePanel
 
@@ -51,6 +42,12 @@ interface ProjectSectionsViewProps {
    * previous TaskListWithPanel behavior, ensuring consistent UX across all views.
    */
   supportsSections?: boolean
+  /**
+   * When true, project-group routes render each child project as a pseudo "section"
+   * while keeping the overall view in flat mode. This enables a grouped presentation
+   * without enabling full section management features.
+   */
+  showProjectsAsSections?: boolean
 }
 
 /**
@@ -80,13 +77,17 @@ interface ProjectSectionsViewProps {
 export function ProjectSectionsView({
   droppableId,
   supportsSections = true,
+  showProjectsAsSections = false,
 }: ProjectSectionsViewProps) {
   // Get data from atoms
   const tasks = useAtomValue(filteredTasksAtom)
   const currentViewState = useAtomValue(currentViewStateAtom)
   const routeContext = useAtomValue(currentRouteContextAtom)
   const allProjects = useAtomValue(projectsAtom)
-  const selectedTask = useAtomValue(selectedTaskAtom)
+  const allLabels = useAtomValue(labelsAtom)
+  const router = useRouter()
+  const { shouldShowProjectPseudoSections, currentProjectGroup, virtualProjectSections } =
+    useProjectGroupVirtualSections(showProjectsAsSections)
 
   // Get project from route context
   const project =
@@ -95,29 +96,16 @@ export function ProjectSectionsView({
       : undefined
 
   // Extract view state
-  const { showSidePanel, compactView } = currentViewState
-  const isMobile = useIsMobile()
+  const { compactView } = currentViewState
 
   // Get sorted task IDs for flat list view (when supportsSections is false)
   const sortedFlatTaskIds = tasks.map((task: Task) => task.id)
 
   // Atom actions
-  const setViewOptions = useSetAtom(setViewOptionsAtom)
   const [isAddingSection, setIsAddingSection] = useState(false)
   const [addingSectionPosition, setAddingSectionPosition] = useState<number | undefined>(undefined)
   const [newSectionName, setNewSectionName] = useState("")
   const [newSectionColor, setNewSectionColor] = useState(DEFAULT_SECTION_COLOR)
-  // Panel width state (global, persisted in localStorage)
-  const sidePanelWidth = useAtomValue(sidePanelWidthAtom)
-  const updateGlobalViewOptions = useSetAtom(updateGlobalViewOptionsAtom)
-
-  // Update panel width when resized
-  const handlePanelResize = (sizes: number[]) => {
-    if (sizes.length >= 2 && sizes[1] !== undefined) {
-      const panelWidth = sizes[1] // Second panel is the side panel
-      updateGlobalViewOptions({ sidePanelWidth: panelWidth })
-    }
-  }
 
   // Jotai actions
   const addSection = useSetAtom(projectAtoms.actions.addSection)
@@ -174,15 +162,7 @@ export function ProjectSectionsView({
     setAddingSectionPosition(position)
   }
 
-  // Side panel view state is the single source of truth for panel visibility
-  const isPanelOpen = showSidePanel && Boolean(selectedTask)
-
   // handleTaskClick is now handled directly by TaskItem using atoms
-
-  const handleClosePanel = () => {
-    // Simply disable the side panel view option - this will sync everything
-    setViewOptions({ showSidePanel: false })
-  }
 
   // Get sections from project
   // Projects are guaranteed to have at least one section after v0.8.0 migration
@@ -192,6 +172,95 @@ export function ProjectSectionsView({
   const renderContent = () => {
     // When supportsSections is false, always render as a flat list
     if (!supportsSections) {
+      if (shouldShowProjectPseudoSections) {
+        return (
+          <div className="px-4">
+            <div className="flex justify-center">
+              <div className="w-full max-w-screen-2xl">
+                <SelectionToolbar />
+
+                <ProjectViewToolbar className="mb-3" />
+
+                {virtualProjectSections.length === 0 ? (
+                  <ViewEmptyState
+                    viewId={routeContext.viewId}
+                    projectName={currentProjectGroup?.name}
+                    className="py-16"
+                  />
+                ) : (
+                  <div className="space-y-6" data-testid="project-group-sections">
+                    {virtualProjectSections.map((section) => (
+                      <div
+                        key={section.key}
+                        data-testid={`project-section-${section.key}`}
+                        className="rounded-xl border border-border bg-card shadow-sm"
+                      >
+                        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                          {section.projectId ? (
+                            <button
+                              type="button"
+                              className="flex items-center gap-3 text-sm font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-sm"
+                              aria-label={`Open ${section.name}`}
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                router.push(`/projects/${section.projectId}`)
+                              }}
+                              data-testid="project-section-title"
+                            >
+                              <span
+                                className="h-2.5 w-2.5 rounded-full"
+                                style={{ backgroundColor: section.color }}
+                                aria-hidden="true"
+                              />
+                              <span>{section.name}</span>
+                            </button>
+                          ) : (
+                            <div
+                              className="flex items-center gap-3"
+                              data-testid="project-section-title"
+                            >
+                              <span
+                                className="h-2.5 w-2.5 rounded-full"
+                                style={{ backgroundColor: section.color }}
+                                aria-hidden="true"
+                              />
+                              <span className="text-sm font-medium">{section.name}</span>
+                            </div>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {section.tasks.length}
+                          </span>
+                        </div>
+
+                        <div className="py-3">
+                          {section.tasks.length === 0 ? (
+                            <div className="py-10 text-center text-sm text-muted-foreground">
+                              No tasks visible in this project
+                            </div>
+                          ) : (
+                            <VirtualizedTaskList
+                              tasks={section.tasks}
+                              variant={compactView ? "compact" : "default"}
+                              sortedTaskIds={section.tasks.map((task: Task) => task.id)}
+                              enableDropTargets={false}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      const currentLabel =
+        routeContext.routeType === "label"
+          ? allLabels.find((label) => label.id === routeContext.viewId)
+          : undefined
+
       return (
         <div className="px-4">
           {/* Centered Content Container */}
@@ -204,12 +273,21 @@ export function ProjectSectionsView({
               <ProjectViewToolbar className="mb-3" />
 
               {/* Flat Task List without sections */}
-              <VirtualizedTaskList
-                tasks={tasks}
-                variant={compactView ? "compact" : "default"}
-                sortedTaskIds={sortedFlatTaskIds}
-                enableDropTargets={false}
-              />
+              {tasks.length === 0 ? (
+                <ViewEmptyState
+                  viewId={routeContext.viewId}
+                  projectName={project?.name}
+                  labelName={currentLabel?.name}
+                  className="py-16"
+                />
+              ) : (
+                <VirtualizedTaskList
+                  tasks={tasks}
+                  variant={compactView ? "compact" : "default"}
+                  sortedTaskIds={sortedFlatTaskIds}
+                  enableDropTargets={false}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -371,63 +449,9 @@ export function ProjectSectionsView({
     )
   }
 
-  // Mobile always uses the original layout with drawer
-  if (isMobile) {
-    return (
-      <div className="flex flex-1 relative">
-        {/* Main Content */}
-        <div className="flex-1">{renderContent()}</div>
-
-        {/* Task Side Panel (mobile drawer) */}
-        <TaskSidePanel isOpen={isPanelOpen} onClose={handleClosePanel} />
-      </div>
-    )
-  }
-
-  // Desktop: Use ResizablePanel layout when side panel is open, fallback to original when closed
-  if (isPanelOpen) {
-    return (
-      <div className="flex flex-col h-screen overflow-hidden">
-        <ResizablePanelGroup
-          direction="horizontal"
-          className="flex-1 min-h-0"
-          onLayout={handlePanelResize}
-        >
-          {/* Main Content Panel */}
-          <ResizablePanel
-            defaultSize={100 - sidePanelWidth}
-            minSize={SIDE_PANEL_WIDTH_MIN}
-            maxSize={SIDE_PANEL_WIDTH_MAX}
-          >
-            <div className="h-full overflow-auto">{renderContent()}</div>
-          </ResizablePanel>
-
-          {/* Resizable Handle */}
-          <ResizableHandle withHandle={false} />
-
-          {/* Side Panel */}
-          <ResizablePanel
-            defaultSize={sidePanelWidth}
-            minSize={SIDE_PANEL_WIDTH_MIN}
-            maxSize={SIDE_PANEL_WIDTH_MAX}
-          >
-            <div className="h-full">
-              <TaskSidePanel isOpen={isPanelOpen} onClose={handleClosePanel} variant="resizable" />
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
-    )
-  }
-
-  // Desktop: Original layout when panel is closed
   return (
-    <div className="flex flex-1 relative h-full">
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto">{renderContent()}</div>
-
-      {/* Task Side Panel (will not render when closed) */}
-      <TaskSidePanel isOpen={isPanelOpen} onClose={handleClosePanel} />
-    </div>
+    <TaskViewSidePanelLayout contentWrapperClassName="overflow-auto">
+      {renderContent()}
+    </TaskViewSidePanelLayout>
   )
 }

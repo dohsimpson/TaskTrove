@@ -24,6 +24,27 @@ import { ApiErrorCodeSchema } from "./api-errors";
 import { DataFileSerializationSchema } from "./data-file";
 
 // =============================================================================
+// SCHEDULER JOB SCHEMAS
+// =============================================================================
+
+/**
+ * Scheduler job schedule schema (currently cron-based)
+ */
+export const SchedulerJobScheduleSchema = z.object({
+  type: z.literal("cron"),
+  expression: z.string(),
+});
+
+/**
+ * Scheduler job summary schema
+ */
+export const SchedulerJobSchema = z.object({
+  id: z.string(),
+  schedule: SchedulerJobScheduleSchema,
+  autoStart: z.boolean(),
+});
+
+// =============================================================================
 // BASE RESPONSE SCHEMAS
 // =============================================================================
 
@@ -238,6 +259,14 @@ export const GetUserResponseSchema = z.object({
 });
 
 /**
+ * GET /api/v1/scheduler/jobs response schema - returns registered jobs
+ */
+export const GetSchedulerJobsResponseSchema = z.object({
+  jobs: z.array(SchedulerJobSchema),
+  running: z.boolean(),
+});
+
+/**
  * GET /api/data response schema - returns complete data structure
  * This endpoint is for clients that need the full data structure
  */
@@ -252,6 +281,8 @@ export const GetDataResponseSchema = DataFileSerializationSchema.extend({
 export type ApiResponse = z.infer<typeof ApiResponseSchema>;
 export type ApiResponseMeta = z.infer<typeof ApiResponseMetaSchema>;
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
+export type SchedulerJobSchedule = z.infer<typeof SchedulerJobScheduleSchema>;
+export type SchedulerJob = z.infer<typeof SchedulerJobSchema>;
 
 export type CreateTaskResponse = z.infer<typeof CreateTaskResponseSchema>;
 export type CreateLabelResponse = z.infer<typeof CreateLabelResponseSchema>;
@@ -281,4 +312,7 @@ export type GetLabelsResponse = z.infer<typeof GetLabelsResponseSchema>;
 export type GetGroupsResponse = z.infer<typeof GetGroupsResponseSchema>;
 export type GetSettingsResponse = z.infer<typeof GetSettingsResponseSchema>;
 export type GetUserResponse = z.infer<typeof GetUserResponseSchema>;
+export type GetSchedulerJobsResponse = z.infer<
+  typeof GetSchedulerJobsResponseSchema
+>;
 export type GetDataResponse = z.infer<typeof GetDataResponseSchema>;

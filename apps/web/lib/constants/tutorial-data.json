@@ -298,7 +298,8 @@
       "startView": "all",
       "soundEnabled": true,
       "linkifyEnabled": true,
-      "popoverHoverOpen": false
+      "popoverHoverOpen": false,
+      "markdownEnabled": true
     }
   },
   "user": {
@@ -306,5 +307,5 @@
     "username": "admin",
     "password": ""
   },
-  "version": "v0.8.0"
+  "version": "v0.10.0"
 }

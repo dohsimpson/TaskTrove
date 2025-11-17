@@ -1,21 +1,46 @@
 /**
  * Recurring Task Processor
  *
- * Simple RRULE processing engine that integrates with existing task completion flow.
- * Handles basic recurring patterns without external dependencies.
+ * Uses the rrule.js library for RFC 5545 compliance while keeping TaskTrove's
+ * timezone-agnostic date handling. We always anchor calculations to the local
+ * due date/time that the app stores rather than trusting DTSTART values inside
+ * the RRULE string.
  */
 
-import { Task } from "@tasktrove/types/core";
+import * as RRuleModule from "rrule";
+import type { ByWeekday, Options } from "rrule";
+// Cross-runtime compat: prefer named export, fall back to default.RRule
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/consistent-type-assertions */
+const hasNamedExport = typeof (RRuleModule as any).RRule === "function";
+const hasDefaultExport =
+  typeof (RRuleModule as any).default?.RRule === "function";
+
+if (!hasNamedExport && !hasDefaultExport) {
+  throw new Error("RRule constructor not found in rrule module");
+}
+
+const RRule = hasNamedExport
+  ? (RRuleModule as any).RRule
+  : (RRuleModule as any).default.RRule;
+/* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/consistent-type-assertions */
+type RRuleType = InstanceType<typeof RRule>;
+import type { Subtask, Task } from "@tasktrove/types/core";
 import { createTaskId } from "@tasktrove/types/id";
-import type { Subtask } from "@tasktrove/types/core";
 import { v4 as uuidv4 } from "uuid";
-import { format } from "date-fns";
+const RRULE_PREFIX = "RRULE:";
 
 /**
- * Parsed RRULE components for date calculation
+ * Parsed RRULE components for consumers that still expect the legacy shape
  */
 interface ParsedRRule {
-  freq: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+  freq:
+    | "DAILY"
+    | "WEEKLY"
+    | "MONTHLY"
+    | "YEARLY"
+    | "HOURLY"
+    | "MINUTELY"
+    | "SECONDLY";
   interval?: number;
   count?: number;
   until?: string;
@@ -25,113 +50,223 @@ interface ParsedRRule {
   bysetpos?: number[];
 }
 
-/**
- * Parse RRULE string into components
- */
-export function parseRRule(rrule: string): ParsedRRule | null {
-  if (!rrule.startsWith("RRULE:")) {
+const FREQUENCY_MAP: Record<number, ParsedRRule["freq"]> = {
+  [RRule.YEARLY]: "YEARLY",
+  [RRule.MONTHLY]: "MONTHLY",
+  [RRule.WEEKLY]: "WEEKLY",
+  [RRule.DAILY]: "DAILY",
+  [RRule.HOURLY]: "HOURLY",
+  [RRule.MINUTELY]: "MINUTELY",
+  [RRule.SECONDLY]: "SECONDLY",
+};
+
+function formatUtcDate(date: Date): string {
+  const year = date.getUTCFullYear();
+  const month = `${date.getUTCMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getUTCDate()}`.padStart(2, "0");
+  return `${year}${month}${day}`;
+}
+
+function stripRRulePrefix(rrule: string): string | null {
+  if (!rrule || !rrule.startsWith(RRULE_PREFIX)) {
+    return null;
+  }
+  return rrule.substring(RRULE_PREFIX.length);
+}
+
+function extractUntilValue(rrule: string): string | null {
+  const body = stripRRulePrefix(rrule);
+  if (!body) {
     return null;
   }
 
-  const ruleString = rrule.substring(6); // Remove 'RRULE:'
-  const parts = ruleString.split(";");
-  const parsed: Partial<ParsedRRule> = {};
-
+  const parts = body.split(";");
   for (const part of parts) {
     const [key, value] = part.split("=");
-    if (!key || value === undefined) continue;
-
-    switch (key) {
-      case "FREQ":
-        // Type-safe frequency validation
-        if (
-          value === "DAILY" ||
-          value === "WEEKLY" ||
-          value === "MONTHLY" ||
-          value === "YEARLY"
-        ) {
-          parsed.freq = value;
-        }
-        break;
-      case "INTERVAL":
-        parsed.interval = parseInt(value, 10);
-        break;
-      case "COUNT":
-        parsed.count = parseInt(value, 10);
-        break;
-      case "UNTIL":
-        parsed.until = value;
-        break;
-      case "BYDAY":
-        parsed.byday = value.split(",").filter((day) => day.trim() !== "");
-        break;
-      case "BYMONTHDAY":
-        parsed.bymonthday = value.split(",").map((n) => parseInt(n, 10));
-        break;
-      case "BYMONTH":
-        parsed.bymonth = value.split(",").map((n) => parseInt(n, 10));
-        break;
-      case "BYSETPOS":
-        parsed.bysetpos = value.split(",").map((n) => parseInt(n, 10));
-        break;
+    if (key === "UNTIL" && value) {
+      return value;
     }
   }
 
-  if (!parsed.freq) {
+  return null;
+}
+
+function isValidUntilValue(until: string): boolean {
+  const match = until.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (!match) {
+    return false;
+  }
+
+  const [, year, month, day] = match;
+  const date = new Date(`${year}-${month}-${day}`);
+  return (
+    date.getUTCFullYear() === Number(year) &&
+    date.getUTCMonth() === Number(month) - 1 &&
+    date.getUTCDate() === Number(day)
+  );
+}
+
+function parseRRuleOptions(rrule: string): Partial<Options> | null {
+  const ruleBody = stripRRulePrefix(rrule);
+  if (!ruleBody) {
     return null;
   }
 
-  // Type-safe return - we know freq is set at this point
-  return {
-    freq: parsed.freq,
-    interval: parsed.interval,
-    count: parsed.count,
-    until: parsed.until,
-    byday: parsed.byday,
-    bymonthday: parsed.bymonthday,
-    bymonth: parsed.bymonth,
-    bysetpos: parsed.bysetpos,
-  };
+  try {
+    return RRule.parseString(ruleBody);
+  } catch {
+    return null;
+  }
+}
+
+function frequencyToLabel(freq?: number): ParsedRRule["freq"] | null {
+  if (typeof freq !== "number") {
+    return null;
+  }
+  return FREQUENCY_MAP[freq] ?? null;
+}
+
+function ensureNumberArray(
+  value?: number | number[] | null,
+): number[] | undefined {
+  if (typeof value === "number") {
+    return [value];
+  }
+  if (Array.isArray(value)) {
+    return value;
+  }
+  return undefined;
+}
+
+function normalizeWeekdays(
+  value?: ByWeekday | ByWeekday[] | null,
+): string[] | undefined {
+  if (!value) {
+    return undefined;
+  }
+  const items = Array.isArray(value) ? value : [value];
+  return items
+    .filter((weekday): weekday is ByWeekday => Boolean(weekday))
+    .map((weekday) => weekday.toString());
+}
+
+function normalizeToLocalDate(date: Date): Date {
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds(),
+    date.getMilliseconds(),
+  );
 }
 
 /**
- * Find all dates in a month that match the given weekdays
- * Clean, focused implementation from Agent4's approach
+ * For date-only recurrences (no BYHOUR), rrule.js yields UTC-based instants.
+ * We want to treat them as floating local dates: Y-M-D from UTC, time = 00:00 local.
  */
+function finalizeOccurrenceDate(rrule: string, date: Date): Date {
+  const options = parseRRuleOptions(rrule);
+  if (!options) {
+    return normalizeToLocalDate(date);
+  }
+  const byhourArray = options.byhour;
+  const hasByHour = Array.isArray(byhourArray)
+    ? byhourArray.length > 0
+    : typeof options.byhour === "number";
+  // If there is an explicit hour, preserve local components as-is.
+  if (hasByHour) {
+    return normalizeToLocalDate(date);
+  }
+  // Date-only: use UTC Y-M-D, set local midnight
+  return new Date(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+    0,
+    0,
+    0,
+    0,
+  );
+}
+
+function copyUtcTime(source: Date, target: Date): void {
+  target.setUTCHours(
+    source.getUTCHours(),
+    source.getUTCMinutes(),
+    source.getUTCSeconds(),
+    source.getUTCMilliseconds(),
+  );
+}
+
+function daysInMonth(year: number, monthIndex: number): number {
+  return new Date(year, monthIndex + 1, 0).getDate();
+}
+
+function calculateSimpleMonthlyNextDate(
+  fromDate: Date,
+  interval: number,
+): Date {
+  const originalDay = fromDate.getDate();
+
+  const target = new Date(fromDate);
+  target.setDate(1);
+  target.setMonth(target.getMonth() + interval);
+
+  const targetYear = target.getFullYear();
+  const targetMonth = target.getMonth();
+  const lastDay = daysInMonth(targetYear, targetMonth);
+  target.setDate(Math.min(originalDay, lastDay));
+  copyUtcTime(fromDate, target);
+
+  return target;
+}
+
+function isSimpleMonthlyRule(parsed?: ParsedRRule | null): boolean {
+  if (!parsed) {
+    return false;
+  }
+
+  const hasByMonthDay = parsed.bymonthday && parsed.bymonthday.length > 0;
+  const hasByDay = parsed.byday && parsed.byday.length > 0;
+  const hasBySetPos = parsed.bysetpos && parsed.bysetpos.length > 0;
+
+  return (
+    parsed.freq === "MONTHLY" && !hasByMonthDay && !hasByDay && !hasBySetPos
+  );
+}
+
 function findWeekdayDatesInMonth(
   year: number,
-  month: number,
+  monthIndex: number,
   weekdays: number[],
 ): Date[] {
   const dates: Date[] = [];
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const totalDays = daysInMonth(year, monthIndex);
 
-  for (let day = 1; day <= daysInMonth; day++) {
-    const date = new Date(year, month, day);
-    if (weekdays.includes(date.getDay())) {
-      dates.push(date);
+  for (let day = 1; day <= totalDays; day++) {
+    const candidate = new Date(year, monthIndex, day);
+    if (weekdays.includes(candidate.getDay())) {
+      dates.push(candidate);
     }
   }
 
   return dates;
 }
 
-/**
- * Apply BYSETPOS filter to a list of dates with enhanced validation
- * Combines Agent4's clean approach with Agent3's validation
- */
 function applyBysetpos(dates: Date[], bysetpos: number[]): Date[] {
   const result: Date[] = [];
 
   for (const pos of bysetpos) {
-    if (pos === 0) continue; // BYSETPOS=0 is invalid per RFC5545
+    if (pos === 0) {
+      continue;
+    }
 
     let targetIndex: number;
     if (pos > 0) {
-      // Positive: 1st, 2nd, 3rd, etc.
       targetIndex = pos - 1;
     } else {
-      // Negative: last (-1), second-to-last (-2), etc.
       targetIndex = dates.length + pos;
     }
 
@@ -146,112 +281,312 @@ function applyBysetpos(dates: Date[], bysetpos: number[]): Date[] {
   return result.sort((a, b) => a.getTime() - b.getTime());
 }
 
-/**
- * Validate if a date combination is impossible (from Agent3's validation logic)
- */
-function isImpossibleDate(month: number, day: number): boolean {
-  if (day <= 0 && day !== -1) return true; // Invalid negative day
-  if (day > 31) return true; // Day > 31 is impossible
-  if (month === 2 && day >= 30) return true; // Feb 30th+ never exists
-  if ([4, 6, 9, 11].includes(month) && day === 31) return true; // Apr, Jun, Sep, Nov don't have 31 days
-  return false;
+function resolveMonthDaysForMonth(
+  bymonthday: number[],
+  year: number,
+  monthIndex: number,
+): number[] {
+  const lastDay = daysInMonth(year, monthIndex);
+  const resolved = bymonthday
+    .map((day) => {
+      if (day === -1) {
+        return lastDay;
+      }
+      if (day < 0) {
+        const candidate = lastDay + day + 1;
+        return Math.max(1, candidate);
+      }
+      return Math.min(day, lastDay);
+    })
+    .filter((day) => Number.isFinite(day));
+
+  return Array.from(new Set(resolved)).sort((a, b) => a - b);
+}
+
+function calculateMonthlyByMonthDayNextDate(
+  fromDate: Date,
+  parsed: ParsedRRule,
+  interval: number,
+): Date {
+  const bymonthday = parsed.bymonthday || [];
+  const currentYear = fromDate.getFullYear();
+  const currentMonth = fromDate.getMonth();
+
+  if (interval === 1) {
+    const currentMonthDays = resolveMonthDaysForMonth(
+      bymonthday,
+      currentYear,
+      currentMonth,
+    );
+    const fromDay = fromDate.getDate();
+    const nextDayThisMonth = currentMonthDays.find((day) => day > fromDay);
+    if (nextDayThisMonth !== undefined) {
+      const candidate = new Date(fromDate);
+      candidate.setDate(nextDayThisMonth);
+      copyUtcTime(fromDate, candidate);
+      return candidate;
+    }
+  }
+
+  const target = new Date(fromDate);
+  target.setHours(0, 0, 0, 0);
+  target.setDate(1);
+  target.setMonth(target.getMonth() + interval);
+
+  // Continue stepping through interval-sized months until we find a match
+  for (let safety = 0; safety < 240; safety += 1) {
+    const targetYear = target.getFullYear();
+    const targetMonth = target.getMonth();
+    const resolvedDays = resolveMonthDaysForMonth(
+      bymonthday,
+      targetYear,
+      targetMonth,
+    );
+
+    if (resolvedDays.length > 0) {
+      const nextDay = resolvedDays[0];
+      if (nextDay !== undefined && Number.isFinite(nextDay)) {
+        target.setDate(nextDay);
+        copyUtcTime(fromDate, target);
+        return target;
+      }
+    }
+
+    target.setMonth(target.getMonth() + interval);
+  }
+
+  // Fallback: if no match found (shouldn't happen), return original date
+  return new Date(fromDate);
+}
+
+function calculateMonthlyByWeekdaySetposNextDate(
+  fromDate: Date,
+  parsed: ParsedRRule,
+  interval: number,
+): Date | null {
+  const weekdayMap: Record<string, number> = {
+    SU: 0,
+    MO: 1,
+    TU: 2,
+    WE: 3,
+    TH: 4,
+    FR: 5,
+    SA: 6,
+  };
+
+  const targetWeekdays = (parsed.byday || [])
+    .map((day) => day.slice(-2))
+    .map((code) => weekdayMap[code])
+    .filter((day): day is number => typeof day === "number");
+
+  if (targetWeekdays.length === 0) {
+    return null;
+  }
+
+  const referenceTime = fromDate.getTime();
+
+  if (interval === 1) {
+    const currentMonthDates = findWeekdayDatesInMonth(
+      fromDate.getFullYear(),
+      fromDate.getMonth(),
+      targetWeekdays,
+    );
+    const filteredCurrent = applyBysetpos(
+      currentMonthDates,
+      parsed.bysetpos || [],
+    );
+    const nextCurrent = filteredCurrent.find(
+      (date) => date.getTime() > referenceTime,
+    );
+    if (nextCurrent) {
+      const result = new Date(nextCurrent);
+      copyUtcTime(fromDate, result);
+      return result;
+    }
+  }
+
+  const target = new Date(fromDate);
+  target.setHours(0, 0, 0, 0);
+  target.setDate(1);
+  target.setMonth(target.getMonth() + interval);
+
+  for (let safety = 0; safety < 240; safety += 1) {
+    const matchingDates = findWeekdayDatesInMonth(
+      target.getFullYear(),
+      target.getMonth(),
+      targetWeekdays,
+    );
+
+    if (matchingDates.length > 0) {
+      const filteredDates = applyBysetpos(matchingDates, parsed.bysetpos || []);
+      if (filteredDates.length > 0) {
+        const targetDate = filteredDates[0];
+        if (targetDate) {
+          const result = new Date(targetDate);
+          copyUtcTime(fromDate, result);
+          return result;
+        }
+      }
+    }
+
+    target.setMonth(target.getMonth() + interval);
+  }
+
+  return null;
+}
+
+function isAfterUntil(date: Date, until?: string): boolean {
+  if (!until) {
+    return false;
+  }
+
+  const match = until.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (!match) {
+    return false;
+  }
+
+  const [, year, month, day] = match;
+  const untilDate = new Date(
+    Date.UTC(Number(year), Number(month) - 1, Number(day), 23, 59, 59, 999),
+  );
+  return date.getTime() > untilDate.getTime();
+}
+
+function buildRRuleInstance(
+  rrule: string,
+  referenceDate: Date,
+): RRuleType | null {
+  const options = parseRRuleOptions(rrule);
+  if (!options || typeof options.freq !== "number") {
+    return null;
+  }
+
+  const normalizedReference = normalizeToLocalDate(referenceDate);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { dtstart, ...rest } = options;
+
+  let adjustedUntil = rest.until;
+  const untilValue = extractUntilValue(rrule);
+  if (untilValue && /^\d{8}$/.test(untilValue) && rest.until) {
+    const year = Number(untilValue.slice(0, 4));
+    const month = Number(untilValue.slice(4, 6)) - 1;
+    const day = Number(untilValue.slice(6, 8));
+    adjustedUntil = new Date(Date.UTC(year, month, day, 23, 59, 59, 999));
+  }
+
+  try {
+    return new RRule({
+      ...rest,
+      ...(adjustedUntil ? { until: adjustedUntil } : {}),
+      dtstart: normalizedReference,
+    });
+  } catch {
+    return null;
+  }
 }
 
 /**
- * Check if a date matches a recurring pattern
+ * Parse RRULE string into components (legacy helper, now powered by rrule.js)
+ */
+export function parseRRule(rrule: string): ParsedRRule | null {
+  const untilValue = extractUntilValue(rrule);
+  if (untilValue && !isValidUntilValue(untilValue)) {
+    return null;
+  }
+
+  const options = parseRRuleOptions(rrule);
+  if (!options) {
+    return null;
+  }
+
+  const freq = frequencyToLabel(options.freq);
+  if (!freq) {
+    return null;
+  }
+
+  const untilString = untilValue
+    ? untilValue
+    : options.until
+      ? formatUtcDate(options.until)
+      : undefined;
+
+  const normalizedWeekdays = normalizeWeekdays(options.byweekday);
+  if (
+    options.byweekday &&
+    (!normalizedWeekdays || normalizedWeekdays.length === 0)
+  ) {
+    return null;
+  }
+
+  return {
+    freq,
+    interval: options.interval,
+    count: options.count ?? undefined,
+    until: untilString,
+    byday: normalizedWeekdays,
+    bymonthday: ensureNumberArray(options.bymonthday),
+    bymonth: ensureNumberArray(options.bymonth),
+    bysetpos: ensureNumberArray(options.bysetpos),
+  };
+}
+
+/**
+ * Check if a date matches a recurring pattern using rrule.js
  */
 export function dateMatchesRecurringPattern(
   date: Date,
   rrule: string,
   referenceDate: Date,
 ): boolean {
-  const parsed = parseRRule(rrule);
-  if (!parsed) {
-    return false;
+  const lines = rrule
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const evaluate = (single: string): boolean => {
+    const parsed = parseRRule(single);
+    const rule = buildRRuleInstance(single, referenceDate);
+    if (!rule || !parsed) return false;
+
+    const isSubDaily =
+      parsed.freq === "HOURLY" ||
+      parsed.freq === "MINUTELY" ||
+      parsed.freq === "SECONDLY";
+
+    if (isSubDaily) {
+      const occurrence = rule.after(date, true);
+      return !!occurrence && occurrence.getTime() === date.getTime();
+    }
+
+    const utcStart = new Date(
+      Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        0,
+        0,
+        0,
+        0,
+      ),
+    );
+    const occurrence = rule.after(utcStart, true);
+    if (!occurrence) return false;
+    return (
+      occurrence.getUTCFullYear() === date.getUTCFullYear() &&
+      occurrence.getUTCMonth() === date.getUTCMonth() &&
+      occurrence.getUTCDate() === date.getUTCDate()
+    );
+  };
+
+  if (lines.length <= 1) {
+    return evaluate(rrule);
   }
-
-  const interval = parsed.interval || 1;
-
-  switch (parsed.freq) {
-    case "DAILY": {
-      // For daily, when date === referenceDate (same day), it always matches
-      const dateNormalized = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-      );
-      const refNormalized = new Date(
-        referenceDate.getFullYear(),
-        referenceDate.getMonth(),
-        referenceDate.getDate(),
-      );
-
-      if (dateNormalized.getTime() === refNormalized.getTime()) {
-        return true; // Same day always matches for daily
-      }
-
-      // For different days, check if the number of days since reference is divisible by interval
-      const daysDiff = Math.floor(
-        (dateNormalized.getTime() - refNormalized.getTime()) /
-          (24 * 60 * 60 * 1000),
-      );
-      return daysDiff > 0 && daysDiff % interval === 0;
-    }
-
-    case "WEEKLY": {
-      if (parsed.byday) {
-        const weekdayMap: Record<string, number> = {
-          SU: 0,
-          MO: 1,
-          TU: 2,
-          WE: 3,
-          TH: 4,
-          FR: 5,
-          SA: 6,
-        };
-        const targetDays = parsed.byday
-          .map((day) => weekdayMap[day])
-          .filter((day) => typeof day === "number");
-        return targetDays.length > 0 && targetDays.includes(date.getDay());
-      } else {
-        // Simple weekly: same day of week, proper interval
-        const weeksDiff = Math.floor(
-          (date.getTime() - referenceDate.getTime()) /
-            (7 * 24 * 60 * 60 * 1000),
-        );
-        return (
-          date.getDay() === referenceDate.getDay() &&
-          weeksDiff >= 0 &&
-          weeksDiff % interval === 0
-        );
-      }
-    }
-
-    case "MONTHLY": {
-      if (parsed.bymonthday && parsed.bymonthday.length > 0) {
-        return parsed.bymonthday.includes(date.getDate());
-      } else {
-        // Same day of month
-        return date.getDate() === referenceDate.getDate();
-      }
-    }
-
-    case "YEARLY": {
-      // Same month and day
-      return (
-        date.getMonth() === referenceDate.getMonth() &&
-        date.getDate() === referenceDate.getDate()
-      );
-    }
-
-    default:
-      return false;
+  for (const single of lines) {
+    if (evaluate(single)) return true;
   }
+  return false;
 }
 
-/**
- * Calculate next due date based on RRULE pattern
- */
 /**
  * Calculate the reference date for recurring task calculations based on recurringMode
  * - For "completedAt" mode: uses the later of actionDate and dueDate to prevent backwards scheduling
@@ -263,15 +598,12 @@ export function getRecurringReferenceDate(
   actionDate?: Date,
 ): Date {
   if (recurringMode === "completedAt" && actionDate) {
-    // Use Math.max to prevent infinite loop when completing/skipping tasks early.
-    // Example: Daily task due tomorrow, completed/skipped today → use tomorrow as reference, not today.
-    // This ensures we never move the schedule backwards and get stuck in a loop.
     return new Date(Math.max(actionDate.getTime(), dueDate.getTime()));
   }
   return new Date(dueDate);
 }
 
-export function calculateNextDueDate(
+function calculateNextDueDateSingle(
   rrule: string,
   fromDate: Date,
   includeFromDate: boolean = false,
@@ -280,489 +612,82 @@ export function calculateNextDueDate(
   if (!parsed) {
     return null;
   }
+  const reference = normalizeToLocalDate(fromDate);
 
-  // If includeFromDate is true, check if fromDate matches the recurring pattern
-  if (
-    includeFromDate &&
-    dateMatchesRecurringPattern(fromDate, rrule, fromDate)
-  ) {
-    // Check UNTIL constraint before returning fromDate
-    if (parsed.until) {
-      const untilDateString = parsed.until.replace(
-        /(\d{4})(\d{2})(\d{2})/,
-        "$1-$2-$3",
-      );
-      const fromDateString = format(fromDate, "yyyy-MM-dd");
-
-      if (fromDateString > untilDateString) {
-        return null; // Past the end date
-      }
-    }
-    return fromDate;
-  }
-
-  const nextDate = new Date(fromDate);
-  const interval = parsed.interval || 1;
-
-  switch (parsed.freq) {
-    case "DAILY":
-      nextDate.setDate(nextDate.getDate() + interval);
-      break;
-
-    case "WEEKLY":
-      if (parsed.byday) {
-        // Handle specific weekdays with enhanced interval support
-        const weekdayMap: Record<string, number> = {
-          SU: 0,
-          MO: 1,
-          TU: 2,
-          WE: 3,
-          TH: 4,
-          FR: 5,
-          SA: 6,
-        };
-
-        const targetDays = parsed.byday
-          .map((day) => weekdayMap[day])
-          .filter((day) => typeof day === "number");
-
-        if (targetDays.length === 0) {
-          return null;
-        }
-
-        if (interval === 1) {
-          // Simple case: find next occurrence of target weekdays
-          const currentDayOfWeek = nextDate.getDay();
-          let daysToAdd = 0;
-
-          // Find the next target day
-          for (let i = 1; i <= 7; i++) {
-            const checkDay = (currentDayOfWeek + i) % 7;
-            if (targetDays.includes(checkDay)) {
-              daysToAdd = i;
-              break;
-            }
-          }
-
-          nextDate.setDate(nextDate.getDate() + daysToAdd);
-        } else {
-          // Complex case: interval > 1, need to respect interval
-          const currentDayOfWeek = nextDate.getDay();
-
-          if (
-            targetDays.length === 1 &&
-            targetDays.includes(currentDayOfWeek)
-          ) {
-            // Single target day and it matches current day, advance by full interval
-            nextDate.setDate(nextDate.getDate() + 7 * interval);
-          } else {
-            // Multiple target days OR current day doesn't match, check for later days in current week
-            let daysToAdd = 0;
-            for (let i = 1; i <= 7; i++) {
-              const checkDay = (currentDayOfWeek + i) % 7;
-              if (targetDays.includes(checkDay)) {
-                daysToAdd = i;
-                break;
-              }
-            }
-
-            if (daysToAdd > 0) {
-              // Found a matching day later in the current week
-              nextDate.setDate(nextDate.getDate() + daysToAdd);
-            } else {
-              // No matching day found in current week, advance by full interval
-              nextDate.setDate(nextDate.getDate() + 7 * interval);
-              // Then find the first matching day in the new week
-              const newDayOfWeek = nextDate.getDay();
-              for (let i = 0; i < 7; i++) {
-                const checkDay = (newDayOfWeek + i) % 7;
-                if (targetDays.includes(checkDay)) {
-                  nextDate.setDate(nextDate.getDate() + i);
-                  break;
-                }
-              }
-            }
-          }
-        }
-      } else {
-        // Simple weekly recurrence
-        nextDate.setDate(nextDate.getDate() + 7 * interval);
-      }
-      break;
-
-    case "MONTHLY":
-      if (
-        parsed.byday &&
-        parsed.byday.length > 0 &&
-        parsed.bysetpos &&
-        parsed.bysetpos.length > 0
-      ) {
-        // Handle BYDAY + BYSETPOS patterns (e.g., first Monday, last Friday)
-        const weekdayMap: Record<string, number> = {
-          SU: 0,
-          MO: 1,
-          TU: 2,
-          WE: 3,
-          TH: 4,
-          FR: 5,
-          SA: 6,
-        };
-        const targetWeekdays = parsed.byday
-          .map((day) => weekdayMap[day])
-          .filter((day) => typeof day === "number");
-
-        if (targetWeekdays.length === 0) {
-          return null;
-        }
-
-        // Move to the next interval month
-        const targetYear = nextDate.getFullYear();
-        const targetMonth = nextDate.getMonth() + interval;
-
-        // Handle year rollover
-        let finalYear = targetYear;
-        let finalMonth = targetMonth;
-        if (targetMonth > 11) {
-          finalYear += Math.floor(targetMonth / 12);
-          finalMonth = targetMonth % 12;
-        }
-
-        // Find all matching weekday dates in the target month
-        const matchingDates = findWeekdayDatesInMonth(
-          finalYear,
-          finalMonth,
-          targetWeekdays,
-        );
-
-        if (matchingDates.length === 0) {
-          return null;
-        }
-
-        // Apply BYSETPOS filter
-        const filteredDates = applyBysetpos(matchingDates, parsed.bysetpos);
-
-        if (filteredDates.length === 0) {
-          return null;
-        }
-
-        // Use the earliest matching date and preserve the original time
-        const targetDate = filteredDates[0];
-        if (!targetDate) {
-          return null;
-        }
-        // Store original time
-        const originalHours = nextDate.getHours();
-        const originalMinutes = nextDate.getMinutes();
-        const originalSeconds = nextDate.getSeconds();
-        const originalMilliseconds = nextDate.getMilliseconds();
-        // Set date components
-        nextDate.setFullYear(targetDate.getFullYear());
-        nextDate.setMonth(targetDate.getMonth());
-        nextDate.setDate(targetDate.getDate());
-        // Restore original time to avoid DST shifts
-        nextDate.setHours(
-          originalHours,
-          originalMinutes,
-          originalSeconds,
-          originalMilliseconds,
-        );
-      } else if (parsed.bymonthday && parsed.bymonthday.length > 0) {
-        // Handle multiple specific month days (e.g., 15th and 30th)
-        // Always move to next interval period first (like original behavior)
-        const targetYear = nextDate.getFullYear();
-        const targetMonth = nextDate.getMonth() + interval;
-
-        // Handle year rollover
-        let finalYear = targetYear;
-        let finalMonth = targetMonth;
-        if (targetMonth > 11) {
-          finalYear += Math.floor(targetMonth / 12);
-          finalMonth = targetMonth % 12;
-        }
-
-        // Find the earliest valid day from the specified days
-        const nextDay = Math.min(
-          ...parsed.bymonthday.map((day) => {
-            if (day === -1) {
-              // -1 means last day of month
-              return new Date(finalYear, finalMonth + 1, 0).getDate();
-            }
-            // Clamp day to last day of month to handle edge cases (e.g., Feb 31st -> Feb 28th)
-            return Math.min(
-              day,
-              new Date(finalYear, finalMonth + 1, 0).getDate(),
-            );
-          }),
-        );
-
-        // Set the date properly using local methods to avoid rollover and DST issues
-        nextDate.setDate(1);
-        nextDate.setFullYear(finalYear);
-        nextDate.setMonth(finalMonth);
-        nextDate.setDate(nextDay);
-      } else {
-        // Simple monthly recurrence - same day of month
-        const originalDay = fromDate.getDate();
-        const targetYear = nextDate.getFullYear();
-        const targetMonth = nextDate.getMonth() + interval;
-        // Get last day of target month
-        const lastDayOfTargetMonth = new Date(
-          targetYear,
-          targetMonth + 1,
-          0,
-        ).getDate();
-        const finalDay = Math.min(originalDay, lastDayOfTargetMonth);
-        // Set the date properly using local methods to avoid rollover and DST issues (e.g., Jan 31 -> Feb 28)
-        // Set date to 1 first to avoid month rollover, then month, then final day
-        nextDate.setDate(1);
-        nextDate.setFullYear(targetYear);
-        nextDate.setMonth(targetMonth);
-        nextDate.setDate(finalDay);
-      }
-      break;
-
-    case "YEARLY":
-      if (
-        parsed.byday &&
-        parsed.byday.length > 0 &&
-        parsed.bysetpos &&
-        parsed.bysetpos.length > 0 &&
-        parsed.bymonth &&
-        parsed.bymonth.length > 0
-      ) {
-        // Handle BYDAY + BYSETPOS + BYMONTH patterns (e.g., 4th Thursday in November - Thanksgiving)
-        const weekdayMap: Record<string, number> = {
-          SU: 0,
-          MO: 1,
-          TU: 2,
-          WE: 3,
-          TH: 4,
-          FR: 5,
-          SA: 6,
-        };
-        const targetWeekdays = parsed.byday
-          .map((day) => weekdayMap[day])
-          .filter((day) => typeof day === "number");
-
-        if (targetWeekdays.length === 0) {
-          return null;
-        }
-
-        const currentMonth = nextDate.getMonth() + 1; // Convert to 1-based
-        const currentYear = nextDate.getFullYear();
-
-        // Find next valid month in current year or future years
-        const validMonthsInCurrentYear = parsed.bymonth.filter(
-          (month) => month > currentMonth,
-        );
-
-        let targetYear: number;
-        let targetMonth: number;
-
-        if (validMonthsInCurrentYear.length > 0) {
-          // Use the earliest valid month in current year
-          targetYear = currentYear;
-          targetMonth = Math.min(...validMonthsInCurrentYear);
-        } else {
-          // Move to next year and use earliest valid month
-          targetYear = currentYear + interval;
-          targetMonth = Math.min(...parsed.bymonth);
-        }
-
-        // Find all matching weekday dates in the target month
-        const matchingDates = findWeekdayDatesInMonth(
-          targetYear,
-          targetMonth - 1,
-          targetWeekdays,
-        ); // Convert to 0-based month
-
-        if (matchingDates.length === 0) {
-          return null;
-        }
-
-        // Apply BYSETPOS filter
-        const filteredDates = applyBysetpos(matchingDates, parsed.bysetpos);
-
-        if (filteredDates.length === 0) {
-          return null;
-        }
-
-        // Use the earliest matching date and preserve the original time
-        const targetDate = filteredDates[0];
-        if (!targetDate) {
-          return null;
-        }
-        // Store original time
-        const originalHours = nextDate.getHours();
-        const originalMinutes = nextDate.getMinutes();
-        const originalSeconds = nextDate.getSeconds();
-        const originalMilliseconds = nextDate.getMilliseconds();
-        // Set date components
-        nextDate.setFullYear(targetDate.getFullYear());
-        nextDate.setMonth(targetDate.getMonth());
-        nextDate.setDate(targetDate.getDate());
-        // Restore original time to avoid DST shifts
-        nextDate.setHours(
-          originalHours,
-          originalMinutes,
-          originalSeconds,
-          originalMilliseconds,
-        );
-      } else if (parsed.bymonth && parsed.bymonth.length > 0) {
-        // Handle specific months with optional specific days
-        const currentMonth = nextDate.getMonth() + 1; // Convert to 1-based
-        const currentYear = nextDate.getFullYear();
-        const currentDay = nextDate.getDate();
-
-        if (parsed.bymonthday && parsed.bymonthday.length > 0) {
-          // Handle BYMONTH + BYMONTHDAY combinations with validation
-          const candidates: Date[] = [];
-
-          // Check current year first
-          for (const month of parsed.bymonth) {
-            if (
-              month > currentMonth ||
-              (month === currentMonth &&
-                parsed.bymonthday.some((day) => {
-                  const actualDay =
-                    day === -1
-                      ? new Date(currentYear, month, 0).getDate()
-                      : day;
-                  return actualDay > currentDay;
-                }))
-            ) {
-              // Add all valid days for this month
-              for (const day of parsed.bymonthday) {
-                if (!isImpossibleDate(month, day)) {
-                  const actualDay =
-                    day === -1
-                      ? new Date(currentYear, month, 0).getDate()
-                      : Math.min(
-                          day,
-                          new Date(currentYear, month, 0).getDate(),
-                        );
-                  if (month > currentMonth || actualDay > currentDay) {
-                    const candidateDate = new Date(nextDate);
-                    candidateDate.setFullYear(currentYear);
-                    candidateDate.setMonth(month - 1);
-                    candidateDate.setDate(actualDay);
-                    candidates.push(candidateDate);
-                  }
-                }
-              }
-            }
-          }
-
-          // If no candidates in current year, check next interval year
-          if (candidates.length === 0) {
-            const targetYear = currentYear + interval;
-            for (const month of parsed.bymonth) {
-              for (const day of parsed.bymonthday) {
-                if (!isImpossibleDate(month, day)) {
-                  const actualDay =
-                    day === -1
-                      ? new Date(targetYear, month, 0).getDate()
-                      : Math.min(day, new Date(targetYear, month, 0).getDate());
-                  const candidateDate = new Date(nextDate);
-                  candidateDate.setFullYear(targetYear);
-                  candidateDate.setMonth(month - 1);
-                  candidateDate.setDate(actualDay);
-                  candidates.push(candidateDate);
-                }
-              }
-            }
-          }
-
-          if (candidates.length === 0) {
-            return null;
-          }
-
-          // Sort and use earliest candidate
-          candidates.sort((a, b) => a.getTime() - b.getTime());
-          const targetDate = candidates[0];
-          if (!targetDate) {
-            return null;
-          }
-
-          nextDate.setFullYear(targetDate.getFullYear());
-          nextDate.setMonth(targetDate.getMonth());
-          nextDate.setDate(targetDate.getDate());
-        } else {
-          // Handle specific months only (keep same day)
-          const validMonthsInCurrentYear = parsed.bymonth.filter(
-            (month) => month > currentMonth,
-          );
-
-          if (validMonthsInCurrentYear.length > 0) {
-            // Use the earliest valid month in current year
-            const nextMonth = Math.min(...validMonthsInCurrentYear);
-            nextDate.setMonth(nextMonth - 1); // Convert back to 0-based
-            // Keep the same day, but handle month-end edge cases
-            const originalDay = nextDate.getDate();
-            const lastDayOfTargetMonth = new Date(
-              currentYear,
-              nextMonth,
-              0,
-            ).getDate();
-            nextDate.setDate(Math.min(originalDay, lastDayOfTargetMonth));
-          } else {
-            // Move to next year and use earliest valid month
-            const targetYear = currentYear + interval;
-            const nextMonth = Math.min(...parsed.bymonth);
-            nextDate.setFullYear(targetYear);
-            nextDate.setMonth(nextMonth - 1); // Convert back to 0-based
-            // Keep the same day, but handle month-end edge cases
-            const originalDay = nextDate.getDate();
-            const lastDayOfTargetMonth = new Date(
-              targetYear,
-              nextMonth,
-              0,
-            ).getDate();
-            nextDate.setDate(Math.min(originalDay, lastDayOfTargetMonth));
-          }
-        }
-      } else {
-        // Simple yearly recurrence - same month and day
-        nextDate.setFullYear(nextDate.getFullYear() + interval);
-      }
-      break;
-
-    default:
-      return null;
-  }
-
-  // Check UNTIL constraint
-  if (parsed.until) {
-    // Validate UNTIL date format (should be YYYYMMDD)
-    const untilMatch = parsed.until.match(/^(\d{4})(\d{2})(\d{2})$/);
-    if (!untilMatch) {
-      // Invalid UNTIL format
-      return null;
-    }
-
-    const [, year, month, day] = untilMatch;
-    if (!year || !month || !day) {
-      return null;
-    }
-    const untilDate = new Date(`${year}-${month}-${day}`);
-
-    // Validate that the date is actually valid (not Feb 31st, etc.)
-    // Use local methods for consistency
+  if (!includeFromDate && parsed.freq === "MONTHLY") {
     if (
-      untilDate.getFullYear() !== parseInt(year) ||
-      untilDate.getMonth() !== parseInt(month) - 1 ||
-      untilDate.getDate() !== parseInt(day)
+      parsed.byday &&
+      parsed.byday.length > 0 &&
+      parsed.bysetpos &&
+      parsed.bysetpos.length > 0
     ) {
-      // Invalid date (e.g., Feb 31st)
+      const result = calculateMonthlyByWeekdaySetposNextDate(
+        reference,
+        parsed,
+        parsed.interval || 1,
+      );
+      if (result) {
+        return isAfterUntil(result, parsed.until) ? null : result;
+      }
       return null;
     }
 
-    if (nextDate > untilDate) {
-      return null; // Past the end date
+    if (parsed.bymonthday && parsed.bymonthday.length > 0) {
+      const result = calculateMonthlyByMonthDayNextDate(
+        reference,
+        parsed,
+        parsed.interval || 1,
+      );
+      return isAfterUntil(result, parsed.until) ? null : result;
     }
   }
 
-  return nextDate;
+  if (isSimpleMonthlyRule(parsed) && !includeFromDate) {
+    const result = calculateSimpleMonthlyNextDate(
+      reference,
+      parsed.interval || 1,
+    );
+    if (isAfterUntil(result, parsed.until)) return null;
+    return normalizeToLocalDate(result);
+  }
+
+  const rule = buildRRuleInstance(rrule, fromDate);
+  if (!rule) {
+    return null;
+  }
+
+  if (includeFromDate) {
+    const inclusiveMatch = rule.after(reference, true);
+    if (inclusiveMatch && inclusiveMatch.getTime() === reference.getTime()) {
+      return normalizeToLocalDate(reference);
+    }
+  }
+
+  const nextOccurrence = rule.after(reference, includeFromDate);
+  return nextOccurrence ? normalizeToLocalDate(nextOccurrence) : null;
+}
+
+export function calculateNextDueDate(
+  rrule: string,
+  fromDate: Date,
+  includeFromDate: boolean = false,
+): Date | null {
+  const lines = rrule
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (lines.length <= 1) {
+    return calculateNextDueDateSingle(rrule, fromDate, includeFromDate);
+  }
+  let best: { date: Date; rule: string } | null = null;
+  for (const single of lines) {
+    const next = calculateNextDueDateSingle(single, fromDate, includeFromDate);
+    if (!next) continue;
+    if (!best || next.getTime() < best.date.getTime()) {
+      best = { date: next, rule: single };
+    }
+  }
+  return best ? finalizeOccurrenceDate(best.rule, best.date) : null;
 }
 
 /**
@@ -773,7 +698,6 @@ export function generateNextTaskInstance(completedTask: Task): Task | null {
     return null;
   }
 
-  // Parse the RRULE to check for COUNT limitation
   const parsed = parseRRule(completedTask.recurring);
   if (!parsed) {
     return null;
@@ -783,11 +707,9 @@ export function generateNextTaskInstance(completedTask: Task): Task | null {
   let nextRecurringPattern = completedTask.recurring;
   if (parsed.count !== undefined) {
     if (parsed.count <= 1) {
-      // This was the last occurrence, no more instances
       return null;
     }
 
-    // Decrement the count for the next instance
     const newCount = parsed.count - 1;
     nextRecurringPattern = completedTask.recurring.replace(
       /COUNT=\d+/,
@@ -808,25 +730,23 @@ export function generateNextTaskInstance(completedTask: Task): Task | null {
   );
 
   if (!nextDueDate) {
-    return null; // No next occurrence (e.g., reached UNTIL date)
+    return null;
   }
 
-  // Reset subtask completion status for the new instance
   const resetSubtasks: Subtask[] = completedTask.subtasks.map((subtask) => ({
     ...subtask,
     completed: false,
   }));
 
-  // Create new task instance
   const nextTask: Task = {
     ...completedTask,
     id: createTaskId(uuidv4()),
     completed: false,
     completedAt: undefined,
-    dueDate: nextDueDate, // Keep as Date object
+    dueDate: nextDueDate,
     createdAt: new Date(),
-    recurring: nextRecurringPattern, // Use the updated recurring pattern with decremented COUNT
-    subtasks: resetSubtasks, // Use the reset subtasks array
+    recurring: nextRecurringPattern,
+    subtasks: resetSubtasks,
   };
 
   return nextTask;

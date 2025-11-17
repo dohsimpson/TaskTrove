@@ -1,5 +1,6 @@
 import type { Extractor } from "@tasktrove/parser/extractors/base";
 import type { ExtractionResult, ParserContext } from "@tasktrove/parser/types";
+import { buildTagPattern } from "../../utils/TagPattern";
 
 export class LabelExtractor implements Extractor {
   readonly name = "label-extractor";
@@ -11,13 +12,29 @@ export class LabelExtractor implements Extractor {
 
     if (context.labels && context.labels.length > 0) {
       // Use dynamic patterns based on actual label names
-      const labelNames = context.labels.map((l) =>
-        l.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-      );
-      labelRegex = new RegExp(`@(${labelNames.join("|")})`, "gi");
+      const labelNames = context.labels
+        .map((label) => label.name)
+        .filter((name): name is string => Boolean(name && name.length > 0))
+        .sort((a, b) => b.length - a.length);
+
+      if (labelNames.length > 0) {
+        labelRegex = buildTagPattern({
+          prefix: "@",
+          candidates: labelNames,
+          flags: "gi",
+        });
+      } else {
+        labelRegex = buildTagPattern({
+          prefix: "@",
+          flags: "gi",
+        });
+      }
     } else {
       // Fallback to static pattern
-      labelRegex = /@(\w+)/g;
+      labelRegex = buildTagPattern({
+        prefix: "@",
+        flags: "gi",
+      });
     }
 
     const matches = [...text.matchAll(labelRegex)];

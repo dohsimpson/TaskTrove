@@ -1,9 +1,11 @@
 import { startOfDay } from "date-fns";
 import type { Extractor } from "../base/Extractor";
 import type { ExtractionResult, ParserContext } from "../../types";
-
-const WORD_BOUNDARY_START = "(?:^|\\s)";
-const WORD_BOUNDARY_END = "(?=\\s|$|[.,])";
+import {
+  START_BOUNDARY,
+  END_BOUNDARY,
+  ensureUnicodeFlag,
+} from "../../utils/patterns";
 
 interface DatePattern {
   pattern: RegExp;
@@ -47,8 +49,8 @@ const DATE_PATTERNS: DatePattern[] = [
   // Month Day format: "Jan 15", "January 15", "Jan 15,"
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}([a-z]+)\\s+(\\d+)(?:st|nd|rd|th)?,?${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}([a-z]+)\\s+(\\d+)(?:st|nd|rd|th)?,?${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getValue: (match, ref) => {
       const monthName = match[1];
@@ -68,8 +70,8 @@ const DATE_PATTERNS: DatePattern[] = [
   // Day Month format: "15 Jan", "15 January"
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(\\d+)(?:st|nd|rd|th)?\\s+([a-z]+)${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}(\\d+)(?:st|nd|rd|th)?\\s+([a-z]+)${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getValue: (match, ref) => {
       const dayStr = match[1];
@@ -89,8 +91,8 @@ const DATE_PATTERNS: DatePattern[] = [
   // Month Day Year format: "Jan 15 2025", "January 15, 2025"
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}([a-z]+)\\s+(\\d+)(?:st|nd|rd|th)?,?\\s+(\\d{4})${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}([a-z]+)\\s+(\\d+)(?:st|nd|rd|th)?,?\\s+(\\d{4})${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getValue: (match) => {
       const monthName = match[1];
@@ -119,8 +121,8 @@ const DATE_PATTERNS: DatePattern[] = [
   // Day Month Year format: "15 Jan 2025", "15 January 2025"
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(\\d+)(?:st|nd|rd|th)?\\s+([a-z]+)\\s+(\\d{4})${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}(\\d+)(?:st|nd|rd|th)?\\s+([a-z]+)\\s+(\\d{4})${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getValue: (match) => {
       const dayStr = match[1];
@@ -149,8 +151,8 @@ const DATE_PATTERNS: DatePattern[] = [
   // US format M/D: "1/15", "1/15/"
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(\\d{1,2})/(\\d{1,2})/?${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}(\\d{1,2})/(\\d{1,2})/?${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getValue: (match, ref) => {
       const monthStr = match[1];
@@ -178,8 +180,8 @@ const DATE_PATTERNS: DatePattern[] = [
   // EU format D/M: "15/1", "15/1/"
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(\\d{1,2})/(\\d{1,2})/?${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}(\\d{1,2})/(\\d{1,2})/?${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getValue: (match, ref) => {
       const dayStr = match[1];
@@ -212,8 +214,8 @@ const DATE_PATTERNS: DatePattern[] = [
   // Date format with year M/D/YYYY or D/M/YYYY: "1/15/2025" or "15/1/2025"
   {
     pattern: new RegExp(
-      `${WORD_BOUNDARY_START}(\\d{1,2})/(\\d{1,2})/(\\d{4})${WORD_BOUNDARY_END}`,
-      "gi",
+      `${START_BOUNDARY}(\\d{1,2})/(\\d{1,2})/(\\d{4})${END_BOUNDARY}`,
+      ensureUnicodeFlag("gi"),
     ),
     getValue: (match) => {
       const firstStr = match[1];

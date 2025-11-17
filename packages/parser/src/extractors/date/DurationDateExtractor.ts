@@ -1,6 +1,7 @@
 import { addDays, addWeeks, addMonths, addYears } from "date-fns";
 import type { Extractor } from "../base/Extractor";
 import type { ExtractionResult, ParserContext } from "../../types";
+import { buildBoundedPattern } from "../../utils/patterns";
 
 export class DurationDateExtractor implements Extractor {
   readonly name = "duration-date-extractor";
@@ -13,15 +14,15 @@ export class DurationDateExtractor implements Extractor {
     // Days: "in 3d", "in 1 day", "in 2 days"
     const dayPatterns = [
       {
-        pattern: /\b(in (\d+)d)\b/gi,
+        pattern: buildBoundedPattern("(in (\\d+)d)"),
         getFutureDate: (days: number) => addDays(now, days),
       },
       {
-        pattern: /\b(in (\d+)\s+day)\b/gi,
+        pattern: buildBoundedPattern("(in (\\d+)\\s+day)"),
         getFutureDate: (days: number) => addDays(now, days),
       },
       {
-        pattern: /\b(in (\d+)\s+days)\b/gi,
+        pattern: buildBoundedPattern("(in (\\d+)\\s+days)"),
         getFutureDate: (days: number) => addDays(now, days),
       },
     ];
@@ -29,15 +30,15 @@ export class DurationDateExtractor implements Extractor {
     // Weeks: "in 1w", "in 1 week", "in 2 weeks"
     const weekPatterns = [
       {
-        pattern: /\b(in (\d+)w)\b/gi,
+        pattern: buildBoundedPattern("(in (\\d+)w)"),
         getFutureDate: (weeks: number) => addWeeks(now, weeks),
       },
       {
-        pattern: /\b(in (\d+)\s+week)\b/gi,
+        pattern: buildBoundedPattern("(in (\\d+)\\s+week)"),
         getFutureDate: (weeks: number) => addWeeks(now, weeks),
       },
       {
-        pattern: /\b(in (\d+)\s+weeks)\b/gi,
+        pattern: buildBoundedPattern("(in (\\d+)\\s+weeks)"),
         getFutureDate: (weeks: number) => addWeeks(now, weeks),
       },
     ];
@@ -45,15 +46,15 @@ export class DurationDateExtractor implements Extractor {
     // Months: "in 2mo", "in 1 month", "in 3 months"
     const monthPatterns = [
       {
-        pattern: /\b(in (\d+)mo)\b/gi,
+        pattern: buildBoundedPattern("(in (\\d+)mo)"),
         getFutureDate: (months: number) => addMonths(now, months),
       },
       {
-        pattern: /\b(in (\d+)\s+month)\b/gi,
+        pattern: buildBoundedPattern("(in (\\d+)\\s+month)"),
         getFutureDate: (months: number) => addMonths(now, months),
       },
       {
-        pattern: /\b(in (\d+)\s+months)\b/gi,
+        pattern: buildBoundedPattern("(in (\\d+)\\s+months)"),
         getFutureDate: (months: number) => addMonths(now, months),
       },
     ];
@@ -61,15 +62,15 @@ export class DurationDateExtractor implements Extractor {
     // Years: "in 1y", "in 2 years", "in 1 year"
     const yearPatterns = [
       {
-        pattern: /\b(in (\d+)y)\b/gi,
+        pattern: buildBoundedPattern("(in (\\d+)y)"),
         getFutureDate: (years: number) => addYears(now, years),
       },
       {
-        pattern: /\b(in (\d+)\s+year)\b/gi,
+        pattern: buildBoundedPattern("(in (\\d+)\\s+year)"),
         getFutureDate: (years: number) => addYears(now, years),
       },
       {
-        pattern: /\b(in (\d+)\s+years)\b/gi,
+        pattern: buildBoundedPattern("(in (\\d+)\\s+years)"),
         getFutureDate: (years: number) => addYears(now, years),
       },
     ];

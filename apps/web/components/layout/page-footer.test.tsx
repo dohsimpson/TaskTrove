@@ -98,6 +98,15 @@ vi.mock("date-fns", () => ({
     return date.toISOString()
   }),
   isToday: vi.fn(() => true),
+  endOfDay: vi.fn((date) => new Date(date)),
+  isBefore: vi.fn(() => false),
+  parse: vi.fn(() => new Date()),
+  parseISO: vi.fn(() => new Date()),
+  set: vi.fn((date, updates) => {
+    const result = new Date(date)
+    Object.assign(result, updates)
+    return result
+  }),
 }))
 
 describe("PageFooter Popover Tests", () => {

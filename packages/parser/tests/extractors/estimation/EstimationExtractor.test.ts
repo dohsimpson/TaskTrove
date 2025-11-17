@@ -83,6 +83,18 @@ describe("EstimationExtractor", () => {
     expect(results[0]?.value).toBe(30 * 60); // 30 minutes = 1800 seconds
   });
 
+  it("should not extract when attached to a preceding word", () => {
+    const results = extractor.extract("Task1~2h", context);
+
+    expect(results).toHaveLength(0);
+  });
+
+  it("should not extract when followed by a word character", () => {
+    const results = extractor.extract("Task ~2hwork", context);
+
+    expect(results).toHaveLength(0);
+  });
+
   it("should return empty array when no estimation found", () => {
     const results = extractor.extract("Just a task", context);
 

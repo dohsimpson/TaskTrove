@@ -303,11 +303,24 @@ export function createMutation<
         return obj !== null && typeof obj === "object" && "taskIds" in obj;
       }
 
-      const count = hasTaskIds(response) ? response.taskIds.length : 1;
-      log.info({ count, module: logModule }, `${operationName} via API`);
+      // Type guard to check if response has success property
+      function hasSuccessFlag(obj: unknown): obj is { success?: boolean } {
+        return obj !== null && typeof obj === "object" && "success" in obj;
+      }
 
-      // Success toast notification
-      toast.success(`${operationName} successfully`);
+      const count = hasTaskIds(response) ? response.taskIds.length : 1;
+      const responseHasSuccessFlag = hasSuccessFlag(response);
+      const operationSucceeded = responseHasSuccessFlag
+        ? response.success !== false
+        : true;
+
+      const logger = operationSucceeded ? log.info : log.warn;
+      logger({ count, module: logModule }, `${operationName} via API`);
+
+      // Success toast notification (skipped when API reports success: false)
+      if (operationSucceeded) {
+        toast.success(`${operationName} successfully`);
+      }
 
       // Cache invalidation - invalidate all specified query keys
       const queryClient = get(queryClientAtom);

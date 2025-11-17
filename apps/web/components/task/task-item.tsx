@@ -4,18 +4,16 @@ import React, { useState } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
-import { TaskDueDate } from "@/components/ui/custom/task-due-date"
 import { Badge } from "@/components/ui/badge"
-import { ClickToEditDiv } from "@/components/ui/custom/click-to-edit-div"
 import { LinkifiedText } from "@/components/ui/custom/linkified-text"
 import { LinkifiedEditableDiv } from "@/components/ui/custom/linkified-editable-div"
+import { MarkdownEditableDiv } from "@/components/ui/custom/markdown-editable-div"
 import { MaterialCard } from "@/components/ui/custom/material-card"
 import { TimeEstimationPopover } from "./time-estimation-popover"
 import { FocusTimerPopover } from "./focus-timer-popover"
 import { LabelManagementPopover } from "./label-management-popover"
 import { TruncatedMetadataText } from "./truncated-metadata-text"
 import {
-  Calendar,
   MessageSquare,
   Flag,
   CheckSquare,
@@ -26,7 +24,6 @@ import {
   Pause,
   Square,
   GripVertical,
-  Users,
 } from "lucide-react"
 import { cn, getContrastColor } from "@/lib/utils"
 import { formatTime, getEffectiveEstimation } from "@/lib/utils/time-estimation"
@@ -34,6 +31,7 @@ import { getPriorityColor, getPriorityTextColor } from "@/lib/color-utils"
 import { isPro } from "@/lib/utils/env"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { TaskSchedulePopover } from "./task-schedule-popover"
+import { TaskScheduleTrigger } from "./task-schedule-trigger"
 import { CommentManagementPopover } from "./comment-management-popover"
 import { SubtaskPopover } from "./subtask-popover"
 import { PriorityPopover } from "./priority-popover"
@@ -42,7 +40,7 @@ import { TaskActionsMenu } from "./task-actions-menu"
 import { AssigneeManagementPopover } from "@/components/task/assignee-management-popover"
 import { AssigneeBadges } from "@/components/task/assignee-badges"
 import { deleteTaskAtom, updateTaskAtom, toggleTaskAtom } from "@tasktrove/atoms/core/tasks"
-import { tasksAtom, labelsAtom, projectsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { tasksAtom, labelsAtom, projectsAtom, settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { DEFAULT_COLOR_PALETTE } from "@tasktrove/constants"
 import {
   startFocusTimerAtom,
@@ -194,7 +192,7 @@ interface TaskItemProps {
   taskId: TaskId
   className?: string
   showProjectBadge?: boolean
-  variant?: "default" | "compact" | "kanban" | "calendar" | "subtask"
+  variant?: "default" | "compact" | "kanban" | "narrow" | "calendar" | "subtask"
   // Subtask-specific props
   parentTask?: Task | CreateTaskRequest // Parent task for subtask operations - can be CreateTaskRequest in quick-add
   // Range selection props
@@ -234,6 +232,7 @@ export function TaskItem({
   const allProjects = useAtomValue(projectsAtom)
   const selectedTaskId = useAtomValue(selectedTaskIdAtom)
   const activeFocusTimer = useAtomValue(activeFocusTimerAtom)
+  const settings = useAtomValue(settingsAtom)
 
   // Atom actions
   const toggleTask = useSetAtom(toggleTaskAtom)
@@ -398,19 +397,27 @@ export function TaskItem({
     setShowQuickAdd(true)
   }
 
-  // Compact variant specific helpers
-  const shouldShowSchedule = variant === "compact" && (task.dueDate || task.recurring)
-
   const shouldShowPriority = variant === "compact" && task.priority < 4
 
   const handleTaskClick = (e: React.MouseEvent) => {
     // Don't trigger if clicking on buttons or interactive elements
     const target = e.target
+    if (!(target instanceof HTMLElement)) {
+      return
+    }
+
+    const currentTarget = e.currentTarget
+    const roleButtonAncestor = target.closest('[role="button"]')
+    const isInternalRoleButton = Boolean(
+      roleButtonAncestor &&
+        currentTarget.contains(roleButtonAncestor) &&
+        roleButtonAncestor !== currentTarget,
+    )
+
     if (
-      !(target instanceof HTMLElement) ||
       target.closest("button") ||
       target.closest("[data-action]") ||
-      target.closest('[role="button"]') ||
+      isInternalRoleButton ||
       target.closest("input") ||
       target.closest("select") ||
       target.closest("textarea") ||
@@ -440,6 +447,12 @@ export function TaskItem({
       "sortedTaskIds",
       sortedTaskIds,
     )
+    if (isShift && !sortedTaskIds) {
+      // Without a known ordering fall back to simple toggle to avoid opening the panel accidentally
+      toggleTaskSelection(taskId)
+      return
+    }
+
     if (isShift && lastSelectedTask && sortedTaskIds) {
       selectRange({
         startTaskId: lastSelectedTask,
@@ -541,180 +554,179 @@ export function TaskItem({
             </div>
 
             {/* Metadata */}
-            <div className="flex items-center gap-1 text-xs flex-shrink-0">
-              {/* Due Date/Recurring */}
-              {shouldShowSchedule ? (
+            <div className="flex items-center gap-2 text-xs flex-shrink-0">
+              <div className="flex items-center gap-1">
+                {/* Due Date/Recurring */}
                 <TaskSchedulePopover taskId={task.id}>
-                  <TaskDueDate
+                  <TaskScheduleTrigger
                     dueDate={task.dueDate}
                     dueTime={task.dueTime}
                     recurring={task.recurring}
                     recurringMode={task.recurringMode}
                     completed={task.completed}
                     variant="compact"
-                    className="cursor-pointer hover:bg-accent transition-colors hover:opacity-100 text-xs flex-shrink-0"
                   />
                 </TaskSchedulePopover>
-              ) : (
-                <TaskSchedulePopover taskId={task.id}>
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
-                    <Calendar className="h-3 w-3" />
-                  </span>
-                </TaskSchedulePopover>
-              )}
 
-              {/* Priority Flag */}
-              {shouldShowPriority ? (
-                <PriorityPopover task={task}>
-                  <Flag
-                    className={cn(
-                      "h-3 w-3 flex-shrink-0 cursor-pointer hover:bg-accent transition-colors hover:opacity-100",
-                      task.priority === 1
-                        ? "text-red-500"
-                        : task.priority === 2
-                          ? "text-orange-500"
-                          : "text-blue-500",
-                    )}
-                  />
-                </PriorityPopover>
-              ) : (
-                <PriorityPopover task={task}>
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
-                    <Flag className="h-3 w-3" />
-                  </span>
-                </PriorityPopover>
-              )}
-
-              {/* Subtasks */}
-              <SubtaskPopover task={task}>
-                <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors">
-                  <CheckSquare className="h-3 w-3" />
-                  {task.subtasks.length > 0 && (
-                    <>
-                      {task.subtasks.filter((s: Subtask) => s.completed).length}/
-                      {task.subtasks.length}
-                    </>
-                  )}
-                </span>
-              </SubtaskPopover>
-
-              {/* Comments */}
-              <CommentManagementPopover
-                task={task}
-                onAddComment={(content) => addComment({ taskId: task.id, content })}
-              >
-                <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors">
-                  <MessageSquare className="h-3 w-3" />
-                  {task.comments.length > 0 && task.comments.length}
-                </span>
-              </CommentManagementPopover>
-
-              {/* Labels */}
-              {task.labels.length > 0 && (
-                <LabelManagementPopover
-                  task={task}
-                  onAddLabel={handleAddLabel}
-                  onRemoveLabel={handleRemoveLabel}
-                >
-                  <div className="flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors">
-                    {getLabelsFromIds(task.labels)
-                      .slice(0, labelsExpanded ? task.labels.length : 1)
-                      .map((label) => (
-                        <Badge
-                          key={label.id}
-                          variant="secondary"
-                          className="text-xs px-1 py-0 h-4 hover:opacity-100"
-                          style={{
-                            backgroundColor: label.color,
-                            color: getContrastColor(label.color),
-                            border: "none",
-                          }}
-                          title={label.name}
-                        >
-                          {label.name.slice(0, 6)}
-                        </Badge>
-                      ))}
-                    {task.labels.length > 1 && !labelsExpanded && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs px-1 py-0 h-4 cursor-pointer hover:bg-accent transition-colors"
-                        title={`+${task.labels.length - 1} more labels`}
-                        data-action="labels"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setLabelsExpanded(true)
-                        }}
-                      >
-                        +{task.labels.length - 1}
-                      </Badge>
-                    )}
-                  </div>
-                </LabelManagementPopover>
-              )}
-
-              {task.labels.length === 0 && (
-                <LabelManagementPopover
-                  task={task}
-                  onAddLabel={handleAddLabel}
-                  onRemoveLabel={handleRemoveLabel}
-                >
-                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
-                    <Tag className="h-3 w-3" />
-                  </span>
-                </LabelManagementPopover>
-              )}
-
-              {/* Project Badge */}
-              {showProjectBadge && taskProject && (
-                <ProjectPopover task={task}>
-                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors">
-                    <Folder
-                      className="h-3 w-3 flex-shrink-0"
-                      style={{ color: taskProject.color }}
+                {/* Priority Flag */}
+                {shouldShowPriority ? (
+                  <PriorityPopover task={task}>
+                    <Flag
+                      className={cn(
+                        "h-3 w-3 flex-shrink-0 cursor-pointer hover:bg-accent transition-colors hover:opacity-100",
+                        task.priority === 1
+                          ? "text-red-500"
+                          : task.priority === 2
+                            ? "text-orange-500"
+                            : "text-blue-500",
+                      )}
                     />
-                    <span className="truncate max-w-24">{taskProject.name}</span>
-                  </span>
-                </ProjectPopover>
-              )}
+                  </PriorityPopover>
+                ) : (
+                  <PriorityPopover task={task}>
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 cursor-pointer hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
+                      <Flag className="h-3 w-3" />
+                    </span>
+                  </PriorityPopover>
+                )}
 
-              {showProjectBadge && !taskProject && allProjects.length > 0 && (
-                <ProjectPopover task={task}>
-                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
+                {/* Subtasks */}
+                <SubtaskPopover task={task}>
+                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors">
+                    <CheckSquare className="h-3 w-3" />
+                    {task.subtasks.length > 0 && (
+                      <>
+                        {task.subtasks.filter((s: Subtask) => s.completed).length}/
+                        {task.subtasks.length}
+                      </>
+                    )}
+                  </span>
+                </SubtaskPopover>
+
+                {/* Comments */}
+                <CommentManagementPopover
+                  task={task}
+                  onAddComment={(content) => addComment({ taskId: task.id, content })}
+                >
+                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors">
+                    <MessageSquare className="h-3 w-3" />
+                    {task.comments.length > 0 && task.comments.length}
+                  </span>
+                </CommentManagementPopover>
+              </div>
+
+              <div className="flex items-center gap-1">
+                {/* Labels */}
+                {task.labels.length > 0 && (
+                  <LabelManagementPopover
+                    task={task}
+                    onAddLabel={handleAddLabel}
+                    onRemoveLabel={handleRemoveLabel}
+                  >
+                    <div className="flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors">
+                      {getLabelsFromIds(task.labels)
+                        .slice(0, labelsExpanded ? task.labels.length : 1)
+                        .map((label) => (
+                          <Badge
+                            key={label.id}
+                            variant="secondary"
+                            className="text-xs px-1 py-0 h-4 hover:opacity-100"
+                            style={{
+                              backgroundColor: label.color,
+                              color: getContrastColor(label.color),
+                              border: "none",
+                            }}
+                            title={label.name}
+                          >
+                            {label.name.slice(0, 2)}
+                          </Badge>
+                        ))}
+                      {task.labels.length > 1 && !labelsExpanded && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs px-1 py-0 h-4 cursor-pointer hover:bg-accent transition-colors"
+                          title={`+${task.labels.length - 1} more labels`}
+                          data-action="labels"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setLabelsExpanded(true)
+                          }}
+                        >
+                          +{task.labels.length - 1}
+                        </Badge>
+                      )}
+                    </div>
+                  </LabelManagementPopover>
+                )}
+
+                {task.labels.length === 0 && (
+                  <LabelManagementPopover
+                    task={task}
+                    onAddLabel={handleAddLabel}
+                    onRemoveLabel={handleRemoveLabel}
+                  >
+                    <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
+                      <Tag className="h-3 w-3" />
+                    </span>
+                  </LabelManagementPopover>
+                )}
+
+                {/* Project Badge */}
+                {showProjectBadge && (taskProject || allProjects.length > 0) && (
+                  <ProjectPopover task={task}>
+                    <span
+                      className={cn(
+                        "flex items-center cursor-pointer hover:bg-accent transition-colors",
+                        taskProject
+                          ? "hover:opacity-100"
+                          : "text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
+                      )}
+                      style={taskProject ? { color: taskProject.color } : undefined}
+                    >
+                      <Folder className="h-3 w-3" />
+                    </span>
+                  </ProjectPopover>
+                )}
+
+                {showProjectBadge && !taskProject && allProjects.length === 0 && (
+                  <span className="invisible flex items-center">
                     <Folder className="h-3 w-3" />
                   </span>
-                </ProjectPopover>
-              )}
+                )}
 
-              {/* Assignees */}
-              {isPro() && (
-                <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
-                  <AssigneeManagementPopover task={task}>
-                    <Users className="h-3 w-3" />
-                  </AssigneeManagementPopover>
-                </span>
-              )}
+                {/* Assignees */}
+                {isPro() && (
+                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
+                    <AssigneeManagementPopover task={task}>
+                      <AssigneeBadges task={task} />
+                    </AssigneeManagementPopover>
+                  </span>
+                )}
+              </div>
 
-              {/* Timer */}
-              <TimeEstimationPopover taskId={task.id}>
-                <TimeEstimationTrigger task={task} />
-              </TimeEstimationPopover>
+              <div className="flex items-center gap-1">
+                {/* Timer */}
+                <TimeEstimationPopover taskId={task.id}>
+                  <TimeEstimationTrigger task={task} />
+                </TimeEstimationPopover>
 
-              {shouldShowFocusTimer(task.id, activeFocusTimer) && (
-                <FocusTimerPopover taskId={task.id}>
-                  <FocusTimerTrigger taskId={task.id} />
-                </FocusTimerPopover>
-              )}
+                {shouldShowFocusTimer(task.id, activeFocusTimer) && (
+                  <FocusTimerPopover taskId={task.id}>
+                    <FocusTimerTrigger taskId={task.id} />
+                  </FocusTimerPopover>
+                )}
 
-              {/* Actions Menu */}
-              <TaskActionsMenu
-                task={task}
-                isVisible={true}
-                onDeleteClick={() => deleteTask(task.id)}
-                onSelectClick={() => toggleTaskSelection(taskId)}
-                isSubTask={false}
-                open={actionsMenuOpen}
-                onOpenChange={handleActionsMenuChange}
-              />
+                {/* Actions Menu */}
+                <TaskActionsMenu
+                  task={task}
+                  isVisible={true}
+                  onDeleteClick={() => deleteTask(task.id)}
+                  onSelectClick={() => toggleTaskSelection(taskId)}
+                  isSubTask={false}
+                  open={actionsMenuOpen}
+                  onOpenChange={handleActionsMenuChange}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -722,16 +734,178 @@ export function TaskItem({
     )
   }
 
-  // Kanban variant render - optimized for narrow columns
-  if (variant === "kanban") {
+  // Narrow variant render
+  if (variant === "narrow") {
     const taskLabels = getLabelsFromIds(task.labels)
 
     return (
       <MaterialCard
-        variant="kanban"
+        variant="narrow"
         selected={isSelected || isInSelection}
         completed={task.completed}
-        leftBorderColor={getPriorityColor(task.priority, "kanban")}
+        onClick={handleTaskClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={cn("group/task", className)}
+        data-task-focused={isSelected}
+        data-task-id={task.id}
+      >
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-start gap-2 flex-1 min-w-0">
+            <TaskCheckbox
+              checked={task.completed}
+              onCheckedChange={() => toggleTask(task.id)}
+              className="mt-0.5"
+              data-action="toggle"
+              priority={task.priority}
+            />
+            <LinkifiedEditableDiv
+              as="h4"
+              value={task.title}
+              onChange={(newTitle) =>
+                updateTask({ updateRequest: { id: task.id, title: newTitle } })
+              }
+              className={cn(
+                "font-medium text-sm text-foreground line-clamp-2 inline-block max-w-full",
+                task.completed && "line-through text-muted-foreground",
+              )}
+              placeholder={t("placeholders.taskTitle", "Enter task title...")}
+            />
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0 text-xs text-muted-foreground">
+            <TimeEstimationPopover taskId={task.id}>
+              <TimeEstimationTrigger task={task} />
+            </TimeEstimationPopover>
+            {shouldShowFocusTimer(task.id, activeFocusTimer) && (
+              <FocusTimerPopover taskId={task.id}>
+                <FocusTimerTrigger taskId={task.id} />
+              </FocusTimerPopover>
+            )}
+            <TaskActionsMenu
+              task={task}
+              isVisible={true}
+              onDeleteClick={() => deleteTask(task.id)}
+              onSelectClick={() => toggleTaskSelection(taskId)}
+              isSubTask={false}
+              open={actionsMenuOpen}
+              onOpenChange={handleActionsMenuChange}
+            />
+          </div>
+        </div>
+
+        <div className="mb-2">
+          <MarkdownEditableDiv
+            as="p"
+            value={task.description || ""}
+            onChange={(newDescription: string) => {
+              updateTask({ updateRequest: { id: task.id, description: newDescription } })
+            }}
+            placeholder={t("placeholders.addDescription", "Add description...")}
+            className={cn(
+              "text-xs hover:bg-accent min-w-48 max-w-sm",
+              task.description
+                ? "text-muted-foreground"
+                : !isDescriptionEditing
+                  ? "text-muted-foreground/60 italic"
+                  : "text-muted-foreground",
+              !task.description && !isHovered && "invisible",
+              task.description && !isDescriptionEditing && "line-clamp-2",
+            )}
+            editingClassName="max-h-20 overflow-y-auto"
+            data-action="edit"
+            multiline={true}
+            allowEmpty={true}
+            onEditingChange={setIsDescriptionEditing}
+            markdownEnabled={settings.general.markdownEnabled}
+          />
+        </div>
+
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex flex-wrap gap-3 flex-1 min-w-0 items-center">
+            <TaskScheduleTrigger
+              dueDate={task.dueDate}
+              dueTime={task.dueTime}
+              recurring={task.recurring}
+              recurringMode={task.recurringMode}
+              completed={task.completed}
+            />
+            {task.priority < 4 ? (
+              <Flag className={cn("h-3 w-3", getPriorityColor(task.priority))} />
+            ) : (
+              <Flag className="h-3 w-3 text-muted-foreground" />
+            )}
+            {task.subtasks.length > 0 ? (
+              <span className="flex items-center gap-1 text-foreground">
+                <CheckSquare className="h-3 w-3" />
+                {task.subtasks.filter((s: Subtask) => s.completed).length}/{task.subtasks.length}
+              </span>
+            ) : (
+              <span className="flex items-center text-muted-foreground">
+                <CheckSquare className="h-3 w-3" />
+              </span>
+            )}
+            {task.comments.length > 0 ? (
+              <span className="flex items-center gap-1 text-foreground">
+                <MessageSquare className="h-3 w-3" />
+                {task.comments.length}
+              </span>
+            ) : (
+              <span className="flex items-center text-muted-foreground">
+                <MessageSquare className="h-3 w-3" />
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 text-muted-foreground flex-shrink-0">
+            {taskLabels.length > 0 ? (
+              <div className="flex flex-wrap gap-1">
+                {taskLabels.map((label) => (
+                  <span
+                    key={label.id}
+                    className="px-1.5 py-0.5 rounded text-xs flex items-center gap-1"
+                    style={{
+                      backgroundColor: label.color,
+                      color: getContrastColor(label.color),
+                    }}
+                  >
+                    <Tag className="h-3 w-3" />
+                    {label.name}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span className="flex items-center gap-1">
+                <Tag className="h-3 w-3" />
+              </span>
+            )}
+
+            {showProjectBadge && (taskProject || allProjects.length > 0) && (
+              <span
+                className={cn("flex items-center", taskProject ? "text-foreground" : undefined)}
+                style={taskProject ? { color: taskProject.color } : undefined}
+              >
+                <Folder className="h-3 w-3" />
+              </span>
+            )}
+
+            {isPro() && <AssigneeBadges task={task} />}
+          </div>
+        </div>
+      </MaterialCard>
+    )
+  }
+
+  // Kanban variant render
+  if (variant === "kanban") {
+    const taskLabels = getLabelsFromIds(task.labels)
+    const leftBorderColor = getPriorityColor(task.priority, "kanban")
+
+    return (
+      <MaterialCard
+        variant={variant}
+        selected={isSelected || isInSelection}
+        completed={task.completed}
+        leftBorderColor={leftBorderColor}
         onClick={handleTaskClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -750,17 +924,24 @@ export function TaskItem({
               data-action="toggle"
             />
 
-            {/* Title */}
+            {/* Title (aligned with default variant behavior) */}
             <LinkifiedEditableDiv
-              as="h4"
+              as="h3"
               value={task.title}
-              onChange={(newTitle) =>
-                updateTask({ updateRequest: { id: task.id, title: newTitle } })
-              }
+              onChange={(newTitle) => {
+                if (newTitle.trim() && newTitle !== task.title) {
+                  updateTask({ updateRequest: { id: task.id, title: newTitle.trim() } })
+                }
+              }}
+              onEditingChange={setIsTitleEditing}
               className={cn(
-                "font-medium text-sm text-foreground line-clamp-2 flex-1 min-w-0",
-                task.completed && "line-through text-muted-foreground",
+                "font-medium text-sm sm:text-[15px] leading-5 w-fit",
+                "max-w-full",
+                !isTitleEditing && "line-clamp-2 break-all",
+                task.completed ? "line-through text-muted-foreground" : "text-foreground",
               )}
+              data-action="edit"
+              allowEmpty={false}
               placeholder={t("placeholders.taskTitle", "Enter task title...")}
             />
           </div>
@@ -790,7 +971,7 @@ export function TaskItem({
 
         {/* Description - editable */}
         <div className="mb-2">
-          <ClickToEditDiv
+          <MarkdownEditableDiv
             as="p"
             value={task.description || ""}
             onChange={(newDescription: string) => {
@@ -799,9 +980,6 @@ export function TaskItem({
             placeholder={t("placeholders.addDescription", "Add description...")}
             className={cn(
               "text-xs hover:bg-accent min-w-48 max-w-sm",
-              // Only apply line-clamp when not editing, otherwise use max-height with scroll
-              !isDescriptionEditing && "line-clamp-2",
-              isDescriptionEditing && "max-h-20 overflow-y-auto",
               task.description
                 ? "text-muted-foreground"
                 : !isDescriptionEditing
@@ -809,11 +987,15 @@ export function TaskItem({
                   : "text-muted-foreground",
               // Only show when there's content or when hovering
               !task.description && !isHovered && "invisible",
+              // Apply line-clamp when description exists and not editing
+              task.description && !isDescriptionEditing && "line-clamp-2",
             )}
+            editingClassName="max-h-20 overflow-y-auto"
             data-action="edit"
             multiline={true}
             allowEmpty={true}
             onEditingChange={setIsDescriptionEditing}
+            markdownEnabled={settings.general.markdownEnabled}
           />
         </div>
 
@@ -822,24 +1004,15 @@ export function TaskItem({
           {/* Left side - Schedule, priority, labels and assignees */}
           <div className="flex flex-wrap gap-3 flex-1 min-w-0 items-center text-xs">
             {/* Due date/recurring - show if present */}
-            {task.dueDate || task.recurring ? (
-              <TaskSchedulePopover taskId={task.id}>
-                <TaskDueDate
-                  dueDate={task.dueDate}
-                  dueTime={task.dueTime}
-                  recurring={task.recurring}
-                  recurringMode={task.recurringMode}
-                  completed={task.completed}
-                  className="cursor-pointer hover:bg-accent transition-colors hover:opacity-100"
-                />
-              </TaskSchedulePopover>
-            ) : (
-              <TaskSchedulePopover taskId={task.id}>
-                <span className="flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
-                  <Calendar className="h-3 w-3" />
-                </span>
-              </TaskSchedulePopover>
-            )}
+            <TaskSchedulePopover taskId={task.id}>
+              <TaskScheduleTrigger
+                dueDate={task.dueDate}
+                dueTime={task.dueTime}
+                recurring={task.recurring}
+                recurringMode={task.recurringMode}
+                completed={task.completed}
+              />
+            </TaskSchedulePopover>
 
             {/* Priority flag */}
             {task.priority < 4 ? (
@@ -859,73 +1032,6 @@ export function TaskItem({
               </PriorityPopover>
             )}
 
-            {taskLabels.length > 0 ? (
-              <>
-                {taskLabels.slice(0, 2).map((label) => (
-                  <LabelManagementPopover
-                    key={label.id}
-                    task={task}
-                    onAddLabel={handleAddLabel}
-                    onRemoveLabel={handleRemoveLabel}
-                    className="flex items-center"
-                  >
-                    <span
-                      key={label.id}
-                      className="px-1.5 py-0.5 rounded text-xs flex items-center gap-1 hover:bg-accent transition-colors hover:opacity-100 cursor-pointer"
-                      style={{
-                        backgroundColor: label.color,
-                        color: getContrastColor(label.color),
-                      }}
-                    >
-                      <Tag className="h-3 w-3" />
-                      {label.name}
-                    </span>
-                  </LabelManagementPopover>
-                ))}
-                {taskLabels.length > 2 && (
-                  <LabelManagementPopover
-                    task={task}
-                    onAddLabel={handleAddLabel}
-                    onRemoveLabel={handleRemoveLabel}
-                    className="flex items-center"
-                  >
-                    <Badge
-                      variant="outline"
-                      className="text-xs px-1.5 py-0.5 cursor-pointer hover:bg-accent transition-colors hover:opacity-100"
-                    >
-                      +{taskLabels.length - 2}
-                    </Badge>
-                  </LabelManagementPopover>
-                )}
-              </>
-            ) : (
-              <LabelManagementPopover
-                task={task}
-                onAddLabel={handleAddLabel}
-                onRemoveLabel={handleRemoveLabel}
-                className="flex items-center"
-              >
-                <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
-                  <Tag className="h-3 w-3" />
-                </span>
-              </LabelManagementPopover>
-            )}
-            {isPro() && (
-              <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
-                <AssigneeManagementPopover task={task}>
-                  <span className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    <span className="text-xs hidden group-hover:inline">
-                      {t("actions.addAssignees", "Add assignees")}
-                    </span>
-                  </span>
-                </AssigneeManagementPopover>
-              </span>
-            )}
-          </div>
-
-          {/* Right side - Metadata icons with nice spacing */}
-          <div className="flex items-center gap-3 text-xs text-muted-foreground flex-shrink-0">
             {/* Subtasks - show if present or on hover */}
             {task.subtasks.length > 0 ? (
               <SubtaskPopover task={task}>
@@ -965,6 +1071,90 @@ export function TaskItem({
             )}
 
             {/* Attachments feature removed */}
+          </div>
+
+          {/* Right side - Labels, project, and assignees */}
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground flex-shrink-0">
+            {taskLabels.length > 0 ? (
+              <>
+                {taskLabels.slice(0, 1).map((label) => (
+                  <LabelManagementPopover
+                    key={label.id}
+                    task={task}
+                    onAddLabel={handleAddLabel}
+                    onRemoveLabel={handleRemoveLabel}
+                    className="flex items-center"
+                  >
+                    <span
+                      key={label.id}
+                      className="px-1.5 py-0.5 rounded text-xs flex items-center gap-1 hover:bg-accent transition-colors hover:opacity-100 cursor-pointer"
+                      style={{
+                        backgroundColor: label.color,
+                        color: getContrastColor(label.color),
+                      }}
+                    >
+                      <Tag className="h-3 w-3" />
+                      {label.name}
+                    </span>
+                  </LabelManagementPopover>
+                ))}
+                {taskLabels.length > 1 && (
+                  <LabelManagementPopover
+                    task={task}
+                    onAddLabel={handleAddLabel}
+                    onRemoveLabel={handleRemoveLabel}
+                    className="flex items-center"
+                  >
+                    <Badge
+                      variant="outline"
+                      className="text-xs px-1.5 py-0.5 cursor-pointer hover:bg-accent transition-colors hover:opacity-100"
+                    >
+                      +{taskLabels.length - 1}
+                    </Badge>
+                  </LabelManagementPopover>
+                )}
+              </>
+            ) : (
+              <LabelManagementPopover
+                task={task}
+                onAddLabel={handleAddLabel}
+                onRemoveLabel={handleRemoveLabel}
+                className="flex items-center"
+              >
+                <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
+                  <Tag className="h-3 w-3" />
+                </span>
+              </LabelManagementPopover>
+            )}
+
+            {showProjectBadge && (taskProject || allProjects.length > 0) && (
+              <ProjectPopover task={task}>
+                <span
+                  className={cn(
+                    "flex items-center cursor-pointer hover:bg-accent transition-colors",
+                    taskProject
+                      ? "hover:opacity-100"
+                      : "text-muted-foreground hover:text-foreground opacity-70 hover:opacity-100",
+                  )}
+                  style={taskProject ? { color: taskProject.color } : undefined}
+                >
+                  <Folder className="h-3 w-3" />
+                </span>
+              </ProjectPopover>
+            )}
+            {showProjectBadge && !taskProject && allProjects.length === 0 && (
+              <span className="invisible flex items-center">
+                <Folder className="h-3 w-3" />
+              </span>
+            )}
+            {isPro() && (
+              <AssigneeManagementPopover
+                task={task}
+                className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100"
+              >
+                <AssigneeBadges task={task} />
+              </AssigneeManagementPopover>
+            )}
           </div>
         </div>
       </MaterialCard>
@@ -1160,7 +1350,7 @@ export function TaskItem({
           {/* Description - Hide on mobile in default variant to save space */}
           <div className={cn("mb-2 hidden sm:block")}>
             <div className="flex gap-2 sm:gap-3">
-              <ClickToEditDiv
+              <MarkdownEditableDiv
                 as="p"
                 value={task.description || ""}
                 onChange={(newDescription: string) => {
@@ -1168,9 +1358,9 @@ export function TaskItem({
                 }}
                 placeholder={t("placeholders.addDescription", "Add description...")}
                 className={cn(
-                  "text-xs sm:text-sm hover:bg-accent max-h-20 overflow-y-auto",
-                  "min-w-[150px] sm:min-w-[200px] md:min-w-64",
-                  "max-w-fit",
+                  "text-xs sm:text-sm hover:bg-accent",
+                  "w-full sm:w-[28rem] md:w-[32rem] lg:w-[36rem] xl:w-[40rem]",
+                  "max-w-full break-words min-w-0",
                   task.description
                     ? "text-muted-foreground"
                     : !isDefaultDescriptionEditing
@@ -1179,10 +1369,13 @@ export function TaskItem({
                   // Only show when there's content or when hovering
                   !task.description && !isHovered && "invisible",
                 )}
+                previewClassName="max-h-20 overflow-y-auto"
+                editingClassName="max-h-none overflow-visible"
                 data-action="edit"
                 multiline={true}
                 allowEmpty={true}
                 onEditingChange={setIsDefaultDescriptionEditing}
+                markdownEnabled={settings.general.markdownEnabled}
               />
               {/* Invisible placeholder to balance the checkbox on the left */}
               <div className="flex-shrink-0 w-5" aria-hidden="true" />
@@ -1196,41 +1389,23 @@ export function TaskItem({
 
             // Left side - Fixed width items
             // Due Date/Recurring - Now clickable with popover
-            if (task.dueDate || task.recurring) {
-              leftMetadataItems.push(
-                <TaskSchedulePopover key="due-date" taskId={task.id}>
-                  <TaskDueDate
-                    dueDate={task.dueDate}
-                    dueTime={task.dueTime}
-                    recurring={task.recurring}
-                    recurringMode={task.recurringMode}
-                    completed={task.completed}
-                    variant="default"
-                    className={cn(
-                      "cursor-pointer hover:bg-accent transition-colors hover:opacity-100",
-                      METADATA_COLUMN_WIDTH,
-                    )}
-                  />
-                </TaskSchedulePopover>,
-              )
-            } else {
-              // Show add due date button
-              leftMetadataItems.push(
-                <TaskSchedulePopover key="due-date" taskId={task.id}>
-                  <span
-                    className={cn(
-                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
-                      METADATA_COLUMN_WIDTH,
-                    )}
-                  >
-                    <Calendar className="h-3 w-3" />
+            leftMetadataItems.push(
+              <TaskSchedulePopover key="due-date" taskId={task.id}>
+                <TaskScheduleTrigger
+                  dueDate={task.dueDate}
+                  dueTime={task.dueTime}
+                  recurring={task.recurring}
+                  recurringMode={task.recurringMode}
+                  completed={task.completed}
+                  className={cn("group", METADATA_COLUMN_WIDTH)}
+                  fallbackLabel={
                     <TruncatedMetadataText showOnHover className="text-xs">
                       {t("actions.addDate", "Add date")}
                     </TruncatedMetadataText>
-                  </span>
-                </TaskSchedulePopover>,
-              )
-            }
+                  }
+                />
+              </TaskSchedulePopover>,
+            )
 
             // Priority Flag - Now clickable with popover
             if (task.priority < 4) {
@@ -1441,21 +1616,18 @@ export function TaskItem({
 
             if (isPro()) {
               rightMetadataItems.push(
-                <span
-                  className={cn(
-                    "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
-                    METADATA_COLUMN_WIDTH,
-                  )}
-                >
-                  <AssigneeManagementPopover key="assignees" task={task}>
+                <AssigneeManagementPopover key="assignees" task={task}>
+                  <span
+                    className={cn(
+                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
+                      METADATA_COLUMN_WIDTH,
+                    )}
+                  >
                     <span className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />
-                      <TruncatedMetadataText showOnHover className="text-xs">
-                        {t("actions.addAssignees", "Add assignees")}
-                      </TruncatedMetadataText>
+                      <AssigneeBadges task={task} />
                     </span>
-                  </AssigneeManagementPopover>
-                </span>,
+                  </span>
+                </AssigneeManagementPopover>,
               )
             }
 

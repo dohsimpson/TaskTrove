@@ -1,6 +1,7 @@
 import { addDays, addWeeks, addMonths, addYears, startOfDay } from "date-fns";
 import type { Extractor } from "../../extractors/base/Extractor";
 import type { ExtractionResult, ParserContext } from "../../types";
+import { buildBoundedPattern } from "../../utils/patterns";
 
 // Chinese text doesn't typically use spaces as word boundaries
 // We'll match patterns anywhere in the text
@@ -10,60 +11,65 @@ interface ChineseDatePattern {
   getValue: (referenceDate: Date) => Date;
 }
 
+const ASCII_WORD_CLASS = "A-Za-z0-9_";
+
+const bounded = (body: string): RegExp =>
+  buildBoundedPattern(body, "g", ASCII_WORD_CLASS);
+
 const CHINESE_DATE_PATTERNS: ChineseDatePattern[] = [
   // 今天 (today)
   {
-    pattern: /(今天)/g,
+    pattern: bounded("(今天)"),
     getValue: (ref) => startOfDay(ref),
   },
   // 明天 (tomorrow)
   {
-    pattern: /(明天)/g,
+    pattern: bounded("(明天)"),
     getValue: (ref) => startOfDay(addDays(ref, 1)),
   },
   // 昨天 (yesterday)
   {
-    pattern: /(昨天)/g,
+    pattern: bounded("(昨天)"),
     getValue: (ref) => startOfDay(addDays(ref, -1)),
   },
   // 后天 (day after tomorrow)
   {
-    pattern: /(后天)/g,
+    pattern: bounded("(后天)"),
     getValue: (ref) => startOfDay(addDays(ref, 2)),
   },
   // 前天 (day before yesterday)
   {
-    pattern: /(前天)/g,
+    pattern: bounded("(前天)"),
     getValue: (ref) => startOfDay(addDays(ref, -2)),
   },
   // 下周 (next week)
   {
-    pattern: /(下周)/g,
+    pattern: bounded("(下周)"),
     getValue: (ref) => startOfDay(addDays(ref, 7)),
   },
   // 上周 (last week)
   {
-    pattern: /(上周)/g,
+    pattern: bounded("(上周)"),
     getValue: (ref) => startOfDay(addDays(ref, -7)),
   },
   // 下个月 (next month)
   {
-    pattern: /(下个月)/g,
+    pattern: bounded("(下个月)"),
     getValue: (ref) => startOfDay(addDays(ref, 30)),
   },
   // 上个月 (last month)
   {
-    pattern: /(上个月)/g,
+    pattern: bounded("(上个月)"),
     getValue: (ref) => startOfDay(addDays(ref, -30)),
   },
   // 明年 (next year)
   {
-    pattern: /(明年)/g,
+    pattern: bounded("(明年)"),
     getValue: (ref) => startOfDay(addDays(ref, 365)),
   },
   // 去年 (last year)
   {
-    pattern: /(去年)/g,
+    pattern: bounded("(去年)"),
     getValue: (ref) => startOfDay(addDays(ref, -365)),
   },
 ];

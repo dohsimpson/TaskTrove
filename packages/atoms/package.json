@@ -80,6 +80,7 @@
     "./ui/navigation": "./src/ui/navigation.ts",
     "./ui/selection": "./src/ui/selection.ts",
     "./ui/scroll-to-task": "./src/ui/scroll-to-task.ts",
+    "./ui/drag": "./src/ui/drag.ts",
     "./ui/audio": "./src/ui/audio.ts",
     "./features/analytics": "./src/features/analytics.ts",
     "./core/rewards": {

@@ -172,4 +172,15 @@ describe("DateExtractor", () => {
     expect(results[0]?.value).toEqual(new Date(2025, 0, 22)); // Jan 22, 2025
     expect(results[0]?.match).toBe("in a week");
   });
+
+  it("should ignore numeric dates with invalid month values", () => {
+    const context: ParserContext = {
+      locale: "en",
+      referenceDate: new Date(2025, 0, 15),
+    };
+
+    const results = extractor.extract("Task 20/02", context);
+
+    expect(results).toHaveLength(0);
+  });
 });

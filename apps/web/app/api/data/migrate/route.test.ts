@@ -72,14 +72,14 @@ describe("/api/data/migrate", () => {
   describe("POST - Migration Tests", () => {
     it("should successfully migrate data when valid", async () => {
       const originalData = {
-        version: "v0.2.0",
+        version: "v0.8.0",
         tasks: [],
         projects: [],
         labels: [],
       }
 
       const migratedData = {
-        version: "v0.3.0",
+        version: "v0.10.0",
         tasks: [],
         projects: [],
         labels: [],
@@ -111,7 +111,7 @@ describe("/api/data/migrate", () => {
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
       expect(data.message).toBe("Data migration completed successfully")
-      expect(data.version).toBe("v0.3.0")
+      expect(data.version).toBe("v0.10.0")
       expect(data.backupPath).toContain(".backup-")
 
       // Verify safeWriteDataFile was called with migrated data
@@ -123,7 +123,7 @@ describe("/api/data/migrate", () => {
 
     it("should handle serialization failure when migrated data is invalid", async () => {
       const originalData = {
-        version: "v0.2.0",
+        version: "v0.8.0",
         tasks: [],
         projects: [],
         labels: [],
@@ -131,7 +131,7 @@ describe("/api/data/migrate", () => {
 
       // Mock migrateDataFile to return invalid data that will fail serialization
       const invalidMigratedData = {
-        version: "v0.3.0",
+        version: "v0.10.0",
         tasks: [
           {
             // Invalid task - missing required fields or invalid date format
@@ -213,7 +213,7 @@ describe("/api/data/migrate", () => {
 
     it("should handle migration function errors", async () => {
       const originalData = {
-        version: "v0.2.0",
+        version: "v0.8.0",
         tasks: [],
         projects: [],
         labels: [],
@@ -241,7 +241,7 @@ describe("/api/data/migrate", () => {
 
     it("should handle backup write errors", async () => {
       const originalData = {
-        version: "v0.2.0",
+        version: "v0.8.0",
         tasks: [],
         projects: [],
         labels: [],

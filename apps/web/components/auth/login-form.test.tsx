@@ -473,4 +473,365 @@ describe("LoginForm", () => {
       expect(toggleButton).toHaveClass("absolute", "right-0")
     })
   })
+
+  describe("SSO Header Authentication Mode (Pro Feature)", () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+    })
+
+    describe("SSO Mode Display", () => {
+      it("should display SSO authentication interface when headerAuthUser is provided", () => {
+        render(
+          <LoginForm
+            onSuccess={mockOnSuccess}
+            onCancel={mockOnCancel}
+            headerAuthUser="testuser"
+            needsPasswordSetup={false}
+          />,
+        )
+
+        // Should show authenticated as message
+        expect(screen.getByText("Authenticated as")).toBeInTheDocument()
+        expect(screen.getByText("testuser")).toBeInTheDocument()
+
+        // Should show SSO sign in button
+        expect(screen.getByText("SSO Sign In")).toBeInTheDocument()
+
+        // Should not show password input
+        expect(screen.queryByPlaceholderText(/Password/i)).not.toBeInTheDocument()
+
+        // Should not show username input (it's pre-filled)
+        expect(screen.queryByPlaceholderText(/Username/i)).not.toBeInTheDocument()
+      })
+
+      it("should prioritize password setup over SSO mode", () => {
+        render(
+          <LoginForm
+            onSuccess={mockOnSuccess}
+            onCancel={mockOnCancel}
+            headerAuthUser="testuser"
+            needsPasswordSetup={true}
+          />,
+        )
+
+        // Should show password setup interface instead of SSO
+        expect(screen.getByText(/First Time Setup/i)).toBeInTheDocument()
+        expect(screen.getByText(/Welcome! Let's complete your initial setup/i)).toBeInTheDocument()
+        expect(screen.getByPlaceholderText(/Create Password/i)).toBeInTheDocument()
+        expect(screen.getByPlaceholderText(/Confirm Password/i)).toBeInTheDocument()
+
+        // Should not show SSO interface
+        expect(screen.queryByText("SSO Sign In")).not.toBeInTheDocument()
+        expect(screen.queryByText("Authenticated as")).not.toBeInTheDocument()
+      })
+
+      it("should display username in highlighted container", () => {
+        render(
+          <LoginForm
+            onSuccess={mockOnSuccess}
+            onCancel={mockOnCancel}
+            headerAuthUser="john.doe@company.com"
+            needsPasswordSetup={false}
+          />,
+        )
+
+        const usernameDisplay = screen.getByText("john.doe@company.com")
+        expect(usernameDisplay).toBeInTheDocument()
+        // Find the highlighted container by going up two levels to reach the div with bg-muted class
+        expect(usernameDisplay.parentElement?.parentElement).toHaveClass("bg-muted", "rounded-lg")
+      })
+    })
+
+    describe("SSO Authentication Flow", () => {
+      it("should call signIn with header-auth provider when SSO button is clicked", async () => {
+        const { signIn } = await import("next-auth/react")
+        vi.mocked(signIn).mockResolvedValue({
+          error: undefined,
+          code: undefined,
+          status: 200,
+          ok: true,
+          url: "/",
+        })
+
+        render(
+          <LoginForm
+            onSuccess={mockOnSuccess}
+            onCancel={mockOnCancel}
+            headerAuthUser="testuser"
+            needsPasswordSetup={false}
+          />,
+        )
+
+        const ssoButton = screen.getByText("SSO Sign In")
+        await user.click(ssoButton)
+
+        expect(signIn).toHaveBeenCalledWith("header-auth", {
+          remoteUser: "testuser",
+          redirect: true,
+          callbackUrl: "/",
+        })
+      })
+
+      it("should show loading state during SSO authentication", async () => {
+        const { signIn } = await import("next-auth/react")
+        // Make signIn hang to test loading state
+        vi.mocked(signIn).mockReturnValue(new Promise(() => {}))
+
+        render(
+          <LoginForm
+            onSuccess={mockOnSuccess}
+            onCancel={mockOnCancel}
+            headerAuthUser="testuser"
+            needsPasswordSetup={false}
+          />,
+        )
+
+        const ssoButton = screen.getByText("SSO Sign In")
+        await user.click(ssoButton)
+
+        // Should show loading state
+        expect(screen.getByText("Signing in...")).toBeInTheDocument()
+        expect(ssoButton).toBeDisabled()
+      })
+
+      it("should handle SSO authentication errors", async () => {
+        const { signIn } = await import("next-auth/react")
+        const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+        vi.mocked(signIn).mockRejectedValue(new Error("Authentication failed"))
+
+        render(
+          <LoginForm
+            onSuccess={mockOnSuccess}
+            onCancel={mockOnCancel}
+            headerAuthUser="testuser"
+            needsPasswordSetup={false}
+          />,
+        )
+
+        const ssoButton = screen.getByText("SSO Sign In")
+        await user.click(ssoButton)
+
+        await waitFor(() => {
+          expect(screen.getByText("Authentication failed. Please try again.")).toBeInTheDocument()
+        })
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+          "[Header Auth] Sign-in exception:",
+          expect.any(Error),
+        )
+
+        consoleSpy.mockRestore()
+      })
+
+      it("should handle error state and allow retry", async () => {
+        const { signIn } = await import("next-auth/react")
+        const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+        // First call fails
+        vi.mocked(signIn).mockRejectedValueOnce(new Error("Network error"))
+
+        render(
+          <LoginForm
+            onSuccess={mockOnSuccess}
+            onCancel={mockOnCancel}
+            headerAuthUser="testuser"
+            needsPasswordSetup={false}
+          />,
+        )
+
+        const ssoButton = screen.getByText("SSO Sign In")
+
+        // First attempt - should fail and show error
+        await user.click(ssoButton)
+        await waitFor(() => {
+          expect(screen.getByText("Authentication failed. Please try again.")).toBeInTheDocument()
+        })
+
+        // Button should still be clickable for retry
+        expect(ssoButton).toBeEnabled()
+        expect(ssoButton).toHaveTextContent("SSO Sign In")
+
+        consoleSpy.mockRestore()
+      })
+    })
+
+    describe("SSO Mode vs Regular Mode", () => {
+      it("should not show SSO interface when headerAuthUser is not provided", () => {
+        render(
+          <LoginForm
+            onSuccess={mockOnSuccess}
+            onCancel={mockOnCancel}
+            needsPasswordSetup={false}
+          />,
+        )
+
+        // Should show regular login form
+        expect(screen.getByPlaceholderText("Password")).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Sign In" })).toBeInTheDocument()
+
+        // Should not show SSO interface
+        expect(screen.queryByText("SSO Sign In")).not.toBeInTheDocument()
+        expect(screen.queryByText("Authenticated as")).not.toBeInTheDocument()
+      })
+
+      it("should not show SSO interface when headerAuthUser is null", () => {
+        render(
+          <LoginForm
+            onSuccess={mockOnSuccess}
+            onCancel={mockOnCancel}
+            headerAuthUser={null}
+            needsPasswordSetup={false}
+          />,
+        )
+
+        // Should show regular login form
+        expect(screen.getByPlaceholderText("Password")).toBeInTheDocument()
+
+        // Should not show SSO interface
+        expect(screen.queryByText("SSO Sign In")).not.toBeInTheDocument()
+      })
+
+      it("should not show SSO interface when headerAuthUser is empty string", () => {
+        render(
+          <LoginForm
+            onSuccess={mockOnSuccess}
+            onCancel={mockOnCancel}
+            headerAuthUser=""
+            needsPasswordSetup={false}
+          />,
+        )
+
+        // Should show regular login form
+        expect(screen.getByPlaceholderText("Password")).toBeInTheDocument()
+
+        // Should not show SSO interface
+        expect(screen.queryByText("SSO Sign In")).not.toBeInTheDocument()
+      })
+    })
+
+    describe("Component Props and Integration", () => {
+      it("should handle long usernames in SSO mode", () => {
+        const longUsername = "very.long.username.with.multiple.dots@company.subdomain.com"
+
+        render(
+          <LoginForm
+            onSuccess={mockOnSuccess}
+            onCancel={mockOnCancel}
+            headerAuthUser={longUsername}
+            needsPasswordSetup={false}
+          />,
+        )
+
+        expect(screen.getByText(longUsername)).toBeInTheDocument()
+      })
+
+      it("should handle special characters in usernames for SSO mode", () => {
+        const specialUsername = "user+tag@example-domain.co.uk"
+
+        render(
+          <LoginForm
+            onSuccess={mockOnSuccess}
+            onCancel={mockOnCancel}
+            headerAuthUser={specialUsername}
+            needsPasswordSetup={false}
+          />,
+        )
+
+        expect(screen.getByText(specialUsername)).toBeInTheDocument()
+      })
+
+      it("should handle onSuccess callback in SSO mode", async () => {
+        const { signIn } = await import("next-auth/react")
+        vi.mocked(signIn).mockResolvedValue({
+          error: undefined,
+          code: undefined,
+          status: 200,
+          ok: true,
+          url: "/",
+        })
+
+        render(
+          <LoginForm
+            onSuccess={mockOnSuccess}
+            onCancel={mockOnCancel}
+            headerAuthUser="testuser"
+            needsPasswordSetup={false}
+          />,
+        )
+
+        const ssoButton = screen.getByText("SSO Sign In")
+        await user.click(ssoButton)
+
+        // onSuccess is typically called by NextAuth redirect, not directly by the component
+        // But we verify the component doesn't prevent the flow
+        expect(signIn).toHaveBeenCalled()
+      })
+    })
+
+    describe("Error Handling and Edge Cases", () => {
+      it("should handle signIn exception when authentication fails", async () => {
+        const { signIn } = await import("next-auth/react")
+        const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+        // Mock signIn to throw an exception (this triggers the catch block)
+        vi.mocked(signIn).mockRejectedValue(new Error("Authentication service unavailable"))
+
+        render(
+          <LoginForm
+            onSuccess={mockOnSuccess}
+            onCancel={mockOnCancel}
+            headerAuthUser="testuser"
+            needsPasswordSetup={false}
+          />,
+        )
+
+        const ssoButton = screen.getByText("SSO Sign In")
+        await user.click(ssoButton)
+
+        // Component should handle the error case
+        await waitFor(() => {
+          expect(screen.getByText("Authentication failed. Please try again.")).toBeInTheDocument()
+        })
+
+        // Should log the error
+        expect(consoleSpy).toHaveBeenCalledWith(
+          "[Header Auth] Sign-in exception:",
+          expect.any(Error),
+        )
+
+        consoleSpy.mockRestore()
+      })
+
+      it("should handle network timeout during SSO authentication", async () => {
+        const { signIn } = await import("next-auth/react")
+        const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+        // Simulate network timeout
+        vi.mocked(signIn).mockRejectedValue(new Error("Network timeout"))
+
+        render(
+          <LoginForm
+            onSuccess={mockOnSuccess}
+            onCancel={mockOnCancel}
+            headerAuthUser="testuser"
+            needsPasswordSetup={false}
+          />,
+        )
+
+        const ssoButton = screen.getByText("SSO Sign In")
+        await user.click(ssoButton)
+
+        await waitFor(() => {
+          expect(screen.getByText("Authentication failed. Please try again.")).toBeInTheDocument()
+        })
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+          "[Header Auth] Sign-in exception:",
+          expect.any(Error),
+        )
+
+        consoleSpy.mockRestore()
+      })
+    })
+  })
 })

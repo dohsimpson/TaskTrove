@@ -10,11 +10,12 @@ import { v4 as uuidv4 } from "uuid"
 import { updateTaskAtom } from "@tasktrove/atoms/core/tasks"
 import { tasksAtom, userAtom } from "@tasktrove/atoms/data/base/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@tasktrove/atoms/ui/dialogs"
-import type { Task, CreateTaskRequest } from "@/lib/types"
+import type { Task, CreateTaskRequest, TaskComment } from "@/lib/types"
 import { createCommentId, createTaskId } from "@/lib/types"
 import { useTranslation } from "@tasktrove/i18n"
 import { createScrollToBottom } from "@tasktrove/dom-utils"
 import { CommentItem } from "./comment-item"
+import { DeleteConfirmDialog } from "@/components/dialogs/delete-confirm-dialog"
 
 interface CommentContentProps {
   taskId?: string // Optional for quick-add mode
@@ -56,19 +57,23 @@ export function CommentContent({
   const [newComment, setNewComment] = useState("")
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false)
   const commentsContainerRef = useRef<HTMLDivElement>(null)
+  const [commentPendingDelete, setCommentPendingDelete] = useState<TaskComment | null>(null)
 
   // Get comments for display in chronological order (oldest first)
   const displayComments = task?.comments?.slice() || [] // Show all comments for both modes
+  const previousCommentsLengthRef = useRef(displayComments.length)
 
   // Shared scroll-to-bottom function with double RAF for reliable DOM painting
   const scrollToBottom = useMemo(() => createScrollToBottom(commentsContainerRef), [])
 
   // Scroll to bottom when a new comment is added
   useEffect(() => {
-    if (shouldScrollToBottom) {
+    if (shouldScrollToBottom && displayComments.length > previousCommentsLengthRef.current) {
       scrollToBottom()
       setShouldScrollToBottom(false)
     }
+
+    previousCommentsLengthRef.current = displayComments.length
   }, [displayComments.length, shouldScrollToBottom, scrollToBottom])
 
   // Scroll to bottom when popover opens (triggered by scrollToBottomKey change)
@@ -125,6 +130,19 @@ export function CommentContent({
     } else if (taskId) {
       updateTask({ updateRequest: { id: createTaskId(taskId), comments: updatedComments } })
     }
+  }
+
+  const handleRequestDeleteComment = (commentId: string) => {
+    const comment = (task.comments || []).find((c) => c.id === commentId)
+    if (comment) {
+      setCommentPendingDelete(comment)
+    }
+  }
+
+  const handleConfirmDeleteComment = () => {
+    if (!commentPendingDelete) return
+    handleDeleteComment(commentPendingDelete.id)
+    setCommentPendingDelete(null)
   }
 
   const handleUpdateComment = (commentId: string, newContent: string) => {
@@ -205,7 +223,7 @@ export function CommentContent({
               key={comment.id}
               comment={comment}
               mode={mode}
-              onDelete={handleDeleteComment}
+              onDelete={handleRequestDeleteComment}
               onUpdate={handleUpdateComment}
             />
           ))}
@@ -236,6 +254,18 @@ export function CommentContent({
           <Plus className="h-4 w-4" />
         </Button>
       </div>
+
+      <DeleteConfirmDialog
+        open={!!commentPendingDelete}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCommentPendingDelete(null)
+          }
+        }}
+        onConfirm={handleConfirmDeleteComment}
+        entityType="comment"
+        entityName={commentPendingDelete?.content}
+      />
     </div>
   )
 }

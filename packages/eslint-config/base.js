@@ -18,6 +18,14 @@ export const config = [
     },
     rules: {
       "turbo/no-undeclared-env-vars": "error",
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "ImportExpression",
+          message:
+            "Dynamic import() is disallowed in shared code. Use a static import or add an approved override.",
+        },
+      ],
     },
   },
   {
@@ -58,5 +66,18 @@ export const config = [
   },
   {
     ignores: ["dist/**", ".next/**", "node_modules/**"],
+  },
+  {
+    files: [
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/*.spec.ts",
+      "**/*.spec.tsx",
+      "**/*.stories.ts",
+      "**/*.stories.tsx",
+    ],
+    rules: {
+      "no-restricted-syntax": "off",
+    },
   },
 ];

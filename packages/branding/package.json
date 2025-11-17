@@ -1,0 +1,12 @@
+{
+  "name": "@tasktrove/branding",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared TaskTrove branding assets (icons, favicons, logos).",
+  "scripts": {
+    "sync": "node ./scripts/sync-icons.mjs"
+  },
+  "files": [
+    "icons"
+  ]
+}

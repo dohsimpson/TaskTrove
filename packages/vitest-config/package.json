@@ -12,9 +12,12 @@
     "./jsdom": "./jsdom.ts",
     "./jsdom.pro": "./jsdom.pro.ts",
     "./jsdom.pro.ts": "./jsdom.pro.ts",
-    "./happy-dom": "./happy-dom.ts"
+    "./happy-dom": "./happy-dom.ts",
+    "./install-type-strip-warning-filter": "./install-type-strip-warning-filter.ts",
+    "./install-type-strip-warning-filter.ts": "./install-type-strip-warning-filter.ts"
   },
   "devDependencies": {
     "vitest": "^3.2.4"
-  }
+  },
+  "type": "module"
 }

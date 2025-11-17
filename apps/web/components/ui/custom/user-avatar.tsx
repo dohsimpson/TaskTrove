@@ -22,7 +22,7 @@ interface UserAvatarProps {
    */
   icon?: React.ReactNode
   /**
-   * Background color for the avatar when using custom icon.
+   * Background color for the avatar when using custom icon. (CSS style)
    * Defaults to the username-based consistent color if not specified.
    */
   iconBackgroundColor?: string

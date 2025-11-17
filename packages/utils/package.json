@@ -32,7 +32,8 @@
     "./project-permissions": {
       "pro": "./src/project-permissions.pro.ts",
       "default": "./src/project-permissions.pro.ts"
-    }
+    },
+    "./version": "./src/version.ts"
   },
   "scripts": {
     "lint": "eslint .",
@@ -45,15 +46,18 @@
     "test:pro": "vitest run --reporter=dot --no-coverage --config vitest.config.pro.ts",
     "test": "pnpm test:base && (test -f vitest.config.pro.ts && pnpm test:pro || true)",
     "test:watch": "vitest --watch",
-    "test:watch:pro": "vitest --watch --config vitest.config.pro.ts"
+    "test:watch:pro": "vitest --watch --config vitest.config.pro.ts",
+    "recurring:cli": "node --import tsx --no-warnings scripts/recurring-cli.ts"
   },
   "dependencies": {
-    "@tasktrove/types": "workspace:*",
     "@tasktrove/constants": "workspace:*",
     "@tasktrove/parser": "workspace:*",
+    "@tasktrove/types": "workspace:*",
     "bcryptjs": "catalog:",
     "clsx": "catalog:",
     "date-fns": "latest",
+    "lodash.mergewith": "4.6.2",
+    "rrule": "catalog:",
     "slugify": "catalog:",
     "tailwind-merge": "catalog:",
     "uuid": "catalog:",
@@ -65,12 +69,14 @@
     "@repo/vitest-config": "workspace:*",
     "@testing-library/jest-dom": "catalog:",
     "@types/bcryptjs": "catalog:",
+    "@types/lodash.mergewith": "4.6.7",
     "@types/node": "catalog:",
     "@types/uuid": "catalog:",
     "@typescript/native-preview": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "happy-dom": "catalog:",
+    "tsx": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

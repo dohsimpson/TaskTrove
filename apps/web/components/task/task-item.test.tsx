@@ -13,7 +13,7 @@ import { render, screen, fireEvent, waitFor, within } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { Provider, useSetAtom } from "jotai"
 import { TaskItem } from "./task-item"
-import type { Task, ProjectId, LabelId } from "@/lib/types"
+import type { Task, ProjectId, LabelId, TaskId } from "@/lib/types"
 import { createLabelId, createTaskId, createUserId, INBOX_PROJECT_ID } from "@/lib/types"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 import {
@@ -52,6 +52,15 @@ vi.mock("date-fns", () => ({
   isToday: vi.fn(() => false),
   isTomorrow: vi.fn(() => false),
   isPast: vi.fn(() => false),
+  endOfDay: vi.fn((date) => new Date(date)),
+  isBefore: vi.fn(() => false),
+  parse: vi.fn(() => new Date()),
+  parseISO: vi.fn(() => new Date()),
+  set: vi.fn((date, updates) => {
+    const result = new Date(date)
+    Object.assign(result, updates)
+    return result
+  }),
 }))
 
 // Mock utils
@@ -795,13 +804,17 @@ describe("TaskItem", () => {
   const mockAddComment = vi.fn()
   const mockOpenTaskPanel = vi.fn()
   const mockToggleTaskSelection = vi.fn()
+  const mockSelectRange = vi.fn()
   const mockAddLabel = vi.fn()
+  let mockLastSelectedTask: TaskId | null = null
 
   beforeEach(async () => {
     vi.clearAllMocks()
     clearTaskRegistry()
     // Register the default mock task
     registerTask(mockTask)
+    mockLastSelectedTask = null
+    mockSelectRange.mockClear()
 
     const { useAtomValue, useSetAtom } = await import("jotai")
 
@@ -816,6 +829,12 @@ describe("TaskItem", () => {
       }
       if (atomString?.includes("selectionMode")) {
         return false // Usually false unless testing selection mode
+      }
+      if (atomString?.includes("selectedTaskId")) {
+        return null
+      }
+      if (atomString?.includes("lastSelectedTask")) {
+        return mockLastSelectedTask
       }
       if (atomString?.includes("sortedLabels") || atomString?.includes("labelsAtom")) {
         return mockLabels
@@ -863,6 +882,14 @@ describe("TaskItem", () => {
       }
       if (atomString?.includes("selectionToggleTaskSelection")) {
         return mockToggleTaskSelection
+      }
+      if (atomString?.includes("selectRange")) {
+        return mockSelectRange
+      }
+      if (atomString?.includes("lastSelectedTask")) {
+        return (value: TaskId | null) => {
+          mockLastSelectedTask = value
+        }
       }
       if (atomString?.includes("enterSelectionMode")) {
         return vi.fn()
@@ -2274,14 +2301,14 @@ describe("TaskItem", () => {
         // Find the container with essential metadata in first row
         const container = screen.getByText("Test Task").closest("[data-task-focused]")
         const essentialMetadata = container?.querySelector(
-          ".flex.items-center.gap-1.text-xs.flex-shrink-0",
+          ".flex.items-center.gap-2.text-xs.flex-shrink-0",
         )
 
         expect(essentialMetadata).toBeInTheDocument()
         expect(essentialMetadata).toHaveClass(
           "flex",
           "items-center",
-          "gap-1",
+          "gap-2",
           "text-xs",
           "flex-shrink-0",
         )
@@ -2317,14 +2344,14 @@ describe("TaskItem", () => {
         // Find the metadata container (all metadata in single row now)
         const container = screen.getByText("Test Task").closest("[data-task-focused]")
         const metadataContainer = container?.querySelector(
-          ".flex.items-center.gap-1.text-xs.flex-shrink-0",
+          ".flex.items-center.gap-2.text-xs.flex-shrink-0",
         )
 
         expect(metadataContainer).toBeInTheDocument()
         expect(metadataContainer).toHaveClass(
           "flex",
           "items-center",
-          "gap-1",
+          "gap-2",
           "text-xs",
           "flex-shrink-0",
         )
@@ -2357,7 +2384,7 @@ describe("TaskItem", () => {
 
         // The actions menu should be in the single metadata row
         const metadataContainer = container?.querySelector(
-          ".flex.items-center.gap-1.text-xs.flex-shrink-0",
+          ".flex.items-center.gap-2.text-xs.flex-shrink-0",
         )
         if (actionsMenu && metadataContainer) {
           expect(metadataContainer.contains(actionsMenu)).toBe(true)
@@ -2378,7 +2405,7 @@ describe("TaskItem", () => {
 
         // The timer triggers should be in the single metadata section
         const metadataContainer = container?.querySelector(
-          ".flex.items-center.gap-1.text-xs.flex-shrink-0",
+          ".flex.items-center.gap-2.text-xs.flex-shrink-0",
         )
 
         expect(metadataContainer).toBeTruthy()
@@ -2386,6 +2413,114 @@ describe("TaskItem", () => {
         // The metadata container should contain multiple elements including timer triggers
         expect(metadataContainer?.children.length).toBeGreaterThan(0)
       })
+    })
+
+    it("shows colored project icon without name in compact variant", () => {
+      render(
+        <Provider>
+          <TaskItem taskId={mockTask.id} variant="compact" showProjectBadge={true} />
+        </Provider>,
+      )
+
+      const projectPopover = screen.getByTestId("project-popover")
+      const folderIcon = within(projectPopover).getByTestId("folder-icon")
+
+      expect(folderIcon).toBeInTheDocument()
+      expect(folderIcon.parentElement).toHaveStyle({ color: "#ff0000" })
+      expect(projectPopover).not.toHaveTextContent("Project 1")
+    })
+
+    it("truncates compact label badges to two letters", () => {
+      render(
+        <Provider>
+          <TaskItem taskId={mockTask.id} variant="compact" />
+        </Provider>,
+      )
+
+      const labelPopover = screen.getByTestId("label-management-popover")
+      const badge = within(labelPopover).getByText("ur")
+
+      expect(badge).toBeInTheDocument()
+    })
+  })
+
+  describe("Narrow Variant", () => {
+    const narrowTask = {
+      ...mockTask,
+      id: createTaskId("11111111-1111-4111-8111-111111111111"),
+      labels: [TEST_LABEL_ID_1, TEST_LABEL_ID_2],
+    }
+
+    beforeEach(() => {
+      registerTask(narrowTask)
+    })
+
+    it("renders static label badges without popover controls", () => {
+      render(
+        <Provider>
+          <TaskItem taskId={narrowTask.id} variant="narrow" />
+        </Provider>,
+      )
+
+      expect(screen.queryByTestId("label-management-popover")).not.toBeInTheDocument()
+      expect(screen.getByText("urgent")).toBeInTheDocument()
+      expect(screen.getByText("work")).toBeInTheDocument()
+    })
+
+    it("passes task priority to the checkbox for styling", () => {
+      render(
+        <Provider>
+          <TaskItem taskId={narrowTask.id} variant="narrow" />
+        </Provider>,
+      )
+
+      const checkbox = screen.getByTestId("checkbox")
+      expect(checkbox).toHaveAttribute("priority", String(narrowTask.priority))
+    })
+
+    it("removes border and shadow accents", () => {
+      render(
+        <Provider>
+          <TaskItem taskId={narrowTask.id} variant="narrow" />
+        </Provider>,
+      )
+
+      const container = screen.getByText("Test Task").closest("[data-task-focused]")
+      expect(container).not.toHaveClass(
+        "border-l-blue-500",
+        "border-l-red-500",
+        "border-l-orange-500",
+        "border-l-[3px]",
+      )
+      expect(container).not.toHaveClass(
+        "shadow-sm",
+        "hover:shadow-md",
+        "dark:hover:shadow-gray-300/30",
+      )
+    })
+
+    it("shows project badge without popover", () => {
+      render(
+        <Provider>
+          <TaskItem taskId={narrowTask.id} variant="narrow" showProjectBadge />
+        </Provider>,
+      )
+
+      expect(screen.queryByTestId("project-popover")).not.toBeInTheDocument()
+      expect(screen.getByTestId("folder-icon")).toBeInTheDocument()
+    })
+
+    it("renders static schedule, priority, subtask, and comment badges", () => {
+      render(
+        <Provider>
+          <TaskItem taskId={narrowTask.id} variant="narrow" />
+        </Provider>,
+      )
+
+      expect(screen.queryByTestId("task-schedule-popover")).not.toBeInTheDocument()
+      expect(screen.queryByTestId("priority-popover")).not.toBeInTheDocument()
+      expect(screen.queryByTestId("subtask-popover")).not.toBeInTheDocument()
+      expect(screen.queryByTestId("comment-management-popover")).not.toBeInTheDocument()
     })
   })
 
@@ -2640,6 +2775,21 @@ describe("TaskItem", () => {
       // Labels are displayed via LabelManagementPopover mock
       const labelPopover = screen.getByTestId("label-management-popover")
       expect(labelPopover).toBeInTheDocument()
+    })
+
+    it("shows project popover trigger with colored icon in kanban variant", () => {
+      render(
+        <Provider>
+          <TaskItem taskId={kanbanTask.id} variant="kanban" />
+        </Provider>,
+      )
+
+      const projectPopover = screen.getByTestId("project-popover")
+      expect(projectPopover).toBeInTheDocument()
+
+      const folderIcon = within(projectPopover).getByTestId("folder-icon")
+      expect(folderIcon).toBeInTheDocument()
+      expect(folderIcon.parentElement).toHaveStyle({ color: "#ff0000" })
     })
 
     it('shows "Add labels" option when hovering and no labels exist', async () => {
@@ -3838,7 +3988,7 @@ describe("TaskItem", () => {
         expect(screen.getByTestId("repeat-icon")).toBeInTheDocument()
       })
 
-      it("shows both overdue and repeat icons for overdue recurring tasks", async () => {
+      it("shows repeat icon for overdue recurring tasks without alert triangle", async () => {
         // Import the mocked functions from date-fns
         const { isPast, isToday, format } = await import("date-fns")
 
@@ -3865,8 +4015,9 @@ describe("TaskItem", () => {
           </Provider>,
         )
 
-        // Should show both alert triangle (overdue) and repeat icons
-        expect(screen.getByTestId("alert-triangle-icon")).toBeInTheDocument()
+        // Should show repeat icon while relying on background styling for overdue state
+        expect(screen.queryByTestId("alert-triangle-icon")).not.toBeInTheDocument()
+        expect(screen.queryByTestId("calendar-icon")).not.toBeInTheDocument()
         expect(screen.getByTestId("repeat-icon")).toBeInTheDocument()
 
         // Restore original mocks

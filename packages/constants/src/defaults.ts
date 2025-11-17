@@ -91,6 +91,11 @@ export const SIDE_PANEL_WIDTH_MIN = 20;
 export const SIDE_PANEL_WIDTH_MAX = 80;
 export const SIDE_PANEL_WIDTH_DEFAULT = 25;
 
+/** Primary app sidebar width constraints (pixels) */
+export const SIDEBAR_WIDTH_PX_MIN = 250;
+export const SIDEBAR_WIDTH_PX_MAX = 480;
+export const SIDEBAR_WIDTH_PX_DEFAULT = 300;
+
 // =============================================================================
 // AUDIO/SOUND DEFAULTS
 // =============================================================================
@@ -146,37 +151,37 @@ export const STANDARD_VIEW_METADATA: Record<
 > = {
   all: {
     title: "All Tasks",
-    description: "View all your tasks in one place",
+    description: "See every task across all projects and labels in one view",
     iconType: "all" as const,
   },
   inbox: {
     title: "Inbox",
-    description: "Start with unorganized tasks",
+    description: "Capture new tasks that don't have a home yet",
     iconType: "inbox" as const,
   },
   today: {
     title: "Today",
-    description: "Focus on today's tasks",
+    description: "Keep up with everything scheduled for today",
     iconType: "today" as const,
   },
   upcoming: {
     title: "Upcoming",
-    description: "See what's coming up next",
+    description: "Plan ahead with tasks scheduled for future dates",
     iconType: "upcoming" as const,
   },
   completed: {
     title: "Completed",
-    description: "Review completed tasks",
+    description: "Celebrate progress with tasks you've finished",
     iconType: "completed" as const,
   },
   calendar: {
     title: "Calendar",
-    description: "View tasks in calendar format",
+    description: "Visualize tasks with due dates on a calendar",
     iconType: "calendar" as const,
   },
   habits: {
     title: "Habits",
-    description: "Track your habits and routines",
+    description: "Track repeating tasks and routines that auto-rollover",
     iconType: "habits" as const,
   },
   // analytics: {
@@ -211,12 +216,12 @@ export const STANDARD_VIEW_METADATA: Record<
   // },
   projects: {
     title: "Projects",
-    description: "Manage and organize projects",
+    description: "Browse all projects and jump into dedicated views",
     iconType: "projects" as const,
   },
   labels: {
     title: "Labels",
-    description: "Organize tasks with labels",
+    description: "Organize and filter tasks with custom labels",
     iconType: "labels" as const,
   },
   "not-found": {

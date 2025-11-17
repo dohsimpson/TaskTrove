@@ -28,7 +28,7 @@ export const DataFileSchema = z.object({
   labelGroups: LabelGroupSchema,
   settings: UserSettingsSchema,
   user: UserSchema,
-  version: VersionStringSchema.optional(), // TODO: make this required after v0.9.0
+  version: VersionStringSchema,
   edition: z.string().optional(),
 });
 

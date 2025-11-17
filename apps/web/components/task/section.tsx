@@ -28,7 +28,6 @@ import { extractDropPayload, reorderItems } from "@tasktrove/dom-utils"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
-import { toast } from "sonner"
 
 interface SectionProps {
   sectionId: GroupId
@@ -125,14 +124,6 @@ export function Section({
   // Handler for dropping tasks onto this section
   const handleDropTaskToSection = useCallback(
     async (args: ElementDropTargetEventBasePayload) => {
-      // Check if sortBy is not "default" - if so, disallow drag and drop
-      if (currentViewState.sortBy !== "default") {
-        toast.error(
-          "Drag and drop is disabled when sorting is applied. Please change sort to 'default' to enable drag and drop.",
-        )
-        return
-      }
-
       if (!project) return
 
       // Extract task IDs from drag source
@@ -200,20 +191,12 @@ export function Section({
         })),
       )
     },
-    [project, updateProjects, updateTasks, taskById, getProjectById, sectionId, currentViewState],
+    [project, updateProjects, updateTasks, taskById, getProjectById, sectionId],
   )
 
   // Handler for dropping tasks onto other tasks (reordering within section)
   const handleDropTaskToListItem = useCallback(
     async (args: ElementDropTargetEventBasePayload) => {
-      // Check if sortBy is not "default" - if so, disallow drag and drop
-      if (currentViewState.sortBy !== "default") {
-        toast.error(
-          "Drag and drop is disabled when sorting is applied. Please change sort to 'default' to enable drag and drop.",
-        )
-        return
-      }
-
       if (!project) return
 
       // Extract and validate drop payload
@@ -297,7 +280,7 @@ export function Section({
         })),
       )
     },
-    [project, updateProjects, updateTasks, taskById, getProjectById, sectionId, currentViewState],
+    [project, updateProjects, updateTasks, taskById, getProjectById, sectionId],
   )
 
   if (!section) return null
@@ -378,7 +361,7 @@ export function Section({
   )
 
   const taskListContent = (
-    <div className="py-2">
+    <div className={cn("py-2", variant === "kanban" && "flex-1 min-h-0 overflow-y-auto pr-1")}>
       {tasks.length === 0 ? (
         emptyState || (
           <div className="min-h-[120px] px-4 flex items-center justify-center text-muted-foreground">
@@ -397,7 +380,7 @@ export function Section({
   )
 
   return (
-    <div className={wrapperClassName}>
+    <div className={cn(wrapperClassName, variant === "kanban" && "min-h-0")}>
       <DropTargetElement
         id={sectionDroppableId}
         options={{ type: "group", indicator: {}, testId: sectionDroppableId }}
@@ -415,7 +398,12 @@ export function Section({
             </div>
           </Collapsible>
         ) : (
-          <div className="flex flex-col flex-1">
+          <div
+            className={cn(
+              "flex flex-col flex-1",
+              variant === "kanban" && "min-h-0 overflow-hidden",
+            )}
+          >
             {headerContent}
             {taskListContent}
           </div>

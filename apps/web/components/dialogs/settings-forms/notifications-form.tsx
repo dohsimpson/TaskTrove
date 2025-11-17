@@ -67,7 +67,7 @@ export function NotificationsForm() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 max-w-full overflow-x-hidden">
       {/* Global Enable/Disable */}
       <SettingsCard title={t("notifications.general.title", "General Settings")} experimental>
         <div className="space-y-4">

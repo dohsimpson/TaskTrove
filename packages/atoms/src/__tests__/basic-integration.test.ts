@@ -13,6 +13,12 @@ import { labelAtoms } from "../core/labels";
 import { viewAtoms } from "../ui/views";
 import { dialogAtoms } from "../ui/dialogs";
 import { selectionAtoms } from "../ui/selection";
+import {
+  activeTasksAtom,
+  completedTasksAtom,
+  todayTasksAtom,
+  overdueTasksAtom,
+} from "../data/tasks/filters";
 import type { Task, Project, Label } from "@tasktrove/types/core";
 import type { CreateTaskRequest } from "@tasktrove/types/api-requests";
 import type { TaskId } from "@tasktrove/types/id";
@@ -194,20 +200,20 @@ describe("TaskTrove Jotai Atoms Integration Tests", () => {
       });
 
       // Test active tasks filter
-      const activeTasks = await store.get(taskAtoms.derived.activeTasks);
+      const activeTasks = await store.get(activeTasksAtom);
       expect(Array.isArray(activeTasks)).toBe(true);
 
       // Test completed tasks filter
-      const completedTasks = await store.get(taskAtoms.derived.completedTasks);
+      const completedTasks = await store.get(completedTasksAtom);
       expect(Array.isArray(completedTasks)).toBe(true);
       expect(completedTasks.every((t: Task) => t.completed)).toBe(true);
 
       // Test today tasks filter
-      const todayTasks = await store.get(taskAtoms.derived.todayTasks);
+      const todayTasks = await store.get(todayTasksAtom);
       expect(Array.isArray(todayTasks)).toBe(true);
 
       // Test overdue tasks filter
-      const overdueTasks = await store.get(taskAtoms.derived.overdueTasks);
+      const overdueTasks = await store.get(overdueTasksAtom);
       expect(Array.isArray(overdueTasks)).toBe(true);
 
       // Test task counts - DISABLED (taskCountsAtom needs refactoring)

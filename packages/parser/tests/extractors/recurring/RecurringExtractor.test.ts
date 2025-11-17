@@ -81,6 +81,19 @@ describe("RecurringExtractor", () => {
     expect(results[0]?.value).toBe("RRULE:FREQ=YEARLY");
   });
 
+  it("should not match recurring keywords attached to other words", () => {
+    const results = extractor.extract("reminderdaily", context);
+
+    expect(results).toHaveLength(0);
+  });
+
+  it("should still match recurring keywords next to punctuation", () => {
+    const results = extractor.extract("Schedule daily, review", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.match).toBe("daily");
+  });
+
   it('should extract "every 3 days"', () => {
     const results = extractor.extract("Backup every 3 days", context);
 
@@ -99,6 +112,136 @@ describe("RecurringExtractor", () => {
     const results = extractor.extract("Just a task", context);
 
     expect(results).toEqual([]);
+  });
+
+  it('should extract "every weekend" as saturday/sunday weekly rule', () => {
+    const results = extractor.extract("Chores every weekend", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]).toMatchObject({
+      type: "recurring",
+      value: "RRULE:FREQ=WEEKLY;BYDAY=SA,SU",
+    });
+  });
+
+  it('should extract abbreviated "ev weekday"', () => {
+    const results = extractor.extract("Emails ev weekday", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe("RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR");
+  });
+
+  it('should support weekday ranges like "every mon-fri"', () => {
+    const results = extractor.extract("Gym every mon-fri", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe("RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR");
+  });
+
+  it('should parse repeated abbreviations like "ev mon, ev fri"', () => {
+    const results = extractor.extract("Sync ev mon, ev fri", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe("RRULE:FREQ=WEEKLY;BYDAY=MO,FR");
+  });
+
+  it('should extract "every other month" as interval 2 monthly', () => {
+    const results = extractor.extract(
+      "Budget review every other month",
+      context,
+    );
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe("RRULE:FREQ=MONTHLY;INTERVAL=2");
+  });
+
+  it('should extract "every other year" as interval 2 yearly', () => {
+    const results = extractor.extract("Conference every other year", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe("RRULE:FREQ=YEARLY;INTERVAL=2");
+  });
+
+  it('should accept abbreviated ordinal like "ev 2nd Monday"', () => {
+    const results = extractor.extract("Payroll ev 2nd Monday", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe("RRULE:FREQ=MONTHLY;BYDAY=2MO");
+  });
+
+  it('should treat "ev 3 days" as an interval rule, not day-of-month', () => {
+    const results = extractor.extract("Status ev 3 days", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe("RRULE:FREQ=DAILY;INTERVAL=3");
+  });
+
+  it('should translate "every first workday" to BYSETPOS=1 weekdays', () => {
+    const results = extractor.extract("Invoices every first workday", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe(
+      "RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=1",
+    );
+  });
+
+  it('should translate "every last workday" to BYSETPOS=-1 weekdays', () => {
+    const results = extractor.extract("Payroll every last workday", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe(
+      "RRULE:FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1",
+    );
+  });
+
+  it('should support multi-day monthly lists like "every 2, every 15, every 27"', () => {
+    const results = extractor.extract(
+      "Review every 2, every 15, every 27",
+      context,
+    );
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe("RRULE:FREQ=MONTHLY;BYMONTHDAY=2,15,27");
+  });
+
+  it('should treat "every 27" as monthly day', () => {
+    const results = extractor.extract("Report every 27", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe("RRULE:FREQ=MONTHLY;BYMONTHDAY=27");
+  });
+
+  it('should treat "every 3 workday" as weekday interval', () => {
+    const results = extractor.extract("Checklist every 3 workday", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe(
+      "RRULE:FREQ=DAILY;INTERVAL=3;BYDAY=MO,TU,WE,TH,FR",
+    );
+  });
+
+  it('should support specific month-day list like "every 14 jan, 14 apr, 15 jun, 15 sep"', () => {
+    const results = extractor.extract(
+      "Comms every 14 jan, 14 apr, 15 jun, 15 sep",
+      context,
+    );
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe(
+      [
+        "RRULE:FREQ=YEARLY;BYMONTH=1;BYMONTHDAY=14",
+        "RRULE:FREQ=YEARLY;BYMONTH=4;BYMONTHDAY=14",
+        "RRULE:FREQ=YEARLY;BYMONTH=6;BYMONTHDAY=15",
+        "RRULE:FREQ=YEARLY;BYMONTH=9;BYMONTHDAY=15",
+      ].join("\n"),
+    );
+  });
+
+  it('should include month for ordinal like "ev 3rd friday jan"', () => {
+    const results = extractor.extract("Plan ev 3rd friday jan", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe("RRULE:FREQ=YEARLY;BYDAY=3FR;BYMONTH=1");
   });
 
   it("should respect disabled sections", () => {
@@ -525,5 +668,15 @@ describe("RecurringExtractor", () => {
         match: "every other week",
       });
     });
+  });
+  it('should capture each clause in "every 1st wed jan, every 3rd thu jul"', () => {
+    const results = extractor.extract(
+      "every 1st wed jan, every 3rd thu jul",
+      context,
+    );
+
+    expect(results).toHaveLength(2);
+    expect(results[0]?.value).toBe("RRULE:FREQ=YEARLY;BYDAY=1WE;BYMONTH=1");
+    expect(results[1]?.value).toBe("RRULE:FREQ=YEARLY;BYDAY=3TH;BYMONTH=7");
   });
 });

@@ -4,6 +4,7 @@ import {
   render,
   screen,
   fireEvent,
+  waitFor,
   mockContentPopoverComponent,
   mockHelpPopoverComponent,
   mockTimeEstimationPopoverComponent,
@@ -126,11 +127,12 @@ vi.mock("lucide-react", () => ({
   ChevronDown: () => <span data-testid="chevron-down-icon">⬇️</span>,
   ChevronUp: () => <span data-testid="chevron-up-icon">⬆️</span>,
   Sparkles: () => <span data-testid="sparkles-icon">✨</span>,
+  Users: () => <span data-testid="users-icon">👥</span>,
   AlertTriangle: () => <span data-testid="alert-triangle-icon">⚠️</span>,
+  MessageSquare: () => <span data-testid="message-square-icon">💬</span>,
   HelpCircle: () => <span data-testid="help-circle-icon">?</span>,
   MoreHorizontal: () => <span data-testid="more-horizontal-icon">⋯</span>,
   CheckSquare: () => <span data-testid="check-square-icon">☑️</span>,
-  MessageSquare: () => <span data-testid="message-square-icon">💬</span>,
   ArrowRight: () => <span data-testid="arrow-right-icon">→</span>,
   Sun: () => <span data-testid="sun-icon">☀️</span>,
   Moon: () => <span data-testid="moon-icon">🌙</span>,
@@ -386,6 +388,15 @@ vi.mock("@/lib/types", () => ({
   UpdateProjectGroupRequestSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
   },
+  // Validator functions
+  isValidPriority: vi.fn((value: unknown) => typeof value === "number" && value >= 1 && value <= 4),
+  isValidViewMode: vi.fn(
+    (value: unknown) =>
+      typeof value === "string" && ["list", "kanban", "calendar", "table", "stats"].includes(value),
+  ),
+  isValidSortDirection: vi.fn(
+    (value: unknown) => typeof value === "string" && ["asc", "desc"].includes(value),
+  ),
 }))
 
 // Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
@@ -487,7 +498,7 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
   })
 
   describe("Token Rendering Alignment", () => {
-    it("should render highlighted tokens without padding that causes shift", () => {
+    it("should render highlighted tokens without padding that causes shift", async () => {
       render(<QuickAddDialog />)
 
       const contentEditable = screen.getByRole("combobox", {
@@ -499,11 +510,16 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
         target: { textContent: "Complete task #work @urgent p1 today" },
       })
 
+      await waitFor(() => {
+        const overlay = contentEditable.parentElement?.querySelector(".absolute.inset-0")
+        const tokens = overlay?.querySelectorAll('span[class*="bg-"]')
+        expect(tokens && tokens.length).toBeGreaterThan(0)
+      })
+
       const overlay = contentEditable.parentElement?.querySelector(".absolute.inset-0")
       const tokens = overlay?.querySelectorAll('span[class*="bg-"]')
 
-      // Should have tokens for #work, @urgent, p1, today
-      expect(tokens?.length).toBeGreaterThan(0)
+      expect(tokens && tokens.length).toBeGreaterThan(0)
 
       tokens?.forEach((token) => {
         // Critical: No padding that shifts text
@@ -517,7 +533,7 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
       })
     })
 
-    it("should handle disabled sections without affecting alignment", () => {
+    it("should handle disabled sections without affecting alignment", async () => {
       render(<QuickAddDialog />)
 
       const contentEditable = screen.getByRole("combobox", {
@@ -530,15 +546,27 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
       })
 
       // Find a token and click to disable it
+      await waitFor(() => {
+        const overlay = contentEditable.parentElement?.querySelector(".absolute.inset-0")
+        const tokens = overlay?.querySelectorAll('span[class*="bg-"]')
+        const projectToken = Array.from(tokens ?? []).find((token) =>
+          token.textContent?.includes("#project"),
+        )
+        expect(projectToken).toBeTruthy()
+      })
+
       const overlay = contentEditable.parentElement?.querySelector(".absolute.inset-0")
-      const projectToken = overlay?.querySelector('span[class*="bg-primary"]')
+      const tokens = overlay?.querySelectorAll('span[class*="bg-"]')
+      const projectToken = Array.from(tokens ?? []).find((token) =>
+        token.textContent?.includes("#project"),
+      )
 
       if (projectToken) {
         fireEvent.click(projectToken)
 
         // Token should now be disabled but without layout shift
         expect(projectToken).not.toHaveClass("px-0.5")
-        expect(projectToken).toHaveClass("cursor-pointer")
+        expect(projectToken).not.toHaveClass("cursor-pointer")
       }
     })
   })

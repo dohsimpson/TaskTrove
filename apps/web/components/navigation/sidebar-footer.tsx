@@ -2,7 +2,7 @@
 
 import React from "react"
 import { Download } from "lucide-react"
-import { SidebarFooter, SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar"
+import { SidebarFooter, SidebarMenu, SidebarMenuItem } from "@/components/ui/custom/sidebar"
 import { useUpdateChecker } from "@/hooks/use-update-checker"
 import { useTranslation } from "@tasktrove/i18n"
 import { NavUser } from "./nav-user"

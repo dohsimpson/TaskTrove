@@ -2,7 +2,7 @@ import React from "react"
 import { describe, it, expect, vi, afterEach } from "vitest"
 import { render, screen } from "@/test-utils"
 import { AppSidebarFooter } from "./sidebar-footer"
-import { SidebarProvider } from "@/components/ui/sidebar"
+import { SidebarProvider } from "@/components/ui/custom/sidebar"
 
 // Mock NavUser component since context menu functionality is now there
 vi.mock("./nav-user", () => ({

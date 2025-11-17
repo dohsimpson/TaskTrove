@@ -8,27 +8,10 @@
   },
   "data": {
     "autoBackup": {
-      "backupTime": {
-        "description": "Time to run daily backup (24-hour format)",
-        "label": "Backup Time"
-      },
       "description": "Automatically backup your data daily to protect against data loss.",
-      "dockerNotice": {
-        "description": "You must mount the backups directory as a volume to access backup files:",
-        "guide": "See backup setup guide",
-        "title": "Docker Users:"
-      },
-      "enable": {
-        "description": "Creates a zip backup of your data daily at the configured time",
-        "label": "Enable Auto Backup"
-      },
-      "manualBackup": {
-        "button": "Trigger Manual Backup Now"
-      },
-      "maxBackups": {
-        "description": "Older backups will be automatically deleted",
-        "label": "Maximum Backups to Keep",
-        "noLimit": "No limit"
+      "schedulerRedirect": {
+        "button": "Open Scheduler Settings",
+        "description": "Auto backup controls now live in Scheduler settings. Head there to enable the job, change the cron time, or run a manual backup."
       },
       "title": "Auto Backup"
     },
@@ -111,15 +94,15 @@
     },
     "startView": {
       "all": {
-        "description": "View all your tasks in one place",
+        "description": "See every task across all projects and labels in one view",
         "label": "All Tasks"
       },
       "completed": {
-        "description": "Review completed tasks",
+        "description": "Celebrate progress with tasks you've finished",
         "label": "Completed"
       },
       "inbox": {
-        "description": "Start with unorganized tasks",
+        "description": "Capture new tasks that don't have a home yet",
         "label": "Inbox"
       },
       "lastViewed": {
@@ -127,11 +110,11 @@
         "label": "Last Viewed"
       },
       "today": {
-        "description": "Focus on today's tasks",
+        "description": "Keep up with everything scheduled for today",
         "label": "Today"
       },
       "upcoming": {
-        "description": "See what's coming up next",
+        "description": "Plan ahead with tasks scheduled for future dates",
         "label": "Upcoming"
       }
     }
@@ -173,6 +156,43 @@
       "testNotification": "Test Notification",
       "title": "Permission Status",
       "tryAgain": "Try Again"
+    }
+  },
+  "scheduler": {
+    "title": "Scheduler",
+    "description": "Monitor and configure background jobs that keep your workspace healthy.",
+    "state": {
+      "label": "Scheduler State",
+      "running": "Running",
+      "stopped": "Stopped"
+    },
+    "actions": {
+      "refresh": "Refresh jobs"
+    },
+    "jobs": {
+      "title": "Registered Jobs",
+      "columns": {
+        "id": "Job ID",
+        "schedule": "Schedule",
+        "autoStart": "Auto start"
+      },
+      "autoStart": {
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+      },
+      "empty": "No scheduled jobs found.",
+      "loading": "Loading jobs..."
+    },
+    "controls": {
+      "enable": "Enable daily backup job",
+      "enableDescription": "Stop or resume running the backup job without touching cron.",
+      "backupTime": "Backup start time",
+      "backupTimeDescription": "Set the daily cron start (24-hour time)",
+      "manualBackup": {
+        "title": "Manual backup",
+        "description": "Need a one-off backup before big changes? Trigger it instantly.",
+        "button": "Trigger Manual Backup Now"
+      }
     }
   }
 }

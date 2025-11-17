@@ -41,6 +41,29 @@ describe("ViewEmptyState", () => {
     ).toBeInTheDocument()
   })
 
+  it("should render habits empty state", () => {
+    render(<ViewEmptyState viewId="habits" />)
+
+    expect(screen.getByText("No habits tracked yet")).toBeInTheDocument()
+    expect(
+      screen.getByText(/Recurring tasks with auto-rollover recurring mode will show up here/),
+    ).toBeInTheDocument()
+  })
+
+  it("should render assigned-to-me empty state", () => {
+    render(<ViewEmptyState viewId={"assigned-to-me" as const} />)
+
+    expect(screen.getByText("No tasks assigned to you")).toBeInTheDocument()
+    expect(screen.getByText(/Tasks teammates assign to you will appear here/)).toBeInTheDocument()
+  })
+
+  it("should render assigned-to-others empty state", () => {
+    render(<ViewEmptyState viewId={"assigned-to-others" as const} />)
+
+    expect(screen.getByText("No delegated tasks yet")).toBeInTheDocument()
+    expect(screen.getByText(/Tasks you assign to others will show here/)).toBeInTheDocument()
+  })
+
   it("should render project empty state with project name", () => {
     const projectId = createProjectId("123e4567-e89b-12d3-a456-426614174000")
     render(<ViewEmptyState viewId={projectId} projectName="My Project" />)

@@ -1,5 +1,6 @@
 import type { Extractor } from "../base/Extractor";
 import type { ExtractionResult, ParserContext } from "../../types";
+import { buildBoundedPattern } from "../../utils/patterns";
 
 interface TimePattern {
   pattern: RegExp;
@@ -11,10 +12,13 @@ interface DurationDatePattern {
   getValue: (match: RegExpMatchArray) => Date;
 }
 
+const boundedPattern = (body: string, flags: string = "gi"): RegExp =>
+  buildBoundedPattern(body, flags);
+
 // "at" patterns (must be processed first to avoid conflicts)
 const AT_PATTERNS: TimePattern[] = [
   {
-    pattern: /\b(at\s+(\d{1,2})(AM|PM|am|pm))\b/gi,
+    pattern: boundedPattern("(at\\s+(\\d{1,2})(AM|PM|am|pm))"),
     getValue: (match) => {
       const hourStr = match[2];
       const periodStr = match[3];
@@ -35,7 +39,7 @@ const AT_PATTERNS: TimePattern[] = [
     },
   },
   {
-    pattern: /\b(at\s+(\d{1,2}):(\d{2})(AM|PM|am|pm))\b/gi,
+    pattern: boundedPattern("(at\\s+(\\d{1,2}):(\\d{2})(AM|PM|am|pm))"),
     getValue: (match) => {
       const hourStr = match[2];
       const minuteStr = match[3];
@@ -60,7 +64,7 @@ const AT_PATTERNS: TimePattern[] = [
     },
   },
   {
-    pattern: /\b(at\s+(\d{1,2}):(\d{2}))\b/g,
+    pattern: boundedPattern("(at\\s+(\\d{1,2}):(\\d{2}))", "g"),
     getValue: (match) => {
       const hourStr = match[2];
       const minuteStr = match[3];
@@ -81,11 +85,11 @@ const AT_PATTERNS: TimePattern[] = [
 // Special time words
 const SPECIAL_PATTERNS: TimePattern[] = [
   {
-    pattern: /\b(noon)\b/gi,
+    pattern: boundedPattern("(noon)"),
     getValue: (match) => "12:00",
   },
   {
-    pattern: /\b(midnight)\b/gi,
+    pattern: boundedPattern("(midnight)"),
     getValue: (match) => "00:00",
   },
 ];
@@ -94,7 +98,7 @@ const SPECIAL_PATTERNS: TimePattern[] = [
 const getDurationPatterns = (referenceDate: Date): DurationDatePattern[] => [
   // Hours + minutes: "in 2h30m", "in 1h 15m", "in 3h30min"
   {
-    pattern: /\b(in (\d+)h\s*(\d+)m(?:in)?)\b/gi,
+    pattern: boundedPattern("(in (\\d+)h\\s*(\\d+)m(?:in)?)"),
     getValue: (match) => {
       const hoursStr = match[2];
       const minutesStr = match[3];
@@ -110,7 +114,7 @@ const getDurationPatterns = (referenceDate: Date): DurationDatePattern[] => [
 
   // Hours only: "in 2h", "in 1 hour", "in 3 hours"
   {
-    pattern: /\b(in (\d+)h)\b/gi,
+    pattern: boundedPattern("(in (\\d+)h)"),
     getValue: (match) => {
       const hoursStr = match[2];
       if (!hoursStr) return new Date(referenceDate);
@@ -122,7 +126,7 @@ const getDurationPatterns = (referenceDate: Date): DurationDatePattern[] => [
 
   // Hours with full word forms: "in 1 hour", "in 3 hours"
   {
-    pattern: /\b(in (\d+)\s+hour)\b/gi,
+    pattern: boundedPattern("(in (\\d+)\\s+hour)"),
     getValue: (match) => {
       const hoursStr = match[2];
       if (!hoursStr) return new Date(referenceDate);
@@ -134,7 +138,7 @@ const getDurationPatterns = (referenceDate: Date): DurationDatePattern[] => [
 
   // Minutes: "in 5min", "in 5 min", "in 5m"
   {
-    pattern: /\b(in (\d+)min)\b/gi,
+    pattern: boundedPattern("(in (\\d+)min)"),
     getValue: (match) => {
       const minutesStr = match[2];
       if (!minutesStr) return new Date(referenceDate);
@@ -146,7 +150,7 @@ const getDurationPatterns = (referenceDate: Date): DurationDatePattern[] => [
 
   // Minutes with space: "in 5 min"
   {
-    pattern: /\b(in (\d+)\s*min)\b/gi,
+    pattern: boundedPattern("(in (\\d+)\\s*min)"),
     getValue: (match) => {
       const minutesStr = match[2];
       if (!minutesStr) return new Date(referenceDate);
@@ -158,7 +162,7 @@ const getDurationPatterns = (referenceDate: Date): DurationDatePattern[] => [
 
   // Minutes short form: "in 5m"
   {
-    pattern: /\b(in (\d+)m)\b/gi,
+    pattern: boundedPattern("(in (\\d+)m)"),
     getValue: (match) => {
       const minutesStr = match[2];
       if (!minutesStr) return new Date(referenceDate);
@@ -170,7 +174,7 @@ const getDurationPatterns = (referenceDate: Date): DurationDatePattern[] => [
 
   // Seconds: "in 30sec", "in 30s"
   {
-    pattern: /\b(in (\d+)sec)\b/gi,
+    pattern: boundedPattern("(in (\\d+)sec)"),
     getValue: (match) => {
       const secondsStr = match[2];
       if (!secondsStr) return new Date(referenceDate);
@@ -184,7 +188,7 @@ const getDurationPatterns = (referenceDate: Date): DurationDatePattern[] => [
 // 12-hour patterns with AM/PM (processed after "at" patterns)
 const HOUR_12_PATTERNS: TimePattern[] = [
   {
-    pattern: /\b(\d{1,2})\s?(AM|PM|am|pm)\b/gi,
+    pattern: boundedPattern("(\\d{1,2})\\s?(AM|PM|am|pm)"),
     getValue: (match) => {
       const hourStr = match[1];
       const periodStr = match[2];
@@ -205,7 +209,7 @@ const HOUR_12_PATTERNS: TimePattern[] = [
     },
   },
   {
-    pattern: /\b(\d{1,2}):(\d{2})\s?(AM|PM|am|pm)\b/gi,
+    pattern: boundedPattern("(\\d{1,2}):(\\d{2})\\s?(AM|PM|am|pm)"),
     getValue: (match) => {
       const hourStr = match[1];
       const minuteStr = match[2];
@@ -234,7 +238,7 @@ const HOUR_12_PATTERNS: TimePattern[] = [
 // 24-hour patterns (processed last)
 const HOUR_24_PATTERNS: TimePattern[] = [
   {
-    pattern: /\b(\d{1,2}):(\d{2})\b/g,
+    pattern: boundedPattern("(\\d{1,2}):(\\d{2})", "g"),
     getValue: (match) => {
       const hourStr = match[1];
       const minuteStr = match[2];

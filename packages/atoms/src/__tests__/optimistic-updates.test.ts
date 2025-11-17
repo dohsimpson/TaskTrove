@@ -16,6 +16,7 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createStore } from "jotai";
+import { updateTasksAtom } from "../core/tasks";
 import { updateTasksMutationAtom } from "../mutations/tasks";
 import { queryClientAtom } from "../data/base/query";
 import type { Task } from "@tasktrove/types/core";
@@ -23,6 +24,7 @@ import { createTaskId } from "@tasktrove/types/id";
 import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
 import { TASKS_QUERY_KEY } from "@tasktrove/constants";
 import { QueryClient } from "@tanstack/react-query";
+import { getEffectiveDueDate } from "@tasktrove/utils";
 
 // Mock fetch globally
 global.fetch = vi.fn();
@@ -53,6 +55,15 @@ const mockCompletedTask: Task = {
   recurringMode: "dueDate",
 };
 
+const mockRecurringTask: Task = {
+  ...mockTask,
+  id: createTaskId("12345678-1234-4234-8234-123456789ab3"),
+  title: "Daily standup",
+  dueDate: new Date("2024-01-02T09:00:00Z"),
+  recurring: "RRULE:FREQ=DAILY",
+  trackingId: createTaskId("12345678-1234-4234-8234-123456789ab4"),
+};
+
 beforeEach(() => {
   store = createStore();
   queryClient = new QueryClient({
@@ -65,7 +76,11 @@ beforeEach(() => {
   store.set(queryClientAtom, queryClient);
 
   // Setup initial data in query client
-  queryClient.setQueryData(TASKS_QUERY_KEY, [mockTask, mockCompletedTask]);
+  queryClient.setQueryData(TASKS_QUERY_KEY, [
+    mockTask,
+    mockCompletedTask,
+    mockRecurringTask,
+  ]);
 
   // Mock process.env to avoid test mode in mutations
   vi.stubEnv("NODE_ENV", "development");
@@ -74,6 +89,7 @@ beforeEach(() => {
   Object.defineProperty(global, "window", {
     value: {},
     writable: true,
+    configurable: true,
   });
 
   vi.clearAllMocks();
@@ -120,6 +136,45 @@ describe("Optimistic Updates", () => {
       expect(updatedTask.completed).toBe(true);
       expect(updatedTask.completedAt).toBeInstanceOf(Date);
       expect(updatedTask.completedAt).toBeDefined();
+    });
+
+    it("should keep recurring anchors incomplete during optimistic completion", async () => {
+      const mutation = store.get(updateTasksMutationAtom);
+
+      const mockResponse = {
+        success: true,
+        taskIds: [mockRecurringTask.id],
+        message: "Task updated successfully",
+      };
+
+      const mockFetchResponse = new Response(JSON.stringify(mockResponse), {
+        status: 200,
+        statusText: "OK",
+      });
+      vi.mocked(global.fetch).mockResolvedValueOnce(mockFetchResponse);
+
+      await mutation.mutateAsync([
+        {
+          id: mockRecurringTask.id,
+          completed: true,
+        },
+      ]);
+
+      const tasks = queryClient.getQueryData<Task[]>(TASKS_QUERY_KEY);
+      if (!tasks) {
+        throw new Error("Tasks not found in query data");
+      }
+
+      const updatedTask = tasks.find(
+        (task) => task.id === mockRecurringTask.id,
+      );
+      if (!updatedTask) {
+        throw new Error("Updated task not found in query data");
+      }
+
+      expect(updatedTask.completed).toBe(false);
+      expect(updatedTask.completedAt).toBeUndefined();
+      expect(updatedTask.recurring).toBe("RRULE:FREQ=DAILY");
     });
 
     it("should clear completedAt when task transitions from complete to incomplete", async () => {
@@ -310,5 +365,69 @@ describe("Optimistic Updates", () => {
       expect(result.taskIds).toEqual([taskUpdate.id]);
       expect(result.message).toContain("test mode");
     });
+  });
+
+  it("should send client-calculated effective due date when completing auto-rollover tasks", async () => {
+    vi.useFakeTimers();
+    try {
+      const fixedNow = new Date("2024-02-10T12:00:00.000Z");
+      vi.setSystemTime(fixedNow);
+
+      const autoRolloverTask: Task = {
+        ...mockTask,
+        id: createTaskId("12345678-1234-4234-8234-123456789ac0"),
+        title: "Auto rollover daily",
+        recurring: "RRULE:FREQ=DAILY;INTERVAL=1",
+        recurringMode: "autoRollover",
+        dueDate: new Date("2024-02-05T09:00:00.000Z"),
+      };
+
+      queryClient.setQueryData(TASKS_QUERY_KEY, [autoRolloverTask]);
+
+      const expectedEffectiveDueDate = getEffectiveDueDate(autoRolloverTask);
+      if (!expectedEffectiveDueDate) {
+        throw new Error("Expected effective due date to be calculated");
+      }
+
+      const mockResponse = {
+        success: true,
+        taskIds: [autoRolloverTask.id],
+        message: "Task updated successfully",
+      };
+
+      const mockFetchResponse = new Response(JSON.stringify(mockResponse), {
+        status: 200,
+        statusText: "OK",
+      });
+      vi.mocked(global.fetch).mockResolvedValueOnce(mockFetchResponse);
+
+      await store.set(updateTasksAtom, [
+        {
+          id: autoRolloverTask.id,
+          completed: true,
+        },
+      ]);
+
+      const fetchArgs = vi.mocked(global.fetch).mock.calls[0];
+      if (!fetchArgs) {
+        throw new Error("Expected fetch to have been called");
+      }
+
+      const [, requestInit] = fetchArgs;
+      if (!requestInit || !requestInit.body) {
+        throw new Error("Expected request body to be defined");
+      }
+
+      const parsedBody = JSON.parse(String(requestInit.body));
+      const updatePayload = Array.isArray(parsedBody)
+        ? parsedBody[0]
+        : parsedBody;
+      expect(updatePayload).toBeDefined();
+      expect(updatePayload.dueDate).toBe(
+        expectedEffectiveDueDate.toISOString().slice(0, 10),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

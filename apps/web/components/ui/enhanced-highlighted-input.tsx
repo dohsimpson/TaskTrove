@@ -3,19 +3,18 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react"
 import { useAtomValue } from "jotai"
 import { cn } from "@/lib/utils"
-import { generateHighlightingPatterns } from "@/lib/utils/shared-patterns"
 import { nlpEnabledAtom } from "@tasktrove/atoms/ui/dialogs"
-import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
-import { visibleProjectsAtom } from "@tasktrove/atoms/core/projects"
 import {
   getAutocompletePrefix,
   TOKEN_STYLES,
   DISABLED_TOKEN_STYLES,
 } from "@/components/ui/enhanced-highlighted-input-helpers"
-import type { ExtractionType, AutocompleteType } from "@tasktrove/parser/types"
+import type { AutocompleteType, ExtractionResult } from "@tasktrove/parser/types"
+
+type ParserTokenType = string
 
 interface ParsedToken {
-  type: ExtractionType | "text"
+  type: ParserTokenType
   value: string
   start: number
   end: number
@@ -56,6 +55,7 @@ interface EnhancedHighlightedInputProps {
     assignees?: AutocompleteItem[]
   }
   users?: Array<{ username: string; id: string; avatar?: string }>
+  parserMatches?: ExtractionResult[] | null
 }
 
 // Create a function that constructs a proper React change event
@@ -115,19 +115,13 @@ export function EnhancedHighlightedInput({
   onToggleSection,
   onAutocompleteSelect,
   autocompleteItems = { projects: [], labels: [], dates: [], estimations: [] },
-  users = [],
+  parserMatches = null,
 }: EnhancedHighlightedInputProps) {
   const inputRef = useRef<HTMLDivElement>(null)
   const autocompleteRef = useRef<HTMLDivElement>(null)
 
   // Get data from atoms with fallbacks
   const nlpEnabled = useAtomValue(nlpEnabledAtom)
-  const labelsFromAtom = useAtomValue(labelsAtom)
-  const projectsFromAtom = useAtomValue(visibleProjectsAtom)
-
-  const labels = useMemo(() => labelsFromAtom, [labelsFromAtom])
-  const projects = useMemo(() => projectsFromAtom, [projectsFromAtom])
-
   const [cursorPosition, setCursorPosition] = useState(0)
   const [isFocused, setIsFocused] = useState(false)
   const [autocomplete, setAutocomplete] = useState<AutocompleteState>({
@@ -140,77 +134,124 @@ export function EnhancedHighlightedInput({
     startPos: 0,
   })
 
-  // Parse text into tokens
+  // Parse text into tokens leveraging parser matches
   const parseText = useCallback(
     (input: string): ParsedToken[] => {
-      const tokens: ParsedToken[] = []
-
-      // Generate dynamic patterns based on available projects, labels, and users
-      const dynamicPatterns = generateHighlightingPatterns({
-        projects: projects.map((p) => ({ name: p.name })),
-        labels: labels.map((l) => ({ name: l.name })),
-        ...(users.length > 0 ? { users: users.map((u) => ({ username: u.username })) } : {}),
-      })
-
-      dynamicPatterns.forEach(({ type, regex }) => {
-        let match
-        const regexCopy = new RegExp(regex.source, regex.flags)
-        while ((match = regexCopy.exec(input)) !== null) {
-          tokens.push({
-            type,
-            value: match[0],
-            start: match.index,
-            end: match.index + match[0].length,
-          })
-        }
-      })
-
-      // Sort tokens by start position
-      tokens.sort((a, b) => a.start - b.start)
-
-      // Remove overlapping tokens (keep the first one)
-      const nonOverlapping: ParsedToken[] = []
-      for (const token of tokens) {
-        if (
-          !nonOverlapping.some(
-            (existing) =>
-              (token.start >= existing.start && token.start < existing.end) ||
-              (token.end > existing.start && token.end <= existing.end),
-          )
-        ) {
-          nonOverlapping.push(token)
-        }
+      if (!parserMatches || parserMatches.length === 0) {
+        return input
+          ? [
+              {
+                type: "text",
+                value: input,
+                start: 0,
+                end: input.length,
+              },
+            ]
+          : []
       }
 
-      // Fill in text tokens
-      const result: ParsedToken[] = []
-      let lastEnd = 0
+      const tokens: ParsedToken[] = []
+      const sortedMatches = [...parserMatches].sort((a, b) => a.startIndex - b.startIndex)
 
-      nonOverlapping.forEach((token) => {
-        if (token.start > lastEnd) {
-          result.push({
+      let cursor = 0
+
+      for (const match of sortedMatches) {
+        const { startIndex, endIndex, match: matchValue, type } = match
+        if (
+          startIndex < 0 ||
+          endIndex > input.length ||
+          typeof matchValue !== "string" ||
+          startIndex >= endIndex
+        ) {
+          continue
+        }
+
+        if (startIndex > cursor) {
+          tokens.push({
             type: "text",
-            value: input.slice(lastEnd, token.start),
-            start: lastEnd,
-            end: token.start,
+            value: input.slice(cursor, startIndex),
+            start: cursor,
+            end: startIndex,
           })
         }
-        result.push(token)
-        lastEnd = token.end
-      })
 
-      if (lastEnd < input.length) {
-        result.push({
+        const slicedValue = input.slice(startIndex, endIndex)
+        const normalizedSlice = slicedValue.toLowerCase()
+        const normalizedMatchValue = matchValue.toLowerCase()
+        const matchOffset =
+          matchValue.length > 0 ? normalizedSlice.indexOf(normalizedMatchValue) : -1
+
+        let tokenType: ParserTokenType = "text"
+        if (typeof type === "string" && type.length > 0) {
+          tokenType = type
+        }
+
+        // When regex boundaries (like \s) expand the slice but the captured match omits the
+        // whitespace, split the slice so the overlay preserves spacing while the token value
+        // still maps to the actual match (without leading/trailing spaces).
+        if (
+          matchOffset !== -1 &&
+          slicedValue.length !== matchValue.length &&
+          matchValue.length > 0
+        ) {
+          const leadingText = slicedValue.slice(0, matchOffset)
+          if (leadingText) {
+            tokens.push({
+              type: "text",
+              value: leadingText,
+              start: startIndex,
+              end: startIndex + leadingText.length,
+            })
+          }
+
+          const matchedText = slicedValue.slice(matchOffset, matchOffset + matchValue.length)
+          tokens.push({
+            type: tokenType,
+            value: matchedText,
+            start: startIndex + matchOffset,
+            end: startIndex + matchOffset + matchedText.length,
+          })
+
+          const trailingIndex = matchOffset + matchedText.length
+          const trailingText = slicedValue.slice(trailingIndex)
+          if (trailingText) {
+            tokens.push({
+              type: "text",
+              value: trailingText,
+              start: startIndex + trailingIndex,
+              end: endIndex,
+            })
+          }
+
+          cursor = endIndex
+          continue
+        }
+
+        // Fallback to previous behavior (covers exact matches and cases where we cannot align)
+        const highlightValue = slicedValue.length === matchValue.length ? slicedValue : matchValue
+
+        tokens.push({
+          type: tokenType,
+          value: highlightValue,
+          start: startIndex,
+          end: endIndex,
+        })
+
+        cursor = endIndex
+      }
+
+      if (cursor < input.length) {
+        tokens.push({
           type: "text",
-          value: input.slice(lastEnd),
-          start: lastEnd,
+          value: input.slice(cursor),
+          start: cursor,
           end: input.length,
         })
       }
 
-      return result
+      return tokens
     },
-    [projects, labels, users],
+    [parserMatches],
   )
 
   // Detect autocomplete triggers
@@ -558,6 +599,27 @@ export function EnhancedHighlightedInput({
       inputRef.current.focus()
     }
   }, [autoFocus])
+
+  // Keep the underlying contentEditable text in sync with the controlled value
+  useEffect(() => {
+    const element = inputRef.current
+    if (!element) return
+
+    const currentText = element.textContent || ""
+    if (currentText === value) return
+
+    element.textContent = value
+
+    // Move caret to end after programmatic updates so the next entry continues naturally
+    const selection = window.getSelection()
+    if (selection) {
+      const range = document.createRange()
+      range.selectNodeContents(element)
+      range.collapse(false)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
+  }, [value])
 
   return (
     <div className="relative">

@@ -7,6 +7,7 @@ import { defineConfig, type UserConfig } from "vitest/config";
 export const baseConfig: UserConfig = {
   test: {
     globals: true,
+    silent: "passed-only",
     exclude: [
       "**/node_modules/**",
       "**/dist/**",

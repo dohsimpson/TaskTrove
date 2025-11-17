@@ -4,7 +4,11 @@ import { useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { useRouter } from "next/navigation"
 import { ChevronDown, ChevronRight, FolderOpen, Folders } from "lucide-react"
-import { SidebarMenuItem, SidebarMenuButton, SidebarMenuBadge } from "@/components/ui/sidebar"
+import {
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarMenuBadge,
+} from "@/components/ui/custom/sidebar"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { useSidebarDragDrop } from "@/hooks/use-sidebar-drag-drop"

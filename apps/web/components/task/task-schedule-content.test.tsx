@@ -14,6 +14,16 @@ import { INBOX_PROJECT_ID } from "@/lib/types"
 import { TEST_TASK_ID_1 } from "@tasktrove/types/test-constants"
 import { calculateNextDueDate } from "@tasktrove/utils"
 import userEvent from "@testing-library/user-event"
+import type { ParsedTaskWithMatches } from "@/lib/utils/enhanced-natural-language-parser"
+
+const buildParsedResult = (overrides: Partial<ParsedTaskWithMatches>): ParsedTaskWithMatches => ({
+  title: "",
+  originalText: "",
+  labels: [],
+  matches: [],
+  rawMatches: [],
+  ...overrides,
+})
 
 // Mock the shared hook
 vi.mock("@/hooks/use-debounced-parse", () => ({
@@ -1154,11 +1164,12 @@ describe("TaskScheduleContent", () => {
       const { parseEnhancedNaturalLanguage, convertTimeToHHMMSS } = await import(
         "@/lib/utils/enhanced-natural-language-parser"
       )
-      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue({
-        title: "",
-        labels: [],
-        originalText: "",
-      })
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(
+        buildParsedResult({
+          title: "",
+          originalText: "",
+        }),
+      )
       vi.mocked(convertTimeToHHMMSS).mockReturnValue("")
     })
 
@@ -1182,12 +1193,13 @@ describe("TaskScheduleContent", () => {
       )
 
       // Mock to return a valid date for "tomorrow"
-      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue({
-        title: "tomorrow",
-        dueDate: new Date(new Date().getTime() + 24 * 60 * 60 * 1000), // Tomorrow's date
-        labels: [],
-        originalText: "tomorrow",
-      })
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(
+        buildParsedResult({
+          title: "tomorrow",
+          dueDate: new Date(new Date().getTime() + 24 * 60 * 60 * 1000), // Tomorrow's date
+          originalText: "tomorrow",
+        }),
+      )
 
       const user = userEvent.setup()
 
@@ -1211,12 +1223,12 @@ describe("TaskScheduleContent", () => {
       )
 
       // Mock to return no meaningful values for invalid input
-      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue({
-        title: "invalid",
-        labels: [],
-        originalText: "invalid",
-        // No dueDate, time, or recurring - should be invalid
-      })
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(
+        buildParsedResult({
+          title: "invalid",
+          originalText: "invalid",
+        }),
+      )
 
       const user = userEvent.setup()
 
@@ -1240,12 +1252,13 @@ describe("TaskScheduleContent", () => {
       )
 
       // Mock to return invalid time parsing
-      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue({
-        title: "task",
-        labels: [],
-        originalText: "task at invalid-time",
-        time: "invalid-time", // Has time but it won't convert
-      })
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(
+        buildParsedResult({
+          title: "task",
+          originalText: "task at invalid-time",
+          time: "invalid-time", // Has time but it won't convert
+        }),
+      )
       vi.mocked(convertTimeToHHMMSS).mockReturnValue("") // Invalid time conversion
 
       const user = userEvent.setup()
@@ -1270,12 +1283,11 @@ describe("TaskScheduleContent", () => {
       )
       const user = userEvent.setup()
 
-      const parsedResult = {
+      const parsedResult = buildParsedResult({
         title: "",
-        labels: [],
         originalText: "tomorrow",
         dueDate: new Date("2024-01-16"),
-      }
+      })
 
       vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(parsedResult)
 
@@ -1310,12 +1322,11 @@ describe("TaskScheduleContent", () => {
       )
       const user = userEvent.setup()
 
-      const parsedResult = {
+      const parsedResult = buildParsedResult({
         title: "",
-        labels: [],
         originalText: "tomorrow",
         dueDate: new Date("2024-01-16"),
-      }
+      })
 
       vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(parsedResult)
 
@@ -1346,12 +1357,11 @@ describe("TaskScheduleContent", () => {
       )
       const user = userEvent.setup()
 
-      const parsedResult = {
+      const parsedResult = buildParsedResult({
         title: "",
-        labels: [],
         originalText: "3PM",
         time: "3PM",
-      }
+      })
 
       vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(parsedResult)
       vi.mocked(convertTimeToHHMMSS).mockReturnValue("15:00:00")
@@ -1384,12 +1394,11 @@ describe("TaskScheduleContent", () => {
       )
       const user = userEvent.setup()
 
-      const parsedResult = {
+      const parsedResult = buildParsedResult({
         title: "",
-        labels: [],
         originalText: "daily",
         recurring: "RRULE:FREQ=DAILY",
-      }
+      })
 
       vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(parsedResult)
 
@@ -1420,14 +1429,13 @@ describe("TaskScheduleContent", () => {
       )
       const user = userEvent.setup()
 
-      const parsedResult = {
+      const parsedResult = buildParsedResult({
         title: "meeting",
-        labels: [],
         originalText: "meeting tomorrow 2PM daily",
         dueDate: new Date("2024-01-16"),
         time: "2PM",
         recurring: "RRULE:FREQ=DAILY",
-      }
+      })
 
       vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(parsedResult)
       vi.mocked(convertTimeToHHMMSS).mockReturnValue("14:00:00")
@@ -1484,12 +1492,11 @@ describe("TaskScheduleContent", () => {
       )
       const user = userEvent.setup()
 
-      const parsedResult = {
+      const parsedResult = buildParsedResult({
         title: "",
-        labels: [],
         originalText: "tomorrow",
         dueDate: new Date("2024-01-16"),
-      }
+      })
 
       vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(parsedResult)
       mockQuickAddTask = { title: "New Task", description: "" }
@@ -1518,12 +1525,12 @@ describe("TaskScheduleContent", () => {
       )
       const user = userEvent.setup()
 
-      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue({
-        title: "invalid input",
-        labels: [],
-        originalText: "invalid input",
-        // No dueDate, time, or recurring - should not trigger any updates
-      })
+      vi.mocked(parseEnhancedNaturalLanguage).mockReturnValue(
+        buildParsedResult({
+          title: "invalid input",
+          originalText: "invalid input",
+        }),
+      )
 
       renderWithTasks(
         [mockTask],

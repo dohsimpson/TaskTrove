@@ -38,7 +38,6 @@ export async function validateRequestBody<T>(
 
     if (!result.success) {
       // Use the pure formatZodErrors function from @tasktrove/utils
-      const { formatZodErrors } = await import("@tasktrove/utils/validation")
       const errorResponse: ErrorResponse = {
         code: ApiErrorCode.VALIDATION_ERROR,
         error: "Validation failed",

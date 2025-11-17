@@ -107,7 +107,7 @@ vi.mock("@/hooks/use-sidebar-drag-state", () => ({
 }))
 
 // Mock sidebar context
-vi.mock("@/components/ui/sidebar", () => ({
+vi.mock("@/components/ui/custom/sidebar", () => ({
   useSidebar: () => ({
     open: true,
     setOpen: vi.fn(),

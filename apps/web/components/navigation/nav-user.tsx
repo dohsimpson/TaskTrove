@@ -29,7 +29,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/custom/sidebar"
 import { AboutModal } from "@/components/dialogs/about-modal"
 import { useTranslation } from "@tasktrove/i18n"
 import { userAtom } from "@tasktrove/atoms/data/base/atoms"
@@ -94,7 +94,7 @@ export function NavUser() {
     {
       icon: SiDiscord,
       label: t("userMenu.community", "Community"),
-      onClick: () => window.open("https://discord.gg/d8TCEtv8", "_blank"),
+      onClick: () => window.open("https://discord.gg/ePRuB68Wsh", "_blank"),
     },
     {
       icon: Keyboard,

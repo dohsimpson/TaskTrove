@@ -3,19 +3,11 @@
 import { useState, useCallback, useEffect, useRef } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
 import { useTranslation } from "@tasktrove/i18n"
-import {
-  X,
-  Calendar,
-  Flag,
-  Folder,
-  AlertTriangle,
-  Users,
-  Crosshair,
-  GripVertical,
-} from "lucide-react"
+import { X, Flag, Folder, Users, Crosshair, GripVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
+import { MarkdownEditableDiv } from "@/components/ui/custom/markdown-editable-div"
 import {
   Drawer,
   DrawerContent,
@@ -24,14 +16,14 @@ import {
   DrawerClose,
 } from "@/components/ui/drawer"
 import { cn } from "@/lib/utils"
-import { format, isToday, isTomorrow } from "date-fns"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { formatTaskDateTime } from "@/lib/utils/task-date-formatter"
 import { isPro } from "@/lib/utils/env"
 import { TaskSchedulePopover } from "./task-schedule-popover"
+import { TaskScheduleTrigger } from "./task-schedule-trigger"
 import { PriorityPopover } from "./priority-popover"
 import { ProjectPopover } from "./project-popover"
 import { AssigneeManagementPopover } from "@/components/task/assignee-management-popover"
+import { AssigneeBadges } from "@/components/task/assignee-badges"
 import { SubtaskContent } from "./subtask-content"
 import { LabelContent } from "./label-content"
 import { CommentContent } from "./comment-content"
@@ -42,18 +34,20 @@ import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
 import { updateTaskAtom, deleteTaskAtom, toggleTaskAtom } from "@tasktrove/atoms/core/tasks"
 import { projectsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { selectedTaskAtom, selectedTaskRouteContextAtom } from "@tasktrove/atoms/ui/selection"
+import { draggingTaskIdsAtom } from "@tasktrove/atoms/ui/drag"
 import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
 import { scrollToTaskActionAtom } from "@tasktrove/atoms/ui/scroll-to-task"
 import { addCommentAtom } from "@tasktrove/atoms/core/tasks"
 import { log } from "@/lib/utils/logger"
-import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { labelsAtom, settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { addLabelAndWaitForRealIdAtom } from "@tasktrove/atoms/core/labels"
 import { type LabelId, Task } from "@/lib/types"
-import { getDueDateTextColor, getPriorityTextColor } from "@/lib/color-utils"
+import { getPriorityTextColor } from "@/lib/color-utils"
 import { DEFAULT_COLOR_PALETTE } from "@tasktrove/constants"
 import { useRouter } from "next/navigation"
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview"
+import { useResetSortOnDrag } from "@/hooks/use-reset-sort-on-drag"
 
 // Constants
 const SIDE_PANEL_WIDTH = 320 // 320px = w-80 in Tailwind
@@ -64,11 +58,13 @@ function SidePanelDragHandle({
   taskTitle,
   children,
 }: {
-  taskId: string
+  taskId: Task["id"]
   taskTitle: string
   children: React.ReactNode
 }) {
   const ref = useRef<HTMLDivElement>(null)
+  const { applyDefaultSort, restorePreviousSort } = useResetSortOnDrag()
+  const setDraggingTaskIds = useSetAtom(draggingTaskIdsAtom)
 
   useEffect(() => {
     const element = ref.current
@@ -110,21 +106,19 @@ function SidePanelDragHandle({
           },
         })
       },
+      onDragStart: () => {
+        applyDefaultSort()
+        setDraggingTaskIds([taskId])
+      },
+      onDrop: () => {
+        restorePreviousSort()
+        setDraggingTaskIds([])
+      },
     })
-  }, [taskId, taskTitle])
+  }, [applyDefaultSort, restorePreviousSort, setDraggingTaskIds, taskId, taskTitle])
 
   return <div ref={ref}>{children}</div>
 }
-
-// Helper functions
-const isOverdue = (date: Date) => {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const checkDate = new Date(date)
-  checkDate.setHours(0, 0, 0, 0)
-  return checkDate < today
-}
-
 // Shared task panel content component
 interface TaskPanelContentProps {
   task: Task
@@ -134,6 +128,7 @@ interface TaskPanelContentProps {
   onAddLabel: (labelName?: string) => void
   onRemoveLabel: (labelId: LabelId) => void
   getTaskProject: () => { id: string; name: string; color: string } | null
+  markdownEnabled: boolean
 }
 
 function TaskPanelContent({
@@ -144,6 +139,7 @@ function TaskPanelContent({
   onAddLabel,
   onRemoveLabel,
   getTaskProject,
+  markdownEnabled,
 }: TaskPanelContentProps) {
   const isMobile = useIsMobile()
   const { t } = useTranslation("task")
@@ -161,43 +157,31 @@ function TaskPanelContent({
         <div className={cn(isPro() && "grid grid-cols-2 gap-2.5")}>
           {/* Due Date */}
           <TaskSchedulePopover taskId={task.id}>
-            <div
-              className={cn(
-                "flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/20 border border-transparent hover:border-border/50",
-                task.dueDate
-                  ? getDueDateTextColor(task.dueDate, task.completed)
-                  : "text-muted-foreground",
-              )}
-            >
-              {task.dueDate &&
-              isOverdue(task.dueDate) &&
-              !isToday(task.dueDate) &&
-              !task.completed ? (
-                <AlertTriangle className="h-4 w-4 text-red-500" />
-              ) : (
-                <Calendar className="h-4 w-4" />
-              )}
-              <span className="text-sm font-medium truncate">
-                {task.dueDate
-                  ? formatTaskDateTime(task, { format: "full" }) ||
-                    (isToday(task.dueDate)
-                      ? t("sidePanel.dueDate.today", "Today")
-                      : isTomorrow(task.dueDate)
-                        ? t("sidePanel.dueDate.tomorrow", "Tomorrow")
-                        : format(task.dueDate, "MMM d, yyyy"))
-                  : t("sidePanel.dueDate.placeholder", "Due Date")}
-              </span>
-            </div>
+            <TaskScheduleTrigger
+              dueDate={task.dueDate}
+              dueTime={task.dueTime}
+              recurring={task.recurring}
+              recurringMode={task.recurringMode}
+              completed={task.completed}
+              variant="panel"
+              className="text-sm font-medium truncate"
+              fallbackLabel={t("sidePanel.dueDate.placeholder", "Due Date")}
+            />
           </TaskSchedulePopover>
 
           {/* Assignment */}
           {isPro() && (
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/20 border border-transparent hover:border-border/50 text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <AssigneeManagementPopover task={task}>
-                <span className="text-sm font-medium truncate">No Assignee</span>
-              </AssigneeManagementPopover>
-            </div>
+            <AssigneeManagementPopover task={task}>
+              <button
+                type="button"
+                className="flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/20 border border-transparent hover:border-border/50 text-muted-foreground w-full text-left"
+              >
+                <Users className="h-4 w-4" />
+                <div className="flex-1 min-w-0">
+                  <AssigneeBadges task={task} className="gap-1" />
+                </div>
+              </button>
+            </AssigneeManagementPopover>
           )}
         </div>
       </div>
@@ -254,12 +238,14 @@ function TaskPanelContent({
         <h3 className="text-sm text-foreground font-bold">
           {t("sidePanel.description.title", "Description")}
         </h3>
-        <EditableDiv
+        <MarkdownEditableDiv
+          data-testid="editable-div"
           value={task.description || ""}
           onChange={(value: string) => autoSave({ description: value })}
-          className="text-sm text-muted-foreground hover:bg-accent/50 px-4 py-3 rounded-lg bg-muted/20 border border-transparent hover:border-border/50 min-h-[60px] transition-all duration-200 min-w-56 max-w-lg"
+          className="text-sm text-muted-foreground rounded-lg min-h-[60px] transition-all duration-200 min-w-56 max-w-lg bg-muted/30"
           placeholder={t("sidePanel.description.placeholder", "Add description...")}
           multiline={true}
+          markdownEnabled={markdownEnabled}
         />
       </div>
 
@@ -348,6 +334,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
   const task = useAtomValue(selectedTaskAtom)
   const allLabels = useAtomValue(labelsAtom)
   const allProjects = useAtomValue(projectsAtom)
+  const settings = useAtomValue(settingsAtom)
 
   // Context menu - always visible in side panel
   const [actionsMenuOpen, setActionsMenuOpen] = useState(false)
@@ -470,6 +457,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
               />
               <div className="flex-1 flex items-center gap-2 min-w-0 truncate">
                 <EditableDiv
+                  data-testid="editable-div"
                   value={task.title}
                   onChange={(value: string) => autoSave({ title: value })}
                   className={cn(
@@ -529,6 +517,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
                 onAddLabel={handleAddLabel}
                 onRemoveLabel={handleRemoveLabel}
                 getTaskProject={getTaskProject}
+                markdownEnabled={settings.general.markdownEnabled}
               />
             </div>
           </div>
@@ -580,6 +569,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
             />
             <div className="flex-1 flex items-center gap-2 min-w-0 truncate">
               <EditableDiv
+                data-testid="editable-div"
                 value={task.title}
                 onChange={(value: string) => autoSave({ title: value })}
                 className={cn(
@@ -644,6 +634,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
             onAddLabel={handleAddLabel}
             onRemoveLabel={handleRemoveLabel}
             getTaskProject={getTaskProject}
+            markdownEnabled={settings.general.markdownEnabled}
           />
         </div>
       </div>

@@ -7,6 +7,9 @@ import {
   Tag,
   FolderOpen,
   Archive,
+  Repeat,
+  UserRoundCheck,
+  UserRoundPlus,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTranslation } from "@tasktrove/i18n"
@@ -69,6 +72,62 @@ function getViewConfigs(t: (key: string, fallback: string) => string): Record<st
       description: t(
         "emptyStates.all.description",
         "This view shows all your tasks across all projects. Create your first task to get started with TaskTrove.",
+      ),
+    },
+    calendar: {
+      icon: Calendar,
+      title: t("emptyStates.calendar.title", "Nothing scheduled on the calendar"),
+      description: t(
+        "emptyStates.calendar.description",
+        "Tasks with due dates appear here. Add due dates to your tasks to plan your work visually.",
+      ),
+    },
+    habits: {
+      icon: Repeat,
+      title: t("emptyStates.habits.title", "No habits tracked yet"),
+      description: t(
+        "emptyStates.habits.description",
+        "Recurring tasks with auto-rollover recurring mode will show up here. Create a repeating task to build consistent routines.",
+      ),
+    },
+    "assigned-to-me": {
+      icon: UserRoundCheck,
+      title: t("emptyStates.assignedToMe.title", "No tasks assigned to you"),
+      description: t(
+        "emptyStates.assignedToMe.description",
+        "Tasks teammates assign to you will appear here. Ask your team to delegate work, or assign tasks to yourself.",
+      ),
+    },
+    "assigned-to-others": {
+      icon: UserRoundPlus,
+      title: t("emptyStates.assignedToOthers.title", "No delegated tasks yet"),
+      description: t(
+        "emptyStates.assignedToOthers.description",
+        "Tasks you assign to others will show here. Delegate work to teammates to keep collaboration moving.",
+      ),
+    },
+    projects: {
+      icon: FolderOpen,
+      title: t("emptyStates.projects.title", "No project tasks to show"),
+      description: t(
+        "emptyStates.projects.description",
+        "Select a project from the sidebar to focus on its tasks, or create a new project to organize your work.",
+      ),
+    },
+    labels: {
+      icon: Tag,
+      title: t("emptyStates.labels.title", "No labeled tasks to display"),
+      description: t(
+        "emptyStates.labels.description",
+        "Filter by a label from the sidebar to see tagged tasks, or add labels to existing work for quick access.",
+      ),
+    },
+    "not-found": {
+      icon: Archive,
+      title: t("emptyStates.notFound.title", "Nothing to see here"),
+      description: t(
+        "emptyStates.notFound.description",
+        "We couldn't find content for this view. Try switching to another section from the sidebar.",
       ),
     },
     analytics: {

@@ -1,6 +1,6 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen } from "@/test-utils"
+import { render, screen, waitFor } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { v4 as uuidv4 } from "uuid"
 import { SubtaskContent } from "./subtask-content"
@@ -524,6 +524,46 @@ describe("SubtaskContent", () => {
       // Input should still be visible but cleared
       expect(screen.getByTestId("subtask-input")).toBeInTheDocument()
       expect(input).toHaveValue("")
+    })
+  })
+
+  describe("Auto-scroll behavior", () => {
+    it("scrolls after the new subtask renders", async () => {
+      const originalScrollTo = Element.prototype.scrollTo
+      const scrollToSpy = vi.fn()
+      Element.prototype.scrollTo = scrollToSpy
+
+      const originalRAF = window.requestAnimationFrame
+      window.requestAnimationFrame = (callback: FrameRequestCallback) => {
+        callback(0)
+        return 0
+      }
+
+      try {
+        const task = createMockTask({ subtasks: [] })
+        const { rerender } = render(<SubtaskContent task={task} />)
+
+        const user = userEvent.setup()
+        await user.type(screen.getByTestId("subtask-input"), "Auto scroll subtask")
+        await user.click(screen.getByTestId("subtask-submit-button"))
+
+        expect(scrollToSpy).not.toHaveBeenCalled()
+
+        rerender(
+          <SubtaskContent
+            task={createMockTask({
+              subtasks: [
+                createMockSubtask({ id: TEST_SUBTASK_ID_2, title: "Auto scroll subtask" }),
+              ],
+            })}
+          />,
+        )
+
+        await waitFor(() => expect(scrollToSpy).toHaveBeenCalledTimes(1))
+      } finally {
+        Element.prototype.scrollTo = originalScrollTo
+        window.requestAnimationFrame = originalRAF
+      }
     })
   })
 

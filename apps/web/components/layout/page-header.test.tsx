@@ -21,7 +21,7 @@ vi.mock("@/lib/help-content", () => ({
 }))
 
 // Mock useSidebar hook
-vi.mock("@/components/ui/sidebar", () => ({
+vi.mock("@/components/ui/custom/sidebar", () => ({
   useSidebar: vi.fn(() => ({
     open: true,
     setOpen: vi.fn(),

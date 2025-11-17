@@ -12,6 +12,7 @@ import { TaskTroveLogo } from "@/components/ui/custom/tasktrove-logo"
 import { TaskTroveIcon } from "@/components/ui/custom/tasktrove-icon"
 import { useTranslation } from "@tasktrove/i18n"
 import { API_ROUTES } from "@tasktrove/types/constants"
+import { PrivacyTermsNotice } from "@/components/legal/privacy-terms-notice"
 
 export interface LoginFormProps {
   needsPasswordSetup: boolean
@@ -20,6 +21,7 @@ export interface LoginFormProps {
   username?: string
   onUsernameChange?: (value: string) => void
   isUsernameRequired?: boolean
+  headerAuthUser?: string | null
 }
 
 export function LoginForm({
@@ -28,6 +30,7 @@ export function LoginForm({
   username = "",
   onUsernameChange,
   isUsernameRequired = false,
+  headerAuthUser,
 }: LoginFormProps) {
   // Translation hooks
   const { t } = useTranslation("auth")
@@ -45,6 +48,10 @@ export function LoginForm({
 
   // Compute whether username change should be disabled (when username is pre-filled)
   const usernameChangeDisabled = isUsernameRequired && username !== ""
+
+  // Check if this is SSO header auth mode
+  // Note: Password setup takes priority over SSO header auth for first-time setup
+  const isHeaderAuthMode = !!headerAuthUser && !needsPasswordSetup
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -148,30 +155,141 @@ export function LoginForm({
             <TaskTroveLogo size="lg" />
           </div>
         </CardHeader>
-        <CardContent className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-4 max-w-xs mx-auto">
-            {needsPasswordSetup ? (
-              // Password Setup Mode
-              <>
-                <div className="text-center space-y-2 mb-4">
-                  <h2 className="text-lg font-semibold">{t("setup.title", "First Time Setup")}</h2>
-                  <p className="text-sm text-muted-foreground">
-                    {t(
-                      "setup.description",
-                      "Welcome! Let's complete your initial setup to get started.",
-                    )}
-                  </p>
+        <CardContent className="p-6 pt-0">
+          {isHeaderAuthMode ? (
+            // SSO Header Auth Mode
+            <div className="space-y-4 max-w-xs mx-auto">
+              <div className="text-center space-y-4">
+                <div className="flex items-center justify-center p-4 bg-muted rounded-lg">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-1">Authenticated as</p>
+                    <p className="font-semibold text-lg">{headerAuthUser}</p>
+                  </div>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-2">
+                  <Button
+                    type="button"
+                    onClick={async () => {
+                      setIsLoading(true)
+                      try {
+                        await signIn("header-auth", {
+                          remoteUser: headerAuthUser,
+                          redirect: true,
+                          callbackUrl: "/",
+                        })
+                      } catch (error) {
+                        console.error("[Header Auth] Sign-in exception:", error)
+                        setError("Authentication failed. Please try again.")
+                      } finally {
+                        setIsLoading(false)
+                      }
+                    }}
+                    disabled={isLoading}
+                    className="w-full"
+                  >
+                    {isLoading ? "Signing in..." : "SSO Sign In"}
+                  </Button>
+                  {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4 max-w-xs mx-auto">
+              {needsPasswordSetup ? (
+                // Password Setup Mode
+                <>
+                  <div className="text-center space-y-2 mb-4">
+                    <h2 className="text-lg font-semibold">
+                      {t("setup.title", "First Time Setup")}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {t(
+                        "setup.description",
+                        "Welcome! Let's complete your initial setup to get started.",
+                      )}
+                    </p>
+                  </div>
+                  <div className="space-y-4">
+                    {isUsernameRequired && onUsernameChange && (
+                      <div className="space-y-2">
+                        <Input
+                          id="username"
+                          type="text"
+                          placeholder={t("setup.usernamePlaceholder", "Username")}
+                          value={username}
+                          onChange={(e) => onUsernameChange(e.target.value)}
+                          disabled={isLoading || usernameChangeDisabled}
+                          className={error ? "border-red-500" : ""}
+                          autoFocus={true}
+                        />
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder={t("setup.passwordPlaceholder", "Create Password")}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          disabled={isLoading}
+                          className={
+                            error
+                              ? "border-red-500" + (password.length > 0 ? " pr-10" : "")
+                              : password.length > 0
+                                ? "pr-10"
+                                : ""
+                          }
+                          autoFocus={!isUsernameRequired}
+                        />
+                        {password.length > 0 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowPassword(!showPassword)}
+                            aria-label={
+                              showPassword
+                                ? t("accessibility.hidePassword", "Hide password")
+                                : t("accessibility.showPassword", "Show password")
+                            }
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Input
+                        id="confirmPassword"
+                        type={showPassword ? "text" : "password"}
+                        placeholder={t("setup.confirmPasswordPlaceholder", "Confirm Password")}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        disabled={isLoading}
+                        className={error ? "border-red-500" : ""}
+                      />
+                    </div>
+                    {error && <p className="text-sm text-red-500">{error}</p>}
+                  </div>
+                </>
+              ) : (
+                // Normal Login Mode
+                <>
                   {isUsernameRequired && onUsernameChange && (
                     <div className="space-y-2">
                       <Input
                         id="username"
                         type="text"
-                        placeholder={t("setup.usernamePlaceholder", "Username")}
+                        placeholder={t("login.usernamePlaceholder", "Username")}
                         value={username}
                         onChange={(e) => onUsernameChange(e.target.value)}
-                        disabled={isLoading || usernameChangeDisabled}
+                        disabled={isLoading}
                         className={error ? "border-red-500" : ""}
                         autoFocus={true}
                       />
@@ -182,7 +300,7 @@ export function LoginForm({
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
-                        placeholder={t("setup.passwordPlaceholder", "Create Password")}
+                        placeholder={t("login.passwordPlaceholder", "Password")}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         disabled={isLoading}
@@ -217,90 +335,22 @@ export function LoginForm({
                       )}
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Input
-                      id="confirmPassword"
-                      type={showPassword ? "text" : "password"}
-                      placeholder={t("setup.confirmPasswordPlaceholder", "Confirm Password")}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      disabled={isLoading}
-                      className={error ? "border-red-500" : ""}
-                    />
-                  </div>
                   {error && <p className="text-sm text-red-500">{error}</p>}
-                </div>
-              </>
-            ) : (
-              // Normal Login Mode
-              <>
-                {isUsernameRequired && onUsernameChange && (
-                  <div className="space-y-2">
-                    <Input
-                      id="username"
-                      type="text"
-                      placeholder={t("login.usernamePlaceholder", "Username")}
-                      value={username}
-                      onChange={(e) => onUsernameChange(e.target.value)}
-                      disabled={isLoading}
-                      className={error ? "border-red-500" : ""}
-                      autoFocus={true}
-                    />
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder={t("login.passwordPlaceholder", "Password")}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      disabled={isLoading}
-                      className={
-                        error
-                          ? "border-red-500" + (password.length > 0 ? " pr-10" : "")
-                          : password.length > 0
-                            ? "pr-10"
-                            : ""
-                      }
-                      autoFocus={!isUsernameRequired}
-                    />
-                    {password.length > 0 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                        aria-label={
-                          showPassword
-                            ? t("accessibility.hidePassword", "Hide password")
-                            : t("accessibility.showPassword", "Show password")
-                        }
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                {error && <p className="text-sm text-red-500">{error}</p>}
-              </>
-            )}
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading
-                ? needsPasswordSetup
-                  ? t("buttons.settingUp", "Setting up...")
-                  : t("buttons.signingIn", "Signing in...")
-                : needsPasswordSetup
-                  ? t("buttons.initialize", "Initialize")
-                  : t("buttons.signIn", "Sign In")}
-            </Button>
-          </form>
+                </>
+              )}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading
+                  ? needsPasswordSetup
+                    ? t("buttons.settingUp", "Setting up...")
+                    : t("buttons.signingIn", "Signing in...")
+                  : needsPasswordSetup
+                    ? t("buttons.initialize", "Initialize")
+                    : t("buttons.signIn", "Sign In")}
+              </Button>
+            </form>
+          )}
+          <div className="my-4" />
+          <PrivacyTermsNotice />
         </CardContent>
       </Card>
     </div>

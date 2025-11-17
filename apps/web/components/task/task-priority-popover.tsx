@@ -107,6 +107,9 @@ export function TaskPriorityPopover({
       open={open}
       onOpenChange={onOpenChange}
       triggerMode={triggerMode}
+      mobileAsDrawer
+      drawerTitle="Priority"
+      drawerDirection="bottom"
     >
       <div className={className}>{children}</div>
     </ContentPopover>

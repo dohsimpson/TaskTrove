@@ -32,6 +32,8 @@ export const nextJsConfig = [
       ...pluginNext.configs["core-web-vitals"].rules,
       // TaskTrove specific: allow unescaped entities
       "react/no-unescaped-entities": "off",
+      // Enforce keys for lists in JSX
+      "react/jsx-key": "error",
     },
   },
   {

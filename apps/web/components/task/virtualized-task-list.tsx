@@ -85,34 +85,10 @@ export function VirtualizedTaskList({
   // Get tasks in sorted order for virtualization
   const sortedTasks = sortedTaskIds.map((id) => tasks.find((t) => t.id === id)).filter(Boolean)
 
-  // Variant-specific height estimates based on actual browser calculations
-  // Formula: MaterialCard padding + content height + TaskItem mb-2 margin (8px)
-  const getEstimateSize = useCallback(() => {
-    switch (variant) {
-      case "calendar":
-        // p-1 (8px total) + minimal content (~16px) + mb-2 (8px) ≈ 32px
-        return 32
-      case "compact":
-        // p-2.5 (20px total) + single row content (40px) + mb-2 (8px) = 68px
-        return 68
-      case "subtask":
-        // p-2 (16px total) + subtask content (~24px) + mb-2 (8px) ≈ 48px
-        return 48
-      case "kanban":
-        // Empirically tested: 110px works better
-        return 110
-      case "default":
-        // p-4 (32px total) + full content (80px) + mb-2 (8px) = 120px
-        return 120
-      default:
-        return 68 // Sensible fallback
-    }
-  }, [variant])
-
   const virtualizer = useVirtualizer({
     count: sortedTasks.length,
     getScrollElement,
-    estimateSize: getEstimateSize,
+    estimateSize: () => 50,
     overscan: 5,
   })
 
@@ -154,7 +130,7 @@ export function VirtualizedTaskList({
 
   // In test environment, render all items to make them available for queries
   const itemsToRender = isTest
-    ? sortedTasks.map((task, index) => ({ task, index, start: index * getEstimateSize() }))
+    ? sortedTasks.map((task, index) => ({ task, index, start: index * 50 }))
     : virtualizer
         .getVirtualItems()
         .map((vi) => ({ task: sortedTasks[vi.index], index: vi.index, start: vi.start }))
@@ -188,7 +164,7 @@ export function VirtualizedTaskList({
                 <TaskItem
                   taskId={task.id}
                   variant={variant}
-                  className="cursor-pointer mb-2 mx-2"
+                  className="cursor-pointer mx-2"
                   showProjectBadge={true}
                   sortedTaskIds={sortedTaskIds}
                 />
@@ -218,6 +194,7 @@ export function VirtualizedTaskList({
                 ) : (
                   taskItem
                 )}
+                <div aria-hidden="true" className="h-2" />
               </div>
             )
           })
@@ -231,7 +208,7 @@ export function VirtualizedTaskList({
                   <TaskItem
                     taskId={task.id}
                     variant={variant}
-                    className="cursor-pointer mb-2 mx-2"
+                    className="cursor-pointer mx-2"
                     showProjectBadge={true}
                     sortedTaskIds={sortedTaskIds}
                   />
@@ -280,6 +257,7 @@ export function VirtualizedTaskList({
                   ) : (
                     taskItem
                   )}
+                  <div aria-hidden="true" className="h-2" />
                 </motion.div>
               )
             })}

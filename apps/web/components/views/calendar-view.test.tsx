@@ -440,6 +440,18 @@ describe("CalendarView", () => {
       recurringMode: "dueDate",
     },
     {
+      id: TEST_TASK_ID_3,
+      title: "Unscheduled Task",
+      priority: 2 satisfies TaskPriority,
+      // No dueDate - this is an unscheduled task
+      completed: false,
+      labels: [],
+      subtasks: [],
+      comments: [],
+      createdAt: new Date(),
+      recurringMode: "dueDate",
+    },
+    {
       id: TEST_TASK_ID_2,
       title: "Task 2",
       priority: 2 satisfies TaskPriority,
@@ -468,7 +480,6 @@ describe("CalendarView", () => {
   const defaultProps = {
     tasks: mockTasks,
     onDateClick: vi.fn(),
-    droppableId: "test-droppable",
   }
 
   beforeEach(() => {
@@ -584,22 +595,15 @@ describe("CalendarView", () => {
     expect(todayButton).toBeInTheDocument()
   })
 
-  it("displays bottom navigation with current date", () => {
+  it("displays calendar with unscheduled tasks dock", () => {
     render(<CalendarView {...defaultProps} />)
 
     // Calendar header shows current month/year in separate dropdowns
     expect(screen.getByText("January")).toBeInTheDocument()
     expect(screen.getByText("2025")).toBeInTheDocument()
 
-    // Shows selected date in bottom panel when a date is selected
-    expect(screen.getByText("Wednesday, January 1")).toBeInTheDocument()
-  })
-
-  it("shows add task button when date is selected", async () => {
-    render(<CalendarView {...defaultProps} />)
-
-    // Add task button should be visible in the bottom panel when date is selected
-    expect(screen.getByText("Add task")).toBeInTheDocument()
+    // Shows FloatingDock for unscheduled tasks
+    expect(screen.getByText(/unscheduled/i)).toBeInTheDocument()
   })
 
   it("displays tasks on calendar grid", async () => {
@@ -724,8 +728,10 @@ describe("CalendarView", () => {
 
     render(<CalendarView {...defaultProps} tasks={manyTasks} />)
 
-    // Should show +2 since we have 5 tasks and only show 3 (removed "more" to match responsive text)
-    expect(screen.getByText("+2")).toBeInTheDocument()
+    // All five tasks should render without truncation
+    manyTasks.forEach((task) => {
+      expect(screen.getByText(`Mock Task ${task.id}`)).toBeInTheDocument()
+    })
   })
 
   it("shows empty state for date with no tasks", () => {
@@ -739,18 +745,6 @@ describe("CalendarView", () => {
 
     // No tasks should be displayed
     expect(screen.queryByText(/Mock Task/)).not.toBeInTheDocument()
-  })
-
-  it("handles add task click from bottom panel", async () => {
-    const user = userEvent.setup()
-    render(<CalendarView {...defaultProps} tasks={[]} />)
-
-    // With a selected date, should show add task button in bottom panel
-    const addTaskButton = screen.getByText("Add task")
-    await user.click(addTaskButton)
-
-    // Should call addTaskToSection with project and section info
-    expect(mockAddTaskToSection).toHaveBeenCalled()
   })
 
   it("renders drag handles for tasks in calendar", () => {
@@ -819,15 +813,9 @@ describe("CalendarView", () => {
     it("applies responsive layout classes", () => {
       render(<CalendarView {...defaultProps} />)
 
-      // Check main container has responsive flex classes (new layout uses h-screen)
-      const mainContainer = document.querySelector(".flex.flex-col.h-screen")
-      expect(mainContainer).toHaveClass(
-        "flex",
-        "flex-col",
-        "h-screen",
-        "overflow-hidden",
-        "bg-background",
-      )
+      // Check main container has responsive flex classes (layout uses h-full)
+      const mainContainer = document.querySelector(".flex.flex-col.h-full.overflow-hidden")
+      expect(mainContainer).toHaveClass("flex", "flex-col", "h-full", "overflow-hidden")
     })
 
     it("has responsive padding on calendar section", () => {
@@ -853,7 +841,7 @@ describe("CalendarView", () => {
       render(<CalendarView {...defaultProps} />)
 
       const dayHeader = screen.getByText("Sun")
-      expect(dayHeader).toHaveClass("p-1", "lg:p-2", "text-center", "text-xs", "lg:text-sm")
+      expect(dayHeader).toHaveClass("p-0.5", "md:p-1.5", "text-center", "text-[10px]", "md:text-xs")
     })
 
     it("uses responsive minimum heights for calendar days", () => {
@@ -874,124 +862,16 @@ describe("CalendarView", () => {
       expect(hasHeightClasses || calendarDay.style.minHeight).toBeTruthy()
     })
 
-    it("shows bottom navigation panel with responsive layout", () => {
+    it("shows floating dock for unscheduled tasks", () => {
       render(<CalendarView {...defaultProps} />)
 
-      // Bottom panel should be present with responsive classes
-      // Find the bottom panel by looking for the container of the selected date section
-      const selectedDateSection = screen.getByText("Wednesday, January 1")
-      const bottomPanel = selectedDateSection.closest('[class*="border-t"]')
-      expect(bottomPanel).toHaveClass(
-        "h-full",
-        "border-t",
-        "border-border",
-        "bg-card",
-        "overflow-auto",
+      // FloatingDock should be present for unscheduled tasks
+      const unscheduledButton = screen.getByText(/unscheduled/i)
+      expect(unscheduledButton).toBeInTheDocument()
+      expect(unscheduledButton.closest("button")).toHaveAttribute(
+        "aria-label",
+        "Open unscheduled list",
       )
-
-      // Selected date section container should have padding
-      const selectedDateContainer = screen.getByText("Add task").closest("div")?.parentElement
-      expect(selectedDateContainer).toHaveClass("p-3")
-    })
-  })
-
-  describe("Layout Consistency", () => {
-    it("maintains consistent bottom panel height when switching between dates with and without tasks", async () => {
-      const user = userEvent.setup()
-
-      // Create tasks for only one specific date
-      const tasksWithDates: Task[] = [
-        {
-          id: TEST_TASK_ID_1,
-          title: "Task with date",
-          priority: 1 satisfies TaskPriority,
-          dueDate: new Date("2024-12-29"), // This date has tasks
-          completed: false,
-          labels: [],
-          createdAt: new Date(),
-          subtasks: [],
-          comments: [],
-          recurringMode: "dueDate",
-        },
-      ]
-
-      render(<CalendarView {...defaultProps} tasks={tasksWithDates} />)
-
-      // Click on a date with tasks
-      const dateWithTasks = screen.getByTestId("droppable-calendar-day-2024-12-29")
-      await user.click(dateWithTasks)
-
-      // Wait for the bottom panel to appear and check for the mocked task
-      await waitFor(() => {
-        expect(screen.getByText(`Mock Task ${TEST_TASK_ID_1}`)).toBeInTheDocument()
-      })
-
-      // Get the container that should have consistent height
-      const taskContainer = document.querySelector(".space-y-2.min-h-\\[120px\\]")
-      expect(taskContainer).toBeInTheDocument()
-
-      // Click on a date without tasks
-      const dateWithoutTasks = screen.getByTestId("droppable-calendar-day-2024-12-30")
-      await user.click(dateWithoutTasks)
-
-      // Wait for and verify placeholder message appears
-      await waitFor(() => {
-        expect(screen.getByText("No tasks scheduled for this date")).toBeInTheDocument()
-      })
-
-      // Verify the same container still exists with same minimum height class
-      const emptyTaskContainer = document.querySelector(".space-y-2.min-h-\\[120px\\]")
-      expect(emptyTaskContainer).toBeInTheDocument()
-
-      // Verify the placeholder has the expected styling
-      const placeholderElement = screen.getByText("No tasks scheduled for this date")
-      expect(placeholderElement).toHaveClass("py-2")
-    })
-
-    it("always renders drop target area regardless of task presence", async () => {
-      const user = userEvent.setup()
-
-      const tasksWithDates: Task[] = [
-        {
-          id: TEST_TASK_ID_1,
-          title: "Task with date",
-          priority: 1 satisfies TaskPriority,
-          dueDate: new Date("2024-12-29"),
-          completed: false,
-          labels: [],
-          createdAt: new Date(),
-          subtasks: [],
-          comments: [],
-          recurringMode: "dueDate",
-        },
-      ]
-
-      render(<CalendarView {...defaultProps} tasks={tasksWithDates} />)
-
-      // Click on date with tasks
-      const dateWithTasks = screen.getByTestId("droppable-calendar-day-2024-12-29")
-      await user.click(dateWithTasks)
-
-      await waitFor(() => {
-        expect(screen.getByText(`Mock Task ${TEST_TASK_ID_1}`)).toBeInTheDocument()
-      })
-
-      // Verify drop target container exists with minimum height
-      let dropTargetContainer = document.querySelector(".space-y-2.min-h-\\[120px\\]")
-      expect(dropTargetContainer).toBeInTheDocument()
-
-      // Click on date without tasks
-      const dateWithoutTasks = screen.getByTestId("droppable-calendar-day-2024-12-30")
-      await user.click(dateWithoutTasks)
-
-      await waitFor(() => {
-        expect(screen.getByText("No tasks scheduled for this date")).toBeInTheDocument()
-      })
-
-      // Verify drop target container still exists with minimum height
-      dropTargetContainer = document.querySelector(".space-y-2.min-h-\\[120px\\]")
-      expect(dropTargetContainer).toBeInTheDocument()
-      expect(dropTargetContainer).toHaveClass("space-y-2", "min-h-[120px]")
     })
   })
 
@@ -1214,19 +1094,6 @@ describe("CalendarView", () => {
         )
       })
     })
-
-    it("applies dropClassName to selected date task list for visual feedback", () => {
-      render(<CalendarView {...defaultProps} />)
-
-      // The selected date task list uses the droppableId prop
-      const selectedDateDropTarget = screen.getByTestId(`droppable-${defaultProps.droppableId}`)
-
-      // Verify that the dropClassName is applied for visual feedback with more subtle styling
-      expect(selectedDateDropTarget).toHaveAttribute(
-        "data-drop-class-name",
-        "ring-2 ring-primary/50 bg-primary/5",
-      )
-    })
   })
 
   describe("Sticky Calendar Header", () => {
@@ -1245,7 +1112,6 @@ describe("CalendarView", () => {
         "bg-background/95",
         "backdrop-blur",
         "supports-[backdrop-filter]:bg-background/60",
-        "border-b",
         "border-border/50",
         "flex-shrink-0",
       )

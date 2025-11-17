@@ -3,6 +3,7 @@
 import React, { useRef, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { createKeyboardHandler } from "@/lib/utils/keyboard"
+import { getCaretFromPoint } from "@tasktrove/dom-utils"
 
 /**
  * Clean contentEditable text by replacing non-breaking spaces with newlines
@@ -40,6 +41,22 @@ function setCursorPosition(element: HTMLElement, position: "start" | "end" | num
     selection.addRange(range)
   } catch {
     // Cursor positioning failed, element will still be focused
+  }
+}
+
+function setSelectionAt(node: Node, offset: number) {
+  const selection = window.getSelection()
+  if (!selection) return
+
+  const range = document.createRange()
+  const clampedOffset = Math.min(Math.max(0, offset), node.textContent?.length ?? offset)
+  try {
+    range.setStart(node, clampedOffset)
+    range.collapse(true)
+    selection.removeAllRanges()
+    selection.addRange(range)
+  } catch {
+    // Ignore selection errors
   }
 }
 
@@ -93,6 +110,9 @@ export function EditableDiv({
   // Handle autoFocus and cursor positioning
   useEffect(() => {
     if (autoFocus && ref.current) {
+      if (!value) {
+        ref.current.textContent = ""
+      }
       ref.current.focus()
 
       // Only position cursor if we have content (not just placeholder)
@@ -163,6 +183,15 @@ export function EditableDiv({
     },
   })
 
+  const handleMouseDown = (event: React.MouseEvent<EditableDivElement>) => {
+    if (!isEditing || !ref.current) return
+
+    const caret = getCaretFromPoint(event.clientX, event.clientY)
+    if (caret?.node && ref.current.contains(caret.node)) {
+      setSelectionAt(caret.node, caret.offset)
+    }
+  }
+
   return React.createElement(Component, {
     ref,
     contentEditable: "plaintext-only",
@@ -177,6 +206,10 @@ export function EditableDiv({
     onFocus: handleFocus,
     onBlur: handleBlur,
     onKeyDown: handleKeyDown,
+    onMouseDown: handleMouseDown,
+    "data-value": value,
+    "data-placeholder": placeholder,
+    "data-multiline": multiline,
     ...domProps,
   })
 }

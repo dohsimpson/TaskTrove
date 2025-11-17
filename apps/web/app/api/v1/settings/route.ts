@@ -20,6 +20,8 @@ import {
 import { withMutexProtection } from "@/lib/utils/api-mutex"
 import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
+import { mergeDeep } from "@tasktrove/utils"
+import { refreshSchedulerJobs } from "@/lib/scheduler/bootstrap"
 
 /**
  * GET /api/v1/settings
@@ -129,34 +131,9 @@ async function updateSettings(
     )
   }
 
-  // Merge partial settings with current settings using conditional spreading.
-  // This preserves all existing fields (including Pro variants like 'productivity')
-  // while deep-merging only the nested objects that were provided in the update.
-  const updatedSettings: UserSettings = {
-    ...fileData.settings, // Preserve all existing fields
-    ...(partialSettings.data && {
-      data: {
-        ...fileData.settings.data,
-        ...partialSettings.data,
-        autoBackup: {
-          ...fileData.settings.data.autoBackup,
-          ...partialSettings.data.autoBackup,
-        },
-      },
-    }),
-    ...(partialSettings.notifications && {
-      notifications: {
-        ...fileData.settings.notifications,
-        ...partialSettings.notifications,
-      },
-    }),
-    ...(partialSettings.general && {
-      general: {
-        ...fileData.settings.general,
-        ...partialSettings.general,
-      },
-    }),
-  }
+  // Merge partial settings with current settings via shared deep merge helper.
+  // Preserves existing fields (including Pro variants) without enumerating keys.
+  const updatedSettings: UserSettings = mergeDeep(fileData.settings, partialSettings)
 
   // Update the data file with new settings
   const updatedFileData = {
@@ -194,6 +171,12 @@ async function updateSettings(
     success: true,
     settings: updatedSettings,
     message: "Settings updated successfully",
+  }
+
+  try {
+    await refreshSchedulerJobs()
+  } catch (error) {
+    console.error("Failed to refresh scheduler after settings update", error)
   }
 
   return NextResponse.json<UpdateSettingsResponse>(response)

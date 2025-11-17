@@ -23,7 +23,7 @@ interface MaterialCardProps {
   /** Data attributes for testing/selection */
   "data-task-focused"?: boolean
   /** Variant of the card */
-  variant?: "default" | "compact" | "kanban" | "calendar" | "subtask"
+  variant?: "default" | "compact" | "kanban" | "narrow" | "calendar" | "subtask"
 }
 
 export function MaterialCard({
@@ -67,6 +67,13 @@ export function MaterialCard({
       "duration-200",
       "p-3 rounded-lg",
       "shadow-sm hover:shadow-md dark:hover:shadow-gray-300/30",
+      selected && selectedStyles,
+    ),
+    narrow: cn(
+      baseStyles,
+      "duration-200",
+      "p-1 rounded-lg",
+      "border-l-0 border-none",
       selected && selectedStyles,
     ),
     calendar: cn(

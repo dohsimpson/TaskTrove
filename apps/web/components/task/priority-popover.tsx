@@ -27,6 +27,9 @@ export function PriorityPopover({ task, children, className, onOpenChange }: Pri
       content={<PriorityContent task={task} onPrioritySelect={() => setOpen(false)} />}
       className="w-full p-0"
       align="start"
+      mobileAsDrawer
+      drawerTitle="Priority"
+      drawerDirection="bottom"
     >
       <div className={className}>{children}</div>
     </ContentPopover>

@@ -1,11 +1,27 @@
 import { TaskParser } from "@tasktrove/parser/core/parser";
 import { extractRecurringAnchor } from "@tasktrove/parser/utils/recurring-anchor";
-import type { ParsedTask, ParserContext } from "@tasktrove/parser/types";
+import type {
+  ParsedTask,
+  ParserContext,
+  ExtractionResult,
+} from "@tasktrove/parser/types";
 
 interface DynamicPatternsConfig {
   projects?: Array<{ name: string }>;
   labels?: Array<{ name: string }>;
   users?: Array<{ username: string }>;
+}
+
+export interface ParsedTaskWithMatches extends ParsedTask {
+  /**
+   * Matches after parser post-processing (overlap resolution, last occurrence, etc.)
+   * These align with the values applied to the parsed task.
+   */
+  matches: ExtractionResult[];
+  /**
+   * Raw extraction results before post-processing. Useful for debugging.
+   */
+  rawMatches: ExtractionResult[];
 }
 
 /**
@@ -16,7 +32,7 @@ export function parseEnhancedNaturalLanguage(
   text: string,
   disabledSections: Set<string> = new Set(),
   config?: DynamicPatternsConfig,
-): ParsedTask {
+): ParsedTaskWithMatches {
   const baseContext: ParserContext = {
     locale: "en",
     referenceDate: new Date(),
@@ -33,7 +49,12 @@ export function parseEnhancedNaturalLanguage(
   // Create new parser instance each time (not singleton) to support Pro/base conditional exports
   const parser = new TaskParser();
   const result = parser.parse(text, context);
-  const parsed = result.parsed;
+  const parsed: ParsedTaskWithMatches = {
+    ...result.parsed,
+    labels: [...result.parsed.labels],
+    matches: [...result.matches],
+    rawMatches: [...result.rawMatches],
+  };
 
   // Auto-enrich recurring patterns with anchor date/time if not already present
   if (parsed.recurring && !parsed.dueDate) {

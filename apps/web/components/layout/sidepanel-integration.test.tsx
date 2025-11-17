@@ -156,6 +156,7 @@ describe("SidePanel Integration", () => {
     // Initialize global view options with default values
     store.set(globalViewOptionsAtom, {
       sidePanelWidth: 25,
+      sideBarWidth: 240,
       showSidePanel: false,
       peopleOwnerCollapsed: false,
       peopleAssigneesCollapsed: false,

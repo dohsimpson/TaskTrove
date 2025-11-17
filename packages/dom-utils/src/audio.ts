@@ -4,6 +4,13 @@
  */
 
 let audioContext: AudioContext | null = null;
+const suppressAudioWarnings =
+  typeof process !== "undefined" && process.env.VITEST === "true";
+
+const logAudioWarning = (...args: unknown[]) => {
+  if (suppressAudioWarnings) return;
+  console.warn(...args);
+};
 
 const initAudioContext = () => {
   if (!audioContext && typeof window !== "undefined") {
@@ -12,7 +19,7 @@ const initAudioContext = () => {
       const AudioContextConstructor = window.AudioContext;
       audioContext = new AudioContextConstructor();
     } catch (error) {
-      console.warn("Web Audio API not supported", error);
+      logAudioWarning("Web Audio API not supported", error);
     }
   }
   return audioContext;
@@ -142,10 +149,10 @@ export const playSound = async (soundType: SoundType, volume: number = 0.3) => {
         await playConfirmSound(context, now, volume);
         break;
       default:
-        console.warn(`Unknown sound type: ${soundType}`);
+        logAudioWarning(`Unknown sound type: ${soundType}`);
     }
   } catch (error) {
-    console.warn(`Failed to play ${soundType} sound`, error);
+    logAudioWarning(`Failed to play ${soundType} sound`, error);
   }
 };
 

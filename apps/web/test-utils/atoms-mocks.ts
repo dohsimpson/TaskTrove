@@ -11,6 +11,7 @@
 
 import { vi } from "vitest"
 import { atom } from "jotai"
+import { SIDEBAR_WIDTH_PX_DEFAULT } from "@tasktrove/constants"
 
 // Helper to create mock atoms with proper jotai structure
 // Creates real Jotai atoms so they can be used with useHydrateAtoms in tests
@@ -129,8 +130,7 @@ vi.mock("@tasktrove/atoms/ui/navigation", () => ({
  * This ensures that typing in search inputs actually updates the displayed value
  */
 vi.mock("@tasktrove/atoms/ui/views", () => {
-  // Create a shared writable viewState atom
-  const mockViewStateAtom = atom({
+  const defaultViewState = {
     viewMode: "list",
     sortBy: "default",
     sortDirection: "asc",
@@ -140,7 +140,10 @@ vi.mock("@tasktrove/atoms/ui/views", () => {
     showSidePanel: false,
     compactView: false,
     collapsedSections: [],
-  })
+  }
+
+  // Create a shared writable viewState atom
+  const mockViewStateAtom = atom(defaultViewState)
   mockViewStateAtom.debugLabel = "currentViewStateAtom"
 
   // Create a write-only atom that updates the searchQuery in viewState
@@ -150,6 +153,15 @@ vi.mock("@tasktrove/atoms/ui/views", () => {
   })
   mockSetSearchQueryAtom.debugLabel = "setSearchQueryAtom"
 
+  const mockSetViewOptionsAtom = atom(
+    null,
+    (get, set, updates: Partial<typeof defaultViewState>) => {
+      const current = get(mockViewStateAtom)
+      set(mockViewStateAtom, { ...current, ...updates })
+    },
+  )
+  mockSetViewOptionsAtom.debugLabel = "setViewOptionsAtom"
+
   return {
     currentViewAtom: createMockAtom("currentViewAtom", "today"),
     currentViewStateAtom: mockViewStateAtom,
@@ -158,11 +170,12 @@ vi.mock("@tasktrove/atoms/ui/views", () => {
     toggleSectionCollapseAtom: createMockAtom("toggleSectionCollapseAtom"),
     toggleTaskPanelWithViewStateAtom: createMockAtom("toggleTaskPanelWithViewStateAtom"),
     sidePanelWidthAtom: createMockAtom("sidePanelWidthAtom", 400),
+    sideBarWidthAtom: createMockAtom("sideBarWidthAtom", SIDEBAR_WIDTH_PX_DEFAULT),
     updateGlobalViewOptionsAtom: createMockAtom("updateGlobalViewOptionsAtom"),
     activeFiltersAtom: createMockAtom("activeFiltersAtom", {}),
     hasActiveFiltersAtom: createMockAtom("hasActiveFiltersAtom", false),
     updateFiltersAtom: createMockAtom("updateFiltersAtom"),
-    setViewOptionsAtom: createMockAtom("setViewOptionsAtom"),
+    setViewOptionsAtom: mockSetViewOptionsAtom,
   }
 })
 
@@ -171,7 +184,7 @@ vi.mock("@tasktrove/atoms/ui/views", () => {
  */
 vi.mock("@tasktrove/atoms/ui/selection", () => ({
   selectedTaskIdAtom: createMockAtom("selectedTaskIdAtom"),
-  selectedTasksAtom: createMockAtom("selectedTasksAtom"),
+  selectedTasksAtom: createMockAtom("selectedTasksAtom", []),
   selectedTaskAtom: createMockAtom("selectedTaskAtom"),
   selectedTaskRouteContextAtom: createMockAtom("selectedTaskRouteContextAtom"),
   selectedTaskRouteContextOverrideAtom: createMockAtom("selectedTaskRouteContextOverrideAtom"),
@@ -180,8 +193,21 @@ vi.mock("@tasktrove/atoms/ui/selection", () => ({
   selectRangeAtom: createMockAtom("selectRangeAtom"),
   toggleTaskSelectionAtom: createMockAtom("toggleTaskSelectionAtom"),
   clearSelectedTasksAtom: createMockAtom("clearSelectedTasksAtom"),
-  multiSelectDraggingAtom: createMockAtom("multiSelectDraggingAtom"),
+  multiSelectDraggingAtom: createMockAtom("multiSelectDraggingAtom", false),
 }))
+
+/**
+ * Mock @tasktrove/atoms/ui/drag
+ */
+vi.mock("@tasktrove/atoms/ui/drag", () => {
+  const draggingTaskIdsAtom = createMockAtom("draggingTaskIdsAtom", [])
+  return {
+    draggingTaskIdsAtom,
+    dragAtoms: {
+      draggingTaskIds: draggingTaskIdsAtom,
+    },
+  }
+})
 
 /**
  * Mock @tasktrove/atoms/ui/scroll-to-task
@@ -393,6 +419,39 @@ vi.mock("@tasktrove/atoms/ui/pomodoro", () => ({
   pomodoroSettingsAtom: createMockAtom("pomodoroSettingsAtom"),
   pomodoroStatusAtom: createMockAtom("pomodoroStatusAtom"),
 }))
+
+/**
+ * Mock @tasktrove/atoms/ui/settings
+ */
+vi.mock("@tasktrove/atoms/ui/settings", () => {
+  const activeSettingsCategoryAtom = atom("general")
+  activeSettingsCategoryAtom.debugLabel = "activeSettingsCategoryAtom"
+
+  const mobileSettingsDrawerOpenAtom = atom(false)
+  mobileSettingsDrawerOpenAtom.debugLabel = "mobileSettingsDrawerOpenAtom"
+
+  const navigateToSettingsCategoryAtom = atom(null, (get, set, category: string) => {
+    set(activeSettingsCategoryAtom, category)
+  })
+  navigateToSettingsCategoryAtom.debugLabel = "navigateToSettingsCategoryAtom"
+
+  const toggleMobileSettingsDrawerAtom = atom(null, (get, set) => {
+    const current = get(mobileSettingsDrawerOpenAtom)
+    set(mobileSettingsDrawerOpenAtom, !current)
+  })
+  toggleMobileSettingsDrawerAtom.debugLabel = "toggleMobileSettingsDrawerAtom"
+
+  const isValidCategory = (id: string) =>
+    ["general", "notifications", "data", "appearance", "scheduler"].includes(id)
+
+  return {
+    activeSettingsCategoryAtom,
+    navigateToSettingsCategoryAtom,
+    mobileSettingsDrawerOpenAtom,
+    toggleMobileSettingsDrawerAtom,
+    isValidCategory,
+  }
+})
 
 /**
  * Mock @tasktrove/atoms/ui/filtered-tasks

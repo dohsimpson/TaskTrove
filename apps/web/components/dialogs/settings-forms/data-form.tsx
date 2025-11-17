@@ -5,25 +5,23 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { SettingsCard } from "@/components/ui/custom/settings-card"
-import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Input } from "@/components/ui/input"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Upload, ExternalLink, CheckCircle2, XCircle, Loader2, Archive } from "lucide-react"
+  Upload,
+  ExternalLink,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  Archive,
+  Clock,
+  Save,
+} from "lucide-react"
 // Future icons (not used yet): import { Calendar, Link, Trash2, Plus } from "lucide-react"
-import { SiTodoist, SiTrello, SiAsana, SiTicktick } from "@icons-pack/react-simple-icons"
-import { toast } from "sonner"
-import { dataSettingsAtom, updateDataSettingsAtom } from "@tasktrove/atoms/core/settings"
 import { queryClientAtom } from "@tasktrove/atoms/data/base/query"
-import { DEFAULT_BACKUP_TIME, SUPPORTED_IMPORT_SOURCES, DATA_QUERY_KEY } from "@tasktrove/constants"
+import { SUPPORTED_IMPORT_SOURCES, DATA_QUERY_KEY } from "@tasktrove/constants"
 import { useTranslation } from "@tasktrove/i18n"
 import { API_ROUTES } from "@/lib/types"
+import { navigateToSettingsCategoryAtom } from "@tasktrove/atoms/ui/settings"
 
 type UploadStatus = "idle" | "uploading" | "success" | "error"
 
@@ -38,9 +36,8 @@ interface UploadResult {
 }
 
 export function DataForm() {
-  const settings = useAtomValue(dataSettingsAtom)
   const queryClient = useAtomValue(queryClientAtom)
-  const updateSettings = useSetAtom(updateDataSettingsAtom)
+  const navigateToCategory = useSetAtom(navigateToSettingsCategoryAtom)
 
   // Upload state
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle")
@@ -121,21 +118,6 @@ export function DataForm() {
     window.open(migrationUrl, "_blank")
   }
 
-  const getProviderIcon = (source: string) => {
-    switch (source.toLowerCase()) {
-      case "todoist":
-        return <SiTodoist className="size-4" />
-      case "trello":
-        return <SiTrello className="size-4" />
-      case "asana":
-        return <SiAsana className="size-4" />
-      case "ticktick":
-        return <SiTicktick className="size-4" />
-      default:
-        return <ExternalLink className="size-4" />
-    }
-  }
-
   const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -198,7 +180,7 @@ export function DataForm() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 max-w-full overflow-x-hidden">
       {/* Calendar Integration - Not implemented yet */}
       {/* <Card>
         <CardHeader>
@@ -239,10 +221,10 @@ export function DataForm() {
                 key={source}
                 variant="outline"
                 onClick={() => importFromService(source)}
-                className="w-full justify-between h-12"
+                className="w-full justify-between"
               >
                 <div className="flex items-center gap-3">
-                  {getProviderIcon(source)}
+                  <Archive className="size-4 text-muted-foreground" />
                   <div className="text-left">
                     <div className="font-medium capitalize">{source}</div>
                   </div>
@@ -293,12 +275,7 @@ export function DataForm() {
               disabled={uploadStatus === "uploading"}
             />
             <label htmlFor="import-file">
-              <Button
-                asChild
-                variant="outline"
-                className="h-12"
-                disabled={uploadStatus === "uploading"}
-              >
+              <Button asChild variant="outline" disabled={uploadStatus === "uploading"}>
                 <span className="flex items-center gap-3">
                   {uploadStatus === "uploading" ? (
                     <Loader2 className="size-5 animate-spin" />
@@ -423,161 +400,23 @@ export function DataForm() {
           "data.autoBackup.description",
           "Automatically backup your data daily to protect against data loss.",
         )}
-        icon={Archive}
+        icon={Save}
         experimental
       >
-        {/* Docker Volume Mounting Notice - Only show when auto backup is enabled */}
-        {settings.autoBackup.enabled && (
-          <div className="p-3 bg-muted rounded-lg border">
-            <div className="flex items-start gap-2">
-              <div className="size-5 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold mt-0.5">
-                !
-              </div>
-              <div className="text-sm">
-                <div className="font-medium">
-                  {t("data.autoBackup.dockerNotice.title", "Docker Users:")}
-                </div>
-                <div className="text-muted-foreground">
-                  {t(
-                    "data.autoBackup.dockerNotice.description",
-                    "You must mount the backups directory as a volume to access backup files:",
-                  )}{" "}
-                  <code className="px-1 py-0.5 bg-muted rounded text-xs">
-                    -v ./backups:/app/backups
-                  </code>
-                </div>
-                <div className="mt-1">
-                  <a
-                    href="https://docs.tasktrove.io/backup#built-in-auto-backup-recommended"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline text-xs flex items-center gap-1"
-                  >
-                    {t("data.autoBackup.dockerNotice.guide", "See backup setup guide")}{" "}
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label htmlFor="auto-backup">
-              {t("data.autoBackup.enable.label", "Enable Auto Backup")}
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              {t(
-                "data.autoBackup.enable.description",
-                "Creates a zip backup of your data daily at the configured time",
-              )}
-            </p>
-          </div>
-          <Switch
-            id="auto-backup"
-            checked={settings.autoBackup.enabled}
-            onCheckedChange={(checked) =>
-              updateSettings({
-                autoBackup: {
-                  ...settings.autoBackup,
-                  enabled: checked,
-                },
-              })
-            }
-          />
-        </div>
-
-        {settings.autoBackup.enabled && (
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="backup-time">
-                {t("data.autoBackup.backupTime.label", "Backup Time")}
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                {t(
-                  "data.autoBackup.backupTime.description",
-                  "Time to run daily backup (24-hour format)",
-                )}
-              </p>
-            </div>
-            <Input
-              id="backup-time"
-              type="time"
-              value={settings.autoBackup.backupTime || DEFAULT_BACKUP_TIME}
-              onChange={(e) =>
-                updateSettings({
-                  autoBackup: {
-                    ...settings.autoBackup,
-                    backupTime: e.target.value,
-                  },
-                })
-              }
-              className="w-32"
-            />
-          </div>
-        )}
-
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label htmlFor="max-backups">
-              {t("data.autoBackup.maxBackups.label", "Maximum Backups to Keep")}
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              {t(
-                "data.autoBackup.maxBackups.description",
-                "Older backups will be automatically deleted",
-              )}
-            </p>
-          </div>
-          <Select
-            value={String(settings.autoBackup.maxBackups)}
-            onValueChange={(value) =>
-              updateSettings({
-                autoBackup: {
-                  ...settings.autoBackup,
-                  maxBackups: Number(value),
-                },
-              })
-            }
-          >
-            <SelectTrigger id="max-backups" className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="-1">
-                {t("data.autoBackup.maxBackups.noLimit", "No limit")}
-              </SelectItem>
-              {[3, 5, 7, 10, 14, 21, 30, 90, 365].map((num) => (
-                <SelectItem key={num} value={String(num)}>
-                  {num}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-3">
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            {t(
+              "data.autoBackup.schedulerRedirect.description",
+              "Auto backup controls now live in Scheduler settings. Head there to enable the job, change the cron time, or run a manual backup.",
+            )}
+          </p>
           <Button
             variant="outline"
-            onClick={async () => {
-              try {
-                const response = await fetch(API_ROUTES.BACKUP, {
-                  method: "POST",
-                })
-                if (response.ok) {
-                  toast.success("Manual backup triggered successfully")
-                } else {
-                  toast.error("Failed to trigger manual backup")
-                }
-              } catch {
-                toast.error("Failed to trigger manual backup. Please try again.")
-              }
-            }}
-            className="w-full"
+            onClick={() => navigateToCategory("scheduler")}
+            className="w-full md:w-auto"
           >
-            <Archive className="size-4 mr-2" />
-            {t("data.autoBackup.manualBackup.button", "Trigger Manual Backup Now")}
+            <Clock className="size-4 mr-2" />
+            {t("data.autoBackup.schedulerRedirect.button", "Open Scheduler Settings")}
           </Button>
         </div>
       </SettingsCard>

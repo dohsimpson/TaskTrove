@@ -9,6 +9,7 @@ import { withAuthentication } from "./auth"
 import { NextResponse } from "next/server"
 import { ApiErrorCode, ErrorResponse, createGroupId, createUserId } from "@/lib/types"
 import { DEFAULT_UUID } from "@tasktrove/constants"
+import { DEFAULT_DATA_VERSION } from "@tasktrove/types/defaults"
 import type { EnhancedRequest } from "./api-logger"
 import { createMockEnhancedRequest } from "@/lib/utils/test-helpers"
 import type { Session } from "next-auth"
@@ -437,6 +438,7 @@ describe("withAuthentication", () => {
 
       // Mock safeReadDataFile to return data file with matching API token
       mockSafeReadDataFile.mockResolvedValue({
+        version: DEFAULT_DATA_VERSION,
         user: {
           id: createUserId(DEFAULT_UUID),
           username: "admin",
@@ -448,6 +450,7 @@ describe("withAuthentication", () => {
             startView: "all",
             soundEnabled: true,
             linkifyEnabled: true,
+            markdownEnabled: true,
             popoverHoverOpen: false,
           },
           data: {
@@ -502,6 +505,7 @@ describe("withAuthentication", () => {
 
       // Mock safeReadDataFile to return data file with different API token
       mockSafeReadDataFile.mockResolvedValue({
+        version: DEFAULT_DATA_VERSION,
         user: {
           id: createUserId(DEFAULT_UUID),
           username: "admin",
@@ -513,6 +517,7 @@ describe("withAuthentication", () => {
             startView: "all",
             soundEnabled: true,
             linkifyEnabled: true,
+            markdownEnabled: true,
             popoverHoverOpen: false,
           },
           data: {
@@ -569,6 +574,7 @@ describe("withAuthentication", () => {
 
       // Mock safeReadDataFile to return data file without API token
       mockSafeReadDataFile.mockResolvedValue({
+        version: DEFAULT_DATA_VERSION,
         user: {
           id: createUserId(DEFAULT_UUID),
           username: "admin",
@@ -580,6 +586,7 @@ describe("withAuthentication", () => {
             startView: "all",
             soundEnabled: true,
             linkifyEnabled: true,
+            markdownEnabled: true,
             popoverHoverOpen: false,
           },
           data: {
@@ -672,6 +679,7 @@ describe("withAuthentication", () => {
 
       // Mock safeReadDataFile to return data file with matching API token
       mockSafeReadDataFile.mockResolvedValue({
+        version: DEFAULT_DATA_VERSION,
         user: {
           id: createUserId(DEFAULT_UUID),
           username: "admin",
@@ -683,6 +691,7 @@ describe("withAuthentication", () => {
             startView: "all",
             soundEnabled: true,
             linkifyEnabled: true,
+            markdownEnabled: true,
             popoverHoverOpen: false,
           },
           data: {

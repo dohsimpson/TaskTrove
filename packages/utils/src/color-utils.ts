@@ -33,9 +33,14 @@ export function getConsistentColor(str: string | undefined): string {
  */
 export function getPriorityColor(
   priority: number,
-  variant?: "default" | "compact" | "kanban" | "calendar",
+  variant?: "default" | "compact" | "kanban" | "narrow" | "calendar",
 ): string {
-  if (variant === "compact" || variant === "kanban" || variant === "default") {
+  if (
+    variant === "compact" ||
+    variant === "kanban" ||
+    variant === "narrow" ||
+    variant === "default"
+  ) {
     switch (priority) {
       case 1:
         return "border-l-red-500";

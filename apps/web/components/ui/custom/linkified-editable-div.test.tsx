@@ -160,6 +160,7 @@ describe("LinkifiedEditableDiv", () => {
     expect(linkifiedText).toHaveClass("cursor-text")
     expect(linkifiedText).toHaveClass("test-class")
     expect(linkifiedText).toHaveAttribute("data-testid", "custom-test")
+    expect(linkifiedText).toHaveAttribute("data-action", "edit")
   })
 
   it("passes through props correctly to EditableDiv", () => {

@@ -56,6 +56,7 @@ import {
 import { updateProjectsMutationAtom } from "@tasktrove/atoms/mutations/projects";
 import { recordOperationAtom } from "@tasktrove/atoms/core/history";
 import { log } from "@tasktrove/atoms/utils/atom-helpers";
+import { getEffectiveDueDate } from "@tasktrove/utils";
 
 /**
  * Core task management atoms for TaskTrove's Jotai migration
@@ -189,9 +190,33 @@ export const updateTasksAtom = namedAtom(
   "updateTasksAtom",
   atom(null, async (get, set, updateRequests: UpdateTaskRequest[]) => {
     try {
+      const taskById = get(taskByIdAtom);
+      const normalizedUpdates = updateRequests.map((updateRequest) => {
+        const originalTask = taskById.get(updateRequest.id);
+        if (
+          !originalTask ||
+          originalTask.completed ||
+          originalTask.recurringMode !== "autoRollover" ||
+          updateRequest.completed !== true ||
+          Object.prototype.hasOwnProperty.call(updateRequest, "dueDate")
+        ) {
+          return updateRequest;
+        }
+
+        const effectiveDueDate = getEffectiveDueDate(originalTask);
+        if (!effectiveDueDate) {
+          return updateRequest;
+        }
+
+        return {
+          ...updateRequest,
+          dueDate: effectiveDueDate,
+        };
+      });
+
       // Use server mutation which handles optimistic updates automatically
       const updateTasksMutation = get(updateTasksMutationAtom);
-      await updateTasksMutation.mutateAsync(updateRequests);
+      await updateTasksMutation.mutateAsync(normalizedUpdates);
     } catch (error) {
       handleAtomError(error, "updateTasksAtom");
       throw error;
@@ -453,17 +478,7 @@ bulkActionsAtom.debugLabel = "bulkActionsAtom";
 // =============================================================================
 
 // Filtering atoms moved to #data/tasks/filters
-// Re-exported below for backward compatibility
-import {
-  activeTasksAtom,
-  inboxTasksAtom,
-  todayTasksAtom,
-  upcomingTasksAtom,
-  calendarTasksAtom,
-  overdueTasksAtom,
-  completedTasksAtom,
-  baseFilteredTasksAtom,
-} from "@tasktrove/atoms/data/tasks/filters";
+import { activeTasksAtom } from "@tasktrove/atoms/data/tasks/filters";
 
 // Note: taskByIdAtom moved to data/base/atoms.ts to avoid circular dependency
 
@@ -1140,18 +1155,13 @@ export const taskAtoms = {
 
   // Derived read atoms
   derived: {
-    activeTasks: activeTasksAtom,
-    completedTasks: completedTasksAtom,
-    inboxTasks: inboxTasksAtom,
-    todayTasks: todayTasksAtom,
-    todayOnly: todayOnlyAtom,
-    upcomingTasks: upcomingTasksAtom,
-    overdueTasks: overdueTasksAtom,
-    calendarTasks: calendarTasksAtom,
     taskById: taskByIdAtom,
     // Note: taskCountsAtom disabled (has UI dependencies, needs refactoring)
     completedTasksToday: completedTasksTodayAtom,
-    baseFilteredTasksForView: baseFilteredTasksAtom,
+    // Note: filtered atoms moved to data/tasks/filters.ts to avoid circular deps
+    // The following are UI-dependent and moved to ui/filtered-tasks.ts:
+    // - activeTasks, completedTasks, inboxTasks, todayTasks, upcomingTasks
+    // - baseFilteredTasksForView: baseFilteredTasksAtom,
     // Note: filteredTasksAtom moved to ui/filtered-tasks.ts (UI-dependent)
     getTasksForView: getTasksForViewAtom,
     orderedTasksByProject: orderedTasksByProjectAtom,

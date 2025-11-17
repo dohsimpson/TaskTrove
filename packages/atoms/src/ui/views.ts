@@ -16,6 +16,9 @@ import {
 import {
   DEFAULT_ACTIVE_FILTERS,
   STANDARD_VIEW_IDS,
+  SIDEBAR_WIDTH_PX_DEFAULT,
+  SIDEBAR_WIDTH_PX_MAX,
+  SIDEBAR_WIDTH_PX_MIN,
 } from "@tasktrove/constants";
 import {
   createAtomWithStorage,
@@ -114,7 +117,11 @@ export function migrateViewStates(data: unknown): ViewStates {
             // Type-safe field preservation with explicit checks
             if (
               key === "viewMode" &&
-              (value === "list" || value === "kanban" || value === "calendar")
+              (value === "list" ||
+                value === "kanban" ||
+                value === "calendar" ||
+                value === "table" ||
+                value === "stats")
             ) {
               preservedFields.viewMode = value;
             } else if (
@@ -280,7 +287,7 @@ updateViewStateAtom.debugLabel = "updateViewStateAtom";
  */
 export const setViewModeAtom = atom(
   null,
-  (get, set, mode: "list" | "kanban" | "calendar") => {
+  (get, set, mode: "list" | "kanban" | "calendar" | "table" | "stats") => {
     set(setViewOptionsAtom, { viewMode: mode });
   },
 );
@@ -646,6 +653,36 @@ export const sidePanelWidthAtom = atom<number>((get) => {
 });
 sidePanelWidthAtom.debugLabel = "sidePanelWidthAtom";
 
+const clampSidebarWidthPx = (value: number) =>
+  Math.min(SIDEBAR_WIDTH_PX_MAX, Math.max(SIDEBAR_WIDTH_PX_MIN, value));
+
+const getSanitizedSidebarWidth = (value: unknown) => {
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return SIDEBAR_WIDTH_PX_DEFAULT;
+  }
+  return clampSidebarWidthPx(value);
+};
+
+/**
+ * Primary sidebar width in pixels (240-480px, default 256px)
+ * Shares persistence with other global view options
+ */
+export const sideBarWidthAtom = atom(
+  (get) => {
+    const rawValue = get(globalViewOptionsAtom).sideBarWidth;
+    return getSanitizedSidebarWidth(rawValue);
+  },
+  (get, set, update: number | ((value: number) => number)) => {
+    const rawValue = get(globalViewOptionsAtom).sideBarWidth;
+    const current = getSanitizedSidebarWidth(rawValue);
+    const next = clampSidebarWidthPx(
+      typeof update === "function" ? update(current) : update,
+    );
+    set(updateGlobalViewOptionsAtom, { sideBarWidth: next });
+  },
+);
+sideBarWidthAtom.debugLabel = "sideBarWidthAtom";
+
 /**
  * Global side panel visibility (applies across all views)
  * Used to control side panel visibility globally
@@ -812,6 +849,7 @@ export const viewAtoms = {
   compactView: compactViewAtom,
   collapsedSections: collapsedSectionsAtom,
   sidePanelWidth: sidePanelWidthAtom,
+  sideBarWidth: sideBarWidthAtom,
   globalShowSidePanel: globalShowSidePanelAtom,
   peopleOwnerCollapsed: peopleOwnerCollapsedAtom,
   peopleAssigneesCollapsed: peopleAssigneesCollapsedAtom,

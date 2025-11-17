@@ -110,9 +110,12 @@ export async function checkDataFile(): Promise<DataFileCheckResult> {
           needsMigration: migrationInfo.needsMigration,
           migrationInfo: migrationInfo,
         }
-      } catch {
-        // If we can't parse the JSON, just return that file exists but don't check migration
-        return { exists: true }
+      } catch (error) {
+        return {
+          exists: true,
+          error: "Data file validation error",
+          details: error instanceof Error ? error.message : "Unknown data file validation error",
+        }
       }
     } catch (readError) {
       return {

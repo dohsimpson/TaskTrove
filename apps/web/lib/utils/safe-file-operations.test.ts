@@ -24,6 +24,7 @@ import {
   DEFAULT_LABEL_GROUP,
   DEFAULT_USER_SETTINGS,
   DEFAULT_USER,
+  DEFAULT_DATA_VERSION,
 } from "@tasktrove/types/defaults"
 
 // Mock fs/promises
@@ -369,6 +370,7 @@ describe("safe-file-operations", () => {
       labelGroups: DEFAULT_LABEL_GROUP,
       settings: DEFAULT_USER_SETTINGS,
       user: DEFAULT_USER,
+      version: DEFAULT_DATA_VERSION,
     }
 
     it("should successfully read a valid data file", async () => {
@@ -378,6 +380,7 @@ describe("safe-file-operations", () => {
           ...task,
           createdAt: task.createdAt.toISOString(),
         })),
+        version: DEFAULT_DATA_VERSION,
       })
 
       mockFs.readFile.mockResolvedValue(jsonString)
@@ -420,6 +423,7 @@ describe("safe-file-operations", () => {
       labelGroups: DEFAULT_LABEL_GROUP,
       settings: DEFAULT_USER_SETTINGS,
       user: DEFAULT_USER,
+      version: DEFAULT_DATA_VERSION,
     }
 
     it("should successfully write a valid data file", async () => {

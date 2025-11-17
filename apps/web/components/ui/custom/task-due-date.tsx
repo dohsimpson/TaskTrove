@@ -1,6 +1,6 @@
 "use client"
 
-import { AlertTriangle, Calendar, Repeat } from "lucide-react"
+import { Calendar, Repeat } from "lucide-react"
 import { isPast, isToday } from "date-fns"
 import { cn } from "@/lib/utils"
 import { getDueDateTextColor, getScheduleIcons } from "@/lib/color-utils"
@@ -18,6 +18,12 @@ interface TaskDueDateProps {
   completed?: boolean
   variant?: "default" | "compact"
   className?: string
+}
+
+// Overdue background styling constants
+const OVERDUE_BACKGROUND_CLASSES = {
+  default: "rounded-md px-1 bg-rose-100/80 dark:bg-rose-500/30",
+  compact: "rounded px-1 bg-rose-100/80 dark:bg-rose-500/30",
 }
 
 export function TaskDueDate({
@@ -70,6 +76,9 @@ export function TaskDueDate({
     displayDate && isPast(displayDate) && !isToday(displayDate) && !completed,
   )
   const scheduleIcons = getScheduleIcons(dueDate || undefined, recurring, completed, isOverdue)
+  const { hasRecurring, primaryIcon, secondaryIcon } = scheduleIcons
+  const showCalendarIcon =
+    primaryIcon === "calendar" || (primaryIcon === "overdue" && !hasRecurring)
 
   const formatDueDate = (date: Date | null | undefined, time: Date | null | undefined) => {
     return formatTaskDateTimeBadge({ dueDate: date || null, dueTime: time }) || ""
@@ -80,21 +89,13 @@ export function TaskDueDate({
       className={cn(
         "flex items-center gap-1",
         dueDate ? getDueDateTextColor(dueDate, completed, variant) : "text-muted-foreground",
+        isOverdue && OVERDUE_BACKGROUND_CLASSES[variant],
         className,
       )}
     >
-      {scheduleIcons.primaryIcon === "overdue" && (
-        <AlertTriangle className="h-3 w-3 text-red-500" data-testid="alert-triangle-icon" />
-      )}
-      {scheduleIcons.primaryIcon === "calendar" && (
-        <Calendar className="h-3 w-3" data-testid="calendar-icon" />
-      )}
-      {scheduleIcons.primaryIcon === "repeat" && (
-        <Repeat className="h-3 w-3" data-testid="repeat-icon" />
-      )}
-      {scheduleIcons.secondaryIcon === "repeat" && (
-        <Repeat className="h-3 w-3" data-testid="repeat-icon" />
-      )}
+      {showCalendarIcon && <Calendar className="h-3 w-3" data-testid="calendar-icon" />}
+      {primaryIcon === "repeat" && <Repeat className="h-3 w-3" data-testid="repeat-icon" />}
+      {secondaryIcon === "repeat" && <Repeat className="h-3 w-3" data-testid="repeat-icon" />}
       {displayDate || dueTime ? formatDueDate(displayDate, dueTime || undefined) : ""}
     </span>
   )

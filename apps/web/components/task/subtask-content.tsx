@@ -63,13 +63,18 @@ export function SubtaskContent({
 
   // Shared scroll-to-bottom function with double RAF for reliable DOM painting
   const scrollToBottom = useMemo(() => createScrollToBottom(subtasksContainerRef), [])
+  const previousSubtasksLengthRef = useRef(task?.subtasks?.length || 0)
 
   // Scroll to bottom when a new subtask is added
   useEffect(() => {
-    if (shouldScrollToBottom) {
+    const currentLength = task?.subtasks?.length || 0
+
+    if (shouldScrollToBottom && currentLength > previousSubtasksLengthRef.current) {
       scrollToBottom()
       setShouldScrollToBottom(false)
     }
+
+    previousSubtasksLengthRef.current = currentLength
   }, [task?.subtasks?.length, shouldScrollToBottom, scrollToBottom])
 
   // Scroll to bottom when popover opens (triggered by scrollToBottomKey change)
@@ -217,8 +222,11 @@ export function SubtaskContent({
                 }}
                 onDrop={handleSubtaskDrop}
               >
-                <div data-subtask-id={String(subtask.id)}>
-                  <DraggableTaskElement taskId={createTaskId(String(subtask.id))}>
+                <div data-subtask-id={String(subtask.id)} className="w-full">
+                  <DraggableTaskElement
+                    taskId={createTaskId(String(subtask.id))}
+                    disableSortResetOnDrag
+                  >
                     <TaskItem
                       taskId={createTaskId(String(subtask.id))}
                       variant="subtask"

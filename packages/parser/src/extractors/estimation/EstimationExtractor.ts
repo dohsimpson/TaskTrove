@@ -1,5 +1,6 @@
 import type { Extractor } from "../base/Extractor";
 import type { ExtractionResult, ParserContext } from "../../types";
+import { buildBoundedPattern } from "../../utils/patterns";
 
 interface EstimationPattern {
   pattern: RegExp;
@@ -9,7 +10,7 @@ interface EstimationPattern {
 // Combined hour + minute patterns (e.g., ~1h30m, ~2h15m)
 const COMBINED_PATTERNS: EstimationPattern[] = [
   {
-    pattern: /~(\d+)h(\d+)m/gi,
+    pattern: buildBoundedPattern("~(\\d+)h(\\d+)m"),
     getValue: (match) => {
       const hoursStr = match[1];
       const minutesStr = match[2];
@@ -26,7 +27,7 @@ const COMBINED_PATTERNS: EstimationPattern[] = [
 // Hour only patterns (e.g., ~1h, ~2h)
 const HOUR_PATTERNS: EstimationPattern[] = [
   {
-    pattern: /~(\d+)h/gi,
+    pattern: buildBoundedPattern("~(\\d+)h"),
     getValue: (match) => {
       const hoursStr = match[1];
       if (!hoursStr) return 0;
@@ -41,7 +42,7 @@ const HOUR_PATTERNS: EstimationPattern[] = [
 // Minute only patterns (e.g., ~30min, ~45m)
 const MINUTE_PATTERNS: EstimationPattern[] = [
   {
-    pattern: /~(\d+)min/gi,
+    pattern: buildBoundedPattern("~(\\d+)min"),
     getValue: (match) => {
       const minutesStr = match[1];
       if (!minutesStr) return 0;
@@ -52,7 +53,7 @@ const MINUTE_PATTERNS: EstimationPattern[] = [
     },
   },
   {
-    pattern: /~(\d+)m\b/gi, // Only match if followed by word boundary to avoid conflicts
+    pattern: buildBoundedPattern("~(\\d+)m"),
     getValue: (match) => {
       const minutesStr = match[1];
       if (!minutesStr) return 0;

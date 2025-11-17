@@ -60,4 +60,78 @@ describe("LabelExtractor", () => {
 
     expect(results).toEqual([]);
   });
+
+  it("should prefer the longest matching label name when prefixes overlap", () => {
+    const context: ParserContext = {
+      locale: "en",
+      referenceDate: new Date(),
+      labels: [{ name: "urgent" }, { name: "urgent-important" }],
+    };
+
+    const results = extractor.extract(
+      "Call client @urgent-important ASAP",
+      context,
+    );
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe("urgent-important");
+  });
+
+  it("should not match dynamic labels when additional characters follow", () => {
+    const context: ParserContext = {
+      locale: "en",
+      referenceDate: new Date(),
+      labels: [{ name: "urgent" }],
+    };
+
+    const results = extractor.extract("Ping @urgentish later", context);
+
+    expect(results).toEqual([]);
+  });
+
+  it("should not extract label when attached to preceding word", () => {
+    const context: ParserContext = {
+      locale: "en",
+      referenceDate: new Date(),
+    };
+
+    const results = extractor.extract("me@example.com", context);
+
+    expect(results).toEqual([]);
+  });
+
+  it("should not extract label when preceded by non-Latin characters without space", () => {
+    const context: ParserContext = {
+      locale: "en",
+      referenceDate: new Date(),
+    };
+
+    const results = extractor.extract("你好@urgent", context);
+
+    expect(results).toEqual([]);
+  });
+
+  it("should extract unicode labels when separated by whitespace", () => {
+    const context: ParserContext = {
+      locale: "en",
+      referenceDate: new Date(),
+    };
+
+    const results = extractor.extract("安排会议 @标签A", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toBe("标签A");
+  });
+
+  it("should not extract dynamic label when attached to preceding word", () => {
+    const context: ParserContext = {
+      locale: "en",
+      referenceDate: new Date(),
+      labels: [{ name: "urgent" }],
+    };
+
+    const results = extractor.extract("email@example@urgent.com", context);
+
+    expect(results).toEqual([]);
+  });
 });

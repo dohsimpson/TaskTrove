@@ -1,6 +1,6 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen } from "@/test-utils"
+import { render, screen, within, fireEvent, mockNextNavigation, mockNavigation } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { ProjectSectionsView } from "./project-sections-view"
 import type { Task, Project } from "@/lib/types"
@@ -9,11 +9,13 @@ import {
   TEST_TASK_ID_2,
   TEST_TASK_ID_3,
   TEST_PROJECT_ID_1,
+  TEST_PROJECT_ID_2,
   TEST_GROUP_ID_1,
   TEST_GROUP_ID_2,
   TEST_GROUP_ID_3,
 } from "@tasktrove/types/test-constants"
 import { DEFAULT_SECTION_COLORS, DEFAULT_UUID } from "@tasktrove/constants"
+import { ROOT_PROJECT_GROUP_ID, ROOT_LABEL_GROUP_ID } from "@tasktrove/types/defaults"
 import { createGroupId } from "@/lib/types"
 
 // Create hoisted mocks and data
@@ -24,6 +26,8 @@ const mockJotai = vi.hoisted(() => ({
   atom: vi.fn(),
   Provider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
+
+mockNextNavigation()
 
 const mockProjectData = vi.hoisted(() => {
   return {
@@ -331,6 +335,30 @@ vi.mock("./selection-toolbar", () => ({
   SelectionToolbar: () => <div data-testid="selection-toolbar">Selection Toolbar</div>,
 }))
 
+vi.mock("./view-empty-state", () => ({
+  ViewEmptyState: ({
+    viewId,
+    projectName,
+    labelName,
+    className,
+  }: {
+    viewId: string
+    projectName?: string
+    labelName?: string
+    className?: string
+  }) => (
+    <div
+      data-testid="view-empty-state"
+      data-view-id={viewId}
+      data-project-name={projectName ?? ""}
+      data-label-name={labelName ?? ""}
+      className={className}
+    >
+      View Empty State
+    </div>
+  ),
+}))
+
 vi.mock("./task-empty-state", () => ({
   TaskEmptyState: ({
     title = "No tasks found",
@@ -574,6 +602,15 @@ describe("ProjectSectionsView", () => {
             return mockTasks
           case "tasksAtom":
             return mockTasks
+          case "labelsAtom":
+            return [
+              {
+                id: "label-1",
+                name: "Important",
+                color: "#ff0000",
+                slug: "important",
+              },
+            ]
           case "currentViewStateAtom":
             return {
               showSidePanel: false,
@@ -618,6 +655,23 @@ describe("ProjectSectionsView", () => {
             return null
           case "selectedTasksAtom":
             return []
+          case "allGroupsAtom":
+            return {
+              projectGroups: {
+                type: "project" as const,
+                id: ROOT_PROJECT_GROUP_ID,
+                name: "All Projects",
+                slug: "all-projects",
+                items: [],
+              },
+              labelGroups: {
+                type: "label" as const,
+                id: ROOT_LABEL_GROUP_ID,
+                name: "All Labels",
+                slug: "all-labels",
+                items: [],
+              },
+            }
           default:
             // Return sensible defaults for unhandled atoms
             return undefined
@@ -645,6 +699,7 @@ describe("ProjectSectionsView", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockNavigation.reset()
     mockJotai.useSetAtom.mockImplementation((atom) => {
       // Handle debugLabel-based atoms
       if (typeof atom === "object" && atom && "debugLabel" in atom) {
@@ -876,6 +931,280 @@ describe("ProjectSectionsView", () => {
     expect(screen.getByTestId(`draggable-task-${TEST_TASK_ID_3}`)).toBeInTheDocument()
   })
 
+  it("renders each project as a pseudo section in project group view", () => {
+    const groupTasks: Task[] = [
+      {
+        id: TEST_TASK_ID_1,
+        title: "Alpha Task",
+        description: "",
+        completed: false,
+        priority: 1,
+        projectId: TEST_PROJECT_ID_1,
+        labels: [],
+        subtasks: [],
+        comments: [],
+        recurringMode: "dueDate",
+        createdAt: new Date("2024-02-01"),
+      },
+      {
+        id: TEST_TASK_ID_2,
+        title: "Beta Task",
+        description: "",
+        completed: false,
+        priority: 2,
+        projectId: TEST_PROJECT_ID_2,
+        labels: [],
+        subtasks: [],
+        comments: [],
+        recurringMode: "dueDate",
+        createdAt: new Date("2024-02-02"),
+      },
+    ]
+
+    const primaryProject: Project = {
+      ...mockProject,
+      id: TEST_PROJECT_ID_1,
+      name: "Test Project",
+    }
+
+    const secondaryProject: Project = {
+      ...mockProject,
+      id: TEST_PROJECT_ID_2,
+      name: "Secondary Project",
+    }
+
+    const mockGroup = {
+      type: "project" as const,
+      id: TEST_GROUP_ID_1,
+      name: "Feature Group",
+      slug: "feature-group",
+      items: [TEST_PROJECT_ID_2, TEST_PROJECT_ID_1],
+      color: "#ff5500",
+    }
+
+    mockJotai.useAtomValue.mockImplementation(
+      createMockUseAtomValue({
+        filteredTasksAtom: groupTasks,
+        tasksAtom: groupTasks,
+        projectsAtom: [primaryProject, secondaryProject],
+        currentRouteContextAtom: {
+          pathname: `/projectgroups/${mockGroup.id}`,
+          viewId: mockGroup.id,
+          routeType: "projectgroup",
+        },
+        allGroupsAtom: {
+          projectGroups: {
+            type: "project" as const,
+            id: ROOT_PROJECT_GROUP_ID,
+            name: "All Projects",
+            slug: "all-projects",
+            items: [mockGroup],
+          },
+          labelGroups: {
+            type: "label" as const,
+            id: ROOT_LABEL_GROUP_ID,
+            name: "All Labels",
+            slug: "all-labels",
+            items: [],
+          },
+        },
+      }),
+    )
+
+    render(
+      <ProjectSectionsView
+        droppableId="group-droppable"
+        supportsSections={false}
+        showProjectsAsSections={true}
+      />,
+    )
+
+    const sectionHeaders = screen.getAllByTestId("project-section-title")
+    expect(sectionHeaders.map((node) => node.textContent?.trim())).toEqual([
+      "Secondary Project",
+      "Test Project",
+    ])
+
+    const secondarySection = screen.getByTestId(`project-section-${TEST_PROJECT_ID_2}`)
+    expect(within(secondarySection).getByText("Beta Task")).toBeInTheDocument()
+    expect(within(secondarySection).queryByText("Alpha Task")).not.toBeInTheDocument()
+
+    const primarySection = screen.getByTestId(`project-section-${TEST_PROJECT_ID_1}`)
+    expect(within(primarySection).getByText("Alpha Task")).toBeInTheDocument()
+  })
+
+  it("shows empty state for child projects without visible tasks", () => {
+    const groupTasks: Task[] = [
+      {
+        id: TEST_TASK_ID_1,
+        title: "Alpha Task",
+        description: "",
+        completed: false,
+        priority: 1,
+        projectId: TEST_PROJECT_ID_1,
+        labels: [],
+        subtasks: [],
+        comments: [],
+        recurringMode: "dueDate",
+        createdAt: new Date("2024-02-01"),
+      },
+    ]
+
+    const primaryProject: Project = {
+      ...mockProject,
+      id: TEST_PROJECT_ID_1,
+      name: "Test Project",
+    }
+
+    const secondaryProject: Project = {
+      ...mockProject,
+      id: TEST_PROJECT_ID_2,
+      name: "Secondary Project",
+    }
+
+    const mockGroup = {
+      type: "project" as const,
+      id: TEST_GROUP_ID_1,
+      name: "Feature Group",
+      slug: "feature-group",
+      items: [TEST_PROJECT_ID_2, TEST_PROJECT_ID_1],
+      color: "#ff5500",
+    }
+
+    mockJotai.useAtomValue.mockImplementation(
+      createMockUseAtomValue({
+        filteredTasksAtom: groupTasks,
+        tasksAtom: groupTasks,
+        projectsAtom: [primaryProject, secondaryProject],
+        currentRouteContextAtom: {
+          pathname: `/projectgroups/${mockGroup.id}`,
+          viewId: mockGroup.id,
+          routeType: "projectgroup",
+        },
+        allGroupsAtom: {
+          projectGroups: {
+            type: "project" as const,
+            id: ROOT_PROJECT_GROUP_ID,
+            name: "All Projects",
+            slug: "all-projects",
+            items: [mockGroup],
+          },
+          labelGroups: {
+            type: "label" as const,
+            id: ROOT_LABEL_GROUP_ID,
+            name: "All Labels",
+            slug: "all-labels",
+            items: [],
+          },
+        },
+      }),
+    )
+
+    render(
+      <ProjectSectionsView
+        droppableId="group-droppable"
+        supportsSections={false}
+        showProjectsAsSections={true}
+      />,
+    )
+
+    const sectionHeaders = screen.getAllByTestId("project-section-title")
+    expect(sectionHeaders.map((node) => node.textContent?.trim())).toEqual([
+      "Secondary Project",
+      "Test Project",
+    ])
+
+    const secondarySection = screen.getByTestId(`project-section-${TEST_PROJECT_ID_2}`)
+    expect(
+      within(secondarySection).getByText("No tasks visible in this project"),
+    ).toBeInTheDocument()
+    expect(within(secondarySection).getAllByText("0", { exact: true }).length).toBeGreaterThan(0)
+  })
+
+  it("navigates to the project when clicking the section header button", () => {
+    const groupTasks: Task[] = [
+      {
+        id: TEST_TASK_ID_2,
+        title: "Beta Task",
+        description: "",
+        completed: false,
+        priority: 2,
+        projectId: TEST_PROJECT_ID_2,
+        labels: [],
+        subtasks: [],
+        comments: [],
+        recurringMode: "dueDate",
+        createdAt: new Date("2024-02-02"),
+      },
+    ]
+
+    const primaryProject: Project = {
+      ...mockProject,
+      id: TEST_PROJECT_ID_1,
+      name: "Test Project",
+    }
+
+    const secondaryProject: Project = {
+      ...mockProject,
+      id: TEST_PROJECT_ID_2,
+      name: "Secondary Project",
+    }
+
+    const mockGroup = {
+      type: "project" as const,
+      id: TEST_GROUP_ID_1,
+      name: "Feature Group",
+      slug: "feature-group",
+      items: [TEST_PROJECT_ID_2, TEST_PROJECT_ID_1],
+      color: "#ff5500",
+    }
+
+    mockJotai.useAtomValue.mockImplementation(
+      createMockUseAtomValue({
+        filteredTasksAtom: groupTasks,
+        tasksAtom: groupTasks,
+        projectsAtom: [primaryProject, secondaryProject],
+        currentRouteContextAtom: {
+          pathname: `/projectgroups/${mockGroup.id}`,
+          viewId: mockGroup.id,
+          routeType: "projectgroup",
+        },
+        allGroupsAtom: {
+          projectGroups: {
+            type: "project" as const,
+            id: ROOT_PROJECT_GROUP_ID,
+            name: "All Projects",
+            slug: "all-projects",
+            items: [mockGroup],
+          },
+          labelGroups: {
+            type: "label" as const,
+            id: ROOT_LABEL_GROUP_ID,
+            name: "All Labels",
+            slug: "all-labels",
+            items: [],
+          },
+        },
+      }),
+    )
+
+    render(
+      <ProjectSectionsView
+        droppableId="group-droppable"
+        supportsSections={false}
+        showProjectsAsSections={true}
+      />,
+    )
+
+    const router = mockNavigation.getRouter()
+    router.push.mockClear()
+
+    const button = screen.getByRole("button", { name: "Open Secondary Project" })
+    fireEvent.click(button)
+
+    expect(router.push).toHaveBeenCalledWith(`/projects/${TEST_PROJECT_ID_2}`)
+  })
+
   describe("when supportsSections is false", () => {
     it("renders as flat list without section UI", () => {
       render(<ProjectSectionsView droppableId="test-droppable" supportsSections={false} />)
@@ -919,6 +1248,47 @@ describe("ProjectSectionsView", () => {
       await userEvent.click(addTaskButton)
 
       expect(mockOpenQuickAdd).toHaveBeenCalled()
+    })
+
+    it("shows view empty state when no tasks are available in flat mode", () => {
+      mockJotai.useAtomValue.mockImplementation(
+        createMockUseAtomValue({
+          filteredTasksAtom: [],
+          tasksAtom: [],
+          currentRouteContextAtom: {
+            pathname: "/inbox",
+            viewId: "inbox",
+            routeType: "standard",
+          },
+        }),
+      )
+
+      render(<ProjectSectionsView droppableId="test-droppable" supportsSections={false} />)
+
+      const emptyState = screen.getByTestId("view-empty-state")
+      expect(emptyState).toBeInTheDocument()
+      expect(emptyState).toHaveAttribute("data-view-id", "inbox")
+      expect(screen.queryByTestId(`task-item-${TEST_TASK_ID_1}`)).not.toBeInTheDocument()
+    })
+
+    it("passes project metadata to view empty state when viewing a project without tasks", () => {
+      mockJotai.useAtomValue.mockImplementation(
+        createMockUseAtomValue({
+          filteredTasksAtom: [],
+          tasksAtom: [],
+          currentRouteContextAtom: {
+            pathname: `/projects/${TEST_PROJECT_ID_1}`,
+            viewId: TEST_PROJECT_ID_1,
+            routeType: "project",
+          },
+        }),
+      )
+
+      render(<ProjectSectionsView droppableId="test-droppable" supportsSections={false} />)
+
+      const emptyState = screen.getByTestId("view-empty-state")
+      expect(emptyState).toBeInTheDocument()
+      expect(emptyState).toHaveAttribute("data-project-name", "Test Project")
     })
   })
 

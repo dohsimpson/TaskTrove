@@ -40,6 +40,9 @@ export function ProjectPopover({
       content={<ProjectContent task={task} onUpdate={onUpdate} />}
       className={contentClassName}
       align={align}
+      mobileAsDrawer
+      drawerTitle="Project"
+      drawerDirection="bottom"
     >
       <div className={className}>{children}</div>
     </ContentPopover>

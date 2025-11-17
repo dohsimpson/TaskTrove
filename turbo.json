@@ -41,6 +41,7 @@
     "NODE_ENV",
     "AUTH_SECRET",
     "DEBUG",
-    "ENABLE_HALLOWEEN_THEME"
+    "ENABLE_HALLOWEEN_THEME",
+    "VITEST"
   ]
 }

@@ -9,7 +9,7 @@ import { openSettingsDialogAtom } from "@tasktrove/atoms/ui/dialogs"
 import { STANDARD_VIEW_METADATA } from "@tasktrove/constants"
 
 import { Button } from "@/components/ui/button"
-import { useSidebar } from "@/components/ui/sidebar"
+import { useSidebar } from "@/components/ui/custom/sidebar"
 import {
   Search,
   ListCheck,
@@ -103,77 +103,15 @@ export function PageHeader({
     return viewId in STANDARD_VIEW_METADATA
   }
 
-  const standardViewTranslations: Partial<
-    Record<
-      keyof typeof STANDARD_VIEW_METADATA | "not-found",
-      { title: string; description: string }
-    >
-  > = {
-    all: {
-      title: t("standardViews.all.title", STANDARD_VIEW_METADATA.all.title),
-      description: t("standardViews.all.description", STANDARD_VIEW_METADATA.all.description),
-    },
-    inbox: {
-      title: t("standardViews.inbox.title", STANDARD_VIEW_METADATA.inbox.title),
-      description: t("standardViews.inbox.description", STANDARD_VIEW_METADATA.inbox.description),
-    },
-    today: {
-      title: t("standardViews.today.title", STANDARD_VIEW_METADATA.today.title),
-      description: t("standardViews.today.description", STANDARD_VIEW_METADATA.today.description),
-    },
-    upcoming: {
-      title: t("standardViews.upcoming.title", STANDARD_VIEW_METADATA.upcoming.title),
-      description: t(
-        "standardViews.upcoming.description",
-        STANDARD_VIEW_METADATA.upcoming.description,
-      ),
-    },
-    completed: {
-      title: t("standardViews.completed.title", STANDARD_VIEW_METADATA.completed.title),
-      description: t(
-        "standardViews.completed.description",
-        STANDARD_VIEW_METADATA.completed.description,
-      ),
-    },
-    calendar: {
-      title: t("standardViews.calendar.title", STANDARD_VIEW_METADATA.calendar.title),
-      description: t(
-        "standardViews.calendar.description",
-        STANDARD_VIEW_METADATA.calendar.description,
-      ),
-    },
-    habits: {
-      title: t("standardViews.habits.title", STANDARD_VIEW_METADATA.habits.title),
-      description: t("standardViews.habits.description", STANDARD_VIEW_METADATA.habits.description),
-    },
-    projects: {
-      title: t("standardViews.projects.title", STANDARD_VIEW_METADATA.projects.title),
-      description: t(
-        "standardViews.projects.description",
-        STANDARD_VIEW_METADATA.projects.description,
-      ),
-    },
-    labels: {
-      title: t("standardViews.labels.title", STANDARD_VIEW_METADATA.labels.title),
-      description: t("standardViews.labels.description", STANDARD_VIEW_METADATA.labels.description),
-    },
-    "not-found": {
-      title: t("standardViews.not-found.title", STANDARD_VIEW_METADATA["not-found"].title),
-      description: t(
-        "standardViews.not-found.description",
-        STANDARD_VIEW_METADATA["not-found"].description,
-      ),
-    },
-  }
-
   // Helper function to get translated page info for standard views
   const getTranslatedPageInfo = () => {
     if (routeContext.routeType === "standard" && routeContext.viewId) {
       const viewIdString = String(routeContext.viewId)
       if (isValidStandardViewId(viewIdString)) {
-        const translation = standardViewTranslations[viewIdString]
-        if (translation) {
-          return translation
+        const metadata = STANDARD_VIEW_METADATA[viewIdString]
+        return {
+          title: t(`standardViews.${viewIdString}.title`, metadata.title),
+          description: t(`standardViews.${viewIdString}.description`, metadata.description),
         }
       }
     }

@@ -61,7 +61,7 @@ export function WeekTimeSlotRow({
     <div
       ref={getSlotRef(hour)}
       data-slot-index={hour}
-      className="flex border-b border-border/50 min-h-[60px]"
+      className="flex border-b border-border/50 min-h-[50px]"
     >
       {/* Time Label */}
       <div className="w-12 flex-shrink-0 p-1 text-right border-r border-border bg-muted/20">
@@ -90,6 +90,7 @@ export function WeekTimeSlotRow({
               <CalendarAddButton
                 onClick={() => onAddTask(day, hour)}
                 title="Add task to this time slot"
+                placement="top-right"
               />
 
               <DropTargetWrapper

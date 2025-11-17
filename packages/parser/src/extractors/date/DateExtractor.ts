@@ -13,65 +13,127 @@ import {
   endOfDay,
 } from "date-fns";
 import { extractWithPatterns, type Pattern } from "../../utils/PatternMatcher";
+import { buildBoundedPattern } from "../../utils/patterns";
+
+const NUMERIC_DATE_DAY_FIRST = false; // TODO: expose as configuration once locales are plumbed through.
+
+function isValidDateComponents(
+  year: number,
+  month: number,
+  day: number,
+): boolean {
+  if (
+    Number.isNaN(year) ||
+    Number.isNaN(month) ||
+    Number.isNaN(day) ||
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31
+  ) {
+    return false;
+  }
+
+  const candidate = new Date(year, month - 1, day);
+  return (
+    candidate.getFullYear() === year &&
+    candidate.getMonth() === month - 1 &&
+    candidate.getDate() === day
+  );
+}
+
+function toMonthDay(
+  first: number,
+  second: number,
+): { month: number; day: number } | null {
+  if (NUMERIC_DATE_DAY_FIRST) {
+    return { day: first, month: second };
+  }
+  return { month: first, day: second };
+}
+
+function buildDateFromNumericParts(
+  year: number,
+  first: number,
+  second: number,
+): Date | null {
+  const parts = toMonthDay(first, second);
+  if (!parts) {
+    return null;
+  }
+
+  const { month, day } = parts;
+
+  if (!isValidDateComponents(year, month, day)) {
+    return null;
+  }
+
+  return new Date(year, month - 1, day);
+}
 
 export class DateExtractor implements Extractor {
   readonly name = "date-extractor";
   readonly type = "date";
 
+  private readonly bounded = (body: string, flags: string = "gi"): RegExp =>
+    buildBoundedPattern(body, flags);
+
   private getPatterns(referenceDate: Date): Pattern<Date>[] {
+    const bounded = this.bounded;
+
     return [
       // Relative dates
       {
-        pattern: /\b(today)\b/gi,
+        pattern: bounded("(today)"),
         getValue: () => startOfDay(referenceDate),
       },
       {
-        pattern: /\b(tod)\b/gi,
+        pattern: bounded("(tod)"),
         getValue: () => startOfDay(referenceDate),
       },
       {
-        pattern: /\b(tomorrow)\b/gi,
+        pattern: bounded("(tomorrow)"),
         getValue: () => startOfDay(addDays(referenceDate, 1)),
       },
       {
-        pattern: /\b(tmr)\b/gi,
+        pattern: bounded("(tmr)"),
         getValue: () => startOfDay(addDays(referenceDate, 1)),
       },
       {
-        pattern: /\b(tom)\b/gi,
+        pattern: bounded("(tom)"),
         getValue: () => startOfDay(addDays(referenceDate, 1)),
       },
       {
-        pattern: /\b(yesterday)\b/gi,
+        pattern: bounded("(yesterday)"),
         getValue: () => startOfDay(subDays(referenceDate, 1)),
       },
       {
-        pattern: /\b(next week)\b/gi,
+        pattern: bounded("(next week)"),
         getValue: () => startOfDay(addWeeks(referenceDate, 1)),
       },
       {
-        pattern: /\b(last week)\b/gi,
+        pattern: bounded("(last week)"),
         getValue: () => startOfDay(subWeeks(referenceDate, 1)),
       },
       {
-        pattern: /\b(next month)\b/gi,
+        pattern: bounded("(next month)"),
         getValue: () => startOfDay(addMonths(referenceDate, 1)),
       },
       {
-        pattern: /\b(last month)\b/gi,
+        pattern: bounded("(last month)"),
         getValue: () => startOfDay(subMonths(referenceDate, 1)),
       },
       {
-        pattern: /\b(next year)\b/gi,
+        pattern: bounded("(next year)"),
         getValue: () => startOfDay(addYears(referenceDate, 1)),
       },
       {
-        pattern: /\b(last year)\b/gi,
+        pattern: bounded("(last year)"),
         getValue: () => startOfDay(subYears(referenceDate, 1)),
       },
       // "in X days/weeks/months/years" patterns
       {
-        pattern: /\b(in (\d+) days?)\b/gi,
+        pattern: bounded("(in (\\d+) days?)"),
         getValue: (match) => {
           const daysStr = match[2];
           if (!daysStr) return referenceDate;
@@ -80,7 +142,7 @@ export class DateExtractor implements Extractor {
         },
       },
       {
-        pattern: /\b(in (\d+) weeks?)\b/gi,
+        pattern: bounded("(in (\\d+) weeks?)"),
         getValue: (match) => {
           const weeksStr = match[2];
           if (!weeksStr) return referenceDate;
@@ -89,7 +151,7 @@ export class DateExtractor implements Extractor {
         },
       },
       {
-        pattern: /\b(in (\d+) months?)\b/gi,
+        pattern: bounded("(in (\\d+) months?)"),
         getValue: (match) => {
           const monthsStr = match[2];
           if (!monthsStr) return referenceDate;
@@ -98,7 +160,7 @@ export class DateExtractor implements Extractor {
         },
       },
       {
-        pattern: /\b(in (\d+) years?)\b/gi,
+        pattern: bounded("(in (\\d+) years?)"),
         getValue: (match) => {
           const yearsStr = match[2];
           if (!yearsStr) return referenceDate;
@@ -108,58 +170,75 @@ export class DateExtractor implements Extractor {
       },
       // "in an hour/a week/a month/a year" patterns
       {
-        pattern: /\b(in an hour)\b/gi,
+        pattern: bounded("(in an hour)"),
         getValue: () => new Date(referenceDate.getTime() + 60 * 60 * 1000),
       },
       {
-        pattern: /\b(in a day)\b/gi,
+        pattern: bounded("(in a day)"),
         getValue: () => startOfDay(addDays(referenceDate, 1)),
       },
       {
-        pattern: /\b(in a week)\b/gi,
+        pattern: bounded("(in a week)"),
         getValue: () => startOfDay(addWeeks(referenceDate, 1)),
       },
       {
-        pattern: /\b(in a month)\b/gi,
+        pattern: bounded("(in a month)"),
         getValue: () => startOfDay(addMonths(referenceDate, 1)),
       },
       {
-        pattern: /\b(in a year)\b/gi,
+        pattern: bounded("(in a year)"),
         getValue: () => startOfDay(addYears(referenceDate, 1)),
       },
       // Numeric date patterns
       {
-        pattern: /\b(\d{1,2})\/(\d{1,2})\b/g,
+        pattern: bounded("(\\d{1,2})/(\\d{1,2})", "g"),
         getValue: (match) => {
-          const monthStr = match[1];
-          const dayStr = match[2];
-          if (!monthStr || !dayStr) return referenceDate;
+          const firstStr = match[1];
+          const secondStr = match[2];
+          if (!firstStr || !secondStr) return null;
 
-          const month = parseInt(monthStr);
-          const day = parseInt(dayStr);
-          const year = referenceDate.getFullYear();
-          return new Date(year, month - 1, day);
+          const first = Number.parseInt(firstStr, 10);
+          const second = Number.parseInt(secondStr, 10);
+          if (Number.isNaN(first) || Number.isNaN(second)) {
+            return null;
+          }
+
+          return buildDateFromNumericParts(
+            referenceDate.getFullYear(),
+            first,
+            second,
+          );
         },
       },
       {
-        pattern: /\b(\d{1,2})\/(\d{1,2})\/(\d{2,4})\b/g,
+        pattern: bounded("(\\d{1,2})/(\\d{1,2})/(\\d{2,4})", "g"),
         getValue: (match) => {
-          const monthStr = match[1];
-          const dayStr = match[2];
+          const firstStr = match[1];
+          const secondStr = match[2];
           const yearStr = match[3];
-          if (!monthStr || !dayStr || !yearStr) return referenceDate;
+          if (!firstStr || !secondStr || !yearStr) return null;
 
-          const month = parseInt(monthStr);
-          const day = parseInt(dayStr);
-          const year = parseInt(yearStr);
-          const fullYear = year < 100 ? 2000 + year : year;
-          return new Date(fullYear, month - 1, day);
+          const first = Number.parseInt(firstStr, 10);
+          const second = Number.parseInt(secondStr, 10);
+          const parsedYear = Number.parseInt(yearStr, 10);
+
+          if (
+            Number.isNaN(first) ||
+            Number.isNaN(second) ||
+            Number.isNaN(parsedYear)
+          ) {
+            return null;
+          }
+
+          const fullYear = parsedYear < 100 ? 2000 + parsedYear : parsedYear;
+          return buildDateFromNumericParts(fullYear, first, second);
         },
       },
       // Month name patterns
       {
-        pattern:
-          /\b(january|jan|february|feb|march|mar|april|apr|may|june|jun|july|jul|august|aug|september|sep|october|oct|november|nov|december|dec)\s+(\d{1,2})(?:\s+(\d{4}))?\b/gi,
+        pattern: bounded(
+          "(january|jan|february|feb|march|mar|april|apr|may|june|jun|july|jul|august|aug|september|sep|october|oct|november|nov|december|dec)\\s+(\\d{1,2})(?:\\s+(\\d{4}))?",
+        ),
         getValue: (match) => {
           const monthNameStr = match[1];
           const dayStr = match[2];

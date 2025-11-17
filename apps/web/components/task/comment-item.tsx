@@ -39,24 +39,54 @@ export function CommentItem({
     <TooltipProvider delayDuration={0}>
       <div
         className={cn(
-          "group flex gap-2 mb-3 last:mb-0 hover:bg-accent/20 rounded-lg p-2 -mx-2 transition-colors",
+          "group mb-3 last:mb-0 hover:bg-accent/20 rounded-lg p-2 -mx-2 transition-colors",
           mode === "popover" && "bg-muted/20 rounded-lg p-1 mx-0",
         )}
       >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <CommentUserDisplay comment={comment} />
-            <Tooltip>
-              <TooltipTrigger className="text-xs text-gray-400 cursor-pointer">
-                {formatDistanceToNow(comment.createdAt, {
-                  addSuffix: true,
-                  includeSeconds: true,
-                })}
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs">{format(comment.createdAt, "PPpp")}</p>
-              </TooltipContent>
-            </Tooltip>
+        <div className="flex flex-col gap-1 flex-1 min-w-0">
+          <div className="flex items-center gap-2" data-testid="comment-header">
+            <div className="flex items-center gap-2">
+              <CommentUserDisplay comment={comment} />
+              <Tooltip>
+                <TooltipTrigger className="text-xs text-gray-400 cursor-pointer">
+                  {formatDistanceToNow(comment.createdAt, {
+                    addSuffix: true,
+                    includeSeconds: true,
+                  })}
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">{format(comment.createdAt, "PPpp")}</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <div
+              className="flex items-center gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
+              data-testid="comment-actions"
+            >
+              <AddReactionButton comment={comment} />
+              {onUpdate && !isEditing && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
+                  data-testid={`comment-edit-button-${comment.id}`}
+                >
+                  <Pencil className="h-3 w-3" />
+                </Button>
+              )}
+              {onDelete && !isEditing && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onDelete(comment.id)}
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                  data-testid={`comment-delete-button-${comment.id}`}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
           </div>
           {isEditing ? (
             <EditableDiv
@@ -79,31 +109,6 @@ export function CommentItem({
               </LinkifiedText>
               <CommentReactions comment={comment} />
             </>
-          )}
-        </div>
-        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <AddReactionButton comment={comment} />
-          {onUpdate && !isEditing && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsEditing(true)}
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
-              data-testid={`comment-edit-button-${comment.id}`}
-            >
-              <Pencil className="h-3 w-3" />
-            </Button>
-          )}
-          {onDelete && !isEditing && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(comment.id)}
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-              data-testid={`comment-delete-button-${comment.id}`}
-            >
-              <X className="h-3 w-3" />
-            </Button>
           )}
         </div>
       </div>

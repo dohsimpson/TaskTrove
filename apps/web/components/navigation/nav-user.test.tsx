@@ -2,7 +2,7 @@ import React from "react"
 import { render, screen, fireEvent, waitFor } from "@/test-utils"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { NavUser } from "./nav-user"
-import { SidebarProvider } from "@/components/ui/sidebar"
+import { SidebarProvider } from "@/components/ui/custom/sidebar"
 
 // Mock next-auth/react
 vi.mock("next-auth/react", () => ({

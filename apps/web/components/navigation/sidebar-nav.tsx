@@ -18,7 +18,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarMenuBadge,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/custom/sidebar"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Tag, Plus, ChevronDown } from "lucide-react"

@@ -6,4 +6,6 @@ services:
       - "3000:3000"
     volumes:
       - ./data:/app/data
+    # environment:
+    #   - AUTH_SECRET=CHANGE_ME
     restart: unless-stopped

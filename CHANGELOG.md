@@ -1,5 +1,28 @@
 # tasktrove
 
+## 0.10.0
+
+### Features
+
+🎉 Feature - Noticable improvements over recurring schedules in smart parsing
+🎉 Feature - Improved project group view to show projects as sections
+🎉 Feature - Improved calendar view layout to increase usability
+🎉 Feature - Left Sidebar is now resizable
+🎉 Feature - Kanban view now supports opening task side panel
+🎉 Feature - Markdown support in description
+
+### Minor Changes
+
+🎉 Feature - Improved PWA mobile experience for settings menu and popovers
+🎉 Feature - Centralize background work with the new job scheduler system.
+
+### Patch Changes
+
+🐛 Bug - Fix orphaned tasks created from completed recurring tasks. (#184)
+🐛 Bug - Fix kanban/layout overflows. (#190)
+🐛 Bug - Fix unexpected re-render when toggling side panel. (#160)
+🐛 Bug - Correct recurring task trackingId handling and placement when completing recurring items.
+
 ## 0.9.1
 
 ### Features

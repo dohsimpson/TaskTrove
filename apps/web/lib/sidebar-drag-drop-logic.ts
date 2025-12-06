@@ -6,9 +6,13 @@
  */
 
 import type { Instruction as TreeInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item"
-import type { Instruction as UnionInstruction } from "@/components/ui/drag-drop"
-import type { ProjectId, GroupId, ProjectGroup } from "@/lib/types"
-import { ROOT_PROJECT_GROUP_ID, isGroup, createGroupId } from "@/lib/types"
+import type { Instruction as UnionInstruction } from "@/components/ui/drag-drop/drop-target-item"
+import type { ProjectId } from "@tasktrove/types/id"
+import type { GroupId } from "@tasktrove/types/id"
+import type { ProjectGroup } from "@tasktrove/types/group"
+import { ROOT_PROJECT_GROUP_ID } from "@tasktrove/types/defaults"
+import { isGroup } from "@tasktrove/types/group"
+import { createGroupId } from "@tasktrove/types/id"
 import { reorderInArray, moveItemBetweenArrays } from "@tasktrove/utils"
 
 // Export type alias for test compatibility

@@ -5,7 +5,7 @@ import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
 import { TaskItem } from "@/components/task/task-item"
 import { format } from "date-fns"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 import { CalendarAddButton } from "./calendar-add-button"
 
 interface TaskPosition {

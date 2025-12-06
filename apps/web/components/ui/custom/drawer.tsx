@@ -26,14 +26,25 @@ function DrawerOverlay({
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Overlay>) {
   return (
-    <DrawerPrimitive.Overlay
-      data-slot="drawer-overlay"
-      className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
-        className,
-      )}
-      {...props}
-    />
+    <DrawerPrimitive.Close asChild>
+      <DrawerPrimitive.Overlay
+        data-slot="drawer-overlay"
+        className={cn(
+          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
+          className,
+        )}
+        // Stop overlay interactions from bubbling to underlying elements (e.g., task cards)
+        onPointerDownCapture={(e) => {
+          e.stopPropagation()
+          props.onPointerDownCapture?.(e)
+        }}
+        onClick={(e) => {
+          e.stopPropagation()
+          props.onClick?.(e)
+        }}
+        {...props}
+      />
+    </DrawerPrimitive.Close>
   )
 }
 

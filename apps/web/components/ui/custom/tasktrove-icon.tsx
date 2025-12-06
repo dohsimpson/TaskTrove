@@ -5,9 +5,11 @@ import { cn } from "@/lib/utils"
 interface TaskTroveIconProps {
   className?: string
   size?: "sm" | "md" | "lg"
+  /** Use rounded-corner variant (for auth screens, badges, etc.) */
+  rounded?: boolean
 }
 
-export function TaskTroveIcon({ className, size = "md" }: TaskTroveIconProps) {
+export function TaskTroveIcon({ className, size = "md", rounded = false }: TaskTroveIconProps) {
   const sizeClasses = {
     sm: "w-8 h-8",
     md: "w-12 h-12",
@@ -20,9 +22,11 @@ export function TaskTroveIcon({ className, size = "md" }: TaskTroveIconProps) {
     lg: 64,
   }
 
+  const src = rounded ? "/icon-rounded.svg" : "/icon0.svg"
+
   return (
     <Image
-      src="/icon0.svg"
+      src={src}
       alt="TaskTrove Icon"
       width={sizeDimensions[size]}
       height={sizeDimensions[size]}

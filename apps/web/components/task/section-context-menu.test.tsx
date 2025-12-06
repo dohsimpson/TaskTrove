@@ -8,7 +8,7 @@ import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import { projectsAtom as baseProjectsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { currentRouteContextAtom, pathnameAtom } from "@tasktrove/atoms/ui/navigation"
 import { useAtomValue } from "jotai"
-import { createGroupId } from "@/lib/types"
+import { createGroupId } from "@tasktrove/types/id"
 import { TEST_PROJECT_ID_1 } from "@tasktrove/types/test-constants"
 
 // Mock component interfaces

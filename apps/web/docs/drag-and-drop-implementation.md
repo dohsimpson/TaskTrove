@@ -192,7 +192,7 @@ In `test-setup.ts` we polyfill DOMRect and DragEvent (pragmatic's unit testing p
 ```ts
 const handlers: { onDragStart?: () => void; onDrop?: () => void } = {}
 
-vi.mock("@/components/ui/drag-drop", () => ({
+vi.mock("@/components/ui/drag-drop/draggable-item", () => ({
   DraggableItem: ({ onDragStart, onDrop, children }: PropsWithChildren<DraggableProps>) => {
     handlers.onDragStart = onDragStart
     handlers.onDrop = onDrop

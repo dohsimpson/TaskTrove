@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { projectsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { updateTaskAtom } from "@tasktrove/atoms/core/tasks"
-import type { TaskId, ProjectSection, GroupId, ProjectId } from "@/lib/types"
-import { createGroupId, createTaskId } from "@/lib/types"
+import type { ProjectSection } from "@tasktrove/types/core"
+import type { TaskId, GroupId, ProjectId } from "@tasktrove/types/id"
+import { createGroupId, createTaskId } from "@tasktrove/types/id"
 import { DEFAULT_SECTION_COLOR } from "@tasktrove/constants"
 
 interface TaskSectionPopoverProps {

@@ -2,8 +2,8 @@ import React from "react"
 import { describe, it, expect, vi } from "vitest"
 import { render, screen, within } from "@/test-utils"
 import { CommentItem } from "./comment-item"
-import type { TaskComment } from "@/lib/types"
-import { createCommentId, createUserId } from "@/lib/types"
+import type { TaskComment } from "@tasktrove/types/core"
+import { createCommentId, createUserId } from "@tasktrove/types/id"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 
 vi.mock("@/components/ui/button", () => ({

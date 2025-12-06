@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server"
-import {
-  DataFileSerializationSchema,
-  UpdateSettingsRequestSchema,
-  UpdateSettingsResponse,
-  ErrorResponse,
-  ApiErrorCode,
-  UserSettings,
-  GetSettingsResponse,
-} from "@/lib/types"
+import { DataFileSerializationSchema } from "@tasktrove/types/data-file"
+import { UpdateSettingsRequestSchema } from "@tasktrove/types/api-requests"
+import { UpdateSettingsResponse, GetSettingsResponse } from "@tasktrove/types/api-responses"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
+import { ErrorResponse } from "@tasktrove/types/api-responses"
+import type { UserSettings } from "@tasktrove/types/settings"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import {

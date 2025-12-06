@@ -1,5 +1,5 @@
 import type { AutocompleteType } from "@tasktrove/parser/types"
-import type { User } from "@/lib/types"
+import type { User } from "@tasktrove/types/core"
 
 interface AutocompleteItem {
   id: string

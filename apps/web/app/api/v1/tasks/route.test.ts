@@ -6,15 +6,14 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { PATCH } from "./route"
+import type { DataFile } from "@tasktrove/types/data-file"
+import { DataFileSchema } from "@tasktrove/types/data-file"
+import { createTaskId, createProjectId, createLabelId, createGroupId } from "@tasktrove/types/id"
 import {
-  DataFile,
-  DataFileSchema,
-  createTaskId,
-  createProjectId,
-  createLabelId,
-  createGroupId,
-} from "@/lib/types"
-import { DEFAULT_EMPTY_DATA_FILE, DEFAULT_PROJECT_SECTION, getDefaultSectionId } from "@/lib/types"
+  DEFAULT_EMPTY_DATA_FILE,
+  DEFAULT_PROJECT_SECTION,
+  getDefaultSectionId,
+} from "@tasktrove/types/defaults"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { createMockEnhancedRequest } from "@/lib/utils/test-helpers"
 

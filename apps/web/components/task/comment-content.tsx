@@ -10,12 +10,14 @@ import { v4 as uuidv4 } from "uuid"
 import { updateTaskAtom } from "@tasktrove/atoms/core/tasks"
 import { tasksAtom, userAtom } from "@tasktrove/atoms/data/base/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@tasktrove/atoms/ui/dialogs"
-import type { Task, CreateTaskRequest, TaskComment } from "@/lib/types"
-import { createCommentId, createTaskId } from "@/lib/types"
+import type { Task, TaskComment } from "@tasktrove/types/core"
+import type { CreateTaskRequest } from "@tasktrove/types/api-requests"
+import { createCommentId, createTaskId } from "@tasktrove/types/id"
 import { useTranslation } from "@tasktrove/i18n"
 import { createScrollToBottom } from "@tasktrove/dom-utils"
 import { CommentItem } from "./comment-item"
 import { DeleteConfirmDialog } from "@/components/dialogs/delete-confirm-dialog"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface CommentContentProps {
   taskId?: string // Optional for quick-add mode
@@ -46,6 +48,7 @@ export function CommentContent({
   const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
   const newTask = useAtomValue(quickAddTaskAtom)
   const isNewTask = !taskId && !legacyTask
+  const isMobile = useIsMobile()
 
   // Get the task data - either from quick-add atom, legacy prop, or find by ID
   const task: Task | CreateTaskRequest | undefined = (() => {
@@ -172,7 +175,7 @@ export function CommentContent({
   return (
     <div className={cn("space-y-3", mode === "popover" && "p-3", className)}>
       {/* Header - only show in popover mode */}
-      {mode === "popover" && (
+      {mode === "popover" && !isMobile && (
         <div className="flex items-center justify-between border-b pb-2 mb-3">
           <div className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
@@ -197,14 +200,12 @@ export function CommentContent({
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium text-sm">
               {commentsLength > 0
-                ? t("comments.title", "Comments ({{count}})", { count: commentsLength })
+                ? `${t("comments.title", "Comments")} (${commentsLength})`
                 : t("comments.addComment", "Add Comment")}
             </span>
           </div>
           {commentsLength > 0 && (
-            <span className="text-xs text-muted-foreground">
-              {t("comments.commentCount", "{{count}} comments", { count: commentsLength })}
-            </span>
+            <span className="text-xs text-muted-foreground">{`${commentsLength} comment`}</span>
           )}
         </div>
       )}

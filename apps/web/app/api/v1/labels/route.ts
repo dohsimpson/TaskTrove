@@ -1,20 +1,21 @@
 import { NextResponse } from "next/server"
+import type { Label } from "@tasktrove/types/core"
 import {
-  Label,
   DeleteLabelRequestSchema,
   CreateLabelRequestSchema,
+  LabelUpdateUnionSchema,
+} from "@tasktrove/types/api-requests"
+import {
   CreateLabelResponse,
   UpdateLabelResponse,
   DeleteLabelResponse,
-  DataFileSerializationSchema,
-  createLabelId,
-  ErrorResponse,
-  ApiErrorCode,
-  LabelUpdateUnionSchema,
-  LabelUpdateUnion,
-  LabelId,
   GetLabelsResponse,
-} from "@/lib/types"
+} from "@tasktrove/types/api-responses"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
+import { ErrorResponse } from "@tasktrove/types/api-responses"
+import { DataFileSerializationSchema } from "@tasktrove/types/data-file"
+import type { LabelUpdateUnion } from "@tasktrove/types/api-requests"
+import { createLabelId, type LabelId } from "@tasktrove/types/id"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { v4 as uuidv4 } from "uuid"

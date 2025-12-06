@@ -25,8 +25,8 @@
     "typecheck": "pnpm typecheck:base && (test -f tsconfig.pro.json && pnpm typecheck:pro || true)",
     "check": "pnpm typecheck && pnpm lint && pnpm test",
     "check:pro": "pnpm typecheck:pro && pnpm lint",
-    "test": "vitest run --reporter=dot --no-coverage",
-    "test:watch": "vitest --watch"
+    "test": "node ../../scripts/run-vitest.mjs run --reporter=dot --no-coverage",
+    "test:watch": "node ../../scripts/run-vitest.mjs --watch"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "catalog:",

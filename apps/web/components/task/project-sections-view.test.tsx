@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, within, fireEvent, mockNextNavigation, mockNavigation } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { ProjectSectionsView } from "./project-sections-view"
-import type { Task, Project } from "@/lib/types"
+import type { Task, Project } from "@tasktrove/types/core"
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
@@ -16,7 +16,7 @@ import {
 } from "@tasktrove/types/test-constants"
 import { DEFAULT_SECTION_COLORS, DEFAULT_UUID } from "@tasktrove/constants"
 import { ROOT_PROJECT_GROUP_ID, ROOT_LABEL_GROUP_ID } from "@tasktrove/types/defaults"
-import { createGroupId } from "@/lib/types"
+import { createGroupId } from "@tasktrove/types/id"
 
 // Create hoisted mocks and data
 const mockJotai = vi.hoisted(() => ({
@@ -1031,6 +1031,81 @@ describe("ProjectSectionsView", () => {
 
     const primarySection = screen.getByTestId(`project-section-${TEST_PROJECT_ID_1}`)
     expect(within(primarySection).getByText("Alpha Task")).toBeInTheDocument()
+  })
+
+  it("fails gracefully when project group viewId is a slug (non-UUID)", () => {
+    const groupTasks: Task[] = [
+      {
+        id: TEST_TASK_ID_1,
+        title: "Alpha Task",
+        description: "",
+        completed: false,
+        priority: 1,
+        projectId: TEST_PROJECT_ID_1,
+        labels: [],
+        subtasks: [],
+        comments: [],
+        recurringMode: "dueDate",
+        createdAt: new Date("2024-02-01"),
+      },
+    ]
+
+    const primaryProject: Project = {
+      ...mockProject,
+      id: TEST_PROJECT_ID_1,
+      name: "Appointments",
+    }
+
+    const mockGroup = {
+      type: "project" as const,
+      id: TEST_GROUP_ID_1,
+      name: "Appointments",
+      slug: "appointments",
+      items: [TEST_PROJECT_ID_1],
+      color: "#ff5500",
+    }
+
+    mockJotai.useAtomValue.mockImplementation(
+      createMockUseAtomValue({
+        filteredTasksAtom: groupTasks,
+        tasksAtom: groupTasks,
+        projectsAtom: [primaryProject],
+        currentRouteContextAtom: {
+          pathname: `/projectgroups/${mockGroup.slug}`,
+          // Simulate refresh path where viewId is the slug instead of UUID
+          viewId: mockGroup.slug,
+          routeType: "projectgroup",
+        },
+        allGroupsAtom: {
+          projectGroups: {
+            type: "project" as const,
+            id: ROOT_PROJECT_GROUP_ID,
+            name: "All Projects",
+            slug: "all-projects",
+            items: [mockGroup],
+          },
+          labelGroups: {
+            type: "label" as const,
+            id: ROOT_LABEL_GROUP_ID,
+            name: "All Labels",
+            slug: "all-labels",
+            items: [],
+          },
+        },
+      }),
+    )
+
+    render(
+      <ProjectSectionsView
+        droppableId="group-droppable"
+        supportsSections={false}
+        showProjectsAsSections={true}
+      />,
+    )
+
+    // Should still render the project section even though the viewId wasn't a UUID
+    expect(screen.getByTestId(`project-section-${TEST_PROJECT_ID_1}`)).toBeInTheDocument()
+    expect(screen.getByText("Alpha Task")).toBeInTheDocument()
   })
 
   it("shows empty state for child projects without visible tasks", () => {

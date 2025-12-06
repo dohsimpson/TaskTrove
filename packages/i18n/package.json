@@ -15,8 +15,8 @@
     "typecheck": "pnpm typecheck:base && (test -f tsconfig.pro.json && pnpm typecheck:pro || true)",
     "check": "pnpm typecheck && pnpm lint && pnpm test",
     "check:pro": "pnpm typecheck:pro && pnpm lint",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "node ../../scripts/run-vitest.mjs run",
+    "test:watch": "node ../../scripts/run-vitest.mjs --watch"
   },
   "dependencies": {
     "i18next": "catalog:",
@@ -26,6 +26,7 @@
     "react": "catalog:"
   },
   "devDependencies": {
+    "@testing-library/react": "catalog:",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest-config": "workspace:*",

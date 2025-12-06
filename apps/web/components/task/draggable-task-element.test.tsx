@@ -5,14 +5,14 @@ import { vi, describe, it, expect, beforeEach } from "vitest"
 import { DraggableTaskElement } from "./draggable-task-element"
 import { draggingTaskIdsAtom } from "@tasktrove/atoms/ui/drag"
 import { currentViewStateAtom, setViewOptionsAtom } from "@tasktrove/atoms/ui/views"
-import { createTaskId } from "@/lib/types"
+import { createTaskId } from "@tasktrove/types/id"
 
 const mockHandlers: {
   onDragStart?: () => void
   onDrop?: () => void
 } = {}
 
-vi.mock("@/components/ui/drag-drop", () => ({
+vi.mock("@/components/ui/drag-drop/draggable-item", () => ({
   DraggableItem: ({
     onDragStart,
     onDrop,

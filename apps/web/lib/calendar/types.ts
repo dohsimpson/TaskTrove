@@ -3,7 +3,8 @@
  * Extends base types from @tasktrove/types for calendar functionality
  */
 
-import type { Task, TaskId } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
+import type { TaskId } from "@tasktrove/types/id"
 
 // Re-export DueDate as Date for now
 export type DueDate = Date

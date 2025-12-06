@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { PriorityContent } from "./priority-content"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 
 interface PriorityPopoverProps {
   task: Task | Task[]

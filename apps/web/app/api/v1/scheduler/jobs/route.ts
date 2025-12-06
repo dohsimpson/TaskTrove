@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { withApiLogging } from "@/lib/middleware/api-logger"
 import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
-import type { GetSchedulerJobsResponse } from "@/lib/types"
+import type { GetSchedulerJobsResponse } from "@tasktrove/types/api-responses"
 import { bootstrapScheduler } from "@/lib/scheduler/bootstrap"
 import { getScheduler } from "@/lib/scheduler/service"
 

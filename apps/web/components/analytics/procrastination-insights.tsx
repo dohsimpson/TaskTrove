@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Clock, AlertCircle, TrendingUp, Lightbulb, Calendar } from "lucide-react"
 import { differenceInDays } from "date-fns"
-import type { TaskId } from "@/lib/types"
+import type { TaskId } from "@tasktrove/types/id"
 
 interface Task {
   id: TaskId

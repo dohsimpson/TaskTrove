@@ -13,8 +13,10 @@ import { render, screen, fireEvent, waitFor, within } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { Provider, useSetAtom } from "jotai"
 import { TaskItem } from "./task-item"
-import type { Task, ProjectId, LabelId, TaskId } from "@/lib/types"
-import { createLabelId, createTaskId, createUserId, INBOX_PROJECT_ID } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
+import type { ProjectId, LabelId, TaskId } from "@tasktrove/types/id"
+import { createLabelId, createTaskId, createUserId } from "@tasktrove/types/id"
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 import {
   TEST_TASK_ID_1,
@@ -27,7 +29,7 @@ import {
   TEST_SUBTASK_ID_1,
   TEST_SUBTASK_ID_2,
 } from "@tasktrove/types/test-constants"
-import { DEFAULT_USER_SETTINGS } from "@/lib/types"
+import { DEFAULT_USER_SETTINGS } from "@tasktrove/types/defaults"
 
 // Mock focus timer functions (simplified since we mock the component)
 const mockIsTaskTimerActive = vi.fn(() => false)

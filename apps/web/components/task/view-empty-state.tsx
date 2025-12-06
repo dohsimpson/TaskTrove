@@ -13,7 +13,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTranslation } from "@tasktrove/i18n"
-import type { ViewId } from "@/lib/types"
+import type { ViewId } from "@tasktrove/types/id"
 
 interface ViewEmptyStateProps {
   viewId: ViewId

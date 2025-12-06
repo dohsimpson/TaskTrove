@@ -300,12 +300,13 @@
       "linkifyEnabled": true,
       "popoverHoverOpen": false,
       "markdownEnabled": true
-    }
+    },
+    "uiSettings": {}
   },
   "user": {
     "id": "00000000-0000-0000-0000-000000000000",
     "username": "admin",
     "password": ""
   },
-  "version": "v0.10.0"
+  "version": "v0.11.0"
 }

@@ -22,7 +22,9 @@ import {
   pathnameAtom,
 } from "@tasktrove/atoms/ui/navigation"
 import { updateProjectGroupAtom } from "@tasktrove/atoms/core/groups"
-import type { ProjectGroup, ProjectId, Project } from "@/lib/types"
+import type { ProjectGroup } from "@tasktrove/types/group"
+import type { ProjectId } from "@tasktrove/types/id"
+import type { Project } from "@tasktrove/types/core"
 import { cn } from "@/lib/utils"
 
 interface DraggableProjectGroupItemProps {

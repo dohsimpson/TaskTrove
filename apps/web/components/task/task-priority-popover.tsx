@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Flag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { updateTaskAtom } from "@tasktrove/atoms/core/tasks"
-import type { TaskId, TaskPriority } from "@/lib/types"
+import type { TaskPriority } from "@tasktrove/types/constants"
+import type { TaskId } from "@tasktrove/types/id"
 import { useSetAtom } from "jotai"
-import { createTaskId, isValidPriority } from "@/lib/types"
+import { createTaskId } from "@tasktrove/types/id"
+import { isValidPriority } from "@tasktrove/types/validators"
 
 interface TaskPriorityPopoverProps {
   taskId?: TaskId

@@ -1,7 +1,7 @@
 "use client"
 
-import { DraggableItem } from "@/components/ui/drag-drop"
-import type { LabelId } from "@/lib/types"
+import { DraggableItem } from "@/components/ui/drag-drop/draggable-item"
+import type { LabelId } from "@tasktrove/types/id"
 
 interface DraggableLabelItemProps {
   labelId: LabelId

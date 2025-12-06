@@ -2,7 +2,7 @@ import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, mockNextThemes } from "@/test-utils"
 import { TaskDetailDialog } from "./task-detail-dialog"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,

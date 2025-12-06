@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Folder, Inbox, ChevronRight, ChevronDown, FolderOpen, Folders } from "lucide-react"
 import { cn, shouldTaskBeInInbox } from "@/lib/utils"
@@ -8,8 +8,11 @@ import { projectsAtom, tasksAtom } from "@tasktrove/atoms/data/base/atoms"
 import { projectIdsAtom } from "@tasktrove/atoms/core/projects"
 import { allGroupsAtom } from "@tasktrove/atoms/core/groups"
 import { useTranslation } from "@tasktrove/i18n"
-import type { Task, ProjectId, GroupId, ProjectGroup } from "@/lib/types"
-import { INBOX_PROJECT_ID, isGroup } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
+import type { ProjectId, GroupId } from "@tasktrove/types/id"
+import type { ProjectGroup } from "@tasktrove/types/group"
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants"
+import { isGroup } from "@tasktrove/types/group"
 
 interface ProjectContentProps {
   // Mode 1: Task-based (for TaskItem)
@@ -43,13 +46,6 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
     return groupIds
   }
 
-  // State for expanded projects and groups (default all groups expanded)
-  const [expandedProjects, setExpandedProjects] = useState<Set<ProjectId>>(new Set())
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() =>
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    collectAllGroupIds(groups.projectGroups?.items || []),
-  )
-
   // Determine current project based on mode (only for single task)
   const currentProjectId = isMultipleTasks ? undefined : task?.projectId
   const currentProject = currentProjectId
@@ -64,6 +60,31 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
   // Check if currently in inbox (includes orphaned tasks, only for single task)
   const projectIds = useAtomValue(projectIdsAtom)
   const isInboxSelected = !isMultipleTasks && shouldTaskBeInInbox(currentProjectId, projectIds)
+
+  // State for expanded projects and groups (default all groups expanded)
+  const [expandedProjects, setExpandedProjects] = useState<Set<ProjectId>>(() => {
+    const initial = new Set<ProjectId>()
+    if (currentProjectId && currentSectionId) {
+      initial.add(currentProjectId)
+    }
+    return initial
+  })
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() =>
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    collectAllGroupIds(groups.projectGroups?.items || []),
+  )
+
+  useEffect(() => {
+    if (!currentProjectId || !currentSectionId) return
+    setExpandedProjects((prev) => {
+      if (prev.has(currentProjectId)) {
+        return prev
+      }
+      const next = new Set(prev)
+      next.add(currentProjectId)
+      return next
+    })
+  }, [currentProjectId, currentSectionId])
 
   const handleProjectSelect = (projectId: ProjectId, sectionId?: GroupId) => {
     if (onUpdate) {
@@ -164,7 +185,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
           {/* Group Header */}
           <div
             className={cn(
-              "flex items-center gap-3 rounded-md hover:bg-accent/50 transition-all duration-200 p-2",
+              "flex items-center gap-3 rounded-md hover:bg-accent/50 transition-all duration-200 py-2",
               indentClass,
             )}
           >
@@ -234,7 +255,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
           {/* Project Row */}
           <div
             className={cn(
-              "flex items-center gap-3 rounded-md hover:bg-accent/50 transition-all duration-200 p-2",
+              "flex items-center gap-3 rounded-md hover:bg-accent/50 transition-all duration-200 py-2",
               isProjectSelected && "bg-accent",
               indentClass,
             )}
@@ -295,7 +316,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
   }
 
   return (
-    <div className={cn("p-1", className)}>
+    <div className={cn(className)}>
       {/* Projects and Groups List */}
       {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
       {groups.projectGroups?.items && groups.projectGroups.items.length > 0 && (

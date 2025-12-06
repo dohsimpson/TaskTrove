@@ -9,10 +9,12 @@ import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { labelsFromIdsAtom } from "@tasktrove/atoms/core/labels"
 import { useTranslation } from "@tasktrove/i18n"
-import type { Task, LabelId, Label } from "@/lib/types"
+import type { Task, Label } from "@tasktrove/types/core"
+import type { LabelId } from "@tasktrove/types/id"
 
 interface LabelContentProps {
   // taskId?: string
@@ -43,6 +45,7 @@ export function LabelContent({
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const commandRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const isMobile = useIsMobile()
 
   const getLabelsFromIds = useAtomValue(labelsFromIdsAtom)
   const allLabels = useAtomValue(labelsAtom)
@@ -50,6 +53,33 @@ export function LabelContent({
   // For quick-add mode, task might not be provided, so use empty array as fallback
   const taskLabelIds = React.useMemo(() => task?.labels || [], [task?.labels])
   const taskLabels = task ? getLabelsFromIds(task.labels) : []
+
+  const selectedLabelsBlock =
+    task && taskLabels.length > 0 ? (
+      <div className="flex flex-wrap gap-1">
+        {taskLabels.map((label) => (
+          <Badge
+            key={label.id}
+            variant="secondary"
+            className="gap-1 px-2 py-1 text-xs group"
+            style={{
+              backgroundColor: label.color,
+              color: "white",
+              border: "none",
+            }}
+          >
+            <Tag className="h-3 w-3" />
+            {label.name}
+            <button
+              onClick={() => handleRemoveLabel(label.id)}
+              className="ml-1 hover:bg-black/20 rounded-full p-0.5 opacity-70 hover:opacity-100"
+            >
+              <X className="h-2 w-2" />
+            </button>
+          </Badge>
+        ))}
+      </div>
+    ) : null
 
   const filteredLabels = React.useMemo(() => {
     const searchTerm = newLabel.toLowerCase().trim()
@@ -61,6 +91,11 @@ export function LabelContent({
 
     return availableLabels.filter((label) => label.name.toLowerCase().includes(searchTerm))
   }, [newLabel, allLabels, taskLabelIds])
+
+  // Keep internal focus state in sync when parent toggles focus intent
+  useEffect(() => {
+    setInputFocus(Boolean(focusInput))
+  }, [focusInput])
 
   const getAllOptions = () => {
     const options: Array<Label | { id: string; name: string; isCreate: true }> = [...filteredLabels]
@@ -148,32 +183,8 @@ export function LabelContent({
 
   return (
     <div className={cn("space-y-3", mode === "popover" && "p-2", className)}>
-      {/* Current Labels - Only show if we have task data */}
-      {task && taskLabels.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {taskLabels.map((label) => (
-            <Badge
-              key={label.id}
-              variant="secondary"
-              className="gap-1 px-2 py-1 text-xs group"
-              style={{
-                backgroundColor: label.color,
-                color: "white",
-                border: "none",
-              }}
-            >
-              <Tag className="h-3 w-3" />
-              {label.name}
-              <button
-                onClick={() => handleRemoveLabel(label.id)}
-                className="ml-1 hover:bg-black/20 rounded-full p-0.5 opacity-70 hover:opacity-100"
-              >
-                <X className="h-2 w-2" />
-              </button>
-            </Badge>
-          ))}
-        </div>
-      )}
+      {/* Current Labels - Desktop: above input; Mobile: below input */}
+      {!isMobile && selectedLabelsBlock}
 
       {/* Add Label Interface - Similar to comment input */}
       <div className="flex gap-2">
@@ -190,14 +201,15 @@ export function LabelContent({
                 data-testid="label-input"
                 onBlur={handleInputBlur}
                 onFocus={() => setInputFocus(true)}
-                autoFocus={inputFocus}
               />
             </div>
           </PopoverTrigger>
           <PopoverContent
-            className="w-80 p-0"
+            className="w-80 p-0 max-h-[60vh] overflow-auto"
             align="start"
             side="bottom"
+            sideOffset={6}
+            collisionPadding={12}
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <div ref={commandRef}>
@@ -253,6 +265,8 @@ export function LabelContent({
           <Plus className="h-4 w-4" />
         </Button>
       </div>
+
+      {isMobile && selectedLabelsBlock}
     </div>
   )
 }

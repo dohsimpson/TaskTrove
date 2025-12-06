@@ -20,7 +20,7 @@ vi.mock("uuid", () => ({
 }))
 
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
-import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types"
+import { DEFAULT_EMPTY_DATA_FILE } from "@tasktrove/types/defaults"
 
 const mockReadDataFile = vi.mocked(safeReadDataFile)
 const mockWriteDataFile = vi.mocked(safeWriteDataFile)

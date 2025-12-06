@@ -7,7 +7,8 @@ import { useSetAtom, useAtomValue } from "jotai"
 import { labelsAtom, tasksAtom } from "@tasktrove/atoms/data/base/atoms"
 import { reorderLabelsAtom } from "@tasktrove/atoms/core/labels"
 import { updateTasksAtom } from "@tasktrove/atoms/core/tasks"
-import type { LabelId, TaskId, UpdateTaskRequest } from "@/lib/types"
+import type { LabelId, TaskId } from "@tasktrove/types/id"
+import type { UpdateTaskRequest } from "@tasktrove/types/api-requests"
 import { toast } from "sonner"
 import {
   findContainingLabel,

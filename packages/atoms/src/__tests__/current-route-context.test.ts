@@ -91,8 +91,9 @@ describe("currentRouteContextAtom", () => {
 
       expect(context).toEqual({
         pathname: "/projects/87654321-4321-4321-8321-210987654321",
-        viewId: "87654321-4321-4321-8321-210987654321", // ViewId is now directly the ProjectId
+        viewId: "not-found",
         routeType: "project",
+        slug: "87654321-4321-4321-8321-210987654321",
       });
     });
 
@@ -104,8 +105,22 @@ describe("currentRouteContextAtom", () => {
 
       expect(context).toEqual({
         pathname: `/projects/${testProjectId}`,
-        viewId: testProjectId, // ViewId is now directly the ProjectId
+        viewId: "not-found",
         routeType: "project",
+        slug: testProjectId,
+      });
+    });
+
+    it("should mark non-existent project slug as not-found and expose slug", () => {
+      store.set(setPathnameAtom, "/projects/not-valid-project");
+
+      const context = store.get(currentRouteContextAtom);
+
+      expect(context).toEqual({
+        pathname: "/projects/not-valid-project",
+        viewId: "not-found",
+        routeType: "project",
+        slug: "not-valid-project",
       });
     });
   });
@@ -117,11 +132,12 @@ describe("currentRouteContextAtom", () => {
       const context = store.get(currentRouteContextAtom);
 
       // Since labels atom returns empty array in test environment,
-      // should fallback to 'all' view
+      // should fallback to not-found sentinel
       expect(context).toEqual({
         pathname: "/labels/urgent",
-        viewId: "all", // Fallback to 'all' view when label not found
+        viewId: "not-found", // Not found when label not in data
         routeType: "label",
+        slug: "urgent",
       });
     });
 
@@ -132,8 +148,9 @@ describe("currentRouteContextAtom", () => {
 
       expect(context).toEqual({
         pathname: "/labels/high%20priority",
-        viewId: "all", // Fallback when labels not available in test
+        viewId: "not-found", // Fallback when labels not available in test
         routeType: "label",
+        slug: "high priority",
       });
     });
   });
@@ -177,8 +194,9 @@ describe("currentRouteContextAtom", () => {
       // Should only use the first segment after /projects/
       expect(context).toEqual({
         pathname: "/projects/87654321-4321-4321-8321-210987654321/settings",
-        viewId: "87654321-4321-4321-8321-210987654321", // ViewId is now directly the ProjectId
+        viewId: "not-found",
         routeType: "project",
+        slug: "87654321-4321-4321-8321-210987654321",
       });
     });
   });
@@ -199,8 +217,8 @@ describe("currentRouteContextAtom", () => {
       const context = store.get(currentRouteContextAtom);
 
       if (context.routeType === "project") {
-        // ViewId is now directly the ProjectId (no prefix)
-        expect(context.viewId).toBe(testProjectId);
+        expect(context.viewId).toBe("not-found");
+        expect(context.slug).toBe(testProjectId);
       }
     });
 
@@ -209,8 +227,7 @@ describe("currentRouteContextAtom", () => {
       const context = store.get(currentRouteContextAtom);
 
       if (context.routeType === "label") {
-        // Should fallback to 'all' view when labels not available in test
-        expect(context.viewId).toBe("all");
+        expect(context.viewId).toBe("not-found");
       }
     });
   });
@@ -245,9 +262,7 @@ describe("currentRouteContextAtom", () => {
       const context = store.get(currentRouteContextAtom);
 
       if (context.pathname.startsWith("/projects/")) {
-        const expectedProjectId = context.pathname.split("/")[2];
-        // ViewId is now directly the ProjectId (no prefix)
-        expect(context.viewId).toBe(expectedProjectId);
+        expect(context.viewId).toBe("not-found");
       }
     });
   });
@@ -262,6 +277,7 @@ describe("currentRouteContextAtom", () => {
         pathname: `/projectgroups/${TEST_GROUP_ID_1}`,
         viewId: "not-found", // Show not found for non-existent UUID
         routeType: "projectgroup",
+        slug: `${TEST_GROUP_ID_1}`,
       });
     });
 
@@ -274,6 +290,7 @@ describe("currentRouteContextAtom", () => {
         pathname: "/projectgroups/work-projects",
         viewId: "not-found", // Show not found since no test project groups data
         routeType: "projectgroup",
+        slug: "work-projects",
       });
     });
 
@@ -286,6 +303,7 @@ describe("currentRouteContextAtom", () => {
         pathname: "/projectgroups/non-existent-group",
         viewId: "not-found", // Show not found for non-existent group
         routeType: "projectgroup",
+        slug: "non-existent-group",
       });
     });
 
@@ -319,6 +337,7 @@ describe("currentRouteContextAtom", () => {
         pathname: "/projectgroups/work-projects/extra-segment",
         viewId: "not-found", // Show not found since "work-projects" doesn't exist in test data
         routeType: "projectgroup",
+        slug: "work-projects",
       });
     });
 
@@ -332,6 +351,7 @@ describe("currentRouteContextAtom", () => {
         pathname: `/projectgroups/${encodedSlug}`,
         viewId: "not-found", // Show not found for non-existent group
         routeType: "projectgroup",
+        slug: "work & personal projects",
       });
     });
 
@@ -358,7 +378,21 @@ describe("currentRouteContextAtom", () => {
         pathname: `/projectgroups/${longSlug}`,
         viewId: "not-found", // Show not found for non-existent group
         routeType: "projectgroup",
+        slug: longSlug,
       });
+    });
+
+    it("should expose slug even when group is not found", () => {
+      store.set(setPathnameAtom, "/projectgroups/tutorial");
+
+      const context = store.get(currentRouteContextAtom);
+
+      if (context.routeType !== "projectgroup") {
+        throw new Error("Expected projectgroup route");
+      }
+
+      expect(context.slug).toBe("tutorial");
+      expect(context.viewId).toBe("not-found");
     });
   });
 });

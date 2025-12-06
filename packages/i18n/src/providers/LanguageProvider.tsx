@@ -20,6 +20,10 @@ import resourcesToBackend from "i18next-resources-to-backend";
  *
  * @template L - Language type (defaults to string, can be narrowed to specific codes)
  */
+type TranslationOptions = Record<string, unknown> & {
+  defaultValue?: string;
+};
+
 interface LanguageContextType<L extends Language = Language> {
   /**
    * Current language code
@@ -40,9 +44,15 @@ interface LanguageContextType<L extends Language = Language> {
    * Translation function for the default namespace
    *
    * @param key - Translation key to look up
+   * @param defaultValueOrOptions - Optional default value or options map (matches i18next signature)
+   * @param options - Optional options map when second arg is a default string
    * @returns Translated string
    */
-  t: (key: string) => string;
+  t: (
+    key: string,
+    defaultValueOrOptions?: string | TranslationOptions,
+    options?: TranslationOptions,
+  ) => string;
 }
 
 /**
@@ -217,7 +227,21 @@ export function LanguageProvider<
   }, []);
 
   // Use i18next directly to avoid re-render loops from useTranslation hook subscriptions
-  const t = (key: string) => i18next.t(key, { ns: config.defaultNS });
+  const t = (
+    key: string,
+    defaultValueOrOptions?: string | TranslationOptions,
+    options?: TranslationOptions,
+  ) => {
+    const baseOptions =
+      typeof defaultValueOrOptions === "string"
+        ? {
+            defaultValue: defaultValueOrOptions,
+            ...(options || {}),
+          }
+        : defaultValueOrOptions || {};
+
+    return i18next.t(key, { ns: config.defaultNS, ...baseOptions });
+  };
 
   /**
    * Set language and persist to cookie

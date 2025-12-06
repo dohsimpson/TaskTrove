@@ -24,7 +24,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Share2, Users, MessageSquare, Bell, Copy, Mail, X, Crown, Shield, Eye } from "lucide-react"
 import { toast } from "sonner"
-import type { TaskId } from "@/lib/types"
+import type { TaskId } from "@tasktrove/types/id"
 import { getAvatarApiUrl } from "@tasktrove/utils"
 
 interface Collaborator {

@@ -7,7 +7,8 @@ import { AdvancedSearch } from "@/components/search/advanced-search"
 import { taskAtoms } from "@tasktrove/atoms/core/tasks"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import { labelAtoms } from "@tasktrove/atoms/core/labels"
-import { Task, Project, Label, LabelId } from "@/lib/types"
+import type { Task, Project, Label } from "@tasktrove/types/core"
+import type { LabelId } from "@tasktrove/types/id"
 
 interface SearchFilter {
   type: "text" | "priority" | "project" | "label" | "assignee" | "date" | "status" | "has"

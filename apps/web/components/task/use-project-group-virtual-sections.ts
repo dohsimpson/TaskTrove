@@ -6,8 +6,10 @@ import { filteredTasksAtom } from "@tasktrove/atoms/ui/filtered-tasks"
 import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
 import { projectsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { allGroupsAtom } from "@tasktrove/atoms/core/groups"
-import type { Task, Project, ProjectGroup, ProjectId, GroupId } from "@/lib/types"
-import { createGroupId, createProjectId } from "@/lib/types"
+import type { Task, Project } from "@tasktrove/types/core"
+import type { ProjectGroup } from "@tasktrove/types/group"
+import type { ProjectId, GroupId } from "@tasktrove/types/id"
+import { GroupIdSchema, createProjectId } from "@tasktrove/types/id"
 import { DEFAULT_SECTION_COLOR } from "@tasktrove/constants"
 
 export interface VirtualProjectSection {
@@ -29,7 +31,13 @@ export function useProjectGroupVirtualSections(enable: boolean) {
   const currentProjectGroup = useMemo(() => {
     if (!shouldShowProjectPseudoSections) return null
     if (typeof routeContext.viewId !== "string") return null
-    return findProjectGroupById(allGroups.projectGroups, createGroupId(routeContext.viewId))
+
+    // Avoid throwing when the viewId is a slug or a not-found sentinel during
+    // initial render/refresh before groups are loaded
+    const parsed = GroupIdSchema.safeParse(routeContext.viewId)
+    if (!parsed.success) return null
+
+    return findProjectGroupById(allGroups.projectGroups, parsed.data)
   }, [allGroups.projectGroups, routeContext.viewId, shouldShowProjectPseudoSections])
 
   const virtualProjectSections = useMemo(() => {

@@ -1,4 +1,4 @@
-import { DEFAULT_PROJECT_SECTION } from "@/lib/types"
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@/test-utils"
@@ -6,14 +6,15 @@ import userEvent from "@testing-library/user-event"
 import { Provider } from "jotai"
 import { KanbanBoard } from "./kanban-board"
 import { DEFAULT_SECTION_COLORS, DEFAULT_UUID } from "@tasktrove/constants"
-import type { Task, TaskPriority } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
+import type { TaskPriority } from "@tasktrove/types/constants"
 import {
   createTaskId,
   createCommentId,
   createLabelId,
   createGroupId,
   createUserId,
-} from "@/lib/types"
+} from "@tasktrove/types/id"
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,

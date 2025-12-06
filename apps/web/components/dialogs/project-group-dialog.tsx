@@ -8,7 +8,7 @@ import {
 } from "@tasktrove/atoms/ui/dialogs"
 import { closeProjectGroupDialogAtom } from "@tasktrove/atoms/ui/navigation"
 import { addProjectGroupAtom, flattenProjectGroupsAtom } from "@tasktrove/atoms/core/groups"
-import { createGroupId } from "@/lib/types"
+import { createGroupId } from "@tasktrove/types/id"
 
 // Wrapper atom to match BaseDialog's expected Promise<void> return type
 const addProjectGroupVoidAtom = atom(

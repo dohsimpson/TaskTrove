@@ -1,7 +1,7 @@
 import { render, screen } from "@/test-utils"
 import { describe, it, expect, vi } from "vitest"
 import { ViewEmptyState } from "./view-empty-state"
-import { createProjectId, createLabelId } from "@/lib/types"
+import { createProjectId, createLabelId } from "@tasktrove/types/id"
 
 describe("ViewEmptyState", () => {
   it("should render inbox empty state", () => {

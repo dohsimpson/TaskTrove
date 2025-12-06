@@ -1,11 +1,11 @@
-import { DEFAULT_PROJECT_SECTION } from "@/lib/types"
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
 import React from "react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { TaskFilterBadges } from "./task-filter-badges"
-import type { Project, Label } from "@/lib/types"
-import { createProjectId, createLabelId } from "@/lib/types"
+import type { Project, Label } from "@tasktrove/types/core"
+import { createProjectId, createLabelId } from "@tasktrove/types/id"
 
 // Mock the atoms
 const mockActiveFilters = vi.fn()

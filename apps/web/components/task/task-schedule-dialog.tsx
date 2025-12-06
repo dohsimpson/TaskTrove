@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Calendar } from "@/components/ui/calendar"
 import { Clock } from "lucide-react"
 import { format } from "date-fns"
-import type { TaskId } from "@/lib/types"
+import type { TaskId } from "@tasktrove/types/id"
 
 interface Task {
   id: TaskId

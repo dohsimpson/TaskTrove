@@ -1,7 +1,7 @@
 import { render, screen } from "@/test-utils/render-with-providers"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { TaskActionsMenu } from "./task-actions-menu"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 import { TEST_TASK_ID_1 } from "@tasktrove/types/test-constants"
 
 // Mock the atoms

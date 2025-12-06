@@ -11,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 import { notificationAtoms } from "@tasktrove/atoms/core/notifications"
 import { settingsAtoms } from "@tasktrove/atoms/core/settings"
-import type { NotificationSettings } from "@/lib/types"
+import type { NotificationSettings } from "@tasktrove/types/settings"
 import { SettingsCard } from "@/components/ui/custom/settings-card"
 import { isSecureContext } from "@tasktrove/dom-utils/notifications"
 import { log } from "@/lib/utils/logger"

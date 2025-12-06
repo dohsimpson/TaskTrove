@@ -1,21 +1,23 @@
 import { NextResponse } from "next/server"
+import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
+import { v4 as uuidv4 } from "uuid"
+import type { Project } from "@tasktrove/types/core"
 import {
-  Project,
   DeleteProjectRequestSchema,
   CreateProjectRequestSchema,
+  ProjectUpdateUnionSchema,
+  UpdateProjectRequest,
+} from "@tasktrove/types/api-requests"
+import {
   CreateProjectResponse,
   UpdateProjectResponse,
   DeleteProjectResponse,
-  ProjectUpdateUnionSchema,
-  UpdateProjectRequest,
-  DataFileSerializationSchema,
-  ErrorResponse,
-  ApiErrorCode,
   GetProjectsResponse,
-} from "@/lib/types"
-import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
-import { v4 as uuidv4 } from "uuid"
-import { createProjectId, createGroupId } from "@/lib/types"
+} from "@tasktrove/types/api-responses"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
+import { ErrorResponse } from "@tasktrove/types/api-responses"
+import { DataFileSerializationSchema } from "@tasktrove/types/data-file"
+import { createProjectId, createGroupId } from "@tasktrove/types/id"
 import {
   DEFAULT_SECTION_NAME,
   DEFAULT_SECTION_COLOR,

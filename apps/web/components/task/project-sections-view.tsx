@@ -15,8 +15,8 @@ import { filteredTasksAtom } from "@tasktrove/atoms/ui/filtered-tasks"
 import { currentViewStateAtom } from "@tasktrove/atoms/ui/views"
 import { DEFAULT_SECTION_COLOR } from "@tasktrove/constants"
 import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
-import type { Task, Project, ProjectSection } from "@/lib/types"
-import { createGroupId } from "@/lib/types"
+import type { Task, Project, ProjectSection } from "@tasktrove/types/core"
+import { createGroupId } from "@tasktrove/types/id"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ColorPicker } from "@/components/ui/custom/color-picker"
@@ -308,76 +308,78 @@ export function ProjectSectionsView({
 
             {/* Debug Badge */}
             {project && <ProjectSectionDebugBadge project={project} />}
-            {sectionsToShow.map((section, index) => (
-              <div key={section.id}>
-                {/* Show add section input if this is the position being added */}
-                {isAddingSection && addingSectionPosition === index && (
-                  <div className="border border-border rounded-lg p-3 bg-card shadow-sm mb-4">
-                    <div className="space-y-3">
-                      <Input
-                        value={newSectionName}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          setNewSectionName(e.target.value)
-                        }
-                        placeholder="Section name..."
-                        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                          if (e.key === "Enter") {
-                            handleAddSection()
-                          } else if (e.key === "Escape") {
-                            handleCancelAddSection()
+            <div className="space-y-2">
+              {sectionsToShow.map((section, index) => (
+                <div key={section.id}>
+                  {/* Show add section input if this is the position being added */}
+                  {isAddingSection && addingSectionPosition === index && (
+                    <div className="border border-border rounded-lg p-3 bg-card shadow-sm mb-4">
+                      <div className="space-y-3">
+                        <Input
+                          value={newSectionName}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setNewSectionName(e.target.value)
                           }
-                        }}
-                        className="text-sm"
-                        autoFocus
-                      />
-                      <ColorPicker
-                        selectedColor={newSectionColor}
-                        onColorSelect={setNewSectionColor}
-                        size="sm"
-                        label="Color"
-                        className="text-xs"
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={handleAddSection}
+                          placeholder="Section name..."
+                          onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                            if (e.key === "Enter") {
+                              handleAddSection()
+                            } else if (e.key === "Escape") {
+                              handleCancelAddSection()
+                            }
+                          }}
+                          className="text-sm"
+                          autoFocus
+                        />
+                        <ColorPicker
+                          selectedColor={newSectionColor}
+                          onColorSelect={setNewSectionColor}
                           size="sm"
-                          variant="default"
-                          disabled={!newSectionName.trim()}
-                          className="px-3"
-                        >
-                          Add
-                        </Button>
-                        <Button
-                          onClick={handleCancelAddSection}
-                          variant="ghost"
-                          size="sm"
-                          className="px-2"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                          label="Color"
+                          className="text-xs"
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={handleAddSection}
+                            size="sm"
+                            variant="default"
+                            disabled={!newSectionName.trim()}
+                            className="px-3"
+                          >
+                            Add
+                          </Button>
+                          <Button
+                            onClick={handleCancelAddSection}
+                            variant="ghost"
+                            size="sm"
+                            className="px-2"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {project && (
-                  <Section
-                    sectionId={createGroupId(section.id)}
-                    projectId={project.id}
-                    droppableId={droppableId}
-                  />
-                )}
+                  {project && (
+                    <Section
+                      sectionId={createGroupId(section.id)}
+                      projectId={project.id}
+                      droppableId={droppableId}
+                    />
+                  )}
 
-                {/* Add section divider after each section */}
-                {/* {supportsSections && ( */}
-                {/*   <AddSectionDivider */}
-                {/*     onAddSection={handleStartAddSection} */}
-                {/*     position={index + 1} */}
-                {/*     className="mt-2" */}
-                {/*   /> */}
-                {/* )} */}
-              </div>
-            ))}
+                  {/* Add section divider after each section */}
+                  {/* {supportsSections && ( */}
+                  {/*   <AddSectionDivider */}
+                  {/*     onAddSection={handleStartAddSection} */}
+                  {/*     position={index + 1} */}
+                  {/*     className="mt-2" */}
+                  {/*   /> */}
+                  {/* )} */}
+                </div>
+              ))}
+            </div>
 
             {/* Show add section input if this is the position being added (at the end) */}
             {isAddingSection && addingSectionPosition === sectionsToShow.length && (

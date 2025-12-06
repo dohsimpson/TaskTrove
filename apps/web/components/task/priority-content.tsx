@@ -5,10 +5,10 @@ import { useSetAtom } from "jotai"
 import { Flag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
-import { isValidPriority } from "@/lib/types"
+import { isValidPriority } from "@tasktrove/types/validators"
 import { getPriorityTextColor } from "@/lib/color-utils"
 import { useTranslation } from "@tasktrove/i18n"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 
 interface PriorityContentProps {
   task: Task | Task[]

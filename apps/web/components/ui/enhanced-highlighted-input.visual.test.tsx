@@ -43,8 +43,8 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       expect(overlay).toBeTruthy()
 
       // Critical: Both must have identical padding classes
-      expect(contentEditable).toHaveClass("p-3")
-      expect(overlay).toHaveClass("p-3")
+      expect(contentEditable).toHaveClass("p-2")
+      expect(overlay).toHaveClass("p-2")
 
       // Neither should have conflicting padding
       expect(contentEditable).not.toHaveClass("px-0", "py-0", "p-0")
@@ -79,7 +79,7 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
 
       expect(contentEditable).not.toHaveClass("text-transparent")
-      expect(contentEditable).toHaveClass("bg-transparent")
+      expect(contentEditable).toHaveClass("bg-muted/30", "focus:bg-background")
       expect(overlay).not.toHaveClass("text-transparent")
     })
   })
@@ -224,13 +224,7 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
 
       // ContentEditable should have shared classes
-      expect(contentEditable).toHaveClass(
-        "w-full",
-        "min-h-[60px]",
-        "p-3",
-        "break-words",
-        "whitespace-break-spaces",
-      )
+      expect(contentEditable).toHaveClass("w-full", "p-2", "break-words", "whitespace-break-spaces")
       expect(overlay).not.toHaveClass("border", "rounded-md")
 
       // Overlay positioning accounts for border with inset-0
@@ -247,7 +241,7 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
         HTMLElement,
       )
 
-      expect(contentEditable).toHaveClass("bg-transparent")
+      expect(contentEditable).toHaveClass("bg-muted/30", "focus:bg-background")
       expect(contentEditable).not.toHaveClass("text-transparent", "z-10")
     })
   })
@@ -263,8 +257,8 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
 
       // Should maintain consistent classes even when empty
-      expect(contentEditable).toHaveClass("min-h-[60px]") // Minimum height
-      expect(overlay).toHaveClass("absolute", "inset-0", "p-3")
+      expect(contentEditable).toHaveClass("w-full", "p-2") // Basic layout classes
+      expect(overlay).toHaveClass("absolute", "inset-0")
     })
 
     it("should handle very long content with proper overflow classes", () => {
@@ -298,9 +292,9 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
         )
         const overlay = getTypedElement(container.querySelector(".absolute.inset-0"), HTMLElement)
 
-        expect(contentEditable).toHaveClass("p-3", "bg-transparent")
+        expect(contentEditable).toHaveClass("p-2", "bg-muted/30", "focus:bg-background")
         expect(contentEditable).not.toHaveClass("text-transparent", "z-10")
-        expect(overlay).toHaveClass("absolute", "inset-0", "p-3", "z-0")
+        expect(overlay).toHaveClass("absolute", "inset-0", "p-2", "z-0")
       })
     })
   })
@@ -320,7 +314,7 @@ describe("Enhanced Highlighted Input - Visual Alignment Tests", () => {
       expect(contentEditable).toHaveAttribute("role", "combobox")
       expect(contentEditable).toHaveAttribute("aria-expanded")
 
-      expect(contentEditable).toHaveClass("bg-transparent")
+      expect(contentEditable).toHaveClass("bg-muted/30", "focus:bg-background")
       expect(contentEditable).not.toHaveClass("text-transparent", "z-10")
     })
 

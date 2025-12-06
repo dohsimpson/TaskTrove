@@ -1,19 +1,13 @@
 "use client"
 
 import { useState, useCallback, useEffect, useRef } from "react"
-import { useSetAtom } from "jotai"
+import { useAtomValue, useSetAtom } from "jotai"
 import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
 import { Button } from "@/components/ui/button"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useTranslation } from "@tasktrove/i18n"
+import { isMobileApp } from "@/lib/utils/env"
 import {
   format,
   startOfMonth,
@@ -27,6 +21,7 @@ import {
   isSameWeek,
   addDays,
   addMonths,
+  getWeek,
 } from "date-fns"
 import { TaskItem } from "@/components/task/task-item"
 import { SelectionToolbar } from "@/components/task/selection-toolbar"
@@ -34,12 +29,18 @@ import { AllDaySection } from "@/components/calendar/all-day-section"
 import { WeekDayHeaders } from "@/components/calendar/week-day-headers"
 import { CalendarAddButton } from "@/components/calendar/calendar-add-button"
 import { FloatingDock } from "@/components/ui/custom/floating-dock"
+import { WeekMonthPicker } from "@/components/calendar/week-month-picker"
+import type { CalendarViewMode } from "@tasktrove/types/calendar"
 import { updateQuickAddTaskAtom } from "@tasktrove/atoms/ui/dialogs"
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { TaskViewSidePanelLayout } from "@/components/task/task-view-side-panel-layout"
 import { taskAtoms } from "@tasktrove/atoms/core/tasks"
 import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
-import type { Task, Project, UpdateTaskRequest, ProjectId } from "@/lib/types"
-import { TaskIdSchema } from "@/lib/types"
+import type { Task, Project } from "@tasktrove/types/core"
+import type { WeekStartsOn } from "@tasktrove/types/settings"
+import type { UpdateTaskRequest } from "@tasktrove/types/api-requests"
+import type { ProjectId } from "@tasktrove/types/id"
+import { TaskIdSchema } from "@tasktrove/types/id"
 import { log } from "@/lib/utils/logger"
 import type { CalendarTaskPosition } from "@/lib/calendar/types"
 import { isCalendarDragData, isValidTaskId } from "@/lib/calendar/types"
@@ -88,6 +89,7 @@ export type CalendarLayoutOptions = {
   monthMaxVisibleTasksPerDay?: number
   monthFixedCellHeight?: number | string
   hideFloatingDockBreakpoint?: "sm" | "md" | "lg" | "xl"
+  showCornerAddButtons?: boolean
 }
 
 interface CalendarViewProps {
@@ -95,8 +97,8 @@ interface CalendarViewProps {
   onDateClick: (date: Date) => void
   project?: Project
   layoutOptions?: CalendarLayoutOptions
-  viewMode?: "month" | "week"
-  onViewModeChange?: (mode: "month" | "week") => void
+  viewMode?: CalendarViewMode
+  onViewModeChange?: (mode: CalendarViewMode) => void
   currentDate?: Date
   onCurrentDateChange?: (date: Date) => void
   onMonthDayLongPress?: (date: Date) => void
@@ -271,6 +273,7 @@ interface WeekTimeGridProps {
   currentDate: Date
   project?: Project
   onWeekSlotLongPress?: (date: Date, hour: number) => void
+  showCornerAddButtons: boolean
 }
 
 function WeekTimeGrid({
@@ -281,6 +284,7 @@ function WeekTimeGrid({
   getTasksForDate,
   project,
   onWeekSlotLongPress,
+  showCornerAddButtons,
 }: WeekTimeGridProps) {
   // Task creation hooks
   const addTaskToSection = useAddTaskToSection()
@@ -402,15 +406,9 @@ function WeekTimeGrid({
                       `}
                         onPointerDown={(e) => {
                           if (!onWeekSlotLongPress) return
-                          if (!(e.currentTarget instanceof HTMLElement)) return
-                          const bounds = e.currentTarget.getBoundingClientRect()
-                          const y = e.clientY - bounds.top
-                          const hour = Math.max(
-                            0,
-                            Math.min(23, Math.floor((y / bounds.height) * 24)),
-                          )
+                          // This cell already represents a single hour row, so use the slot hour directly
                           const timeoutId = window.setTimeout(
-                            () => onWeekSlotLongPress(day, hour),
+                            () => onWeekSlotLongPress(day, slot.hour),
                             450,
                           )
                           const clear = () => window.clearTimeout(timeoutId)
@@ -419,11 +417,13 @@ function WeekTimeGrid({
                           e.currentTarget.addEventListener("pointerleave", clear, { once: true })
                         }}
                       >
-                        <CalendarAddButton
-                          onClick={() => handleTimeSlotClick(day, slot.hour)}
-                          title="Add task to this time slot"
-                          placement="top-right"
-                        />
+                        {showCornerAddButtons && (
+                          <CalendarAddButton
+                            onClick={() => handleTimeSlotClick(day, slot.hour)}
+                            title="Add task to this time slot"
+                            placement="top-right"
+                          />
+                        )}
 
                         <DropTargetWrapper
                           dropTargetId={`time-slot-${format(day, "yyyy-MM-dd")}-${slot.hour}`}
@@ -494,9 +494,11 @@ export function CalendarView({
   onWeekSlotLongPress,
 }: CalendarViewProps) {
   const { t } = useTranslation("task")
+  const showCornerAddButtons =
+    (layoutOptions?.showCornerAddButtons ?? !isMobileApp()) && !isMobileApp()
   const [currentDate, setCurrentDate] = useState(controlledCurrentDate ?? new Date())
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
-  const [calendarViewMode, setCalendarViewMode] = useState<"month" | "week">(viewMode ?? "month")
+  const [calendarViewMode, setCalendarViewMode] = useState<CalendarViewMode>(viewMode ?? "month")
   // Keep internal state in sync with controlled props
   useEffect(() => {
     if (viewMode && viewMode !== calendarViewMode) setCalendarViewMode(viewMode)
@@ -511,6 +513,13 @@ export function CalendarView({
   const today = new Date()
   const addTaskToSection = useAddTaskToSection()
   const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
+  const settings = useAtomValue(settingsAtom)
+  const weekStartsOnSetting = settings.uiSettings.weekStartsOn
+  const weekStartsOn: WeekStartsOn =
+    typeof weekStartsOnSetting === "number" && [0, 1, 2, 3, 4, 5, 6].includes(weekStartsOnSetting)
+      ? weekStartsOnSetting
+      : 0
+  const showWeekNumber = Boolean(settings.uiSettings.showWeekNumber)
 
   const [isTaskDockOpen, setIsTaskDockOpen] = useState(false)
 
@@ -721,18 +730,24 @@ export function CalendarView({
   // Calculate calendar start based on view mode
   const calendarStart =
     calendarViewMode === "week"
-      ? startOfWeek(currentDate, { weekStartsOn: 0 }) // Start of current week
-      : startOfWeek(monthStart, { weekStartsOn: 0 }) // Start on Sunday
+      ? startOfWeek(currentDate, { weekStartsOn }) // Start of current week
+      : startOfWeek(monthStart, { weekStartsOn }) // Start on preferred day
 
   // Choose calendar end based on view mode and layout preference
   const calendarEnd =
     calendarViewMode === "week"
-      ? endOfWeek(currentDate, { weekStartsOn: 0 }) // End of current week
+      ? endOfWeek(currentDate, { weekStartsOn }) // End of current week
       : alwaysShow6Rows
         ? addDays(calendarStart, 41) // Always show exactly 42 days (6 weeks)
-        : endOfWeek(monthEnd, { weekStartsOn: 0 }) // Dynamic layout based on month
+        : endOfWeek(monthEnd, { weekStartsOn }) // Dynamic layout based on month
 
   const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd })
+
+  // Group days by week for easier rendering when week numbers are shown
+  const calendarWeeks: Date[][] = []
+  for (let i = 0; i < calendarDays.length; i += 7) {
+    calendarWeeks.push(calendarDays.slice(i, i + 7))
+  }
 
   const getTasksForDate = (date: Date) => {
     return tasks.filter((task) => task.dueDate && isSameDay(task.dueDate, date))
@@ -747,29 +762,6 @@ export function CalendarView({
     },
     [project, addTaskToSection, updateQuickAddTask],
   )
-
-  // Generate month and year options (locale-aware)
-  const months = Array.from({ length: 12 }, (_, i) => ({
-    value: i.toString(),
-    label: format(new Date(2000, i, 1), "MMMM"),
-  }))
-
-  const currentYear = new Date().getFullYear()
-  const years = Array.from({ length: 21 }, (_, i) => {
-    const year = currentYear - 10 + i
-    return { value: year.toString(), label: year.toString() }
-  })
-
-  // Handle month/year selection
-  const handleMonthChange = (monthValue: string) => {
-    const month = parseInt(monthValue)
-    setDateAndNotify(new Date(currentDate.getFullYear(), month, 1))
-  }
-
-  const handleYearChange = (yearValue: string) => {
-    const year = parseInt(yearValue)
-    setDateAndNotify(new Date(year, currentDate.getMonth(), 1))
-  }
 
   // Handle navigation based on view mode
   const handlePrevious = () => {
@@ -793,94 +785,98 @@ export function CalendarView({
     <div className="h-full flex flex-col">
       {/* Sticky Calendar Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-border/50 flex-shrink-0">
-        <div className="flex items-center justify-between pt-2 sm:px-3 sm:pt-4 sm:pb-3">
-          {/* Calendar View Toggle */}
-          {(layoutOptions?.showViewToggle ?? true) ? (
-            <div className="flex items-center gap-1">
-              <Button
-                variant={calendarViewMode === "month" ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setCalendarViewMode("month")
-                  onViewModeChange?.("month")
-                }}
-              >
-                Month
-              </Button>
-              <Button
-                variant={calendarViewMode === "week" ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setCalendarViewMode("week")
-                  onViewModeChange?.("week")
-                }}
-              >
-                Week
-              </Button>
-            </div>
-          ) : (
-            <div />
-          )}
-
-          {/* Month/Year Selectors and Navigation Controls */}
-          {(layoutOptions?.showDateControls ?? true) && (
-            <div className="flex items-center gap-1 lg:gap-2">
-              {/* Current Month/Year with Dropdowns */}
-              <Select value={currentDate.getMonth().toString()} onValueChange={handleMonthChange}>
-                <SelectTrigger className="w-auto h-auto border border-input bg-background px-3 py-2 text-lg lg:text-xl font-semibold hover:bg-accent/50 focus:ring-2 focus:ring-ring rounded-md">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {months.map((month) => (
-                    <SelectItem key={month.value} value={month.value}>
-                      {month.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={currentDate.getFullYear().toString()} onValueChange={handleYearChange}>
-                <SelectTrigger className="w-auto h-auto border border-input bg-background px-3 py-2 text-lg lg:text-xl font-semibold hover:bg-accent/50 focus:ring-2 focus:ring-ring rounded-md">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year.value} value={year.value}>
-                      {year.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Navigation Controls */}
-              <div className="flex items-center gap-1 lg:gap-2">
+        <div className="flex flex-col gap-2 pt-2 sm:px-3 sm:pt-4 sm:pb-3">
+          <div className="flex flex-wrap items-center gap-2 px-3 sm:px-0">
+            {(layoutOptions?.showViewToggle ?? true) ? (
+              <div className="flex items-center gap-1">
                 <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8 lg:w-10"
-                  onClick={handlePrevious}
+                  variant={calendarViewMode === "month" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => {
+                    setCalendarViewMode("month")
+                    onViewModeChange?.("month")
+                  }}
                 >
-                  <ChevronLeft className="h-3 w-3 lg:h-4 lg:w-4" />
+                  Month
                 </Button>
+                <Button
+                  variant={calendarViewMode === "week" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => {
+                    setCalendarViewMode("week")
+                    onViewModeChange?.("week")
+                  }}
+                >
+                  Week
+                </Button>
+              </div>
+            ) : (
+              <div className="flex-1" />
+            )}
+
+            <div
+              className={`flex flex-wrap items-center gap-3 text-sm ${
+                layoutOptions?.showViewToggle === false ? "w-full" : "ml-auto"
+              }`}
+            >
+              {(layoutOptions?.showDateControls ?? true) && (
+                <div
+                  className={`flex items-center gap-2 ${
+                    layoutOptions?.showViewToggle === false ? "flex-1 justify-start" : ""
+                  }`}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 rounded-full border border-input/60"
+                    onClick={handlePrevious}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+
+                  {calendarViewMode === "month" && (
+                    <WeekMonthPicker
+                      mode="month"
+                      currentDate={currentDate}
+                      weekStartsOn={weekStartsOn}
+                      onSelectDate={setDateAndNotify}
+                    />
+                  )}
+
+                  {calendarViewMode === "week" && (
+                    <WeekMonthPicker
+                      mode="week"
+                      currentDate={currentDate}
+                      weekStartsOn={weekStartsOn}
+                      onSelectDate={setDateAndNotify}
+                    />
+                  )}
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 rounded-full border border-input/60"
+                    onClick={handleNext}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              {(layoutOptions?.showDateControls ?? true) && (
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 text-xs lg:text-sm"
+                  className={`h-9 px-3 rounded-full border border-input/60 ${
+                    layoutOptions?.showViewToggle === false ? "ml-auto" : ""
+                  }`}
                   onClick={() => setDateAndNotify(new Date())}
                 >
                   Today
                 </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8 lg:w-10"
-                  onClick={handleNext}
-                >
-                  <ChevronRight className="h-3 w-3 lg:h-4 lg:w-4" />
-                </Button>
-              </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Sticky Day Headers - Only for Month View */}
@@ -891,18 +887,40 @@ export function CalendarView({
                 {format(currentDate, "MMMM yyyy")}
               </div>
             )}
-            <div className="grid grid-cols-7 gap-0">
-              {/* Month view: Show just weekday names */}
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, index) => (
-                <div
-                  key={day}
-                  className={`p-0.5 md:p-1.5 text-center text-[10px] md:text-xs font-semibold tracking-[0.06em] md:tracking-[0.08em] uppercase text-muted-foreground/80 ${
-                    index === 0 || index === 6 ? "text-muted-foreground" : ""
-                  }`}
-                >
-                  {day}
+            <div
+              className={
+                showWeekNumber
+                  ? "grid [grid-template-columns:52px_repeat(7,minmax(0,1fr))] gap-0"
+                  : "grid grid-cols-7 gap-0"
+              }
+            >
+              {showWeekNumber && (
+                <div className="p-0.5 md:p-1.5 text-center text-[10px] md:text-xs font-semibold uppercase text-muted-foreground/80">
+                  Week
                 </div>
-              ))}
+              )}
+              {/* Month view: weekday labels aligned to weekStartsOn */}
+              {(() => {
+                const baseHeaders = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+                const orderedHeaders = [
+                  ...baseHeaders.slice(weekStartsOn),
+                  ...baseHeaders.slice(0, weekStartsOn),
+                ]
+
+                return orderedHeaders.map((label, index) => {
+                  const isWeekend = label === "Sun" || label === "Sat"
+                  return (
+                    <div
+                      key={`${label}-${index}`}
+                      className={`p-0.5 md:p-1.5 text-center text-[10px] md:text-xs font-semibold tracking-[0.06em] md:tracking-[0.08em] uppercase text-muted-foreground/80 ${
+                        isWeekend ? "text-muted-foreground" : ""
+                      }`}
+                    >
+                      {label}
+                    </div>
+                  )
+                })
+              })()}
             </div>
           </div>
         )}
@@ -932,140 +950,171 @@ export function CalendarView({
               currentDate={currentDate}
               project={project}
               onWeekSlotLongPress={onWeekSlotLongPress}
+              showCornerAddButtons={showCornerAddButtons}
             />
           ) : (
             // Month View: Traditional Calendar Grid
-            <div className="grid grid-cols-7 gap-0 flex-1">
-              {calendarDays.map((day) => {
-                const dayTasks = getTasksForDate(day)
-                const isSelected = selectedDate ? isSameDay(day, selectedDate) : false
-                const isTodayDate = isToday(day)
-                const isCurrentMonth = isSameMonth(day, currentDate)
-                const isWeekend = day.getDay() === 0 || day.getDay() === 6
-                const dayId = format(day, "yyyy-MM-dd")
-                const isCurrentWeek = isSameWeek(day, today, { weekStartsOn: 0 })
-                const cellClasses = [
-                  "flex flex-1 flex-col overflow-hidden p-1 lg:p-1.5 border border-border cursor-pointer hover:bg-muted/70 focus-visible:bg-muted/80 transition-colors relative group outline-none",
-                  isCurrentWeek ? "bg-primary/5" : "",
-                  isWeekend ? "bg-muted/20" : "",
-                  isSelected ? "ring-2 ring-foreground" : "",
-                  isTodayDate && !isSelected ? "bg-primary/10" : "",
-                  !isCurrentMonth ? "opacity-40" : "",
-                ]
-                const dayLabel = format(day, "EEEE, MMMM d")
-
-                // Optional compact layout: limit pills and show +N
-                const limit = layoutOptions?.monthMaxVisibleTasksPerDay
-                const visibleTasks = typeof limit === "number" ? dayTasks.slice(0, limit) : dayTasks
-                const hiddenCount =
-                  typeof limit === "number" ? Math.max(0, dayTasks.length - visibleTasks.length) : 0
+            <div className="flex-1 grid grid-rows-6 gap-0 min-h-0">
+              {calendarWeeks.map((weekDays, weekIndex) => {
+                const weekNumber =
+                  showWeekNumber && weekDays[0] ? getWeek(weekDays[0], { weekStartsOn }) : null
 
                 return (
-                  <DropTargetWrapper
-                    key={day.toISOString()}
-                    dropTargetId={`calendar-day-${dayId}`}
-                    dropClassName="ring-2 ring-primary/50 bg-primary/10"
-                    onDrop={({ source, location }) => {
-                      handleCalendarDrop({ source, location })
-                    }}
-                    canDrop={({ source }) => source.data.type === "draggable-item"}
-                    getData={() => ({
-                      type: "calendar-day",
-                      date: dayId,
-                    })}
-                    className="flex flex-1"
+                  <div
+                    key={`week-${weekIndex}`}
+                    className={
+                      showWeekNumber
+                        ? "grid [grid-template-columns:52px_repeat(7,minmax(0,1fr))] gap-0 h-full"
+                        : "grid grid-cols-7 gap-0 h-full"
+                    }
                   >
-                    <div
-                      className={cellClasses.join(" ")}
-                      style={
-                        layoutOptions?.monthFixedCellHeight
-                          ? {
-                              height:
-                                typeof layoutOptions.monthFixedCellHeight === "number"
-                                  ? `${layoutOptions.monthFixedCellHeight}px`
-                                  : layoutOptions.monthFixedCellHeight,
+                    {showWeekNumber && (
+                      <div className="flex items-center justify-center border border-border bg-muted/40 text-[11px] font-semibold text-muted-foreground">
+                        W{weekNumber}
+                      </div>
+                    )}
+                    {weekDays.map((day) => {
+                      const dayTasks = getTasksForDate(day)
+                      const isSelected = selectedDate ? isSameDay(day, selectedDate) : false
+                      const isTodayDate = isToday(day)
+                      const isCurrentMonth = isSameMonth(day, currentDate)
+                      const isWeekend = day.getDay() === 0 || day.getDay() === 6
+                      const dayId = format(day, "yyyy-MM-dd")
+                      const isCurrentWeek = isSameWeek(day, today, { weekStartsOn })
+                      const cellClasses = [
+                        "flex flex-1 flex-col overflow-hidden lg:p-1.5 border border-border cursor-pointer hover:bg-muted/70 focus-visible:bg-muted/80 transition-colors relative group outline-none",
+                        isMobileApp() ? "" : "p-1",
+                        isCurrentWeek ? "bg-primary/5" : "",
+                        isWeekend ? "bg-muted/20" : "",
+                        // Inset the selection ring so it doesn't overlap grid borders
+                        isSelected ? "ring-2 ring-inset ring-foreground" : "",
+                        isTodayDate && !isSelected ? "bg-primary/10" : "",
+                        !isCurrentMonth ? "opacity-40" : "",
+                      ]
+                      const dayLabel = format(day, "EEEE, MMMM d")
+
+                      const limit = layoutOptions?.monthMaxVisibleTasksPerDay
+                      const visibleTasks =
+                        typeof limit === "number" ? dayTasks.slice(0, limit) : dayTasks
+                      const hiddenCount =
+                        typeof limit === "number"
+                          ? Math.max(0, dayTasks.length - visibleTasks.length)
+                          : 0
+
+                      return (
+                        <DropTargetWrapper
+                          key={day.toISOString()}
+                          dropTargetId={`calendar-day-${dayId}`}
+                          dropClassName="ring-2 ring-primary/50 bg-primary/10"
+                          onDrop={({ source, location }) => {
+                            handleCalendarDrop({ source, location })
+                          }}
+                          canDrop={({ source }) => source.data.type === "draggable-item"}
+                          getData={() => ({
+                            type: "calendar-day",
+                            date: dayId,
+                          })}
+                          className="flex flex-1"
+                        >
+                          <div
+                            className={cellClasses.join(" ")}
+                            style={
+                              layoutOptions?.monthFixedCellHeight
+                                ? {
+                                    height:
+                                      typeof layoutOptions.monthFixedCellHeight === "number"
+                                        ? `${layoutOptions.monthFixedCellHeight}px`
+                                        : layoutOptions.monthFixedCellHeight,
+                                  }
+                                : undefined
                             }
-                          : undefined
-                      }
-                      role="button"
-                      tabIndex={0}
-                      aria-pressed={isSelected}
-                      aria-current={isTodayDate ? "date" : undefined}
-                      aria-label={`${dayLabel}${isCurrentMonth ? "" : " (adjacent month)"}`}
-                      onClick={() => {
-                        setSelectedDate(day)
-                        onDateClick(day)
-                      }}
-                      onPointerDown={(e) => {
-                        if (!onMonthDayLongPress) return
-                        const target = e.currentTarget
-                        const timeoutId = window.setTimeout(() => onMonthDayLongPress(day), 450)
-                        const clear = () => window.clearTimeout(timeoutId)
-                        target.addEventListener("pointerup", clear, { once: true })
-                        target.addEventListener("pointercancel", clear, { once: true })
-                        target.addEventListener("pointerleave", clear, { once: true })
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault()
-                          setSelectedDate(day)
-                          onDateClick(day)
-                        }
-                      }}
-                    >
-                      <CalendarAddButton
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          handleMonthDayQuickAdd(day)
-                        }}
-                        title="Add task to this day"
-                        placement="top-right"
-                      />
-                      {/* Month view: Show date number */}
-                      <div className="mb-0.5 lg:mb-1 text-xs lg:text-sm font-semibold">
-                        {isTodayDate ? (
-                          <span className="inline-flex h-5 w-5 lg:h-6 lg:w-6 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
-                            {format(day, "d")}
-                          </span>
-                        ) : (
-                          <span
-                            className={
-                              isCurrentMonth ? "text-foreground" : "text-muted-foreground italic"
-                            }
+                            role="button"
+                            tabIndex={0}
+                            aria-pressed={isSelected}
+                            aria-current={isTodayDate ? "date" : undefined}
+                            aria-label={`${dayLabel}${isCurrentMonth ? "" : " (adjacent month)"}`}
+                            onClick={() => {
+                              setSelectedDate(day)
+                              onDateClick(day)
+                            }}
+                            onPointerDown={(e) => {
+                              if (!onMonthDayLongPress) return
+                              const target = e.currentTarget
+                              const timeoutId = window.setTimeout(
+                                () => onMonthDayLongPress(day),
+                                450,
+                              )
+                              const clear = () => window.clearTimeout(timeoutId)
+                              target.addEventListener("pointerup", clear, { once: true })
+                              target.addEventListener("pointercancel", clear, { once: true })
+                              target.addEventListener("pointerleave", clear, { once: true })
+                            }}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault()
+                                setSelectedDate(day)
+                                onDateClick(day)
+                              }
+                            }}
                           >
-                            {format(day, "d")}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1 overflow-hidden space-y-0.5 lg:space-y-1">
-                        {isCurrentMonth &&
-                          visibleTasks.map((task, index) => (
-                            <DraggableWrapper
-                              key={task.id}
-                              dragId={task.id}
-                              index={index}
-                              getData={() => ({
-                                type: "draggable-item",
-                                dragId: task.id,
-                                taskId: task.id,
-                                fromCalendarDay: dayId,
-                              })}
-                            >
-                              <TaskItem
-                                taskId={task.id}
-                                variant="calendar"
-                                showProjectBadge={false}
+                            {showCornerAddButtons && (
+                              <CalendarAddButton
+                                onClick={(event) => {
+                                  event.stopPropagation()
+                                  handleMonthDayQuickAdd(day)
+                                }}
+                                title="Add task to this day"
+                                placement="top-right"
                               />
-                            </DraggableWrapper>
-                          ))}
-                        {isCurrentMonth && hiddenCount > 0 && (
-                          <div className="text-[10px] inline-flex rounded-full bg-muted px-1.5 py-0.5 text-muted-foreground">
-                            +{hiddenCount}
+                            )}
+                            <div className="mb-0.5 lg:mb-1 text-xs lg:text-sm font-semibold">
+                              {isTodayDate ? (
+                                <span className="inline-flex h-5 w-5 lg:h-6 lg:w-6 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                                  {format(day, "d")}
+                                </span>
+                              ) : (
+                                <span
+                                  className={
+                                    isCurrentMonth
+                                      ? "text-foreground"
+                                      : "text-muted-foreground italic"
+                                  }
+                                >
+                                  {format(day, "d")}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex-1 overflow-hidden space-y-0.5 lg:space-y-1">
+                              {visibleTasks.map((task, index) => (
+                                <DraggableWrapper
+                                  key={task.id}
+                                  dragId={task.id}
+                                  index={index}
+                                  getData={() => ({
+                                    type: "draggable-item",
+                                    dragId: task.id,
+                                    taskId: task.id,
+                                    fromCalendarDay: dayId,
+                                  })}
+                                >
+                                  <TaskItem
+                                    taskId={task.id}
+                                    variant="calendar"
+                                    showProjectBadge={false}
+                                  />
+                                </DraggableWrapper>
+                              ))}
+                              {isCurrentMonth && hiddenCount > 0 && (
+                                <div className="text-[10px] inline-flex rounded-full bg-muted px-1.5 py-0.5 text-muted-foreground">
+                                  +{hiddenCount}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  </DropTargetWrapper>
+                        </DropTargetWrapper>
+                      )
+                    })}
+                  </div>
                 )
               })}
             </div>

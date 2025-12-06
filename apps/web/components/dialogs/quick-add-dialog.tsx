@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useEffect, useMemo, useRef, useCallback, createContext } from "react"
 import { Dialog, DialogContentWithoutOverlay, DialogTitle } from "@/components/ui/dialog"
+import { Drawer, DrawerContent, DrawerHeader } from "@/components/ui/custom/drawer"
 import { Button } from "@/components/ui/button"
 import { PillActionButton } from "@/components/ui/custom/pill-action-button"
 import { Textarea } from "@/components/ui/textarea"
@@ -19,12 +20,14 @@ import {
   MessageSquare,
   Clock,
   Users,
+  CopyPlus,
+  ScanText,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { useAtomValue, useSetAtom } from "jotai"
 import { labelsAtom, tasksAtom, usersAtom, userAtom } from "@tasktrove/atoms/data/base/atoms"
-import { visibleProjectsAtom } from "@tasktrove/atoms/core/projects"
+import { visibleProjectsAtom, addProjectAtom } from "@tasktrove/atoms/core/projects"
 import { addLabelAndWaitForRealIdAtom } from "@tasktrove/atoms/core/labels"
 import { addTaskAtom } from "@tasktrove/atoms/core/tasks"
 import { nlpEnabledAtom } from "@tasktrove/atoms/ui/dialogs"
@@ -50,19 +53,13 @@ import { SubtaskPopover } from "@/components/task/subtask-popover"
 import { CommentManagementPopover } from "@/components/task/comment-management-popover"
 import { SubmitButton } from "@/components/ui/custom/submit-button"
 import { ContentPopover } from "@/components/ui/content-popover"
-import {
-  INBOX_PROJECT_ID,
-  CreateTaskRequest,
-  type ProjectId,
-  type LabelId,
-  type GroupId,
-  type TaskPriority,
-  ProjectIdSchema,
-  LabelIdSchema,
-  createSubtaskId,
-  createCommentId,
-  taskToCreateTaskRequest,
-} from "@/lib/types"
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants"
+import type { CreateTaskRequest } from "@tasktrove/types/api-requests"
+import type { ProjectId, LabelId, GroupId } from "@tasktrove/types/id"
+import type { TaskPriority } from "@tasktrove/types/constants"
+import { ProjectIdSchema, LabelIdSchema } from "@tasktrove/types/id"
+import { createSubtaskId, createCommentId } from "@tasktrove/types/id"
+import { taskToCreateTaskRequest } from "@tasktrove/types/utils"
 import { PLACEHOLDER_TASK_INPUT } from "@tasktrove/constants"
 import { log } from "@/lib/utils/logger"
 import { v4 as uuidv4 } from "uuid"
@@ -77,6 +74,7 @@ import { AssigneeBadges } from "@/components/task/assignee-badges"
 import { getProViewUpdates } from "@/components/dialogs/quick-add-helpers"
 import { getAssigneeAutocompleteItems } from "@/components/dialogs/quick-add-autocomplete-items"
 import type { AutocompleteType } from "@tasktrove/parser/types"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 // Enhanced autocomplete interface
 interface AutocompleteItem {
@@ -84,6 +82,8 @@ interface AutocompleteItem {
   label: string
   icon: React.ReactNode
   type: AutocompleteType
+  value?: string
+  isCreateOption?: boolean
 }
 
 interface QuickAddShortcutMetadata {
@@ -104,6 +104,7 @@ interface QuickAddShortcutRegistry {
 export const QuickAddShortcutContext = createContext<QuickAddShortcutRegistry | null>(null)
 
 export function QuickAddDialog() {
+  const isMobile = useIsMobile()
   // Dialog state atoms
   const open = useAtomValue(showQuickAddAtom)
   const closeDialog = useSetAtom(closeQuickAddAtom)
@@ -111,7 +112,7 @@ export function QuickAddDialog() {
   const resetCopyTask = useSetAtom(resetCopyTaskAtom)
 
   const shortcutListenersRef = useRef<Set<QuickAddShortcutListener>>(new Set())
-  const keepDialogOpenRef = useRef(false)
+  const [keepOpen, setKeepOpen] = useState(false)
   const registerShortcutListener = useCallback((listener: QuickAddShortcutListener) => {
     shortcutListenersRef.current.add(listener)
     return () => shortcutListenersRef.current.delete(listener)
@@ -156,6 +157,7 @@ export function QuickAddDialog() {
   // UI-only state (stays local)
   const [input, setInput] = useState("")
   const [showConfirmCloseDialog, setShowConfirmCloseDialog] = useState(false)
+  const [autocompleteOpen, setAutocompleteOpen] = useState(false)
 
   const newTask: CreateTaskRequest = useAtomValue(quickAddTaskAtom)
   const updateNewTask = useSetAtom(updateQuickAddTaskAtom)
@@ -171,6 +173,7 @@ export function QuickAddDialog() {
   const users = useAtomValue(usersAtom)
   const currentUserId = useAtomValue(userAtom).id
   const addTask = useSetAtom(addTaskAtom)
+  const addProject = useSetAtom(addProjectAtom)
   const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
   const nlpEnabled = useAtomValue(nlpEnabledAtom)
   const setNlpEnabled = useSetAtom(nlpEnabledAtom)
@@ -178,8 +181,19 @@ export function QuickAddDialog() {
   // Get the task to copy
   const taskToCopy = copyTaskId ? tasks.find((t) => t.id === copyTaskId) : null
 
-  // Create empty Set once to avoid re-creating on every render (which causes infinite loop)
-  const disabledSections = useMemo(() => new Set<string>(), [])
+  // Track toggled-off parser sections so users can click tokens to disable/enable them
+  const [disabledSections, setDisabledSections] = useState<Set<string>>(new Set())
+  const handleToggleSection = useCallback((section: string) => {
+    setDisabledSections((prev) => {
+      const next = new Set(prev)
+      if (next.has(section)) {
+        next.delete(section)
+      } else {
+        next.add(section)
+      }
+      return next
+    })
+  }, [])
 
   // Use debounced parsing for better performance (disabled when NLP toggle is off)
   const parsed = useDebouncedParse(input, disabledSections)
@@ -207,6 +221,8 @@ export function QuickAddDialog() {
   const [initialTask, setInitialTask] = useState<typeof newTask>(newTask)
   const hasInitializedRef = useRef(false)
   const reinitializeTimeoutRef = useRef<number | null>(null)
+
+  const hasSchedule = Boolean(newTask.dueDate || newTask.recurring)
 
   const initializeQuickAddState = useCallback(() => {
     let updates: Partial<CreateTaskRequest> = {}
@@ -385,6 +401,7 @@ export function QuickAddDialog() {
 
       if (shouldClose) {
         hasInitializedRef.current = false
+        setKeepOpen(false)
         closeDialog()
       } else {
         scheduleReinitialize()
@@ -406,8 +423,7 @@ export function QuickAddDialog() {
   )
 
   const handleSubmit = async () => {
-    const keepDialogOpen = keepDialogOpenRef.current
-    keepDialogOpenRef.current = false
+    const keepDialogOpen = keepOpen
     // Require either parsed title or manual input
     const finalTitle = parsed?.title || input.trim()
     if (!finalTitle) return
@@ -452,16 +468,6 @@ export function QuickAddDialog() {
   const handleKeyDown = (event: React.KeyboardEvent) => {
     const shortcutDefinitions: QuickAddShortcutDefinition[] = [
       {
-        id: "submit_keep_open",
-        label: "Add task and stay in quick add",
-        keys: ["Cmd/Ctrl", "Enter"],
-        matcher: (e) => e.key === "Enter" && (e.metaKey || e.ctrlKey),
-        handler: () => {
-          keepDialogOpenRef.current = true
-          triggerSubmit()
-        },
-      },
-      {
         id: "submit",
         label: "Add task",
         keys: ["Enter"],
@@ -471,7 +477,6 @@ export function QuickAddDialog() {
           !(e.metaKey || e.ctrlKey) &&
           e.target === e.currentTarget,
         handler: () => {
-          keepDialogOpenRef.current = false
           triggerSubmit()
         },
       },
@@ -494,17 +499,48 @@ export function QuickAddDialog() {
     setInput(e.target.value)
   }
 
-  const handleAutocompleteSelect = (item: AutocompleteItem) => {
-    // Enhanced autocomplete selection is handled by the EnhancedHighlightedInput component
-    console.log("Autocomplete selected:", item)
+  // Helper functions
+  const handleAddProject = async (projectName?: string) => {
+    const trimmedName = projectName?.trim()
+    if (!trimmedName) return
+
+    const existingProject = projects.find(
+      (project) => project.name.toLowerCase() === trimmedName.toLowerCase(),
+    )
+
+    let projectId: ProjectId | undefined
+
+    if (!existingProject) {
+      const randomColor =
+        DEFAULT_COLOR_PALETTE[Math.floor(Math.random() * DEFAULT_COLOR_PALETTE.length)] ?? "#3b82f6"
+
+      projectId = await addProject({ name: trimmedName, color: randomColor })
+    } else {
+      projectId = existingProject.id
+    }
+
+    if (!projectId) return
+
+    projectSetByParsingRef.current = false
+    updateNewTask({ updateRequest: { projectId, sectionId: undefined } })
   }
 
-  // Helper functions
+  const handleAutocompleteSelect = (item: AutocompleteItem) => {
+    // Enhanced autocomplete selection is handled by the EnhancedHighlightedInput component
+    if (item.isCreateOption) {
+      if (item.type === "label") {
+        void handleAddLabel(item.value ?? item.label)
+      } else if (item.type === "project") {
+        void handleAddProject(item.value ?? item.label)
+      }
+    }
+  }
 
   const handleAddLabel = async (labelName?: string) => {
-    if (labelName) {
+    const trimmedName = labelName?.trim()
+    if (trimmedName) {
       const existingLabel = labels.find(
-        (label) => label.name.toLowerCase() === labelName.toLowerCase(),
+        (label) => label.name.toLowerCase() === trimmedName.toLowerCase(),
       )
 
       let labelId: LabelId | undefined
@@ -515,8 +551,8 @@ export function QuickAddDialog() {
         // Wait for the real label ID from the server
         // Use addLabelAndWaitForRealId to disable optimistic updates and get the real ID immediately
         labelId = await addLabelAndWaitForRealId({
-          name: labelName,
-          slug: labelName.toLowerCase().replace(/\s+/g, "-"),
+          name: trimmedName,
+          slug: trimmedName.toLowerCase().replace(/\s+/g, "-"),
           color: randomColor,
         })
       } else {
@@ -568,326 +604,344 @@ export function QuickAddDialog() {
     resetQuickAddState()
   }
 
+  const handleEscapeKeyDown = (event: KeyboardEvent) => {
+    if (autocompleteOpen) {
+      // Keep dialog open when autocomplete is visible; the input handler will close the menu.
+      event.preventDefault()
+    }
+  }
+
+  const quickAddTitle = taskToCopy
+    ? t("quickAdd.copyTitle", "Duplicate Task")
+    : t("quickAdd.title", "New Task")
+
+  const quickAddBody = (
+    <div className="flex flex-col justify-between gap-1">
+      {/* Main Input Row with Smart Parsing toggle */}
+      <div>
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1 pb-3">
+            <EnhancedHighlightedInput
+              placeholder={PLACEHOLDER_TASK_INPUT}
+              value={input}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onAutocompleteVisibilityChange={setAutocompleteOpen}
+              autoFocus
+              onAutocompleteSelect={handleAutocompleteSelect}
+              autocompleteItems={autocompleteItems}
+              parserMatches={parsed?.overlayMatches ?? parsed?.matches ?? null}
+              disabledSections={disabledSections}
+              onToggleSection={handleToggleSection}
+            />
+          </div>
+          {/* Smart Parsing label above compact toggle */}
+          <div className="flex flex-col items-center justify-center pl-1 flex-shrink-0 gap-1">
+            <ContentPopover
+              content={t(
+                "quickAdd.smartParsing.help",
+                "Smart Parsing automatically detects and extracts task details from your input. It can identify priorities (P1-P4), due dates (tomorrow, next week, etc.), project names (#project), labels (@label), and recurring patterns (daily, weekly).",
+              )}
+              side="right"
+              align="center"
+              triggerMode="hover"
+              className="w-64 p-2 text-xs leading-relaxed"
+              triggerClassName="select-none"
+            >
+              <label htmlFor="quick-add-nlp-toggle" className="cursor-pointer select-none">
+                <ScanText className="h-4 w-4" aria-hidden />
+              </label>
+            </ContentPopover>
+            <VisuallyHidden>
+              <label htmlFor="quick-add-nlp-toggle">
+                {t("quickAdd.smartParsing.label", "Smart Parsing")}
+              </label>
+            </VisuallyHidden>
+            <Switch
+              id="quick-add-nlp-toggle"
+              checked={nlpEnabled}
+              onCheckedChange={setNlpEnabled}
+              className="scale-75"
+              data-testid="nlp-toggle"
+            />
+          </div>
+        </div>
+
+        {/* Description */}
+        <Textarea
+          placeholder={t("quickAdd.description.placeholder", "Description")}
+          value={newTask.description ?? ""}
+          onChange={(e) => updateNewTask({ updateRequest: { description: e.target.value } })}
+          className="border-0 shadow-none focus-visible:ring-0 placeholder:text-gray-400 resize-none p-2 bg-muted/30 focus:bg-background"
+          rows={2}
+        />
+      </div>
+
+      {/* Quick Actions Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2 sm:pt-3 pb-1">
+        <div className="flex items-center gap-1 flex-wrap">
+          {/* Due Date */}
+          <TaskSchedulePopover>
+            <PillActionButton
+              icon={
+                <TaskScheduleTrigger
+                  dueDate={newTask.dueDate ?? undefined}
+                  dueTime={newTask.dueTime ?? undefined}
+                  recurring={newTask.recurring ?? undefined}
+                  recurringMode={newTask.recurringMode}
+                  completed={false}
+                  variant="button"
+                  fallbackLabel={t("quickAdd.buttons.date", "Date")}
+                  showLabel={false}
+                />
+              }
+              label={hasSchedule ? null : t("quickAdd.buttons.date", "Date")}
+              ariaLabel={t("quickAdd.buttons.date", "Date")}
+            />
+          </TaskSchedulePopover>
+
+          {/* Priority */}
+          <TaskPriorityPopover
+            onUpdate={(priority) => handleManualPrioritySelect(priority)}
+            align="start"
+            contentClassName="w-48 p-1"
+          >
+            <PillActionButton
+              icon={<Flag className="h-3 w-3 flex-shrink-0" />}
+              label={t("quickAdd.buttons.priority", "Priority")}
+              display={
+                newTask.priority && newTask.priority < 4 ? `P${newTask.priority}` : undefined
+              }
+              className={cn(
+                newTask.priority && newTask.priority < 4
+                  ? getPriorityTextColor(newTask.priority)
+                  : "text-muted-foreground",
+              )}
+            />
+          </TaskPriorityPopover>
+
+          {/* Add Label */}
+          <LabelManagementPopover onAddLabel={handleAddLabel} onRemoveLabel={handleRemoveLabel}>
+            <PillActionButton
+              icon={<Tag className="h-3 w-3 flex-shrink-0" />}
+              label={t("quickAdd.buttons.label", "Label")}
+              display={
+                newTask.labels && newTask.labels.length > 0 ? `${newTask.labels.length}` : undefined
+              }
+              className={cn(
+                newTask.labels && newTask.labels.length > 0
+                  ? "text-foreground font-medium"
+                  : "text-muted-foreground",
+              )}
+            />
+          </LabelManagementPopover>
+
+          {/* Project */}
+          <ProjectPopover
+            onUpdate={(projectId, sectionId) => handleManualProjectSelect(projectId, sectionId)}
+            align="start"
+            contentClassName="w-64 p-0"
+          >
+            {(() => {
+              const selectedProjectId = newTask.projectId
+              const project = projects.find((p) => p.id === selectedProjectId)
+              const section = project?.sections.find((s) => s.id === newTask.sectionId)
+              const valueText = project
+                ? `${project.name}${section ? ` • ${section.name}` : ""}`
+                : undefined
+              return (
+                <PillActionButton
+                  icon={
+                    <Folder
+                      className="h-3 w-3 flex-shrink-0"
+                      style={{ color: project?.color || undefined }}
+                    />
+                  }
+                  label={t("quickAdd.buttons.project", "Project")}
+                  display={valueText}
+                  className="text-muted-foreground"
+                  maxLabelWidthClass="max-w-[12rem] sm:max-w-[16rem]"
+                />
+              )
+            })()}
+          </ProjectPopover>
+
+          {/* People */}
+          <PeopleManagementPopover onOpenChange={() => {}}>
+            <PillActionButton
+              icon={<Users className="h-3 w-3 flex-shrink-0" />}
+              label={t("quickAdd.buttons.assign", "Assign")}
+              display={<AssigneeBadges />}
+              className="text-muted-foreground"
+            />
+          </PeopleManagementPopover>
+
+          {/* Subtasks */}
+          <SubtaskPopover onOpenChange={() => {}}>
+            <PillActionButton
+              icon={<CheckSquare className="h-3 w-3 flex-shrink-0" />}
+              label={t("quickAdd.buttons.subtasks", "Subtasks")}
+              display={
+                newTask.subtasks && newTask.subtasks.length > 0
+                  ? `${newTask.subtasks.length}`
+                  : undefined
+              }
+              className={cn(
+                newTask.subtasks && newTask.subtasks.length > 0
+                  ? "text-foreground font-medium"
+                  : "text-muted-foreground",
+              )}
+            />
+          </SubtaskPopover>
+
+          {/* Comments */}
+          <CommentManagementPopover onOpenChange={() => {}}>
+            <PillActionButton
+              icon={<MessageSquare className="h-3 w-3 flex-shrink-0" />}
+              label={t("quickAdd.buttons.comments", "Comments")}
+              display={
+                newTask.comments && newTask.comments.length > 0
+                  ? `${newTask.comments.length}`
+                  : undefined
+              }
+              className={cn(
+                newTask.comments && newTask.comments.length > 0
+                  ? "text-foreground font-medium"
+                  : "text-muted-foreground",
+              )}
+            />
+          </CommentManagementPopover>
+
+          {/* Estimation */}
+          <TimeEstimationPopover
+            value={newTask.estimation || 0}
+            onChange={(seconds) => updateNewTask({ updateRequest: { estimation: seconds || 0 } })}
+          >
+            <PillActionButton
+              icon={<Clock className="h-3 w-3 flex-shrink-0" />}
+              label={t("quickAdd.buttons.estimation", "Estimate")}
+              display={
+                newTask.estimation && newTask.estimation > 0
+                  ? formatTime(newTask.estimation)
+                  : undefined
+              }
+              className={cn(
+                newTask.estimation && newTask.estimation > 0
+                  ? "text-foreground"
+                  : "text-muted-foreground",
+              )}
+              ariaLabel={t("quickAdd.buttons.estimation", "Estimate")}
+            />
+          </TimeEstimationPopover>
+        </div>
+
+        {/* NLP Toggle moved next to title input above */}
+      </div>
+
+      {/* Labels Display */}
+      {newTask.labels && newTask.labels.length > 0 && (
+        <div className="flex flex-wrap gap-1 py-2">
+          {newTask.labels.map((labelId) => {
+            const label = labels.find((l) => l.id === labelId)
+            if (!label) return null
+            return (
+              <Badge
+                key={labelId}
+                variant="secondary"
+                className="gap-1 px-2 py-0.5 text-xs"
+                style={{
+                  backgroundColor: label.color,
+                  color: "white",
+                  border: "none",
+                }}
+              >
+                <Tag className="h-3 w-3" />
+                {label.name}
+                <button
+                  onClick={() => handleRemoveLabel(labelId)}
+                  className="hover:bg-black/20 rounded-full p-0.5"
+                >
+                  <X className="h-2 w-2" />
+                </button>
+              </Badge>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Bottom Section */}
+      <div className="flex items-center justify-end gap-3 pt-2">
+        <ContentPopover
+          content={t(
+            "quickAdd.keepOpen.help",
+            "Create more than one task: leave the dialog open after adding",
+          )}
+          side="right"
+          align="center"
+          triggerMode="hover"
+          className="w-64 p-2 text-xs leading-relaxed"
+          triggerClassName="select-none"
+        >
+          <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
+            <label htmlFor="quick-add-keep-open" className="cursor-pointer select-none">
+              <CopyPlus className="h-4 w-4" aria-hidden />
+            </label>
+            <Switch
+              id="quick-add-keep-open"
+              checked={keepOpen}
+              onCheckedChange={setKeepOpen}
+              className="scale-90"
+              aria-label={t("quickAdd.keepOpen.label", "Add another")}
+            />
+          </div>
+        </ContentPopover>
+        <Button variant="ghost" onClick={handleCloseDialog} className="text-xs sm:text-sm">
+          {t("common.cancel", "Cancel")}
+        </Button>
+        <SubmitButton
+          onSubmit={handleSubmit}
+          disabled={!parsed?.title && !input.trim()}
+          submittingText={t("quickAdd.addingTask", "Adding")}
+          className="text-xs sm:text-sm"
+          ref={submitButtonRef}
+        >
+          {t("quickAdd.addTask", "Add task")}
+        </SubmitButton>
+      </div>
+    </div>
+  )
+
   return (
     <QuickAddShortcutContext.Provider value={shortcutContextValue}>
       <>
-        <Dialog open={open} onOpenChange={handleCloseDialog}>
-          <DialogContentWithoutOverlay
-            className="w-full max-w-[420px] sm:max-w-[520px] md:max-w-[600px] p-1 border shadow-2xl"
-            showCloseButton={false}
-          >
-            <VisuallyHidden>
-              <DialogTitle>
-                {taskToCopy
-                  ? t("quickAdd.copyTitle", "Duplicate Task")
-                  : t("quickAdd.title", "Quick Add Task")}
-              </DialogTitle>
-            </VisuallyHidden>
-            <div className="flex flex-col justify-between gap-1">
-              {/* Main Input Row with Smart Parsing toggle */}
-              <div>
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <EnhancedHighlightedInput
-                      placeholder={PLACEHOLDER_TASK_INPUT}
-                      value={input}
-                      onChange={handleInputChange}
-                      onKeyDown={handleKeyDown}
-                      autoFocus
-                      onAutocompleteSelect={handleAutocompleteSelect}
-                      autocompleteItems={autocompleteItems}
-                      parserMatches={parsed?.matches ?? null}
-                      disabledSections={disabledSections}
-                    />
-                  </div>
-                  {/* Smart Parsing label above compact toggle */}
-                  <div className="flex flex-col items-center justify-center pl-1 flex-shrink-0">
-                    <ContentPopover
-                      content={t(
-                        "quickAdd.smartParsing.help",
-                        "Smart Parsing is an experimental feature that automatically detects and extracts task details from your input. It can identify priorities (P1-P4), due dates (tomorrow, next week, etc.), project names (#project), labels (@label), and recurring patterns (daily, weekly).",
-                      )}
-                      side="right"
-                      align="center"
-                      triggerMode="hover"
-                      className="w-64 p-2 text-xs leading-relaxed"
-                      triggerClassName="cursor-help select-none"
-                    >
-                      <span className="text-[10px] leading-3 text-muted-foreground text-center">
-                        <span className="block">{t("quickAdd.smart", "Smart")}</span>
-                        <span className="block">{t("quickAdd.parsing", "Parsing")}</span>
-                      </span>
-                    </ContentPopover>
-                    <VisuallyHidden>
-                      <label htmlFor="quick-add-nlp-toggle">
-                        {t("quickAdd.smartParsing.label", "Smart Parsing")}
-                      </label>
-                    </VisuallyHidden>
-                    <Switch
-                      id="quick-add-nlp-toggle"
-                      checked={nlpEnabled}
-                      onCheckedChange={setNlpEnabled}
-                      className="scale-75"
-                      data-testid="nlp-toggle"
-                    />
-                  </div>
-                </div>
-
-                {/* Description */}
-                <Textarea
-                  placeholder={t("quickAdd.description.placeholder", "Description")}
-                  value={newTask.description ?? ""}
-                  onChange={(e) =>
-                    updateNewTask({ updateRequest: { description: e.target.value } })
-                  }
-                  className="border-0 shadow-none focus-visible:ring-0 placeholder:text-gray-400 resize-none p-2 bg-muted/50 min-h-16 sm:min-h-24"
-                  rows={2}
-                />
+        {isMobile ? (
+          <Drawer open={open} onOpenChange={handleCloseDialog} direction="bottom">
+            <DrawerContent
+              className="max-h-[80vh] rounded-t-2xl border shadow-2xl focus:outline-none"
+              onEscapeKeyDown={handleEscapeKeyDown}
+            >
+              <DrawerHeader className="flex items-center justify-center pb-2">
+                <DialogTitle>{quickAddTitle}</DialogTitle>
+              </DrawerHeader>
+              <div className="max-h-[calc(80vh-72px)] overflow-y-auto px-2 pb-4 pt-1">
+                {quickAddBody}
               </div>
-
-              {/* Quick Actions Bar */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2 sm:pt-3 pb-1">
-                <div className="flex items-center gap-1 flex-wrap">
-                  {/* Due Date */}
-                  <TaskSchedulePopover>
-                    <PillActionButton
-                      icon={
-                        <TaskScheduleTrigger
-                          dueDate={newTask.dueDate ?? undefined}
-                          dueTime={newTask.dueTime ?? undefined}
-                          recurring={newTask.recurring ?? undefined}
-                          recurringMode={newTask.recurringMode}
-                          completed={false}
-                          variant="button"
-                          fallbackLabel={t("quickAdd.buttons.date", "Date")}
-                          showLabel={false}
-                        />
-                      }
-                      label={t("quickAdd.buttons.date", "Date")}
-                    />
-                  </TaskSchedulePopover>
-
-                  {/* Priority */}
-                  <TaskPriorityPopover
-                    onUpdate={(priority) => handleManualPrioritySelect(priority)}
-                    align="start"
-                    contentClassName="w-48 p-1"
-                  >
-                    <PillActionButton
-                      icon={<Flag className="h-3 w-3 flex-shrink-0" />}
-                      label={t("quickAdd.buttons.priority", "Priority")}
-                      display={
-                        newTask.priority && newTask.priority < 4
-                          ? `P${newTask.priority}`
-                          : undefined
-                      }
-                      className={cn(
-                        newTask.priority && newTask.priority < 4
-                          ? getPriorityTextColor(newTask.priority)
-                          : "text-muted-foreground",
-                      )}
-                    />
-                  </TaskPriorityPopover>
-
-                  {/* Add Label */}
-                  <LabelManagementPopover
-                    onAddLabel={handleAddLabel}
-                    onRemoveLabel={handleRemoveLabel}
-                  >
-                    <PillActionButton
-                      icon={<Tag className="h-3 w-3 flex-shrink-0" />}
-                      label={t("quickAdd.buttons.label", "Label")}
-                      display={
-                        newTask.labels && newTask.labels.length > 0
-                          ? `${newTask.labels.length}`
-                          : undefined
-                      }
-                      className={cn(
-                        newTask.labels && newTask.labels.length > 0
-                          ? "text-foreground font-medium"
-                          : "text-muted-foreground",
-                      )}
-                    />
-                  </LabelManagementPopover>
-
-                  {/* Project */}
-                  <ProjectPopover
-                    onUpdate={(projectId, sectionId) =>
-                      handleManualProjectSelect(projectId, sectionId)
-                    }
-                    align="start"
-                    contentClassName="w-64 p-0"
-                  >
-                    {(() => {
-                      const selectedProjectId = newTask.projectId
-                      const project = projects.find((p) => p.id === selectedProjectId)
-                      const section = project?.sections.find((s) => s.id === newTask.sectionId)
-                      const valueText = project
-                        ? `${project.name}${section ? ` • ${section.name}` : ""}`
-                        : undefined
-                      return (
-                        <PillActionButton
-                          icon={
-                            <Folder
-                              className="h-3 w-3 flex-shrink-0"
-                              style={{ color: project?.color || undefined }}
-                            />
-                          }
-                          label={t("quickAdd.buttons.project", "Project")}
-                          display={valueText}
-                          className="text-muted-foreground"
-                          maxLabelWidthClass="max-w-[12rem] sm:max-w-[16rem]"
-                        />
-                      )
-                    })()}
-                  </ProjectPopover>
-
-                  {/* People */}
-                  <PeopleManagementPopover onOpenChange={() => {}}>
-                    <PillActionButton
-                      icon={<Users className="h-3 w-3 flex-shrink-0" />}
-                      label={t("quickAdd.buttons.assign", "Assign")}
-                      display={<AssigneeBadges />}
-                      className="text-muted-foreground"
-                    />
-                  </PeopleManagementPopover>
-
-                  {/* Subtasks */}
-                  <SubtaskPopover onOpenChange={() => {}}>
-                    <PillActionButton
-                      icon={<CheckSquare className="h-3 w-3 flex-shrink-0" />}
-                      label={t("quickAdd.buttons.subtasks", "Subtasks")}
-                      display={
-                        newTask.subtasks && newTask.subtasks.length > 0
-                          ? `${newTask.subtasks.length}`
-                          : undefined
-                      }
-                      className={cn(
-                        newTask.subtasks && newTask.subtasks.length > 0
-                          ? "text-foreground font-medium"
-                          : "text-muted-foreground",
-                      )}
-                    />
-                  </SubtaskPopover>
-
-                  {/* Comments */}
-                  <CommentManagementPopover onOpenChange={() => {}}>
-                    <PillActionButton
-                      icon={<MessageSquare className="h-3 w-3 flex-shrink-0" />}
-                      label={t("quickAdd.buttons.comments", "Comments")}
-                      display={
-                        newTask.comments && newTask.comments.length > 0
-                          ? `${newTask.comments.length}`
-                          : undefined
-                      }
-                      className={cn(
-                        newTask.comments && newTask.comments.length > 0
-                          ? "text-foreground font-medium"
-                          : "text-muted-foreground",
-                      )}
-                    />
-                  </CommentManagementPopover>
-
-                  {/* Section button removed; section selection is integrated into Project popover */}
-
-                  {/* Estimation */}
-                  <TimeEstimationPopover
-                    value={newTask.estimation || 0}
-                    onChange={(seconds) =>
-                      updateNewTask({ updateRequest: { estimation: seconds || 0 } })
-                    }
-                  >
-                    <PillActionButton
-                      icon={<Clock className="h-3 w-3 flex-shrink-0" />}
-                      label={t("quickAdd.buttons.estimation", "Estimate")}
-                      display={
-                        newTask.estimation && newTask.estimation > 0
-                          ? formatTime(newTask.estimation)
-                          : undefined
-                      }
-                      className={cn(
-                        newTask.estimation && newTask.estimation > 0
-                          ? "text-foreground"
-                          : "text-muted-foreground",
-                      )}
-                      ariaLabel={t("quickAdd.buttons.estimation", "Estimate")}
-                    />
-                  </TimeEstimationPopover>
-
-                  {/* Expansion Toggle removed; advanced options are merged above */}
-                </div>
-
-                {/* NLP Toggle moved next to title input above */}
-              </div>
-
-              {/* Advanced Row removed; items merged above */}
-
-              {/* Labels Display */}
-              {newTask.labels && newTask.labels.length > 0 && (
-                <div className="flex flex-wrap gap-1 py-2">
-                  {newTask.labels.map((labelId) => {
-                    const label = labels.find((l) => l.id === labelId)
-                    if (!label) return null
-                    return (
-                      <Badge
-                        key={labelId}
-                        variant="secondary"
-                        className="gap-1 px-2 py-0.5 text-xs"
-                        style={{
-                          backgroundColor: label.color,
-                          color: "white",
-                          border: "none",
-                        }}
-                      >
-                        <Tag className="h-3 w-3" />
-                        {label.name}
-                        <button
-                          onClick={() => handleRemoveLabel(labelId)}
-                          className="hover:bg-black/20 rounded-full p-0.5"
-                        >
-                          <X className="h-2 w-2" />
-                        </button>
-                      </Badge>
-                    )
-                  })}
-                </div>
-              )}
-
-              {/* Advanced Sections */}
-              {/* <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}> */}
-              {/*   <CollapsibleContent className="space-y-4"> */}
-              {/*     <div className="space-y-2"> */}
-              {/*       <label className="text-xs text-muted-foreground">Time Estimate (minutes)</label> */}
-              {/*       <input */}
-              {/*         type="number" */}
-              {/*         placeholder="e.g. 30" */}
-              {/*         value={timeEstimate || ""} */}
-              {/*         onChange={(e) => setTimeEstimate(e.target.value ? parseInt(e.target.value) : undefined)} */}
-              {/*         className="w-24 px-2 py-1 text-sm bg-transparent border border-border rounded" */}
-              {/*         min="1" */}
-              {/*       /> */}
-              {/*     </div> */}
-              {/*   </CollapsibleContent> */}
-              {/* </Collapsible> */}
-
-              {/* Bottom Section */}
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <Button variant="ghost" onClick={handleCloseDialog} className="text-xs sm:text-sm">
-                  {t("common.cancel", "Cancel")}
-                </Button>
-                <SubmitButton
-                  onSubmit={handleSubmit}
-                  disabled={!parsed?.title && !input.trim()}
-                  submittingText={t("quickAdd.addingTask", "Adding")}
-                  className="text-xs sm:text-sm"
-                  ref={submitButtonRef}
-                >
-                  {t("quickAdd.addTask", "Add task")}
-                </SubmitButton>
-              </div>
-            </div>
-          </DialogContentWithoutOverlay>
-        </Dialog>
+            </DrawerContent>
+          </Drawer>
+        ) : (
+          <Dialog open={open} onOpenChange={handleCloseDialog}>
+            <DialogContentWithoutOverlay
+              className="w-full max-w-[420px] sm:max-w-[520px] md:max-w-[600px] p-1 border shadow-2xl"
+              showCloseButton={false}
+              onEscapeKeyDown={handleEscapeKeyDown}
+            >
+              <VisuallyHidden>
+                <DialogTitle>{quickAddTitle}</DialogTitle>
+              </VisuallyHidden>
+              {quickAddBody}
+            </DialogContentWithoutOverlay>
+          </Dialog>
+        )}
 
         {/* Confirmation dialog for unsaved data */}
         <UnsavedConfirmationDialog

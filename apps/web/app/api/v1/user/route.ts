@@ -1,14 +1,11 @@
 import { NextResponse } from "next/server"
-import {
-  User,
-  UserSerializationSchema,
-  UpdateUserRequestSchema,
-  UpdateUserResponse,
-  ErrorResponse,
-  ApiErrorCode,
-  GetUserResponse,
-  DataFileSerializationSchema,
-} from "@/lib/types"
+import type { User } from "@tasktrove/types/core"
+import { DataFileSerializationSchema } from "@tasktrove/types/data-file"
+import { UserSerializationSchema } from "@tasktrove/types/serialization"
+import { UpdateUserRequestSchema } from "@tasktrove/types/api-requests"
+import { UpdateUserResponse, GetUserResponse } from "@tasktrove/types/api-responses"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
+import { ErrorResponse } from "@tasktrove/types/api-responses"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import {

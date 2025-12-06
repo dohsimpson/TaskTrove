@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 import type { SetStateAction } from "jotai"
-import { isValidPriority } from "@/lib/types"
+import { isValidPriority } from "@tasktrove/types/validators"
 import { convertTimeToHHMMSS, type ParsedTask } from "@/lib/utils/enhanced-natural-language-parser"
 import { calculateNextDueDate } from "@tasktrove/utils"
 

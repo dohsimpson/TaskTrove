@@ -1,6 +1,7 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen, fireEvent } from "@/test-utils"
+import { waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { EnhancedHighlightedInput } from "./enhanced-highlighted-input"
 import type { ExtractionResult } from "@tasktrove/parser/types"
@@ -23,6 +24,9 @@ vi.mock("lucide-react", () => ({
   ),
   Folder: ({ className }: { className?: string }) => (
     <div data-testid="folder-icon" className={className} />
+  ),
+  PlusCircle: ({ className }: { className?: string }) => (
+    <div data-testid="plus-circle-icon" className={className} />
   ),
 }))
 
@@ -128,6 +132,17 @@ describe("EnhancedHighlightedInput", () => {
     ],
   }
 
+  const setCursorToEnd = (element: HTMLDivElement) => {
+    const textNode = element.firstChild ?? element.appendChild(document.createTextNode(""))
+    const length = element.textContent?.length ?? 0
+    const range = document.createRange()
+    range.setStart(textNode, length)
+    range.collapse(true)
+    const selection = window.getSelection()
+    selection?.removeAllRanges()
+    selection?.addRange(range)
+  }
+
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -147,17 +162,18 @@ describe("EnhancedHighlightedInput", () => {
       expect(overlay).toBeInTheDocument()
 
       // Both should have identical padding
-      expect(contentEditable).toHaveClass("p-3")
-      expect(overlay).toHaveClass("p-3")
+      expect(contentEditable).toHaveClass("p-2")
+      expect(overlay).toHaveClass("p-2")
 
       // ContentEditable should have exact classes from working example
       expect(contentEditable).toHaveClass(
         "w-full",
-        "min-h-[60px]",
-        "p-3",
+        "",
+        "p-2",
         "break-words",
         "whitespace-break-spaces",
-        "bg-transparent",
+        "bg-muted/30",
+        "focus:bg-background",
       )
       expect(contentEditable).not.toHaveClass("text-transparent", "z-10")
 
@@ -165,7 +181,7 @@ describe("EnhancedHighlightedInput", () => {
       expect(overlay).toHaveClass(
         "absolute",
         "inset-0",
-        "p-3",
+        "p-2",
         "pointer-events-none",
         "z-0",
         "whitespace-break-spaces",
@@ -200,9 +216,8 @@ describe("EnhancedHighlightedInput", () => {
         expect(token).not.toHaveClass("p-2")
 
         expect(token).toHaveClass("opacity-60")
-        expect(token).not.toHaveClass("cursor-pointer")
-        expect(token).not.toHaveClass("hover:opacity-80")
-        expect(token).not.toHaveClass("transition-opacity")
+        expect(token).toHaveClass("cursor-pointer")
+        expect(token).toHaveClass("pointer-events-auto")
       })
     })
 
@@ -245,7 +260,7 @@ describe("EnhancedHighlightedInput", () => {
       const placeholderElement = overlay?.querySelector("span")
 
       expect(placeholderElement).toBeInTheDocument()
-      expect(placeholderElement).toHaveClass("text-muted-foreground", "pointer-events-none")
+      expect(placeholderElement).toHaveClass("text-muted-foreground/70", "pointer-events-none")
 
       // Placeholder should not have any positioning or spacing classes
       expect(placeholderElement).not.toHaveClass("absolute")
@@ -373,12 +388,106 @@ describe("EnhancedHighlightedInput", () => {
 
       // Overlay classes should remain unchanged regardless of autocomplete state
       expect(overlay?.className).toBe(initialClasses)
-      expect(overlay).toHaveClass("absolute", "inset-0", "p-3", "z-0")
+      expect(overlay).toHaveClass("absolute", "inset-0", "p-2", "z-0")
+    })
+  })
+
+  describe("Create options", () => {
+    it("shows create label option when no matching label exists", async () => {
+      render(
+        <EnhancedHighlightedInput
+          {...defaultProps}
+          value="@newlabel"
+          autocompleteItems={mockAutocompleteItems}
+        />,
+      )
+
+      const input = screen.getByRole("combobox")
+      if (input instanceof HTMLDivElement) {
+        input.textContent = "@newlabel"
+        setCursorToEnd(input)
+      }
+
+      fireEvent.input(input, { currentTarget: input, target: input })
+
+      await waitFor(() => {
+        expect(screen.getByText('Create label "newlabel"')).toBeInTheDocument()
+      })
+    })
+
+    it("shows create project option when no matching project exists", async () => {
+      render(
+        <EnhancedHighlightedInput
+          {...defaultProps}
+          value="#moonshot"
+          autocompleteItems={mockAutocompleteItems}
+        />,
+      )
+
+      const input = screen.getByRole("combobox")
+      if (input instanceof HTMLDivElement) {
+        input.textContent = "#moonshot"
+        setCursorToEnd(input)
+      }
+
+      fireEvent.input(input, { currentTarget: input, target: input })
+
+      await waitFor(() => {
+        expect(screen.getByText('Create project "moonshot"')).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe("Trigger boundaries", () => {
+    it("does not show label autocomplete when @ is part of a word", async () => {
+      render(
+        <EnhancedHighlightedInput
+          {...defaultProps}
+          value="myemail@"
+          autocompleteItems={mockAutocompleteItems}
+        />,
+      )
+
+      const input = screen.getByRole("combobox")
+      if (input instanceof HTMLDivElement) {
+        input.textContent = "myemail@"
+        setCursorToEnd(input)
+      }
+
+      fireEvent.input(input, { currentTarget: input, target: input })
+
+      await waitFor(() => {
+        expect(screen.queryByRole("listbox")).not.toBeInTheDocument()
+        expect(screen.queryByText(/Create label/)).not.toBeInTheDocument()
+      })
+    })
+
+    it("does not show project autocomplete when # is part of a word", async () => {
+      render(
+        <EnhancedHighlightedInput
+          {...defaultProps}
+          value="topic#deepdive"
+          autocompleteItems={mockAutocompleteItems}
+        />,
+      )
+
+      const input = screen.getByRole("combobox")
+      if (input instanceof HTMLDivElement) {
+        input.textContent = "topic#deepdive"
+        setCursorToEnd(input)
+      }
+
+      fireEvent.input(input, { currentTarget: input, target: input })
+
+      await waitFor(() => {
+        expect(screen.queryByRole("listbox")).not.toBeInTheDocument()
+        expect(screen.queryByText(/Create project/)).not.toBeInTheDocument()
+      })
     })
   })
 
   describe("Disabled Sections Styling", () => {
-    it("should apply disabled styling without affecting text positioning", () => {
+    it("should render disabled tokens as plain text (no highlight/strike) but keep hover affordance", () => {
       const disabledSections = new Set(["#work", "@urgent"])
 
       render(
@@ -394,14 +503,22 @@ describe("EnhancedHighlightedInput", () => {
       )
 
       const overlay = screen.getByRole("combobox").parentElement?.querySelector(".absolute.inset-0")
-      const disabledTokens = overlay?.querySelectorAll('span[class*="line-through"]')
+      const tokens = Array.from(overlay?.querySelectorAll("span") || [])
+      const disabledTokens = tokens.filter((span) =>
+        ["#work", "@urgent"].includes(span.textContent || ""),
+      )
 
       expect(disabledTokens).toHaveLength(2)
 
       disabledTokens?.forEach((token) => {
-        expect(token).toHaveClass("bg-gray-200", "text-gray-600", "line-through")
-        // Should not have padding that affects positioning
-        expect(token).not.toHaveClass("px-0.5")
+        // No highlight / strike-through classes
+        expect(token.className).not.toMatch(/bg-|line-through/)
+        // Hover affordance for reapply
+        expect(token).toHaveClass(
+          "hover:underline",
+          "hover:decoration-dotted",
+          "hover:decoration-foreground",
+        )
       })
     })
   })
@@ -507,20 +624,20 @@ describe("EnhancedHighlightedInput", () => {
       expect(contentEditable).not.toHaveClass("text-transparent", "z-10")
     })
 
-    it("should show/hide placeholder based on focus without layout shift", async () => {
+    it("should show placeholder when empty regardless of focus", async () => {
       render(<EnhancedHighlightedInput {...defaultProps} placeholder="Test placeholder" />)
 
       const contentEditable = screen.getByRole("combobox")
       const overlay = contentEditable.parentElement?.querySelector(".absolute.inset-0")
 
-      // Initially should show placeholder (not focused)
+      // Should show placeholder when empty (both focused and unfocused)
       expect(overlay).toHaveTextContent("Test placeholder")
 
-      // Focus should hide placeholder
+      // Focus should not hide placeholder (simplified logic)
       fireEvent.focus(contentEditable)
-      expect(overlay).not.toHaveTextContent("Test placeholder")
+      expect(overlay).toHaveTextContent("Test placeholder")
 
-      // Blur should show placeholder again (if no content)
+      // Blur should still show placeholder
       fireEvent.blur(contentEditable)
       expect(overlay).toHaveTextContent("Test placeholder")
     })
@@ -586,8 +703,8 @@ describe("EnhancedHighlightedInput", () => {
       // Check that the main alignment elements are still properly positioned
       const overlay = contentEditable.parentElement?.querySelector(".absolute.inset-0")
       expect(overlay).toBeInTheDocument()
-      expect(overlay).toHaveClass("absolute", "inset-0", "p-3", "z-0")
-      expect(contentEditable).toHaveClass("p-3", "bg-transparent")
+      expect(overlay).toHaveClass("absolute", "inset-0", "p-2", "z-0")
+      expect(contentEditable).toHaveClass("p-2", "bg-muted/30", "focus:bg-background")
       expect(contentEditable).not.toHaveClass("z-10", "text-transparent")
 
       // Should have tokens rendered (may be 0 in test environment, which is fine)

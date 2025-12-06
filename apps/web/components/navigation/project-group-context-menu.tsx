@@ -12,7 +12,9 @@ import {
   deleteProjectGroupAtom,
 } from "@tasktrove/atoms/core/groups"
 import { startEditingGroupAtom } from "@tasktrove/atoms/ui/navigation"
-import { createProjectId, type GroupId, type ProjectId } from "@/lib/types"
+import { createProjectId } from "@tasktrove/types/id"
+import type { GroupId } from "@tasktrove/types/id"
+import type { ProjectId } from "@tasktrove/types/id"
 import { DEFAULT_PROJECT_COLORS } from "@tasktrove/constants"
 
 interface ProjectGroupContextMenuProps {

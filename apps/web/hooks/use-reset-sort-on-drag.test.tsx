@@ -4,7 +4,7 @@ import { Provider, createStore, useAtomValue, useSetAtom } from "jotai"
 import { describe, it, expect } from "vitest"
 import { draggingTaskIdsAtom } from "@tasktrove/atoms/ui/drag"
 import { currentViewStateAtom, setViewOptionsAtom } from "@tasktrove/atoms/ui/views"
-import { createTaskId } from "@/lib/types"
+import { createTaskId } from "@tasktrove/types/id"
 import { useResetSortOnDrag } from "./use-reset-sort-on-drag"
 
 describe("useResetSortOnDrag", () => {

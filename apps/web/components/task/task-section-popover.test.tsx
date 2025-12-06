@@ -3,8 +3,8 @@ import { describe, it, expect } from "vitest"
 import { render, screen, fireEvent } from "@/test-utils"
 import { TaskSectionPopover } from "./task-section-popover"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
-import { createProjectId, createGroupId, createTaskId } from "@/lib/types"
-import type { Project } from "@/lib/types"
+import { createProjectId, createGroupId, createTaskId } from "@tasktrove/types/id"
+import type { Project } from "@tasktrove/types/core"
 
 const mockProject: Project = {
   id: createProjectId("123e4567-e89b-12d3-a456-426614174000"),

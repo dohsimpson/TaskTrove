@@ -154,8 +154,9 @@ function parseRouteContext(
     // Fallback if label not found or labels not available
     return {
       pathname,
-      viewId: "all", // Fallback to showing all tasks
+      viewId: "not-found", // Explicit not-found sentinel for missing labels
       routeType: "label",
+      slug: decodedParam,
     };
   }
 

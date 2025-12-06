@@ -2,7 +2,7 @@ import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@/test-utils"
 import { PomodoroDialog } from "./pomodoro-dialog"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 import { TEST_TASK_ID_1, TEST_TASK_ID_2 } from "@tasktrove/types/test-constants"
 
 // Mock component props interface

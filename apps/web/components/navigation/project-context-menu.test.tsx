@@ -10,7 +10,10 @@ import {
   TEST_TASK_ID_2,
 } from "@tasktrove/types/test-constants"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import { TaskUpdateSerializationSchema, TaskUpdateArraySerializationSchema } from "@/lib/types"
+import {
+  TaskUpdateSerializationSchema,
+  TaskUpdateArraySerializationSchema,
+} from "@tasktrove/types/api-requests"
 
 // Mock component interfaces
 interface MockButtonProps {
@@ -341,12 +344,20 @@ describe("ProjectContextMenu", () => {
 
   describe("Serialization Schema Tests", () => {
     // Direct tests for the schemas to catch serialization issues like the one reported
-    it("validates TaskUpdateSerializationSchema accepts null projectId", () => {
+    it("validates TaskSerializationSchema accepts null projectId", () => {
       // This test directly validates the fix for the reported error:
       // "Failed to serialize updated tasks data: expected string, received null"
       const updateWithNullProjectId = {
         id: TEST_TASK_ID_1,
+        title: "Test Task",
+        completed: false,
+        priority: 1,
+        labels: [],
+        subtasks: [],
+        comments: [],
+        createdAt: new Date(),
         projectId: null, // This should be valid after our fix
+        recurringMode: "dueDate",
       }
 
       const result = TaskUpdateSerializationSchema.safeParse(updateWithNullProjectId)
@@ -357,17 +368,33 @@ describe("ProjectContextMenu", () => {
       }
     })
 
-    it("validates TaskUpdateArraySerializationSchema accepts array with null projectId", () => {
+    it("validates TaskArraySerializationSchema accepts array with null projectId", () => {
       // Test the array serialization schema used by the mutation atom
       // This is the exact path that was failing when deleting projects without contained resources
       const updatesWithNullProjectId = [
         {
           id: TEST_TASK_ID_1,
+          title: "Test Task 1",
+          completed: false,
+          priority: 1,
+          labels: [],
+          subtasks: [],
+          comments: [],
+          createdAt: new Date(),
           projectId: null,
+          recurringMode: "dueDate",
         },
         {
           id: TEST_TASK_ID_2,
+          title: "Test Task 2",
+          completed: false,
+          priority: 2,
+          labels: [],
+          subtasks: [],
+          comments: [],
+          createdAt: new Date(),
           projectId: null,
+          recurringMode: "dueDate",
         },
       ]
 

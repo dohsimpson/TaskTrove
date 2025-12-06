@@ -4,8 +4,8 @@ import { render, screen, waitFor } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { v4 as uuidv4 } from "uuid"
 import { SubtaskContent } from "./subtask-content"
-import type { Task, Subtask } from "@/lib/types"
-import { createSubtaskId } from "@/lib/types"
+import type { Task, Subtask } from "@tasktrove/types/core"
+import { createSubtaskId } from "@tasktrove/types/id"
 import {
   TEST_TASK_ID_1,
   TEST_PROJECT_ID_1,

@@ -10,7 +10,7 @@ import { ContentPopover } from "@/components/ui/content-popover"
 import { HelpPopover } from "@/components/ui/help-popover"
 import { Badge } from "@/components/ui/badge"
 import { taskAtoms } from "@tasktrove/atoms/core/tasks"
-import type { TaskId } from "@/lib/types"
+import type { TaskId } from "@tasktrove/types/id"
 
 interface TimeEstimationPickerProps {
   taskId?: TaskId // For existing tasks

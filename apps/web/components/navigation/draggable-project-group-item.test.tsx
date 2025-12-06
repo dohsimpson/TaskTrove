@@ -1,10 +1,11 @@
-import { DEFAULT_PROJECT_SECTION } from "@/lib/types"
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@/test-utils"
 import { DraggableProjectGroupItem } from "./draggable-project-group-item"
-import type { ProjectGroup, Project } from "@/lib/types"
-import { createProjectId, createGroupId } from "@/lib/types"
+import type { ProjectGroup } from "@tasktrove/types/group"
+import type { Project } from "@tasktrove/types/core"
+import { createProjectId, createGroupId } from "@tasktrove/types/id"
 import { mockNextNavigation, mockNavigation } from "@/test-utils/mock-router"
 
 // Mock components that might cause issues

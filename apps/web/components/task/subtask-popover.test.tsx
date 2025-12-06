@@ -11,7 +11,7 @@ import {
 import userEvent from "@testing-library/user-event"
 import { Provider } from "jotai"
 import { SubtaskPopover } from "./subtask-popover"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 import {
   TEST_TASK_ID_1,
   TEST_SUBTASK_ID_1,

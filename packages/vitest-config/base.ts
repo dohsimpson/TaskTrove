@@ -8,6 +8,7 @@ export const baseConfig: UserConfig = {
   test: {
     globals: true,
     silent: "passed-only",
+    testTimeout: 15_000, // Increased from default 5000ms as we have increased vitest nice value
     exclude: [
       "**/node_modules/**",
       "**/dist/**",

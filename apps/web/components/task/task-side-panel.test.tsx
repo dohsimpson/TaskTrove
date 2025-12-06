@@ -4,8 +4,8 @@ import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { TaskSidePanel } from "./task-side-panel"
 import { DEFAULT_SECTION_COLORS, DEFAULT_UUID } from "@tasktrove/constants"
-import type { LabelId } from "@/lib/types"
-import { createLabelId } from "@/lib/types"
+import type { LabelId } from "@tasktrove/types/id"
+import { createLabelId } from "@tasktrove/types/id"
 
 // Define proper interfaces for mocks
 interface MockJotaiAtom {
@@ -126,7 +126,7 @@ function isReactElement(
 }
 
 // Mock Drawer components
-vi.mock("@/components/ui/drawer", () => ({
+vi.mock("@/components/ui/custom/drawer", () => ({
   Drawer: ({ children, open, onOpenChange, direction }: DrawerProps) => (
     <div data-testid="drawer" data-open={open} data-direction={direction}>
       <div onClick={() => onOpenChange?.(!open)}>{children}</div>
@@ -1019,7 +1019,12 @@ describe("TaskSidePanel", () => {
         const drawerContents = screen.getAllByTestId("drawer-content")
         const drawerContent = drawerContents[0] // Get the first one (main drawer content)
         expect(drawerContent).toBeInTheDocument()
-        expect(drawerContent).toHaveClass("!max-h-[60vh]", "focus:outline-none")
+        expect(drawerContent).toHaveClass(
+          "!max-h-[70vh]",
+          "focus:outline-none",
+          "[&>div:first-child]:cursor-grab",
+          "[&>div:first-child]:active:cursor-grabbing",
+        )
       })
 
       it("hides keyboard shortcuts on mobile", () => {
@@ -1058,7 +1063,6 @@ describe("TaskSidePanel", () => {
           drawerTitles[0] // Prefer the one with task details, fallback to first
         expect(drawerTitle).toBeInTheDocument()
         expect(drawerTitle).toHaveTextContent("Task Details: Test Task")
-        expect(drawerTitle).toHaveClass("sr-only") // Visually hidden but accessible
       })
 
       it("renders drawer close button correctly", () => {
@@ -1067,7 +1071,10 @@ describe("TaskSidePanel", () => {
         render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
         // Should have a close button in the drawer header
-        const drawerCloseButton = screen.getByTestId("drawer-close")
+        const allButtons = screen.getAllByRole("button")
+        const drawerCloseButton = allButtons.find(
+          (button) => button.querySelector("svg.lucide-x") !== null,
+        )
         expect(drawerCloseButton).toBeInTheDocument()
       })
 

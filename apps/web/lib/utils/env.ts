@@ -6,6 +6,10 @@ export const isPro = (): boolean => {
   return false
 }
 
+export const isMobileApp = (): boolean => {
+  return false
+}
+
 /**
  * Check if the application is running in development mode
  */
@@ -21,3 +25,7 @@ export const isAuthEnabled = (): boolean => {
   const secret = process.env.AUTH_SECRET
   return Boolean(secret && secret.trim())
 }
+
+export const isAndroid = (): boolean => false
+export const isIos = (): boolean => false
+export const isWeb = (): boolean => true

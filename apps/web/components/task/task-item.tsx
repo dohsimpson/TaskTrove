@@ -64,8 +64,12 @@ import {
 } from "@tasktrove/atoms/ui/dialogs"
 import { selectedTaskIdAtom } from "@tasktrove/atoms/ui/selection"
 import { toggleTaskPanelWithViewStateAtom } from "@tasktrove/atoms/ui/views"
-import type { Task, TaskId, TaskPriority, Subtask, LabelId, CreateTaskRequest } from "@/lib/types"
-import { INBOX_PROJECT_ID, createTaskId } from "@/lib/types"
+import type { Task, Subtask } from "@tasktrove/types/core"
+import type { TaskPriority } from "@tasktrove/types/constants"
+import type { CreateTaskRequest } from "@tasktrove/types/api-requests"
+import type { TaskId, LabelId } from "@tasktrove/types/id"
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants"
+import { createTaskId } from "@tasktrove/types/id"
 import { TimeEstimationPicker } from "../ui/custom/time-estimation-picker"
 import { useTranslation } from "@tasktrove/i18n"
 // Responsive width for metadata columns to ensure consistent alignment
@@ -1171,7 +1175,7 @@ export function TaskItem({
         onClick={handleTaskClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className={cn("group/task text-xs", className)}
+        className={cn("group/task text-xs py-0 px-0.5", className)}
         data-task-id={task.id}
       >
         <div className="flex items-center gap-1 min-w-0">

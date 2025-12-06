@@ -48,3 +48,5 @@ export const toggleMobileSettingsDrawerAtom = atom(
     set(mobileSettingsDrawerOpenAtom, !get(mobileSettingsDrawerOpenAtom));
   },
 );
+
+// No extra atom for uiSettings; use settingsAtom/updateSettingsAtom directly

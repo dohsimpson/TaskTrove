@@ -1,11 +1,11 @@
-import { DEFAULT_PROJECT_SECTION } from "@/lib/types"
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@/test-utils"
 import { mockNextNavigation } from "@/test-utils/mock-router"
 import { DraggableProjectItem } from "./draggable-project-item"
-import type { Project } from "@/lib/types"
-import { createProjectId, createGroupId } from "@/lib/types"
+import type { Project } from "@tasktrove/types/core"
+import { createProjectId, createGroupId } from "@tasktrove/types/id"
 
 // Mock Next.js router using centralized utilities
 mockNextNavigation()

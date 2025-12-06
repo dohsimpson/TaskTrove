@@ -12,7 +12,7 @@ import {
   handleSettingsAtomInMock,
 } from "@/test-utils"
 import { QuickAddDialog } from "./quick-add-dialog"
-import type { Project } from "@/lib/types"
+import type { Project } from "@tasktrove/types/core"
 
 // Mock component props interface
 interface MockComponentProps {
@@ -151,6 +151,8 @@ vi.mock("lucide-react", () => ({
       ⏳
     </span>
   ),
+  ScanText: () => <span data-testid="scan-text-icon">📄</span>,
+  CopyPlus: () => <span data-testid="copy-plus-icon">📋➕</span>,
 }))
 
 vi.mock("@radix-ui/react-visually-hidden", () => ({
@@ -225,17 +227,27 @@ vi.mock("jotai", async (importOriginal) => {
   }
 })
 
-vi.mock("@/lib/types", () => ({
+vi.mock("@tasktrove/types/constants", () => ({
   INBOX_PROJECT_ID: "inbox",
-  createProjectId: vi.fn((id) => id),
-  createLabelId: vi.fn((id) => id),
-  createSubtaskId: vi.fn((id) => id),
-  createTaskId: vi.fn((id) => id),
-  createSectionId: vi.fn((id) => id),
-  createGroupId: vi.fn((id) => id),
-  createCommentId: vi.fn((id) => id),
-  createVoiceCommandId: vi.fn((id) => id),
-  // Mock Zod schemas used by mutation atoms
+}))
+
+vi.mock("@tasktrove/types/id", async () => {
+  const actual = await vi.importActual<typeof import("@tasktrove/types/id")>("@tasktrove/types/id")
+  return {
+    ...actual,
+    createProjectId: vi.fn((id: string) => id),
+    createLabelId: vi.fn((id: string) => id),
+    createSubtaskId: vi.fn((id: string) => id),
+    createTaskId: vi.fn((id: string) => id),
+    createSectionId: vi.fn((id: string) => id),
+    createGroupId: vi.fn((id: string) => id),
+    createCommentId: vi.fn((id: string) => id),
+    createVoiceCommandId: vi.fn((id: string) => id),
+    createVersionString: vi.fn((version: string) => version),
+  }
+})
+
+vi.mock("@tasktrove/types/api-responses", () => ({
   UpdateTaskResponseSchema: {
     safeParse: vi.fn().mockReturnValue({
       success: true,
@@ -272,9 +284,56 @@ vi.mock("@/lib/types", () => ({
       data: { labelIds: [], success: true, message: "Mock response" },
     }),
   },
-  LabelCreateSerializationSchema: {
-    safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
+  UpdateProjectResponseSchema: {
+    safeParse: vi.fn().mockReturnValue({
+      success: true,
+      data: { projectIds: [], success: true, message: "Mock response" },
+    }),
   },
+  DeleteProjectResponseSchema: {
+    safeParse: vi.fn().mockReturnValue({
+      success: true,
+      data: { projectIds: [], success: true, message: "Mock response" },
+    }),
+  },
+  UpdateLabelResponseSchema: {
+    safeParse: vi.fn().mockReturnValue({
+      success: true,
+      data: { labelIds: [], success: true, message: "Mock response" },
+    }),
+  },
+  DeleteLabelResponseSchema: {
+    safeParse: vi.fn().mockReturnValue({
+      success: true,
+      data: { labelIds: [], success: true, message: "Mock response" },
+    }),
+  },
+  OrderingUpdateResponseSchema: {
+    safeParse: vi
+      .fn()
+      .mockReturnValue({ success: true, data: { success: true, message: "Mock response" } }),
+  },
+  UpdateSettingsResponseSchema: {
+    safeParse: vi.fn().mockReturnValue({
+      success: true,
+      data: { success: true, settings: {}, message: "Mock response" },
+    }),
+  },
+  UpdateGroupResponseSchema: {
+    safeParse: vi.fn().mockReturnValue({
+      success: true,
+      data: { labelIds: [], success: true, message: "Mock response" },
+    }),
+  },
+  DeleteGroupResponseSchema: {
+    safeParse: vi.fn().mockReturnValue({
+      success: true,
+      data: { labelIds: [], success: true, message: "Mock response" },
+    }),
+  },
+}))
+
+vi.mock("@tasktrove/types/api-requests", () => ({
   CreateTaskRequestSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
   },
@@ -282,6 +341,18 @@ vi.mock("@/lib/types", () => ({
     safeParse: vi.fn().mockReturnValue({ success: true, data: "mock-id" }),
   },
   CreateGroupRequestSchema: {
+    safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
+  },
+  DeleteGroupRequestSchema: {
+    safeParse: vi.fn().mockReturnValue({ success: true, data: "mock-id" }),
+  },
+  UpdateProjectGroupRequestSchema: {
+    safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
+  },
+}))
+
+vi.mock("@tasktrove/types/serialization", () => ({
+  LabelCreateSerializationSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
   },
   TaskArraySerializationSchema: {
@@ -299,7 +370,6 @@ vi.mock("@/lib/types", () => ({
   TaskSerializationSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
   },
-  // Project-related schemas
   ProjectCreateSerializationSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
   },
@@ -309,61 +379,17 @@ vi.mock("@/lib/types", () => ({
   ProjectDeleteSerializationSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: { id: "mock-id" } }),
   },
-  UpdateProjectResponseSchema: {
-    safeParse: vi.fn().mockReturnValue({
-      success: true,
-      data: { projectIds: [], success: true, message: "Mock response" },
-    }),
-  },
-  DeleteProjectResponseSchema: {
-    safeParse: vi.fn().mockReturnValue({
-      success: true,
-      data: { projectIds: [], success: true, message: "Mock response" },
-    }),
-  },
-  // Label-related schemas
   LabelUpdateArraySerializationSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: [] }),
-  },
-  UpdateLabelResponseSchema: {
-    safeParse: vi.fn().mockReturnValue({
-      success: true,
-      data: { labelIds: [], success: true, message: "Mock response" },
-    }),
-  },
-  DeleteLabelResponseSchema: {
-    safeParse: vi.fn().mockReturnValue({
-      success: true,
-      data: { labelIds: [], success: true, message: "Mock response" },
-    }),
   },
   LabelDeleteSerializationSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: { id: "mock-id" } }),
   },
-  // Ordering-related schemas
-  OrderingUpdateResponseSchema: {
-    safeParse: vi
-      .fn()
-      .mockReturnValue({ success: true, data: { success: true, message: "Mock response" } }),
-  },
   OrderingSerializationSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
   },
-  // Settings-related schemas
-  UpdateSettingsResponseSchema: {
-    safeParse: vi.fn().mockReturnValue({
-      success: true,
-      data: { success: true, settings: {}, message: "Mock response" },
-    }),
-  },
   UpdateSettingsRequestSchema: {
     safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
-  },
-  UpdateGroupResponseSchema: {
-    safeParse: vi.fn().mockReturnValue({
-      success: true,
-      data: { labelIds: [], success: true, message: "Mock response" },
-    }),
   },
   BulkGroupUpdateSchema: {
     safeParse: vi.fn().mockReturnValue({
@@ -376,19 +402,9 @@ vi.mock("@/lib/types", () => ({
       .fn()
       .mockReturnValue({ success: true, data: { success: true, message: "Mock response" } }),
   },
-  DeleteGroupResponseSchema: {
-    safeParse: vi.fn().mockReturnValue({
-      success: true,
-      data: { labelIds: [], success: true, message: "Mock response" },
-    }),
-  },
-  DeleteGroupRequestSchema: {
-    safeParse: vi.fn().mockReturnValue({ success: true, data: "mock-id" }),
-  },
-  UpdateProjectGroupRequestSchema: {
-    safeParse: vi.fn().mockReturnValue({ success: true, data: {} }),
-  },
-  // Validator functions
+}))
+
+vi.mock("@tasktrove/types/validators", () => ({
   isValidPriority: vi.fn((value: unknown) => typeof value === "number" && value >= 1 && value <= 4),
   isValidViewMode: vi.fn(
     (value: unknown) =>
@@ -433,8 +449,7 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
 
       // Should have exact classes from working example (no conflicts)
       expect(contentEditable).toHaveClass("w-full")
-      expect(contentEditable).toHaveClass("min-h-[60px]")
-      expect(contentEditable).toHaveClass("p-3")
+      expect(contentEditable).toHaveClass("p-2")
       expect(contentEditable).toHaveClass("break-words")
       expect(contentEditable).toHaveClass("whitespace-break-spaces")
       expect(contentEditable).not.toHaveClass("text-transparent")
@@ -458,7 +473,7 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
       expect(overlay).toBeInTheDocument()
       expect(overlay).toHaveClass("absolute")
       expect(overlay).toHaveClass("inset-0")
-      expect(overlay).toHaveClass("p-3")
+      expect(overlay).toHaveClass("p-2")
       expect(overlay).toHaveClass("pointer-events-none")
       expect(overlay).toHaveClass("z-0")
       expect(overlay).toHaveClass("whitespace-break-spaces")
@@ -528,8 +543,8 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
         expect(token).not.toHaveClass("rounded")
 
         expect(token).toHaveClass("opacity-60")
-        expect(token).not.toHaveClass("cursor-pointer")
-        expect(token).not.toHaveClass("hover:opacity-80")
+        // Tokens are intentionally clickable for toggling
+        expect(token).toHaveClass("cursor-pointer")
       })
     })
 
@@ -564,9 +579,9 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
       if (projectToken) {
         fireEvent.click(projectToken)
 
-        // Token should now be disabled but without layout shift
+        // Token should now be disabled but without layout shift; still clickable to re-enable
         expect(projectToken).not.toHaveClass("px-0.5")
-        expect(projectToken).not.toHaveClass("cursor-pointer")
+        expect(projectToken).toHaveClass("cursor-pointer")
       }
     })
   })
@@ -586,7 +601,7 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
       const inputContainer = contentEditable.parentElement
 
       expect(inputContainer).toHaveClass("relative")
-      expect(contentEditable).toHaveClass("p-3", "bg-transparent")
+      expect(contentEditable).toHaveClass("p-2", "bg-muted/30", "focus:bg-background")
       expect(contentEditable).not.toHaveClass("z-10")
     })
 
@@ -660,7 +675,7 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
       // Verify tokens are rendered in overlay
       const overlay = inputContainer?.querySelector(".absolute.inset-0")
       expect(overlay).toBeInTheDocument()
-      expect(overlay).toHaveClass("absolute", "inset-0", "p-3", "z-0")
+      expect(overlay).toHaveClass("absolute", "inset-0", "p-2", "z-0")
     })
   })
 
@@ -758,7 +773,7 @@ describe("Quick Add Dialog - Alignment Integration Tests", () => {
       })
 
       // Verify the critical CSS classes are present (not computed styles in test env)
-      expect(contentEditable).toHaveClass("p-3") // Consistent padding
+      expect(contentEditable).toHaveClass("p-2") // Consistent padding
       expect(contentEditable).not.toHaveClass("text-transparent") // Cursor visibility fix
       expect(contentEditable).not.toHaveClass("z-10") // Cursor visibility fix
 

@@ -1,11 +1,11 @@
-import { DEFAULT_PROJECT_SECTION } from "@/lib/types"
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent } from "@/test-utils"
+import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { ProjectContent } from "./project-content"
-import type { Task, Project } from "@/lib/types"
-import { createProjectId, createGroupId, createTaskId } from "@/lib/types"
+import type { Task, Project } from "@tasktrove/types/core"
+import { createProjectId, createGroupId, createTaskId } from "@tasktrove/types/id"
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
 
 // Mock project data with groups and sections
 const mockProjects: Project[] = [
@@ -355,22 +355,19 @@ describe("ProjectContent", () => {
       ])
     })
 
+    it("auto-expands the project that contains the task's selected section", async () => {
+      render(<ProjectContent task={mockTask} />)
+
+      // Section for the current task should be visible without manual expansion
+      expect(await screen.findByText("To Do")).toBeInTheDocument()
+    })
+
     it("highlights currently selected project and section", () => {
       render(<ProjectContent task={mockTask} />)
 
-      // The task has project-1 and section-1 selected
-      // Expand to show sections first by finding the chevron and clicking it
-      const workProject = screen.getByText("Work Project")
-      const projectContainer = workProject.closest("div")?.parentElement
-      const chevronButton = projectContainer?.querySelector("button")
-
-      if (chevronButton) {
-        fireEvent.click(chevronButton)
-
-        // Now check for selected section
-        const todoSection = screen.getByText("To Do")
-        expect(todoSection.closest("div")).toHaveClass("bg-accent")
-      }
+      // Sections should already be visible since the task lives inside "To Do"
+      const todoSection = screen.getByText("To Do")
+      expect(todoSection.closest("div")).toHaveClass("bg-accent")
     })
   })
 

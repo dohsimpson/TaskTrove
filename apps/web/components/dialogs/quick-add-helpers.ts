@@ -1,4 +1,6 @@
-import type { CreateTaskRequest, User, UserId } from "@/lib/types"
+import type { CreateTaskRequest } from "@tasktrove/types/api-requests"
+import type { User } from "@tasktrove/types/core"
+import type { UserId } from "@tasktrove/types/id"
 import type { RouteContext } from "@tasktrove/atoms/ui/navigation"
 
 export function getProViewUpdates(

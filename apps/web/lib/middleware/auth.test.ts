@@ -7,7 +7,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { withAuthentication } from "./auth"
 import { NextResponse } from "next/server"
-import { ApiErrorCode, ErrorResponse, createGroupId, createUserId } from "@/lib/types"
+import type { ErrorResponse } from "@tasktrove/types/api-responses"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
+import { createGroupId } from "@tasktrove/types/id"
+import { createUserId } from "@tasktrove/types/id"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 import { DEFAULT_DATA_VERSION } from "@tasktrove/types/defaults"
 import type { EnhancedRequest } from "./api-logger"
@@ -464,6 +467,9 @@ describe("withAuthentication", () => {
             enabled: true,
             requireInteraction: false,
           },
+          uiSettings: {
+            weekStartsOn: undefined,
+          },
         },
         tasks: [],
         projects: [],
@@ -530,6 +536,9 @@ describe("withAuthentication", () => {
           notifications: {
             enabled: true,
             requireInteraction: false,
+          },
+          uiSettings: {
+            weekStartsOn: undefined,
           },
         },
         tasks: [],
@@ -599,6 +608,9 @@ describe("withAuthentication", () => {
           notifications: {
             enabled: true,
             requireInteraction: false,
+          },
+          uiSettings: {
+            weekStartsOn: undefined,
           },
         },
         tasks: [],
@@ -704,6 +716,9 @@ describe("withAuthentication", () => {
           notifications: {
             enabled: true,
             requireInteraction: false,
+          },
+          uiSettings: {
+            weekStartsOn: undefined,
           },
         },
         tasks: [],

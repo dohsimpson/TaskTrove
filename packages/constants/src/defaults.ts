@@ -160,7 +160,7 @@ export const STANDARD_VIEW_METADATA: Record<
     iconType: "inbox" as const,
   },
   today: {
-    title: "Today",
+    title: "Today's Tasks",
     description: "Keep up with everything scheduled for today",
     iconType: "today" as const,
   },
@@ -459,7 +459,7 @@ export const FALLBACK_COLOR = GRAY_COLORS.default;
 // =============================================================================
 
 /** Placeholder text for task input */
-export const PLACEHOLDER_TASK_INPUT = "What needs to be done?";
+export const PLACEHOLDER_TASK_INPUT = "Task name";
 
 /** Placeholder text for project name */
 export const PLACEHOLDER_PROJECT_NAME = "Enter project name";

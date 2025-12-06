@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { QuickCommentDialog } from "./quick-comment-dialog"
-import { createTaskId } from "@/lib/types"
+import { createTaskId } from "@tasktrove/types/id"
 
 // Mock component interfaces
 interface MockButtonProps {

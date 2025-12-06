@@ -4,7 +4,9 @@ import { withMutexProtection } from "@/lib/utils/api-mutex"
 import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
 import { withApiLogging } from "@/lib/middleware/api-logger"
-import { ApiErrorCode, ErrorResponse, API_ROUTES } from "@/lib/types"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
+import type { ErrorResponse } from "@tasktrove/types/api-responses"
+import { API_ROUTES } from "@tasktrove/types/constants"
 
 async function createBackup() {
   try {

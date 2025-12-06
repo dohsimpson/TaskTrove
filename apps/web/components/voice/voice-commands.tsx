@@ -21,7 +21,8 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { log } from "@/lib/utils/logger"
-import { VoiceCommand, createVoiceCommandId } from "@/lib/types"
+import type { VoiceCommand } from "@tasktrove/types/voice-commands"
+import { createVoiceCommandId } from "@tasktrove/types/id"
 
 // Define proper SpeechRecognition interface for browser API
 interface SpeechRecognition extends EventTarget {

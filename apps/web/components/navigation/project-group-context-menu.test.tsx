@@ -4,8 +4,8 @@ import { screen, fireEvent } from "@/test-utils"
 import { render } from "@/test-utils/render-with-providers"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
 import { groupsQueryAtom } from "@tasktrove/atoms/data/base/query"
-import { createGroupId, createProjectId } from "@/lib/types"
-import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types"
+import { createGroupId, createProjectId } from "@tasktrove/types/id"
+import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@tasktrove/types/defaults"
 
 // Mock component interfaces
 interface MockButtonProps {

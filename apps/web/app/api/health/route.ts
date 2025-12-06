@@ -7,7 +7,7 @@ import {
   CURRENT_API_VERSION,
   SUPPORTED_API_VERSIONS,
 } from "@/lib/middleware/api-version"
-import { API_ROUTES } from "@/lib/types"
+import { API_ROUTES } from "@tasktrove/types/constants"
 
 async function healthCheck() {
   try {

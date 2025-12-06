@@ -22,6 +22,12 @@ export interface ParsedTaskWithMatches extends ParsedTask {
    * Raw extraction results before post-processing. Useful for debugging.
    */
   rawMatches: ExtractionResult[];
+  /**
+   * Unfiltered matches for UI overlays (e.g., to keep clickable tokens visible
+   * even when a section is temporarily disabled). Defaults to `matches` when
+   * no alternate set is provided.
+   */
+  overlayMatches?: ExtractionResult[];
 }
 
 /**

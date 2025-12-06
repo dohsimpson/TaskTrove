@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 import { isPro } from "@/lib/utils/env"
 
 interface TaskDebugBadgeProps {

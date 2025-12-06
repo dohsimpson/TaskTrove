@@ -1,7 +1,8 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@/test-utils"
-import type { Task, VoiceCommand } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
+import type { VoiceCommand } from "@tasktrove/types/voice-commands"
 import { TEST_VOICE_COMMAND_ID_1, TEST_TASK_ID_3 } from "@tasktrove/types/test-constants"
 import { createMockTask } from "@tasktrove/atoms/utils/test-helpers"
 

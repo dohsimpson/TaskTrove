@@ -3,7 +3,8 @@
 import React, { useState } from "react"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { ProjectContent } from "./project-content"
-import type { Task, ProjectId, GroupId } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
+import type { ProjectId, GroupId } from "@tasktrove/types/id"
 
 interface ProjectPopoverProps {
   // Mode 1: Task-based (for TaskItem)

@@ -15,7 +15,7 @@ import {
 } from "@tasktrove/atoms/ui/navigation"
 import { selectedTasksAtom } from "@tasktrove/atoms/ui/selection"
 import { isValidProjectId } from "@/lib/utils/routing"
-import { createProjectId } from "@/lib/types"
+import { createProjectId } from "@tasktrove/types/id"
 import { cn } from "@/lib/utils"
 
 interface ProjectViewToolbarProps {

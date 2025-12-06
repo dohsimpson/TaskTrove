@@ -3,7 +3,9 @@
 import { useEffect, useRef } from "react"
 import { autoScrollWhileDragging } from "auto-scroll-while-dragging"
 import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
-import { DraggableItem, DropTargetItem } from "@/components/ui/drag-drop"
+// Use relative path so helpers work when imported from other apps (e.g. mobile tests)
+import { DraggableItem } from "@/components/ui/drag-drop/draggable-item"
+import { DropTargetItem } from "@/components/ui/drag-drop/drop-target-item"
 
 interface DropTargetElementProps {
   type: "list-item" | "group"

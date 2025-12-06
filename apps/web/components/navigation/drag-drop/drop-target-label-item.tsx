@@ -1,7 +1,7 @@
 "use client"
 
-import { DropTargetItem } from "@/components/ui/drag-drop"
-import type { LabelId } from "@/lib/types"
+import { DropTargetItem } from "@/components/ui/drag-drop/drop-target-item"
+import type { LabelId } from "@tasktrove/types/id"
 import type { DropEventData } from "@/hooks/use-sidebar-drag-drop"
 import { isValidLabelOperation } from "@/lib/label-drag-drop-logic"
 

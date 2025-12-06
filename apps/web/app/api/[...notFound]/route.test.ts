@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { NextRequest } from "next/server"
 import { GET, POST, PATCH, DELETE } from "./route"
-import { ApiErrorCode } from "@/lib/types"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
 
 describe("API 404 Catch-All Handler", () => {
   const createRequest = (path: string, method: string) => {

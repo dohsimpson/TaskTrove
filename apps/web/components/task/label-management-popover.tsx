@@ -3,7 +3,9 @@
 import React, { useState } from "react"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { LabelContent } from "./label-content"
-import type { Task, LabelId } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
+import type { LabelId } from "@tasktrove/types/id"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface LabelManagementPopoverProps {
   task?: Task
@@ -23,6 +25,7 @@ export function LabelManagementPopover({
   onOpenChange,
 }: LabelManagementPopoverProps) {
   const [open, setOpen] = useState(false)
+  const isMobile = useIsMobile()
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen)
@@ -48,7 +51,7 @@ export function LabelManagementPopover({
           onRemoveLabel={onRemoveLabel}
           mode="popover"
           onAddingChange={handleAddingChange}
-          focusInput={true}
+          focusInput={!isMobile}
         />
       }
       side="bottom"

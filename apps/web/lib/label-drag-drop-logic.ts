@@ -12,8 +12,9 @@
  */
 
 import type { Instruction as TreeInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item"
-import type { Instruction as UnionInstruction } from "@/components/ui/drag-drop"
-import type { LabelId, Label } from "@/lib/types"
+import type { Instruction as UnionInstruction } from "@/components/ui/drag-drop/drop-target-item"
+import type { LabelId } from "@tasktrove/types/id"
+import type { Label } from "@tasktrove/types/core"
 import { reorderInArray } from "@tasktrove/utils"
 
 // =============================================================================

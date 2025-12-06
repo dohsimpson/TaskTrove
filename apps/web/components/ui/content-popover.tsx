@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useAtomValue } from "jotai"
 import { useDebounce } from "@uidotdev/usehooks"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -9,12 +9,11 @@ import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
 import {
   Drawer,
-  DrawerContent,
   DrawerTrigger,
   DrawerHeader,
   DrawerTitle,
-} from "@/components/ui/drawer"
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
+  DrawerContent,
+} from "@/components/ui/custom/drawer"
 
 interface ContentPopoverProps {
   children: React.ReactNode
@@ -42,6 +41,33 @@ interface ContentPopoverProps {
   drawerTitle?: string
   drawerDirection?: "bottom" | "top" | "left" | "right"
   drawerMaxHeightClass?: string
+  drawerActions?: React.ReactNode
+  drawerSnapPoints?: Array<number>
+}
+
+// Track globally whether any mobile drawer is open so other surfaces
+// (e.g., pull-to-refresh gestures) can temporarily disable themselves.
+let mobileDrawerOpenCount = 0
+const MOBILE_DRAWER_EVENT = "tt-mobile-drawer-toggle"
+
+function notifyMobileDrawerState() {
+  if (typeof window === "undefined" || typeof document === "undefined") return
+
+  const isAnyOpen = mobileDrawerOpenCount > 0
+  const root = document.documentElement
+
+  root.classList.toggle("tt-mobile-drawer-open", isAnyOpen)
+  if (isAnyOpen) {
+    root.dataset.mobileDrawerOpen = "true"
+  } else {
+    delete root.dataset.mobileDrawerOpen
+  }
+
+  window.dispatchEvent(
+    new CustomEvent(MOBILE_DRAWER_EVENT, {
+      detail: { open: isAnyOpen, count: mobileDrawerOpenCount },
+    }),
+  )
 }
 
 export function ContentPopover({
@@ -70,12 +96,15 @@ export function ContentPopover({
   drawerTitle,
   drawerDirection = "bottom",
   drawerMaxHeightClass,
+  drawerActions,
+  drawerSnapPoints,
 }: ContentPopoverProps) {
   const [internalHoverState, setInternalHoverState] = useState(false)
   const [hasFocusedElement, setHasFocusedElement] = useState(false)
   const settings = useAtomValue(settingsAtom)
   const [isTouchPointer, setIsTouchPointer] = useState(false)
   const isMobile = useIsMobile()
+  const prevDrawerOpenRef = useRef(false)
 
   // Detect coarse pointer devices (mobile/tablet) and prefer click-triggered popovers
   useEffect(() => {
@@ -95,7 +124,9 @@ export function ContentPopover({
   )
 
   // Determine requested mode: prop overrides setting
-  const requestedMode = triggerMode ?? (settings.general.popoverHoverOpen ? "hover" : "click")
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const popoverHoverOpen = settings?.general?.popoverHoverOpen ?? false
+  const requestedMode = triggerMode ?? (popoverHoverOpen ? "hover" : "click")
   // Force click on touch devices for better UX
   const effectiveTriggerMode = isTouchPointer ? "click" : requestedMode
 
@@ -117,6 +148,33 @@ export function ContentPopover({
         ? debouncedHoverState
         : internalHoverState
 
+  // Keep a global flag so mobile pull-to-refresh can pause while drawers are open.
+  useEffect(() => {
+    if (!isMobile || !mobileAsDrawer) {
+      // If we transitioned away from mobile while the drawer was open, clean up the counter.
+      if (prevDrawerOpenRef.current) {
+        mobileDrawerOpenCount = Math.max(0, mobileDrawerOpenCount - 1)
+        notifyMobileDrawerState()
+        prevDrawerOpenRef.current = false
+      }
+      return
+    }
+    const wasOpen = prevDrawerOpenRef.current
+    if (isOpen !== wasOpen) {
+      mobileDrawerOpenCount = Math.max(0, mobileDrawerOpenCount + (isOpen ? 1 : -1))
+      notifyMobileDrawerState()
+      prevDrawerOpenRef.current = isOpen
+    }
+    return () => {
+      // Clean up when unmounting while still open
+      if (prevDrawerOpenRef.current) {
+        mobileDrawerOpenCount = Math.max(0, mobileDrawerOpenCount - 1)
+        notifyMobileDrawerState()
+        prevDrawerOpenRef.current = false
+      }
+    }
+  }, [isOpen, isMobile, mobileAsDrawer])
+
   // Reset focus state when popover closes
   useEffect(() => {
     if (!isOpen) {
@@ -134,24 +192,49 @@ export function ContentPopover({
     // For hover mode with internal state: state is controlled by debounced hover state
   }
 
+  const [drawerActiveSnapPoint, setDrawerActiveSnapPoint] = useState<number | undefined | null>(
+    drawerSnapPoints?.[0],
+  )
+
   // Click mode (default behavior)
   if (effectiveTriggerMode === "click") {
     // Mobile fallback: render a Drawer when requested
     if (isMobile && mobileAsDrawer) {
       return (
-        <Drawer open={isOpen} onOpenChange={handleOpenChange} direction={drawerDirection}>
+        <Drawer
+          open={isOpen}
+          onOpenChange={handleOpenChange}
+          direction={drawerDirection}
+          snapPoints={drawerSnapPoints}
+          activeSnapPoint={drawerActiveSnapPoint}
+          setActiveSnapPoint={(v) => {
+            if (typeof v === "number") setDrawerActiveSnapPoint(v)
+          }}
+        >
           <DrawerTrigger asChild>
-            <div className={triggerClassName}>{children}</div>
+            <div
+              className={triggerClassName}
+              onClick={(e) => {
+                e.stopPropagation()
+              }}
+              onPointerDownCapture={(e) => {
+                // Prevent ancestor click handlers (e.g., task cards) from firing
+                e.stopPropagation()
+              }}
+            >
+              {children}
+            </div>
           </DrawerTrigger>
           <DrawerContent
-            className={cn(drawerMaxHeightClass ?? "!max-h-[80vh]", "focus:outline-none")}
+            className={cn(drawerMaxHeightClass ?? "!max-h-[95vh]", "focus:outline-none")}
           >
-            <DrawerHeader className="pb-0">
-              <VisuallyHidden>
-                <DrawerTitle>{drawerTitle ?? "Menu"}</DrawerTitle>
-              </VisuallyHidden>
+            <DrawerHeader className="pb-3 text-center">
+              <DrawerTitle className="text-base font-semibold">{drawerTitle ?? "Menu"}</DrawerTitle>
+              {drawerActions ? (
+                <div className="mt-2 flex justify-center gap-2">{drawerActions}</div>
+              ) : null}
             </DrawerHeader>
-            <div className="p-2 flex-1 min-h-0 overflow-y-auto">{content}</div>
+            <div className="flex-1 min-h-0 overflow-y-auto px-3 pb-4">{content}</div>
           </DrawerContent>
         </Drawer>
       )
@@ -159,7 +242,12 @@ export function ContentPopover({
     return (
       <Popover open={isOpen} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild className={triggerClassName}>
-          {children}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            onPointerDownCapture={(e) => e.stopPropagation()}
+          >
+            {children}
+          </div>
         </PopoverTrigger>
         <PopoverContent
           className={enhancedClassName}

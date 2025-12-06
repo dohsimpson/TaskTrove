@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { AlertTriangle, FileText, DatabaseBackup } from "lucide-react"
 import { StartupAlert } from "./startup-alert"
-import { API_ROUTES } from "@/lib/types"
+import { API_ROUTES } from "@tasktrove/types/constants"
 import { useAtomValue } from "jotai"
 import { queryClientAtom } from "@tasktrove/atoms/data/base/query"
 import { Input } from "@/components/ui/input"

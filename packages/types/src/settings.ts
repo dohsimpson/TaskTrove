@@ -6,7 +6,6 @@
 
 import { z } from "zod";
 import { STANDARD_VIEW_IDS } from "@tasktrove/constants";
-import { ProjectIdSchema } from "./id";
 
 // =============================================================================
 // DATA SETTINGS
@@ -35,45 +34,6 @@ export type DataSettings = z.infer<typeof DataSettingsSchema>;
 // NOTIFICATION SETTINGS
 // =============================================================================
 
-// Advanced notification schemas - commented out for future implementation
-/*
-export const NotificationChannelsSchema = z.object({
-  push: z.boolean(),
-  email: z.boolean(),
-  desktop: z.boolean(),
-  mobile: z.boolean(),
-})
-
-export const NotificationScheduleSchema = z.object({
-  quietHours: z.object({
-    enabled: z.boolean(),
-    start: z.string(),
-    end: z.string(),
-  }),
-  weekends: z.boolean(),
-  holidays: z.boolean(),
-})
-
-export const NotificationTypesSchema = z.object({
-  reminders: z.boolean(),
-  deadlines: z.boolean(),
-  collaboration: z.boolean(),
-  achievements: z.boolean(),
-  system: z.boolean(),
-})
-
-export const NotificationFrequencySchema = z.object({
-  immediate: z.boolean(),
-  digest: z.enum(["never", "daily", "weekly"]),
-  digestTime: z.string(),
-})
-
-export const NotificationSoundSchema = z.object({
-  enabled: z.boolean(),
-  volume: z.number().min(0).max(100),
-})
-*/
-
 /**
  * Notification settings schema
  */
@@ -82,16 +42,6 @@ export const NotificationSettingsSchema = z.object({
   enabled: z.boolean(),
   /** Whether notifications require user interaction to dismiss */
   requireInteraction: z.boolean(),
-  /** Notification channels */
-  // channels: NotificationChannelsSchema,
-  /** Schedule settings */
-  // schedule: NotificationScheduleSchema,
-  /** Type preferences */
-  // types: NotificationTypesSchema,
-  /** Frequency settings */
-  // frequency: NotificationFrequencySchema,
-  /** Sound settings */
-  // sound: NotificationSoundSchema,
 });
 
 /**
@@ -125,131 +75,39 @@ export const GeneralSettingsSchema = z.object({
 export type GeneralSettings = z.infer<typeof GeneralSettingsSchema>;
 
 // =============================================================================
-// APPEARANCE SETTINGS
+// UI SETTINGS
 // =============================================================================
 
 /**
- * Appearance settings schema - Minimal placeholder for future implementation
+ * UI-specific settings for client display preferences
  */
-export const AppearanceSettingsSchema = z.object({}).optional();
+export const UiSettingsSchema = z.object({
+  /**
+   * First day of the week
+   * 0 = Sunday, 6 = Saturday. Undefined falls back to Sunday.
+   */
+  weekStartsOn: z
+    .union([
+      z.literal(0),
+      z.literal(1),
+      z.literal(2),
+      z.literal(3),
+      z.literal(4),
+      z.literal(5),
+      z.literal(6),
+    ])
+    .optional(),
+  /**
+   * Whether to display ISO week numbers in calendar surfaces
+   */
+  showWeekNumber: z.boolean().optional(),
+});
 
-/**
- * Appearance and theme settings interface
- */
-export interface AppearanceSettings {
-  /** Theme preference */
-  theme: "light" | "dark" | "system";
-  /** Custom color scheme */
-  colorScheme?: string;
-  /** Interface density */
-  density: "compact" | "comfortable" | "spacious";
-  /** Font size multiplier */
-  fontScale: number;
-  /** Sidebar position */
-  sidebarPosition: "left" | "right";
-  /** Language preference */
-  language: string;
-  /** High contrast mode */
-  highContrast: boolean;
-  /** Reduced motion preference */
-  reducedMotion: boolean;
-  /** Show task metadata by default */
-  showTaskMetadata: boolean;
-  /** Priority colors enabled */
-  priorityColors: boolean;
-  /** Date format preference */
-  dateFormat: "MM/dd/yyyy" | "dd/MM/yyyy" | "yyyy-MM-dd";
-}
-
-// =============================================================================
-// BEHAVIOR SETTINGS
-// =============================================================================
-
-/**
- * Behavior and preference settings interface
- */
-export interface BehaviorSettings {
-  /** Default view on app launch */
-  startView:
-    | "inbox"
-    | "today"
-    | "upcoming"
-    | "completed"
-    | "all"
-    | "analytics"
-    | "search"
-    | "lastViewed";
-  /** First day of week */
-  weekStartDay: 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0 = Sunday, 1 = Monday, etc.
-  /** Working days of the week */
-  workingDays: number[];
-  /** Time format preference */
-  timeFormat: "12h" | "24h";
-  /** System locale */
-  systemLocale: string;
-  /** Default task priority */
-  defaultTaskPriority: 1 | 2 | 3 | 4;
-  /** Auto-assign new tasks to current project */
-  autoAssignToCurrentProject: boolean;
-  /** Auto-focus title field when creating tasks */
-  autoFocusTaskTitle: boolean;
-  /** Default project for new tasks */
-  defaultProjectId?: z.infer<typeof ProjectIdSchema>;
-  /** Enable keyboard shortcuts */
-  keyboardShortcuts: boolean;
-  /** Confirmation dialogs */
-  confirmations: {
-    deleteTask: boolean;
-    deleteProject: boolean;
-    deleteLabel: boolean;
-    markAllComplete: boolean;
-  };
-}
-
-// =============================================================================
-// PRODUCTIVITY SETTINGS
-// =============================================================================
-
-/**
- * Productivity and analytics settings interface
- */
-export interface ProductivitySettings {
-  /** Pomodoro timer configuration */
-  pomodoro: {
-    workDuration: number; // minutes
-    shortBreakDuration: number; // minutes
-    longBreakDuration: number; // minutes
-    longBreakInterval: number; // number of sessions
-    autoStartBreaks: boolean;
-    autoStartWork: boolean;
-    soundEnabled: boolean;
-  };
-  /** Goal tracking settings */
-  goals: {
-    dailyTaskTarget: number;
-    weeklyTaskTarget: number;
-    trackingEnabled: boolean;
-    showProgress: boolean;
-  };
-  /** Analytics preferences */
-  analytics: {
-    dataCollection: boolean;
-    showMetrics: boolean;
-    metricVisibility: {
-      productivity: boolean;
-      streak: boolean;
-      timeSpent: boolean;
-      completion: boolean;
-    };
-  };
-  /** Focus mode settings */
-  focusMode: {
-    enabled: boolean;
-    hideDistractions: boolean;
-    minimalUI: boolean;
-    blockNotifications: boolean;
-  };
-}
+export type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type UiSettings = z.infer<typeof UiSettingsSchema> & {
+  weekStartsOn?: WeekStartsOn;
+  showWeekNumber?: boolean;
+};
 
 // =============================================================================
 // USER SETTINGS
@@ -262,6 +120,7 @@ export const UserSettingsSchema = z.object({
   data: DataSettingsSchema,
   notifications: NotificationSettingsSchema,
   general: GeneralSettingsSchema,
+  uiSettings: UiSettingsSchema,
 });
 
 /**
@@ -276,56 +135,10 @@ export const PartialUserSettingsSchema = z.object({
   data: DataSettingsSchema.partial().optional(),
   notifications: NotificationSettingsSchema.partial().optional(),
   general: GeneralSettingsSchema.partial().optional(),
-  // Optional future settings (not stored yet):
-  // appearance: AppearanceSettingsSchema.partial().optional(),
-  // productivity: ProductivitySettingsSchema.partial().optional(),
+  uiSettings: UiSettingsSchema.partial().optional(),
 });
 
 /**
  * Partial user settings type for updates - allows nested partials
  */
 export type PartialUserSettings = z.infer<typeof PartialUserSettingsSchema>;
-
-// =============================================================================
-// NOTIFICATION INTERFACES
-// =============================================================================
-
-// Simplified interfaces for basic notification functionality
-export interface NotificationChannels {
-  /** Desktop notifications */
-  desktop: boolean;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface NotificationSchedule {
-  // Simplified - no complex scheduling for now
-}
-
-export interface NotificationTypes {
-  /** Deadline notifications */
-  deadlines: boolean;
-}
-
-/**
- * Notification frequency settings
- */
-export interface NotificationFrequency {
-  /** Send notifications immediately */
-  immediate: boolean;
-  /** Digest frequency */
-  digest: "never" | "daily" | "weekly";
-  /** Time to send digest (HH:MM format) */
-  digestTime: string;
-}
-
-/**
- * Sound settings for notifications
- */
-export interface NotificationSound {
-  /** Whether sound is enabled */
-  enabled: boolean;
-  /** Volume level (0-100) */
-  volume: number;
-  /** Custom sound file path */
-  soundFile?: string;
-}

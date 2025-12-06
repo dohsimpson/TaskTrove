@@ -22,7 +22,8 @@ import {
 } from "@tasktrove/atoms/ui/navigation"
 import { projectTaskCountsAtom } from "@tasktrove/atoms/ui/task-counts"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
-import type { Project, GroupId } from "@/lib/types"
+import type { Project } from "@tasktrove/types/core"
+import type { GroupId } from "@tasktrove/types/id"
 import { cn } from "@/lib/utils"
 
 interface DraggableProjectItemProps {

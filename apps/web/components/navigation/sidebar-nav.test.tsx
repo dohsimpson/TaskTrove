@@ -4,7 +4,7 @@ import { render, screen } from "@/test-utils"
 import { SidebarNav } from "./sidebar-nav"
 import { SidebarProvider } from "@/components/ui/custom/sidebar"
 import { mockNextNavigation } from "@/test-utils/mock-router"
-import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@/lib/types"
+import { DEFAULT_PROJECT_GROUP, DEFAULT_LABEL_GROUP } from "@tasktrove/types/defaults"
 
 // Mock Next.js router using centralized utilities
 mockNextNavigation()
@@ -128,8 +128,8 @@ vi.mock("./draggable-project-item", () => ({
   ),
 }))
 
-// Mock lib/types to provide isGroup function
-vi.mock("@/lib/types", async (importOriginal) => {
+// Mock @tasktrove/types/group to provide isGroup function
+vi.mock("@tasktrove/types/group", async (importOriginal) => {
   const actual = await importOriginal()
   return {
     ...Object(actual),

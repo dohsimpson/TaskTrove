@@ -40,13 +40,25 @@ export function useDebouncedParse(
       }
 
       if (text.trim()) {
-        setParsed(
-          parseEnhancedNaturalLanguage(text, disabledSections, {
-            projects: projects.map((p) => ({ name: p.name })),
-            labels: labels.map((l) => ({ name: l.name })),
-            users: users.map((u) => ({ username: u.username })),
-          }),
-        )
+        const config = {
+          projects: projects.map((p) => ({ name: p.name })),
+          labels: labels.map((l) => ({ name: l.name })),
+          users: users.map((u) => ({ username: u.username })),
+        }
+
+        // Parse once with disabled sections to drive task-sync behaviour
+        const filteredParse = parseEnhancedNaturalLanguage(text, disabledSections, config)
+
+        // Parse again without disabled sections so the UI overlay retains clickable tokens
+        const overlayParse =
+          disabledSections.size > 0
+            ? parseEnhancedNaturalLanguage(text, new Set(), config)
+            : filteredParse
+
+        setParsed({
+          ...filteredParse,
+          overlayMatches: overlayParse.matches,
+        })
       } else {
         setParsed(null)
       }

@@ -1,4 +1,4 @@
-import { DEFAULT_PROJECT_SECTION } from "@/lib/types"
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
 /**
  * Tests for the /api/projects endpoint
  *
@@ -15,7 +15,7 @@ import {
   TEST_TASK_ID_2,
 } from "@tasktrove/types/test-constants"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
-import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types"
+import { DEFAULT_EMPTY_DATA_FILE } from "@tasktrove/types/defaults"
 
 // Mock the safe file operations directly
 vi.mock("@/lib/utils/safe-file-operations")

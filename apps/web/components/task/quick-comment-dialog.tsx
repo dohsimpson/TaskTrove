@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { MessageSquare, Send } from "lucide-react"
-import type { TaskId } from "@/lib/types"
+import type { TaskId } from "@tasktrove/types/id"
 import { getAvatarApiUrl } from "@tasktrove/utils"
 
 interface Task {

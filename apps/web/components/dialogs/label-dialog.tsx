@@ -2,7 +2,7 @@ import { BaseDialog } from "./base-dialog"
 import { showLabelDialogAtom, labelDialogContextAtom } from "@tasktrove/atoms/ui/dialogs"
 import { closeLabelDialogAtom } from "@tasktrove/atoms/ui/navigation"
 import { addLabelAtom } from "@tasktrove/atoms/core/labels"
-import { createLabelId } from "@/lib/types"
+import { createLabelId } from "@tasktrove/types/id"
 
 export function LabelDialog() {
   return (

@@ -169,9 +169,15 @@ vi.mock("@/lib/utils/routing", () => ({
 }))
 
 // Mock types
-vi.mock("@/lib/types", () => ({
-  createProjectId: vi.fn((id) => id),
-}))
+vi.mock("@tasktrove/types/id", async () => {
+  const actual = await vi.importActual<typeof import("@tasktrove/types/id")>("@tasktrove/types/id")
+  return {
+    ...actual,
+    createProjectId: vi.fn((id: string) => id),
+    createGroupId: vi.fn((id: string) => id),
+    createVersionString: vi.fn((version: string) => version),
+  }
+})
 
 // Test wrapper component
 const TestWrapper = ({ children }: { children: React.ReactNode }) => <Provider>{children}</Provider>

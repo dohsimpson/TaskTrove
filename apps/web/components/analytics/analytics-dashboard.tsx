@@ -27,7 +27,7 @@ import { GoalTracker } from "./goal-tracker"
 import { useAtomValue, useSetAtom } from "jotai"
 import { analyticsAtoms } from "@tasktrove/atoms/features/analytics"
 import { log } from "@/lib/utils/logger"
-import type { TimePeriod } from "@/lib/types"
+import type { TimePeriod } from "@tasktrove/types/utils"
 
 interface Goal {
   id: string

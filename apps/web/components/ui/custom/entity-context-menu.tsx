@@ -34,7 +34,7 @@ import { cn } from "@/lib/utils"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
 import { isValidProjectId } from "@/lib/utils/routing"
-import { GroupId, LabelId, ProjectId, SectionId } from "@/lib/types"
+import { GroupId, LabelId, ProjectId, SectionId } from "@tasktrove/types/id"
 
 interface EntityContextMenuProps {
   id: GroupId | LabelId | ProjectId | SectionId

@@ -198,7 +198,7 @@ export function EditableDiv({
     suppressContentEditableWarning: true,
     className: cn(
       "outline-none cursor-text",
-      "focus:ring-2 focus:ring-primary/20 focus:border-primary px-1 py-0.5 -mx-1 -my-0.5",
+      "px-1 py-0.5 -mx-1 -my-0.5",
       multiline && "whitespace-pre-line",
       "min-w-[4rem]",
       className,

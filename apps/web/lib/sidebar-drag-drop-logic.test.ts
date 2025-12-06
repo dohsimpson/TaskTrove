@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { isValidSidebarOperation, type DragInstruction } from "./sidebar-drag-drop-logic"
-import { ROOT_PROJECT_GROUP_ID } from "@/lib/types"
+import { ROOT_PROJECT_GROUP_ID } from "@tasktrove/types/defaults"
 
 describe("isValidSidebarOperation", () => {
   describe("Project operations", () => {

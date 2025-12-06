@@ -3,13 +3,14 @@
 import React, { useState } from "react"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { TaskScheduleContent } from "./task-schedule-content"
-import type { TaskId } from "@/lib/types"
+import type { TaskId } from "@tasktrove/types/id"
 
 interface TaskSchedulePopoverProps {
   taskId?: TaskId | TaskId[]
   children: React.ReactNode
   className?: string
   onOpenChange?: (open: boolean) => void
+  open?: boolean
 }
 
 export function TaskSchedulePopover({
@@ -17,24 +18,27 @@ export function TaskSchedulePopover({
   children,
   className,
   onOpenChange,
+  open,
 }: TaskSchedulePopoverProps) {
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
 
   const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen)
+    if (open === undefined) {
+      setInternalOpen(newOpen)
+    }
     onOpenChange?.(newOpen)
   }
 
   const handleClose = () => {
-    setOpen(false)
+    handleOpenChange(false)
   }
 
   return (
     <ContentPopover
-      open={open}
+      open={open ?? internalOpen}
       onOpenChange={handleOpenChange}
       content={<TaskScheduleContent taskId={taskId} onClose={handleClose} />}
-      className="w-72 p-0 overflow-y-auto"
+      className="w-80 p-0 overflow-y-auto"
       triggerClassName={className}
       align="start"
       mobileAsDrawer

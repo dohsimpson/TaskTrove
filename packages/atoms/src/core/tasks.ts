@@ -91,6 +91,9 @@ export const addTaskAtom = namedAtom(
       // Get the create task mutation
       const createTaskMutation = get(createTaskMutationAtom);
 
+      // Play task creation sound immediately for instant feedback
+      set(playSoundAtom, { soundType: "confirm" });
+
       // taskData is already CreateTaskRequest type, no parsing needed
       const createTaskData = taskData;
 
@@ -264,6 +267,9 @@ export const deleteTasksAtom = atom(
         set(notificationAtoms.actions.cancelTask, taskId);
       }
 
+      // Play deletion sound immediately for instant feedback
+      set(playSoundAtom, { soundType: "whoosh" });
+
       // Get the delete task mutation
       const deleteTaskMutation = get(deleteTaskMutationAtom);
 
@@ -279,9 +285,6 @@ export const deleteTasksAtom = atom(
           ? `Deleted task: ${taskTitles}`
           : `Deleted ${tasksToDelete.length} tasks: ${taskTitles}`;
       set(recordOperationAtom, message);
-
-      // Play deletion sound
-      set(playSoundAtom, { soundType: "whoosh" });
 
       log.info(
         { taskIds, count: tasksToDelete.length, module: "tasks" },
@@ -326,6 +329,11 @@ export const toggleTaskAtom = atom(null, async (get, set, taskId: TaskId) => {
     const wasCompleted = task.completed;
     const willBeCompleted = !wasCompleted;
 
+    // Play completion sound immediately when marking complete
+    if (willBeCompleted) {
+      set(playSoundAtom, { soundType: "bellClear" });
+    }
+
     // Use updateTaskAtom for efficient API call with minimal payload
     await set(updateTaskAtom, {
       updateRequest: {
@@ -339,12 +347,6 @@ export const toggleTaskAtom = atom(null, async (get, set, taskId: TaskId) => {
     set(recordOperationAtom, `${actionText} task: "${task.title}"`);
 
     // Play completion sound when task is marked as completed
-    if (willBeCompleted) {
-      // Use the new clear bell sound for todo completion
-      // This provides instant, satisfying feedback perfect for todos
-      set(playSoundAtom, { soundType: "bellClear" });
-    }
-
     log.info(
       { taskId, completed: willBeCompleted, module: "tasks" },
       `Task ${willBeCompleted ? "completed" : "uncompleted"}`,

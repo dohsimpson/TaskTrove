@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import type { TaskId } from "@/lib/types"
+import type { TaskId } from "@tasktrove/types/id"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"

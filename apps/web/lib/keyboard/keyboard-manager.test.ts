@@ -29,7 +29,7 @@ import { matchesShortcut } from "@/hooks/use-global-keyboard-manager"
 import * as ContextMatcher from "@/lib/keyboard/context-matcher"
 import { TEST_TASK_ID_1, TEST_SECTION_ID_1 } from "@tasktrove/types/test-constants"
 import { DEFAULT_TASK_PRIORITY } from "@tasktrove/constants"
-import type { TaskPriority } from "@/lib/types"
+import type { TaskPriority } from "@tasktrove/types/core"
 
 // Mock atoms for testing
 const mockContext: KeyboardContext = {

@@ -9,13 +9,10 @@ import { filteredTasksAtom } from "@tasktrove/atoms/ui/filtered-tasks"
 import { currentViewAtom, currentViewStateAtom } from "@tasktrove/atoms/ui/views"
 import { addCommentAtom } from "@tasktrove/atoms/core/tasks"
 import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
-import {
-  INBOX_PROJECT_ID,
-  type Task,
-  type Project,
-  type VoiceCommand,
-  type TaskId,
-} from "@/lib/types"
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants"
+import type { Task, Project } from "@tasktrove/types/core"
+import type { VoiceCommand } from "@tasktrove/types/voice-commands"
+import type { TaskId } from "@tasktrove/types/id"
 import { QuickCommentDialog } from "@/components/task/quick-comment-dialog"
 import { ProjectSectionsView } from "@/components/task/project-sections-view"
 import { KanbanBoard } from "@/components/views/kanban-board"

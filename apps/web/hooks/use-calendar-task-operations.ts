@@ -4,7 +4,8 @@ import { useCallback } from "react"
 import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
 import { useSetAtom } from "jotai"
 import { updateQuickAddTaskAtom } from "@tasktrove/atoms/ui/dialogs"
-import type { Task, Project, ProjectId } from "@/lib/types"
+import type { Task, Project } from "@tasktrove/types/core"
+import type { ProjectId } from "@tasktrove/types/id"
 import type { CalendarTaskOperationsHookResult as CalendarTaskOperationsHookResultType } from "@/lib/calendar/types"
 
 // Re-export with proper naming

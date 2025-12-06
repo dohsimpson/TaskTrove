@@ -3,8 +3,9 @@ import { describe, it, expect, vi, beforeEach, type Mock } from "vitest"
 import { render, screen, waitFor } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { CommentContent } from "./comment-content"
-import type { Task, TaskComment, CreateTaskRequest } from "@/lib/types"
-import { createTaskId, createCommentId, createUserId } from "@/lib/types"
+import type { Task, TaskComment } from "@tasktrove/types/core"
+import type { CreateTaskRequest } from "@tasktrove/types/api-requests"
+import { createTaskId, createCommentId, createUserId } from "@tasktrove/types/id"
 import {
   TEST_TASK_ID_1,
   TEST_PROJECT_ID_1,

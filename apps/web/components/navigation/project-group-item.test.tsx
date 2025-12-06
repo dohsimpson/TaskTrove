@@ -6,8 +6,8 @@ import { SidebarProvider } from "@/components/ui/custom/sidebar"
 import { ProjectGroupItem } from "./project-group-item"
 import { TEST_PROJECT_ID_1, TEST_PROJECT_ID_2 } from "@tasktrove/types/test-constants"
 import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
-import type { ProjectGroup } from "@/lib/types"
-import { createGroupId, createProjectId } from "@/lib/types"
+import type { ProjectGroup } from "@tasktrove/types/group"
+import { createGroupId, createProjectId } from "@tasktrove/types/id"
 
 // Mock the context menu components
 vi.mock("./project-group-context-menu", () => ({

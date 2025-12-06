@@ -1,22 +1,23 @@
 import { NextResponse } from "next/server"
+import type { Task } from "@tasktrove/types/core"
+import type { GroupId } from "@tasktrove/types/id"
+import { createTaskId, TaskId } from "@tasktrove/types/id"
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants"
 import {
-  Task,
-  INBOX_PROJECT_ID,
   CreateTaskRequestSchema,
   DeleteTaskRequestSchema,
-  createTaskId,
-  TaskId,
-  DataFileSerializationSchema,
-  TaskUpdateUnionSchema,
   UpdateTaskRequest,
+} from "@tasktrove/types/api-requests"
+import {
   UpdateTaskResponse,
   DeleteTaskResponse,
   CreateTaskResponse,
-  ErrorResponse,
-  ApiErrorCode,
   GetTasksResponse,
-  type GroupId,
-} from "@/lib/types"
+} from "@tasktrove/types/api-responses"
+import { DataFileSerializationSchema } from "@tasktrove/types/data-file"
+import { TaskUpdateUnionSchema } from "@tasktrove/types/api-requests"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
+import { ErrorResponse } from "@tasktrove/types/api-responses"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import {

@@ -3,7 +3,7 @@
 import React from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { TaskSearchContent } from "./task-search-content"
-import type { TaskId } from "@/lib/types"
+import type { TaskId } from "@tasktrove/types/id"
 
 interface TaskSearchDialogProps {
   open: boolean

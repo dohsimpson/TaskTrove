@@ -26,7 +26,7 @@ import {
   DEFAULT_SECTION_NAME,
   DEFAULT_SECTION_COLOR,
 } from "@tasktrove/constants";
-import { UserSettings } from "@tasktrove/types/settings";
+import { UserSettings, UiSettings } from "@tasktrove/types/settings";
 
 /**
  * Default ROOT project group for empty data files
@@ -124,6 +124,8 @@ export const DEFAULT_GENERAL_SETTINGS = {
   markdownEnabled: true,
   popoverHoverOpen: false,
 } as const;
+// weekStartsOn is optional; the default UI settings object should be empty
+export const DEFAULT_UI_SETTINGS: UiSettings = {};
 
 /**
  * Default view state configuration
@@ -151,6 +153,7 @@ export const DEFAULT_GLOBAL_VIEW_OPTIONS: GlobalViewOptions = {
   showSidePanel: DEFAULT_SHOW_SIDE_PANEL,
   peopleOwnerCollapsed: false,
   peopleAssigneesCollapsed: false,
+  dismissedUi: {},
 };
 
 /**
@@ -166,6 +169,7 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   },
   notifications: DEFAULT_NOTIFICATION_SETTINGS,
   general: DEFAULT_GENERAL_SETTINGS,
+  uiSettings: DEFAULT_UI_SETTINGS,
 };
 
 export const DEFAULT_USER: User = {

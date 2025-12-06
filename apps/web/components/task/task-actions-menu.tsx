@@ -20,7 +20,7 @@ import {
   ArrowUpRight,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 import { useSetAtom } from "jotai"
 import { openQuickAddWithCopyAtom } from "@tasktrove/atoms/ui/dialogs"
 // import { openPomodoroAtom } "@tasktrove/atoms" // Commented out since pomodoro timer is disabled

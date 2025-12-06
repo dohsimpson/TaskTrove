@@ -9,8 +9,8 @@ import {
 } from "@/test-utils"
 import { vi, describe, it, expect, beforeEach } from "vitest"
 import { TaskScheduleContent } from "./task-schedule-content"
-import type { Task } from "@/lib/types"
-import { INBOX_PROJECT_ID } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants"
 import { TEST_TASK_ID_1 } from "@tasktrove/types/test-constants"
 import { calculateNextDueDate } from "@tasktrove/utils"
 import userEvent from "@testing-library/user-event"
@@ -143,8 +143,8 @@ vi.mock("@tasktrove/utils", () => ({
 }))
 
 // Mock the CommonRRules and related functions
-vi.mock("@/lib/types", async () => {
-  const actual = await vi.importActual("@/lib/types")
+vi.mock("@tasktrove/types/constants", async () => {
+  const actual = await vi.importActual("@tasktrove/types/constants")
   return {
     ...actual,
     CommonRRules: {

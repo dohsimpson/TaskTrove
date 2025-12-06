@@ -1,12 +1,12 @@
-// import { bootstrapScheduler } from "@/lib/scheduler/bootstrap"
-
 export async function register() {
-  if (process.env.NEXT_RUNTIME !== "nodejs") {
+  // Only skip when explicitly running in the edge runtime. In standalone prod builds
+  // NEXT_RUNTIME is often undefined, so allow initialization by default.
+  if (process.env.NEXT_RUNTIME === "edge") {
     return
   }
 
   try {
-    const { bootstrapScheduler } = await import("@/lib/scheduler/bootstrap")
+    const { bootstrapScheduler } = await import("./lib/scheduler/bootstrap")
     await bootstrapScheduler()
   } catch (error) {
     console.error("Failed to initialize scheduler:", error)

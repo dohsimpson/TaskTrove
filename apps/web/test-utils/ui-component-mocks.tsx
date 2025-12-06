@@ -91,6 +91,7 @@ export const mockSettingsAtom = {
   general: {
     popoverHoverOpen: false,
   },
+  uiSettings: {},
 }
 
 /**

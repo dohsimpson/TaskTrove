@@ -27,8 +27,11 @@ import { taskAtoms } from "@tasktrove/atoms/core/tasks"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import { labelAtoms } from "@tasktrove/atoms/core/labels"
 import { toast } from "sonner"
-import type { Task, CreateTaskRequest, Project } from "@/lib/types"
-import { INBOX_PROJECT_ID, createGroupId, createProjectId, isValidPriority } from "@/lib/types"
+import type { Task, Project } from "@tasktrove/types/core"
+import type { CreateTaskRequest } from "@tasktrove/types/api-requests"
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants"
+import { createGroupId, createProjectId } from "@tasktrove/types/id"
+import { isValidPriority } from "@tasktrove/types/validators"
 
 interface TaskFormProps {
   task?: Partial<Task>

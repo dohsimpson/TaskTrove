@@ -161,6 +161,8 @@ export const GlobalViewOptionsSchema = z.object({
   peopleOwnerCollapsed: z.boolean(),
   /** People panel assignees section collapse state */
   peopleAssigneesCollapsed: z.boolean(),
+  /** Map of dismissible UI elements by id */
+  dismissedUi: z.record(z.string(), z.boolean()).default({}),
 });
 
 /**

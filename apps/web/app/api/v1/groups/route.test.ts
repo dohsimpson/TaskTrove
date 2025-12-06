@@ -10,10 +10,11 @@ import { vi } from "vitest"
 import { describe, it, expect, beforeEach } from "vitest"
 import { NextRequest } from "next/server"
 import { GET, POST, PATCH, DELETE } from "./route"
-import { createGroupId, createProjectId, type DataFile } from "@/lib/types"
+import { createGroupId, createProjectId } from "@tasktrove/types/id"
+import type { DataFile } from "@tasktrove/types/data-file"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { DEFAULT_UUID } from "@tasktrove/constants"
-import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types"
+import { DEFAULT_EMPTY_DATA_FILE } from "@tasktrove/types/defaults"
 
 // Mock safe file operations
 vi.mock("@/lib/utils/safe-file-operations", () => ({

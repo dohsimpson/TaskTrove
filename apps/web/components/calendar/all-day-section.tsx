@@ -6,9 +6,10 @@ import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
 import { TaskItem } from "@/components/task/task-item"
 import { format, isToday } from "date-fns"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 import { isCalendarDragData } from "@/lib/calendar/types"
 import { CalendarAddButton } from "./calendar-add-button"
+import { isMobileApp } from "@/lib/utils/env"
 
 // Local drop event data type for DropTargetWrapper compatibility
 interface DropEventData {
@@ -95,10 +96,11 @@ export function AllDaySection({
                   date: dayKey,
                   isAllDay: true,
                 })}
-                className={`
-                p-1 border-r border-border last:border-r-0 relative group
-                ${isTodayDate ? "bg-primary/5" : ""}
-              `}
+                className={cn(
+                  "border-r border-border last:border-r-0 relative group",
+                  isTodayDate && "bg-primary/5",
+                  !isMobileApp() && "p-1",
+                )}
               >
                 <CalendarAddButton
                   onClick={() => onAllDayClick(date)}

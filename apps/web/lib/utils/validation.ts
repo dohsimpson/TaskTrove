@@ -7,7 +7,8 @@
 
 import { z } from "zod"
 import { NextResponse } from "next/server"
-import { ErrorResponse, ApiErrorCode } from "@/lib/types"
+import type { ErrorResponse } from "@tasktrove/types/api-responses"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
 import { formatZodErrors } from "@tasktrove/utils/validation"
 
 // Re-export pure validation utilities from @tasktrove/utils package

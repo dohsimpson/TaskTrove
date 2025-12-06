@@ -11,8 +11,14 @@ import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
 import { createErrorResponse } from "@/lib/utils/validation"
 import { log } from "@/lib/utils/logger"
-import { DataFile, DataFileSchema, JsonSchema, ApiErrorCode, API_ROUTES } from "@/lib/types"
-import type { ErrorResponse, ProjectId, LabelId } from "@/lib/types"
+import { DataFileSchema } from "@tasktrove/types/data-file"
+import { JsonSchema } from "@tasktrove/types/constants"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
+import { API_ROUTES } from "@tasktrove/types/constants"
+import type { DataFile } from "@tasktrove/types/data-file"
+import { LATEST_DATA_VERSION } from "@tasktrove/types/schema-version"
+import type { ErrorResponse } from "@tasktrove/types/api-responses"
+import type { ProjectId, LabelId } from "@tasktrove/types/id"
 import { migrateDataFile, needsMigration, getMigrationInfo } from "@/lib/utils/data-migration"
 import { compareVersions } from "@tasktrove/utils/version"
 
@@ -38,9 +44,20 @@ async function importData(
     // Validate import data structure - accepts any JSON object
     const rawImportData = JsonSchema.parse(body)
 
+    // Ensure version exists for migration checks; fall back to latest when absent
+    const normalizedImportData =
+      typeof rawImportData === "object" &&
+      rawImportData !== null &&
+      !Array.isArray(rawImportData) &&
+      (!("version" in rawImportData) ||
+        rawImportData.version == null ||
+        rawImportData.version === "")
+        ? { ...rawImportData, version: LATEST_DATA_VERSION }
+        : rawImportData
+
     // Get migration info for the import data
-    const requiresMigration = needsMigration(rawImportData)
-    const migrationInfo = getMigrationInfo(rawImportData)
+    const requiresMigration = needsMigration(normalizedImportData)
+    const migrationInfo = getMigrationInfo(normalizedImportData)
 
     log.info(
       {
@@ -54,7 +71,7 @@ async function importData(
     let importData: DataFile
     try {
       if (requiresMigration) {
-        importData = migrateDataFile(rawImportData)
+        importData = migrateDataFile(normalizedImportData)
         log.info(
           {
             module: "import",
@@ -67,7 +84,7 @@ async function importData(
         )
       } else {
         // No migration needed, validate and use data as-is
-        importData = DataFileSchema.parse(rawImportData)
+        importData = DataFileSchema.parse(normalizedImportData)
         log.info(
           {
             module: "import",

@@ -17,7 +17,7 @@ import { showSearchDialogAtom } from "@tasktrove/atoms/ui/dialogs"
 import { closeSearchAtom } from "@tasktrove/atoms/ui/navigation"
 import { toggleTaskPanelAtom } from "@tasktrove/atoms/ui/dialogs"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
-import { Task, Project } from "@/lib/types"
+import { Task, Project } from "@tasktrove/types/core"
 
 export function SearchDialog() {
   // Dialog state atoms

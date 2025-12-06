@@ -54,15 +54,15 @@ export const updateSettingsAtom = atom(
       // Get the update settings mutation
       const updateSettingsMutation = get(updateSettingsMutationAtom);
 
+      // Play settings update sound immediately for instant feedback
+      set(playSoundAtom, { soundType: "confirm" });
+
       // Execute the mutation - this will handle optimistic updates and API persistence
       await updateSettingsMutation.mutateAsync({ settings: partialSettings });
 
       // Record the operation for undo/redo feedback
       const settingsKeys = Object.keys(partialSettings).join(", ");
       set(recordOperationAtom, `Updated settings: ${settingsKeys}`);
-
-      // Play settings update sound
-      set(playSoundAtom, { soundType: "confirm" });
 
       log.info({ settingsKeys, module: "settings" }, "Settings updated");
     } catch (error) {

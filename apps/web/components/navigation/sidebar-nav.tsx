@@ -31,7 +31,7 @@ import { DraggableProjectItem } from "@/components/navigation/draggable-project-
 import { DraggableLabelItem, DropTargetLabelItem } from "./drag-drop"
 import { useSidebarDragDrop } from "@/hooks/use-sidebar-drag-drop"
 import { useLabelDragDrop } from "@/hooks/use-label-drag-drop"
-import { DropTargetItem } from "@/components/ui/drag-drop"
+import { DropTargetItem } from "@/components/ui/drag-drop/drop-target-item"
 import { isValidLabelOperation } from "@/lib/label-drag-drop-logic"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
@@ -40,8 +40,9 @@ import { taskCountsAtom, labelTaskCountsAtom } from "@tasktrove/atoms/ui/task-co
 import { projectsAtom, labelsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { updateLabelAtom } from "@tasktrove/atoms/core/labels"
 import { allGroupsAtom } from "@tasktrove/atoms/core/groups"
-import type { Project, Label, ProjectGroup } from "@/lib/types"
-import { isGroup } from "@/lib/types"
+import type { Project, Label } from "@tasktrove/types/core"
+import type { ProjectGroup } from "@tasktrove/types/group"
+import { isGroup } from "@tasktrove/types/group"
 import {
   openSearchAtom,
   openQuickAddAtom,

@@ -37,11 +37,12 @@ import { TaskScheduleTrigger } from "@/components/task/task-schedule-trigger"
 import { ProjectPopover } from "@/components/task/project-popover"
 import { TaskSearchDialog } from "@/components/task/task-search-dialog"
 import { cn } from "@/lib/utils"
-import { createCommentId, createSubtaskId, createTaskId, createUserId } from "@/lib/types"
+import { createCommentId, createSubtaskId, createTaskId, createUserId } from "@tasktrove/types/id"
 import { DraggableTaskElement } from "./draggable-task-element"
 import { BulkAssigneeButton } from "@/components/task/bulk-assignee-button"
 import { DEFAULT_UUID } from "@tasktrove/constants"
-import type { TaskComment, Subtask, TaskId } from "@/lib/types"
+import type { TaskComment, Subtask } from "@tasktrove/types/core"
+import type { TaskId } from "@tasktrove/types/id"
 
 interface SelectionToolbarProps {
   className?: string

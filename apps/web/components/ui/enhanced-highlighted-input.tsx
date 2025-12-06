@@ -1,13 +1,13 @@
 "use client"
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react"
+import { PlusCircle } from "lucide-react"
 import { useAtomValue } from "jotai"
 import { cn } from "@/lib/utils"
 import { nlpEnabledAtom } from "@tasktrove/atoms/ui/dialogs"
 import {
   getAutocompletePrefix,
   TOKEN_STYLES,
-  DISABLED_TOKEN_STYLES,
 } from "@/components/ui/enhanced-highlighted-input-helpers"
 import type { AutocompleteType, ExtractionResult } from "@tasktrove/parser/types"
 
@@ -26,6 +26,7 @@ interface AutocompleteItem {
   icon: React.ReactNode
   type: AutocompleteType
   value?: string
+  isCreateOption?: boolean
 }
 
 interface AutocompleteState {
@@ -54,6 +55,7 @@ interface EnhancedHighlightedInputProps {
     estimations: AutocompleteItem[]
     assignees?: AutocompleteItem[]
   }
+  onAutocompleteVisibilityChange?: (open: boolean) => void
   users?: Array<{ username: string; id: string; avatar?: string }>
   parserMatches?: ExtractionResult[] | null
 }
@@ -92,8 +94,7 @@ const createReactChangeEvent = (value: string): React.ChangeEvent<HTMLInputEleme
 }
 
 // Shared classes for contentEditable and overlay to ensure perfect alignment
-const SHARED_TEXT_CLASSES =
-  "w-full min-h-[60px] p-3 whitespace-pre-wrap break-words whitespace-break-spaces"
+const SHARED_TEXT_CLASSES = "w-full p-2 whitespace-pre-wrap break-words whitespace-break-spaces"
 
 // Helper to safely lookup token styles (handles Pro-only types like 'assignee' in base)
 function getStyleForToken<T extends Record<string, string>>(styles: T, tokenType: string): string {
@@ -115,15 +116,16 @@ export function EnhancedHighlightedInput({
   onToggleSection,
   onAutocompleteSelect,
   autocompleteItems = { projects: [], labels: [], dates: [], estimations: [] },
+  onAutocompleteVisibilityChange,
   parserMatches = null,
 }: EnhancedHighlightedInputProps) {
   const inputRef = useRef<HTMLDivElement>(null)
   const autocompleteRef = useRef<HTMLDivElement>(null)
+  const [, setIsFocused] = useState(false)
 
   // Get data from atoms with fallbacks
   const nlpEnabled = useAtomValue(nlpEnabledAtom)
   const [cursorPosition, setCursorPosition] = useState(0)
-  const [isFocused, setIsFocused] = useState(false)
   const [autocomplete, setAutocomplete] = useState<AutocompleteState>({
     show: false,
     type: null,
@@ -265,54 +267,101 @@ export function EnhancedHighlightedInput({
       const textBeforeCursor = text.slice(0, cursorPos)
       const lastChar = textBeforeCursor[textBeforeCursor.length - 1] || ""
       const lastWord = textBeforeCursor.split(/\s/).pop() || ""
+      const isTriggerAtWordBoundary = (triggerIndex: number): boolean => {
+        if (triggerIndex === -1) return false
+        if (triggerIndex === 0) return true
+        const prevChar = text[triggerIndex - 1]
+        return prevChar !== undefined && /\s/.test(prevChar)
+      }
+      const lastHashIndex = textBeforeCursor.lastIndexOf("#")
+      const lastAtIndex = textBeforeCursor.lastIndexOf("@")
 
       // Project autocomplete (#)
-      if (lastChar === "#" || (lastWord.startsWith("#") && lastWord.length > 1)) {
+      const hasProjectTrigger =
+        lastChar === "#" || (lastWord.startsWith("#") && lastWord.length > 1)
+      if (hasProjectTrigger && isTriggerAtWordBoundary(lastHashIndex)) {
         const query = lastWord.slice(1)
+        const normalizedQuery = query.trim().toLowerCase()
         const filteredProjects = autocompleteItems.projects.filter((p) =>
-          p.label.toLowerCase().includes(query.toLowerCase()),
+          p.label.toLowerCase().includes(normalizedQuery),
         )
 
-        if (filteredProjects.length > 0) {
+        const hasExactProject = autocompleteItems.projects.some(
+          (p) => p.label.toLowerCase() === normalizedQuery,
+        )
+
+        const createProjectItem: AutocompleteItem = {
+          id: `create-project-${normalizedQuery || "new"}`,
+          label: normalizedQuery ? `Create project "${query.trim()}"` : "Create project",
+          value: query.trim(),
+          icon: <PlusCircle className="w-3 h-3" />,
+          type: "project",
+          isCreateOption: true,
+        }
+
+        const shouldAddCreate = Boolean(normalizedQuery) && !hasExactProject
+        const maxItems = 8
+        const trimmed = filteredProjects.slice(0, maxItems - (shouldAddCreate ? 1 : 0))
+        const items = shouldAddCreate ? [...trimmed, createProjectItem] : trimmed
+
+        if (items.length > 0) {
           return {
             show: true,
             type: "project",
             query,
-            items: filteredProjects.slice(0, 8),
+            items,
             selectedIndex: 0,
             position: { x: 0, y: 0 },
-            startPos: textBeforeCursor.lastIndexOf("#"),
+            startPos: lastHashIndex,
           }
         }
       }
 
       // Label + Assignee autocomplete (@)
-      if (lastChar === "@" || (lastWord.startsWith("@") && lastWord.length > 1)) {
+      const hasLabelTrigger = lastChar === "@" || (lastWord.startsWith("@") && lastWord.length > 1)
+      if (hasLabelTrigger && isTriggerAtWordBoundary(lastAtIndex)) {
         const query = lastWord.slice(1)
+        const normalizedQuery = query.trim().toLowerCase()
 
         // Get filtered assignees (if available)
         const filteredAssignees =
           autocompleteItems.assignees?.filter((a) =>
-            a.label.toLowerCase().includes(query.toLowerCase()),
+            a.label.toLowerCase().includes(normalizedQuery),
           ) || []
 
         // Get filtered labels
         const filteredLabels = autocompleteItems.labels.filter((l) =>
-          l.label.toLowerCase().includes(query.toLowerCase()),
+          l.label.toLowerCase().includes(normalizedQuery),
         )
 
-        // Combine: assignees first, then labels (total max 8 items)
-        const combinedItems = [...filteredAssignees, ...filteredLabels].slice(0, 8)
+        const hasExactLabel = autocompleteItems.labels.some(
+          (l) => l.label.toLowerCase() === normalizedQuery,
+        )
 
-        if (combinedItems.length > 0) {
+        const createLabelItem: AutocompleteItem = {
+          id: `create-label-${normalizedQuery || "new"}`,
+          label: normalizedQuery ? `Create label "${query.trim()}"` : "Create label",
+          value: query.trim(),
+          icon: <PlusCircle className="w-3 h-3" />,
+          type: "label",
+          isCreateOption: true,
+        }
+
+        const combinedItems = [...filteredAssignees, ...filteredLabels]
+        const shouldAddCreate = Boolean(normalizedQuery) && !hasExactLabel
+        const maxItems = 8
+        const trimmed = combinedItems.slice(0, maxItems - (shouldAddCreate ? 1 : 0))
+        const items = shouldAddCreate ? [...trimmed, createLabelItem] : trimmed
+
+        if (items.length > 0) {
           return {
             show: true,
             type: "label",
             query,
-            items: combinedItems,
+            items,
             selectedIndex: 0,
             position: { x: 0, y: 0 },
-            startPos: textBeforeCursor.lastIndexOf("@"),
+            startPos: lastAtIndex,
           }
         }
       }
@@ -404,7 +453,7 @@ export function EnhancedHighlightedInput({
       const prefix = getAutocompletePrefix(item.type)
 
       // Use the actual label/name for insertion
-      const insertText = item.label
+      const insertText = item.value ?? item.label
 
       const newText =
         value.slice(0, autocomplete.startPos) +
@@ -558,6 +607,11 @@ export function EnhancedHighlightedInput({
     [autocomplete, onKeyDown, handleAutocompleteSelect],
   )
 
+  // Notify parent when autocomplete visibility changes
+  useEffect(() => {
+    onAutocompleteVisibilityChange?.(autocomplete.show)
+  }, [autocomplete.show, onAutocompleteVisibilityChange])
+
   // Render highlighted content
   const renderHighlightedContent = useMemo(() => {
     const tokens = parseText(value)
@@ -573,13 +627,18 @@ export function EnhancedHighlightedInput({
       }
 
       const isDisabled = disabledSections.has(token.value.toLowerCase())
-      const styles = isDisabled ? DISABLED_TOKEN_STYLES : TOKEN_STYLES
-      const tokenStyle = getStyleForToken(styles, token.type)
+      const tokenStyle = isDisabled
+        ? "" // Disabled tokens render as plain text
+        : getStyleForToken(TOKEN_STYLES, token.type)
+      const hoverBorder =
+        isDisabled && tokenStyle === ""
+          ? "hover:underline hover:decoration-dotted hover:decoration-foreground hover:underline-offset-2"
+          : ""
 
       return (
         <span
           key={index}
-          className={cn(tokenStyle, "opacity-60")} // Apply opacity to show blinking cursor behind it
+          className={cn(tokenStyle, hoverBorder, "opacity-60 cursor-pointer pointer-events-auto")} // Clickable to toggle parsing
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
@@ -634,7 +693,7 @@ export function EnhancedHighlightedInput({
         aria-owns="enhanced-quick-add-autocomplete"
         aria-label="Quick add task input with natural language parsing"
         aria-describedby="enhanced-quick-add-help"
-        className={cn(SHARED_TEXT_CLASSES, "bg-transparent")}
+        className={cn(SHARED_TEXT_CLASSES, "bg-muted/30 focus:bg-background")}
         onInput={handleInput}
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
@@ -660,11 +719,11 @@ export function EnhancedHighlightedInput({
           // "absolute inset-0 pointer-events-none z-0"
         )}
       >
-        {value
-          ? renderHighlightedContent
-          : !isFocused && (
-              <span className="text-muted-foreground pointer-events-none">{placeholder}</span>
-            )}
+        {value ? (
+          renderHighlightedContent
+        ) : (
+          <span className={cn("text-muted-foreground/70 pointer-events-none")}>{placeholder}</span>
+        )}
       </div>
 
       {/* Autocomplete dropdown */}

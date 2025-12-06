@@ -10,7 +10,8 @@ import {
   openSectionDialogAtom,
 } from "@tasktrove/atoms/ui/navigation"
 import { isValidProjectId } from "@/lib/utils/routing"
-import type { Project, ProjectSection, GroupId } from "@/lib/types"
+import type { Project, ProjectSection } from "@tasktrove/types/core"
+import type { GroupId } from "@tasktrove/types/id"
 import { getDefaultSectionId } from "@tasktrove/types/defaults"
 import { FALLBACK_COLOR } from "@tasktrove/constants"
 

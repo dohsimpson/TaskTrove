@@ -14,7 +14,7 @@ import {
 import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
 import { isTaskTimerActiveAtom } from "@tasktrove/atoms/ui/focus-timer"
 import { useFocusTimerDisplay } from "@/hooks/use-focus-timer-display"
-import type { TaskId } from "@/lib/types"
+import type { TaskId } from "@tasktrove/types/id"
 
 interface FocusTimerPopoverProps {
   taskId: TaskId

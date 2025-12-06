@@ -1,4 +1,3 @@
-import { DEFAULT_PROJECT_SECTION } from "@/lib/types"
 import React from "react"
 import { flushSync } from "react-dom"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
@@ -16,10 +15,13 @@ import {
   handleSettingsAtomInMock,
 } from "@/test-utils"
 import { QuickAddDialog } from "./quick-add-dialog"
-import type { Project, LabelId, TaskPriority } from "@/lib/types"
-import { createLabelId } from "@/lib/types"
+import type { Project } from "@tasktrove/types/core"
+import type { LabelId } from "@tasktrove/types/id"
+import type { TaskPriority } from "@tasktrove/types/constants"
+import { createLabelId } from "@tasktrove/types/id"
+import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
 import { TEST_PROJECT_ID_1, TEST_PROJECT_ID_2 } from "@tasktrove/types/test-constants"
-import type { ParsedTaskWithMatches } from "@/lib/utils/enhanced-natural-language-parser"
+import type { ParsedTaskWithMatches } from "@tasktrove/utils/parser-adapter"
 
 const buildParsedResult = (overrides: Partial<ParsedTaskWithMatches>): ParsedTaskWithMatches => ({
   title: "",
@@ -43,19 +45,60 @@ interface MockComponentProps {
   variant?: string
 }
 
+// Track autocomplete visibility for dialog mock
+let latestAutocompleteOpen = false
+
 // Mock UI components
-vi.mock("@/components/ui/dialog", () => ({
-  Dialog: ({ children, open }: MockComponentProps) =>
-    open ? <div data-testid="dialog">{children}</div> : null,
-  DialogContentWithoutOverlay: ({ children, className }: MockComponentProps) => (
-    <div data-testid="dialog-content" className={className}>
-      {children}
-    </div>
-  ),
-  DialogTitle: ({ children }: MockComponentProps) => (
-    <div data-testid="dialog-title">{children}</div>
-  ),
-}))
+vi.mock("@/components/ui/dialog", () => {
+  let latestOnOpenChange: ((open: boolean) => void) | undefined
+  return {
+    Dialog: ({
+      children,
+      open,
+      onOpenChange,
+    }: MockComponentProps & { onOpenChange?: (open: boolean) => void }) => {
+      latestOnOpenChange = onOpenChange
+      return open ? <div data-testid="dialog">{children}</div> : null
+    },
+    DialogContentWithoutOverlay: ({
+      children,
+      className,
+      onEscapeKeyDown,
+      onOpenChange,
+    }: MockComponentProps & {
+      onEscapeKeyDown?: (event: KeyboardEvent) => void
+      onOpenChange?: (open: boolean) => void
+    }) => (
+      <div
+        data-testid="dialog-content"
+        className={className}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            const nativeEvent = new KeyboardEvent("keydown", { key: "Escape" })
+            if (latestAutocompleteOpen) {
+              Object.defineProperty(nativeEvent, "defaultPrevented", { value: true })
+            }
+            onEscapeKeyDown?.(nativeEvent)
+            if (!nativeEvent.defaultPrevented) {
+              const close = onOpenChange ?? latestOnOpenChange
+              close?.(false)
+              // Mirror the real close atom side-effect so tests can assert it
+              if (close === latestOnOpenChange) {
+                mockCloseDialog()
+              }
+            }
+          }
+        }}
+        tabIndex={-1}
+      >
+        {children}
+      </div>
+    ),
+    DialogTitle: ({ children }: MockComponentProps) => (
+      <div data-testid="dialog-title">{children}</div>
+    ),
+  }
+})
 
 // Mock the Textarea component
 vi.mock("@/components/ui/textarea", () => ({
@@ -280,6 +323,8 @@ vi.mock("lucide-react", () => ({
   PanelLeftIcon: () => <span data-testid="panel-left-icon">◀️</span>,
   ClockFading: () => <span data-testid="clock-fading-icon">⏰</span>,
   SquareX: () => <span data-testid="square-x-icon">❌</span>,
+  ScanText: () => <span data-testid="scan-text-icon">📄</span>,
+  CopyPlus: () => <span data-testid="copy-plus-icon">📋➕</span>,
 }))
 
 // Mock UI components that use ContentPopover
@@ -300,7 +345,7 @@ vi.mock("@/components/task/subtask-popover", () => ({
 }))
 
 // Mock the constants
-vi.mock("@/lib/types", async (importOriginal) => {
+vi.mock("@tasktrove/types/constants", async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>()
   return {
     ...actual,
@@ -501,39 +546,49 @@ vi.mock("@/lib/utils/enhanced-natural-language-parser", async () => {
 })
 
 // Mock the EnhancedHighlightedInput component
-vi.mock("@/components/ui/enhanced-highlighted-input", () => ({
-  EnhancedHighlightedInput: ({
-    value,
-    onChange,
-    onKeyDown,
-    placeholder,
-    parserMatches: _parserMatches,
-    disabledSections: _disabledSections,
-  }: {
-    value: string
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-    onKeyDown: (e: React.KeyboardEvent) => void
-    placeholder: string
-    parserMatches?: unknown
-    disabledSections?: Set<string>
-  }) => {
-    void _parserMatches
-    void _disabledSections
-    return (
-      <input
-        data-testid="enhanced-input"
-        role="combobox"
-        aria-label="Quick add task input with natural language parsing"
-        aria-controls="mock-controls"
-        aria-expanded="false"
-        value={value}
-        onChange={onChange}
-        onKeyDown={onKeyDown}
-        placeholder={placeholder}
-      />
-    )
-  },
-}))
+vi.mock("@/components/ui/enhanced-highlighted-input", () => {
+  return {
+    EnhancedHighlightedInput: ({
+      value,
+      onChange,
+      onKeyDown,
+      placeholder,
+      parserMatches: _parserMatches,
+      disabledSections: _disabledSections,
+      onAutocompleteVisibilityChange,
+    }: {
+      value: string
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+      onKeyDown: (e: React.KeyboardEvent) => void
+      placeholder: string
+      parserMatches?: unknown
+      disabledSections?: Set<string>
+      onAutocompleteVisibilityChange?: (open: boolean) => void
+    }) => {
+      void _parserMatches
+      void _disabledSections
+
+      // Synchronously notify visibility for predictable tests
+      const isOpen = value.includes("@")
+      latestAutocompleteOpen = isOpen
+      onAutocompleteVisibilityChange?.(isOpen)
+
+      return (
+        <input
+          data-testid="enhanced-input"
+          role="combobox"
+          aria-label="Quick add task input with natural language parsing"
+          aria-controls="mock-controls"
+          aria-expanded="false"
+          value={value}
+          onChange={onChange}
+          onKeyDown={onKeyDown}
+          placeholder={placeholder}
+        />
+      )
+    },
+  }
+})
 
 // Ensure window.matchMedia is mocked properly
 Object.defineProperty(window, "matchMedia", {
@@ -643,7 +698,7 @@ describe("QuickAddDialog", () => {
 
     // Title should be present but visually hidden for accessibility
     expect(screen.getByTestId("dialog-title")).toBeInTheDocument()
-    expect(screen.getByText("Quick Add Task")).toBeInTheDocument()
+    expect(screen.getByText("New Task")).toBeInTheDocument()
   })
 
   it("renders input with correct placeholder", () => {
@@ -783,6 +838,30 @@ describe("QuickAddDialog", () => {
 
     const submitButton = screen.getByText("Add task")
     expect(submitButton).toBeDisabled()
+  })
+
+  it("does not close dialog when Escape is pressed while autocomplete is open", async () => {
+    renderDialog()
+
+    const input = screen.getByTestId("enhanced-input")
+    // Type value that opens autocomplete in the mock
+    fireEvent.change(input, { target: { value: "@project" } })
+
+    // Let state update propagate
+    await Promise.resolve()
+
+    const dialogContent = screen.getByTestId("dialog-content")
+    fireEvent.keyDown(dialogContent, { key: "Escape" })
+
+    expect(mockCloseDialog).not.toHaveBeenCalled()
+
+    // With autocomplete closed, Escape should close dialog (call close atom)
+    fireEvent.change(input, { target: { value: "" } })
+    fireEvent.keyDown(dialogContent, { key: "Escape" })
+
+    return waitFor(() => {
+      expect(mockCloseDialog).toHaveBeenCalledTimes(1)
+    })
   })
 
   it("enables submit button when title is entered", async () => {
@@ -1778,11 +1857,9 @@ describe("QuickAddDialog", () => {
       const nlpToggle = screen.getByTestId("nlp-toggle")
 
       // Initially NLP should be enabled and parsing should work
-      await act(async () => {
-        fireEvent.change(input, { target: { value: "Buy groceries p1" } })
-      })
+      fireEvent.change(input, { target: { value: "Buy groceries p1" } })
 
-      // Wait for debounced parsing
+      // Wait for parsing to take effect
       await waitFor(() => {
         expect(parseEnhancedNaturalLanguage).toHaveBeenCalled()
       })
@@ -1796,34 +1873,22 @@ describe("QuickAddDialog", () => {
         )
       })
 
-      // Clear mocks
-      vi.mocked(parseEnhancedNaturalLanguage).mockClear()
+      // Clear updateTask mock to track new calls after disabling NLP
       mockUpdateTask.mockClear()
 
       // Turn off NLP toggle
-      await act(async () => {
-        fireEvent.click(nlpToggle)
-      })
+      fireEvent.click(nlpToggle)
+
+      // Wait for state update
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       // Type new text that would normally be parsed
-      await act(async () => {
-        fireEvent.change(input, { target: { value: "Buy groceries p2" } })
-        // Wait for debounce delay
-        await new Promise((resolve) => setTimeout(resolve, 200))
-      })
+      fireEvent.change(input, { target: { value: "Buy groceries p2" } })
 
-      // Verify parsing was called but results were ignored (NLP disabled)
-      // Note: The parser may still be called due to debouncing, but results should be ignored
-      // The important test is that no priority was actually set from the parsing
-      if (vi.mocked(parseEnhancedNaturalLanguage).mock.calls.length > 0) {
-        // If parser was called, verify it was with the new text
-        expect(parseEnhancedNaturalLanguage).toHaveBeenLastCalledWith(
-          "Buy groceries p2",
-          expect.any(Set),
-        )
-      }
+      // Wait to ensure parsing would have happened if enabled
+      await new Promise((resolve) => setTimeout(resolve, 200))
 
-      // Verify no new priority was set
+      // Verify no new priority was set (parsing was disabled)
       const priorityUpdateCalls = vi
         .mocked(mockUpdateTask)
         .mock.calls.filter((call) => call[0]?.updateRequest?.priority !== undefined)
@@ -2018,7 +2083,7 @@ describe("QuickAddDialog", () => {
 
       // Find textarea and check it has responsive min-height
       const textarea = screen.getByPlaceholderText("Description")
-      expect(textarea).toHaveClass("min-h-16", "sm:min-h-24")
+      expect(textarea).toHaveClass("p-2", "bg-muted/30", "focus:bg-background")
     })
   })
 

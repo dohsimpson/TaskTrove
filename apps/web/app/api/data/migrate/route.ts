@@ -7,8 +7,10 @@ import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
 import { withApiLogging } from "@/lib/middleware/api-logger"
 import { safeWriteDataFile } from "@/lib/utils/safe-file-operations"
-import type { Json, ErrorResponse } from "@/lib/types"
-import { ApiErrorCode, API_ROUTES } from "@/lib/types"
+import type { Json } from "@tasktrove/types/constants"
+import type { ErrorResponse } from "@tasktrove/types/api-responses"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
+import { API_ROUTES } from "@tasktrove/types/constants"
 
 async function migrateData() {
   try {

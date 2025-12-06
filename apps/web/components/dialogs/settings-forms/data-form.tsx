@@ -20,7 +20,7 @@ import {
 import { queryClientAtom } from "@tasktrove/atoms/data/base/query"
 import { SUPPORTED_IMPORT_SOURCES, DATA_QUERY_KEY } from "@tasktrove/constants"
 import { useTranslation } from "@tasktrove/i18n"
-import { API_ROUTES } from "@/lib/types"
+import { API_ROUTES } from "@tasktrove/types/constants"
 import { navigateToSettingsCategoryAtom } from "@tasktrove/atoms/ui/settings"
 
 type UploadStatus = "idle" | "uploading" | "success" | "error"
@@ -249,7 +249,7 @@ export function DataForm() {
           </p>
           <div className="p-3 bg-muted rounded-lg border">
             <div className="flex items-start gap-2">
-              <div className="size-5 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold mt-0.5">
+              <div className="size-5 flex-shrink-0 rounded-full bg-foreground text-background flex items-center justify-center text-[11px] leading-none font-bold mt-0.5">
                 !
               </div>
               <div className="text-sm">

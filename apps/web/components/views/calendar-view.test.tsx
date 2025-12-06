@@ -4,8 +4,8 @@ import { render, screen, waitFor } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { v4 as uuidv4 } from "uuid"
 import { CalendarView } from "./calendar-view"
-import { createTaskId } from "@/lib/types"
-import type { Task, TaskPriority } from "@/lib/types"
+import { createTaskId } from "@tasktrove/types/id"
+import type { Task, TaskPriority } from "@tasktrove/types/core"
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
@@ -377,16 +377,22 @@ vi.mock("jotai", async (importOriginal) => {
   return {
     ...actual,
     useAtomValue: vi.fn((atom) => {
+      const atomStr = atom.toString()
+      if (atomStr.includes("settings")) {
+        return {
+          uiSettings: {},
+        }
+      }
       // Mock showTaskPanelAtom to return false
-      if (atom.toString().includes("showTaskPanel")) {
+      if (atomStr.includes("showTaskPanel")) {
         return false
       }
       // Mock selectedTaskAtom to return null
-      if (atom.toString().includes("selectedTask")) {
+      if (atomStr.includes("selectedTask")) {
         return null
       }
       // Mock currentViewStateAtom to return a valid view state
-      if (atom.toString().includes("currentViewState")) {
+      if (atomStr.includes("currentViewState")) {
         return {
           showSidePanel: false,
           viewMode: "calendar",
@@ -414,10 +420,11 @@ vi.mock("jotai", async (importOriginal) => {
   }
 })
 
-// Mock useIsMobile hook
-vi.mock("@/hooks/use-mobile", () => ({
-  useIsMobile: vi.fn(() => false),
-}))
+let mockIsMobileApp = false
+vi.mock("@/lib/utils/env", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/utils/env")>()
+  return { ...actual, isMobileApp: () => mockIsMobileApp }
+})
 
 // Mock useAddTaskToSection hook
 const mockAddTaskToSection = vi.fn()
@@ -485,13 +492,13 @@ describe("CalendarView", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockAddTaskToSection.mockClear()
+    mockIsMobileApp = false
   })
 
   it("renders calendar header with navigation", () => {
     render(<CalendarView {...defaultProps} />)
 
-    expect(screen.getByText("January")).toBeInTheDocument()
-    expect(screen.getByText("2025")).toBeInTheDocument()
+    expect(screen.getByText("January 2025")).toBeInTheDocument()
     expect(screen.getByTestId("chevron-left")).toBeInTheDocument()
     expect(screen.getByTestId("chevron-right")).toBeInTheDocument()
     expect(screen.getByText("Today")).toBeInTheDocument()
@@ -556,6 +563,23 @@ describe("CalendarView", () => {
     expect(callArgs).toBeInstanceOf(Date)
   })
 
+  it("hides quick-add corner buttons when disabled via layoutOptions", () => {
+    const layoutOptions = {
+      showCornerAddButtons: false,
+      showDateControls: false,
+      showViewToggle: false,
+    }
+
+    const { unmount } = render(
+      <CalendarView {...defaultProps} viewMode="month" layoutOptions={layoutOptions} />,
+    )
+    expect(screen.queryByTitle("Add task to this day")).toBeNull()
+    unmount()
+
+    render(<CalendarView {...defaultProps} viewMode="week" layoutOptions={layoutOptions} />)
+    expect(screen.queryByTitle("Add task to this time slot")).toBeNull()
+  })
+
   // Task clicks are now handled internally by TaskItem component
 
   it("navigates to previous month", async () => {
@@ -599,8 +623,7 @@ describe("CalendarView", () => {
     render(<CalendarView {...defaultProps} />)
 
     // Calendar header shows current month/year in separate dropdowns
-    expect(screen.getByText("January")).toBeInTheDocument()
-    expect(screen.getByText("2025")).toBeInTheDocument()
+    expect(screen.getByText("January 2025")).toBeInTheDocument()
 
     // Shows FloatingDock for unscheduled tasks
     expect(screen.getByText(/unscheduled/i)).toBeInTheDocument()
@@ -740,8 +763,7 @@ describe("CalendarView", () => {
 
     // Calendar should still be rendered but without tasks
     expect(document.querySelector(".grid.grid-cols-7")).toBeInTheDocument()
-    expect(screen.getByText("January")).toBeInTheDocument()
-    expect(screen.getByText("2025")).toBeInTheDocument()
+    expect(screen.getByText("January 2025")).toBeInTheDocument()
 
     // No tasks should be displayed
     expect(screen.queryByText(/Mock Task/)).not.toBeInTheDocument()
@@ -833,8 +855,8 @@ describe("CalendarView", () => {
       const prevButton = screen.getByTestId("chevron-left").closest("button")
       const nextButton = screen.getByTestId("chevron-right").closest("button")
 
-      expect(prevButton).toHaveClass("h-8", "w-8", "lg:w-10")
-      expect(nextButton).toHaveClass("h-8", "w-8", "lg:w-10")
+      expect(prevButton).toHaveClass("h-9", "w-9", "rounded-full", "border", "border-input/60")
+      expect(nextButton).toHaveClass("h-9", "w-9", "rounded-full", "border", "border-input/60")
     })
 
     it("shows responsive text in day headers", () => {
@@ -882,8 +904,7 @@ describe("CalendarView", () => {
       expect(document.querySelector(".grid.grid-cols-7")).toBeInTheDocument()
 
       // Verify bottom navigation is accessible
-      expect(screen.getByText("January")).toBeInTheDocument()
-      expect(screen.getByText("2025")).toBeInTheDocument()
+      expect(screen.getByText("January 2025")).toBeInTheDocument()
       expect(screen.getByTestId("selection-toolbar")).toBeInTheDocument()
     })
 
@@ -1037,6 +1058,9 @@ describe("CalendarView", () => {
         if (atom.debugLabel === "showTaskPanelAtom" || atom.toString().includes("showTaskPanel")) {
           return false
         }
+        if (atom.toString().includes("settings")) {
+          return { uiSettings: {} }
+        }
         // Mock selectedTaskAtom to return null
         if (atom.debugLabel === "selectedTaskAtom" || atom.toString().includes("selectedTask")) {
           return null
@@ -1125,8 +1149,7 @@ describe("CalendarView", () => {
       expect(stickyHeader).toBeInTheDocument()
 
       // Month/Year dropdowns should be inside sticky header
-      expect(stickyHeader).toHaveTextContent("January")
-      expect(stickyHeader).toHaveTextContent("2025")
+      expect(stickyHeader).toHaveTextContent("January 2025")
 
       // Navigation buttons should be inside sticky header
       const prevButton = screen.getByTestId("chevron-left").closest("button")

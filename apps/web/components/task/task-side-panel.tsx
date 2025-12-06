@@ -8,13 +8,7 @@ import { Button } from "@/components/ui/button"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { MarkdownEditableDiv } from "@/components/ui/custom/markdown-editable-div"
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerClose,
-} from "@/components/ui/drawer"
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/custom/drawer"
 import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { isPro } from "@/lib/utils/env"
@@ -41,7 +35,8 @@ import { addCommentAtom } from "@tasktrove/atoms/core/tasks"
 import { log } from "@/lib/utils/logger"
 import { labelsAtom, settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { addLabelAndWaitForRealIdAtom } from "@tasktrove/atoms/core/labels"
-import { type LabelId, Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
+import type { LabelId } from "@tasktrove/types/id"
 import { getPriorityTextColor } from "@/lib/color-utils"
 import { DEFAULT_COLOR_PALETTE } from "@tasktrove/constants"
 import { useRouter } from "next/navigation"
@@ -174,7 +169,7 @@ function TaskPanelContent({
             <AssigneeManagementPopover task={task}>
               <button
                 type="button"
-                className="flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/20 border border-transparent hover:border-border/50 text-muted-foreground w-full text-left"
+                className="flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/30 border border-transparent hover:border-border/50 text-muted-foreground w-full text-left"
               >
                 <Users className="h-4 w-4" />
                 <div className="flex-1 min-w-0">
@@ -196,7 +191,7 @@ function TaskPanelContent({
           <PriorityPopover task={task}>
             <div
               className={cn(
-                "flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/20 border border-transparent hover:border-border/50",
+                "flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/30 border border-transparent hover:border-border/50",
                 task.priority < 4 ? getPriorityTextColor(task.priority) : "text-muted-foreground",
               )}
             >
@@ -211,7 +206,7 @@ function TaskPanelContent({
 
           {/* Project */}
           <ProjectPopover task={task}>
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/20 border border-transparent hover:border-border/50 text-muted-foreground">
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/30 border border-transparent hover:border-border/50 text-muted-foreground">
               {(() => {
                 const project = getTaskProject()
                 return project ? (
@@ -242,7 +237,7 @@ function TaskPanelContent({
           data-testid="editable-div"
           value={task.description || ""}
           onChange={(value: string) => autoSave({ description: value })}
-          className="text-sm text-muted-foreground rounded-lg min-h-[60px] transition-all duration-200 min-w-56 max-w-lg bg-muted/30"
+          className="text-sm text-muted-foreground rounded-lg min-h-[60px] transition-all duration-200 min-w-56 max-w-lg bg-muted/30 focus:border-1"
           placeholder={t("sidePanel.description.placeholder", "Add description...")}
           multiline={true}
           markdownEnabled={markdownEnabled}
@@ -315,6 +310,8 @@ interface TaskSidePanelProps {
 export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSidePanelProps) {
   const isMobile = useIsMobile()
   const [isAutoSaving, setIsAutoSaving] = useState(false)
+  const mobileSnapPoints = [0.9, 1]
+  const [activeSnapPoint, setActiveSnapPoint] = useState<number | string | null>(0.9)
   const { t } = useTranslation("task")
 
   // Atom actions
@@ -431,25 +428,30 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
 
   // Mobile: Bottom drawer
   if (isMobile) {
+    const isFullyExpanded = activeSnapPoint === 1
+
     return (
-      <Drawer open={isOpen} onOpenChange={() => onClose()} direction="bottom">
-        <DrawerContent className="!max-h-[60vh] focus:outline-none [&>div:first-child]:cursor-grab [&>div:first-child]:active:cursor-grabbing">
+      <Drawer
+        open={isOpen}
+        onOpenChange={() => onClose()}
+        direction="bottom"
+        snapPoints={mobileSnapPoints}
+        activeSnapPoint={activeSnapPoint}
+        setActiveSnapPoint={setActiveSnapPoint}
+        // Keep overlay visible even at the initial snap point
+        fadeFromIndex={0}
+      >
+        <DrawerContent
+          className={cn(
+            "focus:outline-none [&>div:first-child]:cursor-grab [&>div:first-child]:active:cursor-grabbing",
+            isFullyExpanded ? "!max-h-[95vh]" : "!max-h-[70vh]",
+          )}
+        >
           <DrawerHeader className="pb-2">
             <DrawerTitle className="sr-only">
               {t("sidePanel.title", "Task Details: {{- title}}", { title: task.title })}
             </DrawerTitle>
             <div className="flex items-center gap-1">
-              {/* Drag handle for mobile */}
-              <SidePanelDragHandle taskId={task.id} taskTitle={task.title}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 flex-shrink-0 cursor-grab hover:bg-muted/50"
-                  title="Drag task"
-                >
-                  <GripVertical className="h-4 w-4" />
-                </Button>
-              </SidePanelDragHandle>
               <TaskCheckbox
                 checked={task.completed}
                 onCheckedChange={() => toggleTask(task.id)}
@@ -499,16 +501,16 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
                   open={actionsMenuOpen}
                   onOpenChange={setActionsMenuOpen}
                 />
-                <DrawerClose asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-                    <X className="h-4 w-4" />
-                  </Button>
-                </DrawerClose>
               </div>
             </div>
           </DrawerHeader>
 
-          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+          <div
+            className={cn(
+              "flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent",
+              isFullyExpanded ? "" : "pb-2",
+            )}
+          >
             <div className="p-4">
               <TaskPanelContent
                 task={task}

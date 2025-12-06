@@ -284,6 +284,29 @@ describe("NavUser", () => {
       expect(signOut).toHaveBeenCalledTimes(1)
     })
 
+    it("uses custom onSignOut handler when provided", async () => {
+      const customSignOut = vi.fn()
+
+      render(
+        <TestWrapper>
+          <NavUser onSignOut={customSignOut} />
+        </TestWrapper>,
+      )
+
+      const logoutButton = screen.getByTitle("Sign out")
+      fireEvent.click(logoutButton)
+
+      const confirmButton = screen.getByTestId("logout-confirm-button")
+      fireEvent.click(confirmButton)
+
+      await waitFor(() => {
+        expect(customSignOut).toHaveBeenCalled()
+      })
+
+      const { signOut } = await import("next-auth/react")
+      expect(signOut).not.toHaveBeenCalled()
+    })
+
     it("shows success toast when logout is confirmed", async () => {
       const { toast } = await import("sonner")
 

@@ -3,7 +3,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { mockUseToast } from "@/test-utils"
 import { render, screen, fireEvent } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
-import { TaskId, createTaskId } from "@/lib/types"
+import type { TaskId } from "@tasktrove/types/id"
+import { createTaskId } from "@tasktrove/types/id"
 
 // Mock Jotai
 vi.mock("jotai", () => ({

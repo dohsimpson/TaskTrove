@@ -13,8 +13,9 @@ import { TaskTroveIcon } from "@/components/ui/custom/tasktrove-icon"
 import { useTranslation } from "@tasktrove/i18n"
 import { API_ROUTES } from "@tasktrove/types/constants"
 import { PrivacyTermsNotice } from "@/components/legal/privacy-terms-notice"
+import { Label } from "@/components/ui/label"
 
-export interface LoginFormProps {
+export type LoginFormProps = {
   needsPasswordSetup: boolean
   onSuccess?: () => void
   onCancel?: () => void
@@ -22,6 +23,14 @@ export interface LoginFormProps {
   onUsernameChange?: (value: string) => void
   isUsernameRequired?: boolean
   headerAuthUser?: string | null
+  /** optional override to perform login instead of NextAuth credentials */
+  onLogin?: (input: { username?: string; password: string }) => Promise<void>
+  /** allow editing a prefilled username during setup/login */
+  usernameEditableWhenPrefilled?: boolean
+  /** slot for consumers to inject additional form fields */
+  extraFields?: React.ReactNode
+  /** placement for extraFields; default places after core inputs */
+  extraFieldsPlacement?: "before" | "after"
 }
 
 export function LoginForm({
@@ -31,6 +40,10 @@ export function LoginForm({
   onUsernameChange,
   isUsernameRequired = false,
   headerAuthUser,
+  onLogin,
+  usernameEditableWhenPrefilled = false,
+  extraFields,
+  extraFieldsPlacement = "after",
 }: LoginFormProps) {
   // Translation hooks
   const { t } = useTranslation("auth")
@@ -47,7 +60,8 @@ export function LoginForm({
   const [showPassword, setShowPassword] = useState(false)
 
   // Compute whether username change should be disabled (when username is pre-filled)
-  const usernameChangeDisabled = isUsernameRequired && username !== ""
+  const usernameChangeDisabled =
+    !usernameEditableWhenPrefilled && isUsernameRequired && username !== ""
 
   // Check if this is SSO header auth mode
   // Note: Password setup takes priority over SSO header auth for first-time setup
@@ -120,6 +134,13 @@ export function LoginForm({
     // Normal login flow
     setIsLoading(true)
     try {
+      if (onLogin) {
+        await onLogin({ username, password })
+        toast.success(t("messages.loginSuccess", "Login successful"))
+        onSuccess?.()
+        return
+      }
+
       const result = await signIn("credentials", {
         ...(isUsernameRequired && { username }),
         password,
@@ -151,7 +172,7 @@ export function LoginForm({
       <Card className="w-full max-w-md gap-0">
         <CardHeader className="text-center space-y-4 p-6">
           <div className="flex flex-col items-center space-y-3">
-            <TaskTroveIcon size="lg" />
+            <TaskTroveIcon size="lg" rounded />
             <TaskTroveLogo size="lg" />
           </div>
         </CardHeader>
@@ -195,6 +216,9 @@ export function LoginForm({
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4 max-w-xs mx-auto">
+              {extraFields && extraFieldsPlacement === "before" ? (
+                <div className="space-y-2">{extraFields}</div>
+              ) : null}
               {needsPasswordSetup ? (
                 // Password Setup Mode
                 <>
@@ -283,6 +307,7 @@ export function LoginForm({
                 <>
                   {isUsernameRequired && onUsernameChange && (
                     <div className="space-y-2">
+                      <Label htmlFor="username">Username</Label>
                       <Input
                         id="username"
                         type="text"
@@ -297,6 +322,7 @@ export function LoginForm({
                   )}
                   <div className="space-y-2">
                     <div className="relative">
+                      <Label htmlFor="password">Password</Label>
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
@@ -338,6 +364,9 @@ export function LoginForm({
                   {error && <p className="text-sm text-red-500">{error}</p>}
                 </>
               )}
+              {extraFields && extraFieldsPlacement === "after" ? (
+                <div className="space-y-2">{extraFields}</div>
+              ) : null}
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading
                   ? needsPasswordSetup

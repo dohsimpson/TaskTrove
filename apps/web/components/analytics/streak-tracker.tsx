@@ -6,7 +6,7 @@ import { Flame, Calendar, Trophy, Target } from "lucide-react"
 import { format, subDays, isToday, startOfDay, endOfDay } from "date-fns"
 import { useAtomValue } from "jotai"
 import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 
 interface StreakTrackerProps {
   currentStreak: number

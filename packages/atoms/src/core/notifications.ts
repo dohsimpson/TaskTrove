@@ -10,6 +10,7 @@ import type {
 import type { ScheduledNotificationSet } from "@tasktrove/types/utils";
 import type { NotificationSettings } from "@tasktrove/types/settings";
 import { createTaskId } from "@tasktrove/types/id";
+import { getTaskNotifyAt } from "@tasktrove/utils/notification";
 import { settingsAtom } from "@tasktrove/atoms/data/base/atoms";
 import { safeSetTimeout } from "@tasktrove/utils";
 import {
@@ -200,23 +201,11 @@ export const scheduleTaskNotificationAtom = atom(
         return;
       }
 
-      const permission = get(notificationPermissionAtom);
-      if (permission !== "granted") {
-        return;
-      }
-
-      // Calculate notification time from due date and time
-      const dueDate =
-        task.dueDate instanceof Date ? task.dueDate : new Date(task.dueDate);
-      const dueTime =
-        task.dueTime instanceof Date ? task.dueTime : new Date(task.dueTime);
-
-      // Combine date and time
-      const notifyAt = new Date(dueDate);
-      notifyAt.setHours(dueTime.getHours(), dueTime.getMinutes(), 0, 0);
+      // Calculate notification time from due date/time (supports all-day default)
+      const notifyAt = getTaskNotifyAt(task);
 
       // Don't schedule notifications for past due dates
-      if (notifyAt <= new Date()) {
+      if (!notifyAt || notifyAt <= new Date()) {
         return;
       }
 
@@ -402,6 +391,9 @@ export const showTaskDueNotificationAtom = atom(
     try {
       const notificationSettings = get(notificationSettingsAtom);
 
+      // Play notification sound immediately to avoid delay from async show
+      set(playSoundAtom, { soundType: "chime" });
+
       // Show browser notification using service worker
       const result = await showServiceWorkerNotification(
         `TaskTrove - Task Due`,
@@ -423,9 +415,6 @@ export const showTaskDueNotificationAtom = atom(
           "Failed to show task due notification",
         );
       }
-
-      // Play notification sound (settings-aware)
-      set(playSoundAtom, { soundType: "chime" });
 
       log.info(
         {
@@ -452,7 +441,7 @@ export const rescheduleAllNotificationsAtom = atom(
 
       // Reschedule for all tasks with due dates
       for (const task of tasks) {
-        if (task.dueDate && task.dueTime && !task.completed) {
+        if (task.dueDate && !task.completed) {
           set(scheduleTaskNotificationAtom, { taskId: task.id, task });
         }
       }

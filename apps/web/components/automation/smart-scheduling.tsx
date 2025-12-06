@@ -27,7 +27,7 @@ import {
   BarChart3,
 } from "lucide-react"
 
-import type { TaskId } from "@/lib/types"
+import type { TaskId } from "@tasktrove/types/id"
 
 interface Task {
   id: TaskId

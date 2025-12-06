@@ -13,7 +13,9 @@ import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
 import { DraggableProjectItem } from "./draggable-project-item"
 import { projectTaskCountsAtom } from "@tasktrove/atoms/ui/task-counts"
-import type { Project, ProjectGroup, ProjectId } from "@/lib/types"
+import type { Project } from "@tasktrove/types/core"
+import type { ProjectGroup } from "@tasktrove/types/group"
+import type { ProjectId } from "@tasktrove/types/id"
 
 interface ProjectGroupItemProps {
   group: ProjectGroup

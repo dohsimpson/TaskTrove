@@ -8,7 +8,8 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 import { NextRequest } from "next/server"
 import { GET, PATCH } from "./route"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
-import { DEFAULT_EMPTY_DATA_FILE, UserSettings } from "@/lib/types"
+import { DEFAULT_EMPTY_DATA_FILE } from "@tasktrove/types/defaults"
+import type { UserSettings } from "@tasktrove/types/settings"
 
 // Mock the safe file operations
 vi.mock("@/lib/utils/safe-file-operations")
@@ -70,6 +71,9 @@ const DEFAULT_SETTINGS: UserSettings = {
     linkifyEnabled: true,
     markdownEnabled: true,
     popoverHoverOpen: false,
+  },
+  uiSettings: {
+    weekStartsOn: undefined,
   },
 }
 

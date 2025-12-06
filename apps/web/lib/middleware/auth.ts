@@ -9,7 +9,8 @@
 
 import { auth } from "@/auth"
 import { NextResponse } from "next/server"
-import { ApiErrorCode, ErrorResponse } from "@/lib/types"
+import type { ErrorResponse } from "@tasktrove/types/api-responses"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
 import type { EnhancedRequest } from "./api-logger"
 import { safeReadDataFile } from "@/lib/utils/safe-file-operations"
 import { isAuthEnabled } from "@/lib/utils/env"

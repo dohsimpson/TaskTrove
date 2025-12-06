@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 import { NextRequest } from "next/server"
 import { GET } from "./route"
 import type { Scheduler } from "@tasktrove/scheduler"
-import type { SchedulerJob } from "@/lib/types"
+import type { SchedulerJob } from "@tasktrove/types/api-responses"
 import { getScheduler } from "@/lib/scheduler/service"
 import { bootstrapScheduler } from "@/lib/scheduler/bootstrap"
 

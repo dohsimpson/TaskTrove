@@ -41,13 +41,13 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
 
       // CRITICAL: Must match the exact working example classes
       expect(contentEditable).toHaveClass("w-full")
-      expect(contentEditable).toHaveClass("min-h-[60px]")
-      expect(contentEditable).toHaveClass("p-3")
+      expect(contentEditable).toHaveClass("whitespace-pre-wrap")
+      expect(contentEditable).toHaveClass("p-2")
       expect(contentEditable).toHaveClass("break-words")
       expect(contentEditable).toHaveClass("whitespace-break-spaces")
       expect(contentEditable).not.toHaveClass("text-transparent")
       expect(contentEditable).not.toHaveClass("z-10")
-      expect(contentEditable).toHaveClass("bg-transparent")
+      expect(contentEditable).toHaveClass("bg-muted/30", "focus:bg-background")
     })
 
     it("should NOT have any conflicting CSS classes that caused misalignment", () => {
@@ -83,7 +83,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       // CRITICAL: Must match the exact working example classes
       expect(overlay).toHaveClass("absolute")
       expect(overlay).toHaveClass("inset-0")
-      expect(overlay).toHaveClass("p-3") // Same padding as contentEditable
+      expect(overlay).toHaveClass("p-2") // Same padding as contentEditable
       expect(overlay).toHaveClass("pointer-events-none")
       expect(overlay).toHaveClass("z-0")
       expect(overlay).toHaveClass("whitespace-break-spaces")
@@ -104,8 +104,8 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       expect(overlay).toBeTruthy()
 
       // CRITICAL: Both must have p-3 and nothing that overrides it
-      expect(contentEditable).toHaveClass("p-3")
-      expect(overlay).toHaveClass("p-3")
+      expect(contentEditable).toHaveClass("p-2")
+      expect(overlay).toHaveClass("p-2")
 
       // Neither should have conflicting padding classes
       expect(contentEditable).not.toHaveClass("px-0")
@@ -364,7 +364,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
 
       // Should have expected number of classes (not dynamic additions)
       expect(contentEditableClassCount).toBeGreaterThan(5) // Has many classes
-      expect(overlayClassCount).toBe(10) // Updated number after refactoring
+      expect(overlayClassCount).toBe(9) // Updated number after refactoring
     })
   })
 
@@ -423,7 +423,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       )
       expect(contentEditable).toBeTruthy()
 
-      expect(contentEditable).toHaveClass("p-3", "bg-transparent")
+      expect(contentEditable).toHaveClass("p-2", "bg-muted/30", "focus:bg-background")
       expect(contentEditable).not.toHaveClass("text-transparent")
 
       // Should not be possible to override these with className prop
@@ -444,11 +444,12 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       // This is the EXACT string from the working example, split for verification
       const expectedClasses = [
         "w-full",
-        "min-h-[60px]",
-        "p-3",
+        "whitespace-pre-wrap",
+        "p-2",
         "break-words",
         "whitespace-break-spaces",
-        "bg-transparent",
+        "bg-muted/30",
+        "focus:bg-background",
       ]
 
       expectedClasses.forEach((className) => {
@@ -472,7 +473,7 @@ describe("Enhanced Highlighted Input - Critical Alignment Tests", () => {
       const expectedClasses = [
         "absolute",
         "inset-0",
-        "p-3",
+        "p-2",
         "pointer-events-none",
         "z-0",
         "whitespace-break-spaces",

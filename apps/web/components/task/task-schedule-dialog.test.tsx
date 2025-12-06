@@ -2,7 +2,7 @@ import React from "react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen, fireEvent } from "@/test-utils"
 import { TaskScheduleDialog } from "./task-schedule-dialog"
-import { createTaskId } from "@/lib/types"
+import { createTaskId } from "@tasktrove/types/id"
 
 // Mock date-fns
 vi.mock("date-fns", () => ({

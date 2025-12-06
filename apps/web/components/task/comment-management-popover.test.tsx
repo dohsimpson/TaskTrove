@@ -3,8 +3,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { CommentManagementPopover } from "./comment-management-popover"
-import type { Task, TaskComment } from "@/lib/types"
-import { createUserId } from "@/lib/types"
+import type { Task, TaskComment } from "@tasktrove/types/core"
+import { createUserId } from "@tasktrove/types/id"
 import {
   TEST_TASK_ID_1,
   TEST_PROJECT_ID_1,

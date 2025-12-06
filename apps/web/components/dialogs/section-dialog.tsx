@@ -2,7 +2,7 @@ import { BaseDialog } from "./base-dialog"
 import { showSectionDialogAtom, sectionDialogContextAtom } from "@tasktrove/atoms/ui/dialogs"
 import { closeSectionDialogAtom } from "@tasktrove/atoms/ui/navigation"
 import { addProjectSectionAtPositionAtom } from "@tasktrove/atoms/core/projects"
-import { createProjectId, createGroupId } from "@/lib/types"
+import { createProjectId, createGroupId } from "@tasktrove/types/id"
 
 export function SectionDialog() {
   return (

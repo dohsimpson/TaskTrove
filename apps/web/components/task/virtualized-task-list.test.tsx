@@ -2,7 +2,7 @@ import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@/test-utils"
 import { VirtualizedTaskList } from "./virtualized-task-list"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 import { TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3 } from "@tasktrove/types/test-constants"
 
 // Create mock function that persists across renders

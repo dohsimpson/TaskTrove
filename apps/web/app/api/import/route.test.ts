@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { POST } from "./route"
-import { DEFAULT_EMPTY_DATA_FILE, createVersionString } from "@/lib/types"
+import { DEFAULT_EMPTY_DATA_FILE } from "@tasktrove/types/defaults"
+import { createVersionString } from "@tasktrove/types/id"
+import { LATEST_DATA_VERSION } from "@tasktrove/types/schema-version"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { createMockEnhancedRequest } from "@/lib/utils/test-helpers"
 
@@ -66,7 +68,7 @@ describe("/api/import", () => {
 
     const request = buildRequest({
       ...baseImportPayload,
-      version: createVersionString("v0.10.0"),
+      version: LATEST_DATA_VERSION,
     })
 
     const response = await POST(request)
@@ -81,12 +83,12 @@ describe("/api/import", () => {
   it("allows import when versions match", async () => {
     mockSafeReadDataFile.mockResolvedValue({
       ...DEFAULT_EMPTY_DATA_FILE,
-      version: createVersionString("v0.10.0"),
+      version: LATEST_DATA_VERSION,
     })
 
     const request = buildRequest({
       ...baseImportPayload,
-      version: createVersionString("v0.10.0"),
+      version: LATEST_DATA_VERSION,
     })
 
     const response = await POST(request)

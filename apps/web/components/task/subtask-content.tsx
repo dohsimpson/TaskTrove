@@ -17,8 +17,10 @@ import { updateTaskAtom } from "@tasktrove/atoms/core/tasks"
 import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@tasktrove/atoms/ui/dialogs"
 import { useTranslation } from "@tasktrove/i18n"
-import type { Task, Subtask, CreateTaskRequest } from "@/lib/types"
-import { createSubtaskId, createTaskId } from "@/lib/types"
+import { useIsMobile } from "@/hooks/use-mobile"
+import type { Task, Subtask } from "@tasktrove/types/core"
+import type { CreateTaskRequest } from "@tasktrove/types/api-requests"
+import { createSubtaskId, createTaskId } from "@tasktrove/types/id"
 import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
 
 interface SubtaskContentProps {
@@ -48,6 +50,7 @@ export function SubtaskContent({
   const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
   const newTask = useAtomValue(quickAddTaskAtom)
   const isNewTask = !taskId && !legacyTask
+  const isMobile = useIsMobile()
 
   // Get the task data - either from quick-add atom, legacy prop, or find by ID
   const task: Task | CreateTaskRequest | undefined = (() => {
@@ -169,7 +172,7 @@ export function SubtaskContent({
   return (
     <div className={cn("space-y-3", mode === "popover" && "p-3", className)}>
       {/* Header - only show in popover mode */}
-      {mode === "popover" && (
+      {mode === "popover" && !isMobile && (
         <div className="flex items-center justify-between border-b pb-2 mb-3">
           <div className="flex items-center gap-2">
             <CheckSquare className="h-4 w-4" />

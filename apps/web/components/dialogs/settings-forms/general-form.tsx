@@ -17,7 +17,8 @@ import {
 import { SettingsCard } from "@/components/ui/custom/settings-card"
 import { settingsAtom, userAtom } from "@tasktrove/atoms/data/base/atoms"
 import { updateSettingsAtom } from "@tasktrove/atoms/core/settings"
-import { UserSchema, type StandardViewId } from "@/lib/types"
+import { UserSchema } from "@tasktrove/types/core"
+import type { StandardViewId } from "@tasktrove/types/id"
 import { START_VIEW_METADATA } from "@tasktrove/constants"
 import {
   Inbox,
@@ -219,8 +220,8 @@ export function GeneralForm() {
     <div className="space-y-6">
       {/* Default Landing Page */}
       <SettingsCard title={t("general.defaultPage.title", "Default Page")}>
-        <div className="flex items-center justify-between gap-4 min-w-0">
-          <div className="space-y-0.5 min-w-0 break-words">
+        <div className="flex flex-col gap-3 min-w-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="space-y-0.5 min-w-0 break-words sm:max-w-[60%]">
             <Label htmlFor="start-view">
               {t("general.defaultPage.label", "When you open TaskTrove, show")}
             </Label>
@@ -232,7 +233,7 @@ export function GeneralForm() {
             </p>
           </div>
           <Select value={currentStartView} onValueChange={handleStartViewChange}>
-            <SelectTrigger id="start-view" className="w-auto min-w-[200px] max-w-full">
+            <SelectTrigger id="start-view" className="w-full sm:w-auto sm:min-w-[220px] max-w-full">
               <SelectValue>
                 {selectedOption && (
                   <div className="flex items-center gap-2">
@@ -275,15 +276,18 @@ export function GeneralForm() {
 
       {/* Language Settings */}
       <SettingsCard title={t("general.language.title", "Language")}>
-        <div className="flex items-center justify-between gap-4 min-w-0">
-          <div className="space-y-0.5 min-w-0 break-words">
+        <div className="flex flex-col gap-3 min-w-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="space-y-0.5 min-w-0 break-words sm:max-w-[60%]">
             <Label htmlFor="language-select">{t("general.language.label", "Language")}</Label>
             <p className="text-sm text-muted-foreground">
               {t("general.language.description", "Select the display language for the application")}
             </p>
           </div>
           <Select value={i18n.resolvedLanguage || "en"} onValueChange={handleLanguageChange}>
-            <SelectTrigger id="language-select" className="w-auto min-w-[180px] max-w-full">
+            <SelectTrigger
+              id="language-select"
+              className="w-full sm:w-auto sm:min-w-[200px] max-w-full"
+            >
               <SelectValue>
                 <div className="flex items-center gap-2">
                   <Languages className="w-4 h-4" />
@@ -315,8 +319,8 @@ export function GeneralForm() {
 
       {/* Sound Settings */}
       <SettingsCard title={t("general.audio.title", "Audio")}>
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-0.5 sm:max-w-[65%]">
             <Label htmlFor="sound-enabled">
               {t("general.audio.soundEffects.label", "Sound Effects")}
             </Label>
@@ -337,8 +341,8 @@ export function GeneralForm() {
 
       {/* Linkify Settings */}
       <SettingsCard title={t("general.links.title", "Links")}>
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-0.5 sm:max-w-[65%]">
             <Label htmlFor="linkify-enabled">
               {t("general.links.autoConvert.label", "Auto-convert URLs to Links")}
             </Label>
@@ -359,8 +363,8 @@ export function GeneralForm() {
 
       {/* Markdown Settings */}
       <SettingsCard title={t("general.markdown.title", "Markdown")}>
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-0.5 sm:max-w-[65%]">
             <Label htmlFor="markdown-enabled">
               {t("general.markdown.enable.label", "Enable Markdown in Descriptions")}
             </Label>
@@ -381,8 +385,8 @@ export function GeneralForm() {
 
       {/* Popover Settings */}
       <SettingsCard title={t("general.popovers.title", "Popovers")} experimental>
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-0.5 sm:max-w-[65%]">
             <Label htmlFor="popover-hover-open">
               {t("general.popovers.hoverOpen.label", "Open on Hover")}
             </Label>

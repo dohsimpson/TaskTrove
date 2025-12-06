@@ -1,7 +1,7 @@
 import React from "react"
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@/test-utils"
-import type { Task, Project } from "@/lib/types"
+import type { Task, Project } from "@tasktrove/types/core"
 import { createMockTask } from "@tasktrove/atoms/utils/test-helpers"
 import { TEST_TASK_ID_1, TEST_TASK_ID_2 } from "@tasktrove/types/test-constants"
 import { mockNextNavigation, mockNavigation, mockUseToast, mockNextThemes } from "@/test-utils"

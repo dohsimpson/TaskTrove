@@ -5,7 +5,8 @@ import { EntityContextMenu } from "@/components/ui/custom/entity-context-menu"
 import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { deleteLabelAtom, updateLabelAtom } from "@tasktrove/atoms/core/labels"
 import { startEditingLabelAtom, openLabelDialogAtom } from "@tasktrove/atoms/ui/navigation"
-import type { Label, LabelId } from "@/lib/types"
+import type { Label } from "@tasktrove/types/core"
+import type { LabelId } from "@tasktrove/types/id"
 
 interface LabelContextMenuProps {
   labelId: LabelId

@@ -17,6 +17,7 @@ import {
   isValidCategory,
 } from "@tasktrove/atoms/ui/settings"
 import { useTranslation } from "@tasktrove/i18n"
+import { useIsMobile } from "@/components/ui/use-mobile"
 import { DataForm } from "@/components/dialogs/settings-forms/data-form"
 import { NotificationsForm } from "@/components/dialogs/settings-forms/notifications-form"
 import { GeneralForm } from "@/components/dialogs/settings-forms/general-form"
@@ -179,13 +180,13 @@ function SettingsContent() {
           />
           {/* Mobile Sidebar */}
           <aside className="absolute left-0 top-0 bottom-0 w-full bg-background border-r z-50 flex flex-col md:hidden">
-            {/* Mobile Close Button */}
+            {/* Mobile Close Button (closes entire dialog to match expected mobile behavior) */}
             <div className="flex items-center justify-between p-4">
               <h2 className="text-lg font-semibold">{t("settings.title", "Settings")}</h2>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setMobileDrawerOpen(false)}
+                onClick={() => closeDialog()}
                 className="h-8 w-8 p-0"
               >
                 <X className="h-4 w-4" />
@@ -200,7 +201,7 @@ function SettingsContent() {
                 {settingsCategories.map((category) => (
                   <Button
                     key={category.id}
-                    variant={activeCategory === category.id ? "default" : "ghost"}
+                    variant="ghost"
                     onClick={() => navigateToCategory(category.id)}
                     className="w-full justify-start py-3 h-auto"
                   >
@@ -219,7 +220,7 @@ function SettingsContent() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-x-hidden">
         {/* Header */}
-        <header className="flex h-16 shrink-0 items-center gap-2 px-4">
+        <header className="flex shrink-0 items-start md:items-center gap-2 px-4 py-4 md:h-16">
           {/* Mobile menu button - only visible on mobile */}
           <Button
             variant="ghost"
@@ -233,12 +234,19 @@ function SettingsContent() {
             </span>
           </Button>
 
-          <div className="flex items-center gap-2 flex-1">
-            <h1 className="text-xl font-semibold">{activeCategoryInfo?.title}</h1>
-            <span className="text-sm text-muted-foreground">·</span>
-            <span className="text-sm text-muted-foreground">{activeCategoryInfo?.description}</span>
+          <div className="flex flex-1 flex-col gap-1 md:flex-row md:items-center md:gap-2 min-w-0">
+            <h1 className="text-xl font-semibold leading-tight">{activeCategoryInfo?.title}</h1>
+            <div className="flex items-center text-sm text-muted-foreground gap-2 leading-tight flex-wrap">
+              <span aria-hidden="true">·</span>
+              <span className="break-words">{activeCategoryInfo?.description}</span>
+            </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => closeDialog()} className="h-8 w-8 p-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => closeDialog()}
+            className="h-8 w-8 p-0 ml-auto"
+          >
             <X className="h-4 w-4" />
             <span className="sr-only">
               {t("settings.accessibility.closeSettings", "Close settings")}
@@ -257,6 +265,18 @@ export function SettingsDialog() {
   const { t } = useTranslation("dialogs")
   const open = useAtomValue(showSettingsDialogAtom)
   const closeDialog = useSetAtom(closeSettingsDialogAtom)
+  const isMobile = useIsMobile()
+  const setMobileDrawerOpen = useSetAtom(mobileSettingsDrawerOpenAtom)
+
+  React.useEffect(() => {
+    // When opening on mobile, start with the category drawer visible;
+    // reset the drawer when closing.
+    if (open) {
+      setMobileDrawerOpen(isMobile)
+    } else {
+      setMobileDrawerOpen(false)
+    }
+  }, [open, isMobile, setMobileDrawerOpen])
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>

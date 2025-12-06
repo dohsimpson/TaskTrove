@@ -31,6 +31,7 @@ import {
   DEFAULT_USER_DATA,
   DEFAULT_PROJECT_GROUP,
   DEFAULT_LABEL_GROUP,
+  DEFAULT_UI_SETTINGS,
 } from "./defaults";
 import { LATEST_DATA_VERSION } from "./schema-version";
 
@@ -159,6 +160,7 @@ export const TEST_GROUPS_DATA: DataFileSerialization = {
     },
     notifications: DEFAULT_NOTIFICATION_SETTINGS,
     general: DEFAULT_GENERAL_SETTINGS,
+    uiSettings: DEFAULT_UI_SETTINGS,
   },
   user: DEFAULT_USER_DATA,
 };

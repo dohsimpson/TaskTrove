@@ -1,8 +1,8 @@
 import { useSetAtom } from "jotai"
 import { openQuickAddAtom } from "@tasktrove/atoms/ui/navigation"
 import { updateQuickAddTaskAtom, resetQuickAddTaskAtom } from "@tasktrove/atoms/ui/dialogs"
-import { ProjectIdSchema, createGroupId, GroupIdSchema } from "@/lib/types"
-import type { ProjectId, GroupId } from "@/lib/types"
+import { ProjectIdSchema, createGroupId, GroupIdSchema } from "@tasktrove/types/id"
+import type { ProjectId, GroupId } from "@tasktrove/types/id"
 
 /**
  * Hook that provides a function to add a task to a specific section.

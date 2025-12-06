@@ -4,7 +4,8 @@ index 3a8e069ce3f4ce003e71768b3d480c073885e84c..99721e50c571c979d82179efeb366313
 +++ b/dist/cjs/group.compiled.css
 @@ -3,4 +3,4 @@
  ._12y31dm9{outline-width:var(--ds-border-width-selected,2px)}
- ._1cwg12x7{outline-offset:var(--ds-space-075,6px)}
+-._1cwg12x7{outline-offset:var(--ds-space-075,6px)}
++._1cwg12x7{outline-offset:0px}
  ._1qu2nqa1{outline-style:solid}
 -._bfhk33gi{background-color:var(--ds-background-information,#e9f2ff)}
 \ No newline at end of file
@@ -35,7 +36,8 @@ index 3a8e069ce3f4ce003e71768b3d480c073885e84c..99721e50c571c979d82179efeb366313
 +++ b/dist/es2019/group.compiled.css
 @@ -3,4 +3,4 @@
  ._12y31dm9{outline-width:var(--ds-border-width-selected,2px)}
- ._1cwg12x7{outline-offset:var(--ds-space-075,6px)}
+-._1cwg12x7{outline-offset:var(--ds-space-075,6px)}
++._1cwg12x7{outline-offset:0px}
  ._1qu2nqa1{outline-style:solid}
 -._bfhk33gi{background-color:var(--ds-background-information,#e9f2ff)}
 \ No newline at end of file
@@ -67,7 +69,8 @@ index 3a8e069ce3f4ce003e71768b3d480c073885e84c..62133bb3180256fbd29f5b68eec329f2
 +++ b/dist/esm/group.compiled.css
 @@ -3,4 +3,4 @@
  ._12y31dm9{outline-width:var(--ds-border-width-selected,2px)}
- ._1cwg12x7{outline-offset:var(--ds-space-075,6px)}
+-._1cwg12x7{outline-offset:var(--ds-space-075,6px)}
++._1cwg12x7{outline-offset:0px}
  ._1qu2nqa1{outline-style:solid}
 -._bfhk33gi{background-color:var(--ds-background-information,#e9f2ff)}
 \ No newline at end of file

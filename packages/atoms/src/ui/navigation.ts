@@ -26,7 +26,6 @@ import {
   sectionDialogContextAtom,
   projectGroupDialogContextAtom,
 } from "@tasktrove/atoms/ui/dialogs";
-import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
 import { ProjectIdSchema } from "@tasktrove/types/id";
 import {
   GroupIdSchema,
@@ -34,10 +33,9 @@ import {
   type LabelId,
   type GroupId,
   type ViewId,
-  type StandardViewId,
-  createProjectId,
   createGroupId,
 } from "@tasktrove/types/id";
+import type { StandardViewId } from "@tasktrove/types/constants";
 import { type Project, type Label } from "@tasktrove/types/core";
 import { type ProjectGroup } from "@tasktrove/types/group";
 import { DEFAULT_GROUP_COLOR, DEFAULT_ROUTE } from "@tasktrove/constants";
@@ -56,6 +54,8 @@ import {
 } from "@tasktrove/constants";
 
 // Internal validation functions for navigation parsing
+// Retained for potential future validation parity; currently unused
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function isValidProjectId(id: string): id is ProjectId {
   try {
     ProjectIdSchema.parse(id);
@@ -369,18 +369,54 @@ closeAllDialogsAtom.debugLabel = "closeAllDialogsAtom";
 // =============================================================================
 // ROUTE CONTEXT ATOMS
 // =============================================================================
+// RouteContext is a discriminated union:
+// - projectgroup routes may start as { viewId: "not-found", slug } on first render
+//   when group data hasn't hydrated; a subsequent recompute will swap in the UUID.
+//   Components should handle both states.
+
+type StandardRouteContext = {
+  pathname: string;
+  viewId: string;
+  routeType: "standard";
+};
+
+type ProjectRouteContext = {
+  pathname: string;
+  viewId: ProjectId | "not-found";
+  routeType: "project";
+  slug?: string;
+};
+
+type LabelRouteContext = {
+  pathname: string;
+  viewId: LabelId | "not-found";
+  routeType: "label";
+  slug?: string;
+};
+
+type ProjectGroupRouteContext = {
+  pathname: string;
+  viewId: GroupId | "not-found";
+  routeType: "projectgroup";
+  /** Raw slug/segment from the URL for loading states */
+  slug?: string;
+};
+
+type FilterRouteContext = {
+  pathname: string;
+  viewId: ViewId;
+  routeType: "filter";
+};
 
 /**
  * Route context type definition
  */
-export interface RouteContext {
-  /** Current pathname */
-  pathname: string;
-  /** Computed view ID for state management */
-  viewId: ViewId;
-  /** Type of route being accessed */
-  routeType: "standard" | "project" | "label" | "filter" | "projectgroup";
-}
+export type RouteContext =
+  | StandardRouteContext
+  | ProjectRouteContext
+  | LabelRouteContext
+  | ProjectGroupRouteContext
+  | FilterRouteContext;
 
 /**
  * Internal pathname atom - will be set by components using usePathname
@@ -421,32 +457,27 @@ function parseRouteContext(
 
   // Handle project routes
   if (firstSegment === "projects" && secondSegment) {
+    const decodedParam = decodeURIComponent(secondSegment);
+
     // Try to resolve project by ID or slug
     if (projects) {
-      const project = resolveProject(secondSegment, projects);
+      const project = resolveProject(decodedParam, projects);
       if (project) {
         return {
           pathname,
           viewId: project.id, // ViewId is the ProjectId
           routeType: "project",
+          slug: project.slug,
         };
       }
     }
 
-    // Fallback: check if it's a valid ID format for backwards compatibility
-    if (isValidProjectId(secondSegment)) {
-      return {
-        pathname,
-        viewId: createProjectId(secondSegment), // Use the ID directly
-        routeType: "project",
-      };
-    }
-
-    // Invalid project ID/slug, treat as project route for fallback handling
+    // Fallback: project not found (either slug or UUID that didn't resolve)
     return {
       pathname,
-      viewId: INBOX_PROJECT_ID, // Use inbox project ID as viewId for invalid projects
+      viewId: "not-found", // Explicit not-found sentinel
       routeType: "project",
+      slug: decodedParam,
     };
   }
 
@@ -462,6 +493,7 @@ function parseRouteContext(
           pathname,
           viewId: label.id, // ViewId is the LabelId
           routeType: "label",
+          slug: label.slug,
         };
       }
 
@@ -472,6 +504,7 @@ function parseRouteContext(
           pathname,
           viewId: labelByName.id, // ViewId is the LabelId
           routeType: "label",
+          slug: labelByName.slug,
         };
       }
     }
@@ -479,30 +512,34 @@ function parseRouteContext(
     // Fallback if label not found or labels not available
     return {
       pathname,
-      viewId: "all", // Fallback to showing all tasks
+      viewId: "not-found", // Explicit not-found sentinel
       routeType: "label",
+      slug: decodedParam,
     };
   }
 
   // Handle project group routes
   if (firstSegment === "projectgroups" && secondSegment) {
+    const decodedParam = decodeURIComponent(secondSegment);
+
     // Try to resolve project group by ID or slug
     if (groups) {
-      const group = resolveProjectGroup(secondSegment, groups.projectGroups);
+      const group = resolveProjectGroup(decodedParam, groups.projectGroups);
       if (group) {
         return {
           pathname,
           viewId: group.id, // ViewId is the GroupId
           routeType: "projectgroup",
+          slug: group.slug,
         };
       }
     }
 
     // Log warning for non-existent groups
-    if (isValidGroupId(secondSegment)) {
-      log.warn(`Project group with ID '${secondSegment}' not found`);
+    if (isValidGroupId(decodedParam)) {
+      log.warn(`Project group with ID '${decodedParam}' not found`);
     } else {
-      log.warn(`Project group with slug '${secondSegment}' not found`);
+      log.warn(`Project group with slug '${decodedParam}' not found`);
     }
 
     // Fallback if project group not found or groups not available
@@ -510,6 +547,7 @@ function parseRouteContext(
       pathname,
       viewId: "not-found", // Show not found component
       routeType: "projectgroup",
+      slug: decodedParam,
     };
   }
 
@@ -521,10 +559,7 @@ function parseRouteContext(
   // For known standard views, use proper typing. For unknown routes, cast to ViewId
   // to allow the system to handle them gracefully with fallback behavior
   const validatedViewId: ViewId =
-    viewId && isStandardViewId(viewId)
-      ? viewId
-      : // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        ((viewId || "inbox") as ViewId);
+    viewId && isStandardViewId(viewId) ? viewId : viewId || "inbox";
 
   return {
     pathname,

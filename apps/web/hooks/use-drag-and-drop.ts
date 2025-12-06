@@ -7,7 +7,8 @@ import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
 import { taskAtoms } from "@tasktrove/atoms/core/tasks"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import { toast } from "sonner"
-import { Task, Project, createProjectId, createLabelId, TaskId } from "@/lib/types"
+import type { Task, Project } from "@tasktrove/types/core"
+import { createProjectId, createLabelId, TaskId } from "@tasktrove/types/id"
 
 interface DragResult {
   source: {

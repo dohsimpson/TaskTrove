@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { TimeEstimationPicker } from "@/components/ui/custom/time-estimation-picker"
-import type { TaskId } from "@/lib/types"
+import type { TaskId } from "@tasktrove/types/id"
 
 interface TimeEstimationPopoverProps {
   taskId?: TaskId // For existing tasks

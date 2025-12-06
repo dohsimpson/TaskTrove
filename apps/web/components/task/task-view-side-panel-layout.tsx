@@ -131,9 +131,9 @@ export function TaskViewSidePanelLayout({
         </ResizablePanel>
         <ResizableHandle withHandle={false} className={cn(!isPanelOpen && "hidden")} />
         <ResizablePanel
-          defaultSize={sidePanelWidth}
+          defaultSize={isPanelOpen ? sidePanelWidth : 0}
           minSize={isPanelOpen ? SIDE_PANEL_WIDTH_MIN : 0}
-          maxSize={SIDE_PANEL_WIDTH_MAX}
+          maxSize={isPanelOpen ? SIDE_PANEL_WIDTH_MAX : 0}
           className={cn(!isPanelOpen && "max-w-0 min-w-0 overflow-hidden")}
         >
           <div className="h-full">

@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect } from "vitest"
-import { createLabelId } from "@/lib/types"
-import type { Label } from "@/lib/types"
+import { createLabelId } from "@tasktrove/types/id"
+import type { Label } from "@tasktrove/types/core"
 import type { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item"
 import {
   findContainingLabel,

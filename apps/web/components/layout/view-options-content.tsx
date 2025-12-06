@@ -195,10 +195,10 @@ export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps
                         mode: "table" as const,
                         label: t("viewOptions.viewMode.table", "Table"),
                       },
-                      // {
-                      // mode: "stats" as const,
-                      // label: t("viewOptions.viewMode.stats", "Stats"),
-                      // },
+                      {
+                        mode: "stats" as const,
+                        label: t("viewOptions.viewMode.stats", "Stats"),
+                      },
                     ]
                   : []),
               ].map(({ mode, label }) => {

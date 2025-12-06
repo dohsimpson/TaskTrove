@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { useAtom, useSetAtom } from "jotai"
 // Most icons are no longer needed thanks to our atoms!
 // DragDropContext no longer needed with pragmatic-drag-and-drop
-import { VoiceCommand } from "@/lib/types"
+import type { VoiceCommand } from "@tasktrove/types/voice-commands"
 // import { GestureHandler } from "@/components/mobile/gesture-handler" // DISABLED - Mobile gestures temporarily removed
 // Old keyboard handlers removed - now using unified global keyboard system
 import { useGlobalKeyboardManager } from "@/hooks/use-global-keyboard-manager"

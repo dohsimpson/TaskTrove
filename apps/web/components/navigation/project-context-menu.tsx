@@ -6,7 +6,8 @@ import { projectsAtom, tasksAtom } from "@tasktrove/atoms/data/base/atoms"
 import { projectAtoms, updateProjectAtom } from "@tasktrove/atoms/core/projects"
 import { updateTasksAtom, deleteTasksAtom } from "@tasktrove/atoms/core/tasks"
 import { startEditingProjectAtom, openProjectDialogAtom } from "@tasktrove/atoms/ui/navigation"
-import type { Project, ProjectId, TaskId } from "@/lib/types"
+import type { Project } from "@tasktrove/types/core"
+import type { ProjectId, TaskId } from "@tasktrove/types/id"
 
 interface ProjectContextMenuProps {
   projectId: ProjectId

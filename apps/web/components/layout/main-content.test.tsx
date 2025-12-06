@@ -1,7 +1,7 @@
 import React from "react"
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@/test-utils"
-import type { VoiceCommand } from "@/lib/types"
+import type { VoiceCommand } from "@tasktrove/types/voice-commands"
 
 // Let @/test-utils handle jotai mocking
 

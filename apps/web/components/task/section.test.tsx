@@ -5,7 +5,7 @@ import { Section, calculateTargetSectionItems } from "./section"
 import { TEST_PROJECT_ID_1, TEST_GROUP_ID_1 } from "@tasktrove/types/test-constants"
 import { DEFAULT_SECTION_COLORS } from "@tasktrove/constants"
 import { reorderItems } from "@tasktrove/dom-utils"
-import { createTaskId } from "@/lib/types"
+import { createTaskId } from "@tasktrove/types/id"
 import type { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
 
 // Mock Jotai

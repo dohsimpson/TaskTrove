@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { TimePeriod } from "@/lib/types"
+import type { TimePeriod } from "@tasktrove/types/utils"
 import { CHART_COLORS } from "@tasktrove/constants"
 import {
   LineChart,

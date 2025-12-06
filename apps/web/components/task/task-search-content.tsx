@@ -9,7 +9,7 @@ import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui
 import { cn } from "@/lib/utils"
 import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
 import { useTranslation } from "@tasktrove/i18n"
-import type { TaskId } from "@/lib/types"
+import type { TaskId } from "@tasktrove/types/id"
 
 interface TaskSearchContentProps {
   onTaskSelect: (taskId: TaskId) => void

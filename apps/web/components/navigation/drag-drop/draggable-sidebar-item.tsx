@@ -1,7 +1,7 @@
 "use client"
 
-import { DraggableItem } from "@/components/ui/drag-drop"
-import type { ProjectId, GroupId } from "@/lib/types"
+import { DraggableItem } from "@/components/ui/drag-drop/draggable-item"
+import type { ProjectId, GroupId } from "@tasktrove/types/id"
 
 interface DraggableSidebarProjectProps {
   projectId: ProjectId

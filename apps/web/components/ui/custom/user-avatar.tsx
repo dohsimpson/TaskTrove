@@ -9,7 +9,7 @@ import { useHalloween } from "@/app/contexts/halloween-context"
 interface UserAvatarProps {
   username?: string
   avatar?: string
-  size?: "sm" | "md" | "lg"
+  size?: "sm" | "md" | "lg" | number
   className?: string
   /**
    * Whether to show initials as fallback.
@@ -96,7 +96,9 @@ export function UserAvatar({
   const showSpookyEmoji = isHalloweenEnabled && !avatar
 
   return (
-    <Avatar className={`${sizeClasses[size]} ${className || ""}`}>
+    <Avatar
+      className={`${typeof size === "number" ? `h-${size} w-${size}` : sizeClasses[size]} ${className || ""}`}
+    >
       {avatarUrl && <AvatarImage src={avatarUrl} alt={username} />}
       <AvatarFallback
         className="rounded-full text-white font-semibold"
@@ -109,7 +111,7 @@ export function UserAvatar({
         ) : showInitials ? (
           initials
         ) : (
-          <User className={iconSizes[size]} />
+          <User className={typeof size === "number" ? `h-${size} w-${size}` : iconSizes[size]} />
         )}
       </AvatarFallback>
     </Avatar>

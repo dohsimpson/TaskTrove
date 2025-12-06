@@ -126,6 +126,9 @@ describe("playSoundAtom", () => {
           ...DEFAULT_GENERAL_SETTINGS,
           soundEnabled,
         },
+        uiSettings: {
+          weekStartsOn: undefined,
+        },
       };
       return atom(mockSettings);
     } else {
@@ -357,6 +360,9 @@ describe("playSoundAtom", () => {
         general: {
           ...DEFAULT_GENERAL_SETTINGS,
           soundEnabled: false, // Sound disabled
+        },
+        uiSettings: {
+          weekStartsOn: undefined,
         },
       };
 

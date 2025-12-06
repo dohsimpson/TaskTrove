@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from "@/test-utils"
 import { vi, describe, it, expect, beforeEach } from "vitest"
 import { TaskSchedulePopover } from "./task-schedule-popover"
-import type { Task } from "@/lib/types"
-import { INBOX_PROJECT_ID } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants"
 import { TEST_TASK_ID_1 } from "@tasktrove/types/test-constants"
 
 // Mock the TaskScheduleContent component

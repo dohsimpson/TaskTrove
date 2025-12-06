@@ -19,7 +19,7 @@ import {
   Plus,
 } from "lucide-react"
 import { format } from "date-fns"
-import type { TaskId } from "@/lib/types"
+import type { TaskId } from "@tasktrove/types/id"
 
 interface CalendarProvider {
   id: string

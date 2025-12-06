@@ -37,7 +37,7 @@ export const PillActionButton = forwardRef<HTMLButtonElement, Props>(
         {icon}
         {display ? (
           <span className={cn("whitespace-nowrap truncate", maxLabelWidthClass)}>{display}</span>
-        ) : !isMobile ? (
+        ) : !isMobile && label ? (
           <span className={cn("whitespace-nowrap truncate", maxLabelWidthClass)}>{label}</span>
         ) : null}
       </Button>

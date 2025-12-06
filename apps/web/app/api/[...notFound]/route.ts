@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { ApiErrorCode, ErrorResponse } from "@/lib/types"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
+import type { ErrorResponse } from "@tasktrove/types/api-responses"
 
 /**
  * Catch-all route handler for non-existent API endpoints

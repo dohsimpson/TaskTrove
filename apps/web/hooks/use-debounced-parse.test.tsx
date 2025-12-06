@@ -69,6 +69,7 @@ describe("useDebouncedParse", () => {
       time: "9AM",
       matches: [],
       rawMatches: [],
+      overlayMatches: [],
     }
 
     const { parseEnhancedNaturalLanguage } = await import(
@@ -237,6 +238,7 @@ describe("useDebouncedParse", () => {
       originalText: "hello world",
       matches: [],
       rawMatches: [],
+      overlayMatches: [],
     }
 
     const { parseEnhancedNaturalLanguage } = await import(
@@ -267,6 +269,7 @@ describe("useDebouncedParse", () => {
       originalText: "hello world",
       matches: [],
       rawMatches: [],
+      overlayMatches: [],
     }
 
     const { parseEnhancedNaturalLanguage } = await import(

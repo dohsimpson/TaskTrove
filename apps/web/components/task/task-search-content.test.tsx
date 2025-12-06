@@ -3,7 +3,8 @@ import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from "vite
 import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { TaskSearchContent } from "./task-search-content"
-import type { Task, TaskId } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
+import type { TaskId } from "@tasktrove/types/id"
 import { TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3 } from "@tasktrove/types/test-constants"
 
 // Mock state

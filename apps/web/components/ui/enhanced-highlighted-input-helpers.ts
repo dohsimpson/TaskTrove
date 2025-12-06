@@ -41,16 +41,16 @@ export const TOKEN_STYLES = {
 } as const
 
 /**
- * Disabled token styles (grayed out with strikethrough)
+ * Disabled token styles: fall back to normal text color (no highlight/muting)
  */
 export const DISABLED_TOKEN_STYLES = {
-  project: "bg-gray-200 text-gray-600 line-through",
-  label: "bg-gray-200 text-gray-600 line-through",
-  priority: "bg-gray-200 text-gray-600 line-through",
-  date: "bg-gray-200 text-gray-600 line-through",
-  time: "bg-gray-200 text-gray-600 line-through",
-  recurring: "bg-gray-200 text-gray-600 line-through",
-  duration: "bg-gray-200 text-gray-600 line-through",
-  estimation: "bg-gray-200 text-gray-600 line-through",
+  project: "",
+  label: "",
+  priority: "",
+  date: "",
+  time: "",
+  recurring: "",
+  duration: "",
+  estimation: "",
   text: "",
 } as const

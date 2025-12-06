@@ -716,6 +716,26 @@ export const peopleAssigneesCollapsedAtom = atom(
 );
 peopleAssigneesCollapsedAtom.debugLabel = "peopleAssigneesCollapsedAtom";
 
+/**
+ * Map of dismissible UI states keyed by component id
+ * Enables global persistence for hide/dismiss toggles across the app
+ */
+export const dismissedUiMapAtom = atom(
+  (get) => get(globalViewOptionsAtom).dismissedUi,
+  (
+    get,
+    set,
+    update:
+      | Record<string, boolean>
+      | ((current: Record<string, boolean>) => Record<string, boolean>),
+  ) => {
+    const current = get(globalViewOptionsAtom).dismissedUi;
+    const next = typeof update === "function" ? update(current) : update;
+    set(updateGlobalViewOptionsAtom, { dismissedUi: next });
+  },
+);
+dismissedUiMapAtom.debugLabel = "dismissedUiMapAtom";
+
 // =============================================================================
 // UTILITY ATOMS
 // =============================================================================
@@ -853,6 +873,7 @@ export const viewAtoms = {
   globalShowSidePanel: globalShowSidePanelAtom,
   peopleOwnerCollapsed: peopleOwnerCollapsedAtom,
   peopleAssigneesCollapsed: peopleAssigneesCollapsedAtom,
+  dismissedUiMap: dismissedUiMapAtom,
   // Filter state
   activeFilters: activeFiltersAtom,
   hasActiveFilters: hasActiveFiltersAtom,

@@ -33,7 +33,8 @@
       "pro": "./src/project-permissions.pro.ts",
       "default": "./src/project-permissions.pro.ts"
     },
-    "./version": "./src/version.ts"
+    "./version": "./src/version.ts",
+    "./notification": "./src/notification.ts"
   },
   "scripts": {
     "lint": "eslint .",
@@ -42,11 +43,11 @@
     "typecheck": "pnpm typecheck:base && (test -f tsconfig.pro.json && pnpm typecheck:pro || true)",
     "check": "pnpm typecheck && pnpm lint && pnpm test",
     "check:pro": "pnpm typecheck:pro && pnpm lint && pnpm test:pro",
-    "test:base": "vitest run --reporter=dot --no-coverage --config vitest.config.ts",
-    "test:pro": "vitest run --reporter=dot --no-coverage --config vitest.config.pro.ts",
+    "test:base": "node ../../scripts/run-vitest.mjs run --reporter=dot --no-coverage --config vitest.config.ts",
+    "test:pro": "node ../../scripts/run-vitest.mjs run --reporter=dot --no-coverage --config vitest.config.pro.ts",
     "test": "pnpm test:base && (test -f vitest.config.pro.ts && pnpm test:pro || true)",
-    "test:watch": "vitest --watch",
-    "test:watch:pro": "vitest --watch --config vitest.config.pro.ts",
+    "test:watch": "node ../../scripts/run-vitest.mjs --watch",
+    "test:watch:pro": "node ../../scripts/run-vitest.mjs --watch --config vitest.config.pro.ts",
     "recurring:cli": "node --import tsx --no-warnings scripts/recurring-cli.ts"
   },
   "dependencies": {

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { renderHook, act } from "@/test-utils"
 import { useFocusTimerDisplay } from "./use-focus-timer-display"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 import type { FocusTimer } from "@tasktrove/atoms/ui/focus-timer"
-import { createTaskId } from "@/lib/types"
+import { createTaskId } from "@tasktrove/types/id"
 import { v4 as uuidv4 } from "uuid"
 
 // Mock the atoms and their values

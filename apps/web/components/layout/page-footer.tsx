@@ -2,11 +2,8 @@
 
 import { useAtomValue, useSetAtom } from "jotai"
 import { CheckCircle, Calendar } from "lucide-react"
+import { taskListForViewAtom } from "@tasktrove/atoms/ui/task-counts"
 import { toggleTaskAtom, completedTasksTodayAtom } from "@tasktrove/atoms/core/tasks"
-import { taskCountsAtom } from "@tasktrove/atoms/ui/task-counts"
-import { todayTasksAtom } from "@tasktrove/atoms/data/tasks/filters"
-import { sortTasksByViewState } from "@tasktrove/atoms/utils/view-sorting"
-import type { ViewState } from "@tasktrove/types/core"
 import { toggleTaskPanelWithViewStateAtom } from "@tasktrove/atoms/ui/views"
 import { selectedTaskRouteContextOverrideAtom } from "@tasktrove/atoms/ui/selection"
 import type { RouteContext } from "@tasktrove/atoms/ui/navigation"
@@ -14,7 +11,7 @@ import { ContentPopover } from "@/components/ui/content-popover"
 import { Button } from "@/components/ui/button"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import { TaskScheduleTrigger } from "@/components/task/task-schedule-trigger"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 import { cn } from "@/lib/utils"
 import { FocusTimerDisplay } from "@/components/task/focus-timer-display"
 import { useTranslation } from "@tasktrove/i18n"
@@ -120,24 +117,10 @@ function TaskListContent({
 }
 
 export function PageFooter({ className }: PageFooterProps) {
-  // Task counts - using the same atoms as the sidebar for consistency
+  // Task counts - using the same filtered atom as the "today" view for consistency
   const completedTasksToday = useAtomValue(completedTasksTodayAtom)
-  const taskCounts = useAtomValue(taskCountsAtom)
-  const rawTodayTasks = useAtomValue(todayTasksAtom) // Base today tasks (same as sidebar)
-  const dueTodayCount = taskCounts.today // Use sidebar count (without UI filters)
-
-  // Apply default sorting (completed tasks at bottom) to match today view
-  const defaultViewState: ViewState = {
-    sortBy: "default",
-    sortDirection: "asc",
-    showCompleted: true,
-    showOverdue: true,
-    searchQuery: "",
-    viewMode: "list",
-    showSidePanel: false,
-    compactView: false,
-  }
-  const todayTasks = sortTasksByViewState([...rawTodayTasks], defaultViewState)
+  const todayTasks = useAtomValue(taskListForViewAtom("today"))
+  const dueTodayCount = todayTasks.length
 
   // Translation setup
   const { t } = useTranslation("layout")

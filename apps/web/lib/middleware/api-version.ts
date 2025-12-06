@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import type { EnhancedRequest } from "./api-logger"
-import { ApiErrorCode, type ErrorResponse } from "@/lib/types"
+import type { ErrorResponse } from "@tasktrove/types/api-responses"
+import { ApiErrorCode } from "@tasktrove/types/api-errors"
 
 /**
  * Current API version

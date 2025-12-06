@@ -11,7 +11,7 @@ import {
   globalViewOptionsAtom,
   setViewOptionsAtom,
 } from "@tasktrove/atoms/ui/views"
-import type { ViewId } from "@/lib/types"
+import type { ViewId } from "@tasktrove/types/id"
 import { mockUseToast, mockNextThemes } from "@/test-utils"
 
 // Mock Next.js themes
@@ -160,6 +160,7 @@ describe("SidePanel Integration", () => {
       showSidePanel: false,
       peopleOwnerCollapsed: false,
       peopleAssigneesCollapsed: false,
+      dismissedUi: {},
     })
 
     const TestComponent: React.FC = () => {

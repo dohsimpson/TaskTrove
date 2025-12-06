@@ -4,8 +4,9 @@ import { useState, useCallback } from "react"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { selectedTasksAtom, multiSelectDraggingAtom } from "@tasktrove/atoms/ui/selection"
 import { draggingTaskIdsAtom } from "@tasktrove/atoms/ui/drag"
-import { DraggableItem } from "@/components/ui/drag-drop"
-import type { TaskId } from "@/lib/types"
+// Relative import ensures cross-app consumers (e.g. mobile tests) resolve correctly
+import { DraggableItem } from "@/components/ui/drag-drop/draggable-item"
+import type { TaskId } from "@tasktrove/types/id"
 import { useResetSortOnDrag } from "@/hooks/use-reset-sort-on-drag"
 import { cn } from "@/lib/utils"
 

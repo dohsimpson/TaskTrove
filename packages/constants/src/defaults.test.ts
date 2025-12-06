@@ -154,7 +154,7 @@ describe("TaskTrove Default Constants", () => {
 
   describe("Placeholder Text", () => {
     it("should have meaningful placeholder texts", () => {
-      expect(PLACEHOLDER_TASK_INPUT).toBe("What needs to be done?");
+      expect(PLACEHOLDER_TASK_INPUT).toBe("Task name");
       expect(PLACEHOLDER_PROJECT_NAME).toBe("Enter project name");
       expect(PLACEHOLDER_LABEL_NAME).toBe("Enter label name");
       expect(PLACEHOLDER_TASK_DESCRIPTION).toBe("Add description...");

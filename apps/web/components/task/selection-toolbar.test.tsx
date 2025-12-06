@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest"
 import { render, screen, fireEvent } from "@/test-utils"
 import { SelectionToolbar } from "./selection-toolbar"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 import { TEST_COMMENT_ID_1, TEST_SUBTASK_ID_1 } from "@tasktrove/types/test-constants"
-import { createTaskId, createUserId } from "@/lib/types"
+import { createTaskId, createUserId } from "@tasktrove/types/id"
 import { DEFAULT_UUID } from "@tasktrove/constants"
 
 // Mock keyboard shortcuts hook

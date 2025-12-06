@@ -41,7 +41,7 @@ vi.mock("jotai", () => ({
   })),
   useAtom: vi.fn(() => [
     {
-      title: "Today",
+      title: "Today's Tasks",
       description: "Tasks due today",
       iconType: "today",
       color: undefined,
@@ -50,7 +50,7 @@ vi.mock("jotai", () => ({
   useAtomValue: vi.fn((atom) => {
     if (atom.debugLabel === "dynamicPageInfoAtom") {
       return {
-        title: "Today",
+        title: "Today's Tasks",
         description: "Tasks due today",
         iconType: "today",
         color: undefined,
@@ -188,7 +188,7 @@ describe("PageHeader", () => {
   it("displays page title from dynamicPageInfoAtom", () => {
     render(<PageHeader {...defaultProps} />)
 
-    expect(screen.getByText("Today")).toBeInTheDocument()
+    expect(screen.getByText("Today's Tasks")).toBeInTheDocument()
   })
 
   it("renders sidebar toggle button", () => {

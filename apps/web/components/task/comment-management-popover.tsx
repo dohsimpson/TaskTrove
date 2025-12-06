@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { CommentContent } from "./comment-content"
-import type { Task } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
 
 interface CommentManagementPopoverProps {
   taskId?: string

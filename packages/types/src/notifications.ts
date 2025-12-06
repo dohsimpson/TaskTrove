@@ -2,14 +2,9 @@
  * Notification Types
  *
  * Re-exports notification types from settings module.
- * All notification-related types are defined in settings.ts to keep them colocated
- * with NotificationSettingsSchema.
+ * Notification-related types are defined beside UserSettingsSchema to keep them
+ * colocated with persisted settings.
  */
 
-export type {
-  NotificationChannels,
-  NotificationSchedule,
-  NotificationTypes,
-  NotificationFrequency,
-  NotificationSound,
-} from "./settings";
+export { NotificationSettingsSchema } from "./settings";
+export type { NotificationSettings } from "./settings";

@@ -1,4 +1,7 @@
-import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
+import {
+  DEFAULT_PROJECT_SECTION,
+  DEFAULT_UI_SETTINGS,
+} from "@tasktrove/types/defaults";
 /**
  * Data query atoms for TaskTrove
  *
@@ -140,6 +143,7 @@ const TEST_SETTINGS: UserSettings = {
   },
   notifications: DEFAULT_NOTIFICATION_SETTINGS,
   general: DEFAULT_GENERAL_SETTINGS,
+  uiSettings: DEFAULT_UI_SETTINGS,
 };
 
 const TEST_USER: User = DEFAULT_USER;

@@ -402,7 +402,7 @@ catalogs:
 
 patchedDependencies:
   '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator':
-    hash: 8cd82489931f636e1beb1e52b922649267b39fe79e6214be62da5d19adb607eb
+    hash: b22df17d51b01d257c528712bd681262e388055a057de9c79b32ff79b0c3b8f1
     path: apps/web/patches/@atlaskit__pragmatic-drag-and-drop-react-drop-indicator.patch
 
 importers:
@@ -444,7 +444,7 @@ importers:
         version: 1.1.0
       '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator':
         specifier: 'catalog:'
-        version: 3.2.7(patch_hash=8cd82489931f636e1beb1e52b922649267b39fe79e6214be62da5d19adb607eb)(@types/react@19.1.13)(react@19.1.1)
+        version: 3.2.7(patch_hash=b22df17d51b01d257c528712bd681262e388055a057de9c79b32ff79b0c3b8f1)(@types/react@19.1.13)(react@19.1.1)
       '@hookform/resolvers':
         specifier: 'catalog:'
         version: 5.2.2(react-hook-form@7.63.0(react@19.1.1))
@@ -1024,6 +1024,9 @@ importers:
       '@repo/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
+      '@testing-library/react':
+        specifier: 'catalog:'
+        version: 16.3.0(@testing-library/dom@10.4.0)(@types/react-dom@19.1.9(@types/react@19.1.13))(@types/react@19.1.13)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@types/react':
         specifier: 'catalog:'
         version: 19.1.13
@@ -6665,7 +6668,7 @@ snapshots:
       '@atlaskit/pragmatic-drag-and-drop': 1.7.7
       '@babel/runtime': 7.28.4
 
-  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator@3.2.7(patch_hash=8cd82489931f636e1beb1e52b922649267b39fe79e6214be62da5d19adb607eb)(@types/react@19.1.13)(react@19.1.1)':
+  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator@3.2.7(patch_hash=b22df17d51b01d257c528712bd681262e388055a057de9c79b32ff79b0c3b8f1)(@types/react@19.1.13)(react@19.1.1)':
     dependencies:
       '@atlaskit/pragmatic-drag-and-drop': 1.7.7
       '@atlaskit/pragmatic-drag-and-drop-hitbox': 1.1.0

@@ -1,14 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { NextRequest } from "next/server"
 import { PATCH } from "./route"
-import type { Task, DataFile } from "@/lib/types"
+import type { Task } from "@tasktrove/types/core"
+import type { DataFile } from "@tasktrove/types/data-file"
 import {
   createTaskId,
   createProjectId,
   createLabelId,
   createSubtaskId,
   createGroupId,
-} from "@/lib/types"
+} from "@tasktrove/types/id"
 
 // Mock the file operations
 vi.mock("@/lib/utils/safe-file-operations", () => ({
@@ -39,7 +40,7 @@ vi.mock("uuid", () => ({
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { processRecurringTaskCompletion, getEffectiveDueDate } from "@tasktrove/utils"
 import { logBusinessEvent } from "@/lib/middleware/api-logger"
-import { DEFAULT_EMPTY_DATA_FILE } from "@/lib/types"
+import { DEFAULT_EMPTY_DATA_FILE } from "@tasktrove/types/defaults"
 
 const mockReadDataFile = vi.mocked(safeReadDataFile)
 const mockWriteDataFile = vi.mocked(safeWriteDataFile)

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { SectionContextMenu } from "./section-context-menu"
 import { editingSectionIdAtom } from "@tasktrove/atoms/ui/navigation"
-import { createGroupId } from "@/lib/types"
+import { createGroupId } from "@tasktrove/types/id"
 import { cn } from "@/lib/utils"
 
 interface EditableSectionHeaderProps {

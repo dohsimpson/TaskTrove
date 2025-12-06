@@ -4,7 +4,7 @@ import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { TaskSearchDialog } from "./task-search-dialog"
 import { TEST_TASK_ID_1 } from "@tasktrove/types/test-constants"
-import type { TaskId } from "@/lib/types"
+import type { TaskId } from "@tasktrove/types/id"
 
 // Mock TaskSearchContent with proper patterns
 vi.mock("./task-search-content", () => ({

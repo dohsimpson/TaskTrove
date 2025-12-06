@@ -2,7 +2,7 @@ import { promises as fs } from "fs"
 import { join } from "path"
 import { DEFAULT_DATA_FILE_PATH, DEFAULT_DATA_DIR } from "@tasktrove/constants"
 import { getMigrationInfo } from "@/lib/utils/data-migration"
-import type { Json } from "@/lib/types"
+import type { Json } from "@tasktrove/types/constants"
 
 interface PermissionCheckResult {
   success: boolean

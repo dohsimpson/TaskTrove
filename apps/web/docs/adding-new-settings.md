@@ -58,13 +58,13 @@ lib/atoms/
 └── ui/
     └── user-settings-atom.ts  # UI-focused settings atoms
 
-lib/types/index.ts             # All type definitions
+lib/types/                     # Modular type definitions (core, settings, etc.)
 app/api/settings/route.ts      # Settings API endpoint
 ```
 
 ## Step-by-Step Guide
 
-### 1. Add Types (lib/types/index.ts)
+### 1. Add Types (lib/types/)
 
 First, define your settings schema and types:
 
@@ -187,7 +187,7 @@ import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { SettingsCard } from "@/components/ui/custom/settings-card"
 import { settingsAtom, updateSettingsAtom } from "@/lib/atoms"
-import type { YourSettings } from "@/lib/types"
+import type { YourSettings } from "@tasktrove/types/settings"
 
 export function YourCategoryForm() {
   const settings = useAtomValue(settingsAtom)

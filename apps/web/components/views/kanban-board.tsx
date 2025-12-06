@@ -4,7 +4,7 @@ import { SelectionToolbar } from "@/components/task/selection-toolbar"
 import { ProjectViewToolbar } from "@/components/task/project-view-toolbar"
 import { Section } from "@/components/task/section"
 import { TaskViewSidePanelLayout } from "@/components/task/task-view-side-panel-layout"
-import type { Project } from "@/lib/types"
+import type { Project } from "@tasktrove/types/core"
 
 interface KanbanBoardProps {
   project?: Project

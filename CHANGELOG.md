@@ -1,5 +1,19 @@
 # tasktrove
 
+## 0.11.0
+
+### Features
+
+🎉 Feature - Add week start preference setting (0=Sunday, 1=Monday) with UI controls in appearance settings
+🎉 Feature - Implement new week-month-picker component with customizable week start support
+🎉 Feature - Update calendar views and task scheduling components to respect week start preference
+🎉 Feature - Cancellable quick add parsed patterns
+
+### Patch Changes
+
+🐛 Bug - Bump nextjs version to address security CVE-2025-55182
+🐛 Bug - Fix #215
+
 ## 0.10.0
 
 ### Features

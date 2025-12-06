@@ -33,7 +33,7 @@ import { withMutexProtection } from "@/lib/utils/api-mutex"
 import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
 import { DEFAULT_LABEL_COLORS } from "@tasktrove/constants"
-import { isGroup } from "@/lib/types"
+import { isGroup } from "@tasktrove/types/group"
 
 /**
  * GET /api/v1/groups

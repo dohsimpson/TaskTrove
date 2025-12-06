@@ -11,8 +11,8 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsgo --noEmit",
-    "test": "vitest run --reporter=dot --no-coverage --config vitest.config.ts",
-    "test:watch": "vitest --watch --config vitest.config.ts",
+    "test": "node ../../scripts/run-vitest.mjs run --reporter=dot --no-coverage --config vitest.config.ts",
+    "test:watch": "node ../../scripts/run-vitest.mjs --watch --config vitest.config.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm test"
   },
   "dependencies": {

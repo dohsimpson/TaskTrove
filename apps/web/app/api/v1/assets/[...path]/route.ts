@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { readFile } from "fs/promises"
+import { readFile, stat } from "fs/promises"
 import { getSecureAssetPath } from "@/lib/utils/path-validation"
 import { ApiErrorCode } from "@tasktrove/types/api-errors"
 import type { ErrorResponse } from "@tasktrove/types/api-responses"
@@ -65,6 +65,16 @@ async function serveAsset(request: EnhancedRequest, path: string[]) {
   }
 
   try {
+    const fileStats = await stat(securePath)
+    if (!fileStats.isFile()) {
+      const errorResponse: ErrorResponse = {
+        code: ApiErrorCode.ASSET_NOT_FOUND,
+        error: "Asset not found",
+        message: "Requested asset path is not a file",
+      }
+      return NextResponse.json<ErrorResponse>(errorResponse, { status: 404 })
+    }
+
     // Read the file
     const fileBuffer = await readFile(securePath)
 

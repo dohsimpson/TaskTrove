@@ -721,7 +721,8 @@ peopleAssigneesCollapsedAtom.debugLabel = "peopleAssigneesCollapsedAtom";
  * Enables global persistence for hide/dismiss toggles across the app
  */
 export const dismissedUiMapAtom = atom(
-  (get) => get(globalViewOptionsAtom).dismissedUi,
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  (get) => get(globalViewOptionsAtom).dismissedUi ?? {},
   (
     get,
     set,
@@ -729,7 +730,10 @@ export const dismissedUiMapAtom = atom(
       | Record<string, boolean>
       | ((current: Record<string, boolean>) => Record<string, boolean>),
   ) => {
-    const current = get(globalViewOptionsAtom).dismissedUi;
+    // Older persisted state might not have the dismissedUi key yet, so
+    // normalize to an empty object before reading/updating.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const current = get(globalViewOptionsAtom).dismissedUi ?? {};
     const next = typeof update === "function" ? update(current) : update;
     set(updateGlobalViewOptionsAtom, { dismissedUi: next });
   },

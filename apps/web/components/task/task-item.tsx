@@ -530,7 +530,7 @@ export function TaskItem({
       >
         <div className="p-2">
           {/* Single row layout - simplified for non-mobile only */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             {/* Task Completion Checkbox */}
             <TaskCheckbox
               checked={task.completed}
@@ -539,7 +539,7 @@ export function TaskItem({
             />
 
             {/* Title */}
-            <div className="flex-1 min-w-0 max-w-full truncate">
+            <div className="flex-1 min-w-0 max-w-full">
               <LinkifiedEditableDiv
                 as="span"
                 value={task.title}
@@ -548,8 +548,10 @@ export function TaskItem({
                     updateTask({ updateRequest: { id: task.id, title: newTitle.trim() } })
                   }
                 }}
+                onEditingChange={setIsTitleEditing}
                 className={cn(
-                  "text-sm block w-fit max-w-full",
+                  "text-sm block w-full min-w-0 break-all",
+                  !isTitleEditing && "line-clamp-2",
                   task.completed ? "line-through text-muted-foreground" : "text-foreground",
                 )}
                 data-action="edit"
@@ -1364,7 +1366,7 @@ export function TaskItem({
                 className={cn(
                   "text-xs sm:text-sm hover:bg-accent",
                   "w-full sm:w-[28rem] md:w-[32rem] lg:w-[36rem] xl:w-[40rem]",
-                  "max-w-full break-words min-w-0",
+                  "max-w-full break-all min-w-0",
                   task.description
                     ? "text-muted-foreground"
                     : !isDefaultDescriptionEditing
@@ -1536,7 +1538,7 @@ export function TaskItem({
                     {taskLabels.map((label) => (
                       <span
                         key={label.id}
-                        className="px-1.5 py-0.5 rounded text-xs flex items-center gap-1 hover:opacity-100 truncate max-w-20 sm:max-w-none"
+                        className="px-1.5 py-0.5 rounded text-xs flex items-center gap-1 hover:opacity-100 truncate max-w-20 sm:max-w-none break-all"
                         style={{
                           backgroundColor: label.color,
                           color: getContrastColor(label.color),

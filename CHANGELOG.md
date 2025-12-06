@@ -1,5 +1,11 @@
 # tasktrove
 
+## 0.11.1
+
+### Patch Changes
+
+🐛 Bug - Bump nextjs version to address security CVE-2025-55182
+
 ## 0.11.0
 
 ### Features
@@ -11,7 +17,6 @@
 
 ### Patch Changes
 
-🐛 Bug - Bump nextjs version to address security CVE-2025-55182
 🐛 Bug - Fix #215
 
 ## 0.10.0

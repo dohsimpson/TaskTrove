@@ -56,7 +56,7 @@ catalog:
   "@types/archiver": ^6.0.3
   "@types/bcryptjs": ^2.4.6
   "@types/color": ^4.1.0
-  "@types/node": ^22.15.3
+  "@types/node": ^24.10.1
   "@types/node-cron": ^3.0.11
   "@types/react": ^19.1.13
   "@types/react-dom": ^19.1.1

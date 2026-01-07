@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useAtomValue } from "jotai"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
@@ -28,7 +29,9 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
+import { formatDateTimeDisplay } from "@/lib/utils/task-date-formatter"
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 
 // Type guard to check if a value is a Record<string, unknown>
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -111,6 +114,9 @@ export function NotificationCenter({
   const [showSettings, setShowSettings] = useState(false)
   const [filter, setFilter] = useState<string>("all")
   const [soundTest, setSoundTest] = useState(false)
+  const appSettings = useAtomValue(settingsAtom)
+  const preferDayMonthFormat = Boolean(appSettings.general.preferDayMonthFormat)
+  const use24HourTime = Boolean(appSettings.uiSettings.use24HourTime)
 
   // Request notification permission on mount
   useEffect(() => {
@@ -537,7 +543,13 @@ export function NotificationCenter({
                         {notification.message}
                       </p>
                       <div className="flex items-center gap-4 text-xs text-gray-500">
-                        <span>{notification.timestamp.toLocaleString()}</span>
+                        <span>
+                          {formatDateTimeDisplay(notification.timestamp, {
+                            includeYear: true,
+                            preferDayMonthFormat,
+                            use24HourTime,
+                          })}
+                        </span>
                         <span className="capitalize">{notification.category}</span>
                       </div>
                     </div>

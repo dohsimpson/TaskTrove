@@ -96,8 +96,7 @@ if (typeof window !== "undefined") {
       }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(window as any).DOMRect = DOMRectPolyfill
+    Object.defineProperty(window, "DOMRect", { value: DOMRectPolyfill, writable: true })
   }
 
   if (typeof window.DragEvent === "undefined") {
@@ -110,8 +109,7 @@ if (typeof window !== "undefined") {
       }
     }
 
-    ;(window as unknown as { DragEvent: typeof DragEvent }).DragEvent =
-      DragEventPolyfill as unknown as typeof DragEvent
+    Object.defineProperty(window, "DragEvent", { value: DragEventPolyfill, writable: true })
   }
 
   // Mock window.matchMedia
@@ -182,10 +180,7 @@ if (typeof window !== "undefined") {
       writable: true,
     })
   }
-  if (
-    typeof (document as Document & { caretPositionFromPoint?: unknown }).caretPositionFromPoint ===
-    "undefined"
-  ) {
+  if (!("caretPositionFromPoint" in document)) {
     Object.defineProperty(document, "caretPositionFromPoint", {
       value: () => null,
       writable: true,

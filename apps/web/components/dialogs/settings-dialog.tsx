@@ -69,7 +69,7 @@ function SettingsContent() {
     },
     {
       id: "data",
-      title: t("settings.categories.data.title", "Data & Storage"),
+      title: t("settings.categories.data.title", "Data"),
       icon: Database,
       description: t("settings.categories.data.description", "Import/export, backups"),
     },
@@ -285,7 +285,7 @@ export function SettingsDialog() {
         {t("settings.description", "Configure TaskTrove application settings and preferences")}
       </DialogDescription>
       <DialogContent
-        className="p-0 w-full max-w-full h-[100dvh] rounded-none overflow-hidden overscroll-contain inset-0 top-0 left-0 translate-x-0 translate-y-0 sm:w-[90vw] sm:h-[85vh] sm:!max-w-[90vw] sm:rounded-lg sm:top-1/2 sm:left-1/2 sm:translate-x-[-50%] sm:translate-y-[-50%]"
+        className="p-0 w-full max-w-full h-[100dvh] rounded-none overflow-hidden overscroll-contain inset-0 top-0 left-0 translate-x-0 translate-y-0 sm:w-[90vw] sm:h-[85vh] sm:!max-w-[90vw] sm:rounded-lg sm:top-1/2 sm:left-1/2 sm:translate-x-[-50%] sm:translate-y-[-50%] border-0"
         showCloseButton={false}
       >
         <div className="flex h-full min-h-0 min-w-0 w-full overflow-x-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">

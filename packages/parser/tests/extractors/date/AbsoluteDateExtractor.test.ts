@@ -10,6 +10,11 @@ describe("AbsoluteDateExtractor", () => {
     locale: "en",
     referenceDate,
   };
+  const dayMonthContext: ParserContext = {
+    locale: "en",
+    referenceDate,
+    preferDayMonthFormat: true,
+  };
 
   it("should extract month day format (Jan 15)", () => {
     const results = extractor.extract("Meeting Jan 15", context);
@@ -107,5 +112,19 @@ describe("AbsoluteDateExtractor", () => {
     const results = extractor.extract("Just a task", context);
 
     expect(results).toEqual([]);
+  });
+
+  it("should prefer month/day for ambiguous numeric dates by default", () => {
+    const results = extractor.extract("Review 1/2", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toEqual(startOfDay(new Date(2025, 0, 2)));
+  });
+
+  it("should prefer day/month for ambiguous numeric dates when enabled", () => {
+    const results = extractor.extract("Review 1/2", dayMonthContext);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toEqual(startOfDay(new Date(2025, 1, 1)));
   });
 });

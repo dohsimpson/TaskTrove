@@ -27,6 +27,7 @@ import {
   AlertTriangle,
   Table,
   ChartNoAxesCombined,
+  Archive,
 } from "lucide-react"
 import { HelpPopover } from "@/components/ui/help-popover"
 import { ButtonGroup } from "@/components/ui/button-group"
@@ -59,6 +60,8 @@ export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps
         return VIEW_CONFIG_OPTIONS.inbox
       case "upcoming":
         return VIEW_CONFIG_OPTIONS.upcoming
+      case "recent":
+        return VIEW_CONFIG_OPTIONS.recent
       case "completed":
         return VIEW_CONFIG_OPTIONS.completed
       case "all":
@@ -106,6 +109,41 @@ export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps
         return <ChartNoAxesCombined className="h-4 w-4" />
     }
   }
+
+  const viewModeOptions =
+    currentView === "calendar"
+      ? [
+          {
+            mode: "calendar" as const,
+            label: t("viewOptions.viewMode.calendar", "Calendar"),
+          },
+        ]
+      : [
+          {
+            mode: "list" as const,
+            label: t("viewOptions.viewMode.list", "List"),
+          },
+          {
+            mode: "kanban" as const,
+            label: t("viewOptions.viewMode.kanban", "Kanban"),
+          },
+          {
+            mode: "calendar" as const,
+            label: t("viewOptions.viewMode.calendar", "Calendar"),
+          },
+          ...(isPro()
+            ? [
+                {
+                  mode: "table" as const,
+                  label: t("viewOptions.viewMode.table", "Table"),
+                },
+                {
+                  mode: "stats" as const,
+                  label: t("viewOptions.viewMode.stats", "Stats"),
+                },
+              ]
+            : []),
+        ]
 
   return (
     <>
@@ -176,32 +214,7 @@ export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps
           </Label>
           <TooltipProvider delayDuration={150} skipDelayDuration={300}>
             <ButtonGroup className="w-full flex-nowrap overflow-hidden">
-              {[
-                {
-                  mode: "list" as const,
-                  label: t("viewOptions.viewMode.list", "List"),
-                },
-                {
-                  mode: "kanban" as const,
-                  label: t("viewOptions.viewMode.kanban", "Kanban"),
-                },
-                {
-                  mode: "calendar" as const,
-                  label: t("viewOptions.viewMode.calendar", "Calendar"),
-                },
-                ...(isPro()
-                  ? [
-                      {
-                        mode: "table" as const,
-                        label: t("viewOptions.viewMode.table", "Table"),
-                      },
-                      {
-                        mode: "stats" as const,
-                        label: t("viewOptions.viewMode.stats", "Stats"),
-                      },
-                    ]
-                  : []),
-              ].map(({ mode, label }) => {
+              {viewModeOptions.map(({ mode, label }) => {
                 const disabled =
                   (mode === "kanban" && isKanbanDisabled()) ||
                   (mode === "calendar" && isCalendarDisabled())
@@ -310,6 +323,15 @@ export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps
                     </li>
                     <li>
                       <strong>
+                        {t("viewOptions.displayOptions.archived.label", "Archived Tasks:")}
+                      </strong>{" "}
+                      {t(
+                        "viewOptions.displayOptions.archived.description",
+                        "Show or hide tasks you've archived",
+                      )}
+                    </li>
+                    <li>
+                      <strong>
                         {t("viewOptions.displayOptions.overdue.label", "Overdue Tasks:")}
                       </strong>{" "}
                       {t(
@@ -360,6 +382,19 @@ export function ViewOptionsContent({ onAdvancedSearch }: ViewOptionsContentProps
               checked={viewState.showCompleted}
               onCheckedChange={(checked) => setViewOptions({ showCompleted: checked })}
               disabled={isShowCompletedDisabled()}
+              className="cursor-pointer"
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Label htmlFor="show-archived" className="text-sm font-medium flex items-center gap-2">
+              <Archive className="h-3 w-3" />
+              {t("viewOptions.displayOptions.archived.title", "Archived Tasks")}
+            </Label>
+            <Switch
+              id="show-archived"
+              checked={viewState.showArchived ?? false}
+              onCheckedChange={(checked) => setViewOptions({ showArchived: checked })}
               className="cursor-pointer"
             />
           </div>

@@ -236,13 +236,11 @@ describe("API Route - Recurring Tasks Integration", () => {
         {
           id: projectId,
           name: "Occasions",
-          slug: "occasions",
           color: "#000000",
           sections: [
             {
               id: sectionId,
               name: "Birthdays",
-              slug: "birthdays",
               type: "section" as const,
               items: [originalTask.id],
               isDefault: true,

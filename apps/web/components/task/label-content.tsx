@@ -1,19 +1,24 @@
 "use client"
 
-import React, { useState, useEffect, useRef, useCallback } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { useAtomValue } from "jotai"
-import { Tag, X, Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Plus, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { labelsFromIdsAtom } from "@tasktrove/atoms/core/labels"
 import { useTranslation } from "@tasktrove/i18n"
-import type { Task, Label } from "@tasktrove/types/core"
+import type { Task } from "@tasktrove/types/core"
 import type { LabelId } from "@tasktrove/types/id"
 
 interface LabelContentProps {
@@ -40,233 +45,159 @@ export function LabelContent({
   // Translation setup
   const { t } = useTranslation("task")
 
-  const [inputFocus, setInputFocus] = useState(focusInput)
-  const [newLabel, setNewLabel] = useState("")
-  const [selectedIndex, setSelectedIndex] = useState(-1)
-  const commandRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [open, setOpen] = useState(Boolean(focusInput))
+  const [search, setSearch] = useState("")
   const isMobile = useIsMobile()
 
   const getLabelsFromIds = useAtomValue(labelsFromIdsAtom)
   const allLabels = useAtomValue(labelsAtom)
 
   // For quick-add mode, task might not be provided, so use empty array as fallback
-  const taskLabelIds = React.useMemo(() => task?.labels || [], [task?.labels])
+  const taskLabelIds = useMemo(() => task?.labels || [], [task?.labels])
   const taskLabels = task ? getLabelsFromIds(task.labels) : []
 
-  const selectedLabelsBlock =
-    task && taskLabels.length > 0 ? (
-      <div className="flex flex-wrap gap-1">
-        {taskLabels.map((label) => (
-          <Badge
-            key={label.id}
-            variant="secondary"
-            className="gap-1 px-2 py-1 text-xs group"
-            style={{
-              backgroundColor: label.color,
-              color: "white",
-              border: "none",
-            }}
-          >
-            <Tag className="h-3 w-3" />
-            {label.name}
-            <button
-              onClick={() => handleRemoveLabel(label.id)}
-              className="ml-1 hover:bg-black/20 rounded-full p-0.5 opacity-70 hover:opacity-100"
-            >
-              <X className="h-2 w-2" />
-            </button>
-          </Badge>
-        ))}
-      </div>
-    ) : null
+  const availableLabels = useMemo(
+    () => allLabels.filter((label) => !taskLabelIds.includes(label.id)),
+    [allLabels, taskLabelIds],
+  )
 
-  const filteredLabels = React.useMemo(() => {
-    const searchTerm = newLabel.toLowerCase().trim()
+  const filteredLabels = useMemo(() => {
+    const term = search.toLowerCase().trim()
+    if (!term) return availableLabels
+    return availableLabels.filter((label) => label.name.toLowerCase().includes(term))
+  }, [availableLabels, search])
 
-    // First filter out already added labels (now comparing by ID)
-    const availableLabels = allLabels.filter((label) => !taskLabelIds.includes(label.id))
+  const canCreate =
+    Boolean(search.trim()) &&
+    !availableLabels.some((label) => label.name.toLowerCase() === search.trim().toLowerCase())
 
-    if (!searchTerm) return availableLabels
-
-    return availableLabels.filter((label) => label.name.toLowerCase().includes(searchTerm))
-  }, [newLabel, allLabels, taskLabelIds])
-
-  // Keep internal focus state in sync when parent toggles focus intent
   useEffect(() => {
-    setInputFocus(Boolean(focusInput))
+    onAddingChange?.(open)
+    if (!open) {
+      setSearch("")
+    }
+  }, [open, onAddingChange])
+
+  useEffect(() => {
+    if (focusInput) setOpen(true)
   }, [focusInput])
 
-  const getAllOptions = () => {
-    const options: Array<Label | { id: string; name: string; isCreate: true }> = [...filteredLabels]
-
-    // Add create option if it should be shown
-    if (
-      newLabel.trim() &&
-      !filteredLabels.some((label) => label.name.toLowerCase() === newLabel.trim().toLowerCase())
-    ) {
-      options.push({ id: "create", name: newLabel.trim(), isCreate: true })
-    }
-
-    return options
-  }
-
   const handleAddLabel = (labelName?: string) => {
-    if (!labelName && !newLabel.trim()) return
-    onAddLabel(labelName || newLabel.trim())
-    setNewLabel("")
-    onAddingChange?.(false)
+    const nameToUse = (labelName ?? search).trim()
+    if (!nameToUse) return
+
+    onAddLabel(nameToUse)
+    setSearch("")
   }
 
   const handleRemoveLabel = (labelId: LabelId) => {
     onRemoveLabel(labelId)
   }
 
-  const handleCancelAdding = useCallback(() => {
-    setNewLabel("")
-    setSelectedIndex(-1)
-    onAddingChange?.(false)
-  }, [onAddingChange])
-
-  // Reset selected index when search term changes and set to first option if available
-  useEffect(() => {
-    const hasCreateOption =
-      newLabel.trim() &&
-      !filteredLabels.some((label) => label.name.toLowerCase() === newLabel.trim().toLowerCase())
-    const totalOptions = filteredLabels.length + (hasCreateOption ? 1 : 0)
-    setSelectedIndex(totalOptions > 0 ? 0 : -1)
-  }, [newLabel, allLabels, taskLabelIds, filteredLabels])
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    const allOptions = getAllOptions()
-
-    if (e.key === "Enter") {
-      e.preventDefault()
-      if (selectedIndex >= 0 && selectedIndex < allOptions.length) {
-        const selectedOption = allOptions[selectedIndex]
-        if (!selectedOption) return
-
-        if ("isCreate" in selectedOption) {
-          handleAddLabel()
-        } else {
-          handleAddLabel(selectedOption.name)
-        }
-      } else {
-        handleAddLabel()
-      }
-    } else if (e.key === "ArrowDown") {
-      e.preventDefault()
-      setSelectedIndex((prev) => Math.min(prev + 1, allOptions.length - 1))
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault()
-      setSelectedIndex((prev) => Math.max(prev - 1, -1))
-    } else if (e.key === "Escape") {
-      e.preventDefault()
-      handleCancelAdding()
-    }
-  }
-
-  const handleInputBlur = (e: React.FocusEvent) => {
-    // Check if this blur is due to escape key or clicking outside
-    // If there's no relatedTarget, it's likely due to escape key or tabbing away
-    if (!e.relatedTarget) {
-      handleCancelAdding()
-    }
-
-    // Always close the popover on blur
-    setTimeout(() => {
-      setInputFocus(false)
-    }, 0)
-  }
-
-  // The Popover component handles click outside automatically
-
   return (
-    <div className={cn("space-y-3", mode === "popover" && "p-2", className)}>
-      {/* Current Labels - Desktop: above input; Mobile: below input */}
-      {!isMobile && selectedLabelsBlock}
+    <div className={cn("space-y-2", mode === "popover" && "p-2", className)}>
+      <div className="flex min-h-[38px] flex-wrap items-center gap-1.5 rounded-lg border border-input bg-background px-2 py-1.5">
+        {taskLabels.map((label) => (
+          <Badge
+            key={label.id}
+            variant="secondary"
+            className="gap-1 rounded-md px-2 py-1 text-xs font-normal"
+            style={{
+              backgroundColor: `${label.color}15`,
+              color: label.color,
+              borderColor: `${label.color}30`,
+            }}
+          >
+            <div className="size-2 rounded-full" style={{ backgroundColor: label.color }} />
+            <span>{label.name}</span>
+            <button
+              onClick={() => handleRemoveLabel(label.id)}
+              className="rounded-sm p-0.5 hover:bg-black/10"
+              aria-label={t("labels.removeLabel", "Remove label")}
+            >
+              <X className="size-3" />
+            </button>
+          </Badge>
+        ))}
 
-      {/* Add Label Interface - Similar to comment input */}
-      <div className="flex gap-2">
-        <Popover open={inputFocus}>
+        <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <div className="flex-1">
-              <Input
-                ref={inputRef}
-                placeholder={t("labels.searchPlaceholder", "Search or create labels...")}
-                value={newLabel}
-                onChange={(e) => setNewLabel(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="text-sm h-9"
-                data-testid="label-input"
-                onBlur={handleInputBlur}
-                onFocus={() => setInputFocus(true)}
-              />
-            </div>
+            <button
+              className="flex h-7 items-center gap-1 rounded-md px-2 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+              data-testid="label-submit-button"
+            >
+              <Plus className="size-3.5" />
+              <span>{t("labels.addLabel", "Add label")}</span>
+            </button>
           </PopoverTrigger>
           <PopoverContent
-            className="w-80 p-0 max-h-[60vh] overflow-auto"
+            className="w-[260px] p-0"
             align="start"
             side="bottom"
             sideOffset={6}
-            collisionPadding={12}
-            onOpenAutoFocus={(e) => e.preventDefault()}
+            // Keep the popover pinned to the trigger while surrounding layouts animate
+            updatePositionStrategy="always"
+            data-testid="popover-content"
           >
-            <div ref={commandRef}>
-              <Command>
-                <CommandList className="max-h-48">
-                  <CommandGroup>
-                    {filteredLabels.map((label, index) => (
-                      <CommandItem
-                        key={label.id}
-                        onMouseDown={(e) => {
-                          e.preventDefault()
-                          handleAddLabel(label.name)
-                        }}
-                        className={cn(
-                          "flex items-center gap-2 cursor-pointer",
-                          selectedIndex === index && "bg-accent",
-                        )}
-                      >
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: label.color }}
-                        />
-                        <span>{label.name}</span>
-                      </CommandItem>
-                    ))}
+            <Command>
+              <CommandInput
+                placeholder={t("labels.searchPlaceholder", "Search or create labels...")}
+                value={search}
+                onValueChange={setSearch}
+                className="h-10 text-sm"
+                data-testid="label-input"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    e.preventDefault()
+                    setOpen(false)
+                  }
+                }}
+              />
+              <CommandList data-testid="command">
+                <CommandEmpty className="py-6 text-center text-sm">
+                  {t("labels.noMatches", "No labels found")}
+                </CommandEmpty>
+                <CommandGroup>
+                  {filteredLabels.map((label) => (
                     <CommandItem
-                      disabled={!newLabel.trim()}
-                      onMouseDown={(e) => {
-                        e.preventDefault()
-                        handleAddLabel()
-                      }}
-                      className={cn(
-                        "flex items-center gap-2 cursor-pointer",
-                        selectedIndex === filteredLabels.length && "bg-accent",
-                      )}
+                      key={label.id}
+                      value={label.name}
+                      onSelect={() => handleAddLabel(label.name)}
+                      className="gap-2"
+                      data-testid="command-item"
                     >
-                      <Plus className="h-3 w-3 mr-2" />
-                      {t("labels.createLabel", 'Create "{{name}}"', { name: newLabel.trim() })}
+                      <div
+                        className="size-3 shrink-0 rounded-full"
+                        style={{ backgroundColor: label.color }}
+                      />
+                      <span className="truncate">{label.name}</span>
                     </CommandItem>
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </div>
+                  ))}
+                  {canCreate && (
+                    <CommandItem
+                      value={search.trim()}
+                      onSelect={() => handleAddLabel(search)}
+                      className="gap-2"
+                      data-testid="command-item"
+                    >
+                      <Plus className="size-3" />
+                      <span>
+                        {t("labels.createLabel", 'Create "{{name}}"', { name: search.trim() })}
+                      </span>
+                    </CommandItem>
+                  )}
+                </CommandGroup>
+              </CommandList>
+            </Command>
           </PopoverContent>
         </Popover>
-        <Button
-          onClick={() => handleAddLabel()}
-          disabled={!newLabel.trim()}
-          size="sm"
-          className="h-9 px-3"
-          data-testid="label-submit-button"
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
       </div>
-
-      {isMobile && selectedLabelsBlock}
+      {isMobile && taskLabels.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          {t("labels.mobileHint", "Tap a tag to remove it.")}
+        </p>
+      )}
     </div>
   )
 }

@@ -39,7 +39,7 @@ import { SettingsDialog } from "@/components/dialogs/settings-dialog"
 import { UserProfileDialog } from "@/components/dialogs/user-profile-dialog"
 import { RouteContent } from "@/components/layout/route-content"
 import { useTheme } from "next-themes"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 import { closeTaskPanelAtom } from "@tasktrove/atoms/ui/dialogs"
 import { toggleTaskPanelAtom } from "@tasktrove/atoms/ui/dialogs"
 import { keyboardShortcutAtom } from "@tasktrove/atoms/core/history"
@@ -53,8 +53,10 @@ import {
   currentRouteContextAtom,
   openSearchAtom,
   openQuickAddAtom,
+  lastViewedPathAtom,
 } from "@tasktrove/atoms/ui/navigation"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useTaskFocus } from "@/hooks/use-task-focus"
 import { useNotificationSystem } from "@/hooks/use-notification-system"
 import { useProjectSectionGuard } from "@/hooks/debug/use-project-section-guard"
 import "@khmyznikov/pwa-install"
@@ -144,6 +146,7 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
 
   // Sync pathname with our route context atom
   const setPathname = useSetAtom(setPathnameAtom)
+  const setLastViewedPath = useSetAtom(lastViewedPathAtom)
 
   // Use our new atoms for simplified state management
   const [routeContext] = useAtom(currentRouteContextAtom)
@@ -151,6 +154,8 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
 
   // Initialize notification system following Next.js best practices
   useNotificationSystem()
+  // Handle global task focus requests (navigation + scroll)
+  useTaskFocus()
   // Development guard to detect tasks that are not tracked by project sections
   useProjectSectionGuard()
 
@@ -174,6 +179,15 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
   useEffect(() => {
     setPathname(pathname)
   }, [pathname, setPathname])
+
+  // Persist last viewed route for "Last Viewed" start view
+  useEffect(() => {
+    if (!pathname || pathname === "/" || routeContext.viewId === "not-found") {
+      return
+    }
+
+    setLastViewedPath(pathname)
+  }, [pathname, routeContext.viewId, setLastViewedPath])
 
   // Update currentViewAtom when route context changes (for compatibility)
   useEffect(() => {
@@ -651,7 +665,7 @@ export function MainLayoutWrapper({ children }: MainLayoutWrapperProps) {
           </SidebarContent>
           <AppSidebarFooter />
         </Sidebar>
-        <SidebarInset className="overflow-auto">
+        <SidebarInset className="overflow-auto bg-primary-soft">
           <div className="flex h-screen flex-col">
             <PageHeader onAdvancedSearch={openSearch} />
 

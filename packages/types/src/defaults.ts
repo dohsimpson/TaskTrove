@@ -3,21 +3,22 @@ import type { GroupId, VersionString } from "./id";
 import type { User, ProjectSection, Project } from "./core";
 import type { ProjectGroup, LabelGroup } from "./group";
 import type { DataFile, UserData } from "./data-file";
-import {
-  SIDE_PANEL_WIDTH_DEFAULT,
-  SIDEBAR_WIDTH_PX_DEFAULT,
-} from "@tasktrove/constants";
 import { createGroupId, createUserId } from "./id";
 import { LATEST_DATA_VERSION } from "./schema-version";
 import {
+  DEFAULT_SHOW_PLANNER,
+  SIDE_PANEL_WIDTH_DEFAULT,
+  SIDEBAR_WIDTH_PX_DEFAULT,
   DEFAULT_UUID,
   DEFAULT_AUTO_BACKUP_ENABLED,
   DEFAULT_BACKUP_TIME,
+  DEFAULT_AUTO_BACKUP_RUN_ON_INIT,
   DEFAULT_MAX_BACKUPS,
   DEFAULT_VIEW_MODE,
   DEFAULT_SORT_BY,
   DEFAULT_SORT_DIRECTION,
   DEFAULT_SHOW_COMPLETED,
+  DEFAULT_SHOW_ARCHIVED,
   DEFAULT_SHOW_OVERDUE,
   DEFAULT_SEARCH_QUERY,
   DEFAULT_SHOW_SIDE_PANEL,
@@ -25,6 +26,7 @@ import {
   DEFAULT_ACTIVE_FILTERS,
   DEFAULT_SECTION_NAME,
   DEFAULT_SECTION_COLOR,
+  DEFAULT_RECENT_VIEW_DAYS,
 } from "@tasktrove/constants";
 import { UserSettings, UiSettings } from "@tasktrove/types/settings";
 
@@ -47,7 +49,6 @@ export const ROOT_LABEL_GROUP_ID: GroupId = createGroupId(DEFAULT_UUID);
 export const DEFAULT_PROJECT_SECTION: ProjectSection = {
   id: createGroupId(DEFAULT_UUID),
   name: DEFAULT_SECTION_NAME,
-  slug: "",
   color: DEFAULT_SECTION_COLOR,
   type: "section",
   items: [],
@@ -58,7 +59,6 @@ export const DEFAULT_PROJECT_GROUP: ProjectGroup = {
   type: "project",
   id: ROOT_PROJECT_GROUP_ID,
   name: "All Projects",
-  slug: "all-projects",
   items: [],
 };
 
@@ -69,7 +69,6 @@ export const DEFAULT_LABEL_GROUP: LabelGroup = {
   type: "label",
   id: ROOT_LABEL_GROUP_ID,
   name: "All Labels",
-  slug: "all-labels",
   items: [],
 };
 
@@ -123,6 +122,7 @@ export const DEFAULT_GENERAL_SETTINGS = {
   linkifyEnabled: true,
   markdownEnabled: true,
   popoverHoverOpen: false,
+  preferDayMonthFormat: false,
 } as const;
 // weekStartsOn is optional; the default UI settings object should be empty
 export const DEFAULT_UI_SETTINGS: UiSettings = {};
@@ -136,9 +136,11 @@ export const DEFAULT_VIEW_STATE: ViewState = {
   sortBy: DEFAULT_SORT_BY,
   sortDirection: DEFAULT_SORT_DIRECTION,
   showCompleted: DEFAULT_SHOW_COMPLETED,
+  showArchived: DEFAULT_SHOW_ARCHIVED,
   showOverdue: DEFAULT_SHOW_OVERDUE,
   searchQuery: DEFAULT_SEARCH_QUERY,
   showSidePanel: DEFAULT_SHOW_SIDE_PANEL,
+  showPlanner: DEFAULT_SHOW_PLANNER,
   compactView: DEFAULT_COMPACT_VIEW,
   collapsedSections: [],
   activeFilters: DEFAULT_ACTIVE_FILTERS,
@@ -151,9 +153,12 @@ export const DEFAULT_GLOBAL_VIEW_OPTIONS: GlobalViewOptions = {
   sidePanelWidth: SIDE_PANEL_WIDTH_DEFAULT,
   sideBarWidth: SIDEBAR_WIDTH_PX_DEFAULT,
   showSidePanel: DEFAULT_SHOW_SIDE_PANEL,
+  showCalendarEvents: true,
+  calendarAutoSyncMinutes: 0,
   peopleOwnerCollapsed: false,
   peopleAssigneesCollapsed: false,
   dismissedUi: {},
+  recentViewDays: DEFAULT_RECENT_VIEW_DAYS,
 };
 
 /**
@@ -164,6 +169,7 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
     autoBackup: {
       enabled: DEFAULT_AUTO_BACKUP_ENABLED,
       backupTime: DEFAULT_BACKUP_TIME,
+      runOnInit: DEFAULT_AUTO_BACKUP_RUN_ON_INIT,
       maxBackups: DEFAULT_MAX_BACKUPS,
     },
   },

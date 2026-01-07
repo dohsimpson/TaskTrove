@@ -11,6 +11,10 @@ import {
   addWeeks,
   isBefore,
 } from "date-fns";
+import {
+  formatDateDisplay,
+  type DateDisplayOptions,
+} from "./task-date-formatter";
 
 export type DueDatePreset =
   | "overdue"
@@ -180,6 +184,7 @@ export function getPresetLabel(
 export function getCustomRangeLabel(
   range: { start?: Date | string; end?: Date | string },
   t?: (key: string, fallback: string) => string,
+  options?: DateDisplayOptions,
 ): string {
   let { start, end } = range;
 
@@ -189,16 +194,18 @@ export function getCustomRangeLabel(
   if (typeof end === "string") {
     end = new Date(end);
   }
+  const includeYear = options?.includeYear ?? true;
+  const dateOptions = { ...options, includeYear };
   if (start && end) {
-    return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
+    return `${formatDateDisplay(start, dateOptions)} - ${formatDateDisplay(end, dateOptions)}`;
   }
   if (start) {
     const fromLabel = t ? t("filters.dateRange.from", "From") : "From";
-    return `${fromLabel} ${start.toLocaleDateString()}`;
+    return `${fromLabel} ${formatDateDisplay(start, dateOptions)}`;
   }
   if (end) {
     const untilLabel = t ? t("filters.dateRange.until", "Until") : "Until";
-    return `${untilLabel} ${end.toLocaleDateString()}`;
+    return `${untilLabel} ${formatDateDisplay(end, dateOptions)}`;
   }
 
   return t ? t("filters.dateRange.label", "Custom Range") : "Custom Range";

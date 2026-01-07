@@ -9,13 +9,32 @@ import { reorderLabelsAtom } from "@tasktrove/atoms/core/labels"
 import { updateTasksAtom } from "@tasktrove/atoms/core/tasks"
 import type { LabelId, TaskId } from "@tasktrove/types/id"
 import type { UpdateTaskRequest } from "@tasktrove/types/api-requests"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 import {
   findContainingLabel,
   resolveLabelTargetLocation,
   calculateLabelMove,
   validateLabelDrop,
 } from "@/lib/label-drag-drop-logic"
+
+type TaskDropSource = { type: "list-item"; ids: TaskId[] }
+type SidebarLabelSource = { type: "sidebar-label"; labelId: LabelId }
+type LabelDropTarget = { labelId: LabelId }
+
+const isTaskDropSource = (data: unknown): data is TaskDropSource =>
+  typeof data === "object" &&
+  data !== null &&
+  Reflect.get(data, "type") === "list-item" &&
+  Array.isArray(Reflect.get(data, "ids"))
+
+const isLabelDropTarget = (data: unknown): data is LabelDropTarget =>
+  typeof data === "object" && data !== null && typeof Reflect.get(data, "labelId") === "string"
+
+const isSidebarLabelSource = (data: unknown): data is SidebarLabelSource =>
+  typeof data === "object" &&
+  data !== null &&
+  Reflect.get(data, "type") === "sidebar-label" &&
+  typeof Reflect.get(data, "labelId") === "string"
 
 // Re-export for convenience
 export type DropEventData = ElementDropTargetEventBasePayload
@@ -58,13 +77,12 @@ export function useLabelDragDrop() {
       }
 
       const targetData = dropTarget.data
-      const sourceType = sourceData.type as string
 
       // Handle TASK drops (adding label to task) - golden path pattern
-      if (sourceType === "list-item" && sourceData.ids && targetData.labelId) {
+      if (isTaskDropSource(sourceData) && isLabelDropTarget(targetData)) {
         try {
-          const taskIds = sourceData.ids as TaskId[]
-          const targetLabelId = targetData.labelId as LabelId
+          const taskIds = sourceData.ids
+          const targetLabelId = targetData.labelId
 
           // Find target label
           const targetLabel = labels.find((l) => l.id === targetLabelId)
@@ -127,7 +145,7 @@ export function useLabelDragDrop() {
       }
 
       // Handle LABEL drops (reordering)
-      if (sourceType === "sidebar-label") {
+      if (isSidebarLabelSource(sourceData)) {
         try {
           // 1. Validate the drop operation
           const error = validateLabelDrop(sourceData, targetData)
@@ -137,7 +155,7 @@ export function useLabelDragDrop() {
           }
 
           // 2. Extract the dragged label ID
-          const draggedLabelId = sourceData.labelId as LabelId
+          const draggedLabelId = sourceData.labelId
           if (!draggedLabelId) return
 
           // 3. Find where the label currently is (pure function)
@@ -158,7 +176,7 @@ export function useLabelDragDrop() {
           }
 
           // 5. Calculate the move (pure function - no mutations)
-          const moveResult = calculateLabelMove(draggedLabelId, sourceIndex, targetIndex, labels)
+          calculateLabelMove(draggedLabelId, sourceIndex, targetIndex, labels)
 
           // 6. Apply updates (only side effects happen here)
           await reorderLabels({ fromIndex: sourceIndex, toIndex: targetIndex })

@@ -37,6 +37,7 @@ interface DropTargetItemProps {
   lineGap?: string
   currentLevel?: number // For tree mode
   indentPerLevel?: number // For tree mode
+  indicatorClassName?: string // For group mode indicator sizing
   getData?: () => Record<string, unknown>
   canDrop?: (sourceData: Record<string, unknown>) => boolean
   validateInstruction?: (
@@ -86,6 +87,7 @@ export function DropTargetItem({
   lineGap = "8px",
   currentLevel = 0,
   indentPerLevel = 0,
+  indicatorClassName,
   getData,
   canDrop,
   validateInstruction,
@@ -269,7 +271,7 @@ export function DropTargetItem({
         <GroupDropIndicator
           isActive={isOver}
           ref={ref}
-          className={cn("flex flex-1", isOver && "p-[2px]")}
+          className={cn("flex flex-1", isOver && "p-[2px]", indicatorClassName)}
         >
           {children}
         </GroupDropIndicator>

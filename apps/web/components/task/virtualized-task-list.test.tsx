@@ -170,6 +170,30 @@ describe("VirtualizedTaskList", () => {
     expect(screen.getByTestId(`draggable-${TEST_TASK_ID_3}`)).toBeInTheDocument()
   })
 
+  it("can disable dragging when requested", () => {
+    const { rerender } = render(
+      <VirtualizedTaskList
+        tasks={mockTasks}
+        variant="default"
+        sortedTaskIds={sortedTaskIds}
+        enableDragging={false}
+      />,
+    )
+
+    expect(screen.queryAllByTestId(/^draggable-/)).toHaveLength(0)
+
+    rerender(
+      <VirtualizedTaskList
+        tasks={mockTasks}
+        variant="default"
+        sortedTaskIds={sortedTaskIds}
+        enableDragging
+      />,
+    )
+
+    expect(screen.queryAllByTestId(/^draggable-/).length).toBeGreaterThan(0)
+  })
+
   it("passes sortedTaskIds to TaskItem", () => {
     render(
       <VirtualizedTaskList tasks={mockTasks} variant="default" sortedTaskIds={sortedTaskIds} />,
@@ -221,7 +245,7 @@ describe("VirtualizedTaskList", () => {
       const spacer = containerDiv?.lastElementChild
       expect(spacer).not.toBeNull()
       expect(spacer).toHaveAttribute("aria-hidden", "true")
-      expect(spacer?.classList.contains("h-2")).toBe(true)
+      expect(spacer?.classList.contains("h-1")).toBe(true)
     })
   })
 

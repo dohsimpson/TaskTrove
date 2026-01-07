@@ -6,9 +6,6 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -17,9 +14,7 @@ const nextConfig = {
   },
   transpilePackages: ["jotai-devtools"],
   output: "standalone",
-  experimental: {
-    nodeMiddleware: true, // Enable Node.js middleware
-  }
+  // Turbopack is the default in Next 16; keep config lean to avoid opt-outs.
 }
 
 export default withBundleAnalyzer(nextConfig)

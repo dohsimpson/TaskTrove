@@ -90,6 +90,7 @@ export const mockSubtaskPopoverComponent = ({ children }: MockSimpleComponentPro
 export const mockSettingsAtom = {
   general: {
     popoverHoverOpen: false,
+    preferDayMonthFormat: false,
   },
   uiSettings: {},
 }

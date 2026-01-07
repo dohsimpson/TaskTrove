@@ -26,6 +26,8 @@ type SidePanelLayoutProps = {
   rootClassName?: string
   /** Optional class applied to the scrollable content wrapper */
   contentWrapperClassName?: string
+  /** When true, applies default horizontal padding to the content wrapper */
+  applyContentPadding?: boolean
 }
 
 /**
@@ -36,6 +38,7 @@ export function TaskViewSidePanelLayout({
   children,
   rootClassName,
   contentWrapperClassName,
+  applyContentPadding = false,
 }: SidePanelLayoutProps) {
   const { showSidePanel } = useAtomValue(currentViewStateAtom)
   const selectedTask = useAtomValue(selectedTaskAtom)
@@ -103,7 +106,11 @@ export function TaskViewSidePanelLayout({
     <TaskSidePanel isOpen={isPanelOpen} onClose={handleClosePanel} variant={variant} />
   )
 
-  const contentClasses = cn("flex-1 min-h-0", contentWrapperClassName)
+  const contentClasses = cn(
+    "flex-1 min-h-0",
+    applyContentPadding && "px-2",
+    contentWrapperClassName,
+  )
 
   if (isMobile) {
     return (

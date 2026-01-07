@@ -47,6 +47,7 @@ import { API_ROUTES } from "@tasktrove/types/constants";
 import {
   DEFAULT_AUTO_BACKUP_ENABLED,
   DEFAULT_BACKUP_TIME,
+  DEFAULT_AUTO_BACKUP_RUN_ON_INIT,
   DEFAULT_MAX_BACKUPS,
   TASKS_QUERY_KEY,
   PROJECTS_QUERY_KEY,
@@ -72,14 +73,12 @@ const TEST_PROJECTS: Project[] = [
   {
     id: createProjectId("12345678-1234-4234-8234-123456789abc"),
     name: "Test Project 1",
-    slug: "test-project-1",
     color: "#ef4444",
     sections: [DEFAULT_PROJECT_SECTION],
   },
   {
     id: createProjectId("12345678-1234-4234-8234-123456789abd"),
     name: "Test Project 2",
-    slug: "test-project-2",
     color: "#10b981",
     sections: [DEFAULT_PROJECT_SECTION],
   },
@@ -89,13 +88,11 @@ const TEST_LABELS: Label[] = [
   {
     id: createLabelId("abcdef01-abcd-4bcd-8bcd-abcdefabcdef"),
     name: "Test Label",
-    slug: "test-label",
     color: "#ef4444",
   },
   {
     id: createLabelId("abcdef01-abcd-4bcd-8bcd-abcdefabcde0"),
     name: "test-personal",
-    slug: "test-personal",
     color: "#3b82f6",
   },
 ];
@@ -104,13 +101,11 @@ const TEST_PROJECT_GROUPS: ProjectGroup = {
   type: "project" as const,
   id: createGroupId("33333333-3333-4333-8333-333333333333"),
   name: "All Projects",
-  slug: "all-projects",
   items: [
     {
       type: "project" as const,
       id: createGroupId("11111111-1111-4111-8111-111111111111"),
       name: "Work Projects",
-      slug: "work-projects",
       description: "Projects related to work",
       color: "#3b82f6",
       items: [createProjectId("44444444-4444-4444-8444-444444444444")],
@@ -119,7 +114,6 @@ const TEST_PROJECT_GROUPS: ProjectGroup = {
       type: "project" as const,
       id: createGroupId("22222222-2222-4222-8222-222222222222"),
       name: "Development",
-      slug: "development",
       items: [createProjectId("55555555-5555-4555-8555-555555555555")],
     },
   ],
@@ -129,7 +123,6 @@ const TEST_LABEL_GROUPS: LabelGroup = {
   type: "label" as const,
   id: createGroupId("88888888-8888-4888-8888-888888888888"),
   name: "All Labels",
-  slug: "all-labels",
   items: [],
 };
 
@@ -138,6 +131,7 @@ const TEST_SETTINGS: UserSettings = {
     autoBackup: {
       enabled: DEFAULT_AUTO_BACKUP_ENABLED,
       backupTime: DEFAULT_BACKUP_TIME,
+      runOnInit: DEFAULT_AUTO_BACKUP_RUN_ON_INIT,
       maxBackups: DEFAULT_MAX_BACKUPS,
     },
   },

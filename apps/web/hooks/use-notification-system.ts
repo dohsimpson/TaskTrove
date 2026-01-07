@@ -62,7 +62,13 @@ export function useNotificationSystem() {
       },
       "Rescheduled notifications for all tasks",
     )
-  }, [tasks, notificationSettings.enabled, notificationPermission, rescheduleAll])
+  }, [
+    tasks,
+    notificationSettings.enabled,
+    notificationPermission,
+    rescheduleAll,
+    scheduledNotifications.size,
+  ])
 
   // Auto-request permission on first task with due date (if enabled in settings)
   useEffect(() => {

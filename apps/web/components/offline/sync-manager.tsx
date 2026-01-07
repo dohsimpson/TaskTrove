@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useAtomValue } from "jotai"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -18,7 +19,9 @@ import {
   Database,
   Smartphone,
 } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
+import { formatDateDisplay, formatDateTimeDisplay } from "@/lib/utils/task-date-formatter"
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 
 interface SyncConflict {
   id: string
@@ -71,6 +74,9 @@ export function SyncManager({
   onToggleOfflineMode,
   onExportData,
 }: SyncManagerProps) {
+  const settings = useAtomValue(settingsAtom)
+  const preferDayMonthFormat = Boolean(settings.general.preferDayMonthFormat)
+  const use24HourTime = Boolean(settings.uiSettings.use24HourTime)
   const [showConflicts, setShowConflicts] = useState(false)
   const [autoSync, setAutoSync] = useState(true)
   const [syncInterval, setSyncInterval] = useState(30) // seconds
@@ -164,7 +170,12 @@ export function SyncManager({
             </div>
             <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <div className="text-2xl font-bold text-blue-600">
-                {syncStatus.lastSync ? new Date(syncStatus.lastSync).toLocaleDateString() : "Never"}
+                {syncStatus.lastSync
+                  ? formatDateDisplay(new Date(syncStatus.lastSync), {
+                      includeYear: true,
+                      preferDayMonthFormat,
+                    })
+                  : "Never"}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400">Last Sync</div>
             </div>
@@ -315,7 +326,11 @@ export function SyncManager({
                     <div>
                       <span className="text-sm font-medium">{change.entity}</span>
                       <div className="text-xs text-gray-600 dark:text-gray-400">
-                        {change.timestamp.toLocaleString()}
+                        {formatDateTimeDisplay(change.timestamp, {
+                          includeYear: true,
+                          preferDayMonthFormat,
+                          use24HourTime,
+                        })}
                       </div>
                     </div>
                   </div>
@@ -356,7 +371,12 @@ export function SyncManager({
                     {getConflictDescription(conflict)}
                   </p>
                   <div className="text-xs text-gray-500 mt-1">
-                    Conflict occurred: {conflict.timestamp.toLocaleString()}
+                    Conflict occurred:{" "}
+                    {formatDateTimeDisplay(conflict.timestamp, {
+                      includeYear: true,
+                      preferDayMonthFormat,
+                      use24HourTime,
+                    })}
                   </div>
                 </div>
 

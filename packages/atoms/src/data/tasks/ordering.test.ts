@@ -46,7 +46,6 @@ function createTestProject(overrides: Partial<Project> = {}): Project {
   return {
     id: createProjectId(uuidv4()),
     name: "Test Project",
-    slug: "test-project",
     sections: [DEFAULT_PROJECT_SECTION],
     color: "#000000",
     ...overrides,
@@ -59,7 +58,6 @@ function createTestSection(
   return {
     id: createGroupId(uuidv4()),
     name: "Test Section",
-    slug: "test-section",
     type: "section",
     items: [],
     ...overrides,

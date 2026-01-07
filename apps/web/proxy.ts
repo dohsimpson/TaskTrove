@@ -8,7 +8,6 @@ import { isAuthEnabled } from "@/lib/utils/env"
 acceptLanguage.languages([...languages])
 
 export const config = {
-  runtime: "nodejs",
   // matcher: '/*' will match all paths including API routes
   // We want to exclude _next static files and other assets
   matcher: [
@@ -63,6 +62,10 @@ function handleI18n(req: NextRequest) {
   return lng
 }
 
+const hasAuthContext = (request: NextRequest): request is NextAuthRequest => {
+  return "auth" in request
+}
+
 function setI18nResponse(response: NextResponse, lng: string, req: NextRequest) {
   // Set language cookie if it doesn't exist or is different
   if (!req.cookies.has(cookieName) || req.cookies.get(cookieName)?.value !== lng) {
@@ -79,9 +82,9 @@ function setI18nResponse(response: NextResponse, lng: string, req: NextRequest) 
   return response
 }
 
-function middleware(req: NextRequest) {
+function proxy(req: NextRequest) {
   const lng = handleI18n(req)
-  const authReq = req as NextAuthRequest
+  const authContext = hasAuthContext(req) ? req.auth : undefined
 
   const isAPIRoute = req.nextUrl.pathname.startsWith("/api/")
   const isAuthRoute = req.nextUrl.pathname.startsWith("/api/auth")
@@ -102,7 +105,7 @@ function middleware(req: NextRequest) {
   }
 
   if (isAuthEnabled()) {
-    if (authReq.auth) {
+    if (authContext) {
       return setI18nResponse(NextResponse.next(), lng, req)
     } else {
       // For API routes, let route handlers handle authentication with proper JSON responses
@@ -119,4 +122,7 @@ function middleware(req: NextRequest) {
   return setI18nResponse(NextResponse.next(), lng, req)
 }
 
-export default isAuthEnabled() ? auth(middleware) : middleware
+const handler = isAuthEnabled() ? auth(proxy) : proxy
+
+export { handler as proxy }
+export default handler

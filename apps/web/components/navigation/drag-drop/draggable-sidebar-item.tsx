@@ -32,6 +32,7 @@ export function DraggableSidebarProject({
         groupId,
         isInGroup: !!groupId,
       })}
+      className="flex-1 flex-col"
     >
       {children}
     </DraggableItem>

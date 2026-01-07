@@ -2,6 +2,7 @@ import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { screen, fireEvent } from "@/test-utils"
 import { render } from "@/test-utils/render-with-providers"
+import { HydrateValues } from "@/test-utils/jotai-mocks"
 import { LabelContextMenu } from "./label-context-menu"
 import { labelAtoms } from "@tasktrove/atoms/core/labels"
 import { startEditingLabelAtom } from "@tasktrove/atoms/ui/navigation"
@@ -135,7 +136,7 @@ describe("LabelContextMenu", () => {
     isVisible: true,
   }
 
-  const defaultAtomValues: Array<[unknown, unknown]> = [
+  const defaultAtomValues: HydrateValues = [
     [labelAtoms.labels, [mockLabel]],
     [startEditingLabelAtom, vi.fn()],
   ]

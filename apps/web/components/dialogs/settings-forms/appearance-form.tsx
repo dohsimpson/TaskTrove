@@ -17,8 +17,8 @@ import { useTranslation } from "@tasktrove/i18n"
 import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { updateSettingsAtom } from "@tasktrove/atoms/core/settings"
 import type { WeekStartsOn } from "@tasktrove/types/settings"
-import { Sparkles, Moon, Sun } from "lucide-react"
-import { toast } from "sonner"
+import { Sparkles, Moon, Sun, Clock4 } from "lucide-react"
+import { toast } from "@/lib/toast"
 
 export function AppearanceForm() {
   const { t } = useTranslation("settings")
@@ -171,6 +171,39 @@ export function AppearanceForm() {
               aria-label={t("appearance.ui.weekNumber.label", "Show week numbers")}
             />
           </div>
+        </div>
+      </SettingsCard>
+
+      <SettingsCard title={t("appearance.time.title", "Time Format")}>
+        <div className="flex items-start justify-between gap-4 rounded-md bg-background px-1 py-2">
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <Clock4 className="h-4 w-4" />
+              <Label>{t("appearance.time.use24Hour.label", "Use 24-hour clock")}</Label>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {t(
+                "appearance.time.use24Hour.description",
+                "Show times as 14:30 instead of 2:30 PM. Leave off to use AM/PM.",
+              )}
+            </p>
+          </div>
+
+          <Switch
+            checked={Boolean(settings.uiSettings.use24HourTime)}
+            onCheckedChange={(checked) => {
+              updateSettings({
+                // use explicit false to overwrite prior true; false/unset both mean 12-hour
+                uiSettings: { use24HourTime: checked ? true : false },
+              })
+              toast.success(
+                checked
+                  ? t("appearance.time.use24Hour.enabled", "24-hour time enabled")
+                  : t("appearance.time.use24Hour.disabled", "12-hour time enabled"),
+              )
+            }}
+            aria-label={t("appearance.time.use24Hour.label", "Use 24-hour clock")}
+          />
         </div>
       </SettingsCard>
     </div>

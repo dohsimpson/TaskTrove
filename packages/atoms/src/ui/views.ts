@@ -24,6 +24,7 @@ import {
   createAtomWithStorage,
   log,
   namedAtom,
+  deserializeWithDefaults,
 } from "@tasktrove/atoms/utils/atom-helpers";
 import { showTaskPanelAtom } from "@tasktrove/atoms/ui/dialogs";
 import {
@@ -47,12 +48,23 @@ import { tasksAtom } from "@tasktrove/atoms/data/base/atoms";
 /**
  * Create default ViewStates object with all standard views initialized
  */
+function getDefaultViewState(viewId?: ViewId | string): ViewState {
+  if (viewId === "recent") {
+    return { ...DEFAULT_VIEW_STATE, showCompleted: true };
+  }
+
+  return { ...DEFAULT_VIEW_STATE };
+}
+
+/**
+ * Create default ViewStates object with all standard views initialized
+ */
 function createDefaultViewStates(): ViewStates {
   const defaultStates: ViewStates = {};
 
   // Initialize all standard views with default state
   for (const viewId of STANDARD_VIEW_IDS) {
-    defaultStates[viewId] = { ...DEFAULT_VIEW_STATE };
+    defaultStates[viewId] = getDefaultViewState(viewId);
   }
 
   return defaultStates;
@@ -66,14 +78,16 @@ export function getViewStateOrDefault(
   viewStates: ViewStates,
   viewId: ViewId,
 ): ViewState {
+  const defaultViewState = getDefaultViewState(viewId);
+
   if (viewId in viewStates) {
     const viewState = viewStates[viewId];
     if (viewState) {
-      return viewState;
+      return { ...defaultViewState, ...viewState };
     }
   }
   // Return default for missing views (new projects, labels, etc.)
-  return { ...DEFAULT_VIEW_STATE };
+  return { ...defaultViewState };
 }
 
 /**
@@ -133,12 +147,16 @@ export function migrateViewStates(data: unknown): ViewStates {
               preservedFields.sortBy = value;
             } else if (key === "showCompleted" && typeof value === "boolean") {
               preservedFields.showCompleted = value;
+            } else if (key === "showArchived" && typeof value === "boolean") {
+              preservedFields.showArchived = value;
             } else if (key === "showOverdue" && typeof value === "boolean") {
               preservedFields.showOverdue = value;
             } else if (key === "searchQuery" && typeof value === "string") {
               preservedFields.searchQuery = value;
             } else if (key === "showSidePanel" && typeof value === "boolean") {
               preservedFields.showSidePanel = value;
+            } else if (key === "showPlanner" && typeof value === "boolean") {
+              preservedFields.showPlanner = value;
             } else if (key === "compactView" && typeof value === "boolean") {
               preservedFields.compactView = value;
             } else if (key === "collapsedSections" && Array.isArray(value)) {
@@ -152,7 +170,7 @@ export function migrateViewStates(data: unknown): ViewStates {
 
       // Merge preserved fields with defaults
       migrated[viewId] = {
-        ...DEFAULT_VIEW_STATE,
+        ...getDefaultViewState(viewId),
         ...preservedFields,
       };
 
@@ -241,6 +259,12 @@ viewStatesAtom.debugLabel = "viewStatesAtom";
 export const globalViewOptionsAtom = createAtomWithStorage<GlobalViewOptions>(
   "global-view-options",
   DEFAULT_GLOBAL_VIEW_OPTIONS,
+  {
+    deserialize: (str) =>
+      deserializeWithDefaults(str, DEFAULT_GLOBAL_VIEW_OPTIONS, {
+        label: "global view options",
+      }),
+  },
 );
 globalViewOptionsAtom.debugLabel = "globalViewOptionsAtom";
 
@@ -306,6 +330,10 @@ export const setViewOptionsAtom = atom(
 
     // Handle showSidePanel globally instead of per-view
     const filteredUpdates = { ...updates };
+
+    if (currentView === "calendar" && filteredUpdates.viewMode) {
+      delete filteredUpdates.viewMode;
+    }
     if ("showSidePanel" in updates) {
       // Update global showSidePanel
       set(updateGlobalViewOptionsAtom, {
@@ -488,6 +516,7 @@ export const currentViewStateAtom = atom<ViewState>((get) => {
   return {
     ...baseViewState,
     showSidePanel: globalShowSidePanel,
+    viewMode: currentView === "calendar" ? "calendar" : baseViewState.viewMode,
   };
 });
 currentViewStateAtom.debugLabel = "currentViewStateAtom";
@@ -523,6 +552,13 @@ export const isCalendarViewAtom = atom<boolean>((get) => {
 isCalendarViewAtom.debugLabel = "isCalendarViewAtom";
 
 /**
+ * Tracks the currently selected calendar date for calendar view mode.
+ * Used to prefill quick add due date when opening from calendar.
+ */
+export const selectedCalendarDateAtom = atom<Date | null>(null);
+selectedCalendarDateAtom.debugLabel = "selectedCalendarDateAtom";
+
+/**
  * Gets current search query
  * Used for search input component and task filtering
  */
@@ -554,6 +590,16 @@ export const showCompletedAtom = atom<boolean>((get) => {
   return viewState.showCompleted;
 });
 showCompletedAtom.debugLabel = "showCompletedAtom";
+
+/**
+ * Gets whether archived tasks are shown
+ * Used for task filtering and toggle controls
+ */
+export const showArchivedAtom = atom<boolean>((get) => {
+  const viewState = get(currentViewStateAtom);
+  return viewState.showArchived ?? false;
+});
+showArchivedAtom.debugLabel = "showArchivedAtom";
 
 /**
  * Gets whether overdue tasks are shown
@@ -866,9 +912,11 @@ export const viewAtoms = {
   isListView: isListViewAtom,
   isKanbanView: isKanbanViewAtom,
   isCalendarView: isCalendarViewAtom,
+  selectedCalendarDate: selectedCalendarDateAtom,
   searchQuery: searchQueryAtom,
   sortConfig: sortConfigAtom,
   showCompleted: showCompletedAtom,
+  showArchived: showArchivedAtom,
   showOverdue: showOverdueAtom,
   compactView: compactViewAtom,
   collapsedSections: collapsedSectionsAtom,

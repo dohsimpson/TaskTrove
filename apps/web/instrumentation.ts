@@ -6,6 +6,7 @@ export async function register() {
   }
 
   try {
+    // eslint-disable-next-line no-restricted-syntax -- dynamic import required during instrumentation bootstrap
     const { bootstrapScheduler } = await import("./lib/scheduler/bootstrap")
     await bootstrapScheduler()
   } catch (error) {

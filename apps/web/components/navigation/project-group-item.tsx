@@ -125,7 +125,6 @@ export function ProjectGroupItem({ group, projects }: ProjectGroupItemProps) {
               key={project.id}
               project={project}
               index={index}
-              isInGroup={true}
               groupId={group.id}
               enableDragDrop={false}
             />

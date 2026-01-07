@@ -64,14 +64,12 @@ describe("GET /api/groups", () => {
         type: "project",
         id: TEST_GROUP_ID_3,
         name: "Active Projects",
-        slug: "active-projects",
         items: [TEST_PROJECT_ID_1],
       },
       labelGroups: {
         type: "label",
         id: createGroupId("99999999-9999-4999-8999-999999999999"),
         name: "All Labels",
-        slug: "all-labels",
         items: [],
       },
     }
@@ -121,14 +119,12 @@ describe("POST /api/groups", () => {
         type: "project",
         id: TEST_GROUP_ID_3,
         name: "Parent Project Group",
-        slug: "parent-project-group",
         items: [],
       },
       labelGroups: {
         type: "label",
         id: createGroupId("88888888-8888-4888-8888-888888888888"),
         name: "All Labels",
-        slug: "all-labels",
         items: [],
       },
     }
@@ -195,14 +191,12 @@ describe("PATCH /api/groups", () => {
         type: "project",
         id: TEST_GROUP_ID_3,
         name: "Original Project Group",
-        slug: "original-project-group",
         items: [TEST_PROJECT_ID_1],
       },
       labelGroups: {
         type: "label",
         id: createGroupId("77777777-7777-4777-8777-777777777777"),
         name: "All Labels",
-        slug: "all-labels",
         items: [],
       },
     }
@@ -269,13 +263,11 @@ describe("DELETE /api/groups", () => {
         type: "project",
         id: createGroupId(DEFAULT_UUID),
         name: "All Projects",
-        slug: "all-projects",
         items: [
           {
             type: "project",
             id: TEST_GROUP_ID_3,
             name: "Project Group to Delete",
-            slug: "project-group-to-delete",
             items: [TEST_PROJECT_ID_1],
           },
         ],
@@ -284,7 +276,6 @@ describe("DELETE /api/groups", () => {
         type: "label",
         id: createGroupId("66666666-6666-4666-8666-666666666666"),
         name: "All Labels",
-        slug: "all-labels",
         items: [],
       },
     }

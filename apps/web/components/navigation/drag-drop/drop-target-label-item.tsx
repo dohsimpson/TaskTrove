@@ -1,6 +1,9 @@
 "use client"
 
+import { useAtomValue } from "jotai"
 import { DropTargetItem } from "@/components/ui/drag-drop/drop-target-item"
+import { taskAtoms } from "@tasktrove/atoms/core/tasks"
+import { createTaskId } from "@tasktrove/types/id"
 import type { LabelId } from "@tasktrove/types/id"
 import type { DropEventData } from "@/hooks/use-sidebar-drag-drop"
 import { isValidLabelOperation } from "@/lib/label-drag-drop-logic"
@@ -26,6 +29,8 @@ export function DropTargetLabelItem({
   children,
   onDrop,
 }: DropTargetLabelItemProps) {
+  const taskById = useAtomValue(taskAtoms.derived.taskById)
+
   return (
     <DropTargetItem
       id={labelId}
@@ -39,20 +44,42 @@ export function DropTargetLabelItem({
         index,
       })}
       canDrop={(sourceData) => {
-        // Accept sidebar labels (for reordering)
-        if (sourceData.type === "sidebar-label") {
-          return true
-        }
-        // Accept tasks (for adding label to task) - golden path pattern
-        if (sourceData.type === "list-item" && sourceData.ids) {
-          return true
-        }
-        return false
+        // Only accept sidebar labels (for reordering)
+        return sourceData.type === "sidebar-label"
       }}
       validateInstruction={isValidLabelOperation}
       onDrop={onDrop}
     >
-      {children}
+      <DropTargetItem
+        id={`${labelId}-task-drop`}
+        index={index}
+        mode="group"
+        className="w-full"
+        indicatorClassName="w-full flex-none"
+        getData={() => ({
+          type: "sidebar-label-drop-target",
+          labelId,
+          index,
+        })}
+        canDrop={(sourceData) => {
+          if (sourceData.type !== "list-item" || !Array.isArray(sourceData.ids)) {
+            return false
+          }
+
+          const hasMovableTask = sourceData.ids.some((id) => {
+            if (typeof id !== "string") {
+              return false
+            }
+            const task = taskById.get(createTaskId(id))
+            return !task || !task.labels.includes(labelId)
+          })
+
+          return hasMovableTask
+        }}
+        onDrop={onDrop}
+      >
+        {children}
+      </DropTargetItem>
     </DropTargetItem>
   )
 }

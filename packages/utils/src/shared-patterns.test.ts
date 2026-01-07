@@ -71,6 +71,7 @@ describe("Shared Patterns", () => {
       expect(matchesParserPattern("today", "date")).toBe(true);
       expect(matchesParserPattern("tomorrow", "date")).toBe(true);
       expect(matchesParserPattern("next week", "date")).toBe(true);
+      expect(matchesParserPattern("2025-01-15", "date")).toBe(true);
       expect(matchesParserPattern("random text", "date")).toBe(false);
     });
 

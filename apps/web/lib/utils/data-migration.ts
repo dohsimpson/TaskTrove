@@ -8,9 +8,10 @@ import { getAppVersion } from "@/lib/utils/version"
 import { isVersionLessThan } from "@tasktrove/utils/version"
 import {
   MigrationStep,
+  v080Migration,
   v0100Migration,
   v0110Migration,
-  v080Migration,
+  v0120Migration,
 } from "@/lib/utils/data-migration-functions"
 
 const MIN_SUPPORTED_VERSION = createVersionString("v0.8.0")
@@ -27,6 +28,10 @@ export const migrationFunctions: MigrationStep[] = [
   {
     version: createVersionString("v0.11.0"),
     migrate: v0110Migration,
+  },
+  {
+    version: createVersionString("v0.12.0"),
+    migrate: v0120Migration,
   },
 ]
 
@@ -62,9 +67,10 @@ function resolveDataFileVersion(record: Json): VersionString {
   return createVersionString(versionValue)
 }
 
-export function migrateDataFile(dataFile: Json): DataFile {
+export async function migrateDataFile(dataFile: Json): Promise<DataFile> {
   const latestAvailableMigration = getLatestAvailableMigration()
-  const target = latestAvailableMigration || createVersionString(`v${getAppVersion()}`)
+  const versionInfo = await getAppVersion()
+  const target = latestAvailableMigration || createVersionString(`v${versionInfo.version}`)
 
   if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
     throw new Error("Data file must be a JSON object")

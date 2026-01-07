@@ -10,3 +10,5 @@ export { DropTargetSidebarProject, DropTargetSidebarGroup } from "./drop-target-
 export { DraggableLabelItem } from "./draggable-label-item"
 
 export { DropTargetLabelItem } from "./drop-target-label-item"
+
+export { DropTargetSidebarView } from "./drop-target-sidebar-view"

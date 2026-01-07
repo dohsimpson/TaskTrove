@@ -5,6 +5,7 @@ import { describe, it, expect, vi } from "vitest"
 vi.mock("jotai", () => ({
   useAtom: vi.fn(() => ["", vi.fn()]),
   useAtomValue: vi.fn(() => []),
+  useSetAtom: vi.fn(() => vi.fn()),
   Provider: vi.fn(({ children }) => children),
 }))
 
@@ -15,6 +16,10 @@ vi.mock("lucide-react", () => ({
 
 vi.mock("@/components/search/advanced-search", () => ({
   AdvancedSearch: () => <div data-testid="advanced-search" />,
+}))
+
+vi.mock("@/hooks/use-task-search-navigation", () => ({
+  useTaskSearchNavigation: () => ({ focusTaskFromSearch: vi.fn() }),
 }))
 
 // Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts

@@ -19,7 +19,7 @@ async function migrateData() {
     const jsonData: Json = JSON.parse(dataContent)
 
     // Perform migration
-    const migratedData = migrateDataFile(jsonData)
+    const migratedData = await migrateDataFile(jsonData)
 
     // Backup original file
     const backupPath = DEFAULT_DATA_FILE_PATH + `.backup-${Date.now()}`

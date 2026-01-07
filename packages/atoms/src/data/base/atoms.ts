@@ -246,3 +246,11 @@ export const usersAtom = namedAtom(
     return [user];
   }),
 );
+
+export const userByIdAtom = namedAtom(
+  "userByIdAtom",
+  atom((get) => {
+    const user = get(userAtom);
+    return user;
+  }),
+);

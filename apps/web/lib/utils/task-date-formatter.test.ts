@@ -14,15 +14,27 @@ const { mockIsToday, mockIsTomorrow, mockIsPast, mockFormat } = vi.hoisted(() =>
   mockIsPast: vi.fn(),
   mockFormat: vi.fn((date: Date, formatStr: string) => {
     const d = date
+    const month = d.getMonth() + 1
+    const day = d.getDate()
+    const year = d.getFullYear()
+    const pad2 = (value: number) => value.toString().padStart(2, "0")
     switch (formatStr) {
-      case "MMM d":
-        return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-      case "MMM d, yyyy":
-        return d.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })
+      case "M/d":
+        return `${month}/${day}`
+      case "d/M":
+        return `${day}/${month}`
+      case "M/d/yyyy":
+        return `${month}/${day}/${year}`
+      case "d/M/yyyy":
+        return `${day}/${month}/${year}`
+      case "MM/dd":
+        return `${pad2(month)}/${pad2(day)}`
+      case "dd/MM":
+        return `${pad2(day)}/${pad2(month)}`
+      case "MM/dd/yyyy":
+        return `${pad2(month)}/${pad2(day)}/${year}`
+      case "dd/MM/yyyy":
+        return `${pad2(day)}/${pad2(month)}/${year}`
       case "h:mm a":
         return d.toLocaleTimeString("en-US", {
           hour: "numeric",
@@ -49,6 +61,7 @@ vi.mock("date-fns", () => ({
 }))
 
 describe("task-date-formatter", () => {
+  const currentYear = new Date().getFullYear()
   // Use plain objects instead of Task type
   const mockTask: {
     dueDate: Date | null | undefined
@@ -78,21 +91,21 @@ describe("task-date-formatter", () => {
     it("formats date only when no time is set", () => {
       const task = {
         ...mockTask,
-        dueDate: new Date("2024-01-15"),
+        dueDate: new Date(currentYear, 0, 15),
       }
       const result = formatTaskDateTime(task, { format: "full" })
-      expect(result).toMatch(/Jan \d+/)
+      expect(result).toMatch(/^\d{1,2}\/\d{1,2}$/)
     })
 
     it("formats date and time when both are set", () => {
-      const dueDate = new Date("2024-01-15")
+      const dueDate = new Date(currentYear, 0, 15)
       const dueTime = new Date("2024-01-01T09:00:00") // 9:00 AM local
       const task = { ...mockTask, dueDate, dueTime }
 
       const result = formatTaskDateTime(task, { format: "full" })
       // With new concise format: "Jan 15 9:00 AM" (no "at")
       expect(result).toContain("AM")
-      expect(result).toContain("Jan")
+      expect(result).toMatch(/\d{1,2}\/\d{1,2}/)
       expect(result).not.toContain("at")
     })
 
@@ -157,40 +170,39 @@ describe("task-date-formatter", () => {
     })
 
     it("includes year when includeYear is true", () => {
-      const dueDate = new Date("2024-01-15")
+      const dueDate = new Date(currentYear, 0, 15)
       const task = { ...mockTask, dueDate }
 
       const result = formatTaskDateTime(task, { format: "full", includeYear: true })
-      expect(result).toMatch(/Jan \d+, 2024/)
+      expect(result).toMatch(new RegExp(`\\d{1,2}\\/\\d{1,2}\\/${currentYear}`))
     })
 
     it("includes year when date is in different year", () => {
-      const dueDate = new Date("2025-01-15")
+      const dueDate = new Date(currentYear + 1, 0, 15)
       const task = { ...mockTask, dueDate }
 
       const result = formatTaskDateTime(task, { format: "full" })
-      // Allow for timezone conversion affecting the year
-      expect(result).toMatch(/(Jan \d+, 2024|Jan \d+, 2025|Jan \d+$)/)
+      expect(result).toMatch(new RegExp(`\\d{1,2}\\/\\d{1,2}\\/${currentYear + 1}`))
     })
 
     it("formats with 24-hour time when use12Hour is false", () => {
-      const dueDate = new Date("2024-01-15")
+      const dueDate = new Date(currentYear, 0, 15)
       const dueTime = new Date("2024-01-01T14:30:00") // 2:30 PM = 14:30 local
       const task = { ...mockTask, dueDate, dueTime }
 
       const result = formatTaskDateTime(task, { format: "full", use12Hour: false })
       // Should contain 24-hour format time and date, no "at" in new format
       expect(result).toContain("14:30")
-      expect(result).toContain("Jan")
+      expect(result).toMatch(/\d{1,2}\/\d{1,2}/)
       expect(result).not.toContain("at")
     })
   })
 
   describe("formatTaskDateTimeBadge", () => {
-    it("returns null when no date or time is set", () => {
+    it("returns empty string when no date or time is set", () => {
       const task = { ...mockTask }
       const result = formatTaskDateTimeBadge(task)
-      expect(result).toBeNull()
+      expect(result).toBe("")
     })
 
     it("formats time only when no date is set", () => {
@@ -202,22 +214,22 @@ describe("task-date-formatter", () => {
     })
 
     it("formats date only when no time is set", () => {
-      const dueDate = new Date("2024-01-15")
+      const dueDate = new Date(currentYear, 0, 15)
       const task = { ...mockTask, dueDate }
 
       const result = formatTaskDateTimeBadge(task)
-      expect(result).toMatch(/Jan \d+/)
+      expect(result).toMatch(/^\d{1,2}\/\d{1,2}$/)
     })
 
     it("formats date and short time when both are set", () => {
-      const dueDate = new Date("2024-01-15")
+      const dueDate = new Date(currentYear, 0, 15)
       const dueTime = new Date("2024-01-01T09:00:00") // 9:00 AM local
       const task = { ...mockTask, dueDate, dueTime }
 
       const result = formatTaskDateTimeBadge(task)
       // Should contain date and short time format, no "at" in new format
       expect(result).toContain("AM")
-      expect(result).toContain("Jan")
+      expect(result).toMatch(/\d{1,2}\/\d{1,2}/)
       expect(result).not.toContain("at")
     })
 
@@ -315,7 +327,8 @@ describe("task-date-formatter", () => {
     })
 
     it("returns 'overdue' status when task is overdue", () => {
-      const task = { ...mockTask, dueDate: new Date("2024-01-01"), completed: false }
+      const overdueYear = currentYear - 1
+      const task = { ...mockTask, dueDate: new Date(overdueYear, 0, 1), completed: false }
 
       mockIsPast.mockReturnValue(true)
       mockIsToday.mockReturnValue(false)
@@ -323,7 +336,7 @@ describe("task-date-formatter", () => {
       const result = getTaskDueDateStatus(task)
 
       expect(result.status).toBe("overdue")
-      expect(result.text).toMatch(/(Dec 31, 2023|Jan 1, 2024)/)
+      expect(result.text).toMatch(new RegExp(`\\d{1,2}\\/\\d{1,2}\\/${overdueYear}`))
     })
 
     it("returns 'today' status when due today", () => {
@@ -338,7 +351,8 @@ describe("task-date-formatter", () => {
     })
 
     it("returns 'upcoming' status for future dates", () => {
-      const task = { ...mockTask, dueDate: new Date("2024-12-25") }
+      const futureYear = currentYear + 1
+      const task = { ...mockTask, dueDate: new Date(futureYear, 11, 25) }
 
       mockIsPast.mockReturnValue(false)
       mockIsToday.mockReturnValue(false)
@@ -346,46 +360,46 @@ describe("task-date-formatter", () => {
       const result = getTaskDueDateStatus(task)
 
       expect(result.status).toBe("upcoming")
-      expect(result.text).toMatch(/(Dec 24, 2024|Dec 25, 2024)/)
+      expect(result.text).toMatch(new RegExp(`\\d{1,2}\\/\\d{1,2}\\/${futureYear}`))
     })
   })
 
   describe("Different format types", () => {
-    const dueDate = new Date("2024-01-15")
+    const dueDate = new Date(currentYear, 0, 15)
     const dueTime = new Date("2024-01-01T09:00:00") // 9:00 AM local
     const task = { ...mockTask, dueDate, dueTime }
 
     it("formats with 'full' format", () => {
       const result = formatTaskDateTime(task, { format: "full" })
-      expect(result).toMatch(/Jan \d+/)
+      expect(result).toMatch(/\d{1,2}\/\d{1,2}/)
       expect(result).toContain("AM")
       expect(result).not.toContain("at")
     })
 
     it("formats with 'compact' format", () => {
       const result = formatTaskDateTime(task, { format: "compact" })
-      expect(result).toMatch(/Jan \d+/)
+      expect(result).toMatch(/\d{1,2}\/\d{1,2}/)
       expect(result).toContain("AM")
       expect(result).not.toContain("at")
     })
 
     it("formats with 'badge' format", () => {
       const result = formatTaskDateTime(task, { format: "badge" })
-      expect(result).toMatch(/Jan \d+/)
+      expect(result).toMatch(/\d{1,2}\/\d{1,2}/)
       expect(result).toContain("AM")
       expect(result).not.toContain("at")
     })
 
     it("formats with 'short' format", () => {
       const result = formatTaskDateTime(task, { format: "short" })
-      expect(result).toMatch(/Jan \d+/)
+      expect(result).toMatch(/\d{1,2}\/\d{1,2}/)
       expect(result).toContain("AM")
       expect(result).not.toContain("at")
     })
 
     it("formats with 'relative' format", () => {
       const result = formatTaskDateTime(task, { format: "relative" })
-      expect(result).toMatch(/Jan \d+/)
+      expect(result).toMatch(/\d{1,2}\/\d{1,2}/)
       expect(result).toContain("AM")
       expect(result).not.toContain("at")
     })

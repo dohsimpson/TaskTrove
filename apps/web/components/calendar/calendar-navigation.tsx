@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { format } from "date-fns"
+import { formatMonthLabel } from "@/lib/utils/task-date-formatter"
 
 interface CalendarNavigationProps {
   currentDate: Date
@@ -35,7 +35,7 @@ export function CalendarNavigation({
   // Generate month options
   const months = Array.from({ length: 12 }, (_, i) => ({
     value: i.toString(),
-    label: format(new Date(2000, i, 1), "MMMM"),
+    label: formatMonthLabel(new Date(2000, i, 1), { variant: "long" }),
   }))
 
   // Generate year options (current year ± 10)

@@ -5,6 +5,7 @@ import {
   getAllGroupsFlat,
   resolveGroup,
 } from "./group-utils";
+import { createProjectGroupSlug } from "./routing";
 import type { ProjectGroup } from "@tasktrove/types/group";
 import { createGroupId, createProjectId } from "@tasktrove/types/id";
 
@@ -27,7 +28,6 @@ describe("group-utils", () => {
     const flatGroup: ProjectGroup = {
       id: TEST_GROUP_ID_1,
       name: "Root Group",
-      slug: "root-group",
       color: "#ff0000",
       type: "project",
       items: [TEST_PROJECT_ID_1, TEST_PROJECT_ID_2],
@@ -36,7 +36,6 @@ describe("group-utils", () => {
     const nestedGroups: ProjectGroup = {
       id: TEST_GROUP_ID_1,
       name: "Root Group",
-      slug: "root-group",
       color: "#ff0000",
       type: "project",
       items: [
@@ -44,7 +43,6 @@ describe("group-utils", () => {
         {
           id: TEST_GROUP_ID_2,
           name: "Nested Group",
-          slug: "nested-group",
           color: "#00ff00",
           type: "project",
           items: [
@@ -52,7 +50,6 @@ describe("group-utils", () => {
             {
               id: TEST_GROUP_ID_3,
               name: "Deep Nested Group",
-              slug: "deep-nested-group",
               color: "#0000ff",
               type: "project",
               items: [TEST_PROJECT_ID_3],
@@ -100,7 +97,6 @@ describe("group-utils", () => {
       const emptyGroup: ProjectGroup = {
         id: TEST_GROUP_ID_1,
         name: "Empty Group",
-        slug: "empty-group",
         color: "#ffffff",
         type: "project",
         items: [],
@@ -116,7 +112,6 @@ describe("group-utils", () => {
       projectGroups: {
         id: TEST_GROUP_ID_1,
         name: "Root Group",
-        slug: "root-group",
         color: "#ff0000",
         type: "project" as const,
         items: [
@@ -124,7 +119,6 @@ describe("group-utils", () => {
           {
             id: TEST_GROUP_ID_2,
             name: "Nested Group",
-            slug: "nested-group",
             color: "#00ff00",
             type: "project" as const,
             items: [
@@ -132,7 +126,6 @@ describe("group-utils", () => {
               {
                 id: TEST_GROUP_ID_3,
                 name: "Deep Nested Group",
-                slug: "deep-nested-group",
                 color: "#0000ff",
                 type: "project" as const,
                 items: [TEST_PROJECT_ID_3],
@@ -176,7 +169,6 @@ describe("group-utils", () => {
         projectGroups: {
           id: TEST_GROUP_ID_1,
           name: "Empty Group",
-          slug: "empty-group",
           color: "#ffffff",
           type: "project" as const,
           items: [],
@@ -196,7 +188,6 @@ describe("group-utils", () => {
         projectGroups: {
           id: TEST_GROUP_ID_1,
           name: "Ordered Group",
-          slug: "ordered-group",
           color: "#ff0000",
           type: "project" as const,
           items: [TEST_PROJECT_ID_3, TEST_PROJECT_ID_1, TEST_PROJECT_ID_2],
@@ -220,7 +211,6 @@ describe("group-utils", () => {
     const nestedGroups: ProjectGroup = {
       id: TEST_GROUP_ID_1,
       name: "Root Group",
-      slug: "root-group",
       color: "#ff0000",
       type: "project",
       items: [
@@ -228,7 +218,6 @@ describe("group-utils", () => {
         {
           id: TEST_GROUP_ID_2,
           name: "Nested Group",
-          slug: "nested-group",
           color: "#00ff00",
           type: "project",
           items: [
@@ -236,7 +225,6 @@ describe("group-utils", () => {
             {
               id: TEST_GROUP_ID_3,
               name: "Deep Nested Group",
-              slug: "deep-nested-group",
               color: "#0000ff",
               type: "project",
               items: [TEST_PROJECT_ID_3],
@@ -274,7 +262,6 @@ describe("group-utils", () => {
       const singleGroup: ProjectGroup = {
         id: TEST_GROUP_ID_1,
         name: "Single Group",
-        slug: "single-group",
         color: "#ff0000",
         type: "project",
         items: [TEST_PROJECT_ID_1],
@@ -289,7 +276,6 @@ describe("group-utils", () => {
       const emptyGroup: ProjectGroup = {
         id: TEST_GROUP_ID_1,
         name: "Empty Group",
-        slug: "empty-group",
         color: "#ffffff",
         type: "project",
         items: [],
@@ -306,7 +292,6 @@ describe("group-utils", () => {
       projectGroups: {
         id: TEST_GROUP_ID_1,
         name: "Root Group",
-        slug: "root-group",
         color: "#ff0000",
         type: "project" as const,
         items: [
@@ -314,7 +299,6 @@ describe("group-utils", () => {
           {
             id: TEST_GROUP_ID_2,
             name: "Nested Group",
-            slug: "nested-group",
             color: "#00ff00",
             type: "project" as const,
             items: [TEST_PROJECT_ID_2],
@@ -331,38 +315,25 @@ describe("group-utils", () => {
       expect(result?.id).toBe(TEST_GROUP_ID_1);
     });
 
-    it("should resolve group by slug when UUID is invalid", () => {
-      const result = resolveGroup("nested-group", groupsData);
+    it("should resolve group by slug with UUID suffix", () => {
+      const slug = createProjectGroupSlug({
+        id: TEST_GROUP_ID_2,
+        name: "Nested Group",
+      });
+      const result = resolveGroup(slug, groupsData);
       expect(result).not.toBe(null);
       expect(result?.name).toBe("Nested Group");
-      expect(result?.slug).toBe("nested-group");
+      expect(result?.id).toBe(TEST_GROUP_ID_2);
     });
 
-    it("should prioritize UUID over slug when both could match", () => {
-      // Create a scenario where slug matches another group's ID
-      const conflictGroupsData = {
-        projectGroups: {
-          id: TEST_GROUP_ID_1,
-          name: "Root Group",
-          slug: "root-group",
-          color: "#ff0000",
-          type: "project" as const,
-          items: [
-            {
-              id: TEST_GROUP_ID_2,
-              name: "UUID Group",
-              slug: TEST_GROUP_ID_1, // slug same as root group's ID
-              color: "#00ff00",
-              type: "project" as const,
-              items: [],
-            },
-          ],
-        },
-        labelGroups: {},
-      };
-
-      const result = resolveGroup(TEST_GROUP_ID_1, conflictGroupsData);
-      expect(result?.name).toBe("Root Group"); // Should match by ID, not slug
+    it("should resolve by UUID even when slug name differs", () => {
+      const slug = createProjectGroupSlug({
+        id: TEST_GROUP_ID_1,
+        name: "Other Name",
+      });
+      const result = resolveGroup(slug, groupsData);
+      expect(result?.name).toBe("Root Group");
+      expect(result?.id).toBe(TEST_GROUP_ID_1);
     });
 
     it("should return null for non-existent group", () => {
@@ -386,7 +357,6 @@ describe("group-utils", () => {
         projectGroups: {
           id: TEST_GROUP_ID_1,
           name: "Empty Root",
-          slug: "empty-root",
           color: "#ffffff",
           type: "project" as const,
           items: [],
@@ -405,27 +375,16 @@ describe("group-utils", () => {
       expect(result?.id).toBe(TEST_GROUP_ID_2);
     });
 
-    it("should handle case-sensitive slug matching", () => {
-      const result = resolveGroup("NESTED-GROUP", groupsData); // uppercase
-      expect(result).toBe(null); // should not match case-insensitive
+    it("should return null for slug without UUID suffix", () => {
+      const result = resolveGroup("nested-group", groupsData);
+      expect(result).toBe(null);
     });
 
-    it("should handle URL-encoded slug inputs", () => {
-      const groupsWithSpecialSlug = {
-        projectGroups: {
-          id: TEST_GROUP_ID_1,
-          name: "Special Group",
-          slug: "special group", // slug with space
-          color: "#ff0000",
-          type: "project" as const,
-          items: [],
-        },
-        labelGroups: {},
-      };
-
-      const result = resolveGroup("special group", groupsWithSpecialSlug);
+    it("should resolve when slug includes spaces but ends with UUID", () => {
+      const slug = `special group-${TEST_GROUP_ID_1}`;
+      const result = resolveGroup(slug, groupsData);
       expect(result).not.toBe(null);
-      expect(result?.name).toBe("Special Group");
+      expect(result?.name).toBe("Root Group");
     });
   });
 
@@ -438,7 +397,6 @@ describe("group-utils", () => {
       const deepGroup: ProjectGroup = {
         id: TEST_GROUP_ID_1,
         name: "Level 1",
-        slug: "level-1",
         color: "#ff0000",
         type: "project",
         items: [],
@@ -451,7 +409,6 @@ describe("group-utils", () => {
             `550e8400-e29b-41d4-a716-44665544${String(i).padStart(4, "0")}`,
           ),
           name: `Level ${i}`,
-          slug: `level-${i}`,
           color: "#ff0000",
           type: "project",
           items: [],
@@ -475,7 +432,6 @@ describe("group-utils", () => {
       const mixedGroup: ProjectGroup = {
         id: TEST_GROUP_ID_1,
         name: "Mixed Group",
-        slug: "mixed-group",
         color: "#ff0000",
         type: "project",
         items: [
@@ -483,7 +439,6 @@ describe("group-utils", () => {
           {
             id: TEST_GROUP_ID_2,
             name: "Nested Group",
-            slug: "nested-group",
             color: "#00ff00",
             type: "project",
             items: [TEST_PROJECT_ID_2], // another project ID

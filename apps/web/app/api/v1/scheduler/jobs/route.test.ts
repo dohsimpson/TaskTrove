@@ -27,7 +27,7 @@ const mockBootstrapScheduler = vi.mocked(bootstrapScheduler)
 
 describe("GET /api/v1/scheduler/jobs", () => {
   const jobs: SchedulerJob[] = [
-    { id: "daily-backup", schedule: { type: "cron", expression: "0 2 * * *" }, autoStart: true },
+    { id: "daily-backup", schedule: { type: "cron", expression: "0 2 * * *" } },
   ]
 
   beforeEach(() => {
@@ -47,11 +47,16 @@ describe("GET /api/v1/scheduler/jobs", () => {
 
     const response = await GET(request)
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const body = (await response.json()) as { jobs: SchedulerJob[]; running: boolean }
+    const body = (await response.json()) as {
+      jobs: SchedulerJob[]
+      running: boolean
+      serverTime: string
+    }
 
     expect(response.status).toBe(200)
     expect(body.jobs).toEqual(jobs)
     expect(body.running).toBe(true)
+    expect(new Date(body.serverTime).toString()).not.toBe("Invalid Date")
     expect(mockBootstrapScheduler).toHaveBeenCalledTimes(1)
   })
 

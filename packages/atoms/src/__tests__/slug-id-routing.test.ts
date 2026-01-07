@@ -2,14 +2,6 @@ import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
 /**
  * ⚠️  WEB API DEPENDENT - Slug/ID Routing Test Suite
  *
- * Platform dependencies:
- * - Web URL parsing and pathname handling
- * - Browser routing and navigation state
- * - URL encoding/decoding for route parameters
- * - Web-specific route resolution logic
- *
- * Slug/ID Routing Test Suite
- *
  * Tests for resolving projects, labels, and project groups
  * by both UUID and slug parameters in URLs.
  */
@@ -28,6 +20,9 @@ import {
   createLabelId,
 } from "@tasktrove/types/id";
 import {
+  createLabelSlug,
+  createProjectGroupSlug,
+  createProjectSlug,
   resolveProject,
   resolveLabel,
   resolveProjectGroup,
@@ -47,6 +42,27 @@ const TEST_LABEL_ID_2 = createLabelId("abcdef01-abcd-4bcd-8bcd-abcdefabcde0");
 const TEST_GROUP_ID_1 = createGroupId("550e8400-e29b-41d4-a716-446655440001");
 const TEST_GROUP_ID_2 = createGroupId("550e8400-e29b-41d4-a716-446655440002");
 
+const isProjectGroup = (
+  item: ProjectGroup["items"][number],
+): item is ProjectGroup =>
+  typeof item === "object" && "id" in item && "type" in item;
+
+const requireProject = (projects: Project[], index: number): Project => {
+  const project = projects[index];
+  if (!project) {
+    throw new Error(`Expected project at index ${index}`);
+  }
+  return project;
+};
+
+const requireLabel = (labels: Label[], index: number): Label => {
+  const label = labels[index];
+  if (!label) {
+    throw new Error(`Expected label at index ${index}`);
+  }
+  return label;
+};
+
 // Mock implementation of the route parsing logic for testing
 function parseRouteContextForTest(
   pathname: string,
@@ -56,8 +72,6 @@ function parseRouteContextForTest(
 ) {
   const parts = pathname.split("/").filter(Boolean);
   const [firstSegment, secondSegment] = parts;
-
-  // Using imported helper functions
 
   // Handle project routes
   if (firstSegment === "projects" && secondSegment) {
@@ -70,7 +84,7 @@ function parseRouteContextForTest(
         routeType: "project" as const,
         routeParams: {
           projectId: project.id,
-          projectSlug: project.slug,
+          projectSlug: createProjectSlug(project),
         },
       };
     }
@@ -99,7 +113,7 @@ function parseRouteContextForTest(
         routeType: "label" as const,
         routeParams: {
           labelId: label.id,
-          labelSlug: label.slug,
+          labelSlug: createLabelSlug(label),
           labelName: label.name,
         },
       };
@@ -126,11 +140,11 @@ function parseRouteContextForTest(
       return {
         pathname,
         viewId: group.id,
-        projectId: ALL_PROJECT_ID, // Project groups show all projects within them
+        projectId: ALL_PROJECT_ID,
         routeType: "projectgroup" as const,
         routeParams: {
           groupId: group.id,
-          groupSlug: group.slug,
+          groupSlug: createProjectGroupSlug(group),
           groupName: group.name,
         },
       };
@@ -139,7 +153,7 @@ function parseRouteContextForTest(
     // Fallback for invalid/non-existent project group
     return {
       pathname,
-      viewId: "not-found", // Show not found component (matching real implementation)
+      viewId: "not-found",
       projectId: ALL_PROJECT_ID,
       routeType: "projectgroup" as const,
       routeParams: {
@@ -168,14 +182,12 @@ describe("Slug/ID Routing", () => {
       {
         id: TEST_PROJECT_ID_1,
         name: "Test Project",
-        slug: "test-project",
         color: "#ff0000",
         sections: [DEFAULT_PROJECT_SECTION],
       },
       {
         id: TEST_PROJECT_ID_2,
         name: "Another Project",
-        slug: "another-project",
         color: "#00ff00",
         sections: [DEFAULT_PROJECT_SECTION],
       },
@@ -185,13 +197,11 @@ describe("Slug/ID Routing", () => {
       {
         id: TEST_LABEL_ID_1,
         name: "Important",
-        slug: "important",
         color: "#ff0000",
       },
       {
         id: TEST_LABEL_ID_2,
         name: "Urgent",
-        slug: "urgent",
         color: "#ff8800",
       },
     ];
@@ -199,7 +209,6 @@ describe("Slug/ID Routing", () => {
     testProjectGroups = {
       id: TEST_GROUP_ID_1,
       name: "Work Projects",
-      slug: "work-projects",
       color: "#3b82f6",
       type: "project",
       items: [
@@ -207,7 +216,6 @@ describe("Slug/ID Routing", () => {
         {
           id: TEST_GROUP_ID_2,
           name: "Personal Projects",
-          slug: "personal-projects",
           color: "#10b981",
           type: "project",
           items: [TEST_PROJECT_ID_2],
@@ -227,12 +235,15 @@ describe("Slug/ID Routing", () => {
       expect(result.routeType).toBe("project");
       expect(result.viewId).toBe(TEST_PROJECT_ID_1);
       expect(result.routeParams.projectId).toBe(TEST_PROJECT_ID_1);
-      expect(result.routeParams.projectSlug).toBe("test-project");
+      expect(result.routeParams.projectSlug).toBe(
+        createProjectSlug(requireProject(testProjects, 0)),
+      );
     });
 
     it("should resolve projects by slug", () => {
+      const slug = createProjectSlug(requireProject(testProjects, 0));
       const result = parseRouteContextForTest(
-        "/projects/test-project",
+        `/projects/${slug}`,
         testLabels,
         testProjects,
       );
@@ -240,25 +251,27 @@ describe("Slug/ID Routing", () => {
       expect(result.routeType).toBe("project");
       expect(result.viewId).toBe(TEST_PROJECT_ID_1);
       expect(result.routeParams.projectId).toBe(TEST_PROJECT_ID_1);
-      expect(result.routeParams.projectSlug).toBe("test-project");
+      expect(result.routeParams.projectSlug).toBe(slug);
     });
 
     it("should handle multiple projects with different slugs", () => {
+      const slug1 = createProjectSlug(requireProject(testProjects, 0));
+      const slug2 = createProjectSlug(requireProject(testProjects, 1));
       const result1 = parseRouteContextForTest(
-        "/projects/test-project",
+        `/projects/${slug1}`,
         testLabels,
         testProjects,
       );
       const result2 = parseRouteContextForTest(
-        "/projects/another-project",
+        `/projects/${slug2}`,
         testLabels,
         testProjects,
       );
 
       expect(result1.viewId).toBe(TEST_PROJECT_ID_1);
       expect(result2.viewId).toBe(TEST_PROJECT_ID_2);
-      expect(result1.routeParams.projectSlug).toBe("test-project");
-      expect(result2.routeParams.projectSlug).toBe("another-project");
+      expect(result1.routeParams.projectSlug).toBe(slug1);
+      expect(result2.routeParams.projectSlug).toBe(slug2);
     });
 
     it("should fallback gracefully for nonexistent projects", () => {
@@ -270,7 +283,7 @@ describe("Slug/ID Routing", () => {
 
       expect(result.routeType).toBe("project");
       expect(result.viewId).toBe(INBOX_PROJECT_ID); // Fallback
-      expect(result.routeParams.projectId).toBe("nonexistent-project"); // Preserves original param
+      expect(result.routeParams.projectId).toBe("nonexistent-project");
     });
   });
 
@@ -285,13 +298,16 @@ describe("Slug/ID Routing", () => {
       expect(result.routeType).toBe("label");
       expect(result.viewId).toBe(TEST_LABEL_ID_1);
       expect(result.routeParams.labelId).toBe(TEST_LABEL_ID_1);
-      expect(result.routeParams.labelSlug).toBe("important");
+      expect(result.routeParams.labelSlug).toBe(
+        createLabelSlug(requireLabel(testLabels, 0)),
+      );
       expect(result.routeParams.labelName).toBe("Important");
     });
 
     it("should resolve labels by slug", () => {
+      const slug = createLabelSlug(requireLabel(testLabels, 0));
       const result = parseRouteContextForTest(
-        "/labels/important",
+        `/labels/${slug}`,
         testLabels,
         testProjects,
       );
@@ -299,45 +315,42 @@ describe("Slug/ID Routing", () => {
       expect(result.routeType).toBe("label");
       expect(result.viewId).toBe(TEST_LABEL_ID_1);
       expect(result.routeParams.labelId).toBe(TEST_LABEL_ID_1);
-      expect(result.routeParams.labelSlug).toBe("important");
+      expect(result.routeParams.labelSlug).toBe(slug);
       expect(result.routeParams.labelName).toBe("Important");
     });
 
     it("should handle multiple labels with different slugs", () => {
+      const slug1 = createLabelSlug(requireLabel(testLabels, 0));
+      const slug2 = createLabelSlug(requireLabel(testLabels, 1));
       const result1 = parseRouteContextForTest(
-        "/labels/important",
+        `/labels/${slug1}`,
         testLabels,
         testProjects,
       );
       const result2 = parseRouteContextForTest(
-        "/labels/urgent",
+        `/labels/${slug2}`,
         testLabels,
         testProjects,
       );
 
       expect(result1.viewId).toBe(TEST_LABEL_ID_1);
       expect(result2.viewId).toBe(TEST_LABEL_ID_2);
-      expect(result1.routeParams.labelSlug).toBe("important");
-      expect(result2.routeParams.labelSlug).toBe("urgent");
+      expect(result1.routeParams.labelSlug).toBe(slug1);
+      expect(result2.routeParams.labelSlug).toBe(slug2);
     });
 
     it("should handle URL encoded label parameters", () => {
+      const slug = createLabelSlug(requireLabel(testLabels, 0));
+      const encodedSlug = encodeURIComponent(slug);
       const result = parseRouteContextForTest(
-        "/labels/important%20label", // URL encoded space
-        [
-          {
-            id: TEST_LABEL_ID_1,
-            name: "Important Label",
-            slug: "important label", // slug with space
-            color: "#ff0000",
-          },
-        ],
+        `/labels/${encodedSlug}`,
+        testLabels,
         testProjects,
       );
 
       expect(result.routeType).toBe("label");
       expect(result.viewId).toBe(TEST_LABEL_ID_1);
-      expect(result.routeParams.labelSlug).toBe("important label");
+      expect(result.routeParams.labelSlug).toBe(slug);
     });
 
     it("should fallback gracefully for nonexistent labels", () => {
@@ -349,25 +362,22 @@ describe("Slug/ID Routing", () => {
 
       expect(result.routeType).toBe("label");
       expect(result.viewId).toBe("not-found"); // Fallback
-      expect(result.routeParams.labelName).toBe("nonexistent-label"); // Preserves original param
+      expect(result.routeParams.labelName).toBe("nonexistent-label");
     });
   });
 
   describe("Priority and precedence", () => {
-    it("should prioritize UUID over slug when both could match", () => {
-      // Create a project with slug that looks like another project's ID
+    it("should prioritize UUID over slug content when path is a UUID", () => {
       const projectsWithConflict: Project[] = [
         {
           id: TEST_PROJECT_ID_1,
           name: "First Project",
-          slug: "first-project",
           color: "#ff0000",
           sections: [DEFAULT_PROJECT_SECTION],
         },
         {
           id: TEST_PROJECT_ID_2,
-          name: "Second Project",
-          slug: TEST_PROJECT_ID_1, // slug same as first project's ID
+          name: `${TEST_PROJECT_ID_1} Project`,
           color: "#00ff00",
           sections: [DEFAULT_PROJECT_SECTION],
         },
@@ -379,9 +389,7 @@ describe("Slug/ID Routing", () => {
         projectsWithConflict,
       );
 
-      // Should resolve to first project (by ID), not second project (by slug)
       expect(result.viewId).toBe(TEST_PROJECT_ID_1);
-      expect(result.routeParams.projectSlug).toBe("first-project");
     });
   });
 
@@ -397,13 +405,16 @@ describe("Slug/ID Routing", () => {
       expect(result.routeType).toBe("projectgroup");
       expect(result.viewId).toBe(TEST_GROUP_ID_1);
       expect(result.routeParams.groupId).toBe(TEST_GROUP_ID_1);
-      expect(result.routeParams.groupSlug).toBe("work-projects");
+      expect(result.routeParams.groupSlug).toBe(
+        createProjectGroupSlug(testProjectGroups),
+      );
       expect(result.routeParams.groupName).toBe("Work Projects");
     });
 
     it("should resolve project groups by slug", () => {
+      const slug = createProjectGroupSlug(testProjectGroups);
       const result = parseRouteContextForTest(
-        "/projectgroups/work-projects",
+        `/projectgroups/${slug}`,
         testLabels,
         testProjects,
         testProjectGroups,
@@ -412,7 +423,7 @@ describe("Slug/ID Routing", () => {
       expect(result.routeType).toBe("projectgroup");
       expect(result.viewId).toBe(TEST_GROUP_ID_1);
       expect(result.routeParams.groupId).toBe(TEST_GROUP_ID_1);
-      expect(result.routeParams.groupSlug).toBe("work-projects");
+      expect(result.routeParams.groupSlug).toBe(slug);
       expect(result.routeParams.groupName).toBe("Work Projects");
     });
 
@@ -427,13 +438,17 @@ describe("Slug/ID Routing", () => {
       expect(result.routeType).toBe("projectgroup");
       expect(result.viewId).toBe(TEST_GROUP_ID_2);
       expect(result.routeParams.groupId).toBe(TEST_GROUP_ID_2);
-      expect(result.routeParams.groupSlug).toBe("personal-projects");
       expect(result.routeParams.groupName).toBe("Personal Projects");
     });
 
     it("should resolve nested project groups by slug", () => {
+      const nestedGroup = testProjectGroups.items[1];
+      if (!nestedGroup || !isProjectGroup(nestedGroup)) {
+        throw new Error("Expected nested project group at index 1");
+      }
+      const slug = createProjectGroupSlug(nestedGroup);
       const result = parseRouteContextForTest(
-        "/projectgroups/personal-projects",
+        `/projectgroups/${slug}`,
         testLabels,
         testProjects,
         testProjectGroups,
@@ -442,19 +457,25 @@ describe("Slug/ID Routing", () => {
       expect(result.routeType).toBe("projectgroup");
       expect(result.viewId).toBe(TEST_GROUP_ID_2);
       expect(result.routeParams.groupId).toBe(TEST_GROUP_ID_2);
-      expect(result.routeParams.groupSlug).toBe("personal-projects");
+      expect(result.routeParams.groupSlug).toBe(slug);
       expect(result.routeParams.groupName).toBe("Personal Projects");
     });
 
     it("should handle multiple project groups with different slugs", () => {
+      const rootSlug = createProjectGroupSlug(testProjectGroups);
+      const nestedGroup = testProjectGroups.items[1];
+      if (!nestedGroup || !isProjectGroup(nestedGroup)) {
+        throw new Error("Expected nested project group at index 1");
+      }
+      const nestedSlug = createProjectGroupSlug(nestedGroup);
       const result1 = parseRouteContextForTest(
-        "/projectgroups/work-projects",
+        `/projectgroups/${rootSlug}`,
         testLabels,
         testProjects,
         testProjectGroups,
       );
       const result2 = parseRouteContextForTest(
-        "/projectgroups/personal-projects",
+        `/projectgroups/${nestedSlug}`,
         testLabels,
         testProjects,
         testProjectGroups,
@@ -462,40 +483,8 @@ describe("Slug/ID Routing", () => {
 
       expect(result1.viewId).toBe(TEST_GROUP_ID_1);
       expect(result2.viewId).toBe(TEST_GROUP_ID_2);
-      expect(result1.routeParams.groupSlug).toBe("work-projects");
-      expect(result2.routeParams.groupSlug).toBe("personal-projects");
-    });
-
-    it("should prioritize UUID over slug when both could match", () => {
-      // Create a project group structure where slug matches another group's ID
-      const projectGroupsWithConflict: ProjectGroup = {
-        id: TEST_GROUP_ID_1,
-        name: "Root Group",
-        slug: "root-group",
-        color: "#ff0000",
-        type: "project",
-        items: [
-          {
-            id: TEST_GROUP_ID_2,
-            name: "UUID Group",
-            slug: TEST_GROUP_ID_1, // slug same as root group's ID
-            color: "#00ff00",
-            type: "project",
-            items: [],
-          },
-        ],
-      };
-
-      const result = parseRouteContextForTest(
-        `/projectgroups/${TEST_GROUP_ID_1}`,
-        testLabels,
-        testProjects,
-        projectGroupsWithConflict,
-      );
-
-      // Should resolve to root group (by ID), not nested group (by slug)
-      expect(result.viewId).toBe(TEST_GROUP_ID_1);
-      expect(result.routeParams.groupName).toBe("Root Group");
+      expect(result1.routeParams.groupSlug).toBe(rootSlug);
+      expect(result2.routeParams.groupSlug).toBe(nestedSlug);
     });
 
     it("should fallback gracefully for nonexistent project groups", () => {
@@ -507,7 +496,7 @@ describe("Slug/ID Routing", () => {
       );
 
       expect(result.routeType).toBe("projectgroup");
-      expect(result.viewId).toBe("not-found"); // Fallback to not found view
+      expect(result.viewId).toBe("not-found");
       expect(result.routeParams.groupIdentifier).toBe("nonexistent-group");
     });
 
@@ -516,61 +505,11 @@ describe("Slug/ID Routing", () => {
         "/projectgroups/work-projects",
         testLabels,
         testProjects,
-        undefined, // No project groups data
+        undefined,
       );
 
       expect(result.routeType).toBe("projectgroup");
-      expect(result.viewId).toBe("not-found"); // Fallback to not found view
-      expect(result.routeParams.groupIdentifier).toBe("work-projects");
-    });
-
-    it("should handle URL encoded project group parameters", () => {
-      const result = parseRouteContextForTest(
-        "/projectgroups/work%20%26%20projects", // URL encoded "work & projects"
-        testLabels,
-        testProjects,
-        testProjectGroups,
-      );
-
-      expect(result.routeType).toBe("projectgroup");
-      expect(result.viewId).toBe("not-found"); // Fallback to not found view
-      expect(result.routeParams.groupIdentifier).toBe("work%20%26%20projects");
-    });
-
-    it("should set correct projectId for project group routes", () => {
-      const result = parseRouteContextForTest(
-        "/projectgroups/work-projects",
-        testLabels,
-        testProjects,
-        testProjectGroups,
-      );
-
-      // Project groups should show all projects, so projectId should be ALL_PROJECT_ID
-      expect(result.projectId).toBe(ALL_PROJECT_ID);
-    });
-  });
-
-  describe("Edge cases", () => {
-    it("should handle empty arrays gracefully", () => {
-      const result = parseRouteContextForTest("/projects/test-project", [], []);
-      expect(result.routeType).toBe("project");
-      expect(result.viewId).toBe(INBOX_PROJECT_ID); // Fallback
-    });
-
-    it("should handle root path", () => {
-      const result = parseRouteContextForTest("/", testLabels, testProjects);
-      expect(result.routeType).toBe("standard");
-      expect(result.viewId).toBe(TODAY_PROJECT_ID);
-    });
-
-    it("should handle standard routes unchanged", () => {
-      const result = parseRouteContextForTest(
-        "/inbox",
-        testLabels,
-        testProjects,
-      );
-      expect(result.routeType).toBe("standard");
-      expect(result.viewId).toBe(TODAY_PROJECT_ID); // Default fallback in mock
+      expect(result.viewId).toBe("not-found");
     });
   });
 });

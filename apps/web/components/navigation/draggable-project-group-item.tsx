@@ -26,6 +26,7 @@ import type { ProjectGroup } from "@tasktrove/types/group"
 import type { ProjectId } from "@tasktrove/types/id"
 import type { Project } from "@tasktrove/types/core"
 import { cn } from "@/lib/utils"
+import { createProjectGroupSlug } from "@tasktrove/utils/routing"
 
 interface DraggableProjectGroupItemProps {
   group: ProjectGroup
@@ -65,7 +66,8 @@ export function DraggableProjectGroupItem({
 
   // Computed values
   const isEditing = editingGroupId === group.id
-  const isActive = pathname === `/projectgroups/${group.slug}`
+  const groupSlug = createProjectGroupSlug(group)
+  const isActive = pathname === `/projectgroups/${groupSlug}`
 
   // Calculate total task count for projects in this group
   const calculateGroupTaskCount = (groupItems: ProjectGroup["items"]): number => {
@@ -106,7 +108,7 @@ export function DraggableProjectGroupItem({
     if (isChevronClick) {
       toggleExpanded()
     } else if (!isEditing) {
-      router.push(`/projectgroups/${group.slug}`)
+      router.push(`/projectgroups/${groupSlug}`)
     }
   }
 
@@ -189,7 +191,6 @@ export function DraggableProjectGroupItem({
               key={project.id}
               project={project}
               index={projectIndex}
-              isInGroup={true}
               groupId={group.id}
             />
           ))}

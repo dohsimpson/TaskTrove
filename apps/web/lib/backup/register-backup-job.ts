@@ -1,5 +1,5 @@
 import { Scheduler } from "@tasktrove/scheduler"
-import { DEFAULT_BACKUP_TIME } from "@tasktrove/constants"
+import { DEFAULT_AUTO_BACKUP_RUN_ON_INIT, DEFAULT_BACKUP_TIME } from "@tasktrove/constants"
 
 import { safeReadDataFile } from "@/lib/utils/safe-file-operations"
 import { runBackup } from "./backup"
@@ -9,10 +9,11 @@ const DAILY_BACKUP_JOB_ID = "daily-backup"
 type BackupScheduleConfig = {
   backupTime: string
   enabled: boolean
+  runOnInit: boolean
 }
 
 export async function registerBackupJob(scheduler: Scheduler) {
-  const { backupTime, enabled } = await loadBackupScheduleConfig()
+  const { backupTime, enabled, runOnInit } = await loadBackupScheduleConfig()
 
   if (!enabled) {
     const removed = scheduler.unregister(DAILY_BACKUP_JOB_ID)
@@ -35,6 +36,7 @@ export async function registerBackupJob(scheduler: Scheduler) {
         type: "cron",
         expression: cronExpression,
       },
+      runOnInit,
       handler: async () => {
         console.log(`[${new Date().toISOString()}] Running scheduled daily backup task...`)
         try {
@@ -56,17 +58,26 @@ async function loadBackupScheduleConfig(): Promise<BackupScheduleConfig> {
       console.log(
         `Could not load data file, using defaults (enabled: true, backup time ${DEFAULT_BACKUP_TIME})`,
       )
-      return { backupTime: DEFAULT_BACKUP_TIME, enabled: true }
+      return {
+        backupTime: DEFAULT_BACKUP_TIME,
+        enabled: true,
+        runOnInit: DEFAULT_AUTO_BACKUP_RUN_ON_INIT,
+      }
     }
     const autoBackupSettings = dataFile.settings.data.autoBackup
     const enabled = autoBackupSettings.enabled !== false
     const backupTime = autoBackupSettings.backupTime || DEFAULT_BACKUP_TIME
-    return { backupTime, enabled }
+    const runOnInit = autoBackupSettings.runOnInit ?? DEFAULT_AUTO_BACKUP_RUN_ON_INIT
+    return { backupTime, enabled, runOnInit }
   } catch {
     console.log(
       `Could not load backup settings, using defaults (enabled: true, backup time ${DEFAULT_BACKUP_TIME})`,
     )
-    return { backupTime: DEFAULT_BACKUP_TIME, enabled: true }
+    return {
+      backupTime: DEFAULT_BACKUP_TIME,
+      enabled: true,
+      runOnInit: DEFAULT_AUTO_BACKUP_RUN_ON_INIT,
+    }
   }
 }
 

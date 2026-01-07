@@ -6,6 +6,7 @@ import { notificationAtoms } from "@tasktrove/atoms/core/notifications"
 import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
 import { updateTaskAtom } from "@tasktrove/atoms/core/tasks"
 import { log } from "@/lib/utils/logger"
+import { focusTaskActionAtom } from "@tasktrove/atoms/ui/task-focus"
 import type { TaskId } from "@tasktrove/types/id"
 import type { ScheduledNotification } from "@tasktrove/types/core"
 import { getServiceWorker, isSecureContext } from "@tasktrove/dom-utils/notifications"
@@ -21,7 +22,7 @@ interface ServiceWorkerMessage {
   type: string
   taskId?: TaskId
   snoozeMinutes?: number
-  payload?: any
+  payload?: unknown
 }
 
 export function useNotificationServiceWorker() {
@@ -32,9 +33,9 @@ export function useNotificationServiceWorker() {
   const scheduledNotifications = useAtomValue(notificationAtoms.scheduledNotifications)
   const isSystemActive = useAtomValue(notificationAtoms.isSystemActive)
   const updateTask = useSetAtom(updateTaskAtom)
-  const showNotification = useSetAtom(notificationAtoms.actions.showNotification)
   const scheduleTask = useSetAtom(notificationAtoms.actions.scheduleTask)
   const tasks = useAtomValue(tasksAtom)
+  const focusTask = useSetAtom(focusTaskActionAtom)
 
   // Handle messages from service worker
   const handleServiceWorkerMessage = useCallback(
@@ -46,14 +47,7 @@ export function useNotificationServiceWorker() {
       switch (type) {
         case "FOCUS_TASK":
           if (taskId) {
-            // Navigate to task (would integrate with router)
-            const url = new URL(window.location.href)
-            url.searchParams.set("focus", taskId)
-            window.history.pushState({}, "", url.toString())
-
-            // Focus the task in the UI
-            const taskElement = document.querySelector(`[data-task-id="${taskId}"]`)
-            taskElement?.scrollIntoView({ behavior: "smooth", block: "center" })
+            focusTask(taskId)
           }
           break
 
@@ -103,7 +97,7 @@ export function useNotificationServiceWorker() {
           log.warn({ type, module: "notifications" }, "Unknown message type from service worker")
       }
     },
-    [tasks, updateTask, scheduleTask],
+    [focusTask, scheduleTask, tasks, updateTask],
   )
 
   // Register service worker following Next.js best practices
@@ -175,7 +169,7 @@ export function useNotificationServiceWorker() {
   }, [handleServiceWorkerMessage])
 
   // Send message to service worker
-  const sendMessageToServiceWorker = useCallback(async (message: any) => {
+  const sendMessageToServiceWorker = useCallback(async (message: unknown) => {
     if (!swRef.current?.active) {
       log.warn({ module: "notifications" }, "Service worker not active, cannot send message")
       return false
@@ -237,7 +231,11 @@ export function useNotificationServiceWorker() {
       // Timeout after service worker ping timeout
       setTimeout(() => resolve(false), SERVICE_WORKER_PING_TIMEOUT)
 
-      swRef.current!.active!.postMessage({ type: "PING" }, [channel.port2])
+      if (swRef.current?.active) {
+        swRef.current.active.postMessage({ type: "PING" }, [channel.port2])
+      } else {
+        resolve(false)
+      }
     })
   }, [])
 
@@ -264,7 +262,7 @@ export function useNotificationServiceWorker() {
         sw.removeEventListener("message", handleServiceWorkerMessage)
       }
     }
-  }, [])
+  }, [handleServiceWorkerMessage, registerServiceWorker])
 
   // Sync scheduled notifications with service worker
   useEffect(() => {

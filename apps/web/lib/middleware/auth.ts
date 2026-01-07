@@ -67,7 +67,7 @@ export function withAuthentication<T>(
 ): (request: EnhancedRequest) => Promise<NextResponse<T | ErrorResponse>> {
   return async (request: EnhancedRequest) => {
     // Check if authentication is enabled via AUTH_SECRET environment variable
-    // This matches the behavior in middleware.ts
+    // This matches the behavior in proxy.ts
     // If authentication is disabled (no AUTH_SECRET), bypass auth check
     if (!isAuthEnabled()) {
       return handler(request)

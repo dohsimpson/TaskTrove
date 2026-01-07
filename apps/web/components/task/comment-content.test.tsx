@@ -14,6 +14,7 @@ import {
   TEST_COMMENT_ID_3,
 } from "@tasktrove/types/test-constants"
 import { DEFAULT_UUID } from "@tasktrove/constants"
+import { DEFAULT_USER_SETTINGS } from "@tasktrove/types/defaults"
 
 // Mock atoms
 let mockUpdateTask: Mock
@@ -37,6 +38,7 @@ vi.mock("jotai", () => ({
         username: "testuser",
         password: "testpassword",
       }
+    if (atom.toString().includes("settings")) return DEFAULT_USER_SETTINGS
     return []
   }),
   atom: vi.fn((value) => ({ init: value, toString: () => "mockAtom" })),
@@ -484,9 +486,10 @@ describe("CommentContent", () => {
       // Should show relative time in the trigger
       expect(screen.getByText(/ago/)).toBeInTheDocument()
 
-      // Should show absolute timestamp in tooltip content (formatted with PPpp)
-      // PPpp format example: "Jan 15, 2024, 9:30:00 AM" (converted from UTC to local timezone)
-      expect(screen.getByTestId("tooltip-content")).toHaveTextContent(/Jan 15, 2024,.*AM|PM/)
+      // Should show absolute timestamp in tooltip content (numeric date + time)
+      expect(screen.getByTestId("tooltip-content")).toHaveTextContent(
+        /\d{1,2}\/\d{1,2}\/\d{4}.*(AM|PM)/,
+      )
     })
 
     it("applies pointer cursor to timestamp hover area", () => {

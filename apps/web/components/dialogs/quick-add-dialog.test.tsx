@@ -20,7 +20,12 @@ import type { LabelId } from "@tasktrove/types/id"
 import type { TaskPriority } from "@tasktrove/types/constants"
 import { createLabelId } from "@tasktrove/types/id"
 import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
-import { TEST_PROJECT_ID_1, TEST_PROJECT_ID_2 } from "@tasktrove/types/test-constants"
+import {
+  TEST_PROJECT_ID_1,
+  TEST_PROJECT_ID_2,
+  TEST_LABEL_ID_1,
+  TEST_LABEL_ID_2,
+} from "@tasktrove/types/test-constants"
 import type { ParsedTaskWithMatches } from "@tasktrove/utils/parser-adapter"
 
 const buildParsedResult = (overrides: Partial<ParsedTaskWithMatches>): ParsedTaskWithMatches => ({
@@ -387,21 +392,19 @@ const mockCloseDialog = vi.fn()
 const mockUpdateTask = vi.fn()
 const mockResetTask = vi.fn()
 const mockLabels = [
-  { id: "1", name: "urgent", color: "#ff0000", nextLabelId: null },
-  { id: "2", name: "important", color: "#00ff00", nextLabelId: null },
+  { id: TEST_LABEL_ID_1, name: "urgent", color: "#ff0000", nextLabelId: null },
+  { id: TEST_LABEL_ID_2, name: "important", color: "#00ff00", nextLabelId: null },
 ]
 const mockProjects: Project[] = [
   {
     id: TEST_PROJECT_ID_1,
     name: "Work",
-    slug: "work",
     color: "#3b82f6",
     sections: [DEFAULT_PROJECT_SECTION],
   },
   {
     id: TEST_PROJECT_ID_2,
     name: "Personal",
-    slug: "personal",
     color: "#ef4444",
     sections: [DEFAULT_PROJECT_SECTION],
   },
@@ -412,14 +415,12 @@ const mockProjectGroups = {
     type: "project" as const,
     id: "root",
     name: "All Projects",
-    slug: "all-projects",
     items: [TEST_PROJECT_ID_1, TEST_PROJECT_ID_2],
   },
   labelGroups: {
     type: "label" as const,
     id: "root-labels",
     name: "All Labels",
-    slug: "all-labels",
     items: [],
   },
 }
@@ -830,7 +831,8 @@ describe("QuickAddDialog", () => {
 
     const projectButton = screen.getByRole("button", { name: /project/i })
     expect(projectButton).toBeInTheDocument()
-    expect(projectButton).toHaveTextContent("Project")
+    expect(projectButton).toHaveAttribute("aria-label", "Project")
+    expect(projectButton).not.toHaveTextContent("Project")
   })
 
   it("disables submit button when no title is parsed", () => {
@@ -885,7 +887,7 @@ describe("QuickAddDialog", () => {
       render(<QuickAddDialog />)
 
       // Click the date button to open TaskSchedulePopover
-      const dateButton = screen.getByText("Date")
+      const dateButton = screen.getByRole("button", { name: "Date" })
       fireEvent.click(dateButton)
 
       await waitFor(() => {
@@ -1014,7 +1016,7 @@ describe("QuickAddDialog", () => {
       render(<QuickAddDialog />)
 
       // Set recurring pattern
-      const dateButton = screen.getByText("Date")
+      const dateButton = screen.getByRole("button", { name: "Date" })
       fireEvent.click(dateButton)
 
       await waitFor(() => {
@@ -1025,7 +1027,7 @@ describe("QuickAddDialog", () => {
 
       // Should show repeat icon instead of calendar icon
       await waitFor(() => {
-        const button = screen.getByText("Date").closest("button")
+        const button = screen.getByRole("button", { name: "Date" })
         const hasRepeatIcon = button?.querySelector("svg")?.classList.contains("lucide-repeat")
         expect(hasRepeatIcon).toBe(true)
       })
@@ -1038,7 +1040,7 @@ describe("QuickAddDialog", () => {
       const input = screen.getByTestId("enhanced-input")
       fireEvent.change(input, { target: { value: "Test task" } })
 
-      const dateButton = screen.getByText("Date")
+      const dateButton = screen.getByRole("button", { name: "Date" })
       fireEvent.click(dateButton)
 
       await waitFor(() => {
@@ -1211,7 +1213,7 @@ describe("QuickAddDialog", () => {
         await waitFor(() => {
           expect(mockUpdateTask).toHaveBeenCalledWith(
             expect.objectContaining({
-              updateRequest: { labels: ["1", "2"] }, // Based on mock labels
+              updateRequest: { labels: [TEST_LABEL_ID_1, TEST_LABEL_ID_2] }, // Based on mock labels
             }),
           )
         })
@@ -1264,7 +1266,7 @@ describe("QuickAddDialog", () => {
         await waitFor(() => {
           expect(mockUpdateTask).toHaveBeenCalledWith(
             expect.objectContaining({
-              updateRequest: { labels: ["1"] }, // Mock urgent label
+              updateRequest: { labels: [TEST_LABEL_ID_1] }, // Mock urgent label
             }),
           )
         })
@@ -2042,10 +2044,12 @@ describe("QuickAddDialog", () => {
 
       // Check that buttons have the smart visibility logic in their HTML structure
       const dialogContent = screen.getByTestId("dialog-content")
-
-      // Priority button text should have conditional classes
-      const prioritySpan = dialogContent.querySelector("span[class*='whitespace-nowrap']")
-      expect(prioritySpan).toBeInTheDocument()
+      const priorityButton = screen.getByRole("button", { name: "Priority" })
+      const dateButton = screen.getByRole("button", { name: "Date" })
+      expect(priorityButton).toBeInTheDocument()
+      expect(dateButton).toBeInTheDocument()
+      expect(screen.queryByText("Priority")).toBeNull()
+      expect(screen.queryByText("Date")).toBeNull()
 
       // Should have responsive text sizing
       const buttons = dialogContent.querySelectorAll(
@@ -2063,14 +2067,9 @@ describe("QuickAddDialog", () => {
       const buttonsWithMinWidth = dialogContent.querySelectorAll("button[class*='gap-2']")
       expect(buttonsWithMinWidth.length).toBeGreaterThan(0)
 
-      // Find text with truncation classes - PillActionButton uses max-w-[6rem] by default
-      const truncatedText = dialogContent.querySelector(
-        "span[class*='truncate'][class*='max-w-[6rem]']",
-      )
-      expect(truncatedText).toBeInTheDocument()
-
-      // PillActionButton has truncate and max-width classes for overflow protection
-      expect(truncatedText).toHaveClass("truncate", "max-w-[6rem]")
+      // Pills should still render rounded icons for compact layout
+      const pillButtons = dialogContent.querySelectorAll("button[class*='rounded-full']")
+      expect(pillButtons.length).toBeGreaterThan(0)
     })
 
     it("has proper spacing and sizing for mobile viewports", () => {

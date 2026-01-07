@@ -4,9 +4,10 @@ import React, { useEffect, useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Folder, Inbox, ChevronRight, ChevronDown, FolderOpen, Folders } from "lucide-react"
 import { cn, shouldTaskBeInInbox } from "@/lib/utils"
-import { projectsAtom, tasksAtom } from "@tasktrove/atoms/data/base/atoms"
+import { projectsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { projectIdsAtom } from "@tasktrove/atoms/core/projects"
 import { allGroupsAtom } from "@tasktrove/atoms/core/groups"
+import { updateTasksAtom } from "@tasktrove/atoms/core/tasks"
 import { useTranslation } from "@tasktrove/i18n"
 import type { Task } from "@tasktrove/types/core"
 import type { ProjectId, GroupId } from "@tasktrove/types/id"
@@ -27,7 +28,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
 
   const allProjects = useAtomValue(projectsAtom)
   const groups = useAtomValue(allGroupsAtom)
-  const updateTasks = useSetAtom(tasksAtom)
+  const updateTasks = useSetAtom(updateTasksAtom)
 
   const isMultipleTasks = Array.isArray(task)
 
@@ -54,7 +55,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
   // Find which section contains this task (if any, only for single task)
   const currentSectionId =
     !isMultipleTasks && currentProject && task
-      ? currentProject.sections.find((s) => s.items.includes(task.id))?.id
+      ? currentProject.sections.find((s) => Array.isArray(s.items) && s.items.includes(task.id))?.id
       : undefined
 
   // Check if currently in inbox (includes orphaned tasks, only for single task)
@@ -149,7 +150,6 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
   }
 
   // Recursive component to render project groups and individual projects
-  /* eslint-disable react/prop-types */
   const ProjectGroupItem = ({
     item,
     level = 0,
@@ -163,7 +163,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
         case 0:
           return ""
         case 1:
-          return "ml-6"
+          return "ml-7"
         case 2:
           return "ml-12"
         case 3:
@@ -185,7 +185,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
           {/* Group Header */}
           <div
             className={cn(
-              "flex items-center gap-3 rounded-md hover:bg-accent/50 transition-all duration-200 py-2",
+              "flex items-center gap-3 rounded-md hover:bg-accent/50 transition-all duration-200 py-2 mx-1.5",
               indentClass,
             )}
           >
@@ -255,7 +255,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
           {/* Project Row */}
           <div
             className={cn(
-              "flex items-center gap-3 rounded-md hover:bg-accent/50 transition-all duration-200 py-2",
+              "flex items-center gap-3 rounded-md hover:bg-accent/50 transition-all duration-200 py-2 mx-1.5",
               isProjectSelected && "bg-accent",
               indentClass,
             )}
@@ -295,7 +295,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
                   <div
                     key={section.id}
                     className={cn(
-                      "flex items-center gap-3 rounded-md cursor-pointer hover:bg-accent/50 transition-all duration-200 p-2",
+                      "flex items-center gap-3 rounded-md cursor-pointer hover:bg-accent/50 transition-all duration-200 py-2 mx-1.5",
                       isSectionSelected && "bg-accent",
                     )}
                     onClick={() => handleSectionSelect(project.id, section.id)}
@@ -316,7 +316,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
   }
 
   return (
-    <div className={cn(className)}>
+    <div className={cn("my-1", className)}>
       {/* Projects and Groups List */}
       {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
       {groups.projectGroups?.items && groups.projectGroups.items.length > 0 && (
@@ -344,7 +344,7 @@ export function ProjectContent({ task, onUpdate, className }: ProjectContentProp
       <div className="space-y-1">
         <div
           className={cn(
-            "flex items-center gap-3 rounded-md cursor-pointer hover:bg-accent/50 transition-all duration-200 p-2",
+            "flex items-center gap-3 rounded-md cursor-pointer hover:bg-accent/50 transition-all duration-200 py-2 mx-1.5",
             isInboxSelected && "bg-accent",
           )}
           onClick={handleInboxSelect}

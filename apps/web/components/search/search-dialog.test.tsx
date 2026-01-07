@@ -1,6 +1,7 @@
 import React from "react"
 import { describe, it, expect } from "vitest"
 import { render, screen } from "@/test-utils"
+import { HydrateValues } from "@/test-utils/jotai-mocks"
 import { SearchDialog } from "./search-dialog"
 import { taskAtoms } from "@tasktrove/atoms/core/tasks"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
@@ -19,7 +20,7 @@ describe("SearchDialog", () => {
 
   it("search input has transparent background in both light and dark modes", () => {
     // Mock atom values to open the dialog
-    const initialAtomValues: Array<[unknown, unknown]> = [
+    const initialAtomValues: HydrateValues = [
       [showSearchDialogAtom, true],
       [taskAtoms.tasks, []],
       [projectAtoms.projects, []],

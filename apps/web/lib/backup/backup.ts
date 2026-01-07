@@ -1,18 +1,41 @@
 import archiver from "archiver"
 import { createWriteStream } from "fs"
-import { mkdir, readdir, unlink, stat } from "fs/promises"
+import { readdir, unlink, stat } from "fs/promises"
 import path from "path"
 import { DEFAULT_DATA_DIR, DEFAULT_BACKUP_DIR, DEFAULT_MAX_BACKUPS } from "@tasktrove/constants"
 import { safeReadDataFile } from "@/lib/utils/safe-file-operations"
 
 const BACKUP_DIR = DEFAULT_BACKUP_DIR
 
+function getErrorCode(error: unknown) {
+  if (typeof error !== "object" || error === null) {
+    return undefined
+  }
+
+  const code = Reflect.get(error, "code")
+  return typeof code === "string" ? code : undefined
+}
+
+function formatError(error: unknown) {
+  if (error instanceof Error) {
+    const code = getErrorCode(error)
+    return code ? `${error.message} (code: ${code})` : error.message
+  }
+
+  return String(error)
+}
+
 async function ensureBackupDir() {
   try {
-    await mkdir(BACKUP_DIR, { recursive: true })
-    console.log("Created backup directory:", BACKUP_DIR)
+    const backupDirStats = await stat(BACKUP_DIR)
+    if (!backupDirStats.isDirectory()) {
+      throw new Error("Backup path is not a directory.")
+    }
   } catch (error) {
-    console.error("Error creating backup directory:", error)
+    if (getErrorCode(error) === "ENOENT") {
+      throw new Error("Backup directory does not exist.")
+    }
+    throw error
   }
 }
 
@@ -70,7 +93,7 @@ async function rotateBackups(maxBackups: number) {
       }),
     )
   } catch (error) {
-    console.error("Error during backup rotation:", error)
+    console.error(`Error during backup rotation: ${formatError(error)}`)
   }
 }
 
@@ -118,7 +141,7 @@ export async function runBackup() {
           await rotateBackups(maxBackups) // Rotate after successful backup
           resolve()
         } catch (rotationError) {
-          console.error("Error during post-backup rotation:", rotationError)
+          console.error(`Error during post-backup rotation: ${formatError(rotationError)}`)
           // Decide if backup failure should depend on rotation failure
           // For now, resolve even if rotation fails, as backup itself succeeded.
           resolve()
@@ -127,21 +150,21 @@ export async function runBackup() {
 
       // Handle stream finish event for better completion tracking
       output.on("finish", () => {
-        console.log("Backup file stream finished writing.")
+        console.log(`Backup file stream finished writing: ${backupFileName}`)
       })
 
       archive.on("warning", (err: Error & { code?: string }) => {
         if (err.code === "ENOENT") {
           // Log specific warnings but don't necessarily reject
-          console.warn("Archiver warning (ENOENT):", err)
+          console.warn(`Archiver warning (ENOENT): ${formatError(err)}`)
         } else {
           // Treat other warnings as potential issues, but maybe not fatal
-          console.warn("Archiver warning:", err)
+          console.warn(`Archiver warning: ${formatError(err)}`)
         }
       })
 
       archive.on("error", (err: Error) => {
-        console.error("Archiver error:", err)
+        console.error(`Archiver error: ${formatError(err)}`)
         reject(err) // Reject the promise on critical archiver errors
       })
 
@@ -150,19 +173,19 @@ export async function runBackup() {
 
       // Append the entire data directory to the archive
       // The second argument specifies the path prefix inside the zip file (false means root)
-      console.log(`Archiving directory: ${DEFAULT_DATA_DIR}`)
+      console.log("Archiving data directory.")
       archive.directory(DEFAULT_DATA_DIR, false)
 
       // Finalize the archive (writes the central directory)
       console.log("Finalizing archive...")
       archive.finalize().catch((err: Error) => {
         // Catch potential errors during finalization
-        console.error("Error during archive finalization:", err)
+        console.error(`Error during archive finalization: ${formatError(err)}`)
         reject(err)
       })
     })
   } catch (error) {
-    console.error("Failed to run backup:", error)
+    console.error(`Failed to run backup: ${formatError(error)}`)
     // Rethrow or handle as appropriate for the scheduler
     throw error
   }

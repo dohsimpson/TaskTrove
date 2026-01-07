@@ -26,8 +26,11 @@ import {
   DeleteProjectResponseSchema,
 } from "@tasktrove/types/api-responses";
 import { createProjectId, createGroupId } from "@tasktrove/types/id";
-import { DEFAULT_PROJECT_COLORS, DEFAULT_UUID } from "@tasktrove/constants";
-import { createSafeProjectNameSlug } from "@tasktrove/utils/routing";
+import {
+  DEFAULT_PROJECT_COLORS,
+  DEFAULT_UUID,
+  getRandomPaletteColor,
+} from "@tasktrove/constants";
 import { createEntityMutation } from "./entity-factory";
 
 // =============================================================================
@@ -51,24 +54,21 @@ export const createProjectMutationAtom = createEntityMutation<
     request: ProjectCreateSerializationSchema,
     response: CreateProjectResponseSchema,
   },
-  // Custom optimistic data factory for project-specific defaults (section, slug, color)
+  // Custom optimistic data factory for project-specific defaults (section, color)
   optimisticDataFactory: (
     projectData: CreateProjectRequest,
     oldProjects: Project[],
   ) => {
+    void oldProjects;
     return {
       ...projectData,
       id: createProjectId(uuidv4()), // Temporary ID that will be replaced by server response
       name: projectData.name,
-      slug:
-        projectData.slug ??
-        createSafeProjectNameSlug(projectData.name, oldProjects),
-      color: projectData.color ?? DEFAULT_PROJECT_COLORS[0],
+      color: projectData.color ?? getRandomPaletteColor(DEFAULT_PROJECT_COLORS),
       sections: projectData.sections ?? [
         {
           id: createGroupId(DEFAULT_UUID),
           name: "Default",
-          slug: "",
           color: "#6b7280",
           type: "section" as const,
           items: [],

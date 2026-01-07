@@ -4,7 +4,12 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { toast, sonner } from "./toast";
+import {
+  toast,
+  sonner,
+  setToastImplementation,
+  resetToastImplementation,
+} from "./toast";
 
 // Mock console methods to test fallback behavior
 const consoleMocks = {
@@ -62,6 +67,28 @@ describe("Toast Utilities", () => {
       // happy-dom provides window object, so should use sonner
       expect(typeof window).toBe("object");
       expect(() => toast.success("Test message")).not.toThrow();
+    });
+  });
+
+  describe("Custom implementation swapping", () => {
+    afterEach(() => {
+      resetToastImplementation();
+    });
+
+    it("delegates to the registered implementation", () => {
+      const success = vi.fn();
+      const impl = {
+        success,
+        error: vi.fn(),
+        info: vi.fn(),
+        warning: vi.fn(),
+      };
+
+      setToastImplementation(impl);
+
+      const msg = "Hello mobile";
+      toast.success(msg);
+      expect(success).toHaveBeenCalledWith(msg, undefined);
     });
   });
 });

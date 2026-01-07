@@ -18,7 +18,9 @@ import {
   RefreshCwIcon as Refresh,
   Plus,
 } from "lucide-react"
-import { format } from "date-fns"
+import { formatDateTimeDisplay, formatTimeOfDay } from "@/lib/utils/task-date-formatter"
+import { useAtomValue } from "jotai"
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import type { TaskId } from "@tasktrove/types/id"
 
 interface CalendarProvider {
@@ -83,6 +85,9 @@ export function CalendarSync({
   onCreateTaskFromEvent,
   onToggleSyncRule,
 }: CalendarSyncProps) {
+  const settings = useAtomValue(settingsAtom)
+  const use24HourTime = Boolean(settings.uiSettings.use24HourTime)
+  const preferDayMonthFormat = Boolean(settings.general.preferDayMonthFormat)
   const [showSyncRules, setShowSyncRules] = useState(false)
 
   const getProviderIcon = (type: string) => {
@@ -118,7 +123,12 @@ export function CalendarSync({
       case "syncing":
         return "Syncing..."
       case "success":
-        return lastSync ? `Last synced ${format(lastSync, "MMM d, h:mm a")}` : "Synced"
+        return lastSync
+          ? `Last synced ${formatDateTimeDisplay(lastSync, {
+              preferDayMonthFormat,
+              use24HourTime,
+            })}`
+          : "Synced"
       case "error":
         return "Sync failed"
       default:
@@ -356,7 +366,11 @@ export function CalendarSync({
                   <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {format(event.start, "MMM d, h:mm a")} - {format(event.end, "h:mm a")}
+                      {formatDateTimeDisplay(event.start, {
+                        preferDayMonthFormat,
+                        use24HourTime,
+                      })}{" "}
+                      - {formatTimeOfDay(event.end, { use24HourTime })}
                     </span>
                     {event.location && (
                       <span className="flex items-center gap-1">

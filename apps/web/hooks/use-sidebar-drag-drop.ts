@@ -5,15 +5,20 @@ import { useSetAtom, useAtomValue } from "jotai"
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item"
 import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
 import { allGroupsAtom } from "@tasktrove/atoms/core/groups"
+import { taskAtoms } from "@tasktrove/atoms/core/tasks"
 import { projectsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { updateProjectGroupAtom } from "@tasktrove/atoms/core/groups"
 import { updateTasksAtom } from "@tasktrove/atoms/core/tasks"
-import type { ProjectId } from "@tasktrove/types/id"
-import type { GroupId } from "@tasktrove/types/id"
-import type { TaskId } from "@tasktrove/types/id"
+import {
+  createGroupId,
+  createProjectId,
+  createTaskId,
+  type ProjectId,
+  type GroupId,
+} from "@tasktrove/types/id"
 import type { UpdateTaskRequest } from "@tasktrove/types/api-requests"
 import { getDefaultSectionId } from "@tasktrove/types/defaults"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 import {
   findContainingGroup,
   resolveTargetLocation,
@@ -42,6 +47,7 @@ export function useSidebarDragDrop() {
   const updateTasks = useSetAtom(updateTasksAtom)
   const allGroups = useAtomValue(allGroupsAtom)
   const projects = useAtomValue(projectsAtom)
+  const taskById = useAtomValue(taskAtoms.derived.taskById)
 
   /**
    * Main drop handler - handles both sidebar reordering and task assignment
@@ -64,13 +70,28 @@ export function useSidebarDragDrop() {
       }
 
       const targetData = dropTarget.data
-      const sourceType = sourceData.type as string
 
       // Handle TASK drops (assignment to project)
-      if (sourceType === "list-item" && sourceData.ids && targetData.projectId) {
+      if (
+        Reflect.get(sourceData, "type") === "list-item" &&
+        Array.isArray(Reflect.get(sourceData, "ids")) &&
+        typeof Reflect.get(targetData, "projectId") === "string"
+      ) {
         try {
-          const taskIds = sourceData.ids as TaskId[]
-          const targetProjectId = targetData.projectId as ProjectId
+          const projectIdValue = Reflect.get(targetData, "projectId")
+          if (typeof projectIdValue !== "string") {
+            return
+          }
+
+          const idsValue = Reflect.get(sourceData, "ids")
+          if (!Array.isArray(idsValue)) {
+            return
+          }
+
+          const taskIds = idsValue
+            .filter((id): id is string => typeof id === "string")
+            .map((id) => createTaskId(id))
+          const targetProjectId = createProjectId(projectIdValue)
 
           // Find target project to get its default section
           const targetProject = projects.find((p) => p.id === targetProjectId)
@@ -85,17 +106,44 @@ export function useSidebarDragDrop() {
             return
           }
 
-          // Build update requests for all tasks
-          const updateRequests: UpdateTaskRequest[] = taskIds.map((taskId) => ({
-            id: taskId,
-            projectId: targetProjectId,
-            sectionId: targetSectionId,
-          }))
+          // Build update requests for tasks that are not already in the target project
+          const updateRequests: UpdateTaskRequest[] = taskIds
+            .map((taskId): UpdateTaskRequest | null => {
+              const task = taskById.get(taskId)
+              if (!task) {
+                return {
+                  id: taskId,
+                  projectId: targetProjectId,
+                  sectionId: targetSectionId,
+                }
+              }
+
+              if (task.projectId === targetProjectId) {
+                return null
+              }
+
+              return {
+                id: taskId,
+                projectId: targetProjectId,
+                sectionId: targetSectionId,
+              }
+            })
+            .filter((req): req is UpdateTaskRequest => req !== null)
+
+          if (updateRequests.length === 0) {
+            const count = taskIds.length
+            toast.info(
+              count === 1
+                ? `Task already belongs to ${targetProject.name}`
+                : `All tasks already belong to ${targetProject.name}`,
+            )
+            return
+          }
 
           // Update all tasks at once
           await updateTasks(updateRequests)
 
-          const count = taskIds.length
+          const count = updateRequests.length
           toast.success(
             count === 1
               ? `Task moved to ${targetProject.name}`
@@ -128,7 +176,14 @@ export function useSidebarDragDrop() {
         }
 
         // 2. Extract the dragged item ID
-        const draggedItemId = (sourceData.projectId || sourceData.groupId) as ProjectId | GroupId
+        const projectId = Reflect.get(sourceData, "projectId")
+        const groupId = Reflect.get(sourceData, "groupId")
+        let draggedItemId: ProjectId | GroupId | null = null
+        if (typeof projectId === "string") {
+          draggedItemId = createProjectId(projectId)
+        } else if (typeof groupId === "string") {
+          draggedItemId = createGroupId(groupId)
+        }
         if (!draggedItemId) return
 
         // 3. Find where the item currently is (pure function)
@@ -169,7 +224,7 @@ export function useSidebarDragDrop() {
         console.error("Error executing sidebar drag-and-drop:", error)
       }
     },
-    [updateGroup, updateTasks, allGroups, projects],
+    [updateGroup, updateTasks, allGroups, projects, taskById],
   )
 
   return { handleDrop }

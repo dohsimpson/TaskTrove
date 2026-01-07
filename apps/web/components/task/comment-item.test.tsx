@@ -65,7 +65,7 @@ vi.mock("@/lib/utils", () => ({
 
 vi.mock("date-fns", () => ({
   formatDistanceToNow: () => "1 minute ago",
-  format: () => "Jan 1, 2024",
+  format: () => "1/1/2024",
 }))
 
 describe("CommentItem", () => {

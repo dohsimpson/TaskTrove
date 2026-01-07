@@ -1,4 +1,4 @@
-import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
+import { DEFAULT_PROJECT_SECTION, DEFAULT_USER_SETTINGS } from "@tasktrove/types/defaults"
 import React from "react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen } from "@/test-utils"
@@ -49,6 +49,7 @@ vi.mock("jotai", () => ({
     if (atomStr.includes("hasActiveFilters")) return mockHasActiveFilters()
     if (atomStr.includes("allProjects")) return mockAllProjects
     if (atomStr.includes("labels")) return mockAllLabels
+    if (atomStr.includes("settings")) return DEFAULT_USER_SETTINGS
 
     return {}
   }),
@@ -177,14 +178,12 @@ describe("TaskFilterBadges", () => {
         id: projectId1,
         name: "Work Project",
         color: "#3b82f6",
-        slug: "work",
         sections: [DEFAULT_PROJECT_SECTION],
       },
       {
         id: projectId2,
         name: "Personal Project",
         color: "#10b981",
-        slug: "personal",
         sections: [DEFAULT_PROJECT_SECTION],
       },
     )
@@ -210,13 +209,11 @@ describe("TaskFilterBadges", () => {
         id: labelId1,
         name: "urgent",
         color: "#ef4444",
-        slug: "urgent",
       },
       {
         id: labelId2,
         name: "important",
         color: "#f59e0b",
-        slug: "important",
       },
     )
 
@@ -269,7 +266,6 @@ describe("TaskFilterBadges", () => {
         id: labelId1,
         name: "urgent",
         color: "#ef4444",
-        slug: "urgent",
       })
 
       mockHasActiveFilters.mockReturnValue(true)
@@ -292,7 +288,6 @@ describe("TaskFilterBadges", () => {
         id: labelId1,
         name: "urgent",
         color: "#ef4444",
-        slug: "urgent",
       })
 
       mockHasActiveFilters.mockReturnValue(true)
@@ -365,7 +360,6 @@ describe("TaskFilterBadges", () => {
         id: projectId1,
         name: "Work Project",
         color: "#3b82f6",
-        slug: "work",
         sections: [DEFAULT_PROJECT_SECTION],
       })
 
@@ -389,7 +383,6 @@ describe("TaskFilterBadges", () => {
         id: labelId1,
         name: "urgent",
         color: "#ef4444",
-        slug: "urgent",
       })
 
       mockHasActiveFilters.mockReturnValue(true)
@@ -448,7 +441,6 @@ describe("TaskFilterBadges", () => {
         id: projectId1,
         name: "Work Project",
         color: "#3b82f6",
-        slug: "work",
         sections: [DEFAULT_PROJECT_SECTION],
       })
 
@@ -470,7 +462,6 @@ describe("TaskFilterBadges", () => {
         id: labelId1,
         name: "urgent",
         color: "#ef4444",
-        slug: "urgent",
       })
 
       mockHasActiveFilters.mockReturnValue(true)

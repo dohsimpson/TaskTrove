@@ -24,6 +24,7 @@ import {
   Pause,
   Square,
   GripVertical,
+  X,
 } from "lucide-react"
 import { cn, getContrastColor } from "@/lib/utils"
 import { formatTime, getEffectiveEstimation } from "@/lib/utils/time-estimation"
@@ -49,10 +50,9 @@ import {
   isTaskTimerActiveAtom,
 } from "@tasktrove/atoms/ui/focus-timer"
 import {
-  lastSelectedTaskAtom,
-  selectRangeAtom,
   toggleTaskSelectionAtom,
   selectedTasksAtom,
+  selectedTaskIdAtom,
 } from "@tasktrove/atoms/ui/selection"
 import { addCommentAtom } from "@tasktrove/atoms/core/tasks"
 import { focusTimerStatusAtom, activeFocusTimerAtom } from "@tasktrove/atoms/ui/focus-timer"
@@ -62,7 +62,6 @@ import {
   updateQuickAddTaskAtom,
   showQuickAddAtom,
 } from "@tasktrove/atoms/ui/dialogs"
-import { selectedTaskIdAtom } from "@tasktrove/atoms/ui/selection"
 import { toggleTaskPanelWithViewStateAtom } from "@tasktrove/atoms/ui/views"
 import type { Task, Subtask } from "@tasktrove/types/core"
 import type { TaskPriority } from "@tasktrove/types/constants"
@@ -72,6 +71,9 @@ import { INBOX_PROJECT_ID } from "@tasktrove/types/constants"
 import { createTaskId } from "@tasktrove/types/id"
 import { TimeEstimationPicker } from "../ui/custom/time-estimation-picker"
 import { useTranslation } from "@tasktrove/i18n"
+import { useTaskMetadataFlash } from "@/hooks/use-flash-on-change"
+import { useTaskMultiSelectClick } from "@/hooks/use-task-multi-select"
+import { DeleteConfirmDialog } from "@/components/dialogs/delete-confirm-dialog"
 // Responsive width for metadata columns to ensure consistent alignment
 const METADATA_COLUMN_WIDTH = "w-auto sm:w-20 md:w-24"
 
@@ -196,7 +198,12 @@ interface TaskItemProps {
   taskId: TaskId
   className?: string
   showProjectBadge?: boolean
-  variant?: "default" | "compact" | "kanban" | "narrow" | "calendar" | "subtask"
+  variant?: "default" | "compact" | "minimal" | "kanban" | "narrow" | "calendar" | "subtask"
+  compactTitleEditable?: boolean
+  actions?: {
+    menu?: "visible" | "context" | "none"
+    deleteButton?: boolean
+  }
   // Subtask-specific props
   parentTask?: Task | CreateTaskRequest // Parent task for subtask operations - can be CreateTaskRequest in quick-add
   // Range selection props
@@ -208,6 +215,8 @@ export function TaskItem({
   className,
   showProjectBadge = true,
   variant = "default",
+  compactTitleEditable = false,
+  actions,
   // Subtask-specific props
   parentTask,
   sortedTaskIds,
@@ -223,6 +232,7 @@ export function TaskItem({
   const [isTitleEditing, setIsTitleEditing] = useState(false)
   // Subtask estimation picker state
   const [showEstimationPicker, setShowEstimationPicker] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   // Mobile detection
   const isMobile = useIsMobile()
@@ -230,7 +240,6 @@ export function TaskItem({
   // Get task data from atoms - MUST be called before any conditional returns
   const allTasks = useAtomValue(tasksAtom)
   const selectedTasks = useAtomValue(selectedTasksAtom)
-  const lastSelectedTask = useAtomValue(lastSelectedTaskAtom)
   const allLabels = useAtomValue(labelsAtom)
   const getLabelsFromIds = useAtomValue(labelsFromIdsAtom)
   const allProjects = useAtomValue(projectsAtom)
@@ -245,7 +254,7 @@ export function TaskItem({
   const addComment = useSetAtom(addCommentAtom)
   const toggleTaskPanel = useSetAtom(toggleTaskPanelWithViewStateAtom)
   const toggleTaskSelection = useSetAtom(toggleTaskSelectionAtom)
-  const selectRange = useSetAtom(selectRangeAtom)
+  const handleMultiSelectClick = useTaskMultiSelectClick()
   const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
 
   // Quick-add atoms for subtask handling in new tasks
@@ -289,6 +298,9 @@ export function TaskItem({
   const { isMenuOpen: actionsMenuOpen, handleMenuOpenChange: handleActionsMenuChange } =
     useContextMenuVisibility(isHovered, isSelected)
 
+  // Flash metadata badges when values change
+  const getFlashClass = useTaskMetadataFlash(task)
+
   // Early return if task not found - AFTER all hooks are called
   if (!task) {
     console.warn(`TaskItem: Task with id ${taskId} not found`)
@@ -302,6 +314,17 @@ export function TaskItem({
   }
 
   const taskProject = getTaskProject()
+  const isArchived = Boolean(task.archived)
+  const isCompleted = task.completed
+  const menuMode =
+    actions?.menu ??
+    (variant === "minimal" ? "context" : variant === "calendar" ? "none" : "visible")
+  const shouldShowActionsMenu = menuMode !== "none"
+  const shouldShowDeleteButton = actions?.deleteButton ?? variant === "minimal"
+
+  const handleArchiveToggle = (archived: boolean) => {
+    updateTask({ updateRequest: { id: task.id, archived } })
+  }
 
   // Helper function to update subtasks in the appropriate context (existing task vs quick-add)
   const updateSubtasks = (updatedSubtasks: Subtask[]) => {
@@ -418,6 +441,9 @@ export function TaskItem({
         roleButtonAncestor !== currentTarget,
     )
 
+    const dialogAncestor = target.closest('[role="dialog"]')
+    const popoverTrigger = target.closest('[data-slot="popover-trigger"]')
+
     if (
       target.closest("button") ||
       target.closest("[data-action]") ||
@@ -425,48 +451,19 @@ export function TaskItem({
       target.closest("input") ||
       target.closest("select") ||
       target.closest("textarea") ||
-      // popover elements
-      target.closest('[role="dialog"]') ||
-      target.closest('[data-slot="popover-trigger"]')
+      // popover elements (allow minimal rows inside popovers)
+      (variant !== "minimal" && dialogAncestor) ||
+      popoverTrigger
     ) {
       return
     }
 
-    // Check for multiselect modifiers
-    const isCmdOrCtrl = e.metaKey || e.ctrlKey // metaKey = CMD on Mac, ctrlKey = CTRL on others
-    const isShift = e.shiftKey
-
-    // Handle multiselect with CMD/CTRL - toggle selection
-    if (isCmdOrCtrl) {
-      toggleTaskSelection(taskId)
+    if (variant === "minimal") {
+      toggleTaskPanel(task)
       return
     }
 
-    // Handle range selection with SHIFT
-    console.log(
-      "isShift",
-      isShift,
-      "lastSelectedTask",
-      lastSelectedTask,
-      "sortedTaskIds",
-      sortedTaskIds,
-    )
-    if (isShift && !sortedTaskIds) {
-      // Without a known ordering fall back to simple toggle to avoid opening the panel accidentally
-      toggleTaskSelection(taskId)
-      return
-    }
-
-    if (isShift && lastSelectedTask && sortedTaskIds) {
-      selectRange({
-        startTaskId: lastSelectedTask,
-        endTaskId: taskId,
-        sortedTaskIds: sortedTaskIds,
-      })
-      return
-    } else if (isShift && !lastSelectedTask) {
-      // when shift but lastSelectedTask is null, treat shift as ctrl
-      toggleTaskSelection(taskId)
+    if (handleMultiSelectClick({ taskId, sortedTaskIds, event: e })) {
       return
     }
 
@@ -490,7 +487,6 @@ export function TaskItem({
         // Wait for the real label ID from the server
         labelId = await addLabelAndWaitForRealId({
           name: labelName,
-          slug: labelName.toLowerCase().replace(/\s+/g, "-"),
           color: randomColor,
         })
       } else {
@@ -513,15 +509,110 @@ export function TaskItem({
     updateTask({ updateRequest: { id: task.id, labels: updatedLabels } })
   }
 
+  const handleTaskContextMenu = (event: React.MouseEvent) => {
+    if (!shouldShowActionsMenu) return
+    if (isTitleEditing || isDescriptionEditing || isDefaultDescriptionEditing) return
+    const target = event.target
+    if (!(target instanceof HTMLElement)) return
+    if (target.closest("input, textarea, select, [contenteditable='true']")) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    handleActionsMenuChange(true)
+  }
+
+  if (variant === "minimal") {
+    return (
+      <div
+        className={cn(
+          "flex items-center gap-2 py-2 rounded text-sm transition-all duration-200 cursor-pointer",
+          "hover:bg-accent/50",
+          isCompleted && "opacity-60",
+          className,
+        )}
+        onClick={handleTaskClick}
+        onContextMenu={handleTaskContextMenu}
+        data-task-id={task.id}
+      >
+        <TaskCheckbox
+          checked={task.completed}
+          onCheckedChange={() => toggleTask(task.id)}
+          priority={task.priority}
+          data-action="toggle"
+        />
+        <span className={cn("truncate flex-1", task.completed && "line-through")}>
+          {task.title}
+        </span>
+        <div className="ml-auto flex items-center gap-1 relative">
+          {(task.dueDate || task.recurring) && (
+            <TaskSchedulePopover taskId={task.id}>
+              <TaskScheduleTrigger
+                dueDate={task.dueDate}
+                dueTime={task.dueTime}
+                recurring={task.recurring}
+                recurringMode={task.recurringMode}
+                completed={task.completed}
+                variant="compact"
+                className="flex-shrink-0"
+              />
+            </TaskSchedulePopover>
+          )}
+          {shouldShowActionsMenu && (
+            <TaskActionsMenu
+              task={task}
+              isVisible={menuMode === "visible"}
+              hideTrigger={menuMode === "context"}
+              onDeleteClick={() => deleteTask(task.id)}
+              onSelectClick={() => toggleTaskSelection(taskId)}
+              onArchiveToggle={handleArchiveToggle}
+              isSubTask={false}
+              open={actionsMenuOpen}
+              onOpenChange={handleActionsMenuChange}
+            />
+          )}
+          {shouldShowDeleteButton && (
+            <>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  setShowDeleteConfirm(true)
+                }}
+                aria-label={t("actions.delete", "Delete")}
+                className="inline-flex h-6 w-6 items-center justify-center rounded text-destructive hover:text-destructive/90 hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
+                data-action="delete"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+              <DeleteConfirmDialog
+                open={showDeleteConfirm}
+                onOpenChange={setShowDeleteConfirm}
+                onConfirm={() => {
+                  deleteTask(task.id)
+                  setShowDeleteConfirm(false)
+                }}
+                entityType="task"
+                entityName={task.title}
+              />
+            </>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   // Compact variant render - only on non-mobile devices
   if (variant === "compact" && !isMobile) {
     return (
       <MaterialCard
         variant="compact"
         selected={isSelected || isInSelection}
-        completed={task.completed}
+        completed={isCompleted}
+        archived={isArchived}
         leftBorderColor={getPriorityColor(task.priority, "compact")}
         onClick={handleTaskClick}
+        onContextMenu={handleTaskContextMenu}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={cn("group/task", className)}
@@ -540,23 +631,41 @@ export function TaskItem({
 
             {/* Title */}
             <div className="flex-1 min-w-0 max-w-full">
-              <LinkifiedEditableDiv
-                as="span"
-                value={task.title}
-                onChange={(newTitle) => {
-                  if (newTitle.trim() && newTitle !== task.title) {
-                    updateTask({ updateRequest: { id: task.id, title: newTitle.trim() } })
-                  }
-                }}
-                onEditingChange={setIsTitleEditing}
-                className={cn(
-                  "text-sm block w-full min-w-0 break-all",
-                  !isTitleEditing && "line-clamp-2",
-                  task.completed ? "line-through text-muted-foreground" : "text-foreground",
-                )}
-                data-action="edit"
-                allowEmpty={false}
-              />
+              {compactTitleEditable ? (
+                <LinkifiedEditableDiv
+                  as="span"
+                  value={task.title}
+                  onChange={(newTitle) => {
+                    if (newTitle.trim() && newTitle !== task.title) {
+                      updateTask({ updateRequest: { id: task.id, title: newTitle.trim() } })
+                    }
+                  }}
+                  onEditingChange={setIsTitleEditing}
+                  className={cn(
+                    "text-sm inline-block w-fit max-w-full min-w-0 break-all",
+                    !isTitleEditing && "line-clamp-1",
+                    cn(
+                      isCompleted && "line-through text-muted-foreground",
+                      !isCompleted && isArchived && "text-muted-foreground",
+                      !isCompleted && !isArchived && "text-foreground",
+                    ),
+                  )}
+                  data-action="edit"
+                  allowEmpty={false}
+                />
+              ) : (
+                <LinkifiedText
+                  as="span"
+                  className={cn(
+                    "text-sm block w-full min-w-0 break-all line-clamp-1",
+                    isCompleted && "line-through text-muted-foreground",
+                    !isCompleted && isArchived && "text-muted-foreground",
+                    !isArchived && !isCompleted && "text-foreground",
+                  )}
+                >
+                  {task.title}
+                </LinkifiedText>
+              )}
             </div>
 
             {/* Metadata */}
@@ -569,7 +678,7 @@ export function TaskItem({
                     dueTime={task.dueTime}
                     recurring={task.recurring}
                     recurringMode={task.recurringMode}
-                    completed={task.completed}
+                    completed={isCompleted}
                     variant="compact"
                   />
                 </TaskSchedulePopover>
@@ -723,15 +832,18 @@ export function TaskItem({
                 )}
 
                 {/* Actions Menu */}
-                <TaskActionsMenu
-                  task={task}
-                  isVisible={true}
-                  onDeleteClick={() => deleteTask(task.id)}
-                  onSelectClick={() => toggleTaskSelection(taskId)}
-                  isSubTask={false}
-                  open={actionsMenuOpen}
-                  onOpenChange={handleActionsMenuChange}
-                />
+                {shouldShowActionsMenu && (
+                  <TaskActionsMenu
+                    task={task}
+                    isVisible={true}
+                    onDeleteClick={() => deleteTask(task.id)}
+                    onSelectClick={() => toggleTaskSelection(taskId)}
+                    onArchiveToggle={handleArchiveToggle}
+                    isSubTask={false}
+                    open={actionsMenuOpen}
+                    onOpenChange={handleActionsMenuChange}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -748,8 +860,10 @@ export function TaskItem({
       <MaterialCard
         variant="narrow"
         selected={isSelected || isInSelection}
-        completed={task.completed}
+        completed={isCompleted}
+        archived={isArchived}
         onClick={handleTaskClick}
+        onContextMenu={handleTaskContextMenu}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={cn("group/task", className)}
@@ -773,7 +887,8 @@ export function TaskItem({
               }
               className={cn(
                 "font-medium text-sm text-foreground line-clamp-2 inline-block max-w-full",
-                task.completed && "line-through text-muted-foreground",
+                isCompleted && "line-through text-muted-foreground",
+                !isCompleted && isArchived && "text-muted-foreground",
               )}
               placeholder={t("placeholders.taskTitle", "Enter task title...")}
             />
@@ -787,15 +902,18 @@ export function TaskItem({
                 <FocusTimerTrigger taskId={task.id} />
               </FocusTimerPopover>
             )}
-            <TaskActionsMenu
-              task={task}
-              isVisible={true}
-              onDeleteClick={() => deleteTask(task.id)}
-              onSelectClick={() => toggleTaskSelection(taskId)}
-              isSubTask={false}
-              open={actionsMenuOpen}
-              onOpenChange={handleActionsMenuChange}
-            />
+            {shouldShowActionsMenu && (
+              <TaskActionsMenu
+                task={task}
+                isVisible={true}
+                onDeleteClick={() => deleteTask(task.id)}
+                onSelectClick={() => toggleTaskSelection(taskId)}
+                onArchiveToggle={handleArchiveToggle}
+                isSubTask={false}
+                open={actionsMenuOpen}
+                onOpenChange={handleActionsMenuChange}
+              />
+            )}
           </div>
         </div>
 
@@ -833,7 +951,7 @@ export function TaskItem({
               dueTime={task.dueTime}
               recurring={task.recurring}
               recurringMode={task.recurringMode}
-              completed={task.completed}
+              completed={isCompleted}
             />
             {task.priority < 4 ? (
               <Flag className={cn("h-3 w-3", getPriorityColor(task.priority))} />
@@ -910,9 +1028,11 @@ export function TaskItem({
       <MaterialCard
         variant={variant}
         selected={isSelected || isInSelection}
-        completed={task.completed}
+        completed={isCompleted}
+        archived={isArchived}
         leftBorderColor={leftBorderColor}
         onClick={handleTaskClick}
+        onContextMenu={handleTaskContextMenu}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={cn("group/task", className)}
@@ -944,7 +1064,11 @@ export function TaskItem({
                 "font-medium text-sm sm:text-[15px] leading-5 w-fit",
                 "max-w-full",
                 !isTitleEditing && "line-clamp-2 break-all",
-                task.completed ? "line-through text-muted-foreground" : "text-foreground",
+                cn(
+                  isCompleted && "line-through text-muted-foreground",
+                  !isCompleted && isArchived && "text-muted-foreground",
+                  !isCompleted && !isArchived && "text-foreground",
+                ),
               )}
               data-action="edit"
               allowEmpty={false}
@@ -963,15 +1087,18 @@ export function TaskItem({
                 <FocusTimerTrigger taskId={task.id} />
               </FocusTimerPopover>
             )}
-            <TaskActionsMenu
-              task={task}
-              isVisible={true}
-              onDeleteClick={() => deleteTask(task.id)}
-              onSelectClick={() => toggleTaskSelection(taskId)}
-              isSubTask={false}
-              open={actionsMenuOpen}
-              onOpenChange={handleActionsMenuChange}
-            />
+            {shouldShowActionsMenu && (
+              <TaskActionsMenu
+                task={task}
+                isVisible={true}
+                onDeleteClick={() => deleteTask(task.id)}
+                onSelectClick={() => toggleTaskSelection(taskId)}
+                onArchiveToggle={handleArchiveToggle}
+                isSubTask={false}
+                open={actionsMenuOpen}
+                onOpenChange={handleActionsMenuChange}
+              />
+            )}
           </div>
         </div>
 
@@ -1016,7 +1143,7 @@ export function TaskItem({
                 dueTime={task.dueTime}
                 recurring={task.recurring}
                 recurringMode={task.recurringMode}
-                completed={task.completed}
+                completed={isCompleted}
               />
             </TaskSchedulePopover>
 
@@ -1172,9 +1299,12 @@ export function TaskItem({
     return (
       <MaterialCard
         variant="calendar"
-        completed={task.completed}
+        selected={isSelected || isInSelection}
+        completed={isCompleted}
+        archived={isArchived}
         leftBorderColor={getPriorityColor(task.priority, "calendar")}
         onClick={handleTaskClick}
+        onContextMenu={handleTaskContextMenu}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={cn("group/task text-xs py-0 px-0.5", className)}
@@ -1185,6 +1315,18 @@ export function TaskItem({
             {task.title}
           </LinkifiedText>
           {isPro() && <AssigneeBadges task={task} className="flex-shrink-0" showOwner={false} />}
+          {shouldShowActionsMenu && (
+            <TaskActionsMenu
+              task={task}
+              isVisible={true}
+              onDeleteClick={() => deleteTask(task.id)}
+              onSelectClick={() => toggleTaskSelection(taskId)}
+              onArchiveToggle={handleArchiveToggle}
+              isSubTask={false}
+              open={actionsMenuOpen}
+              onOpenChange={handleActionsMenuChange}
+            />
+          )}
         </div>
       </MaterialCard>
     )
@@ -1200,7 +1342,9 @@ export function TaskItem({
     return (
       <MaterialCard
         variant="subtask"
-        completed={task.completed}
+        completed={isCompleted}
+        archived={isArchived}
+        onContextMenu={handleTaskContextMenu}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={cn("group/task flex items-center", className)}
@@ -1225,7 +1369,11 @@ export function TaskItem({
           }}
           className={cn(
             "flex-1 text-sm leading-5 border border-transparent hover:border-accent mr-3",
-            task.completed ? "line-through text-muted-foreground" : "text-foreground",
+            task.completed
+              ? "line-through text-muted-foreground"
+              : isArchived
+                ? "text-muted-foreground"
+                : "text-foreground",
           )}
           data-action="edit"
           allowEmpty={false}
@@ -1250,17 +1398,19 @@ export function TaskItem({
               </div>
             </TimeEstimationPopover>
           )}
-          <TaskActionsMenu
-            task={task}
-            isVisible={true}
-            onDeleteClick={handleSubtaskDelete}
-            onSelectClick={() => toggleTaskSelection(taskId)}
-            onEstimationClick={handleEstimationMenuClick}
-            onConvertToTaskClick={handleConvertToTask}
-            isSubTask={true}
-            open={actionsMenuOpen}
-            onOpenChange={handleActionsMenuChange}
-          />
+          {shouldShowActionsMenu && (
+            <TaskActionsMenu
+              task={task}
+              isVisible={true}
+              onDeleteClick={handleSubtaskDelete}
+              onSelectClick={() => toggleTaskSelection(taskId)}
+              onEstimationClick={handleEstimationMenuClick}
+              onConvertToTaskClick={handleConvertToTask}
+              isSubTask={true}
+              open={actionsMenuOpen}
+              onOpenChange={handleActionsMenuChange}
+            />
+          )}
         </div>
 
         {/* Hidden TimeEstimationPicker to be triggered programmatically from menu */}
@@ -1282,9 +1432,11 @@ export function TaskItem({
     <MaterialCard
       variant="default"
       selected={isSelected || isInSelection}
-      completed={task.completed}
+      completed={isCompleted}
+      archived={isArchived}
       leftBorderColor={getPriorityColor(task.priority, "default")}
       onClick={handleTaskClick}
+      onContextMenu={handleTaskContextMenu}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={className}
@@ -1299,6 +1451,7 @@ export function TaskItem({
           <TaskCheckbox
             checked={task.completed}
             onCheckedChange={() => toggleTask(task.id)}
+            className="mt-0.5"
             data-action="toggle"
           />
         </div>
@@ -1322,7 +1475,11 @@ export function TaskItem({
                   "font-medium text-sm sm:text-[15px] leading-5 w-fit",
                   "max-w-full",
                   !isTitleEditing && "line-clamp-2",
-                  task.completed ? "line-through text-muted-foreground" : "text-foreground",
+                  task.completed
+                    ? "line-through text-muted-foreground"
+                    : isArchived
+                      ? "text-muted-foreground"
+                      : "text-foreground",
                 )}
                 data-action="edit"
                 allowEmpty={false}
@@ -1341,15 +1498,18 @@ export function TaskItem({
                   <FocusTimerTrigger taskId={task.id} />
                 </FocusTimerPopover>
               )}
-              <TaskActionsMenu
-                task={task}
-                isVisible={true}
-                onDeleteClick={() => deleteTask(task.id)}
-                onSelectClick={() => toggleTaskSelection(taskId)}
-                isSubTask={false}
-                open={actionsMenuOpen}
-                onOpenChange={handleActionsMenuChange}
-              />
+              {shouldShowActionsMenu && (
+                <TaskActionsMenu
+                  task={task}
+                  isVisible={true}
+                  onDeleteClick={() => deleteTask(task.id)}
+                  onSelectClick={() => toggleTaskSelection(taskId)}
+                  onArchiveToggle={handleArchiveToggle}
+                  isSubTask={false}
+                  open={actionsMenuOpen}
+                  onOpenChange={handleActionsMenuChange}
+                />
+              )}
             </div>
           </div>
 
@@ -1402,8 +1562,8 @@ export function TaskItem({
                   dueTime={task.dueTime}
                   recurring={task.recurring}
                   recurringMode={task.recurringMode}
-                  completed={task.completed}
-                  className={cn("group", METADATA_COLUMN_WIDTH)}
+                  completed={isCompleted}
+                  className={cn("group", METADATA_COLUMN_WIDTH, getFlashClass("schedule"))}
                   fallbackLabel={
                     <TruncatedMetadataText showOnHover className="text-xs">
                       {t("actions.addDate", "Add date")}
@@ -1422,6 +1582,7 @@ export function TaskItem({
                       "flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
                       getPriorityTextColor(task.priority),
+                      getFlashClass("priority"),
                     )}
                   >
                     <Flag className="h-3 w-3" />P{task.priority}
@@ -1436,6 +1597,7 @@ export function TaskItem({
                     className={cn(
                       "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
+                      getFlashClass("priority"),
                     )}
                   >
                     <Flag className="h-3 w-3" />
@@ -1456,6 +1618,7 @@ export function TaskItem({
                     className={cn(
                       "flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors hover:opacity-100 text-foreground",
                       METADATA_COLUMN_WIDTH,
+                      getFlashClass("subtasks"),
                     )}
                   >
                     <CheckSquare className="h-3 w-3" />
@@ -1466,6 +1629,7 @@ export function TaskItem({
                     className={cn(
                       "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors whitespace-nowrap opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
+                      getFlashClass("subtasks"),
                     )}
                   >
                     <CheckSquare className="h-3 w-3" />
@@ -1493,6 +1657,7 @@ export function TaskItem({
                     className={cn(
                       "flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors hover:opacity-100 text-foreground",
                       METADATA_COLUMN_WIDTH,
+                      getFlashClass("comments"),
                     )}
                   >
                     <MessageSquare className="h-3 w-3" />
@@ -1512,6 +1677,7 @@ export function TaskItem({
                     className={cn(
                       "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors whitespace-nowrap opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
+                      getFlashClass("comments"),
                     )}
                   >
                     <MessageSquare className="h-3 w-3" />
@@ -1534,7 +1700,12 @@ export function TaskItem({
                   onAddLabel={handleAddLabel}
                   onRemoveLabel={handleRemoveLabel}
                 >
-                  <span className="flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors">
+                  <span
+                    className={cn(
+                      "flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors",
+                      getFlashClass("labels"),
+                    )}
+                  >
                     {taskLabels.map((label) => (
                       <span
                         key={label.id}
@@ -1560,7 +1731,12 @@ export function TaskItem({
                   onAddLabel={handleAddLabel}
                   onRemoveLabel={handleRemoveLabel}
                 >
-                  <span className="group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100">
+                  <span
+                    className={cn(
+                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
+                      getFlashClass("labels"),
+                    )}
+                  >
                     <Tag className="h-3 w-3" />
                     <TruncatedMetadataText showOnHover className="text-xs">
                       {t("actions.addLabel", "Add label")}
@@ -1579,6 +1755,7 @@ export function TaskItem({
                       className={cn(
                         "flex items-center gap-1 cursor-pointer hover:bg-accent transition-colors hover:opacity-100",
                         METADATA_COLUMN_WIDTH,
+                        getFlashClass("project"),
                       )}
                     >
                       <Folder
@@ -1597,6 +1774,7 @@ export function TaskItem({
                       className={cn(
                         "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
                         METADATA_COLUMN_WIDTH,
+                        getFlashClass("project"),
                       )}
                     >
                       <Folder className="h-3 w-3" />
@@ -1611,7 +1789,7 @@ export function TaskItem({
                 rightMetadataItems.push(
                   <span
                     key="project-placeholder"
-                    className={cn("invisible", METADATA_COLUMN_WIDTH)}
+                    className={cn("invisible", METADATA_COLUMN_WIDTH, getFlashClass("project"))}
                   >
                     <Folder className="h-3 w-3" />
                     <span className="text-xs">Placeholder</span>
@@ -1627,6 +1805,7 @@ export function TaskItem({
                     className={cn(
                       "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
+                      getFlashClass("assignees"),
                     )}
                   >
                     <span className="flex items-center gap-1">

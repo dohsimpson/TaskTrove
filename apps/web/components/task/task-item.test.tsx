@@ -809,6 +809,7 @@ describe("TaskItem", () => {
   const mockSelectRange = vi.fn()
   const mockAddLabel = vi.fn()
   let mockLastSelectedTask: TaskId | null = null
+  let mockSelectedTaskId: TaskId | null = null
 
   beforeEach(async () => {
     vi.clearAllMocks()
@@ -816,6 +817,7 @@ describe("TaskItem", () => {
     // Register the default mock task
     registerTask(mockTask)
     mockLastSelectedTask = null
+    mockSelectedTaskId = null
     mockSelectRange.mockClear()
 
     const { useAtomValue, useSetAtom } = await import("jotai")
@@ -833,7 +835,7 @@ describe("TaskItem", () => {
         return false // Usually false unless testing selection mode
       }
       if (atomString?.includes("selectedTaskId")) {
-        return null
+        return mockSelectedTaskId
       }
       if (atomString?.includes("lastSelectedTask")) {
         return mockLastSelectedTask
@@ -1027,6 +1029,41 @@ describe("TaskItem", () => {
 
       const checkboxes = screen.getAllByTestId("checkbox")
       expect(checkboxes).toHaveLength(1) // Only completion checkbox
+    })
+  })
+
+  describe("Selection interactions", () => {
+    it("uses selected task as range anchor when shift-clicking without lastSelectedTask", () => {
+      const secondTask: Task = {
+        ...mockTask,
+        id: TEST_TASK_ID_2,
+        title: "Second Task",
+      }
+
+      registerTask(secondTask)
+      mockSelectedTaskId = mockTask.id
+
+      const sortedTaskIds = [mockTask.id, secondTask.id]
+
+      const { container } = render(
+        <Provider>
+          <TaskItem taskId={mockTask.id} sortedTaskIds={sortedTaskIds} />
+          <TaskItem taskId={secondTask.id} sortedTaskIds={sortedTaskIds} />
+        </Provider>,
+      )
+
+      const secondRow = container.querySelector(`[data-task-id="${secondTask.id}"]`)
+      expect(secondRow).toBeTruthy()
+      if (!secondRow) return
+
+      fireEvent.click(secondRow, { shiftKey: true })
+
+      expect(mockSelectRange).toHaveBeenCalledWith({
+        startTaskId: mockTask.id,
+        endTaskId: secondTask.id,
+        sortedTaskIds,
+      })
+      expect(mockToggleTaskSelection).not.toHaveBeenCalled()
     })
   })
 
@@ -3442,12 +3479,15 @@ describe("TaskItem", () => {
         }
         if (atomString?.includes("settingsAtom")) {
           return {
+            ...DEFAULT_USER_SETTINGS,
             general: {
+              ...DEFAULT_USER_SETTINGS.general,
               linkifyEnabled: true,
               startView: "all",
               soundEnabled: true,
             },
             data: {
+              ...DEFAULT_USER_SETTINGS.data,
               autoBackup: {
                 enabled: true,
                 backupTime: "02:00",
@@ -3455,6 +3495,7 @@ describe("TaskItem", () => {
               },
             },
             notifications: {
+              ...DEFAULT_USER_SETTINGS.notifications,
               enabled: true,
               requireInteraction: true,
             },
@@ -3638,12 +3679,15 @@ describe("TaskItem", () => {
         }
         if (atomString?.includes("settingsAtom")) {
           return {
+            ...DEFAULT_USER_SETTINGS,
             general: {
+              ...DEFAULT_USER_SETTINGS.general,
               linkifyEnabled: true,
               startView: "all",
               soundEnabled: true,
             },
             data: {
+              ...DEFAULT_USER_SETTINGS.data,
               autoBackup: {
                 enabled: true,
                 backupTime: "02:00",
@@ -3651,6 +3695,7 @@ describe("TaskItem", () => {
               },
             },
             notifications: {
+              ...DEFAULT_USER_SETTINGS.notifications,
               enabled: true,
               requireInteraction: true,
             },

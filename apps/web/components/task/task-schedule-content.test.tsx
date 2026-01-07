@@ -8,7 +8,6 @@ import {
   handleSettingsAtomInMock,
 } from "@/test-utils"
 import { vi, describe, it, expect, beforeEach } from "vitest"
-import { TaskScheduleContent } from "./task-schedule-content"
 import type { Task } from "@tasktrove/types/core"
 import { INBOX_PROJECT_ID } from "@tasktrove/types/constants"
 import { TEST_TASK_ID_1 } from "@tasktrove/types/test-constants"
@@ -45,6 +44,14 @@ vi.mock("@/components/ui/help-popover", () => ({
   HelpPopover: mockHelpPopoverComponent,
 }))
 
+// Force desktop layout in tests so pickers render by default
+vi.mock("@/hooks/use-mobile", () => ({
+  useIsMobile: vi.fn(() => false),
+}))
+
+// Import after mocks so component picks up mocked hooks
+import { TaskScheduleContent } from "./task-schedule-content"
+
 // Mock jotai to provide test data
 let mockTasks: Task[] = []
 let mockQuickAddTask: {
@@ -55,6 +62,7 @@ let mockQuickAddTask: {
 } | null = null
 const mockUpdateTasks = vi.fn()
 const mockUpdateQuickAddTask = vi.fn()
+const currentYear = new Date().getFullYear()
 vi.mock("jotai", () => {
   const createMockAtom = () => {
     const atom = () => null
@@ -91,11 +99,54 @@ vi.mock("jotai", () => {
 vi.mock("date-fns", () => ({
   format: (date: Date | string, formatStr: string) => {
     const d = typeof date === "string" ? new Date(date) : date
-    if (formatStr === "MMM d") {
-      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    const month = d.getMonth() + 1
+    const day = d.getDate()
+    const year = d.getFullYear()
+    const pad2 = (value: number) => value.toString().padStart(2, "0")
+    if (formatStr === "M/d") {
+      return `${month}/${day}`
     }
-    if (formatStr === "MMM d, yyyy") {
-      return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    if (formatStr === "d/M") {
+      return `${day}/${month}`
+    }
+    if (formatStr === "M/d/yyyy") {
+      return `${month}/${day}/${year}`
+    }
+    if (formatStr === "d/M/yyyy") {
+      return `${day}/${month}/${year}`
+    }
+    if (formatStr === "MM/dd") {
+      return `${pad2(month)}/${pad2(day)}`
+    }
+    if (formatStr === "dd/MM") {
+      return `${pad2(day)}/${pad2(month)}`
+    }
+    if (formatStr === "MM/dd/yyyy") {
+      return `${pad2(month)}/${pad2(day)}/${year}`
+    }
+    if (formatStr === "dd/MM/yyyy") {
+      return `${pad2(day)}/${pad2(month)}/${year}`
+    }
+    if (formatStr === "EEE" || formatStr === "EE") {
+      return d.toLocaleDateString("en-US", { weekday: "short" })
+    }
+    if (formatStr === "EEEE") {
+      return d.toLocaleDateString("en-US", { weekday: "long" })
+    }
+    if (formatStr === "MMM") {
+      return d.toLocaleDateString("en-US", { month: "short" })
+    }
+    if (formatStr === "MMMM") {
+      return d.toLocaleDateString("en-US", { month: "long" })
+    }
+    if (formatStr === "MMM yyyy") {
+      return `${d.toLocaleDateString("en-US", { month: "short" })} ${year}`
+    }
+    if (formatStr === "MMMM yyyy") {
+      return `${d.toLocaleDateString("en-US", { month: "long" })} ${year}`
+    }
+    if (formatStr === "yyyy-MM-dd") {
+      return `${year}-${pad2(month)}-${pad2(day)}`
     }
     if (formatStr === "h:mm a") {
       return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
@@ -225,25 +276,42 @@ describe("TaskScheduleContent", () => {
       expect(screen.getByText("Today")).toBeInTheDocument()
       expect(screen.getByText("Tomorrow")).toBeInTheDocument()
       expect(screen.getByText("Next Week")).toBeInTheDocument()
-      // Calendar is now always visible by default
-      expect(screen.getByRole("grid")).toBeInTheDocument() // Calendar grid
+      const dateToggle = screen
+        .getAllByRole("button")
+        .find(
+          (btn) => btn.getAttribute("aria-expanded") !== null && btn.textContent?.includes("Date"),
+        )
+      expect(dateToggle).toBeDefined()
+      if (dateToggle) {
+        fireEvent.click(dateToggle)
+        expect(dateToggle.getAttribute("aria-expanded")).toBe("true")
+      }
     })
 
-    it("should always show calendar and time selector by default", () => {
+    it("should always show calendar and time selector by default", async () => {
       renderWithTasks(
         [mockTask],
         <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
-      // Calendar should be visible by default
-      expect(screen.getByRole("grid")).toBeInTheDocument()
-      // Time selector should also be visible with empty inputs by default
-      const hourInput = screen.getAllByRole("spinbutton")[0]
-      const minuteInput = screen.getAllByRole("spinbutton")[1]
-      expect(hourInput).toHaveValue(null)
-      expect(minuteInput).toHaveValue(null)
-      // Toggle button should not be present
-      expect(screen.queryByText("Show calendar & time")).not.toBeInTheDocument()
+      const dateToggle = screen
+        .getAllByRole("button")
+        .find(
+          (btn) => btn.getAttribute("aria-expanded") !== null && btn.textContent?.includes("Date"),
+        )
+      expect(dateToggle).toBeDefined()
+      if (dateToggle) {
+        fireEvent.click(dateToggle)
+        expect(dateToggle.getAttribute("aria-expanded")).toBe("true")
+      }
+
+      // Time toggle should be present
+      const timeToggle = screen
+        .getAllByRole("button")
+        .find(
+          (btn) => btn.getAttribute("aria-expanded") !== null && btn.textContent?.includes("Time"),
+        )
+      expect(timeToggle).toBeDefined()
     })
 
     it("should call updateTask with correct parameters for today", () => {
@@ -566,30 +634,45 @@ describe("TaskScheduleContent", () => {
   })
 
   describe("Time Selection Mode", () => {
-    it("should show time selector by default with calendar", () => {
+    const openTimePicker = () => {
+      const toggle = screen
+        .getAllByRole("button")
+        .find(
+          (btn) => btn.getAttribute("aria-expanded") !== null && btn.textContent?.includes("Time"),
+        )
+      if (!toggle) {
+        throw new Error("Expected to find time toggle button")
+      }
+      fireEvent.click(toggle)
+    }
+
+    const getTimeInputs = async () => {
+      openTimePicker()
+      await waitFor(() => expect(screen.getAllByRole("spinbutton").length).toBeGreaterThan(1))
+      const [hourInput, minuteInput] = screen.getAllByRole("spinbutton")
+      return { hourInput, minuteInput }
+    }
+
+    it("should show time selector by default with calendar", async () => {
       renderWithTasks(
         [mockTask],
         <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
-      // Time selector should be visible by default with empty inputs
-      const hourInput = screen.getAllByRole("spinbutton")[0]
-      const minuteInput = screen.getAllByRole("spinbutton")[1]
-      expect(hourInput).toHaveValue(null)
-      expect(minuteInput).toHaveValue(null)
+      const { hourInput, minuteInput } = await getTimeInputs()
+      expect(hourInput).toHaveValue(12) // Default hour value
+      expect(minuteInput).toHaveValue(0) // Default minute value ("00" parsed as number)
       expect(screen.getByText("Set")).toBeInTheDocument()
-      expect(screen.getByText("Set")).toBeDisabled() // Should be disabled when inputs are empty
+      expect(screen.getByText("Set")).not.toBeDisabled() // Should be enabled with default values
     })
 
-    it("should call updateTask with dueTime when Set button is clicked", () => {
+    it("should call updateTask with dueTime when Set button is clicked", async () => {
       renderWithTasks(
         [mockTask],
         <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
-      // Fill in time inputs first
-      const hourInput = screen.getAllByRole("spinbutton")[0]
-      const minuteInput = screen.getAllByRole("spinbutton")[1]
+      const { hourInput, minuteInput } = await getTimeInputs()
       if (!hourInput || !minuteInput) {
         throw new Error("Expected to find hour and minute inputs")
       }
@@ -609,29 +692,27 @@ describe("TaskScheduleContent", () => {
       ])
     })
 
-    it("should auto-fill minute to 00 when hour is set", () => {
+    it("should auto-fill minute to 00 when hour is set", async () => {
       renderWithTasks(
         [mockTask],
         <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
-      // Fill in only hour input
-      const hourInput = screen.getAllByRole("spinbutton")[0]
-      const minuteInput = screen.getAllByRole("spinbutton")[1]
+      const { hourInput, minuteInput } = await getTimeInputs()
       if (!hourInput || !minuteInput) {
         throw new Error("Expected to find hour and minute inputs")
       }
 
-      // Initially minute should be empty
-      expect(minuteInput).toHaveValue(null)
+      // Initially minute should already have default value "00"
+      expect(minuteInput).toHaveValue(0) // "00" parsed as number
 
-      // When hour is entered, minute should auto-fill to "00"
+      // When hour is changed, minute should remain "00"
       fireEvent.change(hourInput, { target: { value: "9" } })
 
-      // Minute input should now show "00" automatically
+      // Minute input should still show "00"
       expect(minuteInput).toHaveValue(0)
 
-      // Set button should now be enabled since both hour and minute are filled
+      // Set button should be enabled since both hour and minute are filled
       const setButton = screen.getByRole("button", { name: "Set" })
       expect(setButton).not.toBeDisabled()
     })
@@ -645,6 +726,8 @@ describe("TaskScheduleContent", () => {
         [taskWithTime],
         <TaskScheduleContent taskId={taskWithTime.id} onClose={mockOnClose} />,
       )
+
+      openTimePicker()
 
       expect(screen.getByText("Clear Time")).toBeInTheDocument()
     })
@@ -690,7 +773,7 @@ describe("TaskScheduleContent", () => {
       ])
     })
 
-    it("should display time in 12-hour format when task has existing time", () => {
+    it("should display time in 12-hour format when task has existing time", async () => {
       const dueTime = new Date()
       dueTime.setHours(13, 22, 0, 0) // 1:22 PM in 24-hour format
       const taskWith1PmTime = { ...mockTask, dueTime }
@@ -701,9 +784,7 @@ describe("TaskScheduleContent", () => {
       )
 
       // Should display "1" in the hour field, not "13"
-      const spinButtons = screen.getAllByRole("spinbutton")
-      const hourInput = spinButtons[0]
-      const minuteInput = spinButtons[1]
+      const { hourInput, minuteInput } = await getTimeInputs()
 
       expect(hourInput).toHaveValue(1) // Should show 1, not 13
       expect(minuteInput).toHaveValue(22)
@@ -712,33 +793,54 @@ describe("TaskScheduleContent", () => {
       expect(screen.getByText("PM")).toBeInTheDocument()
     })
 
-    it("should have consistent height for all time picker controls", () => {
+    it("keeps local date and time selections synced when the task updates", async () => {
+      const initialDueDate = new Date(2024, 0, 1, 9, 15)
+      const initialTask = { ...mockTask, dueDate: initialDueDate, dueTime: initialDueDate }
+
+      const { rerender } = renderWithTasks(
+        [initialTask],
+        <TaskScheduleContent taskId={initialTask.id} onClose={mockOnClose} />,
+      )
+
+      // Simulate the task being updated elsewhere with a new date/time
+      const updatedDueDate = new Date(2024, 1, 2, 16, 45) // Feb 2, 2024 @ 4:45 PM
+      mockTasks = [{ ...initialTask, dueDate: updatedDueDate, dueTime: updatedDueDate }]
+      rerender(<TaskScheduleContent taskId={initialTask.id} onClose={mockOnClose} />)
+
+      const { hourInput, minuteInput } = await getTimeInputs()
+      expect(hourInput).toHaveValue(4) // 4 PM (12-hour format)
+      expect(minuteInput).toHaveValue(45)
+      expect(screen.getByText("PM")).toBeInTheDocument()
+
+      const expectedDateLabel = `${updatedDueDate.toLocaleDateString("en-US", {
+        weekday: "short",
+      })}, ${updatedDueDate.getMonth() + 1}/${updatedDueDate.getDate()}/${updatedDueDate.getFullYear()}`
+      await waitFor(() => expect(screen.getByText(expectedDateLabel)).toBeInTheDocument())
+    })
+
+    it("should have consistent height for all time picker controls", async () => {
       renderWithTasks(
         [mockTask],
         <TaskScheduleContent taskId={mockTask.id} onClose={mockOnClose} />,
       )
 
-      // Get all time picker controls
-      const hourInput = screen.getAllByRole("spinbutton")[0]
-      const minuteInput = screen.getAllByRole("spinbutton")[1]
-      // Get the AM/PM selector - it's the third combobox (after month and year dropdowns)
-      const amPmTrigger = screen.getAllByRole("combobox")[2]
+      const { hourInput, minuteInput } = await getTimeInputs()
+      const amPmTrigger = screen.getAllByRole("combobox")[0]
       const setButton = screen.getByRole("button", { name: "Set" })
 
       if (!hourInput || !minuteInput || !amPmTrigger) {
         throw new Error("Expected to find hour, minute, and AM/PM controls")
       }
 
-      // All controls should have h-8 class (32px height)
-      // Check that the inputs have w-10 and h-8
-      expect(hourInput.className).toContain("h-8")
-      expect(minuteInput.className).toContain("h-8")
+      // All controls should share the time control height (currently h-10)
+      expect(hourInput.className).toContain("h-10")
+      expect(minuteInput.className).toContain("h-10")
 
       // Check that AM/PM trigger has !h-8 (important height override)
-      expect(amPmTrigger.className).toContain("!h-8")
+      expect(amPmTrigger.className).toContain("h-10")
 
-      // Check that Set button has h-8
-      expect(setButton.className).toContain("h-8")
+      // Check that Set button matches height
+      expect(setButton.className).toContain("h-10")
     })
   })
 
@@ -759,6 +861,9 @@ describe("TaskScheduleContent", () => {
     it("should display due date only when no due time is set", () => {
       const dueDate = new Date("2024-01-15")
       const taskWithDueDate = { ...mockTask, dueDate }
+      const expectedDate = `${dueDate.getMonth() + 1}/${dueDate.getDate()}${
+        dueDate.getFullYear() === currentYear ? "" : `/${dueDate.getFullYear()}`
+      }`
 
       renderWithTasks(
         [taskWithDueDate],
@@ -766,7 +871,7 @@ describe("TaskScheduleContent", () => {
       )
 
       // Should show date without time when no dueTime is set
-      expect(screen.getByText(/Due: Jan \d+/)).toBeInTheDocument()
+      expect(screen.getByText(`Due: ${expectedDate}`)).toBeInTheDocument()
       expect(screen.queryByText(/at 9:00 AM/)).not.toBeInTheDocument()
     })
 
@@ -775,6 +880,9 @@ describe("TaskScheduleContent", () => {
       const dueTime = new Date()
       dueTime.setHours(9, 0, 0, 0) // 9:00 AM
       const taskWithDateTime = { ...mockTask, dueDate, dueTime }
+      const expectedDate = `${dueDate.getMonth() + 1}/${dueDate.getDate()}${
+        dueDate.getFullYear() === currentYear ? "" : `/${dueDate.getFullYear()}`
+      }`
 
       renderWithTasks(
         [taskWithDateTime],
@@ -786,7 +894,7 @@ describe("TaskScheduleContent", () => {
         screen.getByText((content) => {
           return (
             content.includes("Due:") &&
-            content.includes("Jan") &&
+            content.includes(expectedDate) &&
             content.includes("AM") &&
             !content.includes("at")
           )
@@ -856,7 +964,7 @@ describe("TaskScheduleContent", () => {
       description: "",
     }
 
-    it("should render schedule options for new task", () => {
+    it("should render schedule options for new task", async () => {
       mockQuickAddTask = mockQuickTask
 
       render(<TaskScheduleContent onClose={mockOnClose} />)
@@ -865,8 +973,15 @@ describe("TaskScheduleContent", () => {
       expect(screen.getByText("Today")).toBeInTheDocument()
       expect(screen.getByText("Tomorrow")).toBeInTheDocument()
       expect(screen.getByText("Next Week")).toBeInTheDocument()
-      // Calendar is now always visible by default
-      expect(screen.getByRole("grid")).toBeInTheDocument() // Calendar grid
+      // Open date picker to expose calendar grid
+      const dateToggle =
+        screen
+          .getAllByRole("button")
+          .find(
+            (btn) =>
+              btn.getAttribute("aria-expanded") !== null && btn.textContent?.includes("Date"),
+          ) ?? screen.getByRole("button", { name: /Date/i })
+      fireEvent.click(dateToggle)
       expect(screen.getByRole("tab", { name: /Recurring/ })).toBeInTheDocument()
     })
 
@@ -1303,7 +1418,11 @@ describe("TaskScheduleContent", () => {
       await user.click(parseButton)
 
       await waitFor(() => {
-        expect(parseEnhancedNaturalLanguage).toHaveBeenCalledWith("tomorrow")
+        expect(parseEnhancedNaturalLanguage).toHaveBeenCalledWith(
+          "tomorrow",
+          expect.any(Set),
+          expect.objectContaining({ preferDayMonthFormat: false }),
+        )
         expect(mockUpdateTasks).toHaveBeenCalledWith([
           {
             id: TEST_TASK_ID_1,
@@ -1341,7 +1460,11 @@ describe("TaskScheduleContent", () => {
       await user.keyboard("{Enter}")
 
       await waitFor(() => {
-        expect(parseEnhancedNaturalLanguage).toHaveBeenCalledWith("tomorrow")
+        expect(parseEnhancedNaturalLanguage).toHaveBeenCalledWith(
+          "tomorrow",
+          expect.any(Set),
+          expect.objectContaining({ preferDayMonthFormat: false }),
+        )
         expect(mockUpdateTasks).toHaveBeenCalledWith([
           {
             id: TEST_TASK_ID_1,

@@ -140,6 +140,7 @@ vi.mock("lucide-react", () => ({
   Minimize2: () => <div data-testid="minimize2-icon" />,
   CheckSquare: () => <div data-testid="check-square-icon" />,
   AlertTriangle: () => <div data-testid="alert-triangle-icon" />,
+  Archive: () => <div data-testid="archive-icon" />,
 }))
 
 // Mock atoms
@@ -150,6 +151,7 @@ const mockAtoms = {
     sortBy: "default",
     sortDirection: "asc",
     showCompleted: false,
+    showArchived: false,
     showOverdue: true,
     searchQuery: "",
     showSidePanel: false,
@@ -233,12 +235,13 @@ describe("ViewOptionsContent", () => {
     renderWithJotai(<ViewOptionsContent />)
 
     expect(screen.getByText("Completed Tasks")).toBeInTheDocument()
+    expect(screen.getByText("Archived Tasks")).toBeInTheDocument()
     expect(screen.getByText("Overdue Tasks")).toBeInTheDocument()
     expect(screen.getByText("Side Panel")).toBeInTheDocument()
     expect(screen.getByText("Compact View")).toBeInTheDocument()
 
     const switches = screen.getAllByTestId("switch")
-    expect(switches.length).toBeGreaterThanOrEqual(4)
+    expect(switches.length).toBeGreaterThanOrEqual(5)
   })
 
   it("renders help popovers", () => {

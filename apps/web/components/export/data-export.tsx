@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useAtomValue } from "jotai"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -26,7 +27,9 @@ import {
   FileSpreadsheet,
   File,
 } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
+import { formatDateDisplay, formatDateTimeDisplay } from "@/lib/utils/task-date-formatter"
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 
 interface ExportOptions {
   format: "json" | "csv" | "pdf" | "xlsx"
@@ -88,6 +91,9 @@ export function DataExport({
   totalDataSize,
   lastBackup,
 }: DataExportProps) {
+  const appSettings = useAtomValue(settingsAtom)
+  const preferDayMonthFormat = Boolean(appSettings.general.preferDayMonthFormat)
+  const use24HourTime = Boolean(appSettings.uiSettings.use24HourTime)
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
     format: "json",
     dateRange: {
@@ -231,7 +237,12 @@ export function DataExport({
             </div>
             <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <div className="text-2xl font-bold text-purple-600">
-                {lastBackup ? lastBackup.toLocaleDateString() : "Never"}
+                {lastBackup
+                  ? formatDateDisplay(lastBackup, {
+                      includeYear: true,
+                      preferDayMonthFormat,
+                    })
+                  : "Never"}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400">Last Backup</div>
             </div>
@@ -522,7 +533,13 @@ export function DataExport({
                       </Badge>
                     </div>
                     <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
-                      <span>{job.createdAt.toLocaleString()}</span>
+                      <span>
+                        {formatDateTimeDisplay(job.createdAt, {
+                          includeYear: true,
+                          preferDayMonthFormat,
+                          use24HourTime,
+                        })}
+                      </span>
                       {job.size && <span>{formatBytes(job.size)}</span>}
                       {job.error && <span className="text-red-600">{job.error}</span>}
                     </div>

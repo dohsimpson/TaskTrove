@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { useSetAtom, useAtomValue } from "jotai"
 import { Button } from "@/components/ui/button"
 import { Plus, FolderPlus } from "lucide-react"
@@ -18,15 +19,29 @@ import { isValidProjectId } from "@/lib/utils/routing"
 import { createProjectId } from "@tasktrove/types/id"
 import { cn } from "@/lib/utils"
 
-interface ProjectViewToolbarProps {
+export type ProjectViewToolbarExtraActions =
+  | ReactNode
+  | {
+      left?: ReactNode
+      right?: ReactNode
+    }
+
+export interface ProjectViewToolbarProps {
   className?: string
+  extraActions?: ProjectViewToolbarExtraActions
+}
+
+const isExtraActionsConfig = (
+  value: ProjectViewToolbarExtraActions | undefined,
+): value is { left?: ReactNode; right?: ReactNode } => {
+  return Boolean(value && typeof value === "object" && ("left" in value || "right" in value))
 }
 
 /**
  * Unified toolbar component for project views containing filter controls, search input, add section button, and add task button.
  * Used across different view types (kanban, project sections, etc.) for consistent UI.
  */
-export function ProjectViewToolbar({ className }: ProjectViewToolbarProps) {
+export function ProjectViewToolbar({ className, extraActions }: ProjectViewToolbarProps) {
   const { t } = useTranslation("task")
   const openQuickAddAction = useSetAtom(openQuickAddAtom)
   const openSectionDialog = useSetAtom(openSectionDialogAtom)
@@ -37,6 +52,8 @@ export function ProjectViewToolbar({ className }: ProjectViewToolbarProps) {
     routeContext.routeType === "project" && isValidProjectId(routeContext.viewId)
   const projectId = isProjectContext ? createProjectId(routeContext.viewId) : undefined
   const hasSelection = selectedTaskIds.length > 0
+  const leftExtraActions = isExtraActionsConfig(extraActions) ? extraActions.left : extraActions
+  const rightExtraActions = isExtraActionsConfig(extraActions) ? extraActions.right : null
 
   const handleAddSection = () => {
     if (projectId) {
@@ -45,20 +62,14 @@ export function ProjectViewToolbar({ className }: ProjectViewToolbarProps) {
   }
 
   return (
-    <div
-      className={cn(
-        "sticky z-10 bg-background py-3",
-        hasSelection ? "top-14 pt-0" : "top-0",
-        className,
-      )}
-    >
+    <div className={cn("my-2 sticky z-10", hasSelection ? "top-14 pt-0" : "top-0", className)}>
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex flex-1 flex-wrap items-center gap-2">
           <TaskFilterControls />
           <TaskSortControls />
           <TaskSearchInput />
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 mr-2">
           {isProjectContext && (
             <Button
               onClick={handleAddSection}
@@ -70,6 +81,7 @@ export function ProjectViewToolbar({ className }: ProjectViewToolbarProps) {
               {t("actions.addSection", "Add Section")}
             </Button>
           )}
+          {leftExtraActions}
           <Button
             onClick={() => openQuickAddAction()}
             variant="default"
@@ -79,6 +91,7 @@ export function ProjectViewToolbar({ className }: ProjectViewToolbarProps) {
             <Plus className="h-4 w-4 mr-1.5" />
             {t("actions.addTask", "Add Task")}
           </Button>
+          {rightExtraActions}
         </div>
       </div>
       <TaskFilterBadges />

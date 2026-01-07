@@ -114,7 +114,11 @@ describe("WeekMonthPicker", () => {
       await userEvent.click(trigger)
     }
 
-    const targetWeek = screen.getByRole("button", { name: /Week 10.*Mar 4 - Mar 10/i })
+    // Advance from the year stage to the week stage before selecting a week.
+    const yearButton = screen.getByRole("button", { name: "2024" })
+    await userEvent.click(yearButton)
+
+    const targetWeek = screen.getByRole("button", { name: /Week 10/i })
     await userEvent.click(targetWeek)
 
     expect(onSelectDate).toHaveBeenCalledTimes(1)

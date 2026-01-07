@@ -13,14 +13,14 @@ describe("MaterialCard", () => {
     const { container } = render(<MaterialCard>Content</MaterialCard>)
     const card = container.firstChild
     if (!(card instanceof HTMLElement)) throw new Error("Expected HTMLElement")
-    expect(card).toHaveClass("p-3", "sm:p-4", "rounded-lg", "border-l-[3px]")
+    expect(card).toHaveClass("px-3", "sm:px-4", "py-3", "rounded-lg", "border-l-[3px]")
   })
 
   it("applies compact variant styles", () => {
     const { container } = render(<MaterialCard variant="compact">Content</MaterialCard>)
     const card = container.firstChild
     if (!(card instanceof HTMLElement)) throw new Error("Expected HTMLElement")
-    expect(card).toHaveClass("p-2.5", "rounded-lg", "border-l-[3px]")
+    expect(card).toHaveClass("px-1", "rounded-lg", "border-l-[3px]")
   })
 
   it("applies kanban variant styles", () => {

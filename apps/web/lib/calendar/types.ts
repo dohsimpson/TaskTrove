@@ -4,7 +4,7 @@
  */
 
 import type { Task } from "@tasktrove/types/core"
-import type { TaskId } from "@tasktrove/types/id"
+import { TaskIdSchema, type TaskId } from "@tasktrove/types/id"
 
 // Re-export DueDate as Date for now
 export type DueDate = Date
@@ -30,7 +30,11 @@ export interface CalendarTimeSlot {
 export interface CalendarTaskPosition {
   top: number
   height: number
+  startMinutes: number
+  endMinutes: number
   task: Task
+  columnIndex: number
+  columnCount: number
   overlaps: number
   zIndex: number
 }
@@ -49,10 +53,10 @@ export interface CalendarDropTarget {
  * Draggable calendar item data
  */
 export interface CalendarDragData {
-  type: "draggable-item"
-  dragId: TaskId
+  type: "draggable-item" | "list-item"
+  dragId?: TaskId
   taskId: TaskId
-  sourceType: "calendar" | "sidebar" | "label"
+  sourceType?: "calendar" | "sidebar" | "label"
   sourceData?: {
     date?: string
     fromAllDay?: boolean
@@ -73,7 +77,7 @@ export interface CalendarDropParams {
 /**
  * Calendar view modes
  */
-export type CalendarViewMode = "month" | "week"
+export type CalendarViewMode = "month" | "week" | "day"
 
 /**
  * Calendar state interface
@@ -108,10 +112,47 @@ export function isCalendarDragData(data: unknown): data is CalendarDragData {
     typeof data === "object" &&
     data !== null &&
     "type" in data &&
-    data.type === "draggable-item" &&
+    (data.type === "draggable-item" || data.type === "list-item") &&
     "taskId" in data &&
     typeof data.taskId === "string"
   )
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null
+
+/**
+ * Extracts valid task IDs from drag data, supporting both single and multi-select drags.
+ */
+export function extractTaskIdsFromDragData(data: unknown): TaskId[] {
+  if (!isRecord(data)) return []
+  const payload = data
+
+  const idsFromArray = Array.isArray(payload.ids)
+    ? payload.ids.filter((id): id is string => typeof id === "string")
+    : []
+
+  const rawIds: string[] = []
+
+  if (idsFromArray.length > 0) {
+    rawIds.push(...idsFromArray)
+  } else {
+    if (typeof payload.taskId === "string") {
+      rawIds.push(payload.taskId)
+    }
+
+    if (typeof payload.dragId === "string") {
+      rawIds.push(payload.dragId)
+    }
+  }
+
+  if (rawIds.length === 0) return []
+
+  const unique = Array.from(new Set(rawIds))
+  return unique.flatMap((id) => {
+    const parsed = TaskIdSchema.safeParse(id)
+    return parsed.success ? [parsed.data] : []
+  })
 }
 
 /**

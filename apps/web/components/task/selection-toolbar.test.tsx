@@ -24,7 +24,7 @@ vi.mock("jotai", () => ({
   useSetAtom: vi.fn((atom) => {
     const label = String(atom?.debugLabel ?? "")
     if (label.includes("clearSelectedTasks")) return mockClearSelection
-    if (label.includes("tasksAtom")) return mockUpdateTasks
+    if (label.includes("updateTasksAtom")) return mockUpdateTasks
     if (label.includes("deleteTasksAtom")) return mockDeleteTasks
     if (label.includes("updateTask")) return mockUpdateTask
     return vi.fn()

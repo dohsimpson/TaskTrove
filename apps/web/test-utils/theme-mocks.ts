@@ -13,39 +13,46 @@ interface MockThemeConfig {
   wrapInDiv?: boolean
 }
 
+type ThemeState = Required<MockThemeConfig>
+
+const themeState: ThemeState = {
+  theme: "light",
+  setTheme: vi.fn(),
+  themes: ["light", "dark", "system"],
+  systemTheme: "light",
+  resolvedTheme: "light",
+  wrapInDiv: false,
+}
+
+vi.mock("next-themes", () => ({
+  useTheme: vi.fn(() => ({
+    theme: themeState.theme,
+    setTheme: themeState.setTheme,
+    themes: themeState.themes,
+    systemTheme: themeState.systemTheme,
+    resolvedTheme: themeState.resolvedTheme,
+  })),
+  ThemeProvider: ({ children }: { children: React.ReactNode }) =>
+    themeState.wrapInDiv ? React.createElement("div", {}, children) : children,
+}))
+
 /**
- * Mock next-themes with default values
- * For custom configuration, use inline vi.mock in your test file
+ * Mock next-themes with default values.
+ * Safe for hoisting because it only mutates shared state used by the mocked module.
  */
 export const mockNextThemes = (config: MockThemeConfig = {}) => {
-  vi.mock("next-themes", () => ({
-    useTheme: vi.fn(() => ({
-      theme: "light",
-      setTheme: vi.fn(),
-      themes: ["light", "dark", "system"],
-      systemTheme: "light",
-      resolvedTheme: "light",
-    })),
-    ThemeProvider: ({ children }: { children: React.ReactNode }) => children,
-  }))
+  themeState.theme = config.theme ?? "light"
+  themeState.setTheme = config.setTheme ?? vi.fn()
+  themeState.themes = config.themes ?? ["light", "dark", "system"]
+  themeState.systemTheme = config.systemTheme ?? "light"
+  themeState.resolvedTheme = config.resolvedTheme ?? "light"
+  themeState.wrapInDiv = config.wrapInDiv ?? false
 }
 
 /**
  * Mock next-themes with div wrapper for ThemeProvider
  */
-export const mockNextThemesWithWrapper = () => {
-  vi.mock("next-themes", () => ({
-    useTheme: () => ({
-      theme: "light",
-      setTheme: vi.fn(),
-      themes: ["light", "dark", "system"],
-      systemTheme: "light",
-      resolvedTheme: "light",
-    }),
-    ThemeProvider: ({ children }: { children: React.ReactNode }) =>
-      React.createElement("div", {}, children),
-  }))
-}
+export const mockNextThemesWithWrapper = () => mockNextThemes({ wrapInDiv: true })
 
 /**
  * Create a mock setTheme function that can be spied on

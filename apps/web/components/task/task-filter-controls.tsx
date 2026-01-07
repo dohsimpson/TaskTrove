@@ -13,7 +13,7 @@ import {
   currentViewAtom,
 } from "@tasktrove/atoms/ui/views"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
-import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { labelsAtom, settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { uiFilteredTasksForViewAtom } from "@tasktrove/atoms/ui/filtered-tasks"
 import type { Task, Project, Label as LabelType } from "@tasktrove/types/core"
 import type { LabelId, ProjectId } from "@tasktrove/types/id"
@@ -21,7 +21,7 @@ import { createLabelId } from "@tasktrove/types/id"
 import { cn } from "@/lib/utils"
 import { getPriorityTextColor } from "@/lib/color-utils"
 import { DueDatePreset, getPresetLabel, getPresetTaskCounts } from "@/lib/utils/date-filter-utils"
-import { format } from "date-fns"
+import { formatDateDisplay } from "@/lib/utils/task-date-formatter"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -116,6 +116,8 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
   // Data for filters
   const allProjects = useAtomValue(projectAtoms.derived.allProjects)
   const allLabels = useAtomValue(labelsAtom)
+  const settings = useAtomValue(settingsAtom)
+  const preferDayMonthFormat = Boolean(settings.general.preferDayMonthFormat)
 
   // Get task counts for each preset (using tasks filtered by everything except due date)
   const tasksForCounts = useAtomValue(tasksForCountsAtom)
@@ -341,11 +343,29 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                         <CalendarIcon className="h-3 w-3 mr-1.5" />
                         {activeFilters.dueDateFilter.customRange.start &&
                         activeFilters.dueDateFilter.customRange.end
-                          ? `${format(activeFilters.dueDateFilter.customRange.start, "MMM dd")} - ${format(activeFilters.dueDateFilter.customRange.end, "MMM dd")}`
+                          ? `${formatDateDisplay(activeFilters.dueDateFilter.customRange.start, {
+                              preferDayMonthFormat,
+                              pad: true,
+                            })} - ${formatDateDisplay(activeFilters.dueDateFilter.customRange.end, {
+                              preferDayMonthFormat,
+                              pad: true,
+                            })}`
                           : activeFilters.dueDateFilter.customRange.start
-                            ? `From ${format(activeFilters.dueDateFilter.customRange.start, "MMM dd")}`
+                            ? `From ${formatDateDisplay(
+                                activeFilters.dueDateFilter.customRange.start,
+                                {
+                                  preferDayMonthFormat,
+                                  pad: true,
+                                },
+                              )}`
                             : activeFilters.dueDateFilter.customRange.end
-                              ? `Until ${format(activeFilters.dueDateFilter.customRange.end, "MMM dd")}`
+                              ? `Until ${formatDateDisplay(
+                                  activeFilters.dueDateFilter.customRange.end,
+                                  {
+                                    preferDayMonthFormat,
+                                    pad: true,
+                                  },
+                                )}`
                               : t("filters.customRange", "Custom Range")}
                       </div>
                       <Button
@@ -386,7 +406,11 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                           >
                             <CalendarIcon className="mr-2 h-3 w-3" />
                             {customStart
-                              ? format(customStart, "MMM dd, yyyy")
+                              ? formatDateDisplay(customStart, {
+                                  includeYear: true,
+                                  preferDayMonthFormat,
+                                  pad: true,
+                                })
                               : t("filters.selectStartDate", "Select start date")}
                           </Button>
                         </PopoverTrigger>
@@ -414,7 +438,11 @@ export function TaskFilterControls({ className }: TaskFilterControlsProps) {
                           >
                             <CalendarIcon className="mr-2 h-3 w-3" />
                             {customEnd
-                              ? format(customEnd, "MMM dd, yyyy")
+                              ? formatDateDisplay(customEnd, {
+                                  includeYear: true,
+                                  preferDayMonthFormat,
+                                  pad: true,
+                                })
                               : t("filters.selectEndDate", "Select end date")}
                           </Button>
                         </PopoverTrigger>

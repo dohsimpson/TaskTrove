@@ -33,20 +33,20 @@ describe("Data Migration Utility", () => {
   })
 
   describe("migrateDataFile", () => {
-    it("should handle data that needs no migration", () => {
+    it("should handle data that needs no migration", async () => {
       const highVersionData = createJsonData({
         ...DEFAULT_EMPTY_DATA_FILE,
         version: "v9.9.9",
       })
 
-      const result = migrateDataFile(highVersionData)
+      const result = await migrateDataFile(highVersionData)
       expect(result.version).toBe(createVersionString("v9.9.9"))
       expect(result).toHaveProperty("tasks")
       expect(result).toHaveProperty("projects")
       expect(result).toHaveProperty("labels")
     })
 
-    it("should reject migration attempts for versions below v0.8.0", () => {
+    it("should reject migration attempts for versions below v0.8.0", async () => {
       const legacyData = createJsonData({
         tasks: [],
         projects: [],
@@ -55,7 +55,9 @@ describe("Data Migration Utility", () => {
         version: "v0.7.9",
       })
 
-      expect(() => migrateDataFile(legacyData)).toThrow(/Minimum supported version is v0\.8\.0/)
+      await expect(migrateDataFile(legacyData)).rejects.toThrow(
+        /Minimum supported version is v0\.8\.0/,
+      )
     })
   })
 

@@ -14,7 +14,6 @@ export interface JobConfig {
   schedule: JobSchedule;
   handler: JobHandler;
   runOnInit?: boolean;
-  autoStart?: boolean;
 }
 
 export interface ScheduledTaskHandle {
@@ -44,7 +43,6 @@ export interface SchedulerOptions {
 
 interface NormalizedJobConfig extends JobConfig {
   runOnInit: boolean;
-  autoStart: boolean;
 }
 
 interface RegisteredJob {
@@ -168,7 +166,7 @@ export class Scheduler {
 
     this.jobs.set(normalizedJob.id, record);
 
-    if (this.started && normalizedJob.autoStart) {
+    if (this.started) {
       task.start();
     }
 
@@ -195,10 +193,7 @@ export class Scheduler {
     }
 
     this.started = true;
-    for (const { config, task } of this.jobs.values()) {
-      if (!config.autoStart) {
-        continue;
-      }
+    for (const { task } of this.jobs.values()) {
       task.start();
     }
   }
@@ -230,7 +225,6 @@ export class Scheduler {
         type: config.schedule.type,
         expression: config.schedule.expression,
       },
-      autoStart: config.autoStart,
     }));
   }
 
@@ -243,7 +237,6 @@ export class Scheduler {
   }
 
   private normalizeJob(job: JobConfig): NormalizedJobConfig {
-    const autoStart = job.autoStart ?? true;
     const runOnInit = job.runOnInit ?? false;
 
     // JobSchedule is always CronExpression which only supports "cron" type
@@ -251,7 +244,6 @@ export class Scheduler {
 
     return {
       ...job,
-      autoStart,
       runOnInit,
       schedule: {
         ...job.schedule,

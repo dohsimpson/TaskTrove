@@ -20,11 +20,11 @@ import { DataFileSerializationSchema } from "@tasktrove/types/data-file"
 import { createProjectId, createGroupId } from "@tasktrove/types/id"
 import {
   DEFAULT_SECTION_NAME,
-  DEFAULT_SECTION_COLOR,
   DEFAULT_PROJECT_COLORS,
+  DEFAULT_SECTION_COLORS,
   DEFAULT_UUID,
+  getRandomPaletteColor,
 } from "@tasktrove/constants"
-import { createSafeProjectNameSlug } from "@/lib/utils/routing"
 import {
   withApiLogging,
   logBusinessEvent,
@@ -148,15 +148,12 @@ async function createProject(
     ...validation.data,
     id: createProjectId(uuidv4()),
     name: validation.data.name, // Required field
-    slug:
-      validation.data.slug ?? createSafeProjectNameSlug(validation.data.name, fileData.projects),
-    color: validation.data.color ?? DEFAULT_PROJECT_COLORS[0], // Default color if not provided
+    color: validation.data.color ?? getRandomPaletteColor(DEFAULT_PROJECT_COLORS), // Random palette color if not provided
     sections: validation.data.sections ?? [
       {
         id: createGroupId(DEFAULT_UUID),
         name: DEFAULT_SECTION_NAME,
-        slug: "",
-        color: DEFAULT_SECTION_COLOR,
+        color: getRandomPaletteColor(DEFAULT_SECTION_COLORS),
         type: "section" as const,
         items: [],
         isDefault: true,
@@ -263,13 +260,6 @@ async function updateProjects(
 
     // Merge update into project
     const updatedProject = { ...project, ...update }
-
-    // If name is being updated but slug is not explicitly provided, regenerate slug
-    if (update.name && update.name !== project.name && !update.slug) {
-      // Filter out current project from slug generation to avoid self-collision
-      const otherProjects = fileData.projects.filter((p) => p.id !== project.id)
-      updatedProject.slug = createSafeProjectNameSlug(update.name, otherProjects)
-    }
 
     // Clean null values using utility function
     return clearNullValues(updatedProject)

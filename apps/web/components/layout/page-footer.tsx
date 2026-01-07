@@ -1,20 +1,21 @@
 "use client"
 
-import { useAtomValue, useSetAtom } from "jotai"
+import { useMemo } from "react"
+import { useAtomValue } from "jotai"
+import { useRouter } from "next/navigation"
 import { CheckCircle, Calendar } from "lucide-react"
 import { taskListForViewAtom } from "@tasktrove/atoms/ui/task-counts"
-import { toggleTaskAtom, completedTasksTodayAtom } from "@tasktrove/atoms/core/tasks"
-import { toggleTaskPanelWithViewStateAtom } from "@tasktrove/atoms/ui/views"
-import { selectedTaskRouteContextOverrideAtom } from "@tasktrove/atoms/ui/selection"
-import type { RouteContext } from "@tasktrove/atoms/ui/navigation"
+import { completedTasksTodayAtom } from "@tasktrove/atoms/core/tasks"
+import { getViewStateAtom } from "@tasktrove/atoms/ui/views"
+import type { ViewId } from "@tasktrove/types/id"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { Button } from "@/components/ui/button"
-import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
-import { TaskScheduleTrigger } from "@/components/task/task-schedule-trigger"
+import { TaskItem } from "@/components/task/task-item"
 import type { Task } from "@tasktrove/types/core"
-import { cn } from "@/lib/utils"
+import { sortTasksByViewState } from "@tasktrove/atoms/utils/view-sorting"
 import { FocusTimerDisplay } from "@/components/task/focus-timer-display"
 import { useTranslation } from "@tasktrove/i18n"
+import { TaskSortControls } from "@/components/task/task-sort-controls"
 interface PageFooterProps {
   className?: string
 }
@@ -23,86 +24,54 @@ function TaskListContent({
   tasks,
   title,
   icon,
-  routeContextOverride,
+  titleRoutePath,
+  sortViewId,
 }: {
   tasks: Task[]
   title: string
   icon: React.ReactNode
-  routeContextOverride?: RouteContext
+  titleRoutePath?: string
+  sortViewId?: ViewId
 }) {
-  const toggleTask = useSetAtom(toggleTaskAtom)
-  const toggleTaskPanel = useSetAtom(toggleTaskPanelWithViewStateAtom)
-  const setRouteContextOverride = useSetAtom(selectedTaskRouteContextOverrideAtom)
+  const router = useRouter()
 
   // Translation setup
   const { t } = useTranslation("layout")
-
-  const handleTaskClick = (e: React.MouseEvent, task: Task) => {
-    // Don't trigger if clicking on buttons or interactive elements
-    const target = e.target
-    if (
-      !(target instanceof HTMLElement) ||
-      target.closest("button") ||
-      target.closest("[data-action]") ||
-      target.closest('[role="button"]') ||
-      target.closest("input") ||
-      target.closest("select") ||
-      target.closest("textarea")
-    ) {
-      return
-    }
-    // Set an override for the route context if provided so focus actions work correctly
-    setRouteContextOverride(routeContextOverride ?? null)
-    // Use atom action to open task panel
-    toggleTaskPanel(task)
-  }
 
   return (
     <div className="space-y-3 p-4">
       {/* Header - Similar to subtask popover */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {icon}
-          <span className="font-medium text-sm">{title}</span>
+        {titleRoutePath ? (
+          <button
+            type="button"
+            onClick={() => router.push(titleRoutePath)}
+            aria-label={`${title} view`}
+            className="inline-flex items-center gap-2 font-medium text-sm text-left underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded"
+          >
+            {icon}
+            <span>{title}</span>
+          </button>
+        ) : (
+          <div className="flex items-center gap-2">
+            {icon}
+            <span className="font-medium text-sm">{title}</span>
+          </div>
+        )}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>
+            {tasks.length}{" "}
+            {tasks.length === 1 ? t("footer.task", "task") : t("footer.tasks", "tasks")}
+          </span>
+          {sortViewId ? <TaskSortControls viewId={sortViewId} className="h-7 w-7" /> : null}
         </div>
-        <span className="text-xs text-muted-foreground">
-          {tasks.length}{" "}
-          {tasks.length === 1 ? t("footer.task", "task") : t("footer.tasks", "tasks")}
-        </span>
       </div>
 
       {/* Tasks List */}
       {tasks.length > 0 ? (
         <div className="space-y-1 max-h-64 overflow-y-auto">
           {tasks.map((task) => (
-            <div
-              key={task.id}
-              className={cn(
-                "flex items-center gap-2 p-2 rounded hover:bg-accent/50 text-sm transition-all duration-200 cursor-pointer",
-                task.completed && "opacity-60",
-              )}
-              onClick={(e) => handleTaskClick(e, task)}
-            >
-              <TaskCheckbox
-                checked={task.completed}
-                onCheckedChange={() => toggleTask(task.id)}
-                priority={task.priority}
-              />
-              <span className={`truncate flex-1 ${task.completed ? "line-through" : ""}`}>
-                {task.title}
-              </span>
-              {(task.dueDate || task.recurring) && (
-                <TaskScheduleTrigger
-                  dueDate={task.dueDate}
-                  dueTime={task.dueTime}
-                  recurring={task.recurring}
-                  recurringMode={task.recurringMode}
-                  completed={task.completed}
-                  variant="compact"
-                  className="ml-auto flex-shrink-0"
-                />
-              )}
-            </div>
+            <TaskItem key={task.id} taskId={task.id} variant="minimal" />
           ))}
         </div>
       ) : (
@@ -120,22 +89,19 @@ export function PageFooter({ className }: PageFooterProps) {
   // Task counts - using the same filtered atom as the "today" view for consistency
   const completedTasksToday = useAtomValue(completedTasksTodayAtom)
   const todayTasks = useAtomValue(taskListForViewAtom("today"))
+  const todayViewStateAtom = useMemo(() => getViewStateAtom("today"), [])
+  const todayViewState = useAtomValue(todayViewStateAtom)
   const dueTodayCount = todayTasks.length
+  const sortedTodayTasks = sortTasksByViewState([...todayTasks], todayViewState)
 
   // Translation setup
   const { t } = useTranslation("layout")
 
-  const todayRouteContext: RouteContext = {
+  const todayRouteContext = {
     pathname: "/today",
     viewId: "today",
     routeType: "standard",
-  }
-
-  const completedRouteContext: RouteContext = {
-    pathname: "/completed",
-    viewId: "completed",
-    routeType: "standard",
-  }
+  } as const
 
   return (
     <div
@@ -149,16 +115,17 @@ export function PageFooter({ className }: PageFooterProps) {
               tasks={Array.isArray(completedTasksToday) ? completedTasksToday : []}
               title={t("footer.completedToday", "Completed Today")}
               icon={<CheckCircle className="h-4 w-4" />}
-              routeContextOverride={completedRouteContext}
             />
           }
           className="w-80 p-0"
           align="start"
           side="top"
+          exclusive={false}
         >
           <Button
             variant="ghost"
             size="sm"
+            aria-label={t("footer.completedToday", "Completed Today")}
             className="flex items-center gap-1 h-auto px-0 py-0 hover:bg-transparent hover:text-foreground cursor-pointer"
           >
             <CheckCircle className="size-4" />
@@ -172,19 +139,22 @@ export function PageFooter({ className }: PageFooterProps) {
         <ContentPopover
           content={
             <TaskListContent
-              tasks={todayTasks}
+              tasks={sortedTodayTasks}
               title={t("footer.dueToday", "Due Today")}
               icon={<Calendar className="h-4 w-4" />}
-              routeContextOverride={todayRouteContext}
+              titleRoutePath={todayRouteContext.pathname}
+              sortViewId={todayRouteContext.viewId}
             />
           }
           className="w-80 p-0"
           align="start"
           side="top"
+          exclusive={false}
         >
           <Button
             variant="ghost"
             size="sm"
+            aria-label={t("footer.dueToday", "Due Today")}
             className="flex items-center gap-1 h-auto px-0 py-0 hover:bg-transparent hover:text-foreground cursor-pointer"
           >
             <Calendar className="size-4" />

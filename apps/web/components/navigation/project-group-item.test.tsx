@@ -38,7 +38,6 @@ describe("ProjectGroupItem", () => {
   const mockTestGroup: ProjectGroup = {
     id: createGroupId("123e4567-e89b-12d3-a456-426614174001"),
     name: "Test Group",
-    slug: "test-group",
     description: "Test group description",
     color: "#3b82f6",
     type: "project",
@@ -49,14 +48,12 @@ describe("ProjectGroupItem", () => {
     {
       id: TEST_PROJECT_ID_1,
       name: "Project 1",
-      slug: "project-1",
       color: "#ef4444",
       sections: [DEFAULT_PROJECT_SECTION],
     },
     {
       id: TEST_PROJECT_ID_2,
       name: "Project 2",
-      slug: "project-2",
       color: "#10b981",
       sections: [DEFAULT_PROJECT_SECTION],
     },
@@ -118,18 +115,6 @@ describe("ProjectGroupItem", () => {
     expect(screen.getByText("Project 2")).toBeInTheDocument()
   })
 
-  it("applies correct indentation for projects within groups", () => {
-    render(
-      <SidebarProvider>
-        <ProjectGroupItem {...defaultProps} />
-      </SidebarProvider>,
-    )
-
-    // Projects within groups should have ml-6 class (24px margin) on the button element
-    const projectButton = screen.getByText("Project 1").closest("button")
-    expect(projectButton).toHaveClass("ml-6")
-  })
-
   it("renders context menu when visible", () => {
     render(
       <SidebarProvider>
@@ -161,7 +146,6 @@ describe("ProjectGroupItem", () => {
     const nestedGroup: ProjectGroup = {
       id: createGroupId("123e4567-e89b-12d3-a456-426614174002"),
       name: "Nested Group",
-      slug: "nested-group",
       type: "project",
       color: "#f59e0b",
       items: [TEST_PROJECT_ID_1],
@@ -191,7 +175,6 @@ describe("ProjectGroupItem", () => {
     const nestedGroup: ProjectGroup = {
       id: createGroupId("123e4567-e89b-12d3-a456-426614174002"),
       name: "Nested Group",
-      slug: "nested-group",
       type: "project",
       color: "#f59e0b",
       items: [TEST_PROJECT_ID_1], // This should be ignored

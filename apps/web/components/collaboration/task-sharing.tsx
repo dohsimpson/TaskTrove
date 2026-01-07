@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useAtomValue } from "jotai"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,7 +24,9 @@ import {
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Share2, Users, MessageSquare, Bell, Copy, Mail, X, Crown, Shield, Eye } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
+import { formatDateDisplay } from "@/lib/utils/task-date-formatter"
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import type { TaskId } from "@tasktrove/types/id"
 import { getAvatarApiUrl } from "@tasktrove/utils"
 
@@ -75,6 +78,8 @@ export function TaskSharing({
   const [inviteMessage, setInviteMessage] = useState("")
   const [newComment, setNewComment] = useState("")
   const [showShareDialog, setShowShareDialog] = useState(false)
+  const settings = useAtomValue(settingsAtom)
+  const preferDayMonthFormat = Boolean(settings.general.preferDayMonthFormat)
 
   const handleInvite = () => {
     if (inviteEmail.trim()) {
@@ -291,7 +296,10 @@ export function TaskSharing({
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium text-sm">{comment.authorName}</span>
                       <span className="text-xs text-gray-500">
-                        {comment.createdAt.toLocaleDateString()}
+                        {formatDateDisplay(comment.createdAt, {
+                          includeYear: true,
+                          preferDayMonthFormat,
+                        })}
                       </span>
                     </div>
                     <p className="text-sm text-gray-700 dark:text-gray-300">{comment.content}</p>

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import { currentViewStateAtom, setViewOptionsAtom } from "@tasktrove/atoms/ui/views"
+import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
 import { draggingTaskIdsAtom } from "@tasktrove/atoms/ui/drag"
 import { DEFAULT_SORT_BY, DEFAULT_SORT_DIRECTION } from "@tasktrove/constants"
 import type { ViewState } from "@tasktrove/types/core"
@@ -17,6 +18,8 @@ interface SortStateSnapshot {
 }
 
 type DragSortFinalizeSource = "component-drop" | "component-cleanup" | "global-drop"
+
+const asMaybeViewState = (viewState: ViewState | null | undefined) => viewState
 
 const dragSortState: {
   activeParticipantCount: number
@@ -51,12 +54,17 @@ function attachGlobalDragListeners(callback: () => void) {
  * configuration is restored once the drag completes.
  */
 export function useResetSortOnDrag({ isEnabled = true }: UseResetSortOnDragOptions = {}) {
-  const currentViewState = useAtomValue(currentViewStateAtom)
-  const currentSortBy = currentViewState?.sortBy
-  const currentSortDirection = currentViewState?.sortDirection
+  const currentViewState = asMaybeViewState(useAtomValue(currentViewStateAtom))
+  const routeContext = useAtomValue(currentRouteContextAtom)
+  const currentSortBy = currentViewState?.sortBy ?? DEFAULT_SORT_BY
+  const currentSortDirection = currentViewState?.sortDirection ?? DEFAULT_SORT_DIRECTION
   const setViewOptions = useSetAtom(setViewOptionsAtom)
   const setDraggingTaskIds = useSetAtom(draggingTaskIdsAtom)
   const hasJoinedRef = useRef(false)
+  const canResetSort =
+    isEnabled &&
+    (currentViewState?.viewMode === "list" || currentViewState?.viewMode === "kanban") &&
+    routeContext.routeType === "project"
 
   const finalizeSortReset = useCallback(
     (source: DragSortFinalizeSource) => {
@@ -75,7 +83,6 @@ export function useResetSortOnDrag({ isEnabled = true }: UseResetSortOnDragOptio
       setDraggingTaskIds([])
 
       if (process.env.NODE_ENV !== "production") {
-        // eslint-disable-next-line no-console -- Debug logging for drag/sort behavior
         console.debug("[DragSort] Restored previous sort", { source, snapshot })
       }
     },
@@ -83,10 +90,9 @@ export function useResetSortOnDrag({ isEnabled = true }: UseResetSortOnDragOptio
   )
 
   const applyDefaultSort = useCallback(() => {
-    if (!isEnabled) return
+    if (!canResetSort) return
     if (currentSortBy === DEFAULT_SORT_BY) {
       if (process.env.NODE_ENV !== "production") {
-        // eslint-disable-next-line no-console -- Debug logging for drag/sort behavior
         console.debug("[DragSort] Sort already default; no reset applied")
       }
       return
@@ -106,13 +112,11 @@ export function useResetSortOnDrag({ isEnabled = true }: UseResetSortOnDragOptio
       attachGlobalDragListeners(() => finalizeSortReset("global-drop"))
 
       if (process.env.NODE_ENV !== "production") {
-        // eslint-disable-next-line no-console -- Debug logging for drag/sort behavior
         console.debug("[DragSort] Applied default sort to enable drag-and-drop", {
           snapshot: dragSortState.previousSort,
         })
       }
     } else if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console -- Debug logging for drag/sort behavior
       console.debug("[DragSort] Joined existing drag sort reset", {
         snapshot: dragSortState.previousSort,
       })
@@ -120,10 +124,11 @@ export function useResetSortOnDrag({ isEnabled = true }: UseResetSortOnDragOptio
 
     dragSortState.activeParticipantCount += 1
     hasJoinedRef.current = true
-  }, [currentSortBy, currentSortDirection, finalizeSortReset, isEnabled, setViewOptions])
+  }, [canResetSort, currentSortBy, currentSortDirection, finalizeSortReset, setViewOptions])
 
   const restorePreviousSort = useCallback(() => {
     if (!isEnabled) return
+    if (!currentViewState) return
     if (!hasJoinedRef.current) return
 
     hasJoinedRef.current = false
@@ -133,7 +138,6 @@ export function useResetSortOnDrag({ isEnabled = true }: UseResetSortOnDragOptio
     }
 
     if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console -- Debug logging for drag/sort behavior
       console.debug("[DragSort] Participant completed drag", {
         remainingParticipants: dragSortState.activeParticipantCount,
       })
@@ -142,7 +146,7 @@ export function useResetSortOnDrag({ isEnabled = true }: UseResetSortOnDragOptio
     if (dragSortState.activeParticipantCount === 0) {
       finalizeSortReset("component-drop")
     }
-  }, [finalizeSortReset, isEnabled])
+  }, [currentViewState, finalizeSortReset, isEnabled])
 
   useEffect(() => {
     return () => {
@@ -155,7 +159,6 @@ export function useResetSortOnDrag({ isEnabled = true }: UseResetSortOnDragOptio
       }
 
       if (process.env.NODE_ENV !== "production") {
-        // eslint-disable-next-line no-console -- Debug logging for drag/sort behavior
         console.debug("[DragSort] Participant unmounted during drag", {
           remainingParticipants: dragSortState.activeParticipantCount,
         })

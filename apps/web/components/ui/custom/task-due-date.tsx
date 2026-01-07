@@ -9,6 +9,8 @@ import { getEffectiveDueDate } from "@tasktrove/utils"
 import { log } from "@/lib/utils/logger"
 import { createTaskId } from "@tasktrove/types/id"
 import type { Task } from "@tasktrove/types/core"
+import { useAtomValue } from "jotai"
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 
 interface TaskDueDateProps {
   dueDate?: Date | null
@@ -35,6 +37,10 @@ export function TaskDueDate({
   variant = "default",
   className,
 }: TaskDueDateProps) {
+  const settings = useAtomValue(settingsAtom)
+  const use24HourTime = Boolean(settings.uiSettings.use24HourTime)
+  const preferDayMonthFormat = Boolean(settings.general.preferDayMonthFormat)
+
   if (!dueDate && !recurring) {
     return null
   }
@@ -80,22 +86,33 @@ export function TaskDueDate({
   const showCalendarIcon =
     primaryIcon === "calendar" || (primaryIcon === "overdue" && !hasRecurring)
 
+  const iconSize = variant === "compact" ? "h-3 w-3" : "h-4 w-4"
+
   const formatDueDate = (date: Date | null | undefined, time: Date | null | undefined) => {
-    return formatTaskDateTimeBadge({ dueDate: date || null, dueTime: time }) || ""
+    return formatTaskDateTimeBadge({ dueDate: date || null, dueTime: time }, undefined, {
+      use24HourTime,
+      preferDayMonthFormat,
+    })
   }
 
   return (
     <span
       className={cn(
-        "flex items-center gap-1",
+        "flex items-center gap-2",
         dueDate ? getDueDateTextColor(dueDate, completed, variant) : "text-muted-foreground",
         isOverdue && OVERDUE_BACKGROUND_CLASSES[variant],
         className,
       )}
     >
-      {showCalendarIcon && <Calendar className="h-3 w-3" data-testid="calendar-icon" />}
-      {primaryIcon === "repeat" && <Repeat className="h-3 w-3" data-testid="repeat-icon" />}
-      {secondaryIcon === "repeat" && <Repeat className="h-3 w-3" data-testid="repeat-icon" />}
+      {showCalendarIcon && (
+        <Calendar className={cn(iconSize, "shrink-0 flex-none")} data-testid="calendar-icon" />
+      )}
+      {primaryIcon === "repeat" && (
+        <Repeat className={cn(iconSize, "shrink-0 flex-none")} data-testid="repeat-icon" />
+      )}
+      {secondaryIcon === "repeat" && (
+        <Repeat className={cn(iconSize, "shrink-0 flex-none")} data-testid="repeat-icon" />
+      )}
       {displayDate || dueTime ? formatDueDate(displayDate, dueTime || undefined) : ""}
     </span>
   )

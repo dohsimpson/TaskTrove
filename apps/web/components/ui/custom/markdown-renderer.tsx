@@ -42,6 +42,7 @@ type BlockNode =
 interface RenderOptions {
   readonly onTaskItemToggle?: (taskIndex: number) => void
   readonly className?: string
+  readonly inLink?: boolean
   counters: {
     task: number
   }
@@ -95,6 +96,7 @@ export function MarkdownRenderer({
     onTaskItemToggle,
     className,
     counters: { task: 0 },
+    inLink: false,
   }
   const defaultClassName = cn(
     "markdown-renderer space-y-3 leading-relaxed text-muted-foreground",
@@ -385,10 +387,16 @@ function parseFencedCode(
   }
 }
 
-function parseInline(text: string): InlineNode[] {
+type ParseInlineOptions = {
+  readonly autolink?: boolean
+}
+
+function parseInline(text: string, options: ParseInlineOptions = {}): InlineNode[] {
   const nodes: InlineNode[] = []
   let index = 0
   let buffer = ""
+  const autoLinkPattern =
+    /(?:https?:\/\/|mailto:)[^\s<]+|www\.[^\s<]+|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/y
 
   const flushBuffer = (): void => {
     if (buffer.length > 0) {
@@ -398,6 +406,27 @@ function parseInline(text: string): InlineNode[] {
   }
 
   while (index < text.length) {
+    if (options.autolink !== false) {
+      autoLinkPattern.lastIndex = index
+      const autoLinkMatch = autoLinkPattern.exec(text)
+      if (autoLinkMatch !== null && autoLinkMatch.index === index) {
+        flushBuffer()
+        const rawLink = autoLinkMatch[0]
+        const href = computeAutoLinkHref(rawLink)
+        if (href !== null) {
+          nodes.push({
+            type: "link",
+            href,
+            children: [{ type: "text", value: rawLink }],
+          })
+        } else {
+          nodes.push({ type: "text", value: rawLink })
+        }
+        index += rawLink.length
+        continue
+      }
+    }
+
     const segment = text.slice(index)
     const charCandidate = text[index]
     if (charCandidate === undefined) {
@@ -480,10 +509,14 @@ function parseInline(text: string): InlineNode[] {
           flushBuffer()
           const label = text.slice(index + 1, closingBracket)
           const href = text.slice(closingBracket + 2, closingParen)
+          const normalizedLabelHref = computeAutoLinkHref(label)
           nodes.push({
             type: "link",
             href,
-            children: parseInline(label),
+            children:
+              normalizedLabelHref !== null
+                ? [{ type: "text", value: label }]
+                : parseInline(label, { autolink: false }),
           })
           index = closingParen + 1
           continue
@@ -634,9 +667,13 @@ function renderInlineNodes(
   nodes.forEach((node, nodeIndex) => {
     const key = `${prefix}-${nodeIndex}`
     if (node.type === "text") {
-      renderTextWithLinks(node.value, key).forEach((element) => {
-        rendered.push(element)
-      })
+      if (options.inLink) {
+        rendered.push(React.createElement(React.Fragment, { key }, node.value))
+      } else {
+        renderTextWithLinks(node.value, key).forEach((element) => {
+          rendered.push(element)
+        })
+      }
       return
     }
     if (node.type === "strong") {
@@ -684,7 +721,7 @@ function renderInlineNodes(
           target={external ? "_blank" : undefined}
           rel={external ? "noopener noreferrer" : undefined}
         >
-          {renderInlineNodes(node.children, `${key}-link`, options)}
+          {renderInlineNodes(node.children, `${key}-link`, { ...options, inLink: true })}
         </a>,
       )
       return

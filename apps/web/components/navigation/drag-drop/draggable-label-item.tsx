@@ -27,6 +27,7 @@ export function DraggableLabelItem({
       id={labelId}
       index={index}
       mode="list"
+      className="w-full"
       getData={() => ({
         type: "sidebar-label",
         labelId,

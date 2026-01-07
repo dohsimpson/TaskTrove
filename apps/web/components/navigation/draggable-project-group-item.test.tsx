@@ -6,6 +6,7 @@ import { DraggableProjectGroupItem } from "./draggable-project-group-item"
 import type { ProjectGroup } from "@tasktrove/types/group"
 import type { Project } from "@tasktrove/types/core"
 import { createProjectId, createGroupId } from "@tasktrove/types/id"
+import { createProjectGroupSlug } from "@tasktrove/utils"
 import { mockNextNavigation, mockNavigation } from "@/test-utils/mock-router"
 
 // Mock components that might cause issues
@@ -177,7 +178,6 @@ describe("DraggableProjectGroupItem", () => {
   const mockGroup: ProjectGroup = {
     id: createGroupId("11111111-1111-4111-8111-111111111111"),
     name: "Test Group",
-    slug: "test-group",
     color: "#FF5733",
     items: [createProjectId("22222222-2222-4222-8222-222222222222")],
     type: "project",
@@ -187,7 +187,6 @@ describe("DraggableProjectGroupItem", () => {
     {
       id: createProjectId("22222222-2222-4222-8222-222222222222"),
       name: "Test Project",
-      slug: "test-project",
       color: "#3498DB",
       sections: [DEFAULT_PROJECT_SECTION],
     },
@@ -250,7 +249,8 @@ describe("DraggableProjectGroupItem", () => {
       }
 
       // Should navigate to group page when not clicking chevron
-      expect(mockNavigation.getRouter().push).toHaveBeenCalledWith("/projectgroups/test-group")
+      const expectedSlug = createProjectGroupSlug(mockGroup)
+      expect(mockNavigation.getRouter().push).toHaveBeenCalledWith(`/projectgroups/${expectedSlug}`)
     })
 
     it("SVG elements are properly detected as Element instances", () => {

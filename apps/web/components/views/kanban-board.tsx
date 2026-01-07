@@ -21,18 +21,21 @@ export function KanbanBoard({ project }: KanbanBoardProps) {
   }
 
   return (
-    <TaskViewSidePanelLayout contentWrapperClassName="flex flex-col h-full min-h-0 overflow-hidden">
+    <TaskViewSidePanelLayout
+      contentWrapperClassName="flex flex-col h-full min-h-0 overflow-hidden"
+      applyContentPadding
+    >
       <div className="flex flex-col h-full min-h-0">
         {/* Selection Toolbar */}
         <SelectionToolbar />
 
         {/* Filter Controls, Search Input and Add Task Button */}
-        <ProjectViewToolbar className="px-4 pt-3" />
+        <ProjectViewToolbar />
 
         {/* Scrollable Kanban Columns */}
         <div className="flex-1 min-h-0 overflow-x-auto">
           <div
-            className={`px-4 py-3 flex flex-col sm:flex-row gap-2 h-full min-h-0 ${(project?.sections.length || 0) <= 1 ? "" : "sm:min-w-max"}`}
+            className={`pb-3 flex flex-col sm:flex-row gap-2 h-full min-h-0 ${(project?.sections.length || 0) <= 1 ? "" : "sm:min-w-max"}`}
           >
             {project?.sections.map((section, index) => (
               <Section
@@ -42,7 +45,7 @@ export function KanbanBoard({ project }: KanbanBoardProps) {
                 sectionId={section.id}
                 projectId={project.id}
                 droppableId={`kanban-${project.id}-section-${index}`}
-                wrapperClassName={`${getColumnClasses()} flex min-w-60 flex-col rounded-lg border bg-muted dark:bg-background py-1 px-2 flex-1 h-full min-h-0 overflow-hidden`}
+                wrapperClassName={`${getColumnClasses()} flex min-w-60 flex-col rounded-lg border bg-muted dark:bg-background flex-1 h-full min-h-0 overflow-hidden`}
               />
             ))}
           </div>

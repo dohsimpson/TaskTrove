@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback } from "react"
-import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
+import { DraggableTaskElement } from "@/components/task/draggable-task-element"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
 import { TaskItem } from "@/components/task/task-item"
 import { format } from "date-fns"
@@ -69,7 +69,9 @@ export function TimeSlot({ hour, label, tasks, date, onAddTask, onTaskDrop }: Ti
           dropTargetId={`time-slot-${format(date, "yyyy-MM-dd")}-${hour}`}
           dropClassName="ring-2 ring-primary/50 bg-primary/5"
           onDrop={handleDrop}
-          canDrop={({ source }) => source.data.type === "draggable-item"}
+          canDrop={({ source }) =>
+            source.data.type === "draggable-item" || source.data.type === "list-item"
+          }
           getData={() => ({
             type: "calendar-time-slot",
             date: format(date, "yyyy-MM-dd"),
@@ -79,14 +81,11 @@ export function TimeSlot({ hour, label, tasks, date, onAddTask, onTaskDrop }: Ti
         >
           <div className="space-y-1">
             {tasks.map((taskPos, index) => (
-              <DraggableWrapper
+              <DraggableTaskElement
                 key={`${taskPos.task.id}-${index}`}
-                dragId={taskPos.task.id}
-                index={0}
-                getData={() => ({
-                  type: "draggable-item",
-                  dragId: taskPos.task.id,
-                  taskId: taskPos.task.id,
+                taskId={taskPos.task.id}
+                getDragData={() => ({
+                  sourceType: "calendar",
                   fromTimeSlot: {
                     date: format(date, "yyyy-MM-dd"),
                     time: taskPos.top,
@@ -94,7 +93,7 @@ export function TimeSlot({ hour, label, tasks, date, onAddTask, onTaskDrop }: Ti
                 })}
               >
                 <TaskItem taskId={taskPos.task.id} variant="calendar" showProjectBadge={false} />
-              </DraggableWrapper>
+              </DraggableTaskElement>
             ))}
           </div>
         </DropTargetWrapper>

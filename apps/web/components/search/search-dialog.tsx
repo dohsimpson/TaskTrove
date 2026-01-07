@@ -7,6 +7,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Drawer, DrawerContent, DrawerHeader } from "@/components/ui/custom/drawer"
 import { Input } from "@/components/ui/input"
 import { Search, Flag, Calendar, FolderOpen, Hash, ArrowRight, Loader2, X } from "lucide-react"
 import { useAtomValue, useSetAtom } from "jotai"
@@ -15,22 +16,25 @@ import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import { labelAtoms } from "@tasktrove/atoms/core/labels"
 import { showSearchDialogAtom } from "@tasktrove/atoms/ui/dialogs"
 import { closeSearchAtom } from "@tasktrove/atoms/ui/navigation"
-import { toggleTaskPanelAtom } from "@tasktrove/atoms/ui/dialogs"
 import { TaskCheckbox } from "@/components/ui/custom/task-checkbox"
 import { Task, Project } from "@tasktrove/types/core"
+import { useTaskSearchNavigation } from "@/hooks/use-task-search-navigation"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { cn } from "@tasktrove/utils"
 
 export function SearchDialog() {
   // Dialog state atoms
   const open = useAtomValue(showSearchDialogAtom)
   const closeDialog = useSetAtom(closeSearchAtom)
-  const toggleTaskPanel = useSetAtom(toggleTaskPanelAtom)
   const tasks = useAtomValue(taskAtoms.tasks)
   const projects = useAtomValue(projectAtoms.projects)
   const labels = useAtomValue(labelAtoms.labels)
+  const isMobile = useIsMobile()
   const [searchValue, setSearchValue] = useState("")
   const [searchResults, setSearchResults] = useState<Task[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const { focusTaskFromSearch } = useTaskSearchNavigation()
 
   // Perform search with debounce
   const performSearch = useCallback(
@@ -145,19 +149,21 @@ export function SearchDialog() {
     })
   }
 
-  return (
-    <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContentWithoutOverlay
-        className="max-w-2xl max-h-[80vh] p-0 bg-card border shadow-2xl"
-        showCloseButton={false}
-      >
-        <DialogTitle className="sr-only">Search Tasks</DialogTitle>
-        <DialogDescription className="sr-only">
-          Search for tasks by title, project, or labels
-        </DialogDescription>
+  const searchPanel = (
+    <div className={cn("flex flex-col", isMobile ? "bg-background min-h-full" : "bg-card")}>
+      <DialogTitle className="sr-only">Search Tasks</DialogTitle>
+      <DialogDescription className="sr-only">
+        Search for tasks by title, project, or labels
+      </DialogDescription>
 
-        {/* Search Input */}
-        <div className="flex items-center border-b px-4 py-3">
+      <div className={cn("flex flex-col", !isMobile && "max-h-96 overflow-y-auto")}>
+        {/* Search Input (sticky) */}
+        <div
+          className={cn(
+            "sticky top-0 z-10 flex items-center px-4 py-3",
+            isMobile ? "bg-background" : "bg-card",
+          )}
+        >
           <Search className="h-4 w-4 text-muted-foreground mr-3" />
           <Input
             placeholder="Search tasks..."
@@ -167,9 +173,9 @@ export function SearchDialog() {
             autoFocus
           />
           <button
-            onClick={closeDialog}
+            onClick={() => setSearchValue("")}
             className="ml-3 p-1 rounded-sm hover:bg-accent transition-colors"
-            aria-label="Close search"
+            aria-label="Clear search"
           >
             <X className="h-4 w-4 text-muted-foreground" />
           </button>
@@ -177,7 +183,7 @@ export function SearchDialog() {
 
         {/* Results Area */}
         {(isSearching || searchResults.length > 0 || searchValue.trim()) && (
-          <div className="max-h-96 overflow-y-auto">
+          <div className="flex-1">
             {isSearching ? (
               <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -195,7 +201,7 @@ export function SearchDialog() {
                       className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent cursor-pointer transition-colors"
                       onClick={() => {
                         closeDialog()
-                        toggleTaskPanel(task)
+                        focusTaskFromSearch(task)
                       }}
                     >
                       <TaskCheckbox checked={task.completed} className="pointer-events-none" />
@@ -237,12 +243,12 @@ export function SearchDialog() {
                           {/* Labels */}
                           {task.labels.slice(0, 2).map((labelId) => {
                             const label = labels.find((l) => l.id === labelId)
-                            return label ? (
+                            return (
                               <div key={labelId} className="flex items-center gap-1">
                                 <Hash className="h-3 w-3" />
-                                <span>{highlightText(label.name, searchValue)}</span>
+                                <span>{highlightText(label?.name || "Label", searchValue)}</span>
                               </div>
-                            ) : null
+                            )
                           })}
                           {task.labels.length > 2 && <span>+{task.labels.length - 2} more</span>}
                         </div>
@@ -261,6 +267,41 @@ export function SearchDialog() {
             )}
           </div>
         )}
+      </div>
+    </div>
+  )
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={closeDialog} direction="top">
+        <DrawerContent
+          className="h-[92vh] max-h-[92vh] rounded-b-2xl border shadow-2xl focus:outline-none"
+          thinHandle
+        >
+          <DrawerHeader className="sr-only">
+            <DialogTitle>Search Tasks</DialogTitle>
+          </DrawerHeader>
+          {/* Scrollable area; flex prevents content from pushing past the drawer bounds */}
+          <div
+            className="flex-1 min-h-0 overflow-y-auto px-3 pb-4"
+            // Prevent initial swipe from bubbling to the drawer close gesture
+            onPointerDownCapture={(e) => e.stopPropagation()}
+            onTouchMoveCapture={(e) => e.stopPropagation()}
+          >
+            {searchPanel}
+          </div>
+        </DrawerContent>
+      </Drawer>
+    )
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={closeDialog}>
+      <DialogContentWithoutOverlay
+        className={cn("max-w-2xl max-h-[80vh] p-0 bg-card border shadow-2xl", "top-[30%]")}
+        showCloseButton={false}
+      >
+        {searchPanel}
       </DialogContentWithoutOverlay>
     </Dialog>
   )

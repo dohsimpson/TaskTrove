@@ -5,6 +5,7 @@ import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation";
 import { type TaskId } from "@tasktrove/types/id";
 import { type Task } from "@tasktrove/types/core";
 import { type RouteContext } from "@tasktrove/atoms/ui/navigation";
+import { taskFocusVisibilityAtom } from "@tasktrove/atoms/ui/task-focus";
 
 /**
  * Simplified Selection State Management Atoms
@@ -29,17 +30,6 @@ import { type RouteContext } from "@tasktrove/atoms/ui/navigation";
 export const selectedTaskIdAtom = atom<TaskId | null>(null);
 selectedTaskIdAtom.debugLabel = "selectedTaskIdAtom";
 
-/**
- * Helper atom to set selected task ID and clear bulk selection
- * Use this instead of directly setting selectedTaskIdAtom
- * Also captures the current route context for potential navigation back
- */
-export const selectedTaskRouteContextOverrideAtom = atom<RouteContext | null>(
-  null,
-);
-selectedTaskRouteContextOverrideAtom.debugLabel =
-  "selectedTaskRouteContextOverrideAtom";
-
 export const setSelectedTaskIdAtom = atom(
   null,
   (get, set, taskId: TaskId | null) => {
@@ -48,22 +38,16 @@ export const setSelectedTaskIdAtom = atom(
 
     // If setting a task (not null), capture route context and clear bulk selection
     if (taskId !== null) {
-      const overrideRouteContext = get(selectedTaskRouteContextOverrideAtom);
-
-      if (overrideRouteContext) {
-        set(selectedTaskRouteContextAtom, overrideRouteContext);
-        set(selectedTaskRouteContextOverrideAtom, null);
-      } else {
-        // Capture the current route context when task is selected
-        const routeContext = get(currentRouteContextAtom);
-        set(selectedTaskRouteContextAtom, routeContext);
-      }
+      // Capture the current route context when task is selected
+      const routeContext = get(currentRouteContextAtom);
+      set(selectedTaskRouteContextAtom, routeContext);
 
       set(clearSelectedTasksAtom);
     } else {
       // Clear route context when task is deselected
       set(selectedTaskRouteContextAtom, null);
-      set(selectedTaskRouteContextOverrideAtom, null);
+      // Clear any focus visibility override once the panel/task is closed
+      set(taskFocusVisibilityAtom, null);
     }
   },
 );
@@ -178,7 +162,8 @@ clearSelectedTasksAtom.debugLabel = "clearSelectedTasksAtom";
 interface RangeSelectionPayload {
   startTaskId: TaskId;
   endTaskId: TaskId;
-  sortedTaskIds: TaskId[];
+  sortedTaskIds?: TaskId[];
+  rangeTaskIds?: TaskId[];
 }
 
 /**
@@ -188,21 +173,32 @@ interface RangeSelectionPayload {
 export const selectRangeAtom = atom(
   null,
   (get, set, payload: RangeSelectionPayload) => {
-    const { startTaskId, endTaskId, sortedTaskIds } = payload;
+    const { startTaskId, endTaskId, sortedTaskIds, rangeTaskIds } = payload;
 
-    // Find indices of start and end tasks in the sorted list
-    const startIndex = sortedTaskIds.indexOf(startTaskId);
-    const endIndex = sortedTaskIds.indexOf(endTaskId);
+    const resolvedRangeTaskIds =
+      rangeTaskIds && rangeTaskIds.length > 0
+        ? rangeTaskIds
+        : sortedTaskIds
+          ? (() => {
+              // Find indices of start and end tasks in the sorted list
+              const startIndex = sortedTaskIds.indexOf(startTaskId);
+              const endIndex = sortedTaskIds.indexOf(endTaskId);
 
-    if (startIndex === -1 || endIndex === -1) {
-      // Invalid task IDs, don't do anything
+              if (startIndex === -1 || endIndex === -1) {
+                return null;
+              }
+
+              // Get range between the two indices (inclusive)
+              const minIndex = Math.min(startIndex, endIndex);
+              const maxIndex = Math.max(startIndex, endIndex);
+              return sortedTaskIds.slice(minIndex, maxIndex + 1);
+            })()
+          : null;
+
+    if (!resolvedRangeTaskIds) {
+      // Invalid task IDs or missing range info, don't do anything
       return;
     }
-
-    // Get range between the two indices (inclusive)
-    const minIndex = Math.min(startIndex, endIndex);
-    const maxIndex = Math.max(startIndex, endIndex);
-    const rangeTaskIds = sortedTaskIds.slice(minIndex, maxIndex + 1);
 
     // Reset side panel state (as with any selection)
     set(resetSidePanelStateAtom);
@@ -212,7 +208,7 @@ export const selectRangeAtom = atom(
 
     // Merge current selection with new range selection, avoiding duplicates
     const mergedSelection = [
-      ...new Set([...currentSelection, ...rangeTaskIds]),
+      ...new Set([...currentSelection, ...resolvedRangeTaskIds]),
     ];
 
     // Set the merged selection
@@ -247,7 +243,6 @@ export const selectionAtoms = {
   selectedTasks: selectedTasksAtom,
   lastSelectedTask: lastSelectedTaskAtom,
   selectedTaskRouteContext: selectedTaskRouteContextAtom,
-  selectedTaskRouteContextOverride: selectedTaskRouteContextOverrideAtom,
   multiSelectDragging: multiSelectDraggingAtom,
   ...selectionActionAtoms,
 } as const;

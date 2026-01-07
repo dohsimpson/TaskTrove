@@ -18,6 +18,7 @@ import {
   Copy,
   CheckSquare,
   ArrowUpRight,
+  Archive,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Task } from "@tasktrove/types/core"
@@ -34,8 +35,10 @@ interface TaskActionsMenuProps {
   onSelectClick?: () => void
   onConvertToTaskClick?: () => void
   isSubTask?: boolean
+  hideTrigger?: boolean
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  onArchiveToggle?: (archived: boolean) => void
 }
 
 export function TaskActionsMenu({
@@ -47,8 +50,10 @@ export function TaskActionsMenu({
   onSelectClick,
   onConvertToTaskClick,
   isSubTask = false,
+  hideTrigger = false,
   open,
   onOpenChange,
+  onArchiveToggle,
 }: TaskActionsMenuProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [internalOpen, setInternalOpen] = useState(false)
@@ -129,6 +134,15 @@ export function TaskActionsMenu({
     setIsOpen(false)
   }
 
+  const handleArchiveToggle = (e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    e?.preventDefault()
+    if (onArchiveToggle) {
+      onArchiveToggle(!(task.archived ?? false))
+    }
+    setIsOpen(false)
+  }
+
   // const handleTimerClick = () => {
   //   openPomodoro(task)
   //   setIsOpen(false)
@@ -142,9 +156,13 @@ export function TaskActionsMenu({
             variant="ghost"
             className={cn(
               "h-5 w-5 p-0 m-0 flex-shrink-0 flex items-center justify-center",
-              isVisible ? "flex" : "hidden",
+              isVisible || hideTrigger ? "flex" : "hidden",
+              hideTrigger &&
+                "absolute right-0 top-1/2 h-0 w-0 -translate-y-1/2 p-0 opacity-0 pointer-events-none",
             )}
             data-action="menu"
+            aria-hidden={hideTrigger || undefined}
+            tabIndex={hideTrigger ? -1 : 0}
           >
             <MoreHorizontal className="h-3.5 w-3.5" />
           </Button>
@@ -172,6 +190,12 @@ export function TaskActionsMenu({
             <DropdownMenuItem onClick={handleConvertToTaskClick} className="cursor-pointer">
               <ArrowUpRight className="h-3.5 w-3.5 mr-2" />
               Convert to Task
+            </DropdownMenuItem>
+          )}
+          {onArchiveToggle && (
+            <DropdownMenuItem onClick={handleArchiveToggle} className="cursor-pointer">
+              <Archive className="h-3.5 w-3.5 mr-2" />
+              {task.archived ? "Unarchive" : "Archive"}
             </DropdownMenuItem>
           )}
           {isSubTask && onEstimationClick && (

@@ -13,8 +13,8 @@ type SignInResult = {
   url: string | null
 }
 
-// Mock sonner toast
-vi.mock("sonner", () => ({
+// Mock toast shim
+vi.mock("@/lib/toast", () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
@@ -267,7 +267,7 @@ describe("LoginForm", () => {
 
   describe("Form Submission", () => {
     it("calls onSuccess when login is successful", async () => {
-      const { toast } = await import("sonner")
+      const { toast } = await import("@/lib/toast")
       const { signIn } = await import("next-auth/react")
 
       // Mock successful sign in

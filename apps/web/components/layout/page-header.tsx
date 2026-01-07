@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { useSidebar } from "@/components/ui/custom/sidebar"
 import {
   Search,
-  ListCheck,
+  ListTodo,
   Calendar,
   Filter,
   CheckSquare,
@@ -26,6 +26,7 @@ import {
   Inbox,
   Folder,
   Tag,
+  History,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ViewOptionsPopover } from "./view-options-popover"
@@ -140,6 +141,8 @@ export function PageHeader({
         return <Inbox {...iconProps} />
       case "upcoming":
         return <Clock {...iconProps} />
+      case "recent":
+        return <History {...iconProps} />
       case "analytics":
         return <TrendingUp {...iconProps} />
       case "project":
@@ -149,13 +152,13 @@ export function PageHeader({
       case "filter":
         return <Filter {...iconProps} />
       case "all":
-        return <ListCheck {...iconProps} />
+        return <ListTodo {...iconProps} />
       case "completed":
         return <CheckSquare {...iconProps} />
       case "search":
         return <Search {...iconProps} />
       default:
-        return <ListCheck {...iconProps} />
+        return <ListTodo {...iconProps} />
     }
   }
 

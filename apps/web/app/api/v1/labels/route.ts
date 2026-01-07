@@ -19,7 +19,6 @@ import { createLabelId, type LabelId } from "@tasktrove/types/id"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { v4 as uuidv4 } from "uuid"
-import { createSafeLabelNameSlug } from "@/lib/utils/routing"
 import {
   withApiLogging,
   logBusinessEvent,
@@ -142,7 +141,6 @@ async function createLabel(
   const newLabel: Label = {
     id: createLabelId(uuidv4()),
     name: validation.data.name,
-    slug: validation.data.slug ?? createSafeLabelNameSlug(validation.data.name, fileData.labels),
     color: validation.data.color ?? DEFAULT_LABEL_COLORS[0],
   }
 
@@ -233,10 +231,10 @@ async function updateLabels(
   }
 
   // Detect if this is a full array replacement (reordering) vs partial updates
-  // Full replacement: all labels present with all fields (name, slug, color)
+  // Full replacement: all labels present with all fields (name, color)
   const isFullReplacement =
     updates.length === fileData.labels.length &&
-    updates.every((u) => u.name !== undefined && u.slug !== undefined && u.color !== undefined)
+    updates.every((u) => u.name !== undefined && u.color !== undefined)
 
   let finalLabels: Label[]
 
@@ -273,14 +271,6 @@ async function updateLabels(
         ...label,
         ...(update.name !== undefined && { name: update.name }),
         ...(update.color !== undefined && { color: update.color }),
-        ...(update.slug !== undefined && { slug: update.slug }),
-      }
-
-      // If name is being updated but slug is not explicitly provided, regenerate slug
-      if (update.name && update.name !== label.name && update.slug === undefined) {
-        // Filter out current label from slug generation to avoid self-collision
-        const otherLabels = fileData.labels.filter((l) => l.id !== label.id)
-        updatedLabel.slug = createSafeLabelNameSlug(update.name, otherLabels)
       }
 
       return updatedLabel

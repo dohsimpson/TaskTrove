@@ -28,6 +28,7 @@ function ViewOptionsPopoverComponent({ onAdvancedSearch, className }: ViewOption
     const isNonDefault =
       viewState.viewMode !== "list" ||
       viewState.showCompleted !== false ||
+      (viewState.showArchived ?? false) !== false ||
       viewState.searchQuery !== "" ||
       viewState.showSidePanel !== false ||
       viewState.compactView !== false

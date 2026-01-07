@@ -53,7 +53,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
 
           return null
-        } catch (error) {
+        } catch {
           return null
         }
       },
@@ -67,14 +67,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
+      if (user.id) {
         token.id = user.id
       }
       return token
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string
+      if (typeof token.id === "string") {
+        session.user.id = token.id
       }
       return session
     },

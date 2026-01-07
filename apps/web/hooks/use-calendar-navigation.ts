@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { addDays, addMonths, startOfMonth, format } from "date-fns"
+import { addDays } from "date-fns"
 
 export interface CalendarNavigationHookResult {
   currentDate: Date

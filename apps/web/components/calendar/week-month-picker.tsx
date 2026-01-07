@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, type ReactNode } from "react"
+import { useAtomValue } from "jotai"
 import {
   addDays,
   endOfWeek,
@@ -12,8 +13,14 @@ import {
   startOfYear,
 } from "date-fns"
 import type { WeekStartsOn } from "@tasktrove/types/settings"
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { ContentPopover } from "@/components/ui/content-popover"
 import { Button } from "@/components/ui/button"
+import {
+  formatDateDisplay,
+  formatMonthLabel,
+  formatMonthYearLabel,
+} from "@/lib/utils/task-date-formatter"
 
 type PickerMode = "week" | "month"
 type PickerStage = "year" | "month" | "week"
@@ -23,6 +30,7 @@ type WeekMonthPickerProps = {
   currentDate: Date
   weekStartsOn: WeekStartsOn
   onSelectDate: (date: Date) => void
+  triggerLabel?: ReactNode
 }
 
 type PickerOption = { value: string; label: string; rangeLabel?: string; start: Date }
@@ -32,10 +40,13 @@ export function WeekMonthPicker({
   currentDate,
   weekStartsOn,
   onSelectDate,
+  triggerLabel,
 }: WeekMonthPickerProps) {
   const [open, setOpen] = useState(false)
   const [stage, setStage] = useState<PickerStage>("year")
   const [isMobile, setIsMobile] = useState(false)
+  const settings = useAtomValue(settingsAtom)
+  const preferDayMonthFormat = Boolean(settings.general.preferDayMonthFormat)
   const [pendingYear, setPendingYear] = useState<number | null>(null)
   const [pendingMonth, setPendingMonth] = useState<number | null>(null)
 
@@ -79,7 +90,9 @@ export function WeekMonthPicker({
       weekOptions.push({
         value: key,
         label: `Week ${weekNumber}`,
-        rangeLabel: `${format(start, "MMM d")} - ${format(end, "MMM d")}`,
+        rangeLabel: `${formatDateDisplay(start, {
+          preferDayMonthFormat,
+        })} - ${formatDateDisplay(end, { preferDayMonthFormat })}`,
         start,
       })
       cursor = addDays(cursor, 7)
@@ -91,7 +104,7 @@ export function WeekMonthPicker({
     const monthDate = new Date(effectiveYear, i, 1)
     return {
       value: `month-${i}`,
-      label: format(monthDate, "MMMM"),
+      label: formatMonthLabel(monthDate, { variant: "long" }),
       start: monthDate,
     }
   })
@@ -295,18 +308,25 @@ export function WeekMonthPicker({
         variant="outline"
         className="h-10 px-4 rounded-full border border-input/60 bg-muted/40 font-semibold"
       >
-        {showWeeks ? (
-          <span className="flex items-center gap-2">
-            <span>Week {currentWeekNumber}</span>
-            <span className="hidden sm:inline text-xs text-muted-foreground">
-              {`${format(weekRangeStart, "MMM d, yyyy")} - ${format(weekRangeEnd, "MMM d, yyyy")}`}
+        {triggerLabel ??
+          (showWeeks ? (
+            <span className="flex items-center gap-2">
+              <span>Week {currentWeekNumber}</span>
+              <span className="hidden sm:inline text-xs text-muted-foreground">
+                {`${formatDateDisplay(weekRangeStart, {
+                  includeYear: true,
+                  preferDayMonthFormat,
+                })} - ${formatDateDisplay(weekRangeEnd, {
+                  includeYear: true,
+                  preferDayMonthFormat,
+                })}`}
+              </span>
             </span>
-          </span>
-        ) : (
-          <span className="flex items-center gap-2">
-            <span>{format(currentDate, "MMMM yyyy")}</span>
-          </span>
-        )}
+          ) : (
+            <span className="flex items-center gap-2">
+              <span>{formatMonthYearLabel(currentDate, { variant: "long" })}</span>
+            </span>
+          ))}
       </Button>
     </ContentPopover>
   )

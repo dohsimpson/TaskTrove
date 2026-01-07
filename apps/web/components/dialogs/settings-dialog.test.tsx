@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen, fireEvent, TestJotaiProvider } from "@/test-utils"
 import { SettingsDialog } from "./settings-dialog"
-import { WritableAtom } from "jotai"
+import { HydrateValues } from "@/test-utils/jotai-mocks"
 import { showSettingsDialogAtom, closeSettingsDialogAtom } from "@tasktrove/atoms/ui/dialogs"
 import {
   activeSettingsCategoryAtom,
@@ -65,8 +65,7 @@ describe("SettingsDialog", () => {
       drawerOpen: boolean
     }> = {},
   ) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const initialValues: Array<[WritableAtom<any, any[], any>, any]> = [
+    const initialValues: HydrateValues = [
       [showSettingsDialogAtom, initial.open ?? true],
       [activeSettingsCategoryAtom, initial.category ?? "general"],
       [mobileSettingsDrawerOpenAtom, initial.drawerOpen ?? false],
@@ -87,7 +86,7 @@ describe("SettingsDialog", () => {
     expect(screen.getAllByText("Settings").length).toBeGreaterThanOrEqual(2)
     expect(screen.getByRole("button", { name: /general/i })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /notifications/i })).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: /data & storage/i })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /data/i })).toBeInTheDocument()
   })
 
   it("does not render when closed", () => {
@@ -173,12 +172,12 @@ describe("SettingsDialog", () => {
     expect(screen.getByRole("heading", { level: 1, name: "General" })).toBeInTheDocument()
     expect(screen.getByTestId("general-form")).toBeInTheDocument()
 
-    // Click on Data & Storage category
-    const dataButton = screen.getByRole("button", { name: /data & storage/i })
+    // Click on Data category
+    const dataButton = screen.getByRole("button", { name: /data/i })
     fireEvent.click(dataButton)
 
     // Should display data category content
-    expect(screen.getByRole("heading", { level: 1, name: "Data & Storage" })).toBeInTheDocument()
+    expect(screen.getByRole("heading", { level: 1, name: "Data" })).toBeInTheDocument()
     expect(screen.getByTestId("data-form")).toBeInTheDocument()
   })
 
@@ -194,7 +193,7 @@ describe("SettingsDialog", () => {
 
     // Click on a category in the mobile drawer
     const dataButton = screen
-      .getAllByRole("button", { name: /data & storage/i })
+      .getAllByRole("button", { name: /data/i })
       .find((btn) => btn.closest("aside")?.classList.contains("absolute")) // Mobile drawer version
 
     if (dataButton) {
@@ -233,6 +232,6 @@ describe("SettingsDialog", () => {
     // Should render category buttons with icons (we can't easily test SVG icons, but buttons should be present)
     expect(screen.getByRole("button", { name: /general/i })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /notifications/i })).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: /data & storage/i })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /data/i })).toBeInTheDocument()
   })
 })

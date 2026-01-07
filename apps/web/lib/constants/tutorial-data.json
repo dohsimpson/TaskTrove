@@ -299,7 +299,8 @@
       "soundEnabled": true,
       "linkifyEnabled": true,
       "popoverHoverOpen": false,
-      "markdownEnabled": true
+      "markdownEnabled": true,
+      "preferDayMonthFormat": false
     },
     "uiSettings": {}
   },
@@ -308,5 +309,5 @@
     "username": "admin",
     "password": ""
   },
-  "version": "v0.11.0"
+  "version": "v0.12.0"
 }

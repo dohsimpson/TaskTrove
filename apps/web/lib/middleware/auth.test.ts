@@ -455,6 +455,7 @@ describe("withAuthentication", () => {
             linkifyEnabled: true,
             markdownEnabled: true,
             popoverHoverOpen: false,
+            preferDayMonthFormat: false,
           },
           data: {
             autoBackup: {
@@ -478,14 +479,12 @@ describe("withAuthentication", () => {
           type: "project",
           id: createGroupId("12345678-1234-4234-8234-123456789abc"),
           name: "All Projects",
-          slug: "all-projects",
           items: [],
         },
         labelGroups: {
           type: "label",
           id: createGroupId("12345678-1234-4234-8234-123456789abc"),
           name: "All Labels",
-          slug: "all-labels",
           items: [],
         },
       })
@@ -525,6 +524,7 @@ describe("withAuthentication", () => {
             linkifyEnabled: true,
             markdownEnabled: true,
             popoverHoverOpen: false,
+            preferDayMonthFormat: false,
           },
           data: {
             autoBackup: {
@@ -548,14 +548,12 @@ describe("withAuthentication", () => {
           type: "project",
           id: createGroupId("12345678-1234-4234-8234-123456789abc"),
           name: "All Projects",
-          slug: "all-projects",
           items: [],
         },
         labelGroups: {
           type: "label",
           id: createGroupId("12345678-1234-4234-8234-123456789abc"),
           name: "All Labels",
-          slug: "all-labels",
           items: [],
         },
       })
@@ -597,6 +595,7 @@ describe("withAuthentication", () => {
             linkifyEnabled: true,
             markdownEnabled: true,
             popoverHoverOpen: false,
+            preferDayMonthFormat: false,
           },
           data: {
             autoBackup: {
@@ -620,14 +619,12 @@ describe("withAuthentication", () => {
           type: "project",
           id: createGroupId("12345678-1234-4234-8234-123456789abc"),
           name: "All Projects",
-          slug: "all-projects",
           items: [],
         },
         labelGroups: {
           type: "label",
           id: createGroupId("12345678-1234-4234-8234-123456789abc"),
           name: "All Labels",
-          slug: "all-labels",
           items: [],
         },
       })
@@ -705,6 +702,7 @@ describe("withAuthentication", () => {
             linkifyEnabled: true,
             markdownEnabled: true,
             popoverHoverOpen: false,
+            preferDayMonthFormat: false,
           },
           data: {
             autoBackup: {
@@ -728,14 +726,12 @@ describe("withAuthentication", () => {
           type: "project",
           id: createGroupId("12345678-1234-4234-8234-123456789abc"),
           name: "All Projects",
-          slug: "all-projects",
           items: [],
         },
         labelGroups: {
           type: "label",
           id: createGroupId("12345678-1234-4234-8234-123456789abc"),
           name: "All Labels",
-          slug: "all-labels",
           items: [],
         },
       })

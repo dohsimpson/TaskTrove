@@ -14,6 +14,7 @@ import {
   filterTasksByPriorities,
   filterTasksByCompletionStatus,
   filterTasksByDueDate,
+  filterTasksByArchived,
   filterTasks,
   viewStateToFilterConfig,
   type FilterConfig,
@@ -113,6 +114,36 @@ describe("filterTasksByCompleted", () => {
 
     const result = filterTasksByCompleted(tasks, false);
     expect(result).toHaveLength(0);
+  });
+});
+
+// =============================================================================
+// FILTER BY ARCHIVED
+// =============================================================================
+
+describe("filterTasksByArchived", () => {
+  const tasks: Task[] = [
+    createTestTask({
+      id: createTaskId("70000000-0000-4000-8000-000000000001"),
+      archived: false,
+    }),
+    createTestTask({
+      id: createTaskId("70000000-0000-4000-8000-000000000002"),
+      archived: true,
+    }),
+  ];
+
+  it("should return all tasks when showArchived is true", () => {
+    const result = filterTasksByArchived(tasks, true);
+    expect(result).toHaveLength(2);
+  });
+
+  it("should filter out archived tasks when showArchived is false", () => {
+    const result = filterTasksByArchived(tasks, false);
+    expect(result).toHaveLength(1);
+    expect(result[0]?.id).toEqual(
+      createTaskId("70000000-0000-4000-8000-000000000001"),
+    );
   });
 });
 
@@ -865,6 +896,36 @@ describe("filterTasks", () => {
     expect(result[0]?.completed).toBe(false);
   });
 
+  it("should hide archived tasks by default", () => {
+    const tasks: Task[] = [
+      createTestTask({
+        id: createTaskId("60000000-0000-4000-8000-000000000010"),
+      }),
+      createTestTask({
+        id: createTaskId("60000000-0000-4000-8000-000000000011"),
+        archived: true,
+      }),
+    ];
+
+    const result = filterTasks(tasks, {});
+    expect(result).toHaveLength(1);
+    expect(result[0]?.id).toEqual(
+      createTaskId("60000000-0000-4000-8000-000000000010"),
+    );
+  });
+
+  it("should include archived tasks when showArchived is true", () => {
+    const archivedTask = createTestTask({
+      id: createTaskId("60000000-0000-4000-8000-000000000012"),
+      archived: true,
+    });
+    const tasks: Task[] = [createTestTask(), archivedTask];
+
+    const result = filterTasks(tasks, { showArchived: true });
+    expect(result).toHaveLength(2);
+    expect(result).toContainEqual(archivedTask);
+  });
+
   it("should apply multiple filters in combination", () => {
     const tasks: Task[] = [
       createTestTask({
@@ -1007,6 +1068,7 @@ describe("viewStateToFilterConfig", () => {
     const config = viewStateToFilterConfig(viewState);
 
     expect(config.showCompleted).toBe(false);
+    expect(config.showArchived).toBe(false);
     expect(config.showOverdue).toBe(true);
     expect(config.searchQuery).toBe("test query");
   });
@@ -1123,5 +1185,23 @@ describe("viewStateToFilterConfig", () => {
     const config = viewStateToFilterConfig(viewState);
 
     expect(config.labels).toBeNull();
+  });
+
+  it("should include showArchived flag when provided", () => {
+    const viewState: ViewState = {
+      viewMode: "list",
+      sortBy: "priority",
+      sortDirection: "asc",
+      showCompleted: true,
+      showArchived: true,
+      showOverdue: true,
+      searchQuery: "",
+      showSidePanel: false,
+      compactView: false,
+    };
+
+    const config = viewStateToFilterConfig(viewState);
+
+    expect(config.showArchived).toBe(true);
   });
 });

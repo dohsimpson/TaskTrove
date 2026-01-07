@@ -6,12 +6,11 @@ import { taskAtoms } from "@tasktrove/atoms/core/tasks"
 import { log } from "@/lib/utils/logger"
 import { format } from "date-fns"
 import type {
-  CalendarDropEventData,
-  CalendarDragData,
   CalendarDropParams,
   CalendarDragDropHookResult as CalendarDragDropHookResultType,
 } from "@/lib/calendar/types"
-import { isCalendarDragData, isValidTaskId } from "@/lib/calendar/types"
+import { extractTaskIdsFromDragData } from "@/lib/calendar/types"
+import type { UpdateTaskRequest } from "@tasktrove/types/api-requests"
 
 // Re-export with proper naming
 export type CalendarDropHookResult = CalendarDragDropHookResultType
@@ -21,34 +20,29 @@ export function useCalendarDragDrop(): CalendarDropHookResult {
 
   const handleTimeSlotDrop = useCallback(
     async (params: CalendarDropParams) => {
-      const { source, location, targetDate, targetTime } = params
+      const { source, targetDate, targetTime } = params
       try {
         const sourceData = source.data
 
-        // Use type guard to validate drag data
-        if (!isCalendarDragData(sourceData)) {
+        const taskIds = extractTaskIdsFromDragData(sourceData)
+        if (taskIds.length === 0) {
           log.warn({ sourceType: "unknown" }, "Invalid source type for calendar time slot drop")
           return
         }
 
-        // Extract task ID with proper typing
-        const taskId = sourceData.taskId
-
-        if (!isValidTaskId(taskId)) {
-          log.warn({ taskId }, "Invalid task ID in calendar time slot drop")
-          return
-        }
-
         // Handle all-day vs specific time
-        let logMessage = "Task date and time updated via time slot drop"
-        let logData: { taskId: string; targetDate: string; targetTime?: number; dueTime?: Date } = {
-          taskId,
+        const logData: {
+          taskIds: string[]
+          targetDate: string
+          targetTime?: number
+          dueTime?: Date
+        } = {
+          taskIds,
           targetDate: format(targetDate, "yyyy-MM-dd"),
           targetTime,
         }
 
-        const updateData: any = {
-          id: taskId,
+        const updateData: Omit<UpdateTaskRequest, "id"> = {
           dueDate: targetDate,
         }
 
@@ -65,13 +59,14 @@ export function useCalendarDragDrop(): CalendarDropHookResult {
           )
           updateData.dueTime = dueTime
           logData.dueTime = dueTime
-          logMessage = "Task date and time updated via time slot drop"
         }
 
-        log.info(logData, logMessage)
+        log.info(logData, "Task date and time updated via time slot drop")
 
         // Update the task
-        updateTask({ updateRequest: updateData })
+        taskIds.forEach((id) => {
+          updateTask({ updateRequest: { ...updateData, id } })
+        })
       } catch (error) {
         log.error(
           { error, targetDate: format(targetDate, "yyyy-MM-dd"), targetTime },

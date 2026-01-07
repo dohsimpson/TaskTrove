@@ -69,6 +69,10 @@
       "description": "Celebrate progress with tasks you've finished",
       "title": "Completed"
     },
+    "recent": {
+      "description": "Review tasks created or completed in the last few days",
+      "title": "Recent"
+    },
     "habits": {
       "description": "Track repeating tasks and routines that auto-rollover",
       "title": "Habits"

@@ -42,12 +42,19 @@ import { DEFAULT_GROUP_COLOR, DEFAULT_ROUTE } from "@tasktrove/constants";
 import { projectsAtom, labelsAtom } from "@tasktrove/atoms/data/base/atoms";
 import { allGroupsAtom } from "@tasktrove/atoms/core/groups";
 import {
+  createLabelSlug,
+  createProjectGroupSlug,
+  createProjectSlug,
+  extractIdFromSlug,
   resolveProject,
   resolveLabel,
   resolveProjectGroup,
   findGroupById,
 } from "@tasktrove/utils";
-import { log } from "@tasktrove/atoms/utils/atom-helpers";
+import {
+  createAtomWithStorage,
+  log,
+} from "@tasktrove/atoms/utils/atom-helpers";
 import {
   STANDARD_VIEW_IDS,
   STANDARD_VIEW_METADATA,
@@ -425,6 +432,16 @@ export const pathnameAtom = atom<string>(DEFAULT_ROUTE);
 pathnameAtom.debugLabel = "pathnameAtom";
 
 /**
+ * Last viewed pathname persisted in localStorage for start view preference
+ */
+export const lastViewedPathAtom = createAtomWithStorage<string | null>(
+  "last-viewed-path",
+  null,
+  { getOnInit: true },
+);
+lastViewedPathAtom.debugLabel = "lastViewedPathAtom";
+
+/**
  * Parse route context from pathname
  */
 function parseRouteContext(
@@ -467,7 +484,7 @@ function parseRouteContext(
           pathname,
           viewId: project.id, // ViewId is the ProjectId
           routeType: "project",
-          slug: project.slug,
+          slug: createProjectSlug(project),
         };
       }
     }
@@ -493,7 +510,7 @@ function parseRouteContext(
           pathname,
           viewId: label.id, // ViewId is the LabelId
           routeType: "label",
-          slug: label.slug,
+          slug: createLabelSlug(label),
         };
       }
 
@@ -504,7 +521,7 @@ function parseRouteContext(
           pathname,
           viewId: labelByName.id, // ViewId is the LabelId
           routeType: "label",
-          slug: labelByName.slug,
+          slug: createLabelSlug(labelByName),
         };
       }
     }
@@ -530,14 +547,15 @@ function parseRouteContext(
           pathname,
           viewId: group.id, // ViewId is the GroupId
           routeType: "projectgroup",
-          slug: group.slug,
+          slug: createProjectGroupSlug(group),
         };
       }
     }
 
     // Log warning for non-existent groups
-    if (isValidGroupId(decodedParam)) {
-      log.warn(`Project group with ID '${decodedParam}' not found`);
+    const candidateId = extractIdFromSlug(decodedParam) ?? decodedParam;
+    if (isValidGroupId(candidateId)) {
+      log.warn(`Project group with ID '${candidateId}' not found`);
     } else {
       log.warn(`Project group with slug '${decodedParam}' not found`);
     }

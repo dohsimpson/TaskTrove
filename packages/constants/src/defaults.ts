@@ -22,6 +22,9 @@ export const DEFAULT_TASK_TITLE = "Untitled Task";
 /** Default completed status for new tasks */
 export const DEFAULT_TASK_COMPLETED = false;
 
+/** Default archived status for new tasks */
+export const DEFAULT_TASK_ARCHIVED = false;
+
 /** Default task status */
 export const DEFAULT_TASK_STATUS = "active" as const;
 
@@ -69,11 +72,17 @@ export const DEFAULT_SORT_DIRECTION = "asc" as const;
 /** Default show completed tasks */
 export const DEFAULT_SHOW_COMPLETED = false;
 
+/** Default show archived tasks */
+export const DEFAULT_SHOW_ARCHIVED = false;
+
 /** Default show overdue tasks */
 export const DEFAULT_SHOW_OVERDUE = true;
 
 /** Default show side panel */
 export const DEFAULT_SHOW_SIDE_PANEL = false;
+
+/** Default show planner pane */
+export const DEFAULT_SHOW_PLANNER = false;
 
 /** Default compact view */
 export const DEFAULT_COMPACT_VIEW = false;
@@ -104,17 +113,20 @@ export const SIDEBAR_WIDTH_PX_DEFAULT = 300;
 export const DEFAULT_SOUND_ENABLED = true;
 
 /** Default sound volume (0-1) */
-export const DEFAULT_SOUND_VOLUME = 0.3;
+export const DEFAULT_SOUND_VOLUME = 0.05;
 
 /** Default notification volume (0-100) */
-export const DEFAULT_NOTIFICATION_VOLUME = 70;
+export const DEFAULT_NOTIFICATION_VOLUME = 5;
 
 // =============================================================================
 // NAVIGATION DEFAULTS
 // =============================================================================
 
-/** Default route for the application */
-export const DEFAULT_ROUTE = "/all" as const;
+/** Default view id for the application */
+export const DEFAULT_VIEW_ID = "inbox" as const;
+
+/** Default route for the application (derived from DEFAULT_VIEW_ID) */
+export const DEFAULT_ROUTE = `/${DEFAULT_VIEW_ID}` as const;
 
 // =============================================================================
 // STANDARD VIEW DEFINITIONS
@@ -122,13 +134,14 @@ export const DEFAULT_ROUTE = "/all" as const;
 
 /** Standard view identifiers used throughout the application */
 export const STANDARD_VIEW_IDS = [
-  "all",
   "inbox",
   "today",
   "upcoming",
-  "completed",
-  "calendar",
   "habits",
+  "calendar",
+  "recent",
+  "all",
+  "completed",
   // "analytics",
   // "search",
   // "shortcuts",
@@ -168,6 +181,11 @@ export const STANDARD_VIEW_METADATA: Record<
     title: "Upcoming",
     description: "Plan ahead with tasks scheduled for future dates",
     iconType: "upcoming" as const,
+  },
+  recent: {
+    title: "Recent",
+    description: "Review tasks created or completed in the last few days",
+    iconType: "recent" as const,
   },
   completed: {
     title: "Completed",
@@ -255,6 +273,10 @@ export const VIEW_CONFIG_OPTIONS = {
     calendarDisabled: false,
     showCompletedDisabled: false,
   },
+  recent: {
+    calendarDisabled: false,
+    showCompletedDisabled: false,
+  },
   completed: {
     calendarDisabled: false,
     showCompletedDisabled: true,
@@ -287,6 +309,13 @@ export const DEFAULT_ANALYTICS_MONTH_DAYS = 30;
 export const DEFAULT_ANALYTICS_WEEK_DAYS = 7;
 
 // =============================================================================
+// RECENT VIEW DEFAULTS
+// =============================================================================
+
+/** Default lookback window in days for the Recent view */
+export const DEFAULT_RECENT_VIEW_DAYS = 7;
+
+// =============================================================================
 // UI COMPONENT DEFAULTS
 // =============================================================================
 
@@ -300,31 +329,40 @@ export const DEFAULT_BUTTON_VARIANT = "default" as const;
 // COLOR PALETTE DEFAULTS
 // =============================================================================
 
-/** Default color palette for projects and labels */
+/** Default color palette for projects and labels (name → hex) */
+export const DEFAULT_COLOR_PALETTE_MAP = {
+  Blue: "#3b82f6",
+  Red: "#ef4444",
+  Green: "#10b981",
+  Yellow: "#f59e0b",
+  Purple: "#8b5cf6",
+  Orange: "#f97316",
+  Cyan: "#06b6d4",
+  Lime: "#84cc16",
+  Pink: "#ec4899",
+  Indigo: "#6366f1",
+  Gray: "#6b7280",
+} as const;
+
+export type DefaultColorName = keyof typeof DEFAULT_COLOR_PALETTE_MAP;
+
+/** Ordered palette values derived from the map (preserves declaration order) */
 export const DEFAULT_COLOR_PALETTE = [
-  "#ef4444", // red
-  "#f59e0b", // amber
-  "#3b82f6", // blue
-  "#8b5cf6", // violet
-  "#10b981", // emerald
-  "#f97316", // orange
-  "#06b6d4", // cyan
-  "#84cc16", // lime
-  "#ec4899", // pink
-  "#6366f1", // indigo
+  DEFAULT_COLOR_PALETTE_MAP.Blue,
+  DEFAULT_COLOR_PALETTE_MAP.Red,
+  DEFAULT_COLOR_PALETTE_MAP.Green,
+  DEFAULT_COLOR_PALETTE_MAP.Yellow,
+  DEFAULT_COLOR_PALETTE_MAP.Purple,
+  DEFAULT_COLOR_PALETTE_MAP.Orange,
+  DEFAULT_COLOR_PALETTE_MAP.Cyan,
+  DEFAULT_COLOR_PALETTE_MAP.Lime,
+  DEFAULT_COLOR_PALETTE_MAP.Pink,
+  DEFAULT_COLOR_PALETTE_MAP.Indigo,
+  DEFAULT_COLOR_PALETTE_MAP.Gray,
 ] as const;
 
-/** Default project colors (subset of main palette) */
-export const DEFAULT_PROJECT_COLORS = [
-  "#3b82f6", // blue
-  "#ef4444", // red
-  "#10b981", // emerald
-  "#f59e0b", // amber
-  "#8b5cf6", // violet
-  "#f97316", // orange
-  "#06b6d4", // cyan
-  "#84cc16", // lime
-] as const;
+/** Default project colors (use the full palette) */
+export const DEFAULT_PROJECT_COLORS = DEFAULT_COLOR_PALETTE;
 
 /** Default label colors (same as projects) */
 export const DEFAULT_LABEL_COLORS = DEFAULT_PROJECT_COLORS;
@@ -332,20 +370,37 @@ export const DEFAULT_LABEL_COLORS = DEFAULT_PROJECT_COLORS;
 /** Default section colors (same as projects) */
 export const DEFAULT_SECTION_COLORS = DEFAULT_PROJECT_COLORS;
 
-/** Color options with names for UI components */
+/** Color options with names for UI components (guaranteed non-empty tuple) */
+type ColorOption = {
+  name: DefaultColorName;
+  value: (typeof DEFAULT_COLOR_PALETTE_MAP)[DefaultColorName];
+};
+
 export const COLOR_OPTIONS = [
-  { name: "Blue", value: "#3b82f6" },
-  { name: "Red", value: "#ef4444" },
-  { name: "Green", value: "#10b981" },
-  { name: "Yellow", value: "#f59e0b" },
-  { name: "Purple", value: "#8b5cf6" },
-  { name: "Orange", value: "#f97316" },
-  { name: "Cyan", value: "#06b6d4" },
-  { name: "Lime", value: "#84cc16" },
-  { name: "Pink", value: "#ec4899" },
-  { name: "Indigo", value: "#6366f1" },
-  { name: "Gray", value: "#6b7280" },
-] as const;
+  { name: "Blue", value: DEFAULT_COLOR_PALETTE_MAP.Blue },
+  { name: "Red", value: DEFAULT_COLOR_PALETTE_MAP.Red },
+  { name: "Green", value: DEFAULT_COLOR_PALETTE_MAP.Green },
+  { name: "Yellow", value: DEFAULT_COLOR_PALETTE_MAP.Yellow },
+  { name: "Purple", value: DEFAULT_COLOR_PALETTE_MAP.Purple },
+  { name: "Orange", value: DEFAULT_COLOR_PALETTE_MAP.Orange },
+  { name: "Cyan", value: DEFAULT_COLOR_PALETTE_MAP.Cyan },
+  { name: "Lime", value: DEFAULT_COLOR_PALETTE_MAP.Lime },
+  { name: "Pink", value: DEFAULT_COLOR_PALETTE_MAP.Pink },
+  { name: "Indigo", value: DEFAULT_COLOR_PALETTE_MAP.Indigo },
+  { name: "Gray", value: DEFAULT_COLOR_PALETTE_MAP.Gray },
+] as const satisfies readonly [ColorOption, ...ColorOption[]];
+
+/** Pick a random color from a given palette (defaults to the core palette) */
+export function getRandomPaletteColor(
+  palette: readonly string[] = DEFAULT_COLOR_PALETTE,
+): string {
+  if (palette.length === 0) {
+    return "#6b7280"; // fallback to gray
+  } else {
+    const idx = Math.floor(Math.random() * palette.length);
+    return palette[idx] || "#6b7280";
+  }
+}
 
 // =============================================================================
 // SEMANTIC COLOR CONSTANTS - TIER 2
@@ -362,18 +417,6 @@ export const COLOR_OPTIONS = [
  * - TIER 4: IMPORT_PRIORITY_COLORS - external system mapping
  * - TIER 5: THEME_COLORS - brand/PWA specific
  */
-
-// Index mapping for reference:
-// [0] = "#ef4444" (red)
-// [1] = "#f59e0b" (amber)
-// [2] = "#3b82f6" (blue)
-// [3] = "#8b5cf6" (violet)
-// [4] = "#10b981" (emerald)
-// [5] = "#f97316" (orange)
-// [6] = "#06b6d4" (cyan)
-// [7] = "#84cc16" (lime)
-// [8] = "#ec4899" (pink)
-// [9] = "#6366f1" (indigo)
 
 /** Chart colors for productivity metrics - references core palette */
 export const CHART_COLORS = {
@@ -533,6 +576,9 @@ export const DEFAULT_AUTO_BACKUP_ENABLED = false;
 
 /** Default backup time in HH:MM format (24-hour) */
 export const DEFAULT_BACKUP_TIME = "02:00";
+
+/** Default auto backup run-on-init behavior */
+export const DEFAULT_AUTO_BACKUP_RUN_ON_INIT = false;
 
 /** Default maximum number of backup files to keep (-1 for unlimited) */
 export const DEFAULT_MAX_BACKUPS = -1;

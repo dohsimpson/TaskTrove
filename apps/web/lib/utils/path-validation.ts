@@ -1,4 +1,4 @@
-import { realpathSync } from "fs"
+import { lstatSync, realpathSync } from "fs"
 import { join, resolve, isAbsolute, sep } from "path"
 import { DEFAULT_ASSETS_DIR, DEFAULT_DATA_DIR } from "@tasktrove/constants"
 
@@ -161,6 +161,24 @@ export function getSecureAssetPath(pathSegments: string[]): string | null {
   // canonicalPath: /app/data/assets-evil/file.txt (would pass without separator check)
   if (!canonicalPath.startsWith(canonicalBase + sep)) {
     return null
+  }
+
+  // Reject any symlinked path segment within the assets directory.
+  // This prevents symlink traversal outside the assets directory.
+  let currentPath = canonicalBase
+  for (const segment of pathSegments) {
+    currentPath = join(currentPath, segment)
+    try {
+      const stat = lstatSync(currentPath)
+      if (stat.isSymbolicLink()) {
+        return null
+      }
+    } catch (error) {
+      if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+        break
+      }
+      throw error
+    }
   }
 
   // Path is validated and secure

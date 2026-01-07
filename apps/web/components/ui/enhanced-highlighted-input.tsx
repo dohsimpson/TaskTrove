@@ -94,7 +94,8 @@ const createReactChangeEvent = (value: string): React.ChangeEvent<HTMLInputEleme
 }
 
 // Shared classes for contentEditable and overlay to ensure perfect alignment
-const SHARED_TEXT_CLASSES = "w-full p-2 whitespace-pre-wrap break-words whitespace-break-spaces"
+const SHARED_TEXT_CLASSES =
+  "w-full p-2 whitespace-pre-wrap break-words whitespace-break-spaces wrap-anywhere"
 
 // Helper to safely lookup token styles (handles Pro-only types like 'assignee' in base)
 function getStyleForToken<T extends Record<string, string>>(styles: T, tokenType: string): string {

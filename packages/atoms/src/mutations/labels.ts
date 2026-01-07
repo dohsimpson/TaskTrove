@@ -26,7 +26,6 @@ import {
 } from "@tasktrove/types/api-responses";
 import { createLabelId } from "@tasktrove/types/id";
 import { DEFAULT_LABEL_COLORS } from "@tasktrove/constants";
-import { createSafeLabelNameSlug } from "@tasktrove/utils/routing";
 import { createEntityMutation } from "./entity-factory";
 
 // =============================================================================
@@ -51,16 +50,15 @@ export const createLabelMutationAtom = createEntityMutation<
     request: LabelCreateSerializationSchema,
     response: CreateLabelResponseSchema,
   },
-  // Custom optimistic data factory for label-specific defaults (slug, color)
+  // Custom optimistic data factory for label-specific defaults (color)
   optimisticDataFactory: (
     labelData: CreateLabelRequest,
     oldLabels: Label[],
   ) => {
+    void oldLabels;
     return {
       id: createLabelId(uuidv4()), // Temporary ID that will be replaced by server response
       name: labelData.name,
-      slug:
-        labelData.slug ?? createSafeLabelNameSlug(labelData.name, oldLabels),
       color: labelData.color || DEFAULT_LABEL_COLORS[0],
     };
   },

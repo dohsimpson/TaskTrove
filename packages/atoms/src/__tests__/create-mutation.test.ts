@@ -1,4 +1,3 @@
-import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults";
 /**
  * ⚠️  WEB API DEPENDENT - Create Mutation Tests
  *
@@ -36,10 +35,6 @@ import {
 } from "../utils/test-helpers";
 
 // Import actual slug generation utilities
-import {
-  createSafeLabelNameSlug,
-  createSafeProjectNameSlug,
-} from "@tasktrove/utils/routing";
 
 // Mock external dependencies
 vi.mock("sonner", () => ({
@@ -73,13 +68,13 @@ const getValidPriority = (index: number): 1 | 2 | 3 | 4 => {
 
 // Mock implementations to isolate the factory function behavior
 const createLabelOptimisticFactory = (
-  labelData: { name: string; color?: string; slug?: string },
+  labelData: { name: string; color?: string },
   oldLabels: Label[] = [],
 ) => {
+  void oldLabels;
   return {
     id: createLabelId(uuidv4()),
     name: labelData.name,
-    slug: labelData.slug ?? createSafeLabelNameSlug(labelData.name, oldLabels),
     color: labelData.color || "#3b82f6",
   };
 };
@@ -88,17 +83,14 @@ const createProjectOptimisticFactory = (
   projectData: {
     name: string;
     color?: string;
-    slug?: string;
     shared?: boolean;
   },
   oldProjects: Project[] = [],
 ) => {
+  void oldProjects;
   return {
     id: createProjectId(uuidv4()),
     name: projectData.name,
-    slug:
-      projectData.slug ??
-      createSafeProjectNameSlug(projectData.name, oldProjects),
     color: projectData.color ?? "#3b82f6",
     shared: projectData.shared ?? false,
     sections: [{ id: "default-section", name: "Default", color: "#6b7280" }],
@@ -108,59 +100,22 @@ const createProjectOptimisticFactory = (
 describe("createMutation Function", () => {
   describe("Optimistic Data Factories", () => {
     describe("Label optimistic factory", () => {
-      it("should use proper slug generation with collision detection", () => {
-        const existingLabels: Label[] = [
-          {
-            id: createLabelId(uuidv4()),
-            name: "Work",
-            slug: "work",
-            color: "#ef4444",
-          },
-        ];
-
+      it("should omit slug in optimistic label data", () => {
         const labelData = { name: "Work", color: "#10b981" };
-        const result = createLabelOptimisticFactory(labelData, existingLabels);
-
-        expect(result.slug).toBe("work-1"); // Should handle collision
-      });
-
-      it("should handle special characters in slug generation", () => {
-        const labelData = { name: "High Priority!", color: "#ef4444" };
         const result = createLabelOptimisticFactory(labelData);
 
-        expect(result.slug).toBe("high-priority");
+        expect(result).not.toHaveProperty("slug");
+        expect(result.name).toBe("Work");
       });
     });
 
     describe("Project optimistic factory", () => {
-      it("should use proper slug generation with collision detection", () => {
-        const existingProjects: Project[] = [
-          {
-            id: createProjectId(uuidv4()),
-            name: "My Project",
-            slug: "my-project",
-            color: "#3b82f6",
-            sections: [DEFAULT_PROJECT_SECTION],
-          },
-        ];
-
+      it("should omit slug in optimistic project data and include sections", () => {
         const projectData = { name: "My Project", color: "#10b981" };
-        const result = createProjectOptimisticFactory(
-          projectData,
-          existingProjects,
-        );
-
-        expect(result.slug).toBe("my-project-1"); // Should handle collision
-      });
-
-      it("should handle special characters in slug generation", () => {
-        const projectData = {
-          name: "Project & Task Management!",
-          color: "#ef4444",
-        };
         const result = createProjectOptimisticFactory(projectData);
 
-        expect(result.slug).toBe("project-and-task-management");
+        expect(result).not.toHaveProperty("slug");
+        expect(result.sections).toHaveLength(1);
       });
     });
   });

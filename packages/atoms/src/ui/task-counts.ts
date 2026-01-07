@@ -15,6 +15,7 @@ import {
   upcomingTasksAtom,
   inboxTasksAtom,
   calendarTasksAtom,
+  recentTasksAtom,
   autoRolloverTasksAtom,
 } from "@tasktrove/atoms/data/tasks/filters";
 
@@ -29,20 +30,28 @@ import { collectProjectIdsFromGroup } from "@tasktrove/utils/group-utils";
 export function createBaseViewResolver(
   get: Getter,
 ): (viewId: ViewId) => Task[] {
-  const allTasks = get(activeTasksAtom);
-  const incompleteTasks = allTasks.filter((task: Task) => !task.completed);
-  const completedTasks = allTasks.filter((task: Task) => task.completed);
-  const filterIncomplete = (tasks: Task[]) =>
-    tasks.filter((task: Task) => !task.completed);
+  const allTasks = get(activeTasksAtom).filter((task: Task) => !task.archived);
+  const incompleteTasks = allTasks.filter(
+    (task: Task) => !task.completed && !task.archived,
+  );
+  const completedTasks = allTasks.filter(
+    (task: Task) => task.completed && !task.archived,
+  );
+  const recentTasks = get(recentTasksAtom).filter(
+    (task: Task) => !task.archived,
+  );
+  const filterIncompleteOrArchived = (tasks: Task[]) =>
+    tasks.filter((task: Task) => !task.completed && !task.archived);
 
   const standardResolvers: Record<string, () => Task[]> = {
     all: () => incompleteTasks,
-    inbox: () => filterIncomplete(get(inboxTasksAtom)),
-    today: () => filterIncomplete(get(todayTasksAtom)),
-    upcoming: () => filterIncomplete(get(upcomingTasksAtom)),
-    calendar: () => filterIncomplete(get(calendarTasksAtom)),
+    inbox: () => filterIncompleteOrArchived(get(inboxTasksAtom)),
+    today: () => filterIncompleteOrArchived(get(todayTasksAtom)),
+    upcoming: () => filterIncompleteOrArchived(get(upcomingTasksAtom)),
+    recent: () => recentTasks,
+    calendar: () => filterIncompleteOrArchived(get(calendarTasksAtom)),
     completed: () => completedTasks,
-    habits: () => filterIncomplete(get(autoRolloverTasksAtom)),
+    habits: () => filterIncompleteOrArchived(get(autoRolloverTasksAtom)),
   };
 
   return (viewId: ViewId) => {
@@ -129,7 +138,9 @@ export const taskListForViewAtom = atomFamily((viewId: ViewId) =>
 export const projectTaskCountsAtom = atom<Record<ProjectId, number>>((get) => {
   try {
     const projects = get(projectsAtom);
-    const tasks = get(activeTasksAtom).filter((task: Task) => !task.completed);
+    const tasks = get(activeTasksAtom).filter(
+      (task: Task) => !task.archived && !task.completed,
+    );
     const counts: Record<ProjectId, number> = {};
 
     for (const project of projects) {
@@ -153,7 +164,9 @@ projectTaskCountsAtom.debugLabel = "projectTaskCountsAtom";
 export const labelTaskCountsAtom = atom<Record<LabelId, number>>((get) => {
   try {
     const labels = get(labelsAtom);
-    const tasks = get(activeTasksAtom).filter((task: Task) => !task.completed);
+    const tasks = get(activeTasksAtom).filter(
+      (task: Task) => !task.archived && !task.completed,
+    );
     const counts: Record<LabelId, number> = {};
 
     for (const label of labels) {
@@ -178,8 +191,11 @@ export const taskCountsAtom = atom((get) => {
   try {
     // Raw counts (not view-specific, always show all active/completed)
     const activeTasks = get(activeTasksAtom);
-    const incompleteTasks = activeTasks.filter((task) => !task.completed);
-    const completedTasks = get(completedTasksAtom);
+    const visibleTasks = activeTasks.filter((task) => !task.archived);
+    const incompleteTasks = visibleTasks.filter((task) => !task.completed);
+    const completedTasks = get(completedTasksAtom).filter(
+      (task) => !task.archived,
+    );
     const allCount = get(taskCountForViewAtom("all"));
 
     // Standard view counts (all respect per-view showCompleted settings via uiFilteredTasksForViewAtom)
@@ -188,6 +204,7 @@ export const taskCountsAtom = atom((get) => {
       inbox: get(taskCountForViewAtom("inbox")),
       today: get(taskCountForViewAtom("today")),
       upcoming: get(taskCountForViewAtom("upcoming")),
+      recent: get(taskCountForViewAtom("recent")),
       calendar: get(taskCountForViewAtom("calendar")),
       habits: get(taskCountForViewAtom("habits")),
       overdue: get(taskCountForViewAtom("today")), // overdue is shown in today view
@@ -202,6 +219,7 @@ export const taskCountsAtom = atom((get) => {
       inbox: 0,
       today: 0,
       upcoming: 0,
+      recent: 0,
       calendar: 0,
       habits: 0,
       overdue: 0,

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useAtomValue } from "jotai"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -19,6 +20,8 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react"
+import { formatDateTimeDisplay } from "@/lib/utils/task-date-formatter"
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 
 interface PerformanceMetrics {
   vitals: {
@@ -88,6 +91,9 @@ export function PerformanceMonitor({
 }: PerformanceMonitorProps) {
   const [selectedTimeframe, setSelectedTimeframe] = useState<"1h" | "24h" | "7d" | "30d">("1h")
   const [autoRefresh, setAutoRefresh] = useState(true)
+  const appSettings = useAtomValue(settingsAtom)
+  const preferDayMonthFormat = Boolean(appSettings.general.preferDayMonthFormat)
+  const use24HourTime = Boolean(appSettings.uiSettings.use24HourTime)
 
   // Auto refresh metrics
   useEffect(() => {
@@ -526,7 +532,11 @@ export function PerformanceMonitor({
                           {issue.impact} impact
                         </Badge>
                         <span className="text-xs text-gray-500">
-                          {issue.timestamp.toLocaleString()}
+                          {formatDateTimeDisplay(issue.timestamp, {
+                            includeYear: true,
+                            preferDayMonthFormat,
+                            use24HourTime,
+                          })}
                         </span>
                       </div>
                     </div>

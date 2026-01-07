@@ -9,7 +9,6 @@ import {
   setSelectedTaskIdAtom,
   selectRangeAtom,
   selectedTaskRouteContextAtom,
-  selectedTaskRouteContextOverrideAtom,
 } from "../ui/selection";
 import {
   TEST_TASK_ID_1,
@@ -154,36 +153,11 @@ describe("Selection Atoms", () => {
         expect(store.get(selectedTaskIdAtom)).toBe(null);
       });
 
-      it("uses override route context when provided", () => {
-        const overrideContext = {
-          pathname: "/today",
-          viewId: "today" as const,
-          routeType: "standard" as const,
-        };
-        store.set(selectedTaskRouteContextOverrideAtom, overrideContext);
-
+      it("clears route context when deselecting", () => {
         store.set(setSelectedTaskIdAtom, TEST_TASK_ID_1);
-
-        expect(store.get(selectedTaskRouteContextAtom)).toEqual(
-          overrideContext,
-        );
-        expect(store.get(selectedTaskRouteContextOverrideAtom)).toBeNull();
-      });
-
-      it("clears route context override when deselecting", () => {
-        const overrideContext = {
-          pathname: "/today",
-          viewId: "today" as const,
-          routeType: "standard" as const,
-        };
-
-        store.set(selectedTaskRouteContextOverrideAtom, overrideContext);
-        store.set(setSelectedTaskIdAtom, TEST_TASK_ID_1);
-
         store.set(setSelectedTaskIdAtom, null);
 
         expect(store.get(selectedTaskRouteContextAtom)).toBeNull();
-        expect(store.get(selectedTaskRouteContextOverrideAtom)).toBeNull();
       });
     });
 

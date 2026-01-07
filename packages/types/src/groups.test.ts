@@ -51,7 +51,6 @@ describe("Group Schemas", () => {
           type: "project",
           id: groupId1,
           name: "Project Group",
-          slug: "project-group",
           items: [projectId1, projectId2],
         };
 
@@ -63,7 +62,6 @@ describe("Group Schemas", () => {
           type: "project",
           id: groupId2,
           name: "Nested Projects",
-          slug: "nested-projects",
           items: [projectId2],
         };
 
@@ -71,7 +69,6 @@ describe("Group Schemas", () => {
           type: "project",
           id: groupId1,
           name: "Mixed Project Group",
-          slug: "mixed-project-group",
           items: [nestedProjectGroup],
         };
 
@@ -83,7 +80,6 @@ describe("Group Schemas", () => {
           type: "project",
           id: groupId2,
           name: "Nested Projects",
-          slug: "nested-projects",
           items: [projectId2],
         };
 
@@ -91,7 +87,6 @@ describe("Group Schemas", () => {
           type: "project",
           id: groupId1,
           name: "Mixed Project Group",
-          slug: "mixed-project-group",
           items: [projectId1, nestedProjectGroup],
         };
 
@@ -105,7 +100,6 @@ describe("Group Schemas", () => {
           type: "project",
           id: groupId1,
           name: "Runtime Project Group",
-          slug: "runtime-project-group",
           items: [taskId1], // Passes at runtime, fails at compile time
         };
 
@@ -117,7 +111,6 @@ describe("Group Schemas", () => {
           type: "label", // Different discriminator
           id: groupId2,
           name: "Label Group",
-          slug: "label-group",
           items: [labelId1],
         };
 
@@ -125,7 +118,6 @@ describe("Group Schemas", () => {
           type: "project",
           id: groupId1,
           name: "Invalid Group",
-          slug: "invalid-group",
           items: [labelGroup], // Different group type discriminator should fail
         };
 
@@ -141,7 +133,6 @@ describe("Group Schemas", () => {
           type: "label",
           id: groupId1,
           name: "Label Group",
-          slug: "label-group",
           items: [labelId1, labelId2],
         };
 
@@ -153,7 +144,6 @@ describe("Group Schemas", () => {
           type: "label",
           id: groupId2,
           name: "Nested Labels",
-          slug: "nested-labels",
           items: [labelId2],
         };
 
@@ -161,7 +151,6 @@ describe("Group Schemas", () => {
           type: "label",
           id: groupId1,
           name: "Mixed Label Group",
-          slug: "mixed-label-group",
           items: [nestedLabelGroup],
         };
 
@@ -173,7 +162,6 @@ describe("Group Schemas", () => {
           type: "label",
           id: groupId2,
           name: "Nested Labels",
-          slug: "nested-labels",
           items: [labelId2],
         };
 
@@ -181,7 +169,6 @@ describe("Group Schemas", () => {
           type: "label",
           id: groupId1,
           name: "Mixed Label Group",
-          slug: "mixed-label-group",
           items: [labelId1, nestedLabelGroup],
         };
 
@@ -195,7 +182,6 @@ describe("Group Schemas", () => {
           type: "label",
           id: groupId1,
           name: "Runtime Label Group",
-          slug: "runtime-label-group",
           items: [taskId1], // Passes at runtime, fails at compile time
         };
 
@@ -207,7 +193,6 @@ describe("Group Schemas", () => {
           type: "project", // Different discriminator
           id: groupId2,
           name: "Project Group",
-          slug: "project-group",
           items: [projectId1],
         };
 
@@ -215,7 +200,6 @@ describe("Group Schemas", () => {
           type: "label",
           id: groupId1,
           name: "Invalid Group",
-          slug: "invalid-group",
           items: [projectGroup], // Different group type discriminator should fail
         };
 
@@ -230,7 +214,6 @@ describe("Group Schemas", () => {
         type: "project",
         id: groupId2,
         name: "Project Group",
-        slug: "project-group",
         items: [projectId1],
       };
 
@@ -238,7 +221,6 @@ describe("Group Schemas", () => {
         type: "label",
         id: groupId1,
         name: "Label Group",
-        slug: "label-group",
         items: [labelId1],
       };
 

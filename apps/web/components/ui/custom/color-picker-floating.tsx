@@ -105,7 +105,8 @@ export function ColorPickerFloating({
     <div
       ref={floatingRef}
       className={cn(
-        "z-50 bg-popover text-popover-foreground rounded-md border p-3 shadow-md",
+        // Min width keeps the 6-column grid from squeezing when opened from narrow context menus
+        "z-50 bg-popover text-popover-foreground rounded-md border p-3 shadow-md min-w-[208px]",
         "animate-in fade-in-0 zoom-in-95",
         className,
       )}

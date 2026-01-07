@@ -117,6 +117,7 @@ vi.mock("lucide-react", () => ({
   Hash: () => <span data-testid="hash-icon">#</span>,
   Tag: () => <span data-testid="tag-icon">🏷️</span>,
   AlertCircle: () => <span data-testid="alert-icon">⚠️</span>,
+  SearchIcon: () => <span data-testid="search-icon">🔍</span>,
   Repeat: () => <span data-testid="repeat-icon">🔄</span>,
   X: () => <span data-testid="x-icon">✕</span>,
   Folder: () => <span data-testid="folder-icon">📁</span>,

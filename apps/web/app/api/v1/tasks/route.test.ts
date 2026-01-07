@@ -79,14 +79,12 @@ const mockDataFile: DataFile = {
     {
       id: createProjectId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"),
       name: "Test Project 1",
-      slug: "test-project-1",
       color: "#3b82f6",
       sections: [DEFAULT_PROJECT_SECTION],
     },
     {
       id: createProjectId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"),
       name: "Test Project 2",
-      slug: "test-project-2",
       color: "#ef4444",
       sections: [DEFAULT_PROJECT_SECTION],
     },
@@ -95,19 +93,16 @@ const mockDataFile: DataFile = {
     {
       id: createLabelId("cccccccc-cccc-4ccc-8ccc-cccccccccccc"),
       name: "Important",
-      slug: "important",
       color: "#ef4444",
     },
     {
       id: createLabelId("dddddddd-dddd-4ddd-8ddd-dddddddddddd"),
       name: "Work",
-      slug: "work",
       color: "#3b82f6",
     },
     {
       id: createLabelId("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"),
       name: "Personal",
-      slug: "personal",
       color: "#10b981",
     },
   ],
@@ -434,13 +429,11 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
           {
             id: PROJECT_ID_1,
             name: "Test Project 1",
-            slug: "test-project-1",
             color: "#3b82f6",
             sections: [
               {
                 id: createGroupId("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"),
                 name: "Default",
-                slug: "",
                 type: "section",
                 items: [TASK_ID_1], // Task 1 is in default section (first section)
                 isDefault: true,
@@ -448,7 +441,6 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
               {
                 id: SECTION_ID_1,
                 name: "Section 1",
-                slug: "",
                 type: "section",
                 items: [],
               },
@@ -457,13 +449,11 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
           {
             id: PROJECT_ID_2,
             name: "Test Project 2",
-            slug: "test-project-2",
             color: "#ef4444",
             sections: [
               {
                 id: createGroupId("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"),
                 name: "Default",
-                slug: "",
                 type: "section",
                 items: [TASK_ID_2], // Task 2 is in default section (first section)
                 isDefault: true,
@@ -471,7 +461,6 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
               {
                 id: SECTION_ID_2,
                 name: "Section 2",
-                slug: "",
                 type: "section",
                 items: [],
               },
@@ -666,20 +655,17 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
           {
             id: PROJECT_ID_1,
             name: "Test Project 1",
-            slug: "test-project-1",
             color: "#3b82f6",
             sections: [
               {
                 id: SECTION_ID_0,
                 name: "Default",
-                slug: "",
                 type: "section",
                 items: [], // Task is NOT in default section
               },
               {
                 id: SECTION_ID_1,
                 name: "Section 1",
-                slug: "",
                 type: "section",
                 items: [TASK_ID_1], // Task 1 is in Section 1
               },
@@ -688,20 +674,17 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
           {
             id: PROJECT_ID_2,
             name: "Test Project 2",
-            slug: "test-project-2",
             color: "#ef4444",
             sections: [
               {
                 id: SECTION_ID_0,
                 name: "Default",
-                slug: "",
                 type: "section",
                 items: [TASK_ID_2],
               },
               {
                 id: SECTION_ID_2,
                 name: "Section 2",
-                slug: "",
                 type: "section",
                 items: [],
               },

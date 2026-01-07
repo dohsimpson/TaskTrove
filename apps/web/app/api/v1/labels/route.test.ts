@@ -56,13 +56,11 @@ describe("PATCH /api/labels", () => {
         {
           id: TEST_LABEL_ID_1,
           name: "Important",
-          slug: "important",
           color: "#ef4444",
         },
         {
           id: TEST_LABEL_ID_2,
           name: "Work",
-          slug: "work",
           color: "#3b82f6",
         },
       ],
@@ -134,83 +132,6 @@ describe("PATCH /api/labels", () => {
     expect(responseData.count).toBe(1)
   })
 
-  it("should regenerate slug when name is updated without explicit slug", async () => {
-    const labelUpdate = {
-      id: TEST_LABEL_ID_1,
-      name: "New Label Name",
-      color: "#8b5cf6",
-    }
-
-    const request = new NextRequest("http://localhost:3000/api/labels", {
-      method: "PATCH",
-      body: JSON.stringify(labelUpdate),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-
-    const response = await PATCH(request)
-    const responseData = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(responseData.success).toBe(true)
-    expect(responseData.labels).toHaveLength(1)
-    expect(responseData.labels[0].name).toBe("New Label Name")
-
-    // Verify that the file was written with the regenerated slug
-    expect(mockSafeWriteDataFile).toHaveBeenCalled()
-    const writeCall = mockSafeWriteDataFile.mock.calls[0]
-    if (!writeCall || !writeCall[0]) {
-      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
-    }
-    const writtenData = writeCall[0].data
-    const updatedLabel = writtenData.labels.find((l: { id: string }) => l.id === TEST_LABEL_ID_1)
-
-    expect(updatedLabel).toBeDefined()
-    if (updatedLabel) {
-      expect(updatedLabel.slug).toBe("new-label-name") // Should regenerate slug from new name
-      expect(updatedLabel.slug).not.toBe("test-label-1") // Should not keep old slug
-    }
-  })
-
-  it("should preserve explicit slug when both name and slug are updated", async () => {
-    const labelUpdate = {
-      id: TEST_LABEL_ID_1,
-      name: "New Label Name",
-      slug: "custom-label-slug",
-      color: "#8b5cf6",
-    }
-
-    const request = new NextRequest("http://localhost:3000/api/labels", {
-      method: "PATCH",
-      body: JSON.stringify(labelUpdate),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-
-    const response = await PATCH(request)
-    const responseData = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(responseData.success).toBe(true)
-
-    // Verify that explicit slug is preserved
-    expect(mockSafeWriteDataFile).toHaveBeenCalled()
-    const writeCall = mockSafeWriteDataFile.mock.calls[0]
-    if (!writeCall || !writeCall[0]) {
-      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
-    }
-    const writtenData = writeCall[0].data
-    const updatedLabel = writtenData.labels.find((l: { id: string }) => l.id === TEST_LABEL_ID_1)
-
-    expect(updatedLabel).toBeDefined()
-    if (updatedLabel) {
-      expect(updatedLabel.slug).toBe("custom-label-slug") // Should preserve explicit slug
-      expect(updatedLabel.name).toBe("New Label Name")
-    }
-  })
-
   it("should return 400 error for missing label ID", async () => {
     const invalidUpdate = {
       name: "Label without ID",
@@ -267,13 +188,11 @@ describe("DELETE /api/labels", () => {
         {
           id: TEST_LABEL_ID_1,
           name: "Important",
-          slug: "important",
           color: "#ef4444",
         },
         {
           id: TEST_LABEL_ID_2,
           name: "Work",
-          slug: "work",
           color: "#3b82f6",
         },
       ],
@@ -384,7 +303,6 @@ describe("POST /api/labels", () => {
         {
           id: TEST_LABEL_ID_1,
           name: "Existing Label",
-          slug: "existing-label",
           color: "#ef4444",
         },
       ],
@@ -431,7 +349,6 @@ describe("POST /api/labels", () => {
     expect(writeCall.data.labels[1]).toEqual({
       id: "12345678-1234-4123-8123-123456789012",
       name: "New Label",
-      slug: "new-label",
       color: "#10b981",
     })
   })
@@ -464,7 +381,6 @@ describe("POST /api/labels", () => {
     expect(writeCall.data.labels[1]).toEqual({
       id: "12345678-1234-4123-8123-123456789012",
       name: "Label Without Color",
-      slug: "label-without-color",
       color: "#3b82f6", // Default blue color from DEFAULT_LABEL_COLORS[0]
     })
   })

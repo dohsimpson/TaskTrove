@@ -42,6 +42,8 @@
     "AUTH_SECRET",
     "DEBUG",
     "ENABLE_HALLOWEEN_THEME",
-    "VITEST"
+    "VITEST",
+    "NEXT_RUNTIME",
+    "SHOW_DEBUG_BADGE"
   ]
 }

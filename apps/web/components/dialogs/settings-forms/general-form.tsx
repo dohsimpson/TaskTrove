@@ -18,14 +18,13 @@ import { SettingsCard } from "@/components/ui/custom/settings-card"
 import { settingsAtom, userAtom } from "@tasktrove/atoms/data/base/atoms"
 import { updateSettingsAtom } from "@tasktrove/atoms/core/settings"
 import { UserSchema } from "@tasktrove/types/core"
-import type { StandardViewId } from "@tasktrove/types/id"
-import { START_VIEW_METADATA } from "@tasktrove/constants"
+import { STANDARD_VIEW_IDS, START_VIEW_METADATA } from "@tasktrove/constants"
 import {
   Inbox,
   Calendar,
   Clock,
   CheckSquare,
-  ListCheck,
+  ListTodo,
   Home,
   Languages,
   Copy,
@@ -34,10 +33,12 @@ import {
   Eye,
   EyeOff,
   ExternalLink,
+  History,
+  Repeat,
 } from "lucide-react"
 import { useTranslation } from "@tasktrove/i18n"
 import { languages, type Language, isValidLanguage } from "@/lib/i18n/settings"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 
 // Language display names
 const languageNames: Record<Language, string> = {
@@ -55,10 +56,13 @@ const languageNames: Record<Language, string> = {
 
 // Icon mapping for UI components
 const ICON_MAP = {
-  all: ListCheck,
+  all: ListTodo,
   inbox: Inbox,
   today: Calendar,
   upcoming: Clock,
+  habits: Repeat,
+  calendar: Calendar,
+  recent: History,
   completed: CheckSquare,
   lastViewed: Home,
 } as const
@@ -71,71 +75,35 @@ export function GeneralForm() {
   const { t, i18n } = useTranslation("settings")
   const [showApiToken, setShowApiToken] = useState(false)
 
-  // Generate start view options with translations
-  const allStartViewOptions: Array<{
-    value: StandardViewId | "lastViewed"
-    label: string
-    description: string
-    icon: React.ComponentType<{ className?: string }>
-  }> = [
-    {
-      value: "all",
-      icon: ICON_MAP.all,
-      label: t("general.startView.all.label", START_VIEW_METADATA.all.title),
-      description: t("general.startView.all.description", START_VIEW_METADATA.all.description),
-    },
-    {
-      value: "inbox",
-      icon: ICON_MAP.inbox,
-      label: t("general.startView.inbox.label", START_VIEW_METADATA.inbox.title),
-      description: t("general.startView.inbox.description", START_VIEW_METADATA.inbox.description),
-    },
-    {
-      value: "today",
-      icon: ICON_MAP.today,
-      label: t("general.startView.today.label", START_VIEW_METADATA.today.title),
-      description: t("general.startView.today.description", START_VIEW_METADATA.today.description),
-    },
-    {
-      value: "upcoming",
-      icon: ICON_MAP.upcoming,
-      label: t("general.startView.upcoming.label", START_VIEW_METADATA.upcoming.title),
-      description: t(
-        "general.startView.upcoming.description",
-        START_VIEW_METADATA.upcoming.description,
-      ),
-    },
-    {
-      value: "completed",
-      icon: ICON_MAP.completed,
-      label: t("general.startView.completed.label", START_VIEW_METADATA.completed.title),
-      description: t(
-        "general.startView.completed.description",
-        START_VIEW_METADATA.completed.description,
-      ),
-    },
-    {
-      value: "lastViewed",
-      icon: ICON_MAP.lastViewed,
-      label: t("general.startView.lastViewed.label", START_VIEW_METADATA.lastViewed.title),
-      description: t(
-        "general.startView.lastViewed.description",
-        START_VIEW_METADATA.lastViewed.description,
-      ),
-    },
-  ]
+  type StandardStartViewId = Exclude<keyof typeof ICON_MAP, "lastViewed">
 
-  // Separate standard views from lastViewed
-  const standardViewOptions = allStartViewOptions.filter((option) => option.value !== "lastViewed")
-  const lastViewedOption = allStartViewOptions.find((option) => option.value === "lastViewed")
+  // Generate start view options with translations
+  const standardStartViewOptions: Array<{
+    value: StandardStartViewId
+    label: string
+    icon: React.ComponentType<{ className?: string }>
+  }> = STANDARD_VIEW_IDS.filter(
+    (viewId): viewId is StandardStartViewId => viewId in ICON_MAP && viewId in START_VIEW_METADATA,
+  ).map((viewId) => ({
+    value: viewId,
+    icon: ICON_MAP[viewId],
+    label: t(`general.startView.${viewId}.label`, START_VIEW_METADATA[viewId].title),
+  }))
+
+  const lastViewedOption = {
+    value: "lastViewed",
+    icon: ICON_MAP.lastViewed,
+    label: t("general.startView.lastViewed.label", START_VIEW_METADATA.lastViewed.title),
+  }
 
   const currentStartView = settings.general.startView
   const currentSoundEnabled = settings.general.soundEnabled
   const currentLinkifyEnabled = settings.general.linkifyEnabled
   const currentMarkdownEnabled = settings.general.markdownEnabled
   const currentPopoverHoverOpen = settings.general.popoverHoverOpen
+  const currentPreferDayMonthFormat = settings.general.preferDayMonthFormat
 
-  const handleStartViewChange = (value: StandardViewId | "lastViewed") => {
+  const handleStartViewChange = (value: StandardStartViewId | "lastViewed") => {
     updateSettings({
       general: {
         startView: value,
@@ -171,6 +139,14 @@ export function GeneralForm() {
     updateSettings({
       general: {
         popoverHoverOpen: enabled,
+      },
+    })
+  }
+
+  const handlePreferDayMonthFormatChange = (enabled: boolean) => {
+    updateSettings({
+      general: {
+        preferDayMonthFormat: enabled,
       },
     })
   }
@@ -214,7 +190,9 @@ export function GeneralForm() {
     }
   }
 
-  const selectedOption = allStartViewOptions.find((option) => option.value === currentStartView)
+  const selectedOption = [...standardStartViewOptions, lastViewedOption].find(
+    (option) => option.value === currentStartView,
+  )
 
   return (
     <div className="space-y-6">
@@ -244,31 +222,21 @@ export function GeneralForm() {
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {standardViewOptions.map((option) => (
+              {standardStartViewOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   <div className="flex items-center gap-2 w-full">
                     <option.icon className="w-4 h-4 flex-shrink-0" />
-                    <div className="flex flex-col items-start">
-                      <span className="font-medium">{option.label}</span>
-                      <span className="text-xs text-muted-foreground">{option.description}</span>
-                    </div>
+                    <span className="font-medium">{option.label}</span>
                   </div>
                 </SelectItem>
               ))}
               <SelectSeparator />
-              {lastViewedOption && (
-                <SelectItem key={lastViewedOption.value} value={lastViewedOption.value}>
-                  <div className="flex items-center gap-2 w-full">
-                    <lastViewedOption.icon className="w-4 h-4 flex-shrink-0" />
-                    <div className="flex flex-col items-start">
-                      <span className="font-medium">{lastViewedOption.label}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {lastViewedOption.description}
-                      </span>
-                    </div>
-                  </div>
-                </SelectItem>
-              )}
+              <SelectItem key={lastViewedOption.value} value={lastViewedOption.value}>
+                <div className="flex items-center gap-2 w-full">
+                  <lastViewedOption.icon className="w-4 h-4 flex-shrink-0" />
+                  <span className="font-medium">{lastViewedOption.label}</span>
+                </div>
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -314,6 +282,28 @@ export function GeneralForm() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+      </SettingsCard>
+
+      {/* Date Format Settings */}
+      <SettingsCard title={t("general.dates.title", "Dates")}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-0.5 sm:max-w-[65%]">
+            <Label htmlFor="prefer-day-month-format">
+              {t("general.dates.preferDayMonth.label", "Prefer day/month for numeric dates")}
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              {t(
+                "general.dates.preferDayMonth.description",
+                "When a date like 1/2 is ambiguous, interpret it as 1 February instead of Jan 2",
+              )}
+            </p>
+          </div>
+          <Switch
+            id="prefer-day-month-format"
+            checked={currentPreferDayMonthFormat}
+            onCheckedChange={handlePreferDayMonthFormatChange}
+          />
         </div>
       </SettingsCard>
 

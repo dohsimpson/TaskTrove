@@ -5,11 +5,13 @@ import type {
   ParserContext,
   ExtractionResult,
 } from "@tasktrove/parser/types";
+import { formatDateDisplay } from "./task-date-formatter";
 
 interface DynamicPatternsConfig {
   projects?: Array<{ name: string }>;
   labels?: Array<{ name: string }>;
   users?: Array<{ username: string }>;
+  preferDayMonthFormat?: boolean;
 }
 
 export interface ParsedTaskWithMatches extends ParsedTask {
@@ -45,6 +47,7 @@ export function parseEnhancedNaturalLanguage(
     disabledSections,
     projects: config?.projects,
     labels: config?.labels,
+    preferDayMonthFormat: config?.preferDayMonthFormat,
   };
 
   // Add users if provided (Pro feature)
@@ -128,13 +131,15 @@ export function getPriorityBackgroundColor(priority?: number): string {
   return colorMap.get(priority) || "#6b7280";
 }
 
-export function getDateDisplay(date?: Date): string {
+export function getDateDisplay(
+  date?: Date,
+  options?: { preferDayMonthFormat?: boolean },
+): string {
   if (!date) return "";
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year:
-      date.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
+  const includeYear = date.getFullYear() !== new Date().getFullYear();
+  return formatDateDisplay(date, {
+    includeYear,
+    preferDayMonthFormat: options?.preferDayMonthFormat,
   });
 }
 
@@ -227,6 +232,7 @@ export const ABSOLUTE_DATE_PATTERNS = [
     pattern: /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+\d{1,2}/gi,
   },
   { display: "1/15", pattern: /\d{1,2}\/\d{1,2}/gi },
+  { display: "2025-01-15", pattern: /\d{4}-\d{2}-\d{2}/gi },
 ];
 
 // Basic time patterns

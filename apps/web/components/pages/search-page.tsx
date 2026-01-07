@@ -7,6 +7,7 @@ import { AdvancedSearch } from "@/components/search/advanced-search"
 import { taskAtoms } from "@tasktrove/atoms/core/tasks"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import { labelAtoms } from "@tasktrove/atoms/core/labels"
+import { useTaskSearchNavigation } from "@/hooks/use-task-search-navigation"
 import type { Task, Project, Label } from "@tasktrove/types/core"
 import type { LabelId } from "@tasktrove/types/id"
 
@@ -19,7 +20,7 @@ interface SearchFilter {
 }
 
 interface SearchPageProps {
-  onTaskClick: (task: Task) => void
+  onTaskClick?: (task: Task) => void
 }
 
 export function SearchPage({ onTaskClick }: SearchPageProps) {
@@ -27,6 +28,7 @@ export function SearchPage({ onTaskClick }: SearchPageProps) {
   const tasks = useAtomValue(taskAtoms.tasks)
   const projects = useAtomValue(projectAtoms.projects)
   const labels = useAtomValue(labelAtoms.labels)
+  const { focusTaskFromSearch } = useTaskSearchNavigation()
   const [searchResults, setSearchResults] = useState<Task[]>([])
   const [hasSearched, setHasSearched] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
@@ -140,7 +142,8 @@ export function SearchPage({ onTaskClick }: SearchPageProps) {
 
   // Handle result click
   const handleResultClick = (task: Task) => {
-    onTaskClick(task)
+    focusTaskFromSearch(task)
+    onTaskClick?.(task)
   }
 
   return (

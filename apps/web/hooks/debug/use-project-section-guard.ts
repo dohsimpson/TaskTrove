@@ -6,7 +6,7 @@ import { tasksAtom, projectsAtom } from "@tasktrove/atoms/data/base/atoms"
 import type { Project, Task } from "@tasktrove/types/core"
 import type { ProjectId, TaskId } from "@tasktrove/types/id"
 import { INBOX_PROJECT_ID } from "@tasktrove/types/constants"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 
 type ProjectSectionIndex = Map<
   ProjectId,
@@ -226,7 +226,7 @@ export function useProjectSectionGuard() {
           onClick: () => {
             const shortcutText =
               "Open DevTools: Cmd+Option+I on macOS, Ctrl+Shift+I on Windows/Linux."
-            if (typeof navigator !== "undefined" && navigator.clipboard) {
+            if (typeof navigator !== "undefined") {
               navigator.clipboard.writeText(shortcutText).catch(() => {
                 console.info(shortcutText)
               })
@@ -260,30 +260,32 @@ export function useProjectSectionGuard() {
       console.warn("[delta] New inconsistencies introduced since the previous render.")
       newlyOrphaned.forEach(({ projectId, taskIds }) => {
         const project = sectionIndex.get(projectId)?.project
+        const matchedTasks = taskIds
+          .map((taskId) => tasks.find((task) => task.id === taskId))
+          .filter((task): task is Task => Boolean(task))
+
         console.table(
-          taskIds
-            .map((taskId) => tasks.find((task) => task.id === taskId))
-            .filter(Boolean)
-            .map((task) => ({
-              projectName: project?.name ?? "(unknown project)",
-              projectId,
-              taskId: task!.id,
-              title: task!.title,
-              completed: task!.completed,
-            })),
+          matchedTasks.map((task) => ({
+            projectName: project?.name ?? "(unknown project)",
+            projectId,
+            taskId: task.id,
+            title: task.title,
+            completed: task.completed,
+          })),
         )
       })
       if (newlyMissing.length > 0) {
+        const missingTasks = newlyMissing
+          .map((taskId) => tasks.find((task) => task.id === taskId))
+          .filter((task): task is Task => Boolean(task))
+
         console.table(
-          newlyMissing
-            .map((taskId) => tasks.find((task) => task.id === taskId))
-            .filter(Boolean)
-            .map((task) => ({
-              taskId: task!.id,
-              projectId: task!.projectId,
-              title: task!.title,
-              completed: task!.completed,
-            })),
+          missingTasks.map((task) => ({
+            taskId: task.id,
+            projectId: task.projectId,
+            title: task.title,
+            completed: task.completed,
+          })),
         )
       }
     }

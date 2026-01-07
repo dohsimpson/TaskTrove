@@ -1,7 +1,10 @@
 import { atom } from "jotai";
 import type { Task } from "@tasktrove/types/core";
 import type { TaskId } from "@tasktrove/types/id";
-import { createAtomWithStorage } from "@tasktrove/atoms/utils/atom-helpers";
+import {
+  createAtomWithStorage,
+  deserializeWithDefaults,
+} from "@tasktrove/atoms/utils/atom-helpers";
 import { tasksAtom } from "@tasktrove/atoms/data/base/atoms";
 
 /**
@@ -50,6 +53,12 @@ const defaultFocusTimerState: FocusTimerState = {
 export const focusTimerStateAtom = createAtomWithStorage<FocusTimerState>(
   "focus-timer-state",
   defaultFocusTimerState,
+  {
+    deserialize: (str) =>
+      deserializeWithDefaults(str, defaultFocusTimerState, {
+        label: "focus timer state",
+      }),
+  },
 );
 focusTimerStateAtom.debugLabel = "focusTimerStateAtom";
 

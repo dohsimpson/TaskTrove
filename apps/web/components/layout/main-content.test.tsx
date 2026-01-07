@@ -79,6 +79,12 @@ vi.mock("@/components/task/task-empty-state", () => ({
   ),
 }))
 
+vi.mock("@/components/task/task-view-side-panel-layout", () => ({
+  TaskViewSidePanelLayout: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="task-view-side-panel-layout">{children}</div>
+  ),
+}))
+
 // Mock TaskItem since it depends on Jotai atoms
 vi.mock("@/components/task/task-item", () => ({
   TaskItem: ({ taskId }: { taskId: string }) => (

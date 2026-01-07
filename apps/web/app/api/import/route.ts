@@ -71,7 +71,7 @@ async function importData(
     let importData: DataFile
     try {
       if (requiresMigration) {
-        importData = migrateDataFile(normalizedImportData)
+        importData = await migrateDataFile(normalizedImportData)
         log.info(
           {
             module: "import",

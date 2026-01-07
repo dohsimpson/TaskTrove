@@ -1,7 +1,8 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@/test-utils"
-import { Section, calculateTargetSectionItems } from "./section"
+import { Section } from "./section"
+import { calculateTargetSectionItems } from "@tasktrove/dom-utils"
 import { TEST_PROJECT_ID_1, TEST_GROUP_ID_1 } from "@tasktrove/types/test-constants"
 import { DEFAULT_SECTION_COLORS } from "@tasktrove/constants"
 import { reorderItems } from "@tasktrove/dom-utils"
@@ -69,13 +70,11 @@ describe("Section", () => {
   const mockProject = {
     id: TEST_PROJECT_ID_1,
     name: "Test Project",
-    slug: "test-project",
     color: "#3B82F6",
     sections: [
       {
         id: TEST_GROUP_ID_1,
         name: "Planning",
-        slug: "planning",
         type: "section" as const,
         items: [],
         color: DEFAULT_SECTION_COLORS[0],

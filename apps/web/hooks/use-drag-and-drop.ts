@@ -6,27 +6,34 @@ import { useAtom } from "jotai"
 import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
 import { taskAtoms } from "@tasktrove/atoms/core/tasks"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 import type { Task, Project } from "@tasktrove/types/core"
-import { createProjectId, createLabelId, TaskId } from "@tasktrove/types/id"
+import { createProjectId, createLabelId, createTaskId, TaskId } from "@tasktrove/types/id"
+
+type DragPayload = {
+  type: string
+  dragId: string
+  index: number
+  [key: string]: unknown
+}
+
+type DropTargetData = {
+  type: string
+  dropTargetId?: string
+  projectId?: string
+  labelId?: string
+  date?: Date
+  [key: string]: unknown
+}
 
 interface DragResult {
   source: {
-    data: {
-      type: string
-      dragId: string
-      index: number
-      [key: string]: any
-    }
+    data: DragPayload
   }
   location: {
     current: {
       dropTargets: Array<{
-        data: {
-          type: string
-          dropTargetId?: string
-          [key: string]: any
-        }
+        data: DropTargetData
       }>
     }
   }
@@ -111,22 +118,24 @@ export function useDragAndDrop() {
 
       // Handle task drop on project
       if (sourceData.type === "draggable-item" && destinationData.type === "project") {
-        const taskId = sourceData.dragId
-        const targetProjectId = destinationData.dropTargetId || destinationData.projectId
+        const { dragId } = sourceData
+        const targetProjectId = destinationData.dropTargetId ?? destinationData.projectId
 
-        if (taskId && targetProjectId) {
-          handleTaskDropOnProject(taskId as TaskId, targetProjectId)
+        if (dragId && targetProjectId) {
+          const taskId = createTaskId(dragId)
+          handleTaskDropOnProject(taskId, targetProjectId)
         }
         return
       }
 
       // Handle task drop on label
       if (sourceData.type === "draggable-item" && destinationData.type === "label") {
-        const taskId = sourceData.dragId
-        const targetLabelId = destinationData.dropTargetId || destinationData.labelId
+        const { dragId } = sourceData
+        const targetLabelId = destinationData.dropTargetId ?? destinationData.labelId
 
-        if (taskId && targetLabelId) {
-          handleTaskDropOnLabel(taskId as TaskId, targetLabelId)
+        if (dragId && targetLabelId) {
+          const taskId = createTaskId(dragId)
+          handleTaskDropOnLabel(taskId, targetLabelId)
         }
         return
       }
@@ -139,12 +148,13 @@ export function useDragAndDrop() {
 
       // Handle calendar day drops
       if (sourceData.type === "draggable-item" && destinationData.type === "calendar-day") {
-        const taskId = sourceData.dragId
+        const { dragId } = sourceData
         const targetDate = destinationData.date
 
-        if (taskId && targetDate) {
+        if (dragId && targetDate) {
+          const taskId = createTaskId(dragId)
           updateTask({
-            updateRequest: { id: taskId as TaskId, dueDate: targetDate },
+            updateRequest: { id: taskId, dueDate: targetDate },
           })
 
           toast.success("Updated task due date")

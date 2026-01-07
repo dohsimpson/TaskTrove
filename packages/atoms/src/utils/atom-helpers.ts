@@ -115,6 +115,47 @@ export const log = {
   error: (...args: unknown[]) => console.error(...args),
 };
 
+export function deserializeWithDefaults<T extends object>(
+  str: string,
+  defaults: T,
+  options?: {
+    label?: string;
+    validate?: (value: unknown) => value is Partial<T>;
+  },
+): T {
+  const label = options?.label ?? "saved data";
+  const errorMessage = `We reset ${label} because saved data was invalid.`;
+
+  if (!str || str === "null" || str === "undefined") {
+    return defaults;
+  }
+
+  try {
+    const parsed = JSON.parse(str);
+    if (!parsed || typeof parsed !== "object") {
+      log.error(
+        { module: "storage", label },
+        "Stored data was not a valid object",
+      );
+      toast.error(errorMessage);
+      return defaults;
+    }
+    if (options?.validate && !options.validate(parsed)) {
+      log.error({ module: "storage", label }, "Stored data failed validation");
+      toast.error(errorMessage);
+      return defaults;
+    }
+    return { ...defaults, ...parsed };
+  } catch (error) {
+    log.error(
+      { error, module: "storage", label: options?.label },
+      "Error parsing JSON for stored data",
+    );
+    toast.error(errorMessage);
+    return defaults;
+  }
+}
+
 // Simple date filter function - this should be moved to @tasktrove/utils
 export function matchesDueDateFilter(): boolean {
   // For now, return true to not break functionality

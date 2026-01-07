@@ -10,23 +10,31 @@ import {
   collapsedSectionsAtom,
   toggleSectionCollapseAtom,
 } from "@tasktrove/atoms/ui/views"
+import { taskFocusVisibilityAtom, includeFocusedTask } from "@tasktrove/atoms/ui/task-focus"
+import { selectedTaskIdAtom } from "@tasktrove/atoms/ui/selection"
 import { applyViewStateFilters } from "@tasktrove/atoms/utils/view-filters"
 import { sortTasksByViewState } from "@tasktrove/atoms/utils/view-sorting"
 import type { Task, Project } from "@tasktrove/types/core"
 import type { ProjectId, GroupId } from "@tasktrove/types/id"
 import type { TaskId } from "@tasktrove/types/id"
-import { createTaskId } from "@tasktrove/types/id"
+import { createTaskId, createProjectId } from "@tasktrove/types/id"
 import { FALLBACK_COLOR } from "@tasktrove/constants"
 import { EditableSectionHeader } from "./editable-section-header"
 import { getDefaultSectionId } from "@tasktrove/types/defaults"
 import { VirtualizedTaskList } from "./virtualized-task-list"
+import type { VirtualizedTaskListProps } from "./virtualized-task-list"
 import { DropTargetElement } from "./project-sections-view-helper"
 import { Collapsible, CollapsibleContent } from "@/components/ui/custom/animated-collapsible"
 import { ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
-import type { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
-import { extractDropPayload, reorderItems } from "@tasktrove/dom-utils"
+import {
+  extractDropPayload,
+  calculateTargetSectionItems,
+  removeIdsFromProjects,
+  insertIdsAtSectionEnd,
+  replaceSectionItems,
+} from "@tasktrove/dom-utils"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { useAddTaskToSection } from "@/hooks/use-add-task-to-section"
@@ -36,61 +44,28 @@ interface SectionProps {
   projectId: ProjectId
   droppableId: string
   wrapperClassName?: string
+  headerClassName?: string
   variant?: "default" | "compact" | "kanban" | "calendar" | "subtask"
   emptyState?: React.ReactNode
   isCollapsible?: boolean
+  renderTaskItem?: VirtualizedTaskListProps["renderTaskItem"]
+  showGaps?: boolean
 }
 
-// Pure function for testing - calculates the target section items after drop
-export function calculateTargetSectionItems(
-  currentSectionItems: TaskId[],
-  draggedTaskIds: TaskId[],
-  targetTaskId: TaskId,
-  instruction: Instruction,
-): TaskId[] {
-  // Check if all dragged tasks are from the current section
-  const draggedTasksFromCurrentSection = draggedTaskIds.every((id) =>
-    currentSectionItems.includes(id),
-  )
-
-  if (draggedTasksFromCurrentSection) {
-    // Same section reordering: use reorderItems
-    const result = reorderItems(
-      currentSectionItems,
-      draggedTaskIds,
-      targetTaskId,
-      instruction,
-      (id) => String(id),
-    )
-    if (!result) return currentSectionItems
-    return result
-  } else {
-    // Cross-section move: only handle reorder-before and reorder-after operations
-    if (instruction.operation !== "reorder-before" && instruction.operation !== "reorder-after") {
-      return currentSectionItems
-    }
-
-    // Manually insert dragged tasks at correct position
-    const targetIndex = currentSectionItems.findIndex((id) => id === targetTaskId)
-    if (targetIndex === -1) return currentSectionItems
-
-    const insertIndex = instruction.operation === "reorder-after" ? targetIndex + 1 : targetIndex
-
-    // Create new array with dragged tasks inserted at correct position
-    const newItems = [...currentSectionItems]
-    newItems.splice(insertIndex, 0, ...draggedTaskIds)
-    return newItems
-  }
-}
+// Re-exported for tests; implementation lives in @tasktrove/dom-utils
+export { calculateTargetSectionItems }
 
 export function Section({
   sectionId,
   projectId,
   droppableId,
   wrapperClassName,
+  headerClassName,
   variant,
   emptyState,
   isCollapsible = true,
+  renderTaskItem,
+  showGaps,
 }: SectionProps) {
   // Get project data
   const getProjectById = useAtomValue(projectAtoms.derived.projectById)
@@ -100,6 +75,8 @@ export function Section({
   const routeContext = useAtomValue(currentRouteContextAtom)
   const taskById = useAtomValue(taskAtoms.derived.taskById)
   const collapsedSections = useAtomValue(collapsedSectionsAtom)
+  const focusVisibility = useAtomValue(taskFocusVisibilityAtom)
+  const selectedTaskId = useAtomValue(selectedTaskIdAtom)
   const toggleSectionCollapse = useSetAtom(toggleSectionCollapseAtom)
   const addTaskToSection = useAddTaskToSection()
 
@@ -110,7 +87,15 @@ export function Section({
   const baseTasks = getOrderedTasksForSection(projectId, sectionId)
 
   // Apply filters and sorting
-  const filteredTasks = applyViewStateFilters(baseTasks, currentViewState, routeContext.viewId)
+  let filteredTasks = applyViewStateFilters(baseTasks, currentViewState, routeContext.viewId)
+  filteredTasks = includeFocusedTask(
+    filteredTasks,
+    baseTasks,
+    focusVisibility,
+    selectedTaskId,
+    routeContext.viewId,
+  )
+
   const tasks = sortTasksByViewState([...filteredTasks], currentViewState)
   const sortedTaskIds = tasks.map((task) => task.id)
 
@@ -155,42 +140,20 @@ export function Section({
         }
       }
 
-      // Remove taskIds from affected projects' sections
-      const projectsMap = new Map<ProjectId, Project>()
-      for (const projectId of affectedProjectIds) {
-        const proj = getProjectById(projectId)
-        if (proj) {
-          projectsMap.set(projectId, {
-            ...proj,
-            sections: proj.sections.map((section) => ({
-              ...section,
-              items: section.items.filter((id) => !taskIds.includes(id)),
-            })),
-          })
-        }
-      }
+      const projects = Array.from(affectedProjectIds)
+        .map((pid) => getProjectById(pid))
+        .filter((p): p is Project => Boolean(p))
 
-      // Add taskIds to the target section (at the end)
-      const targetProject = projectsMap.get(project.id)
+      const cleaned = removeIdsFromProjects(projects, taskIds)
+      const targetProject = cleaned.find((p) => p.id === project.id)
       if (!targetProject) return
 
-      const targetSectionIndex = targetProject.sections.findIndex((s) => s.id === sectionId)
-      if (targetSectionIndex < 0) return
+      const updatedTarget = insertIdsAtSectionEnd(targetProject, sectionId, taskIds)
 
-      const targetSection = targetProject.sections[targetSectionIndex]
-      if (!targetSection) return
+      const merged = cleaned.map((proj) => (proj.id === project.id ? updatedTarget : proj))
 
-      targetProject.sections[targetSectionIndex] = {
-        ...targetSection,
-        items: [...targetSection.items, ...taskIds],
-      }
-
-      // Batch update all projects
       await updateProjects(
-        Array.from(projectsMap.values()).map((proj) => ({
-          id: proj.id,
-          sections: proj.sections,
-        })),
+        merged.map((proj) => ({ id: createProjectId(proj.id), sections: proj.sections })),
       )
     },
     [project, updateProjects, updateTasks, taskById, getProjectById, sectionId],
@@ -243,43 +206,20 @@ export function Section({
         }
       }
 
-      // Update all affected projects
-      const projectsMap = new Map<ProjectId, Project>()
-      for (const projectId of affectedProjectIds) {
-        const proj = getProjectById(projectId)
-        if (proj) {
-          if (projectId === project.id) {
-            // Update target section with reordered items
-            projectsMap.set(projectId, {
-              ...proj,
-              sections: proj.sections.map((section) =>
-                section.id === sectionId
-                  ? { ...section, items: reorderedItems }
-                  : {
-                      ...section,
-                      items: section.items.filter((id) => !taskIds.includes(id)),
-                    },
-              ),
-            })
-          } else {
-            // Remove tasks from other projects' sections
-            projectsMap.set(projectId, {
-              ...proj,
-              sections: proj.sections.map((section) => ({
-                ...section,
-                items: section.items.filter((id) => !taskIds.includes(id)),
-              })),
-            })
-          }
-        }
-      }
+      const projects = Array.from(affectedProjectIds)
+        .map((pid) => getProjectById(pid))
+        .filter((p): p is Project => Boolean(p))
 
-      // Batch update all projects
+      const cleaned = removeIdsFromProjects(projects, taskIds)
+      const targetProject = cleaned.find((p) => p.id === project.id)
+      if (!targetProject) return
+
+      const updatedTarget = replaceSectionItems(targetProject, sectionId, reorderedItems)
+
+      const merged = cleaned.map((proj) => (proj.id === project.id ? updatedTarget : proj))
+
       await updateProjects(
-        Array.from(projectsMap.values()).map((proj) => ({
-          id: proj.id,
-          sections: proj.sections,
-        })),
+        merged.map((proj) => ({ id: createProjectId(proj.id), sections: proj.sections })),
       )
     },
     [project, updateProjects, updateTasks, taskById, getProjectById, sectionId],
@@ -323,7 +263,11 @@ export function Section({
       isDefaultSection={isDefaultSection}
       onSaveEdit={handleSaveEdit}
       onCancelEdit={handleCancelEdit}
-      className={cn("px-2 py-2", variant === "kanban" ? "border-b-2" : "border-t-2")}
+      className={cn(
+        "px-2 py-2 bg-background/60",
+        variant === "kanban" ? "border-b-2 mb-2" : "border-t-2",
+        headerClassName,
+      )}
       nameClassName="font-medium text-foreground"
       nameElement="h3"
       leftContent={
@@ -363,7 +307,7 @@ export function Section({
   )
 
   const taskListContent = (
-    <div className={cn("py-2", variant === "kanban" && "flex-1 min-h-0 overflow-y-auto pr-1")}>
+    <div className={cn("py-2", variant === "kanban" && "flex-1 min-h-0 overflow-y-auto py-0")}>
       {tasks.length === 0 ? (
         emptyState || (
           <div className="min-h-[120px] px-4 flex items-center justify-center text-muted-foreground">
@@ -376,6 +320,10 @@ export function Section({
           variant={variant ?? (currentViewState.compactView ? "compact" : "default")}
           sortedTaskIds={sortedTaskIds}
           onDropTaskToListItem={handleDropTaskToListItem}
+          listSectionId={sectionId}
+          compactTitleEditable={variant === "compact" || currentViewState.compactView}
+          renderTaskItem={renderTaskItem}
+          showGaps={showGaps}
         />
       )}
     </div>
@@ -385,7 +333,12 @@ export function Section({
     <div className={cn(wrapperClassName, variant === "kanban" && "min-h-0")}>
       <DropTargetElement
         id={sectionDroppableId}
-        options={{ type: "group", indicator: {}, testId: sectionDroppableId }}
+        options={{
+          type: "group",
+          indicator: {},
+          testId: sectionDroppableId,
+          groupSectionId: sectionId,
+        }}
         onDrop={handleDropTaskToSection}
       >
         {isCollapsible ? (

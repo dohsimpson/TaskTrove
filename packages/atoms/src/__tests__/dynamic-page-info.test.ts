@@ -398,14 +398,12 @@ describe("dynamicPageInfoAtom", () => {
         {
           id: TEST_PROJECT_ID_1,
           name: "My Project",
-          slug: "my-project",
           color: "#3b82f6",
           sections: [DEFAULT_PROJECT_SECTION],
         },
         {
           id: TEST_PROJECT_ID_2,
           name: "Work Tasks 2024",
-          slug: "work-tasks-2024",
           color: "#ef4444",
           sections: [DEFAULT_PROJECT_SECTION],
         },
@@ -459,13 +457,11 @@ describe("dynamicPageInfoAtom", () => {
         {
           id: TEST_LABEL_ID_1,
           name: "urgent",
-          slug: "urgent",
           color: "#ef4444",
         },
         {
           id: TEST_LABEL_ID_2,
           name: "high priority",
-          slug: "high-priority",
           color: "#f59e0b",
         },
       ]);
@@ -569,7 +565,6 @@ describe("dynamicPageInfoAtom", () => {
         {
           id: TEST_PROJECT_ID_1,
           name: "Test Project",
-          slug: "test-project",
           color: "#3b82f6",
           sections: [DEFAULT_PROJECT_SECTION],
         },
@@ -587,7 +582,6 @@ describe("dynamicPageInfoAtom", () => {
         {
           id: TEST_LABEL_ID_1,
           name: "test-label",
-          slug: "test-label",
           color: "#ef4444",
         },
       ]);
@@ -629,7 +623,6 @@ describe("dynamicPageInfoAtom", () => {
         {
           id: TEST_PROJECT_ID_1,
           name: "Dynamic Project",
-          slug: "dynamic-project",
           color: "#10b981",
           sections: [DEFAULT_PROJECT_SECTION],
         },
@@ -662,7 +655,6 @@ describe("dynamicPageInfoAtom", () => {
         {
           id: TEST_PROJECT_ID_1,
           name: "Work Tasks",
-          slug: "work-tasks",
           color: "#3b82f6",
           sections: [DEFAULT_PROJECT_SECTION],
         },
@@ -679,7 +671,6 @@ describe("dynamicPageInfoAtom", () => {
         {
           id: TEST_LABEL_ID_1,
           name: "urgent",
-          slug: "urgent",
           color: "#ef4444",
         },
       ]);

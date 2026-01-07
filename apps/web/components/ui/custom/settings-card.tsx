@@ -2,16 +2,21 @@ import React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
+import { ProBadge } from "@/components/ui/custom/pro-badge"
 import { ExperimentalBadge } from "./experimental-badge"
 import { isAndroid, isIos, isMobileApp } from "@/lib/utils/env"
 
 interface SettingsCardProps {
+  /** Optional element id for anchoring */
+  id?: string
   /** Card title text */
   title: string
   /** Optional card description */
   description?: string
   /** Optional icon to show before title */
   icon?: React.ComponentType<{ className?: string }>
+  /** Whether to show the card */
+  hidden?: boolean
   /** Whether to show experimental badge */
   experimental?: boolean
   /** Whether to show Pro badge */
@@ -29,9 +34,11 @@ interface SettingsCardProps {
 }
 
 export function SettingsCard({
+  id,
   title,
   description,
   icon: Icon,
+  hidden = false,
   experimental = false,
   proOnly = false,
   androidOnly = false,
@@ -40,6 +47,8 @@ export function SettingsCard({
   children,
   className,
 }: SettingsCardProps) {
+  if (hidden) return null
+
   const platformMismatch = (androidOnly && !isAndroid()) || (iosOnly && !isIos())
   if (platformMismatch) return null
 
@@ -47,12 +56,12 @@ export function SettingsCard({
   if (mobileAppMismatch) return null
 
   return (
-    <Card className={cn("w-full max-w-full overflow-x-hidden", className)}>
+    <Card id={id} className={cn("w-full max-w-full overflow-x-hidden", className)}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           {Icon && <Icon className="size-5" />}
           {title}
-          {proOnly && <Badge variant="outline">Pro</Badge>}
+          {proOnly && <ProBadge />}
           {androidOnly && <Badge variant="secondary">Android</Badge>}
           {iosOnly && <Badge variant="secondary">iOS</Badge>}
           {!androidOnly && !iosOnly && mobileAppOnly && <Badge variant="secondary">Mobile</Badge>}

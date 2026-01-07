@@ -87,8 +87,13 @@ export {
 } from "./validation";
 export { isValidOrigin } from "./origin-validation";
 export {
-  createSafeProjectNameSlug,
-  createSafeLabelNameSlug,
+  createEntitySlug,
+  createProjectSlug,
+  createLabelSlug,
+  createProjectGroupSlug,
+  createLabelGroupSlug,
+  createSectionSlug,
+  extractIdFromSlug,
   resolveProject,
   resolveLabel,
   isValidProjectId,
@@ -130,14 +135,22 @@ export {
 export type { DueDatePreset, DateRange } from "./date-filter-utils";
 export {
   formatTaskDateTime,
+  formatDateDisplay,
+  formatDateTimeDisplay,
+  formatMonthLabel,
+  formatMonthYearLabel,
+  formatWeekdayLabel,
+  formatDayOfMonthLabel,
   formatTimeShort,
   formatTaskDateTimeBadge,
+  formatTimeOfDay,
   isTaskOverdue,
   getTaskDueDateStatus,
 } from "./task-date-formatter";
 export type {
   TaskDateFormat,
   TaskDateFormatOptions,
+  DateDisplayOptions,
 } from "./task-date-formatter";
 export { clearNullValues, mergeDeep } from "./object-utils";
 export {

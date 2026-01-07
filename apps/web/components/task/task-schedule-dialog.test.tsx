@@ -7,10 +7,14 @@ import { createTaskId } from "@tasktrove/types/id"
 // Mock date-fns
 vi.mock("date-fns", () => ({
   format: vi.fn((date, formatString) => {
-    if (formatString === "MMM d, yyyy") {
-      return "Jan 15, 2024"
+    const d = date instanceof Date ? date : new Date(date)
+    const month = d.getMonth() + 1
+    const day = d.getDate()
+    const year = d.getFullYear()
+    if (formatString === "M/d/yyyy") {
+      return `${month}/${day}/${year}`
     }
-    return "2024-01-15"
+    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
   }),
 }))
 
@@ -101,12 +105,15 @@ vi.mock("@/components/ui/dialog", () => ({
   ),
 }))
 
-vi.mock("@/components/ui/calendar", () => ({
+vi.mock("@/components/ui/custom/calendar", () => ({
   Calendar: ({ mode, selected, onSelect, disabled, className }: MockCalendarProps) => (
     <div data-testid="calendar" className={className} data-mode={mode}>
       <div data-testid="selected-date">{selected ? "Date selected" : "No date selected"}</div>
-      <button data-testid="select-date" onClick={() => onSelect?.(new Date("2024-01-15"))}>
-        Select Jan 15
+      <button
+        data-testid="select-date"
+        onClick={() => onSelect?.(new Date("2024-01-15T12:00:00Z"))}
+      >
+        Select 1/15
       </button>
       <button
         data-testid="select-past-date"
@@ -130,7 +137,7 @@ vi.mock("@/components/ui/calendar", () => ({
 const mockTask = {
   id: createTaskId("12345678-1234-4234-8234-123456789ab1"),
   title: "Test Task",
-  dueDate: new Date("2024-01-10"),
+  dueDate: new Date("2024-01-15T12:00:00Z"),
 }
 
 const mockTaskWithoutDate = {
@@ -382,7 +389,7 @@ describe("TaskScheduleDialog", () => {
     )
 
     // The button should show schedule text based on the initial due date
-    const submitButton = screen.getByText("Schedule for Jan 15, 2024")
+    const submitButton = screen.getByText("Schedule for 1/15/2024")
     fireEvent.click(submitButton)
 
     expect(mockOnSchedule).toHaveBeenCalledWith(mockTask.id, mockTask.dueDate, "custom")

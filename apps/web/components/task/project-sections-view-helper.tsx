@@ -7,13 +7,53 @@ import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag
 import { DraggableItem } from "@/components/ui/drag-drop/draggable-item"
 import { DropTargetItem } from "@/components/ui/drag-drop/drop-target-item"
 
-interface DropTargetElementProps {
-  type: "list-item" | "group"
+type ListDropTargetOptions = {
+  type: "list-item"
   indicator: {
-    lineGap?: string // gap between items
+    lineGap?: string
   }
   testId?: string
-  onDrop?: (args: ElementDropTargetEventBasePayload) => void
+}
+
+type GroupDropTargetOptions = {
+  type: "group"
+  indicator: {
+    lineGap?: string
+  }
+  /**
+   * Section/group identifier this drop zone represents.
+   * Required so we can reliably block same-section drops.
+   */
+  groupSectionId: string
+  testId?: string
+}
+
+type DropTargetElementProps = ListDropTargetOptions | GroupDropTargetOptions
+
+const getSourceIds = (sourceData: Record<string, unknown>): string[] => {
+  return Array.isArray(sourceData.ids)
+    ? sourceData.ids.filter((id): id is string => typeof id === "string")
+    : []
+}
+
+const collectSourceSectionIds = (sourceData: Record<string, unknown>): Set<string> => {
+  const primary = typeof sourceData.sectionId === "string" ? [sourceData.sectionId] : []
+  const list = Array.isArray(sourceData.sectionIds)
+    ? sourceData.sectionIds.filter((id): id is string => typeof id === "string")
+    : []
+  return new Set<string>([...primary, ...list])
+}
+
+const isSelfDrop = (targetId: string, sourceData: Record<string, unknown>): boolean => {
+  return getSourceIds(sourceData).includes(targetId)
+}
+
+const isSameSectionDrop = (
+  targetSectionId: string,
+  sourceData: Record<string, unknown>,
+): boolean => {
+  const sectionIds = collectSourceSectionIds(sourceData)
+  return sectionIds.size > 0 && sectionIds.size === 1 && sectionIds.has(targetSectionId)
 }
 
 /**
@@ -60,9 +100,11 @@ export function DropTargetElement({
         lineGap={indicator.lineGap}
         onDrop={handleDrop}
         canDrop={(sourceData) => {
-          // Prevent dropping item onto itself
-          const sourceIds = Array.isArray(sourceData.ids) ? sourceData.ids : []
-          return !sourceIds.includes(id)
+          if (isSelfDrop(id, sourceData)) return false
+          if (type === "group" && isSameSectionDrop(options.groupSectionId, sourceData)) {
+            return false
+          }
+          return true
         }}
         className="flex flex-1 min-h-0"
       >

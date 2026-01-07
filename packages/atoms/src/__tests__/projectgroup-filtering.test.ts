@@ -18,6 +18,7 @@ import {
   createGroupId,
 } from "@tasktrove/types/id";
 import { TASKS_QUERY_KEY, GROUPS_QUERY_KEY } from "@tasktrove/constants";
+import { createProjectGroupSlug } from "@tasktrove/utils/routing";
 
 // Mock fetch globally
 global.fetch = vi.fn();
@@ -98,7 +99,6 @@ const personalGroup: ProjectGroup = {
   type: "project" as const,
   id: GROUP_PERSONAL,
   name: "Personal",
-  slug: "personal",
   color: "#4CAF50",
   items: [PROJECT_PERSONAL_1, PROJECT_PERSONAL_2],
 };
@@ -107,7 +107,6 @@ const workGroup: ProjectGroup = {
   type: "project" as const,
   id: GROUP_WORK,
   name: "Work",
-  slug: "work",
   color: "#2196F3",
   items: [PROJECT_WORK_1, PROJECT_WORK_2],
 };
@@ -117,9 +116,11 @@ const rootProjectGroup: ProjectGroup = {
   type: "project" as const,
   id: ROOT_GROUP_ID,
   name: "All Projects",
-  slug: "all-projects",
   items: [personalGroup, workGroup],
 };
+
+const personalSlug = createProjectGroupSlug(personalGroup);
+const workSlug = createProjectGroupSlug(workGroup);
 
 beforeEach(() => {
   store = createStore();
@@ -140,7 +141,6 @@ beforeEach(() => {
       type: "label" as const,
       id: createGroupId("dddddddd-dddd-4ddd-8ddd-dddddddddddd"),
       name: "All Labels",
-      slug: "all-labels",
       items: [],
     },
   });
@@ -159,7 +159,7 @@ describe("ProjectGroup Filtering", () => {
   describe("Bug Fix: Switching between projectgroups", () => {
     it("should update task list when switching from personal to work projectgroup", () => {
       // Navigate to personal projectgroup
-      store.set(setPathnameAtom, "/projectgroups/personal");
+      store.set(setPathnameAtom, `/projectgroups/${personalSlug}`);
 
       // Should show only personal tasks
       const personalTasks = store.get(filteredTasksAtom);
@@ -170,7 +170,7 @@ describe("ProjectGroup Filtering", () => {
       ]);
 
       // Navigate to work projectgroup
-      store.set(setPathnameAtom, "/projectgroups/work");
+      store.set(setPathnameAtom, `/projectgroups/${workSlug}`);
 
       // Should now show only work tasks (THIS IS THE BUG - it shows personal tasks)
       const workTasks = store.get(filteredTasksAtom);
@@ -183,7 +183,7 @@ describe("ProjectGroup Filtering", () => {
 
     it("should update task list when switching from work to personal projectgroup", () => {
       // Navigate to work projectgroup first
-      store.set(setPathnameAtom, "/projectgroups/work");
+      store.set(setPathnameAtom, `/projectgroups/${workSlug}`);
 
       const workTasks = store.get(filteredTasksAtom);
       expect(workTasks).toHaveLength(2);
@@ -193,7 +193,7 @@ describe("ProjectGroup Filtering", () => {
       ]);
 
       // Navigate to personal projectgroup
-      store.set(setPathnameAtom, "/projectgroups/personal");
+      store.set(setPathnameAtom, `/projectgroups/${personalSlug}`);
 
       const personalTasks = store.get(filteredTasksAtom);
       expect(personalTasks).toHaveLength(2);
@@ -205,19 +205,19 @@ describe("ProjectGroup Filtering", () => {
 
     it("should handle multiple switches correctly", () => {
       // Start with personal
-      store.set(setPathnameAtom, "/projectgroups/personal");
+      store.set(setPathnameAtom, `/projectgroups/${personalSlug}`);
       expect(store.get(filteredTasksAtom)).toHaveLength(2);
 
       // Switch to work
-      store.set(setPathnameAtom, "/projectgroups/work");
+      store.set(setPathnameAtom, `/projectgroups/${workSlug}`);
       expect(store.get(filteredTasksAtom)).toHaveLength(2);
 
       // Back to personal
-      store.set(setPathnameAtom, "/projectgroups/personal");
+      store.set(setPathnameAtom, `/projectgroups/${personalSlug}`);
       expect(store.get(filteredTasksAtom)).toHaveLength(2);
 
       // Back to work
-      store.set(setPathnameAtom, "/projectgroups/work");
+      store.set(setPathnameAtom, `/projectgroups/${workSlug}`);
       const finalTasks = store.get(filteredTasksAtom);
       expect(finalTasks).toHaveLength(2);
       expect(finalTasks.map((t) => t.title)).toEqual([

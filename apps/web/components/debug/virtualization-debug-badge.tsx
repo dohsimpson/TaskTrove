@@ -17,7 +17,12 @@ export function VirtualizationDebugBadge({
   renderedItems,
 }: VirtualizationDebugBadgeProps) {
   // Only show in development when there are more than 10 items
-  if (typeof window === "undefined" || process.env.NODE_ENV !== "development" || totalItems <= 10) {
+  if (
+    typeof window === "undefined" ||
+    process.env.NODE_ENV !== "development" ||
+    totalItems <= 10 ||
+    !process.env.SHOW_DEBUG_BADGE
+  ) {
     return null
   }
 

@@ -84,8 +84,8 @@ describe("/api/data/migrate", () => {
         projects: [],
         labels: [],
         groups: {
-          projects: { id: "default", name: "All Projects", slug: "all-projects", items: [] },
-          labels: { id: "default", name: "All Labels", slug: "all-labels", items: [] },
+          projects: { id: "default", name: "All Projects", items: [] },
+          labels: { id: "default", name: "All Labels", items: [] },
         },
       }
 
@@ -144,8 +144,8 @@ describe("/api/data/migrate", () => {
         projects: [],
         labels: [],
         groups: {
-          projects: { id: "default", name: "All Projects", slug: "all-projects", items: [] },
-          labels: { id: "default", name: "All Labels", slug: "all-labels", items: [] },
+          projects: { id: "default", name: "All Projects", items: [] },
+          labels: { id: "default", name: "All Labels", items: [] },
         },
       }
 
@@ -253,8 +253,8 @@ describe("/api/data/migrate", () => {
         projects: [],
         labels: [],
         groups: {
-          projects: { id: "default", name: "All Projects", slug: "all-projects", items: [] },
-          labels: { id: "default", name: "All Labels", slug: "all-labels", items: [] },
+          projects: { id: "default", name: "All Projects", items: [] },
+          labels: { id: "default", name: "All Labels", items: [] },
         },
       }
 

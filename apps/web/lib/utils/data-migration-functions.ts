@@ -105,7 +105,6 @@ export function v080Migration(dataFile: Json): Json {
           {
             id: DEFAULT_UUID,
             name: DEFAULT_SECTION_NAME,
-            slug: "",
             color: DEFAULT_SECTION_COLOR,
             type: "section",
             items: [],
@@ -303,6 +302,110 @@ export function v0110Migration(dataFile: Json): Json {
   }
 
   result.settings = settings
+
+  return JSON.parse(JSON.stringify(result))
+}
+
+export function v0120Migration(dataFile: Json): Json {
+  console.log("Base migration v0.12.0")
+
+  if (typeof dataFile !== "object" || dataFile === null || Array.isArray(dataFile)) {
+    throw new Error("Migration input must be a JSON object")
+  }
+
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(dataFile)) {
+    result[key] = value
+  }
+
+  // Ensure uiSettings exists (base defaults to empty object)
+  const settingsValue = result.settings
+  const hasObjectSettings =
+    typeof settingsValue === "object" && settingsValue !== null && !Array.isArray(settingsValue)
+
+  const settingsObj: Record<string, unknown> = hasObjectSettings
+    ? { ...settingsValue }
+    : { ...DEFAULT_USER_SETTINGS }
+
+  const uiSettingsValue = settingsObj.uiSettings
+  const hasObjectUiSettings =
+    typeof uiSettingsValue === "object" &&
+    uiSettingsValue !== null &&
+    !Array.isArray(uiSettingsValue)
+
+  settingsObj.uiSettings = hasObjectUiSettings ? uiSettingsValue : { ...DEFAULT_UI_SETTINGS }
+
+  // Clone general settings
+  let general: Record<string, unknown>
+  const generalValue = settingsObj.general
+  if (typeof generalValue === "object" && generalValue !== null && !Array.isArray(generalValue)) {
+    const clonedGeneral: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(generalValue)) {
+      clonedGeneral[key] = value
+    }
+    general = clonedGeneral
+  } else {
+    general = { ...DEFAULT_GENERAL_SETTINGS }
+  }
+
+  if (!("preferDayMonthFormat" in general)) {
+    console.log("✓ Adding preferDayMonthFormat flag to general settings")
+    general.preferDayMonthFormat = DEFAULT_GENERAL_SETTINGS.preferDayMonthFormat
+  }
+
+  settingsObj.general = general
+  result.settings = settingsObj
+
+  const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === "object" && value !== null && !Array.isArray(value)
+
+  const stripSlugFromSection = (section: unknown): unknown => {
+    if (!isRecord(section)) return section
+    const { slug: _slug, ...rest } = section
+    void _slug
+    return rest
+  }
+
+  const stripSlugFromProject = (project: unknown): unknown => {
+    if (!isRecord(project)) return project
+    const { slug: _slug, sections, ...rest } = project
+    void _slug
+    const nextSections = Array.isArray(sections) ? sections.map(stripSlugFromSection) : sections
+    return sections === undefined ? rest : { ...rest, sections: nextSections }
+  }
+
+  const stripSlugFromGroup = (group: unknown): unknown => {
+    if (!isRecord(group)) return group
+    const { slug: _slug, items, ...rest } = group
+    void _slug
+    const nextItems = Array.isArray(items)
+      ? items.map((item) => (isRecord(item) ? stripSlugFromGroup(item) : item))
+      : items
+    return items === undefined ? rest : { ...rest, items: nextItems }
+  }
+
+  const projectsValue = result.projects
+  if (Array.isArray(projectsValue)) {
+    result.projects = projectsValue.map(stripSlugFromProject)
+  }
+
+  const labelsValue = result.labels
+  if (Array.isArray(labelsValue)) {
+    result.labels = labelsValue.map((label) => {
+      if (!isRecord(label)) return label
+      const { slug: _slug, ...rest } = label
+      void _slug
+      return rest
+    })
+  }
+
+  if (isRecord(result.projectGroups)) {
+    result.projectGroups = stripSlugFromGroup(result.projectGroups)
+  }
+
+  if (isRecord(result.labelGroups)) {
+    result.labelGroups = stripSlugFromGroup(result.labelGroups)
+  }
 
   return JSON.parse(JSON.stringify(result))
 }

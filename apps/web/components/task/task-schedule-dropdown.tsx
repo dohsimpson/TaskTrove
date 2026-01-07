@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -9,9 +9,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar } from "@/components/ui/custom/calendar"
 import { Calendar as CalendarIcon } from "lucide-react"
-import { format } from "date-fns"
+import { useAtomValue } from "jotai"
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { formatDateDisplay } from "@/lib/utils/task-date-formatter"
 import type { TaskId } from "@tasktrove/types/id"
 
 interface Task {
@@ -29,6 +31,16 @@ interface TaskScheduleDropdownProps {
 export function TaskScheduleDropdown({ task, onSchedule, children }: TaskScheduleDropdownProps) {
   const [showCustomDateDialog, setShowCustomDateDialog] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(task.dueDate)
+  const settings = useAtomValue(settingsAtom)
+  const preferDayMonthFormat = Boolean(settings.general.preferDayMonthFormat)
+
+  // Sync local selection whenever the dialog opens for a different task or the
+  // task's due date changes. Without this, the calendar keeps showing whatever
+  // month/date was selected the first time the component mounted (often "today"),
+  // which is why January due dates were opening on December.
+  useEffect(() => {
+    setSelectedDate(task.dueDate)
+  }, [task.id, task.dueDate, showCustomDateDialog])
 
   const handleQuickSchedule = (type: string) => {
     const today = new Date()
@@ -110,7 +122,10 @@ export function TaskScheduleDropdown({ task, onSchedule, children }: TaskSchedul
               </Button>
               <Button onClick={handleCustomDateSubmit}>
                 {selectedDate
-                  ? `Schedule for ${format(selectedDate, "MMM d, yyyy")}`
+                  ? `Schedule for ${formatDateDisplay(selectedDate, {
+                      includeYear: true,
+                      preferDayMonthFormat,
+                    })}`
                   : "Remove due date"}
               </Button>
             </div>

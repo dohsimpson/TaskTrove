@@ -21,8 +21,8 @@ vi.mock("jotai", async (importOriginal) => {
       if (atomStr.includes("visibleProjects") || atom.debugLabel === "visibleProjectsAtom") {
         return [
           [
-            { id: "1", name: "Work", color: "#ff0000", slug: "work" },
-            { id: "2", name: "Personal", color: "#00ff00", slug: "personal" },
+            { id: "1", name: "Work", color: "#ff0000" },
+            { id: "2", name: "Personal", color: "#00ff00" },
           ],
           vi.fn(),
         ]
@@ -89,6 +89,9 @@ vi.mock("jotai", async (importOriginal) => {
           },
           labelGroups: DEFAULT_LABEL_GROUP,
         }
+      }
+      if (atom.debugLabel === "taskByIdAtom" || atom.toString?.().includes("taskByIdAtom")) {
+        return new Map()
       }
       // Handle other read-only atoms by returning their default values
       const atomStr = atom.toString?.() || ""

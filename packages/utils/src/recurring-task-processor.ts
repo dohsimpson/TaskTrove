@@ -7,22 +7,7 @@
  * the RRULE string.
  */
 
-import * as RRuleModule from "rrule";
-import type { ByWeekday, Options } from "rrule";
-// Cross-runtime compat: prefer named export, fall back to default.RRule
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/consistent-type-assertions */
-const hasNamedExport = typeof (RRuleModule as any).RRule === "function";
-const hasDefaultExport =
-  typeof (RRuleModule as any).default?.RRule === "function";
-
-if (!hasNamedExport && !hasDefaultExport) {
-  throw new Error("RRule constructor not found in rrule module");
-}
-
-const RRule = hasNamedExport
-  ? (RRuleModule as any).RRule
-  : (RRuleModule as any).default.RRule;
-/* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/consistent-type-assertions */
+import { RRule, type ByWeekday, type Options } from "rrule";
 type RRuleType = InstanceType<typeof RRule>;
 import type { Subtask, Task } from "@tasktrove/types/core";
 import { createTaskId } from "@tasktrove/types/id";

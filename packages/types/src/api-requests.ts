@@ -334,8 +334,6 @@ export const UpdateProjectGroupRequestSchema = z.object({
   type: z.literal("project"),
   /** Updated group name */
   name: z.string().optional(),
-  /** Updated group slug */
-  slug: z.string().optional(),
   /** Updated group description */
   description: z.string().optional(),
   /** Updated group color */
@@ -356,8 +354,6 @@ export const UpdateLabelGroupRequestSchema = z.object({
   type: z.literal("label"),
   /** Updated group name */
   name: z.string().optional(),
-  /** Updated group slug */
-  slug: z.string().optional(),
   /** Updated group description */
   description: z.string().optional(),
   /** Updated group color */

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useAtomValue } from "jotai"
 import { nlpEnabledAtom } from "@tasktrove/atoms/ui/dialogs"
-import { labelsAtom, usersAtom } from "@tasktrove/atoms/data/base/atoms"
+import { labelsAtom, usersAtom, settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { visibleProjectsAtom } from "@tasktrove/atoms/core/projects"
 import {
   parseEnhancedNaturalLanguage,
@@ -28,9 +28,11 @@ export function useDebouncedParse(
 
   // Get data from atoms
   const enabled = useAtomValue(nlpEnabledAtom)
-  const labels = useAtomValue(labelsAtom) || []
-  const projects = useAtomValue(visibleProjectsAtom) || []
-  const users = useAtomValue(usersAtom) || []
+  const labels = useAtomValue(labelsAtom)
+  const projects = useAtomValue(visibleProjectsAtom)
+  const users = useAtomValue(usersAtom)
+  const settings = useAtomValue(settingsAtom)
+  const preferDayMonthFormat = Boolean(settings.general.preferDayMonthFormat)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -44,6 +46,7 @@ export function useDebouncedParse(
           projects: projects.map((p) => ({ name: p.name })),
           labels: labels.map((l) => ({ name: l.name })),
           users: users.map((u) => ({ username: u.username })),
+          preferDayMonthFormat,
         }
 
         // Parse once with disabled sections to drive task-sync behaviour
@@ -65,7 +68,7 @@ export function useDebouncedParse(
     }, delay)
 
     return () => clearTimeout(timer)
-  }, [text, delay, disabledSections, enabled, labels, projects, users])
+  }, [text, delay, disabledSections, enabled, labels, projects, users, preferDayMonthFormat])
 
   return parsed
 }

@@ -19,7 +19,7 @@ import {
   AlertTriangle,
   Headphones,
 } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 import { log } from "@/lib/utils/logger"
 import type { VoiceCommand } from "@tasktrove/types/voice-commands"
 import { createVoiceCommandId } from "@tasktrove/types/id"

@@ -4,6 +4,27 @@
 
 import { COLOR_OPTIONS } from "@tasktrove/constants";
 
+type OpaqueTintOptions = {
+  /** Percent of the source color in the final mix (0-100). */
+  mixPercent?: number;
+  /** Base color to mix against (auto: white in light, black in dark mode). */
+  baseColor?: string;
+};
+
+/**
+ * Build an opaque tint of a color (no transparency) that adapts to light/dark mode.
+ * Uses CSS color-mix with light-dark() so the result stays solid and hides backgrounds.
+ * In light mode: mixes with white, in dark mode: mixes with black.
+ */
+export function getOpaqueTintColor(
+  color: string,
+  { mixPercent = 15, baseColor }: OpaqueTintOptions = {},
+): string {
+  const lightBase = baseColor ?? "white";
+  const darkBase = baseColor ?? "black";
+  return `light-dark(color-mix(in srgb, ${color} ${mixPercent}%, ${lightBase}), color-mix(in srgb, ${color} ${mixPercent}%, ${darkBase}))`;
+}
+
 /**
  * Get a consistent color from COLOR_OPTIONS based on a string hash
  * @param str - Any string (username, ID, etc.)
@@ -61,7 +82,7 @@ export function getPriorityColor(
       case 3:
         return "border-l-blue-500";
       default:
-        return "border-l-border"; // Use default border color when no priority
+        return "border-l-muted-foreground";
     }
   } else {
     // Fallback for no variant specified - maintain backward compatibility

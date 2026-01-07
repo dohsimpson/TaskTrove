@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/consistent-type-assertions */
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { v080Migration, v0100Migration, v0110Migration } from "@/lib/utils/data-migration-functions"
+import { v080Migration, v0100Migration, v0120Migration } from "@/lib/utils/data-migration-functions"
 import type { Json } from "@tasktrove/types/constants"
 import {
-  DEFAULT_EMPTY_DATA_FILE,
   DEFAULT_USER_SETTINGS,
   DEFAULT_USER,
   DEFAULT_GENERAL_SETTINGS,
@@ -16,11 +15,11 @@ import {
   TEST_LABEL_ID_1,
 } from "@tasktrove/types/test-constants"
 
-describe("Data Migration Functions", () => {
-  function createJsonData(data: Record<string, unknown>): Json {
-    return JSON.parse(JSON.stringify(data))
-  }
+export function createJsonData(data: Record<string, unknown>): Json {
+  return JSON.parse(JSON.stringify(data))
+}
 
+describe("Data Migration Functions", () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -74,14 +73,12 @@ describe("Data Migration Functions", () => {
           type: "project",
           id: DEFAULT_UUID,
           name: "All Projects",
-          slug: "all-projects",
           items: [],
         },
         labelGroups: {
           type: "label",
           id: DEFAULT_UUID,
           name: "All Labels",
-          slug: "all-labels",
           items: [],
         },
         settings: DEFAULT_USER_SETTINGS,
@@ -137,14 +134,12 @@ describe("Data Migration Functions", () => {
           type: "project",
           id: DEFAULT_UUID,
           name: "All Projects",
-          slug: "all-projects",
           items: [],
         },
         labelGroups: {
           type: "label",
           id: DEFAULT_UUID,
           name: "All Labels",
-          slug: "all-labels",
           items: [],
         },
         settings: DEFAULT_USER_SETTINGS,
@@ -167,14 +162,12 @@ describe("Data Migration Functions", () => {
           type: "project",
           id: DEFAULT_UUID,
           name: "All Projects",
-          slug: "all-projects",
           items: [],
         },
         labelGroups: {
           type: "label",
           id: DEFAULT_UUID,
           name: "All Labels",
-          slug: "all-labels",
           items: [],
         },
         settings: DEFAULT_USER_SETTINGS,
@@ -214,14 +207,12 @@ describe("Data Migration Functions", () => {
           type: "project",
           id: DEFAULT_UUID,
           name: "All Projects",
-          slug: "all-projects",
           items: [],
         },
         labelGroups: {
           type: "label",
           id: DEFAULT_UUID,
           name: "All Labels",
-          slug: "all-labels",
           items: [],
         },
         settings: DEFAULT_USER_SETTINGS,
@@ -237,35 +228,6 @@ describe("Data Migration Functions", () => {
     })
   })
 
-  describe("v0.11.0 Migration Function", () => {
-    it("should add uiSettings with default weekStartsOn when missing", () => {
-      const data = createJsonData({
-        ...DEFAULT_EMPTY_DATA_FILE,
-        version: "v0.10.0",
-      })
-      delete (data as any).settings.uiSettings
-
-      const migrated = v0110Migration(data) as any
-      expect(migrated).toHaveProperty("settings.uiSettings")
-      expect(migrated.settings.uiSettings.weekStartsOn).toBeUndefined()
-      expect(migrated.settings.uiSettings).not.toHaveProperty("weekStartsOn")
-    })
-
-    it("should preserve existing weekStartsOn", () => {
-      const data = createJsonData({
-        ...DEFAULT_EMPTY_DATA_FILE,
-        version: "v0.10.0",
-        settings: {
-          ...DEFAULT_USER_SETTINGS,
-          uiSettings: { weekStartsOn: 1 },
-        },
-      })
-
-      const migrated = v0110Migration(data) as any
-      expect(migrated).toHaveProperty("settings.uiSettings.weekStartsOn", 1)
-    })
-  })
-
   describe("v0.10.0 Migration Function", () => {
     it("should add markdownEnabled flag to general settings when missing", () => {
       const v080DataWithoutMarkdownEnabled = createJsonData({
@@ -276,14 +238,12 @@ describe("Data Migration Functions", () => {
           type: "project",
           id: DEFAULT_UUID,
           name: "All Projects",
-          slug: "all-projects",
           items: [],
         },
         labelGroups: {
           type: "label",
           id: DEFAULT_UUID,
           name: "All Labels",
-          slug: "all-labels",
           items: [],
         },
         settings: {
@@ -327,14 +287,12 @@ describe("Data Migration Functions", () => {
           type: "project",
           id: DEFAULT_UUID,
           name: "All Projects",
-          slug: "all-projects",
           items: [],
         },
         labelGroups: {
           type: "label",
           id: DEFAULT_UUID,
           name: "All Labels",
-          slug: "all-labels",
           items: [],
         },
         user: DEFAULT_USER,
@@ -356,14 +314,12 @@ describe("Data Migration Functions", () => {
           type: "project",
           id: DEFAULT_UUID,
           name: "All Projects",
-          slug: "all-projects",
           items: [],
         },
         labelGroups: {
           type: "label",
           id: DEFAULT_UUID,
           name: "All Labels",
-          slug: "all-labels",
           items: [],
         },
         settings: {
@@ -435,14 +391,12 @@ describe("Data Migration Functions", () => {
           type: "project",
           id: DEFAULT_UUID,
           name: "All Projects",
-          slug: "all-projects",
           items: [],
         },
         labelGroups: {
           type: "label",
           id: DEFAULT_UUID,
           name: "All Labels",
-          slug: "all-labels",
           items: [],
         },
         settings: DEFAULT_USER_SETTINGS,
@@ -486,14 +440,12 @@ describe("Data Migration Functions", () => {
           type: "project",
           id: DEFAULT_UUID,
           name: "All Projects",
-          slug: "all-projects",
           items: [],
         },
         labelGroups: {
           type: "label",
           id: DEFAULT_UUID,
           name: "All Labels",
-          slug: "all-labels",
           items: [],
         },
         settings: DEFAULT_USER_SETTINGS,
@@ -502,6 +454,141 @@ describe("Data Migration Functions", () => {
       })
 
       expect(() => v0100Migration(v080DataWithDanglingTasks)).not.toThrow()
+    })
+  })
+
+  describe("v0.12.0 Migration Function (base)", () => {
+    it("should add preferDayMonthFormat flag to general settings when missing", () => {
+      const v011Data = createJsonData({
+        tasks: [],
+        projects: [],
+        labels: [],
+        projectGroups: {
+          type: "project",
+          id: DEFAULT_UUID,
+          name: "All Projects",
+          items: [],
+        },
+        labelGroups: {
+          type: "label",
+          id: DEFAULT_UUID,
+          name: "All Labels",
+          items: [],
+        },
+        settings: {
+          ...DEFAULT_USER_SETTINGS,
+          general: {
+            startView: "all",
+            soundEnabled: true,
+            linkifyEnabled: true,
+            popoverHoverOpen: false,
+          },
+        },
+        user: DEFAULT_USER,
+        version: "v0.11.0",
+      })
+
+      const result = v0120Migration(v011Data) as any
+
+      expect(result.settings.general).toHaveProperty(
+        "preferDayMonthFormat",
+        DEFAULT_GENERAL_SETTINGS.preferDayMonthFormat,
+      )
+    })
+
+    it("should remove stored slugs from projects, labels, sections, and groups", () => {
+      const v011Data = createJsonData({
+        tasks: [],
+        projects: [
+          {
+            id: TEST_PROJECT_ID_1,
+            name: "Project One",
+            slug: "project-one",
+            color: "#ffffff",
+            sections: [
+              {
+                id: "section-1",
+                name: "Default",
+                slug: "",
+                color: "#ffffff",
+                type: "section",
+                items: [],
+                isDefault: true,
+              },
+              {
+                id: "section-2",
+                name: "Extra",
+                slug: "extra",
+                color: "#000000",
+                type: "section",
+                items: [],
+              },
+            ],
+          },
+        ],
+        labels: [
+          {
+            id: TEST_LABEL_ID_1,
+            name: "Urgent",
+            slug: "urgent",
+            color: "#ff0000",
+          },
+        ],
+        projectGroups: {
+          type: "project",
+          id: DEFAULT_UUID,
+          name: "All Projects",
+          slug: "all-projects",
+          items: [
+            TEST_PROJECT_ID_1,
+            {
+              type: "project",
+              id: "group-1",
+              name: "Nested",
+              slug: "nested",
+              items: [],
+            },
+          ],
+        },
+        labelGroups: {
+          type: "label",
+          id: DEFAULT_UUID,
+          name: "All Labels",
+          slug: "all-labels",
+          items: [
+            TEST_LABEL_ID_1,
+            {
+              type: "label",
+              id: "group-2",
+              name: "Nested Labels",
+              slug: "nested-labels",
+              items: [],
+            },
+          ],
+        },
+        settings: DEFAULT_USER_SETTINGS,
+        user: DEFAULT_USER,
+        version: "v0.11.0",
+      })
+
+      const result = v0120Migration(v011Data) as any
+
+      const project = result.projects?.[0]
+      const label = result.labels?.[0]
+      const rootProjectGroup = result.projectGroups
+      const rootLabelGroup = result.labelGroups
+
+      expect(project && "slug" in project).toBe(false)
+      expect(label && "slug" in label).toBe(false)
+
+      expect(project?.sections?.[0] && "slug" in project.sections[0]).toBe(false)
+      expect(project?.sections?.[1] && "slug" in project.sections[1]).toBe(false)
+
+      expect(rootProjectGroup && "slug" in rootProjectGroup).toBe(false)
+      expect(rootProjectGroup?.items?.[1] && "slug" in rootProjectGroup.items[1]).toBe(false)
+
+      expect(rootLabelGroup && "slug" in rootLabelGroup).toBe(false)
+      expect(rootLabelGroup?.items?.[1] && "slug" in rootLabelGroup.items[1]).toBe(false)
     })
   })
 })

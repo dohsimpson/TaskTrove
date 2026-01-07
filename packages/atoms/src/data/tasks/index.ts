@@ -22,6 +22,7 @@ export {
   inboxTasksAtom,
   todayTasksAtom,
   upcomingTasksAtom,
+  recentTasksAtom,
   calendarTasksAtom,
   overdueTasksAtom,
   completedTasksAtom,

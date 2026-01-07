@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react"
 import { Calendar, Flag, Tag, Folder, Plus, Clock, Repeat, Timer } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { smoothScrollIntoView } from "@tasktrove/dom-utils"
 
 export interface AutocompleteSuggestion {
   type: "tag" | "project" | "date" | "priority" | "time" | "recurring" | "duration" | "create"
@@ -51,7 +52,7 @@ export function AutocompleteDropdown({
   useEffect(() => {
     const selectedElement = dropdownRef.current?.children[selectedIndex]
     if (selectedElement instanceof HTMLElement) {
-      selectedElement.scrollIntoView({ block: "nearest" })
+      smoothScrollIntoView(selectedElement, { block: "nearest" })
     }
   }, [selectedIndex])
 

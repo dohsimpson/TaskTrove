@@ -72,6 +72,7 @@ vi.mock("jotai", () => ({
         sortBy: "dueDate",
         sortDirection: "asc",
         showCompleted: false,
+        showArchived: false,
         showSidePanel: false,
         compactView: false,
       }

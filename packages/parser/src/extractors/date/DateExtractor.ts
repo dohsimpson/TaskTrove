@@ -15,7 +15,7 @@ import {
 import { extractWithPatterns, type Pattern } from "../../utils/PatternMatcher";
 import { buildBoundedPattern } from "../../utils/patterns";
 
-const NUMERIC_DATE_DAY_FIRST = false; // TODO: expose as configuration once locales are plumbed through.
+// Prefer day/month interpretation for ambiguous numeric dates when enabled via context.
 
 function isValidDateComponents(
   year: number,
@@ -45,8 +45,9 @@ function isValidDateComponents(
 function toMonthDay(
   first: number,
   second: number,
+  preferDayMonthFormat: boolean,
 ): { month: number; day: number } | null {
-  if (NUMERIC_DATE_DAY_FIRST) {
+  if (preferDayMonthFormat) {
     return { day: first, month: second };
   }
   return { month: first, day: second };
@@ -56,8 +57,9 @@ function buildDateFromNumericParts(
   year: number,
   first: number,
   second: number,
+  preferDayMonthFormat: boolean,
 ): Date | null {
-  const parts = toMonthDay(first, second);
+  const parts = toMonthDay(first, second, preferDayMonthFormat);
   if (!parts) {
     return null;
   }
@@ -78,7 +80,10 @@ export class DateExtractor implements Extractor {
   private readonly bounded = (body: string, flags: string = "gi"): RegExp =>
     buildBoundedPattern(body, flags);
 
-  private getPatterns(referenceDate: Date): Pattern<Date>[] {
+  private getPatterns(
+    referenceDate: Date,
+    preferDayMonthFormat: boolean,
+  ): Pattern<Date>[] {
     const bounded = this.bounded;
 
     return [
@@ -207,6 +212,7 @@ export class DateExtractor implements Extractor {
             referenceDate.getFullYear(),
             first,
             second,
+            preferDayMonthFormat,
           );
         },
       },
@@ -231,7 +237,31 @@ export class DateExtractor implements Extractor {
           }
 
           const fullYear = parsedYear < 100 ? 2000 + parsedYear : parsedYear;
-          return buildDateFromNumericParts(fullYear, first, second);
+          return buildDateFromNumericParts(
+            fullYear,
+            first,
+            second,
+            preferDayMonthFormat,
+          );
+        },
+      },
+      {
+        pattern: bounded("(\\d{4})-(\\d{2})-(\\d{2})", "g"),
+        getValue: (match) => {
+          const yearStr = match[1];
+          const monthStr = match[2];
+          const dayStr = match[3];
+          if (!yearStr || !monthStr || !dayStr) return null;
+
+          const year = Number.parseInt(yearStr, 10);
+          const month = Number.parseInt(monthStr, 10);
+          const day = Number.parseInt(dayStr, 10);
+
+          if (!isValidDateComponents(year, month, day)) {
+            return null;
+          }
+
+          return new Date(year, month - 1, day);
         },
       },
       // Month name patterns
@@ -287,7 +317,10 @@ export class DateExtractor implements Extractor {
   }
 
   extract(text: string, context: ParserContext): ExtractionResult[] {
-    const patterns = this.getPatterns(context.referenceDate);
+    const patterns = this.getPatterns(
+      context.referenceDate,
+      Boolean(context.preferDayMonthFormat),
+    );
 
     return extractWithPatterns(text, context, patterns, "date", {
       transform: (value, match) => {

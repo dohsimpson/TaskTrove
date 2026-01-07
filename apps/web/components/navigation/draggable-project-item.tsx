@@ -25,11 +25,11 @@ import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import type { Project } from "@tasktrove/types/core"
 import type { GroupId } from "@tasktrove/types/id"
 import { cn } from "@/lib/utils"
+import { createProjectSlug } from "@tasktrove/utils/routing"
 
 interface DraggableProjectItemProps {
   project: Project
   index: number
-  isInGroup?: boolean
   groupId?: GroupId
   enableDragDrop?: boolean
 }
@@ -42,7 +42,6 @@ interface DraggableProjectItemProps {
 export function DraggableProjectItem({
   project,
   index,
-  isInGroup = false,
   groupId,
   enableDragDrop = true,
 }: DraggableProjectItemProps) {
@@ -60,7 +59,8 @@ export function DraggableProjectItem({
   const { handleDrop } = useSidebarDragDrop()
 
   // Computed values
-  const isActive = pathname === `/projects/${project.slug}`
+  const projectSlug = createProjectSlug(project)
+  const isActive = pathname === `/projects/${projectSlug}`
   const taskCount = projectTaskCounts[project.id] || 0
   const isEditing = editingProjectId === project.id
 
@@ -81,7 +81,8 @@ export function DraggableProjectItem({
   const content = (
     <SidebarMenuItem>
       <div
-        className="relative group w-full"
+        data-slot="sidebar-project-row"
+        className={cn("relative group", "w-full")}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -90,13 +91,10 @@ export function DraggableProjectItem({
           isActive={isActive}
           onClick={(e) => {
             if (!isEditing && !e.defaultPrevented) {
-              router.push(`/projects/${project.slug}`)
+              router.push(`/projects/${projectSlug}`)
             }
           }}
-          className={cn(
-            "cursor-pointer",
-            isInGroup ? "ml-6 w-[calc(100%-calc(var(--spacing)*6))]" : "w-full",
-          )}
+          className="cursor-pointer w-full"
         >
           <div className="flex items-center gap-2 w-full">
             <Folder className="h-4 w-4" style={{ color: project.color }} />

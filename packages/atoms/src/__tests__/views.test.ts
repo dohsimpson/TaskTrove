@@ -355,6 +355,7 @@ describe("getViewStateOrDefault", () => {
       sortBy: "priority",
       sortDirection: "desc",
       showCompleted: true,
+      showArchived: false,
       showOverdue: false,
       searchQuery: "test",
       showSidePanel: true,
@@ -369,6 +370,7 @@ describe("getViewStateOrDefault", () => {
       sortBy: "dueDate",
       sortDirection: "asc",
       showCompleted: false,
+      showArchived: false,
       showOverdue: true,
       searchQuery: "",
       showSidePanel: false,
@@ -380,13 +382,12 @@ describe("getViewStateOrDefault", () => {
 
   it("should return existing ViewState when viewId exists", () => {
     const result = getViewStateOrDefault(mockViewStates, "today");
-    expect(result).toEqual(mockViewStates.today);
+    expect(result).toEqual({ ...DEFAULT_VIEW_STATE, ...mockViewStates.today });
   });
 
   it("should return same reference for existing ViewState", () => {
     const result = getViewStateOrDefault(mockViewStates, "inbox");
-    expect(result).toEqual(mockViewStates.inbox);
-    expect(result).toBe(mockViewStates.inbox); // Same object reference
+    expect(result).toEqual({ ...DEFAULT_VIEW_STATE, ...mockViewStates.inbox });
   });
 
   it("should return default ViewState when viewId does not exist", () => {

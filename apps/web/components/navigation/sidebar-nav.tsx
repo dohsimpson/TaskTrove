@@ -28,10 +28,12 @@ import { ProjectContextMenu } from "@/components/navigation/project-context-menu
 import { LabelContextMenu } from "./label-context-menu"
 import { DraggableProjectGroupItem } from "./draggable-project-group-item"
 import { DraggableProjectItem } from "@/components/navigation/draggable-project-item"
-import { DraggableLabelItem, DropTargetLabelItem } from "./drag-drop"
+import { DraggableLabelItem, DropTargetLabelItem, DropTargetSidebarView } from "./drag-drop"
 import { useSidebarDragDrop } from "@/hooks/use-sidebar-drag-drop"
 import { useLabelDragDrop } from "@/hooks/use-label-drag-drop"
+import { useSidebarViewDrop } from "@/hooks/use-sidebar-view-drop"
 import { DropTargetItem } from "@/components/ui/drag-drop/drop-target-item"
+import { isSidebarViewDropId } from "@/lib/sidebar-view-drop-logic"
 import { isValidLabelOperation } from "@/lib/label-drag-drop-logic"
 import { useContextMenuVisibility } from "@/hooks/use-context-menu-visibility"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
@@ -55,8 +57,15 @@ import {
 import { useTranslation } from "@tasktrove/i18n"
 import { getMainNavItems } from "@/components/navigation/main-nav-items"
 import { ComingSoonWrapper } from "@/components/ui/coming-soon-wrapper"
+import { createLabelSlug } from "@tasktrove/utils/routing"
 
-export function SidebarNav() {
+interface SidebarNavProps {
+  mainNavItemsFilter?: (
+    items: ReturnType<typeof getMainNavItems>,
+  ) => ReturnType<typeof getMainNavItems>
+}
+
+export function SidebarNav({ mainNavItemsFilter }: SidebarNavProps) {
   // Translation setup
   const { t } = useTranslation(["navigation", "common"])
 
@@ -70,6 +79,7 @@ export function SidebarNav() {
   // Drag and drop - consolidated hooks
   const { handleDrop: handleProjectDrop } = useSidebarDragDrop()
   const { handleDrop: handleLabelDrop } = useLabelDragDrop()
+  const { handleDrop: handleViewDrop } = useSidebarViewDrop()
 
   // Get action atoms
   const openSearch = useSetAtom(openSearchAtom)
@@ -81,7 +91,9 @@ export function SidebarNav() {
   const CARD_BUTTON_STYLES =
     "h-[100px] w-full flex flex-col items-center justify-center gap-1.5 bg-card border-1 border-border hover:border-primary/50 hover:bg-primary/5 hover:scale-105 rounded-lg transition-all duration-200 cursor-pointer"
 
-  const mainNavItems = getMainNavItems({ taskCountsData, t })
+  const mainNavItems = (mainNavItemsFilter ?? ((items) => items))(
+    getMainNavItems({ taskCountsData, t }),
+  )
 
   // Refs for controlling animated icons
   const searchIconRef = useRef<SearchIconHandle>(null)
@@ -128,35 +140,48 @@ export function SidebarNav() {
       <SidebarGroup>
         <SidebarGroupContent>
           <SidebarMenu>
-            {mainNavItems.map((item) => (
-              <SidebarMenuItem key={item.id}>
-                {item.comingSoon ? (
-                  <ComingSoonWrapper
-                    disabled={true}
-                    featureName={item.featureName || item.label}
-                    proOnly={item.proOnly}
-                  >
-                    <SidebarMenuButton isActive={false}>
-                      {item.icon}
-                      <span>{item.label}</span>
-                      {item.count !== undefined && (
-                        <SidebarMenuBadge>{item.count}</SidebarMenuBadge>
-                      )}
-                    </SidebarMenuButton>
-                  </ComingSoonWrapper>
+            {mainNavItems.map((item) => {
+              const viewId = isSidebarViewDropId(item.id) ? item.id : null
+              const button = item.comingSoon ? (
+                <SidebarMenuButton isActive={false}>
+                  {item.icon}
+                  <span>{item.label}</span>
+                  {item.count !== undefined && <SidebarMenuBadge>{item.count}</SidebarMenuBadge>}
+                </SidebarMenuButton>
+              ) : (
+                <SidebarMenuButton asChild isActive={pathname === item.href}>
+                  <Link href={item.href}>
+                    {item.icon}
+                    <span>{item.label}</span>
+                    {item.count !== undefined && <SidebarMenuBadge>{item.count}</SidebarMenuBadge>}
+                  </Link>
+                </SidebarMenuButton>
+              )
+              const maybeDroppableButton =
+                !item.comingSoon && viewId !== null ? (
+                  <DropTargetSidebarView viewId={viewId} onDrop={handleViewDrop}>
+                    {button}
+                  </DropTargetSidebarView>
                 ) : (
-                  <SidebarMenuButton asChild isActive={pathname === item.href}>
-                    <Link href={item.href}>
-                      {item.icon}
-                      <span>{item.label}</span>
-                      {item.count !== undefined && (
-                        <SidebarMenuBadge>{item.count}</SidebarMenuBadge>
-                      )}
-                    </Link>
-                  </SidebarMenuButton>
-                )}
-              </SidebarMenuItem>
-            ))}
+                  button
+                )
+
+              return (
+                <SidebarMenuItem key={item.id}>
+                  {item.comingSoon ? (
+                    <ComingSoonWrapper
+                      disabled={true}
+                      featureName={item.featureName || item.label}
+                      proOnly={item.proOnly}
+                    >
+                      {maybeDroppableButton}
+                    </ComingSoonWrapper>
+                  ) : (
+                    maybeDroppableButton
+                  )}
+                </SidebarMenuItem>
+              )
+            })}
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
@@ -190,6 +215,9 @@ export function SidebarNav() {
                   getData={() => ({
                     type: "sidebar-root-drop-target",
                   })}
+                  canDrop={(sourceData) =>
+                    sourceData.type === "sidebar-project" || sourceData.type === "sidebar-group"
+                  }
                   onDrop={handleProjectDrop}
                 >
                   {/* Render root group items in order (projects and groups) */}
@@ -209,12 +237,7 @@ export function SidebarNav() {
                       const project = projects.find((p) => p.id === item)
                       if (!project) return null
                       return (
-                        <DraggableProjectItem
-                          key={project.id}
-                          project={project}
-                          index={index}
-                          isInGroup={false}
-                        />
+                        <DraggableProjectItem key={project.id} project={project} index={index} />
                       )
                     }
                   })}
@@ -254,6 +277,7 @@ export function SidebarNav() {
                   getData={() => ({
                     type: "sidebar-labels-root-drop-target",
                   })}
+                  canDrop={(sourceData) => sourceData.type === "sidebar-label"}
                   validateInstruction={isValidLabelOperation}
                   onDrop={handleLabelDrop}
                 >
@@ -411,7 +435,8 @@ function LabelMenuItem({ label }: { label: Label }) {
   const stopEditing = useSetAtom(stopEditingLabelAtom)
   const updateLabelAction = useSetAtom(updateLabelAtom)
 
-  const isActive = pathname === `/labels/${label.slug}`
+  const labelSlug = createLabelSlug(label)
+  const isActive = pathname === `/labels/${labelSlug}`
   const taskCount = labelTaskCounts[label.id] || 0
   const isEditing = editingLabelId === label.id
 
@@ -428,7 +453,7 @@ function LabelMenuItem({ label }: { label: Label }) {
 
   return (
     <SidebarMenuItemWithContext
-      href={`/labels/${label.slug}`}
+      href={`/labels/${labelSlug}`}
       isActive={isActive}
       icon={<Tag className="h-4 w-4" style={{ color: label.color }} />}
       name={label.name}

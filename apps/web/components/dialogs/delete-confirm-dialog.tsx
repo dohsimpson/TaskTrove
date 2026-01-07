@@ -23,6 +23,9 @@ export type DeleteEntityType =
   | "bulk"
   | "group"
   | "comment"
+  | "calendarEvent"
+  | "calendarSync"
+  | "backgroundImage"
 
 export interface DeleteConfirmDialogProps {
   open: boolean
@@ -81,6 +84,12 @@ export function DeleteConfirmDialog({
         return t("delete.group.title", "Delete Group")
       case "comment":
         return t("delete.comment.title", "Delete Comment")
+      case "calendarEvent":
+        return t("delete.calendarEvent.title", "Delete Calendar Event")
+      case "calendarSync":
+        return t("delete.calendarSync.title", "Remove Calendar Connection")
+      case "backgroundImage":
+        return t("delete.backgroundImage.title", "Remove Background Image")
       default:
         return t("delete.default.title", "Delete Item")
     }
@@ -140,6 +149,22 @@ export function DeleteConfirmDialog({
           "delete.comment.description",
           "Are you sure you want to delete this comment? This action cannot be undone.",
         )
+      case "calendarEvent":
+        return t(
+          "delete.calendarEvent.description",
+          "Are you sure you want to delete this calendar event? This action cannot be undone.",
+        )
+      case "calendarSync":
+        return t(
+          "delete.calendarSync.description",
+          'Remove "{{- name}}" from calendar sync? Credentials will be deleted from this workspace.',
+          { name: entityName || "" },
+        )
+      case "backgroundImage":
+        return t(
+          "delete.backgroundImage.description",
+          "Are you sure you want to remove this background image?",
+        )
       default:
         return t("delete.default.description", "Are you sure you want to delete this item?")
     }
@@ -166,6 +191,12 @@ export function DeleteConfirmDialog({
         return t("delete.group.confirm", "Delete Group")
       case "comment":
         return t("delete.comment.confirm", "Delete Comment")
+      case "calendarEvent":
+        return t("delete.calendarEvent.confirm", "Delete Event")
+      case "calendarSync":
+        return t("delete.calendarSync.confirm", "Remove Connection")
+      case "backgroundImage":
+        return t("delete.backgroundImage.confirm", "Remove Image")
       default:
         return t("delete.default.confirm", "Delete")
     }

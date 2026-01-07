@@ -8,7 +8,8 @@
     "addProject": "Add project",
     "addSection": "Add Section",
     "addSubtask": "Add subtask",
-    "addTask": "Add task"
+    "addTask": "Add task",
+    "delete": "Delete"
   },
   "comments": {
     "addAnotherComment": "Add another comment...",
@@ -113,6 +114,12 @@
     "year": "year",
     "yearly": "Yearly",
     "years": "years"
+  },
+  "recentSettings": {
+    "title": "Recent activity range",
+    "7": "Last 7 days",
+    "30": "Last 30 days",
+    "90": "Last 90 days"
   },
   "schedule": {
     "clear": "Clear",

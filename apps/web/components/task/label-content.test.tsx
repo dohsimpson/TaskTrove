@@ -154,6 +154,7 @@ vi.mock("lucide-react", () => ({
   Tag: () => <span data-testid="tag-icon">🏷️</span>,
   X: () => <span data-testid="x-icon">✖️</span>,
   Plus: () => <span data-testid="plus-icon">➕</span>,
+  SearchIcon: () => <span data-testid="search-icon">🔍</span>,
 }))
 
 // Mock utility functions
@@ -182,7 +183,6 @@ describe("LabelContent", () => {
   const createMockLabel = (id: LabelId, name: string, color: string = "#ff0000"): Label => ({
     id,
     name,
-    slug: name.toLowerCase().replace(/\s+/g, "-"),
     color,
   })
 
@@ -216,24 +216,28 @@ describe("LabelContent", () => {
   })
 
   describe("Rendering Modes", () => {
-    it("renders in inline mode by default", () => {
+    it("renders in inline mode by default", async () => {
       const task = createMockTask()
       const onAddLabel = vi.fn()
       const onRemoveLabel = vi.fn()
 
       render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
-      // Should show input field in inline mode
-      expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      await userEvent.click(screen.getByText("Add label"))
+
+      // Should show input field when popover opens
+      await waitFor(() => {
+        expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      })
       expect(screen.getByPlaceholderText("Search or create labels...")).toBeInTheDocument()
     })
 
-    it("renders in popover mode when specified", () => {
+    it("renders in popover mode when specified", async () => {
       const task = createMockTask()
       const onAddLabel = vi.fn()
       const onRemoveLabel = vi.fn()
 
-      render(
+      const { container } = render(
         <LabelContent
           task={task}
           onAddLabel={onAddLabel}
@@ -242,10 +246,15 @@ describe("LabelContent", () => {
         />,
       )
 
-      // Should show input field in popover mode with padding
-      expect(screen.getByTestId("label-input")).toBeInTheDocument()
-      const container = screen.getByTestId("label-input").closest(".space-y-3")
-      expect(container).toHaveClass("p-2")
+      // In popover mode, the main container should have p-2 class
+      expect(container.firstChild).toHaveClass("p-2")
+
+      await userEvent.click(screen.getByText("Add label"))
+
+      // Should show input field when popover opens
+      await waitFor(() => {
+        expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      })
     })
 
     it("applies custom className", () => {
@@ -288,7 +297,7 @@ describe("LabelContent", () => {
       expect(screen.getByText("Personal")).toBeInTheDocument()
     })
 
-    it("shows label input when task has no labels", () => {
+    it("shows label input when task has no labels", async () => {
       const task = createMockTask({ labels: [] })
       const onAddLabel = vi.fn()
       const onRemoveLabel = vi.fn()
@@ -302,22 +311,30 @@ describe("LabelContent", () => {
         />,
       )
 
-      expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      await userEvent.click(screen.getByText("Add label"))
+
+      await waitFor(() => {
+        expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      })
       expect(screen.getByPlaceholderText("Search or create labels...")).toBeInTheDocument()
     })
 
-    it("handles undefined task gracefully (quick-add mode)", () => {
+    it("handles undefined task gracefully (quick-add mode)", async () => {
       const onAddLabel = vi.fn()
       const onRemoveLabel = vi.fn()
 
       render(<LabelContent onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} mode="popover" />)
 
+      await userEvent.click(screen.getByText("Add label"))
+
       // Should show input field and not crash
-      expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      })
       expect(screen.queryByTestId("label-badge")).not.toBeInTheDocument()
     })
 
-    it("supports taskId prop for future compatibility", () => {
+    it("supports taskId prop for future compatibility", async () => {
       const task = createMockTask()
       const onAddLabel = vi.fn()
       const onRemoveLabel = vi.fn()
@@ -325,7 +342,10 @@ describe("LabelContent", () => {
       render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
       // Should render without errors (taskId is currently logged but not used)
-      expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      await userEvent.click(screen.getByText("Add label"))
+      await waitFor(() => {
+        expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      })
     })
   })
 
@@ -341,9 +361,8 @@ describe("LabelContent", () => {
 
       const badge = screen.getByTestId("label-badge")
       expect(badge).toHaveStyle({
-        backgroundColor: "#ff0000",
-        color: "white",
-        border: "none",
+        backgroundColor: "#ff000015",
+        color: "#ff0000",
       })
       expect(screen.getByText("Work")).toBeInTheDocument()
     })
@@ -381,14 +400,17 @@ describe("LabelContent", () => {
   })
 
   describe("Add Label Interface", () => {
-    it("shows label input field always visible", () => {
+    it("shows label input field always visible", async () => {
       const task = createMockTask()
       const onAddLabel = vi.fn()
       const onRemoveLabel = vi.fn()
 
       render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
-      expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      await userEvent.click(screen.getByText("Add label"))
+      await waitFor(() => {
+        expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      })
       expect(screen.getByPlaceholderText("Search or create labels...")).toBeInTheDocument()
       expect(screen.getByTestId("label-submit-button")).toBeInTheDocument()
     })
@@ -401,6 +423,10 @@ describe("LabelContent", () => {
 
       render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
+      await user.click(screen.getByText("Add label"))
+      await waitFor(() => {
+        expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      })
       const input = screen.getByTestId("label-input")
       await user.type(input, "w")
 
@@ -426,6 +452,10 @@ describe("LabelContent", () => {
         />,
       )
 
+      await userEvent.click(screen.getByText("Add label"))
+      await waitFor(() => {
+        expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      })
       const input = screen.getByTestId("label-input")
       await user.type(input, "test")
 
@@ -443,6 +473,7 @@ describe("LabelContent", () => {
 
       render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
+      await user.click(screen.getByText("Add label"))
       const input = screen.getByTestId("label-input")
       await user.type(input, "w") // Type to trigger dropdown
 
@@ -463,6 +494,7 @@ describe("LabelContent", () => {
 
       render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
+      await user.click(screen.getByText("Add label"))
       const input = screen.getByTestId("label-input")
       await user.type(input, "work")
 
@@ -482,6 +514,7 @@ describe("LabelContent", () => {
 
       render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
+      await user.click(screen.getByText("Add label"))
       const input = screen.getByTestId("label-input")
       await user.type(input, "w")
 
@@ -503,6 +536,7 @@ describe("LabelContent", () => {
 
       render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
+      await user.click(screen.getByText("Add label"))
       const input = screen.getByTestId("label-input")
       await user.type(input, "new label")
 
@@ -519,6 +553,7 @@ describe("LabelContent", () => {
 
       render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
+      await user.click(screen.getByText("Add label"))
       const input = screen.getByTestId("label-input")
       await user.type(input, "new label")
 
@@ -543,6 +578,7 @@ describe("LabelContent", () => {
 
       render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
+      await user.click(screen.getByText("Add label"))
       const input = screen.getByTestId("label-input")
       await user.type(input, "w")
 
@@ -562,6 +598,7 @@ describe("LabelContent", () => {
 
       render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
+      await user.click(screen.getByText("Add label"))
       const input = screen.getByTestId("label-input")
       await user.type(input, "w")
       await waitFor(() => {
@@ -588,6 +625,7 @@ describe("LabelContent", () => {
         />,
       )
 
+      await user.click(screen.getByText("Add label"))
       const input = screen.getByTestId("label-input")
       await user.type(input, "w")
       // Don't type anything, just click on existing label
@@ -596,8 +634,10 @@ describe("LabelContent", () => {
       })
       await user.click(screen.getByText("Work"))
 
-      expect(onAddingChange).toHaveBeenCalledWith(false)
-      expect(screen.queryByTestId("popover-content")).not.toBeInTheDocument()
+      expect(onAddLabel).toHaveBeenCalledWith("Work")
+      expect(input).toHaveValue("")
+      // Popover stays open to allow adding multiple labels
+      expect(screen.getByTestId("popover-content")).toBeInTheDocument()
     })
 
     it("trims whitespace from new label names", async () => {
@@ -608,6 +648,7 @@ describe("LabelContent", () => {
 
       render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
+      await user.click(screen.getByText("Add label"))
       const input = screen.getByTestId("label-input")
       await user.type(input, "  spaced label  ")
 
@@ -638,6 +679,7 @@ describe("LabelContent", () => {
         />,
       )
 
+      await user.click(screen.getByText("Add label"))
       const input = screen.getByTestId("label-input")
       await user.type(input, "w")
       expect(screen.getByTestId("label-input")).toBeInTheDocument()
@@ -656,6 +698,7 @@ describe("LabelContent", () => {
 
       render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
+      await user.click(screen.getByText("Add label"))
       const input = screen.getByTestId("label-input")
       await user.type(input, "w")
 
@@ -684,6 +727,7 @@ describe("LabelContent", () => {
         </div>,
       )
 
+      await user.click(screen.getByText("Add label"))
       const input = screen.getByTestId("label-input")
       await user.type(input, "w")
       expect(screen.getByTestId("label-input")).toBeInTheDocument()
@@ -710,6 +754,7 @@ describe("LabelContent", () => {
         />,
       )
 
+      await user.click(screen.getByText("Add label"))
       const input = screen.getByTestId("label-input")
       await user.type(input, "w")
       onAddingChange.mockClear()
@@ -730,6 +775,7 @@ describe("LabelContent", () => {
 
       render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
+      await user.click(screen.getByText("Add label"))
       const input = screen.getByTestId("label-input")
       await user.type(input, "w")
 
@@ -749,12 +795,16 @@ describe("LabelContent", () => {
       render(<LabelContent task={task} onAddLabel={onAddLabel} onRemoveLabel={onRemoveLabel} />)
 
       // Should not crash when onAddingChange is not provided
+      await user.click(screen.getByText("Add label"))
+      await waitFor(() => {
+        expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      })
       const input = screen.getByTestId("label-input")
       await user.type(input, "w")
       expect(screen.getByTestId("label-input")).toBeInTheDocument()
     })
 
-    it("handles task with null/undefined labels array", () => {
+    it("handles task with null/undefined labels array", async () => {
       const taskWithNullLabels = createMockTask()
       // @ts-expect-error - Testing edge case
       taskWithNullLabels.labels = null
@@ -771,7 +821,10 @@ describe("LabelContent", () => {
         />,
       )
 
-      expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      await userEvent.click(screen.getByText("Add label"))
+      await waitFor(() => {
+        expect(screen.getByTestId("label-input")).toBeInTheDocument()
+      })
     })
   })
 })

@@ -1,20 +1,15 @@
 "use client"
 
 import React from "react"
-import { useState } from "react"
-import { useAtomValue, useSetAtom } from "jotai"
+import { useAtomValue } from "jotai"
 import { useTranslation } from "@tasktrove/i18n"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import { filteredTasksAtom } from "@tasktrove/atoms/ui/filtered-tasks"
 import { currentViewAtom, currentViewStateAtom } from "@tasktrove/atoms/ui/views"
-import { addCommentAtom } from "@tasktrove/atoms/core/tasks"
 import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
 import { INBOX_PROJECT_ID } from "@tasktrove/types/constants"
-import type { Task, Project } from "@tasktrove/types/core"
+import type { Project } from "@tasktrove/types/core"
 import type { VoiceCommand } from "@tasktrove/types/voice-commands"
-import type { TaskId } from "@tasktrove/types/id"
-import { QuickCommentDialog } from "@/components/task/quick-comment-dialog"
-import { ProjectSectionsView } from "@/components/task/project-sections-view"
 import { KanbanBoard } from "@/components/views/kanban-board"
 import { CalendarView } from "@/components/views/calendar-view"
 import { TableView } from "@/components/views/table-view"
@@ -22,6 +17,10 @@ import { StatsView } from "@/components/views/stats-view"
 import { AnalyticsDashboard } from "@/components/analytics/analytics-dashboard"
 import { TaskEmptyState } from "@/components/task/task-empty-state"
 import { PermissionChecker } from "@/components/startup/permission-checker"
+import { TodayView } from "@/components/views/today-view"
+import { RecentView } from "@/components/views/recent-view"
+import { StandardTaskListView } from "@/components/views/task-list-view"
+import { TaskViewSidePanelLayout } from "@/components/task/task-view-side-panel-layout"
 
 interface MainContentProps {
   onVoiceCommand: (command: VoiceCommand) => void
@@ -41,8 +40,6 @@ export function MainContent({ onVoiceCommand }: MainContentProps): React.ReactEl
   // Extract values from atoms
   const { viewMode } = currentViewState
   const currentProjectId = routeContext.routeType === "project" ? routeContext.viewId : null
-  // Jotai action atoms for local functionality
-  const addCommentAction = useSetAtom(addCommentAtom)
   const allProjects = useAtomValue(projectAtoms.derived.allProjects)
 
   // The filteredTasksAtom automatically handles all filtering and sorting based on:
@@ -52,16 +49,6 @@ export function MainContent({ onVoiceCommand }: MainContentProps): React.ReactEl
   // - User's selected sort options (sortBy and sortDirection)
   // No manual filtering logic needed here
 
-  const [commentDialogTask, setCommentDialogTask] = useState<Task | null>(null)
-
-  const handleAddComment = (taskId: TaskId, content: string) => {
-    addCommentAction({ taskId, content })
-  }
-
-  // Generate droppable ID based on current view
-  const getDroppableId = () => {
-    return `task-list-${currentView}`
-  }
   const renderContent = () => {
     switch (currentView) {
       case "analytics":
@@ -110,12 +97,6 @@ export function MainContent({ onVoiceCommand }: MainContentProps): React.ReactEl
       default: {
         // Task views (inbox, today, upcoming, projects, etc.)
 
-        // Configure section support based on view type
-        const getSectionSupport = (): boolean => {
-          if (routeContext.routeType === "project") return true
-          return false // Only projects support sections, projectgroups use flat view
-        }
-
         // Get project for project views
         const getProjectForView = (): Project | undefined => {
           if (routeContext.routeType === "project" && currentProjectId) {
@@ -128,7 +109,6 @@ export function MainContent({ onVoiceCommand }: MainContentProps): React.ReactEl
           return undefined
         }
 
-        const supportsSections = getSectionSupport()
         const projectForView = getProjectForView()
 
         switch (viewMode) {
@@ -153,26 +133,23 @@ export function MainContent({ onVoiceCommand }: MainContentProps): React.ReactEl
           case "stats":
             return <StatsView />
 
-          default:
-            // Use ProjectSectionsView for all task views
-            return (
-              <div className="flex flex-col h-full">
-                <ProjectSectionsView
-                  supportsSections={supportsSections}
-                  droppableId={getDroppableId()}
-                  showProjectsAsSections={routeContext.routeType === "projectgroup"}
-                />
+          // list view
+          default: {
+            const listContent =
+              currentView === "today" ? (
+                <TodayView />
+              ) : currentView === "recent" ? (
+                <RecentView />
+              ) : (
+                <StandardTaskListView />
+              )
 
-                {commentDialogTask && (
-                  <QuickCommentDialog
-                    task={commentDialogTask}
-                    isOpen={true}
-                    onClose={() => setCommentDialogTask(null)}
-                    onAddComment={handleAddComment}
-                  />
-                )}
-              </div>
+            return (
+              <TaskViewSidePanelLayout contentWrapperClassName="overflow-auto" applyContentPadding>
+                {listContent}
+              </TaskViewSidePanelLayout>
             )
+          }
         }
       }
     }

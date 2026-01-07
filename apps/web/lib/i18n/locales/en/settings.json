@@ -78,6 +78,13 @@
       "label": "Language",
       "title": "Language"
     },
+    "dates": {
+      "preferDayMonth": {
+        "description": "When a date like 1/2 is ambiguous, interpret it as 1 February instead of Jan 2",
+        "label": "Prefer day/month for numeric dates"
+      },
+      "title": "Dates"
+    },
     "links": {
       "autoConvert": {
         "description": "Automatically convert URLs in task titles to clickable links",
@@ -171,9 +178,28 @@
     },
     "jobs": {
       "title": "Registered Jobs",
+      "backup": {
+        "runOnInit": "Run once on scheduler start",
+        "config": {
+          "label": "Configure backup",
+          "title": "Backup settings",
+          "maxBackups": {
+            "label": "Max backup count",
+            "description": "Use -1 to keep unlimited backups."
+          }
+        }
+      },
+      "calendar": {
+        "runOnInit": "Run once on scheduler start",
+        "config": {
+          "label": "Open calendar sync settings"
+        }
+      },
       "columns": {
         "id": "Job ID",
         "schedule": "Schedule",
+        "config": "Config",
+        "runOnStart": "Run on start",
         "autoStart": "Auto start"
       },
       "autoStart": {

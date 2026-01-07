@@ -171,14 +171,12 @@ describe("Scheduler", () => {
       id: "list",
       schedule: cron("0 0 * * *"),
       handler: vi.fn(),
-      autoStart: false,
     });
 
     expect(scheduler.listJobs()).toEqual([
       {
         id: "list",
         schedule: { type: "cron", expression: "0 0 * * *" },
-        autoStart: false,
       },
     ]);
   });

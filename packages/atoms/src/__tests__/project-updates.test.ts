@@ -60,7 +60,6 @@ describe("Project Updates and Task Reordering", () => {
         {
           id: TEST_PROJECT_ID_1,
           name: "Test Project",
-          slug: "test-project",
           color: "#3b82f6",
           viewState: {
             viewMode: "list" as const,
@@ -90,7 +89,6 @@ describe("Project Updates and Task Reordering", () => {
       {
         id: TEST_PROJECT_ID_1,
         name: "Test Project",
-        slug: "test-project",
         color: "#3b82f6",
         sections: [DEFAULT_PROJECT_SECTION],
       },
@@ -139,7 +137,6 @@ describe("Project Updates and Task Reordering", () => {
       {
         id: TEST_PROJECT_ID_1,
         name: "Test Project",
-        slug: "test-project",
         color: "#3b82f6",
         sections: [DEFAULT_PROJECT_SECTION],
       },
@@ -197,14 +194,12 @@ describe("Project Updates and Task Reordering", () => {
       {
         id: TEST_PROJECT_ID_1,
         name: "Project To Keep",
-        slug: "project-to-keep",
         color: "#3b82f6",
         sections: [DEFAULT_PROJECT_SECTION],
       },
       {
         id: TEST_PROJECT_ID_2,
         name: "Project To Delete",
-        slug: "project-to-delete",
         color: "#ef4444",
         sections: [DEFAULT_PROJECT_SECTION],
       },
@@ -241,7 +236,6 @@ describe("Project Updates and Task Reordering", () => {
         {
           id: section1Id,
           name: "Section 1",
-          slug: "section-1",
           type: "section" as const,
           color: "#3b82f6",
           items: [taskAId, taskBId], // A is at index 0, B is at index 1
@@ -249,7 +243,6 @@ describe("Project Updates and Task Reordering", () => {
         {
           id: section2Id,
           name: "Section 2",
-          slug: "section-2",
           type: "section" as const,
           color: "#ef4444",
           items: [taskCId],
@@ -287,7 +280,6 @@ describe("Project Updates and Task Reordering", () => {
         {
           id: defaultSectionId,
           name: "Tasks",
-          slug: "",
           type: "section" as const,
           color: "#808080",
           items: [taskAId, taskBId], // Default section tasks
@@ -295,7 +287,6 @@ describe("Project Updates and Task Reordering", () => {
         {
           id: otherSectionId,
           name: "Other Section",
-          slug: "other",
           type: "section" as const,
           color: "#ef4444",
           items: [taskCId],
@@ -334,7 +325,6 @@ describe("Project Updates and Task Reordering", () => {
         {
           id: section1Id,
           name: "Section 1",
-          slug: "section-1",
           type: "section" as const,
           color: "#3b82f6",
           items: [taskAId, taskBId],
@@ -342,7 +332,6 @@ describe("Project Updates and Task Reordering", () => {
         {
           id: section2Id,
           name: "Section 2",
-          slug: "section-2",
           type: "section" as const,
           color: "#ef4444",
           items: [taskCId, taskDId],

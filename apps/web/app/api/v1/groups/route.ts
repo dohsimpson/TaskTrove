@@ -21,7 +21,6 @@ import type { GroupId, ProjectId } from "@tasktrove/types/id"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { v4 as uuidv4 } from "uuid"
-import { createSafeProjectGroupNameSlug, createSafeLabelGroupNameSlug } from "@/lib/utils/routing"
 import {
   withApiLogging,
   logBusinessEvent,
@@ -32,7 +31,11 @@ import {
 import { withMutexProtection } from "@/lib/utils/api-mutex"
 import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
-import { DEFAULT_LABEL_COLORS } from "@tasktrove/constants"
+import {
+  DEFAULT_LABEL_COLORS,
+  DEFAULT_PROJECT_COLORS,
+  getRandomPaletteColor,
+} from "@tasktrove/constants"
 import { isGroup } from "@tasktrove/types/group"
 
 /**
@@ -188,9 +191,8 @@ async function createGroup(
         type: "project",
         id: newGroupId,
         name,
-        slug: createSafeProjectGroupNameSlug(name, fileData.projectGroups),
         description,
-        color: color ?? DEFAULT_LABEL_COLORS[0],
+        color: color ?? getRandomPaletteColor(DEFAULT_PROJECT_COLORS),
         items: [],
       }
       // Add to root projectGroups items
@@ -201,9 +203,8 @@ async function createGroup(
         type: "label",
         id: newGroupId,
         name,
-        slug: createSafeLabelGroupNameSlug(name, fileData.labelGroups),
         description,
-        color: color ?? DEFAULT_LABEL_COLORS[0],
+        color: color ?? getRandomPaletteColor(DEFAULT_LABEL_COLORS),
         items: [],
       }
       // Add to root labelGroups items
@@ -281,9 +282,8 @@ async function createGroup(
       type: "project",
       id: newGroupId,
       name,
-      slug: createSafeProjectGroupNameSlug(name, fileData.projectGroups),
       description,
-      color: color ?? DEFAULT_LABEL_COLORS[0],
+      color: color ?? getRandomPaletteColor(DEFAULT_PROJECT_COLORS),
       items: [],
     }
     parentGroup.items.push(newProjectGroup)
@@ -293,9 +293,8 @@ async function createGroup(
       type: "label",
       id: newGroupId,
       name,
-      slug: createSafeLabelGroupNameSlug(name, fileData.labelGroups),
       description,
-      color: color ?? DEFAULT_LABEL_COLORS[0],
+      color: color ?? getRandomPaletteColor(DEFAULT_LABEL_COLORS),
       items: [],
     }
     parentGroup.items.push(newLabelGroup)
@@ -502,17 +501,6 @@ async function handleIndividualGroupUpdates(
     // Update group properties in-place
     if (update.name !== undefined) {
       group.name = update.name
-      // If name is being updated but slug is not explicitly provided, regenerate slug
-      if (update.slug === undefined) {
-        if (group.type === "project") {
-          group.slug = createSafeProjectGroupNameSlug(update.name, fileData.projectGroups)
-        } else {
-          group.slug = createSafeLabelGroupNameSlug(update.name, fileData.labelGroups)
-        }
-      }
-    }
-    if (update.slug !== undefined) {
-      group.slug = update.slug
     }
     if (update.description !== undefined) {
       group.description = update.description

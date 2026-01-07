@@ -4,6 +4,7 @@ import {
   type CreateTaskRequest,
 } from "./api-requests";
 import { getDefaultSectionId } from "./defaults";
+export { isValidCronExpression } from "./utils/cron";
 
 /**
  * Safely converts a Task to a CreateTaskRequest by removing fields that shouldn't be included.

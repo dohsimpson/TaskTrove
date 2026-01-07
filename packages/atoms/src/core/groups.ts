@@ -11,6 +11,10 @@ import {
   ROOT_LABEL_GROUP_ID,
   ROOT_PROJECT_GROUP_ID,
 } from "@tasktrove/types/defaults";
+import {
+  DEFAULT_PROJECT_COLORS,
+  getRandomPaletteColor,
+} from "@tasktrove/constants";
 import { log } from "@tasktrove/atoms/utils/atom-helpers";
 import { groupsQueryAtom } from "@tasktrove/atoms/data/base/query";
 import {
@@ -41,14 +45,12 @@ export const allGroupsAtom = atom((get) => {
       type: "project" as const,
       id: ROOT_PROJECT_GROUP_ID,
       name: "All Projects",
-      slug: "all-projects",
       items: [],
     },
     labelGroups: {
       type: "label" as const,
       id: ROOT_LABEL_GROUP_ID,
       name: "All Labels",
-      slug: "all-labels",
       items: [],
     },
   };
@@ -111,11 +113,14 @@ export const addProjectGroupAtom = atom(
   ) => {
     const mutation = get(createProjectGroupMutationAtom);
 
+    const resolvedColor =
+      groupData.color ?? getRandomPaletteColor(DEFAULT_PROJECT_COLORS);
+
     const request: CreateGroupRequest = {
       type: "project",
       name: groupData.name,
       description: groupData.description,
-      color: groupData.color,
+      color: resolvedColor,
       parentId: groupData.parentId,
     };
 

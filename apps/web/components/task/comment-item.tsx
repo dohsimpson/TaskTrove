@@ -3,13 +3,16 @@ import { X, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { formatDistanceToNow, format } from "date-fns"
+import { formatDistanceToNow } from "date-fns"
+import { useAtomValue } from "jotai"
 import type { TaskComment } from "@tasktrove/types/core"
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { EditableDiv } from "@/components/ui/custom/editable-div"
 import { LinkifiedText } from "@/components/ui/custom/linkified-text"
 import { CommentUserDisplay } from "@/components/task/comment-user-display"
 import { CommentReactions } from "@/components/task/comment-reactions"
 import { AddReactionButton } from "@/components/task/add-reaction-button"
+import { formatDateDisplay, formatTimeOfDay } from "@/lib/utils/task-date-formatter"
 
 export function CommentItem({
   comment,
@@ -22,6 +25,9 @@ export function CommentItem({
   onDelete?: (commentId: string) => void
   onUpdate?: (commentId: string, newContent: string) => void
 }) {
+  const settings = useAtomValue(settingsAtom)
+  const use24HourTime = Boolean(settings.uiSettings.use24HourTime)
+  const preferDayMonthFormat = Boolean(settings.general.preferDayMonthFormat)
   const [isEditing, setIsEditing] = useState(false)
 
   const handleSave = (newContent: string) => {
@@ -55,7 +61,12 @@ export function CommentItem({
                   })}
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p className="text-xs">{format(comment.createdAt, "PPpp")}</p>
+                  <p className="text-xs">
+                    {`${formatDateDisplay(comment.createdAt, {
+                      includeYear: true,
+                      preferDayMonthFormat,
+                    })}, ${formatTimeOfDay(comment.createdAt, { use24HourTime })}`}
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </div>

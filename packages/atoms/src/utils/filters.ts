@@ -21,6 +21,8 @@ import type { ProjectId, LabelId } from "@tasktrove/types/id";
 export interface FilterConfig {
   /** Whether to show completed tasks */
   showCompleted?: boolean;
+  /** Whether to show archived tasks */
+  showArchived?: boolean;
   /** Whether to show overdue tasks */
   showOverdue?: boolean;
   /** Search query to match against task title and description */
@@ -68,6 +70,21 @@ export function filterTasksByCompleted(
   showCompleted: boolean,
 ): Task[] {
   return showCompleted ? tasks : tasks.filter((t) => !t.completed);
+}
+
+/**
+ * Filters tasks by archived status
+ *
+ * @param tasks - Array of tasks to filter
+ * @param showArchived - Whether to include archived tasks
+ * @returns Filtered array of tasks
+ */
+export function filterTasksByArchived(
+  tasks: Task[],
+  showArchived: boolean,
+): Task[] {
+  if (showArchived) return tasks;
+  return tasks.filter((task) => !task.archived);
 }
 
 /**
@@ -337,6 +354,10 @@ export function filterTasksByDueDate(
 export function filterTasks(tasks: Task[], config: FilterConfig): Task[] {
   let filtered = tasks;
 
+  // Apply archived visibility filter (default: hide archived)
+  const showArchived = config.showArchived ?? false;
+  filtered = filterTasksByArchived(filtered, showArchived);
+
   // Apply completion visibility filter
   if (config.showCompleted !== undefined) {
     filtered = filterTasksByCompleted(filtered, config.showCompleted);
@@ -394,6 +415,7 @@ export function filterTasks(tasks: Task[], config: FilterConfig): Task[] {
 export function viewStateToFilterConfig(viewState: ViewState): FilterConfig {
   return {
     showCompleted: viewState.showCompleted,
+    showArchived: viewState.showArchived ?? false,
     showOverdue: viewState.showOverdue,
     searchQuery: viewState.searchQuery,
     projectIds: viewState.activeFilters?.projectIds,

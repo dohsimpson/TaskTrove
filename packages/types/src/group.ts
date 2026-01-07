@@ -23,7 +23,6 @@ import {
 interface IBaseGroup {
   id: GroupId;
   name: string;
-  slug: string;
   description?: string;
   color?: string;
 }
@@ -66,8 +65,6 @@ export const ProjectSectionSchema: z.ZodType<ProjectSection> = z.object({
   id: GroupIdSchema,
   /** Display name of the section */
   name: z.string(),
-  /** Unique SEO friendly slug (empty string for sections) */
-  slug: z.string().default(""),
   /** Optional description */
   description: z.string().optional(),
   /** Section color (hex code) */
@@ -94,7 +91,6 @@ ProjectGroupSchema = z
     type: z.literal("project"),
     id: GroupIdSchema,
     name: z.string(),
-    slug: z.string(),
     description: z.string().optional(),
     color: z.string().optional(),
     items: z.array(
@@ -123,7 +119,6 @@ LabelGroupSchema = z
     type: z.literal("label"),
     id: GroupIdSchema,
     name: z.string(),
-    slug: z.string(),
     description: z.string().optional(),
     color: z.string().optional(),
     items: z.array(z.union([LabelIdSchema, z.lazy(() => LabelGroupSchema)])),

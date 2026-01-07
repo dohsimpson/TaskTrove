@@ -246,14 +246,12 @@ describe.skip("KanbanBoard", () => {
   const mockProject = {
     id: TEST_PROJECT_ID_1,
     name: "Test Project",
-    slug: "test-project",
     color: "#3b82f6",
     position: 1000,
     sections: [
       {
         id: TEST_GROUP_ID_1,
         name: "To Do",
-        slug: "to-do",
         type: "section" as const,
         items: [],
         color: DEFAULT_SECTION_COLORS[0],
@@ -261,7 +259,6 @@ describe.skip("KanbanBoard", () => {
       {
         id: TEST_GROUP_ID_2,
         name: "In Progress",
-        slug: "in-progress",
         type: "section" as const,
         items: [],
         color: DEFAULT_SECTION_COLORS[1],
@@ -269,7 +266,6 @@ describe.skip("KanbanBoard", () => {
       {
         id: SECTION_ID_3,
         name: "Review",
-        slug: "review",
         type: "section" as const,
         items: [],
         color: DEFAULT_SECTION_COLORS[2],
@@ -277,7 +273,6 @@ describe.skip("KanbanBoard", () => {
       {
         id: SECTION_ID_4,
         name: "Done",
-        slug: "done",
         type: "section" as const,
         items: [],
         color: DEFAULT_SECTION_COLORS[3],
@@ -815,7 +810,6 @@ describe.skip("KanbanBoard", () => {
           {
             id: createGroupId(DEFAULT_UUID),
             name: "Custom Section 1",
-            slug: "custom-section-1",
             type: "section" as const,
             items: [],
             color: "#ff0000",
@@ -823,7 +817,6 @@ describe.skip("KanbanBoard", () => {
           {
             id: createGroupId("00000000-0000-4000-8000-000000000001"),
             name: "Custom Section 2",
-            slug: "custom-section-2",
             type: "section" as const,
             items: [],
             color: "#00ff00",
@@ -851,7 +844,6 @@ describe.skip("KanbanBoard", () => {
           {
             id: createGroupId(DEFAULT_UUID),
             name: "With Hash",
-            slug: "with-hash",
             type: "section" as const,
             items: [],
             color: "#3b82f6",
@@ -859,7 +851,6 @@ describe.skip("KanbanBoard", () => {
           {
             id: createGroupId("00000000-0000-4000-8000-000000000001"),
             name: "Without Hash",
-            slug: "without-hash",
             type: "section" as const,
             items: [],
             color: "3b82f6",

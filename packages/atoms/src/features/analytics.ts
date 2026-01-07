@@ -3,7 +3,6 @@ import {
   startOfDay,
   endOfDay,
   subDays,
-  format,
   startOfWeek,
   endOfWeek,
 } from "date-fns";
@@ -20,6 +19,7 @@ import {
 import { TimePeriod } from "@tasktrove/types/utils";
 import { Task, Project, Label } from "@tasktrove/types/core";
 import { createTaskId } from "@tasktrove/types/id";
+import { formatDateDisplay, formatMonthLabel } from "@tasktrove/utils";
 
 /**
  * Analytics atoms for TaskTrove Jotai migration
@@ -211,7 +211,10 @@ export const trendDataAtom = atom<TrendData[]>((get) => {
         completed > 0 ? Math.min(completed * 10 + dayFocusTime / 10, 100) : 0;
 
       data.push({
-        date: format(date, dateRange === "year" ? "MMM" : "MMM d"),
+        date:
+          dateRange === "year"
+            ? formatMonthLabel(date, { variant: "short" })
+            : formatDateDisplay(date),
         completed,
         created,
         focusTime: dayFocusTime,

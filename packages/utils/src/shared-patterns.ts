@@ -453,6 +453,7 @@ export function generateHighlightingPatterns(
     // Absolute date patterns
     "(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|january|february|march|april|may|june|july|august|september|october|november|december)\\s+\\d{1,2}",
     "\\d{1,2}/\\d{1,2}",
+    "\\d{4}-\\d{2}-\\d{2}",
     "\\d{1,2}-\\d{1,2}",
   ];
   const dateRegex = new RegExp(

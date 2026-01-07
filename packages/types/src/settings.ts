@@ -20,6 +20,8 @@ export const DataSettingsSchema = z.object({
     enabled: z.boolean(),
     /** Time to run daily backup in HH:MM format (24-hour) */
     backupTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
+    /** Run backup immediately after scheduler bootstraps */
+    runOnInit: z.boolean().optional(),
     /** Maximum number of backup files to keep (-1 for unlimited) */
     maxBackups: z.number(),
   }),
@@ -67,6 +69,8 @@ export const GeneralSettingsSchema = z.object({
   markdownEnabled: z.boolean(),
   /** Enable/disable popover hover open behavior */
   popoverHoverOpen: z.boolean(),
+  /** Prefer day/month interpretation for ambiguous numeric dates (e.g., 1/2) */
+  preferDayMonthFormat: z.boolean(),
 });
 
 /**
@@ -101,6 +105,11 @@ export const UiSettingsSchema = z.object({
    * Whether to display ISO week numbers in calendar surfaces
    */
   showWeekNumber: z.boolean().optional(),
+  /**
+   * When true, show times in 24-hour format (e.g., 17:30).
+   * When false or unset, fall back to 12-hour with AM/PM.
+   */
+  use24HourTime: z.boolean().optional(),
 });
 
 export type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6;

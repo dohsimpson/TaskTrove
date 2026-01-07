@@ -17,6 +17,7 @@ describe("applyViewStateFilters", () => {
     sortBy: "default",
     sortDirection: "asc",
     showCompleted: true,
+    showArchived: false,
     showOverdue: true,
     searchQuery: "",
     showSidePanel: false,
@@ -76,6 +77,65 @@ describe("applyViewStateFilters", () => {
 
       expect(result).toHaveLength(1);
       expect(result[0]?.completed).toBe(false);
+    });
+  });
+
+  describe("showArchived filter", () => {
+    it("should exclude archived tasks by default", () => {
+      const tasks = [
+        createTask({
+          id: createTaskId("11111111-1111-4111-8111-111111111111"),
+          archived: true,
+        }),
+        createTask({
+          id: createTaskId("22222222-2222-4222-8222-222222222222"),
+          archived: false,
+        }),
+      ];
+
+      const result = applyViewStateFilters(tasks, baseViewState, "all");
+
+      expect(result).toHaveLength(1);
+      expect(result[0]?.archived).toBeFalsy();
+    });
+
+    it("should include archived tasks when showArchived is true", () => {
+      const tasks = [
+        createTask({
+          id: createTaskId("11111111-1111-4111-8111-111111111111"),
+          archived: true,
+        }),
+      ];
+
+      const viewState = { ...baseViewState, showArchived: true };
+      const result = applyViewStateFilters(tasks, viewState, "all");
+
+      expect(result).toHaveLength(1);
+      expect(result[0]?.archived).toBe(true);
+    });
+
+    it("should hide archived tasks in completed view unless enabled", () => {
+      const tasks = [
+        createTask({
+          id: createTaskId("33333333-3333-4333-8333-333333333333"),
+          completed: true,
+          archived: true,
+        }),
+      ];
+
+      const resultHidden = applyViewStateFilters(
+        tasks,
+        baseViewState,
+        "completed",
+      );
+      expect(resultHidden).toHaveLength(0);
+
+      const resultShown = applyViewStateFilters(
+        tasks,
+        { ...baseViewState, showArchived: true },
+        "completed",
+      );
+      expect(resultShown).toHaveLength(1);
     });
   });
 

@@ -29,7 +29,7 @@ import {
 } from "lucide-react"
 import { selectedTasksAtom, clearSelectedTasksAtom } from "@tasktrove/atoms/ui/selection"
 import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
-import { deleteTasksAtom } from "@tasktrove/atoms/core/tasks"
+import { deleteTasksAtom, updateTasksAtom } from "@tasktrove/atoms/core/tasks"
 import { DeleteConfirmDialog } from "@/components/dialogs/delete-confirm-dialog"
 import { PriorityPopover } from "@/components/task/priority-popover"
 import { TaskSchedulePopover } from "@/components/task/task-schedule-popover"
@@ -72,7 +72,7 @@ export function SelectionToolbar({ className }: SelectionToolbarProps) {
   const hasSelection = selectedTaskIds.length > 0
 
   // Bulk actions - use tasksAtom directly
-  const updateTasks = useSetAtom(tasksAtom)
+  const updateTasks = useSetAtom(updateTasksAtom)
   const deleteTasks = useSetAtom(deleteTasksAtom)
 
   // Selection actions

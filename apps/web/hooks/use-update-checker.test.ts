@@ -25,12 +25,14 @@ describe("useUpdateChecker", () => {
   }
 
   beforeEach(() => {
-    mockGetAppVersion.mockReturnValue("1.0.0")
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: async () => release,
-    } as unknown as Response)
-    globalThis.fetch = fetchMock as unknown as typeof fetch
+    mockGetAppVersion.mockResolvedValue({ version: "1.0.0", native: false })
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify(release), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    )
+    vi.stubGlobal("fetch", fetchMock)
   })
 
   afterEach(() => {

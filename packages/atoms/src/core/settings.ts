@@ -20,6 +20,7 @@ import type {
 import {
   DEFAULT_AUTO_BACKUP_ENABLED,
   DEFAULT_BACKUP_TIME,
+  DEFAULT_AUTO_BACKUP_RUN_ON_INIT,
   DEFAULT_MAX_BACKUPS,
 } from "@tasktrove/constants";
 
@@ -90,6 +91,7 @@ export const dataSettingsAtom = atom((get) => {
       autoBackup: {
         enabled: DEFAULT_AUTO_BACKUP_ENABLED,
         backupTime: DEFAULT_BACKUP_TIME,
+        runOnInit: DEFAULT_AUTO_BACKUP_RUN_ON_INIT,
         maxBackups: DEFAULT_MAX_BACKUPS,
       },
     };

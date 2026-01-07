@@ -12,6 +12,7 @@ const mockTask: Task = {
   title: "Test Task",
   description: "Test description",
   completed: false,
+  archived: false,
   priority: 4,
   labels: [],
   comments: [],
@@ -119,6 +120,7 @@ describe("TaskActionsMenu", () => {
         renderTaskActionsMenu({
           isSubTask: false,
           onEditClick: vi.fn(),
+          onArchiveToggle: vi.fn(),
           open: false,
           onOpenChange: vi.fn(),
         })
@@ -177,6 +179,24 @@ describe("TaskActionsMenu", () => {
       // Should be hidden
       button = container.querySelector("button")
       expect(button).toHaveClass("hidden")
+    })
+
+    it("renders archive toggle label based on task state", () => {
+      const { rerender } = renderTaskActionsMenu({
+        onArchiveToggle: vi.fn(),
+        open: true,
+      })
+      expect(screen.getByText("Archive")).toBeInTheDocument()
+
+      rerender(
+        <TaskActionsMenu
+          {...defaultProps}
+          onArchiveToggle={vi.fn()}
+          open={true}
+          task={{ ...mockTask, archived: true }}
+        />,
+      )
+      expect(screen.getByText("Unarchive")).toBeInTheDocument()
     })
   })
 })

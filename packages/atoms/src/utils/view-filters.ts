@@ -10,6 +10,7 @@ import type { ViewId } from "@tasktrove/types/id";
 import {
   filterTasks,
   viewStateToFilterConfig,
+  filterTasksByArchived,
 } from "@tasktrove/atoms/utils/filters";
 
 /**
@@ -25,9 +26,10 @@ export function applyViewStateFilters(
   viewState: ViewState,
   viewId: ViewId,
 ): Task[] {
-  // For completed view, always show all completed tasks (no filtering)
+  // For completed view, still hide archived tasks unless explicitly shown
   if (viewId === "completed") {
-    return tasks;
+    const showArchived = viewState.showArchived ?? false;
+    return filterTasksByArchived(tasks, showArchived);
   }
 
   // Convert ViewState to FilterConfig and apply all filters using the centralized filterTasks function

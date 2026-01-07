@@ -117,7 +117,6 @@ describe("DraggableProjectItem", () => {
   const mockProject: Project = {
     id: createProjectId("33333333-3333-4333-8333-333333333333"),
     name: "Test Project",
-    slug: "test-project",
     color: "#3498DB",
     sections: [DEFAULT_PROJECT_SECTION],
   }
@@ -164,7 +163,6 @@ describe("DraggableProjectItem", () => {
         <DraggableProjectItem
           project={mockProject}
           index={0}
-          isInGroup={true}
           groupId={createGroupId("44444444-4444-4444-8444-444444444444")}
         />,
       )
@@ -231,27 +229,11 @@ describe("DraggableProjectItem", () => {
         <DraggableProjectItem
           project={mockProject}
           index={0}
-          isInGroup={true}
           groupId={createGroupId("44444444-4444-4444-8444-444444444444")}
         />,
       )
 
       // Drop indicators should be at level 1 with indentation
-    })
-
-    it("applies correct indentation for grouped projects", () => {
-      render(
-        <DraggableProjectItem
-          project={mockProject}
-          index={0}
-          isInGroup={true}
-          groupId={createGroupId("44444444-4444-4444-8444-444444444444")}
-        />,
-      )
-
-      // Should have ml-6 class for indentation
-      const button = screen.getByRole("button")
-      expect(button).toHaveClass("ml-6")
     })
   })
 

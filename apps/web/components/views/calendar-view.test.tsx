@@ -1,11 +1,13 @@
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, waitFor } from "@/test-utils"
+import { render, screen, waitFor, within, fireEvent } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { v4 as uuidv4 } from "uuid"
 import { CalendarView } from "./calendar-view"
 import { createTaskId } from "@tasktrove/types/id"
 import type { Task, TaskPriority } from "@tasktrove/types/core"
+import { DEFAULT_USER_SETTINGS } from "@tasktrove/types/defaults"
+import { MINUTES_PER_HOUR } from "@/lib/calendar/time-grid"
 import {
   TEST_TASK_ID_1,
   TEST_TASK_ID_2,
@@ -22,25 +24,24 @@ vi.mock("date-fns", async (importOriginal) => {
     format: vi.fn((date, formatStr) => {
       const dateObj = new Date(date)
       if (formatStr === "MMMM yyyy") return "January 2025"
+      if (formatStr === "MMM yyyy") return "Jan 2025"
       if (formatStr === "MMMM") return "January"
+      if (formatStr === "MMM") return "Jan"
+      if (formatStr === "EEEE") {
+        // For January 1, 2025 (which is a Wednesday), return proper format
+        const day = dateObj.getDate()
+        if (dateObj.getFullYear() === 2025 && dateObj.getMonth() === 0 && day === 1) {
+          return "Wednesday"
+        }
+        return "Monday"
+      }
+      if (formatStr === "EEE") return "Wed"
       if (formatStr === "d") return dateObj.getDate().toString()
       if (formatStr === "yyyy-MM-dd") {
         const year = dateObj.getFullYear()
         const month = String(dateObj.getMonth() + 1).padStart(2, "0")
         const day = String(dateObj.getDate()).padStart(2, "0")
         return `${year}-${month}-${day}`
-      }
-      if (formatStr === "EEEE, MMMM d") {
-        // For January 1, 2025 (which is a Wednesday), return proper format
-        const day = dateObj.getDate()
-        if (dateObj.getFullYear() === 2025 && dateObj.getMonth() === 0 && day === 1) {
-          return "Wednesday, January 1"
-        }
-        return `Monday, January ${day}`
-      }
-      if (formatStr === "MMM d") {
-        const day = dateObj.getDate()
-        return `Jan ${day}`
       }
       return "2025-01-01"
     }),
@@ -53,8 +54,8 @@ vi.mock("date-fns", async (importOriginal) => {
       return new Date("2025-01-31")
     }),
     startOfWeek: vi.fn(() => {
-      // For January 1, 2025 (Wednesday), return Sunday December 29, 2024
-      return new Date("2024-12-29")
+      // For January 1, 2025 (Wednesday), return Sunday December 29, 2024 (local tz safe)
+      return new Date(2024, 11, 29)
     }),
     endOfWeek: vi.fn(() => {
       return new Date("2025-01-04")
@@ -147,18 +148,18 @@ vi.mock("date-fns", async (importOriginal) => {
   }
 })
 
-// Mock DraggableWrapper and DropTargetWrapper
-vi.mock("@/components/ui/draggable-wrapper", () => ({
-  DraggableWrapper: ({
+// Mock DraggableTaskElement and DropTargetWrapper
+vi.mock("@/components/task/draggable-task-element", () => ({
+  DraggableTaskElement: ({
     children,
-    dragId,
+    taskId,
     className,
   }: {
     children: React.ReactNode
-    dragId: string
+    taskId: string
     className?: string
   }) => (
-    <div data-testid={`draggable-${dragId}`} className={className}>
+    <div data-testid={`draggable-${taskId}`} className={className}>
       {children}
     </div>
   ),
@@ -171,20 +172,26 @@ vi.mock("@/components/ui/drop-target-wrapper", () => ({
     className,
     dropClassName,
     getData,
+    canDrop,
   }: {
     children: React.ReactNode
     dropTargetId?: string
     className?: string
     dropClassName?: string
     getData?: () => Record<string, unknown>
+    canDrop?: (data: { source?: { data?: Record<string, unknown> } }) => boolean
   }) => {
     const data = getData ? getData() : {}
+    const canDropResult = canDrop
+      ? canDrop({ source: { data: { type: "calendar-external-event" } } })
+      : undefined
     return (
       <div
         data-testid={`droppable-${dropTargetId}`}
         data-droppable-type={
           data.type === "project" ? "TASK" : data.type === "label" ? "TASK" : data.type
         }
+        data-can-drop={canDrop ? String(Boolean(canDropResult)) : undefined}
         data-drop-class-name={dropClassName}
         className={className}
       >
@@ -192,6 +199,16 @@ vi.mock("@/components/ui/drop-target-wrapper", () => ({
       </div>
     )
   },
+}))
+
+// Mock ProjectViewToolbar to avoid navigation context dependency in tests
+vi.mock("@/components/task/project-view-toolbar", () => ({
+  ProjectViewToolbar: ({
+    className,
+  }: {
+    className?: string
+    extraActions?: React.ReactNode | { left?: React.ReactNode; right?: React.ReactNode }
+  }) => <div data-testid="project-view-toolbar" className={className} />,
 }))
 
 // Mock useDragAndDrop hook
@@ -341,6 +358,8 @@ vi.mock("lucide-react", async (importOriginal) => {
   }
 })
 
+let mockUiSettings: Record<string, unknown> = {}
+
 // Mock TaskItem since we're testing the CalendarView behavior
 vi.mock("@/components/task/task-item", () => ({
   TaskItem: ({ taskId }: { taskId: string; variant?: string; showProjectBadge?: boolean }) => (
@@ -380,7 +399,11 @@ vi.mock("jotai", async (importOriginal) => {
       const atomStr = atom.toString()
       if (atomStr.includes("settings")) {
         return {
-          uiSettings: {},
+          ...DEFAULT_USER_SETTINGS,
+          uiSettings: {
+            ...DEFAULT_USER_SETTINGS.uiSettings,
+            ...mockUiSettings,
+          },
         }
       }
       // Mock showTaskPanelAtom to return false
@@ -406,13 +429,14 @@ vi.mock("jotai", async (importOriginal) => {
       return undefined
     }),
     useSetAtom: vi.fn((atom) => {
-      if (atom.toString().includes("updateTask")) {
+      const atomLabel = atom?.toString?.() ?? ""
+      if (atomLabel.includes("updateTask") || atomLabel.includes("updateTasks")) {
         return vi.fn()
       }
-      if (atom.toString().includes("updateQuickAddTask")) {
+      if (atomLabel.includes("updateQuickAddTask")) {
         return vi.fn()
       }
-      if (atom.toString().includes("updateGlobalViewOptions")) {
+      if (atomLabel.includes("updateGlobalViewOptions")) {
         return vi.fn()
       }
       return vi.fn()
@@ -493,6 +517,7 @@ describe("CalendarView", () => {
     vi.clearAllMocks()
     mockAddTaskToSection.mockClear()
     mockIsMobileApp = false
+    mockUiSettings = {}
   })
 
   it("renders calendar header with navigation", () => {
@@ -527,12 +552,148 @@ describe("CalendarView", () => {
     expect(calendarGrid).toBeInTheDocument()
   })
 
+  it("allows additional drop types", () => {
+    render(
+      <CalendarView
+        {...defaultProps}
+        additionalDropTypes={["calendar-external-event"]}
+        onAdditionalDrop={vi.fn()}
+      />,
+    )
+
+    const dropTarget = screen.getByTestId("droppable-calendar-day-2024-12-30")
+    expect(dropTarget.getAttribute("data-can-drop")).toBe("true")
+  })
+
   it("displays tasks on calendar days", () => {
     render(<CalendarView {...defaultProps} />)
 
     expect(screen.getByText(`Mock Task ${TEST_TASK_ID_1}`)).toBeInTheDocument()
     expect(screen.getByText(`Mock Task ${TEST_TASK_ID_2}`)).toBeInTheDocument()
     expect(screen.getByText(`Mock Task ${TEST_TASK_ID_3}`)).toBeInTheDocument()
+  })
+
+  it("orders month items by all-day then timed by time", () => {
+    const targetDate = new Date("2024-12-29")
+    const tasks: Task[] = [
+      {
+        id: TEST_TASK_ID_1,
+        title: "All Day Task",
+        priority: 1 satisfies TaskPriority,
+        dueDate: targetDate,
+        completed: false,
+        labels: [],
+        subtasks: [],
+        comments: [],
+        createdAt: new Date(),
+        recurringMode: "dueDate",
+      },
+      {
+        id: TEST_TASK_ID_2,
+        title: "Timed Task 10am",
+        priority: 1 satisfies TaskPriority,
+        dueDate: targetDate,
+        dueTime: new Date("2024-12-29T10:00:00"),
+        completed: false,
+        labels: [],
+        subtasks: [],
+        comments: [],
+        createdAt: new Date(),
+        recurringMode: "dueDate",
+      },
+      {
+        id: TEST_TASK_ID_3,
+        title: "Timed Task 3pm",
+        priority: 1 satisfies TaskPriority,
+        dueDate: targetDate,
+        dueTime: new Date("2024-12-29T15:00:00"),
+        completed: false,
+        labels: [],
+        subtasks: [],
+        comments: [],
+        createdAt: new Date(),
+        recurringMode: "dueDate",
+      },
+    ]
+    const externalEvents = [
+      {
+        id: "event-all-day",
+        title: "All Day Event",
+        allDay: true,
+        start: new Date("2024-12-29T00:00:00"),
+      },
+      {
+        id: "event-09",
+        title: "Event 9am",
+        allDay: false,
+        start: new Date("2024-12-29T09:00:00"),
+      },
+      {
+        id: "event-14",
+        title: "Event 2pm",
+        allDay: false,
+        start: new Date("2024-12-29T14:00:00"),
+      },
+    ]
+
+    render(
+      <CalendarView
+        {...defaultProps}
+        tasks={tasks}
+        externalEvents={externalEvents}
+        viewMode="month"
+        extensions={{
+          useExternalEvents: ({ externalEvents }) => ({
+            monthEventsByDate: {
+              "2024-12-29": externalEvents ?? [],
+              "2024-12-28": externalEvents ?? [],
+            },
+            monthMaxVisibleEventsPerDay: 10,
+          }),
+          renderMonthCellEvent: ({ event }) => {
+            const isRecord = (value: unknown): value is Record<string, unknown> =>
+              Boolean(value && typeof value === "object")
+            const id = isRecord(event) && typeof event.id === "string" ? event.id : "unknown"
+            return <div data-testid={`event-${id}`}>Event {id}</div>
+          },
+        }}
+      />,
+    )
+
+    const allDayTask = screen.getByTestId(`task-${TEST_TASK_ID_1}`)
+    const cell = allDayTask.closest('[data-testid^="droppable-calendar-day-"]')
+    if (!cell) {
+      throw new Error("Unable to locate calendar cell for event ordering test")
+    }
+    // Type guard to ensure this is an HTMLElement for within()
+    const isHTMLElement = (element: Element): element is HTMLElement => {
+      return element instanceof HTMLElement
+    }
+    if (!isHTMLElement(cell)) {
+      throw new Error("Calendar cell is not an HTMLElement")
+    }
+    const scoped = within(cell)
+    const allDayEvent = scoped.getByTestId("event-event-all-day")
+    const event09 = scoped.getByTestId("event-event-09")
+    const task10 = scoped.getByTestId(`task-${TEST_TASK_ID_2}`)
+    const event14 = scoped.getByTestId("event-event-14")
+    const task15 = scoped.getByTestId(`task-${TEST_TASK_ID_3}`)
+
+    expect(cell.contains(allDayEvent)).toBe(true)
+    expect(cell.contains(allDayTask)).toBe(true)
+    expect(cell.contains(event09)).toBe(true)
+    expect(cell.contains(task10)).toBe(true)
+    expect(cell.contains(event14)).toBe(true)
+    expect(cell.contains(task15)).toBe(true)
+
+    const isBefore = (first: HTMLElement, second: HTMLElement) =>
+      Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING)
+
+    expect(isBefore(allDayEvent, allDayTask)).toBe(true)
+    expect(isBefore(allDayTask, event09)).toBe(true)
+    expect(isBefore(event09, task10)).toBe(true)
+    expect(isBefore(task10, event14)).toBe(true)
+    expect(isBefore(event14, task15)).toBe(true)
   })
 
   it("handles date selection", async () => {
@@ -544,7 +705,9 @@ describe("CalendarView", () => {
 
     // Click the actual date content, not the drop zone wrapper
     const dateContent =
-      calendarDay.querySelector('[role="button"]') || calendarDay.firstElementChild
+      calendarDay.querySelector('[data-calendar-day-button="true"]') ||
+      calendarDay.querySelector("button[aria-label]") ||
+      calendarDay.firstElementChild
     if (dateContent) {
       if (dateContent instanceof Element) {
         await user.click(dateContent)
@@ -619,14 +782,93 @@ describe("CalendarView", () => {
     expect(todayButton).toBeInTheDocument()
   })
 
-  it("displays calendar with unscheduled tasks dock", () => {
+  it("switches to week view when a week number is clicked", async () => {
+    mockUiSettings = { showWeekNumber: true, weekStartsOn: 0 }
+    const user = userEvent.setup()
+    const onViewModeChange = vi.fn()
+    const onCurrentDateChange = vi.fn()
+
+    render(
+      <CalendarView
+        {...defaultProps}
+        onViewModeChange={onViewModeChange}
+        onCurrentDateChange={onCurrentDateChange}
+      />,
+    )
+
+    const weekNumberCell = screen.getByTestId("week-number-0")
+    await user.click(weekNumberCell)
+
+    expect(onViewModeChange).toHaveBeenCalledWith("week")
+    expect(onCurrentDateChange).toHaveBeenCalled()
+    const latestCall = onCurrentDateChange.mock.calls.at(-1)
+    const latestDate = latestCall?.[0]
+    expect(latestDate).toBeInstanceOf(Date)
+    expect(latestDate && Number.isNaN(latestDate.getTime())).toBe(false)
+  })
+
+  it("does not render an unscheduled tasks dock", () => {
     render(<CalendarView {...defaultProps} />)
 
     // Calendar header shows current month/year in separate dropdowns
     expect(screen.getByText("January 2025")).toBeInTheDocument()
 
-    // Shows FloatingDock for unscheduled tasks
-    expect(screen.getByText(/unscheduled/i)).toBeInTheDocument()
+    // Unscheduled dock has been removed
+    expect(screen.queryByText(/unscheduled/i)).not.toBeInTheDocument()
+  })
+
+  it("does not render the planner side pane in base", () => {
+    render(<CalendarView {...defaultProps} />)
+
+    expect(screen.queryByText(/planner/i)).not.toBeInTheDocument()
+  })
+
+  it("snaps drag start to the current 15-minute slot when starting in the lower half", async () => {
+    render(<CalendarView {...defaultProps} viewMode="week" />)
+
+    const slotRow = document.querySelector('[data-slot-index="9"]')
+    expect(slotRow).toBeInTheDocument()
+
+    const grid = slotRow?.parentElement
+    expect(grid).toBeInTheDocument()
+
+    const dayColumns = slotRow?.querySelector("div.flex-1.grid")
+    expect(dayColumns).toBeInTheDocument()
+
+    const dayCell = dayColumns?.firstElementChild
+    expect(dayCell).toBeInTheDocument()
+
+    if (!(grid instanceof HTMLElement) || !(dayCell instanceof HTMLElement)) {
+      throw new Error("Expected time grid elements to be available")
+    }
+
+    vi.spyOn(grid, "getBoundingClientRect").mockReturnValue({
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      width: 0,
+      height: 0,
+      x: 0,
+      y: 0,
+      toJSON: () => "",
+    })
+
+    dayCell.setPointerCapture = vi.fn()
+
+    const startMinutes = 9 * MINUTES_PER_HOUR
+    fireEvent.pointerDown(dayCell, {
+      button: 0,
+      pointerType: "mouse",
+      pointerId: 1,
+      clientY: startMinutes + 10,
+    })
+
+    await waitFor(() => {
+      const draft = document.querySelector("div.bg-primary\\/15")
+      expect(draft).toBeInTheDocument()
+      expect(draft).toHaveStyle({ top: `${startMinutes}px` })
+    })
   })
 
   it("displays tasks on calendar grid", async () => {
@@ -685,7 +927,7 @@ describe("CalendarView", () => {
     expect(task2Elements.length).toBeGreaterThan(0)
   })
 
-  it("shows more tasks indicator when there are more than 3 tasks", () => {
+  it("shows all month-day tasks without an overflow indicator", () => {
     const manyTasks: Task[] = [
       {
         id: TEST_TASK_ID_1,
@@ -751,10 +993,12 @@ describe("CalendarView", () => {
 
     render(<CalendarView {...defaultProps} tasks={manyTasks} />)
 
-    // All five tasks should render without truncation
+    // Default month view shows all tasks without an overflow badge
     manyTasks.forEach((task) => {
       expect(screen.getByText(`Mock Task ${task.id}`)).toBeInTheDocument()
     })
+
+    expect(screen.queryByText("+2 more")).not.toBeInTheDocument()
   })
 
   it("shows empty state for date with no tasks", () => {
@@ -884,16 +1128,10 @@ describe("CalendarView", () => {
       expect(hasHeightClasses || calendarDay.style.minHeight).toBeTruthy()
     })
 
-    it("shows floating dock for unscheduled tasks", () => {
+    it("does not show a floating dock for unscheduled tasks", () => {
       render(<CalendarView {...defaultProps} />)
 
-      // FloatingDock should be present for unscheduled tasks
-      const unscheduledButton = screen.getByText(/unscheduled/i)
-      expect(unscheduledButton).toBeInTheDocument()
-      expect(unscheduledButton.closest("button")).toHaveAttribute(
-        "aria-label",
-        "Open unscheduled list",
-      )
+      expect(screen.queryByText(/unscheduled/i)).not.toBeInTheDocument()
     })
   })
 
@@ -905,7 +1143,7 @@ describe("CalendarView", () => {
 
       // Verify bottom navigation is accessible
       expect(screen.getByText("January 2025")).toBeInTheDocument()
-      expect(screen.getByTestId("selection-toolbar")).toBeInTheDocument()
+      expect(screen.getAllByTestId("selection-toolbar").length).toBeGreaterThan(0)
     })
 
     it("provides keyboard navigation for buttons", () => {
@@ -1059,7 +1297,12 @@ describe("CalendarView", () => {
           return false
         }
         if (atom.toString().includes("settings")) {
-          return { uiSettings: {} }
+          return {
+            ...DEFAULT_USER_SETTINGS,
+            uiSettings: {
+              ...DEFAULT_USER_SETTINGS.uiSettings,
+            },
+          }
         }
         // Mock selectedTaskAtom to return null
         if (atom.debugLabel === "selectedTaskAtom" || atom.toString().includes("selectedTask")) {
@@ -1145,7 +1388,7 @@ describe("CalendarView", () => {
       render(<CalendarView {...defaultProps} />)
 
       // Verify header elements are within the sticky container
-      const stickyHeader = document.querySelector(".sticky.top-0.z-10")
+      const stickyHeader = document.querySelector(".sticky.top-0.z-20")
       expect(stickyHeader).toBeInTheDocument()
 
       // Month/Year dropdowns should be inside sticky header
@@ -1212,6 +1455,48 @@ describe("CalendarView", () => {
       // Proper nesting: main -> sticky header + scrollable grid
       expect(mainContainer?.contains(stickyHeader)).toBe(true)
       expect(mainContainer?.contains(scrollableGrid)).toBe(true)
+    })
+
+    it("keeps the week/day header and all-day row sticky in week view", async () => {
+      const user = userEvent.setup()
+      render(<CalendarView {...defaultProps} />)
+
+      await user.click(screen.getByText("Week"))
+
+      const stickyWeekRow = document.querySelector(".sticky.top-0.z-40")
+      const weekHeaders = screen.getByTestId("week-day-headers")
+      const allDayLabel = screen.getByText("All Day")
+
+      expect(stickyWeekRow).toBeInTheDocument()
+      expect(stickyWeekRow?.contains(weekHeaders)).toBe(true)
+      expect(stickyWeekRow?.contains(allDayLabel)).toBe(true)
+    })
+
+    it("keeps the same selected day highlighted when switching between month and week views", async () => {
+      const user = userEvent.setup()
+      render(<CalendarView {...defaultProps} />)
+
+      // Select January 1st (in the first displayed week) in month view
+      const jan1Day = screen.getByTestId("droppable-calendar-day-2025-01-01")
+      const jan1CellButton =
+        jan1Day.querySelector('[data-calendar-day-button="true"]') ??
+        jan1Day.querySelector("[role='button']")
+      if (!jan1CellButton) throw new Error("No cell button found")
+      await user.click(jan1CellButton)
+
+      // The inner cell should show the primary border when selected
+      const jan1Selected = jan1Day.querySelectorAll(".border-2.border-primary")
+      expect(jan1Selected.length).toBeGreaterThan(0)
+
+      // Switch to week view
+      await user.click(screen.getByText("Week"))
+
+      // In week view, the selected day header should still carry the primary border
+      await waitFor(() => {
+        const selectedWeekHeader = Array.from(document.querySelectorAll(".border-2.border-primary"))
+        const hasJan1Header = selectedWeekHeader.some((el) => el.textContent?.includes("1"))
+        expect(hasJan1Header).toBe(true)
+      })
     })
   })
 })

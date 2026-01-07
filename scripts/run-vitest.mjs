@@ -14,7 +14,7 @@ const isMac = process.platform === "darwin"
 
 const skipTaskpolicy = Boolean(process.env.VITEST_FAST)
 const useBackground = Boolean(process.env.VITEST_BACKGROUND)
-const niceLevel = process.env.VITEST_NICE ?? "8"
+const niceLevel = process.env.VITEST_NICE ?? "19"
 
 const baseArgs = ["--disable-warning=ExperimentalWarning", vitestBin, ...process.argv.slice(2)]
 

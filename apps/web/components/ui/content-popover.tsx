@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useId, useRef, useState } from "react"
 import { useAtomValue } from "jotai"
 import { useDebounce } from "@uidotdev/usehooks"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -24,6 +24,7 @@ interface ContentPopoverProps {
   side?: "top" | "right" | "bottom" | "left"
   onOpenChange?: (open: boolean) => void
   open?: boolean
+  exclusive?: boolean
   triggerMode?: "click" | "hover"
   debounceDelay?: number
   onOpenAutoFocus?: (event: Event) => void
@@ -44,6 +45,8 @@ interface ContentPopoverProps {
   drawerActions?: React.ReactNode
   drawerSnapPoints?: Array<number>
 }
+
+const CONTENT_POPOVER_OPEN_EVENT = "tt-content-popover-open"
 
 // Track globally whether any mobile drawer is open so other surfaces
 // (e.g., pull-to-refresh gestures) can temporarily disable themselves.
@@ -79,6 +82,7 @@ export function ContentPopover({
   side = "bottom",
   onOpenChange,
   open,
+  exclusive = true,
   triggerMode,
   debounceDelay = 200,
   onOpenAutoFocus = (event) => event.preventDefault(),
@@ -105,6 +109,8 @@ export function ContentPopover({
   const [isTouchPointer, setIsTouchPointer] = useState(false)
   const isMobile = useIsMobile()
   const prevDrawerOpenRef = useRef(false)
+  const popoverId = useId()
+  const prevOpenRef = useRef(false)
 
   // Detect coarse pointer devices (mobile/tablet) and prefer click-triggered popovers
   useEffect(() => {
@@ -147,6 +153,37 @@ export function ContentPopover({
       : effectiveTriggerMode === "hover"
         ? debouncedHoverState
         : internalHoverState
+
+  const closeSelf = useCallback(() => {
+    if (open !== undefined) {
+      onOpenChange?.(false)
+    } else {
+      setInternalHoverState(false)
+    }
+  }, [open, onOpenChange])
+
+  // Ensure only one popover is open globally.
+  useEffect(() => {
+    if (exclusive === false || typeof window === "undefined") return
+    if (isOpen && !prevOpenRef.current) {
+      window.dispatchEvent(
+        new CustomEvent(CONTENT_POPOVER_OPEN_EVENT, { detail: { id: popoverId } }),
+      )
+    }
+    prevOpenRef.current = isOpen
+  }, [exclusive, isOpen, popoverId])
+
+  useEffect(() => {
+    if (exclusive === false || typeof window === "undefined") return
+    const handleExternalOpen = (event: Event) => {
+      if (!isOpen) return
+      if (!(event instanceof CustomEvent)) return
+      if (event.detail?.id === popoverId) return
+      closeSelf()
+    }
+    window.addEventListener(CONTENT_POPOVER_OPEN_EVENT, handleExternalOpen)
+    return () => window.removeEventListener(CONTENT_POPOVER_OPEN_EVENT, handleExternalOpen)
+  }, [exclusive, isOpen, popoverId, closeSelf])
 
   // Keep a global flag so mobile pull-to-refresh can pause while drawers are open.
   useEffect(() => {
@@ -227,8 +264,9 @@ export function ContentPopover({
           </DrawerTrigger>
           <DrawerContent
             className={cn(drawerMaxHeightClass ?? "!max-h-[95vh]", "focus:outline-none")}
+            thinHandle={isMobile}
           >
-            <DrawerHeader className="pb-3 text-center">
+            <DrawerHeader className={cn("pb-3 text-center", "pt-0")}>
               <DrawerTitle className="text-base font-semibold">{drawerTitle ?? "Menu"}</DrawerTitle>
               {drawerActions ? (
                 <div className="mt-2 flex justify-center gap-2">{drawerActions}</div>

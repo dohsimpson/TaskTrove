@@ -9,14 +9,12 @@ import type { Project } from "@tasktrove/types/core"
 const mockProject: Project = {
   id: createProjectId("123e4567-e89b-12d3-a456-426614174000"),
   name: "Test Project",
-  slug: "test-project",
   color: "#3b82f6",
   sections: [
     {
       id: createGroupId("123e4567-e89b-12d3-a456-426614174001"),
       name: "Test Section",
       color: "#ef4444",
-      slug: "test-section",
       type: "section",
       items: [],
     },
@@ -24,7 +22,6 @@ const mockProject: Project = {
       id: createGroupId("123e4567-e89b-12d3-a456-426614174002"),
       name: "Another Section",
       color: "#10b981",
-      slug: "another-section",
       type: "section",
       items: [],
     },

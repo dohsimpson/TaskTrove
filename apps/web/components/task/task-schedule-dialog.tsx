@@ -1,11 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar } from "@/components/ui/custom/calendar"
 import { Clock } from "lucide-react"
-import { format } from "date-fns"
+import { useAtomValue } from "jotai"
+import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { formatDateDisplay } from "@/lib/utils/task-date-formatter"
 import type { TaskId } from "@tasktrove/types/id"
 
 interface Task {
@@ -23,6 +25,16 @@ interface TaskScheduleDialogProps {
 
 export function TaskScheduleDialog({ task, isOpen, onClose, onSchedule }: TaskScheduleDialogProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(task?.dueDate)
+  const settings = useAtomValue(settingsAtom)
+  const preferDayMonthFormat = Boolean(settings.general.preferDayMonthFormat)
+
+  // Keep calendar in sync when the dialog opens for a different task or when the
+  // task's due date changes. Otherwise the calendar can stay on the previously
+  // viewed month (commonly "today"), causing January dates to render while December
+  // is still shown.
+  useEffect(() => {
+    setSelectedDate(task?.dueDate)
+  }, [task?.id, task?.dueDate, isOpen])
 
   const handleQuickSchedule = (type: string) => {
     if (!task) return
@@ -115,7 +127,10 @@ export function TaskScheduleDialog({ task, isOpen, onClose, onSchedule }: TaskSc
             </Button>
             <Button onClick={handleCustomDateSubmit}>
               {selectedDate
-                ? `Schedule for ${format(selectedDate, "MMM d, yyyy")}`
+                ? `Schedule for ${formatDateDisplay(selectedDate, {
+                    includeYear: true,
+                    preferDayMonthFormat,
+                  })}`
                 : "Remove due date"}
             </Button>
           </div>

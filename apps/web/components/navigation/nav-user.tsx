@@ -14,7 +14,7 @@ import {
 } from "lucide-react"
 import { SiGithub, SiDiscord } from "@icons-pack/react-simple-icons"
 import { signOut } from "next-auth/react"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 import { useAtomValue, useSetAtom } from "jotai"
 import {
   DropdownMenu,
@@ -37,12 +37,16 @@ import { THEME_COLORS } from "@tasktrove/constants"
 import { UserAvatar } from "@/components/ui/custom/user-avatar"
 import { RoleBadge } from "@/components/navigation/role-badge"
 import { isMobileApp, isPro } from "@/lib/utils/env"
+import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "@/lib/constants/default"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface ContextMenuItem {
   icon: React.ComponentType<{ className?: string }>
   label: string
   onClick?: () => void
   comingSoon?: boolean
+  iconClassName?: string
+  itemClassName?: string
 }
 
 export type NavUserIssue = {
@@ -51,22 +55,31 @@ export type NavUserIssue = {
   variant?: "warning" | "destructive" | "info"
   linkHref?: string
   linkLabel?: string
+  details?: string
 }
+
+export type NavUserMenuItem = ContextMenuItem
 
 type NavUserProps = {
   /** Optional override for sign-out handling (e.g., mobile clears stored tokens). */
   onSignOut?: () => Promise<void> | void
   /** Optional issue banner shown in the dropdown + badge on the trigger (mobile). */
-  issue?: NavUserIssue | null
+  issue?: NavUserIssue | NavUserIssue[] | null
+  /** Optional menu items to prepend to the default list. */
+  extraMenuItems?: ContextMenuItem[]
+  /** Optional corner badge rendered on the trigger (mobile). */
+  cornerBadge?: React.ReactNode
 }
 
-export function NavUser({ onSignOut, issue }: NavUserProps = {}) {
+export function NavUser({ onSignOut, issue, extraMenuItems, cornerBadge }: NavUserProps = {}) {
   // Translation setup
   const { t } = useTranslation("navigation")
 
   const [aboutModalOpen, setAboutModalOpen] = useState(false)
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
   const [isRunningAsPWA, setIsRunningAsPWA] = useState(false)
+  const [issueDialogOpen, setIssueDialogOpen] = useState(false)
+  const [issueDialogIssue, setIssueDialogIssue] = useState<NavUserIssue | null>(null)
   const openSettingsDialog = useSetAtom(openSettingsDialogAtom)
   const openUserProfileDialog = useSetAtom(openUserProfileDialogAtom)
 
@@ -78,55 +91,78 @@ export function NavUser({ onSignOut, issue }: NavUserProps = {}) {
     setIsRunningAsPWA(isPWA())
   }, [])
 
-  const issueTone = issue?.variant ?? "warning"
-  const issueBadgeClass =
-    issueTone === "destructive"
+  const issues = Array.isArray(issue) ? issue.filter(Boolean) : issue ? [issue] : []
+  const primaryIssue = issues[0]
+  const issueTone = primaryIssue?.variant ?? "warning"
+  const getIssueBadgeClass = (variant: NavUserIssue["variant"]) =>
+    variant === "destructive"
       ? "bg-destructive text-destructive-foreground"
-      : issueTone === "info"
+      : variant === "info"
         ? "bg-blue-500 text-white"
         : "bg-amber-500 text-white"
-  const issueIconClass =
-    issueTone === "destructive"
+  const getIssueIconClass = (variant: NavUserIssue["variant"]) =>
+    variant === "destructive"
       ? "text-destructive"
-      : issueTone === "info"
+      : variant === "info"
         ? "text-blue-500"
         : "text-amber-500"
+  const issueBadgeClass = getIssueBadgeClass(issueTone)
 
-  const issueBadge = issue ? (
+  const issueBadge = primaryIssue ? (
     <span
       className={`absolute -right-1 -top-1 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full border border-background px-1 text-[10px] font-bold leading-none shadow-sm ${issueBadgeClass}`}
     >
       !
     </span>
   ) : null
+  const triggerBadge = cornerBadge ?? issueBadge
 
-  const issueBanner = issue ? (
+  const issueBanner = issues.length ? (
     <>
       <DropdownMenuGroup>
-        <DropdownMenuItem
-          onSelect={(event) => event.preventDefault()}
-          className="cursor-default focus:bg-background"
-        >
-          <div className="flex items-start gap-2">
-            <AlertTriangle className={`mt-0.5 h-4 w-4 ${issueIconClass}`} />
-            <div className="space-y-1">
-              <p className="text-sm font-semibold leading-tight">{issue.label}</p>
-              {issue.description && (
-                <p className="text-xs leading-snug text-muted-foreground">{issue.description}</p>
-              )}
-              {issue.linkHref && (
-                <a
-                  className="text-xs font-semibold text-primary hover:underline"
-                  href={issue.linkHref}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {issue.linkLabel ?? "View guide"}
-                </a>
-              )}
+        {issues.map((item, index) => (
+          <DropdownMenuItem
+            key={`${item.label}-${index}`}
+            onSelect={(event) => event.preventDefault()}
+            className="cursor-default focus:bg-background"
+          >
+            <div className="flex items-start gap-2">
+              <AlertTriangle
+                className={`mt-0.5 h-4 w-4 ${getIssueIconClass(item.variant ?? "warning")}`}
+              />
+              <div className="space-y-1">
+                <p className="text-sm font-semibold leading-tight">{item.label}</p>
+                {item.description && (
+                  <p className="text-xs leading-snug text-muted-foreground whitespace-pre-line">
+                    {item.description}
+                  </p>
+                )}
+                {item.details && (
+                  <button
+                    type="button"
+                    className="text-xs font-semibold text-primary hover:underline"
+                    onClick={() => {
+                      setIssueDialogIssue(item)
+                      setIssueDialogOpen(true)
+                    }}
+                  >
+                    Details
+                  </button>
+                )}
+                {item.linkHref && (
+                  <a
+                    className="text-xs font-semibold text-primary hover:underline"
+                    href={item.linkHref}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {item.linkLabel ?? "View guide"}
+                  </a>
+                )}
+              </div>
             </div>
-          </div>
-        </DropdownMenuItem>
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuGroup>
       <DropdownMenuSeparator />
     </>
@@ -147,16 +183,19 @@ export function NavUser({ onSignOut, issue }: NavUserProps = {}) {
     refreshBrowser()
   }
 
+  const githubRepoUrl = `https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}`
+  const githubDiscussionsUrl = `${githubRepoUrl}/discussions`
+
   const contextMenuItems: ContextMenuItem[] = [
     {
       icon: Bug,
       label: t("userMenu.reportBug", "Report Bug"),
-      onClick: () => window.open("https://github.com/dohsimpson/TaskTrove/discussions", "_blank"),
+      onClick: () => window.open(githubDiscussionsUrl, "_blank"),
     },
     {
       icon: SiGithub,
       label: t("userMenu.github", "Github"),
-      onClick: () => window.open("https://github.com/dohsimpson/TaskTrove", "_blank"),
+      onClick: () => window.open(githubRepoUrl, "_blank"),
     },
     {
       icon: SiDiscord,
@@ -180,16 +219,20 @@ export function NavUser({ onSignOut, issue }: NavUserProps = {}) {
     },
   ]
 
-  const visibleMenuItems = isMobileApp()
-    ? contextMenuItems.filter((item) => item.icon !== Download && item.icon !== Keyboard)
+  const allMenuItems = extraMenuItems?.length
+    ? [...extraMenuItems, ...contextMenuItems]
     : contextMenuItems
+
+  const visibleMenuItems = isMobileApp()
+    ? allMenuItems.filter((item) => item.icon !== Download && item.icon !== Keyboard)
+    : allMenuItems
 
   const dropdownTrigger = isMobileApp() ? (
     <div className="relative">
-      <button type="button">
+      <button type="button" className="flex items-center justify-center">
         <UserAvatar username={user.username} avatar={user.avatar} size={8} showInitials={true} />
       </button>
-      {issueBadge}
+      {triggerBadge}
     </div>
   ) : (
     <SidebarMenuButton
@@ -289,7 +332,7 @@ export function NavUser({ onSignOut, issue }: NavUserProps = {}) {
               <DropdownMenuItem
                 key={index}
                 onClick={item.comingSoon ? undefined : item.onClick}
-                className="cursor-pointer"
+                className={`cursor-pointer ${item.itemClassName ?? ""}`}
               >
                 {item.comingSoon ? (
                   <ComingSoonWrapper
@@ -302,7 +345,7 @@ export function NavUser({ onSignOut, issue }: NavUserProps = {}) {
                   </ComingSoonWrapper>
                 ) : (
                   <>
-                    <item.icon className="mr-2 h-4 w-4" />
+                    <item.icon className={`mr-2 h-4 w-4 ${item.iconClassName ?? ""}`} />
                     {item.label}
                     {isInstallAppItem && isRunningAsPWA && (
                       <CheckCircle2 className="ml-auto h-4 w-4 text-green-500" />
@@ -328,6 +371,18 @@ export function NavUser({ onSignOut, issue }: NavUserProps = {}) {
       )}
 
       <AboutModal open={aboutModalOpen} onOpenChange={setAboutModalOpen} />
+      {issueDialogIssue?.details && (
+        <Dialog open={issueDialogOpen} onOpenChange={setIssueDialogOpen}>
+          <DialogContent className="max-w-xl">
+            <DialogHeader>
+              <DialogTitle>{issueDialogIssue.label}</DialogTitle>
+            </DialogHeader>
+            <pre className="max-h-[60vh] whitespace-pre-wrap rounded-md bg-muted p-3 text-xs text-foreground">
+              {issueDialogIssue.details}
+            </pre>
+          </DialogContent>
+        </Dialog>
+      )}
       <LogoutConfirmDialog
         open={logoutDialogOpen}
         onOpenChange={setLogoutDialogOpen}

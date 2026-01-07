@@ -9,8 +9,8 @@ vi.mock("next-auth/react", () => ({
   signOut: vi.fn(),
 }))
 
-// Mock sonner
-vi.mock("sonner", () => ({
+// Mock toast shim
+vi.mock("@/lib/toast", () => ({
   toast: {
     success: vi.fn(),
   },
@@ -308,7 +308,7 @@ describe("NavUser", () => {
     })
 
     it("shows success toast when logout is confirmed", async () => {
-      const { toast } = await import("sonner")
+      const { toast } = await import("@/lib/toast")
 
       render(
         <TestWrapper>

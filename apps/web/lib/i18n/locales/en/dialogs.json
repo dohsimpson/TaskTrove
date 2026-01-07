@@ -80,6 +80,11 @@
       "confirm": "Delete",
       "description": "Are you sure you want to delete \"{{- name}}\"? This action cannot be undone.",
       "title": "Delete Task"
+    },
+    "calendarSync": {
+      "title": "Remove Calendar Connection",
+      "description": "Remove \"{{- name}}\" from calendar sync? Credentials will be deleted from this workspace.",
+      "confirm": "Remove Connection"
     }
   },
   "logout": {
@@ -141,7 +146,7 @@
       },
       "data": {
         "description": "Import/export, backups",
-        "title": "Data & Storage"
+        "title": "Data"
       },
       "scheduler": {
         "description": "Review periodic background jobs",

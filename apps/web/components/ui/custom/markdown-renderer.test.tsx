@@ -103,6 +103,42 @@ describe("MarkdownRenderer", () => {
     expect(screen.getByText("team@example.com")).toHaveAttribute("href", "mailto:team@example.com")
   })
 
+  it("linkifies URLs containing underscores without italicizing", () => {
+    render(<MarkdownRenderer>{"https://example.org/How_to_log_in_to_DSM"}</MarkdownRenderer>)
+
+    const link = screen.getByText("https://example.org/How_to_log_in_to_DSM")
+    expect(link.tagName).toBe("A")
+    expect(link).toHaveAttribute("href", "https://example.org/How_to_log_in_to_DSM")
+  })
+
+  it("does not nest anchors when rendering markdown links that look like URLs", () => {
+    render(
+      <MarkdownRenderer>
+        {"[Docs](https://example.org/How_to_log_in_to_DSM) visit https://example.org"}
+      </MarkdownRenderer>,
+    )
+
+    const anchors = screen.getAllByRole("link")
+    expect(anchors).toHaveLength(2)
+    expect(anchors[0]).toBeInTheDocument()
+    expect(anchors[0]?.textContent).toBe("Docs")
+    expect(anchors[0]).toHaveAttribute("href", "https://example.org/How_to_log_in_to_DSM")
+  })
+
+  it("renders a single anchor when the markdown link text is itself a URL", () => {
+    render(
+      <MarkdownRenderer>
+        {"[https://example.org/How_to_log_in_to_DSM](https://example.org/How_to_log_in_to_DSM)"}
+      </MarkdownRenderer>,
+    )
+
+    const anchors = screen.getAllByRole("link")
+    expect(anchors).toHaveLength(1)
+    expect(anchors[0]).toBeInTheDocument()
+    expect(anchors[0]?.textContent).toBe("https://example.org/How_to_log_in_to_DSM")
+    expect(anchors[0]).toHaveAttribute("href", "https://example.org/How_to_log_in_to_DSM")
+  })
+
   it("sanitizes unsafe markdown links", () => {
     render(<MarkdownRenderer>{"[Bad](javascript:alert('xss')) text"}</MarkdownRenderer>)
 
@@ -122,5 +158,19 @@ describe("MarkdownRenderer", () => {
     const span = screen.getByText("Inline text")
     expect(span.tagName).toBe("SPAN")
     expect(span.className).toBe("")
+  })
+
+  it("keeps link text with underscores intact even when different from href", () => {
+    render(
+      <MarkdownRenderer>
+        {"[https://example.org/How_to_win](https://example.org/How_to_log_in_to_DSM)"}
+      </MarkdownRenderer>,
+    )
+
+    const anchors = screen.getAllByRole("link")
+    expect(anchors).toHaveLength(1)
+    expect(anchors[0]).toBeInTheDocument()
+    expect(anchors[0]?.textContent).toBe("https://example.org/How_to_win")
+    expect(anchors[0]).toHaveAttribute("href", "https://example.org/How_to_log_in_to_DSM")
   })
 })

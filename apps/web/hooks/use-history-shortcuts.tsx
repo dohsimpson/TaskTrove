@@ -28,7 +28,7 @@ export const useHistoryShortcuts = () => {
         event.target instanceof HTMLInputElement ||
         event.target instanceof HTMLTextAreaElement ||
         event.target instanceof HTMLSelectElement ||
-        (event.target as HTMLElement).isContentEditable
+        (event.target instanceof HTMLElement && event.target.isContentEditable)
       ) {
         return
       }

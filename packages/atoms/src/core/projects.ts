@@ -24,6 +24,8 @@ import {
   DEFAULT_UUID,
   DEFAULT_SECTION_NAME,
   DEFAULT_SECTION_COLOR,
+  DEFAULT_SECTION_COLORS,
+  getRandomPaletteColor,
 } from "@tasktrove/constants";
 import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
 import { createGroupId } from "@tasktrove/types/id";
@@ -50,13 +52,11 @@ import { clearNullValues } from "@tasktrove/utils";
 const createDefaultInboxProject = (): Project => ({
   id: INBOX_PROJECT_ID,
   name: DEFAULT_INBOX_NAME,
-  slug: "inbox",
   color: DEFAULT_INBOX_COLOR,
   sections: [
     {
       id: createGroupId(DEFAULT_UUID),
       name: DEFAULT_SECTION_NAME,
-      slug: "",
       color: DEFAULT_SECTION_COLOR,
       type: "section" as const,
       items: [],
@@ -450,12 +450,12 @@ export const addProjectSectionAtom = atom(
           }
 
           // Use provided color or default
-          const sectionColor = data.color || DEFAULT_SECTION_COLOR;
+          const sectionColor =
+            data.color || getRandomPaletteColor(DEFAULT_SECTION_COLORS);
 
           const newSection: ProjectSection = {
             id: createGroupId(uuidv4()),
             name: data.sectionName,
-            slug: "",
             color: sectionColor,
             type: "section" as const,
             items: [],
@@ -503,14 +503,22 @@ addProjectSectionAtom.debugLabel = "addProjectSectionAtom";
  * Validates that section has no tasks before removing
  * Uses server mutation for persistence
  */
+const removeProjectSectionStateAtom = atom<{
+  projectId: ProjectId;
+  sectionId: GroupId;
+  deleteTasks?: boolean;
+} | null>(null);
+
 export const removeProjectSectionAtom = atom(
-  null,
+  (get) => get(removeProjectSectionStateAtom),
   async (
     get,
     set,
     data: { projectId: ProjectId; sectionId: GroupId; deleteTasks?: boolean },
   ) => {
     try {
+      set(removeProjectSectionStateAtom, data);
+
       const projects = get(projectsAtom);
       const project = projects.find((p: Project) => p.id === data.projectId);
       const section = project?.sections.find((s) => s.id === data.sectionId);

@@ -31,7 +31,7 @@ export default defineConfig({
       "hooks/**/*.{ts,tsx}",
       "lib/**/*.{ts,tsx}",
       "providers/**/*.{ts,tsx}",
-      "middleware.ts",
+      "proxy.ts",
       "auth.ts",
     ],
     ignore: [

@@ -41,19 +41,16 @@ const TEST_LABELS: Label[] = [
     id: LABEL_1,
     name: "Work",
     color: "#ff0000",
-    slug: "work",
   },
   {
     id: LABEL_2,
     name: "Personal",
     color: "#00ff00",
-    slug: "personal",
   },
   {
     id: LABEL_3,
     name: "Urgent",
     color: "#0000ff",
-    slug: "urgent",
   },
 ]
 
@@ -277,7 +274,6 @@ describe("calculateLabelMove", () => {
           id: LABEL_1,
           name: "Work",
           color: "#ff0000",
-          slug: "work",
         },
       ]
       const result = calculateLabelMove(LABEL_1, 0, 0, singleLabelArray)

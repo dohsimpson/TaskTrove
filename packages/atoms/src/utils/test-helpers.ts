@@ -97,7 +97,6 @@ export function createMockProject(
 ): Omit<Project, "id" | "viewState"> {
   const defaults = {
     name: `Mock Project ${Date.now()}`,
-    slug: `mock-project-${Date.now()}`,
     color: "#3b82f6",
     sections: [DEFAULT_PROJECT_SECTION],
   };
@@ -113,7 +112,6 @@ export function createMockLabel(
 ): Omit<Label, "id"> {
   const defaults = {
     name: `mock-label-${Date.now()}`,
-    slug: `mock-label-${Date.now()}`,
     color: "#10b981",
   };
 

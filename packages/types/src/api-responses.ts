@@ -41,7 +41,6 @@ export const SchedulerJobScheduleSchema = z.object({
 export const SchedulerJobSchema = z.object({
   id: z.string(),
   schedule: SchedulerJobScheduleSchema,
-  autoStart: z.boolean(),
 });
 
 // =============================================================================
@@ -77,6 +76,26 @@ export const ErrorResponseSchema = z.object({
   message: z.string(),
   stack: z.string().optional(),
   filePath: z.string().optional(),
+});
+
+// =============================================================================
+// HEALTH CHECK RESPONSE SCHEMA
+// =============================================================================
+
+export const HealthCheckResponseSchema = z.object({
+  status: z
+    .enum(["healthy", "error", "needs_initialization", "needs_migration"])
+    .optional(),
+  edition: z.enum(["base", "pro"]).optional(),
+  apiVersion: z.string().optional(),
+  serverVersion: z.string().optional(),
+  supportedVersions: z.array(z.string()).optional(),
+  message: z.string().optional(),
+  details: z.string().optional(),
+  timestamp: z.string().optional(),
+  dataFileCheck: z.unknown().optional(),
+  migrationInfo: z.unknown().optional(),
+  errors: z.unknown().optional(),
 });
 
 // =============================================================================
@@ -264,6 +283,7 @@ export const GetUserResponseSchema = z.object({
 export const GetSchedulerJobsResponseSchema = z.object({
   jobs: z.array(SchedulerJobSchema),
   running: z.boolean(),
+  serverTime: z.string().datetime(),
 });
 
 /**
@@ -281,6 +301,7 @@ export const GetDataResponseSchema = DataFileSerializationSchema.extend({
 export type ApiResponse = z.infer<typeof ApiResponseSchema>;
 export type ApiResponseMeta = z.infer<typeof ApiResponseMetaSchema>;
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
+export type HealthCheckResponse = z.infer<typeof HealthCheckResponseSchema>;
 export type SchedulerJobSchedule = z.infer<typeof SchedulerJobScheduleSchema>;
 export type SchedulerJob = z.infer<typeof SchedulerJobSchema>;
 

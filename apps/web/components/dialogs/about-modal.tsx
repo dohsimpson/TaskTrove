@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -11,16 +12,31 @@ import { Button } from "@/components/ui/button"
 import { Star, Heart } from "lucide-react"
 import { TaskTroveLogo } from "@/components/ui/custom/tasktrove-logo"
 import { getAppVersion } from "@/lib/utils/version"
+import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "@/lib/constants/default"
 import { useTranslation } from "@tasktrove/i18n"
 import { PrivacyTermsNotice } from "@/components/legal/privacy-terms-notice"
 interface AboutModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  extraVersionInfo?: React.ReactNode
 }
 
-export function AboutModal({ open, onOpenChange }: AboutModalProps) {
-  const version = getAppVersion()
+export function AboutModal({ open, onOpenChange, extraVersionInfo }: AboutModalProps) {
+  const [version, setVersion] = useState<string | null>(null)
   const { t } = useTranslation("dialogs")
+  const githubRepoUrl = `https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}`
+  const githubSponsorsUrl = `https://github.com/sponsors/${GITHUB_REPO_OWNER}`
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const versionInfo = await getAppVersion()
+        setVersion(versionInfo.version)
+      } catch (error) {
+        console.warn("[AboutModal] Unable to read app version", error)
+      }
+    })()
+  }, [])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -39,9 +55,11 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
             <div className="flex justify-center mb-4">
               <TaskTroveLogo size="md" />
             </div>
-            <div className="flex items-center justify-center gap-2">
-              <p className="text-sm text-muted-foreground">v{version}</p>
-            </div>
+            {extraVersionInfo ?? (
+              <div className="flex items-center justify-center gap-2">
+                <p className="text-sm text-muted-foreground">v{version ?? "Unknown"}</p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -65,7 +83,7 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
                 variant="outline"
                 size="sm"
                 className="flex-1 cursor-pointer group"
-                onClick={() => window.open("https://github.com/dohsimpson/TaskTrove", "_blank")}
+                onClick={() => window.open(githubRepoUrl, "_blank")}
               >
                 <Star className="size-4 mr-2 text-yellow-600 group-hover:animate-[breathe_3s_ease-in-out_infinite]" />
                 {t("about.starOnGitHub", "Star on GitHub")}
@@ -75,7 +93,7 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
                 variant="outline"
                 size="sm"
                 className="flex-1 cursor-pointer group"
-                onClick={() => window.open("https://github.com/sponsors/dohsimpson", "_blank")}
+                onClick={() => window.open(githubSponsorsUrl, "_blank")}
               >
                 <Heart className="size-4 mr-2 text-pink-600 group-hover:animate-[breathe_3s_ease-in-out_infinite]" />
                 {t("about.sponsorMe", "Sponsor Me")}

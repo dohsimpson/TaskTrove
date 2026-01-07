@@ -5,4 +5,4 @@
 /**
  * Calendar view modes
  */
-export type CalendarViewMode = "month" | "week";
+export type CalendarViewMode = "month" | "week" | "day";

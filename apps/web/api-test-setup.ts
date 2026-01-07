@@ -7,6 +7,15 @@
 
 import { vi } from "vitest"
 
+const hasMutableHeaders = (response: unknown): response is { headers: Headers } => {
+  return (
+    typeof response === "object" &&
+    response !== null &&
+    "headers" in response &&
+    response.headers instanceof Headers
+  )
+}
+
 // Mock API middleware globally for API tests
 // These mocks only take effect for files that import these modules
 
@@ -34,29 +43,14 @@ vi.mock("@/lib/middleware/api-logger", () => ({
     return async (...args: unknown[]) => {
       const response = await handler(...args)
       // Add X-Request-ID header to match middleware behavior
-      if (response && typeof response === "object" && "headers" in response) {
-        const headers = response.headers as Headers
-        if (!headers.get("X-Request-ID")) {
-          headers.set("X-Request-ID", "test-request-id")
-        }
+      if (hasMutableHeaders(response) && !response.headers.get("X-Request-ID")) {
+        response.headers.set("X-Request-ID", "test-request-id")
       }
       return response
     }
   },
   logBusinessEvent: vi.fn(),
-  withFileOperationLogging: async (operation: () => Promise<unknown>) => {
-    try {
-      return await operation()
-    } catch (error) {
-      throw error // Re-throw to maintain test behavior
-    }
-  },
-  withPerformanceLogging: async (operation: () => Promise<unknown>) => {
-    try {
-      return await operation()
-    } catch (error) {
-      throw error // Re-throw to maintain test behavior
-    }
-  },
+  withFileOperationLogging: async (operation: () => Promise<unknown>) => operation(),
+  withPerformanceLogging: async (operation: () => Promise<unknown>) => operation(),
   logSecurityEvent: vi.fn(),
 }))

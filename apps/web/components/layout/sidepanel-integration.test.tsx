@@ -158,9 +158,12 @@ describe("SidePanel Integration", () => {
       sidePanelWidth: 25,
       sideBarWidth: 240,
       showSidePanel: false,
+      showCalendarEvents: true,
+      calendarAutoSyncMinutes: 0,
       peopleOwnerCollapsed: false,
       peopleAssigneesCollapsed: false,
       dismissedUi: {},
+      recentViewDays: 7,
     })
 
     const TestComponent: React.FC = () => {

@@ -28,7 +28,7 @@ Currently implemented:
 
 - **General**: General settings
 - **Notifications**: notification preferences
-- **Data & Storage**: Data related settings
+- **Data**: Data related settings
 
 Planned for future:
 

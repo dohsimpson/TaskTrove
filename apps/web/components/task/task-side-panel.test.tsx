@@ -4,8 +4,10 @@ import { render, screen } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { TaskSidePanel } from "./task-side-panel"
 import { DEFAULT_SECTION_COLORS, DEFAULT_UUID } from "@tasktrove/constants"
+import { DEFAULT_USER_SETTINGS } from "@tasktrove/types/defaults"
 import type { LabelId } from "@tasktrove/types/id"
 import { createLabelId } from "@tasktrove/types/id"
+import { formatTaskDateTimeBadge } from "@/lib/utils/task-date-formatter"
 
 // Define proper interfaces for mocks
 interface MockJotaiAtom {
@@ -72,7 +74,26 @@ vi.mock("date-fns", async () => {
   const actual = await vi.importActual<typeof import("date-fns")>("date-fns")
   return {
     ...actual,
-    format: vi.fn(() => "Jan 1"),
+    format: vi.fn((date, formatString) => {
+      const d = date instanceof Date ? date : new Date(date)
+      const month = d.getMonth() + 1
+      const day = d.getDate()
+      const year = d.getFullYear()
+      const pad2 = (value: number) => value.toString().padStart(2, "0")
+      if (formatString === "M/d") {
+        return `${month}/${day}`
+      }
+      if (formatString === "M/d/yyyy") {
+        return `${month}/${day}/${year}`
+      }
+      if (formatString === "MM/dd") {
+        return `${pad2(month)}/${pad2(day)}`
+      }
+      if (formatString === "MM/dd/yyyy") {
+        return `${pad2(month)}/${pad2(day)}/${year}`
+      }
+      return "Jan 1"
+    }),
     isToday: vi.fn(() => false),
     isTomorrow: vi.fn(() => false),
     formatDistanceToNow: vi.fn(() => "2 hours ago"),
@@ -419,7 +440,7 @@ describe("TaskSidePanel", () => {
     description: "Test description",
     completed: false,
     priority: 2 as const,
-    dueDate: new Date("2024-01-01"),
+    dueDate: new Date("2024-01-01T12:00:00Z"),
     projectId: "project-1",
     labels: ["label-1"],
     subtasks: [
@@ -502,13 +523,16 @@ describe("TaskSidePanel", () => {
   ]
 
   const mockSettings = {
+    ...DEFAULT_USER_SETTINGS,
     general: {
+      ...DEFAULT_USER_SETTINGS.general,
       startView: "all" as const,
       soundEnabled: true,
       linkifyEnabled: true,
       popoverHoverOpen: false,
     },
     notifications: {
+      ...DEFAULT_USER_SETTINGS.notifications,
       enabled: true,
       requireInteraction: true,
     },
@@ -539,6 +563,7 @@ describe("TaskSidePanel", () => {
       if (label === "sortedLabelsAtom") return mockAllLabels
       if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
       if (label === "sortedProjectsAtom") return mockProjects
+      if (label === "projectsAtom") return mockProjects
       if (label === "settingsAtom") return mockSettings
       return []
     })
@@ -561,6 +586,7 @@ describe("TaskSidePanel", () => {
       if (label === "sortedLabelsAtom") return mockAllLabels
       if (label === "labelsFromIdsAtom") return mockGetLabelsFromIds
       if (label === "sortedProjectsAtom") return mockProjects
+      if (label === "projectsAtom") return mockProjects
       if (label === "settingsAtom") return mockSettings
       return []
     })
@@ -1045,7 +1071,7 @@ describe("TaskSidePanel", () => {
         const drawerHeaders = screen.getAllByTestId("drawer-header")
         const drawerHeader = drawerHeaders[0] // Get the first one (main drawer header)
         expect(drawerHeader).toBeInTheDocument()
-        expect(drawerHeader).toHaveClass("pb-2")
+        expect(drawerHeader).toHaveClass("pb-3")
 
         // Task title should be in the header
         expect(screen.getByText("Test Task")).toBeInTheDocument()
@@ -1195,12 +1221,18 @@ describe("TaskSidePanel", () => {
         const { rerender } = render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
         // Check that mobile elements are present
-        screen.getByText("Scheduling")
-        screen.getByText("Category")
         screen.getByText("Description")
         screen.getAllByText("Subtasks")
         screen.getAllByText("Labels")
         screen.getAllByText("Comments")
+
+        // Check for due date scheduling functionality (shows actual date since task has dueDate)
+        screen.getByText("1/1/2024")
+        screen.getByText("Schedule")
+
+        // Check for priority and project controls (category functionality)
+        screen.getByText("P2")
+        screen.getAllByText(/project/i)
 
         // Switch to desktop
         mockUseIsMobile.mockReturnValue(false)
@@ -1208,10 +1240,16 @@ describe("TaskSidePanel", () => {
         rerender(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
         // Same sections should exist
-        expect(screen.getByText("Scheduling")).toBeInTheDocument()
-        expect(screen.getByText("Category")).toBeInTheDocument()
         expect(screen.getByText("Description")).toBeInTheDocument()
         expect(screen.getAllByText("Comments")[0]).toBeInTheDocument()
+
+        // Check for due date scheduling functionality (shows actual date since task has dueDate)
+        expect(screen.getByText("1/1/2024")).toBeInTheDocument()
+        expect(screen.getByText("Schedule")).toBeInTheDocument()
+
+        // Check for priority and project controls (category functionality)
+        expect(screen.getByText("P2")).toBeInTheDocument()
+        expect(screen.getAllByText(/project/i).length).toBeGreaterThan(0)
       })
 
       it("handles auto-save functionality in both modes", async () => {
@@ -1295,14 +1333,14 @@ describe("TaskSidePanel", () => {
 
         // The component should render the due date
         // Actual overdue styling depends on the mocked isOverdue function
-        expect(screen.getByText("Jan 1")).toBeInTheDocument()
+        expect(screen.getByText("1/1/2024")).toBeInTheDocument()
       })
 
       it("does not apply overdue background styling to completed tasks", () => {
         const overdueCompletedTask = {
           ...mockTask,
           completed: true,
-          dueDate: new Date("2023-01-01"), // Past date
+          dueDate: new Date("2023-01-01T12:00:00Z"), // Past date
         }
 
         // Update mock to return overdue completed task
@@ -1623,6 +1661,17 @@ describe("TaskSidePanel", () => {
       mockUseIsMobile.mockReturnValue(false) // Test desktop mode
     })
 
+    const getBadgeText = (dueDate?: Date, dueTime?: Date) => {
+      return formatTaskDateTimeBadge(
+        { dueDate: dueDate ?? null, dueTime: dueTime ?? null },
+        undefined,
+        {
+          use24HourTime: mockSettings.uiSettings?.use24HourTime,
+          preferDayMonthFormat: mockSettings.general?.preferDayMonthFormat,
+        },
+      )
+    }
+
     it("should display due date only when no due time is set", () => {
       const taskWithDateOnly = { ...mockTask, dueTime: undefined }
 
@@ -1639,7 +1688,9 @@ describe("TaskSidePanel", () => {
       render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
       // Should show date without time
-      expect(screen.getByText("Jan 1")).toBeInTheDocument()
+      expect(
+        screen.getByText(getBadgeText(taskWithDateOnly.dueDate, undefined)),
+      ).toBeInTheDocument()
       expect(screen.queryByText(/at 9:00 AM/)).not.toBeInTheDocument()
     })
 
@@ -1662,9 +1713,7 @@ describe("TaskSidePanel", () => {
 
       // Should show date information (may or may not include time depending on setup)
       expect(
-        screen.getByText((content) => {
-          return content.includes("Jan")
-        }),
+        screen.getByText(getBadgeText(taskWithDateTime.dueDate, taskWithDateTime.dueTime)),
       ).toBeInTheDocument()
     })
 
@@ -1685,16 +1734,17 @@ describe("TaskSidePanel", () => {
 
       render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-      // Should show "Today at 9:00 AM" when utility function is working
-      // For now just check that the date display includes time elements
-      const timeText = screen.getByText(/Jan 1/)
-      expect(timeText).toBeInTheDocument()
+      expect(
+        screen.getByText(getBadgeText(taskDueToday.dueDate, taskDueToday.dueTime)),
+      ).toBeInTheDocument()
     })
 
     it("should display Tomorrow with time when due tomorrow with time", () => {
       const dueTime = new Date()
       dueTime.setHours(9, 0, 0, 0) // 9:00 AM
-      const taskDueTomorrow = { ...mockTask, dueDate: new Date(), dueTime }
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      const taskDueTomorrow = { ...mockTask, dueDate: tomorrow, dueTime }
 
       mockJotai.useAtomValue.mockImplementation((atom) => {
         const label = String(atom?.debugLabel ?? "")
@@ -1708,10 +1758,9 @@ describe("TaskSidePanel", () => {
 
       render(<TaskSidePanel isOpen={true} onClose={mockOnClose} />)
 
-      // Should show "Tomorrow at 9:00 AM" when utility function is working
-      // For now just check that the date display includes time elements
-      const timeText = screen.getByText(/Jan 1/)
-      expect(timeText).toBeInTheDocument()
+      expect(
+        screen.getByText(getBadgeText(taskDueTomorrow.dueDate, taskDueTomorrow.dueTime)),
+      ).toBeInTheDocument()
     })
 
     it("should display time only when task has dueTime but no dueDate", () => {
@@ -1756,9 +1805,7 @@ describe("TaskSidePanel", () => {
 
       // Should show date information in mobile mode too
       expect(
-        screen.getByText((content) => {
-          return content.includes("Jan")
-        }),
+        screen.getByText(getBadgeText(taskWithDateTime.dueDate, taskWithDateTime.dueTime)),
       ).toBeInTheDocument()
     })
   })

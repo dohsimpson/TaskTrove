@@ -12,6 +12,11 @@ import type { NotificationSettings } from "@tasktrove/types/settings";
 import { createTaskId } from "@tasktrove/types/id";
 import { getTaskNotifyAt } from "@tasktrove/utils/notification";
 import { settingsAtom } from "@tasktrove/atoms/data/base/atoms";
+import {
+  cancelNotificationTimer,
+  scheduleNotificationTimer,
+  type NotificationSchedulerAtoms,
+} from "@tasktrove/atoms/core/notification-scheduler";
 import { safeSetTimeout } from "@tasktrove/utils";
 import {
   log,
@@ -19,7 +24,10 @@ import {
   showServiceWorkerNotification,
 } from "@tasktrove/atoms/utils/atom-helpers";
 import { playSoundAtom } from "@tasktrove/atoms/ui/audio";
-import { DEFAULT_UUID } from "@tasktrove/constants";
+import {
+  DEFAULT_NOTIFICATION_VOLUME,
+  DEFAULT_UUID,
+} from "@tasktrove/constants";
 import { DEFAULT_NOTIFICATION_SETTINGS } from "@tasktrove/types/defaults";
 import { updateSettingsAtom } from "@tasktrove/atoms/core/settings";
 
@@ -261,73 +269,6 @@ export const cancelTaskNotificationAtom = atom(
   },
 );
 
-/** Reschedule the notification timer (internal) */
-const rescheduleNotificationTimerAtom = atom(null, (get, set) => {
-  try {
-    // Clear existing timer
-    const currentTimer = get(activeNotificationTimerAtom);
-    if (currentTimer) {
-      clearTimeout(currentTimer);
-      set(activeNotificationTimerAtom, null);
-    }
-
-    // Get all notifications at next time
-    const nextNotifications = get(nextDueNotificationsAtom);
-    if (nextNotifications.size === 0) {
-      set(isNotificationSystemActiveAtom, false);
-      return;
-    }
-
-    const now = new Date();
-    // Get the first notification's time (they all have the same time)
-    const firstNotification = nextNotifications.values().next().value;
-    if (!firstNotification) {
-      // Should not happen since we checked size > 0
-      return;
-    }
-    const timeUntil = firstNotification.notifyAt.getTime() - now.getTime();
-
-    if (timeUntil <= 0) {
-      // Fire all immediately
-      set(fireNotificationsAtom, nextNotifications);
-    } else {
-      // Schedule timer for all
-      try {
-        const timerId = safeSetTimeout(() => {
-          set(fireNotificationsAtom, nextNotifications);
-        }, timeUntil);
-
-        set(activeNotificationTimerAtom, timerId);
-        set(isNotificationSystemActiveAtom, true);
-
-        log.info(
-          {
-            count: nextNotifications.size,
-            timeUntil,
-            notifyAt: firstNotification.notifyAt.toISOString(),
-            module: "notifications",
-          },
-          "Scheduled notification timer for multiple tasks",
-        );
-      } catch (error) {
-        log.warn(
-          {
-            count: nextNotifications.size,
-            timeUntil,
-            notifyAt: firstNotification.notifyAt.toISOString(),
-            error: error instanceof Error ? error.message : String(error),
-            module: "notifications",
-          },
-          "Cannot schedule notification timer: this might be caused by delay exceeds maximum safe timeout value. Skipping scheduling.", // TODO: fix this by having a mechanism to not schedule tasks long in the future (setTimeout is not reliable for long schedule anyway)
-        );
-        // Don't set timer or activation state - effectively skips scheduling
-      }
-    }
-  } catch (error) {
-    handleAtomError(error, "rescheduleNotificationTimerAtom");
-  }
-});
-
 /** Fire multiple notifications (internal) */
 const fireNotificationsAtom = atom(
   null,
@@ -384,6 +325,26 @@ const fireNotificationsAtom = atom(
   },
 );
 
+const schedulerAtoms: NotificationSchedulerAtoms = {
+  activeTimerAtom: activeNotificationTimerAtom,
+  isSystemActiveAtom: isNotificationSystemActiveAtom,
+  fireNotificationsAtom,
+};
+
+/** Reschedule the notification timer (internal) */
+const rescheduleNotificationTimerAtom = atom(null, (get, set) => {
+  try {
+    // Clear existing timer (no-op on native)
+    cancelNotificationTimer(get, set, schedulerAtoms);
+
+    // Get all notifications at next time
+    const nextNotifications = get(nextDueNotificationsAtom);
+    scheduleNotificationTimer(set, nextNotifications, schedulerAtoms);
+  } catch (error) {
+    handleAtomError(error, "rescheduleNotificationTimerAtom");
+  }
+});
+
 /** Show notification to user */
 export const showTaskDueNotificationAtom = atom(
   null,
@@ -392,7 +353,10 @@ export const showTaskDueNotificationAtom = atom(
       const notificationSettings = get(notificationSettingsAtom);
 
       // Play notification sound immediately to avoid delay from async show
-      set(playSoundAtom, { soundType: "chime" });
+      set(playSoundAtom, {
+        soundType: "chime",
+        volume: DEFAULT_NOTIFICATION_VOLUME / 100,
+      });
 
       // Show browser notification using service worker
       const result = await showServiceWorkerNotification(

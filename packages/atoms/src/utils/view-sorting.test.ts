@@ -64,6 +64,35 @@ describe("sortTasksByViewState", () => {
       expect(result[2]?.completed).toBe(true);
     });
 
+    it("should order active, archived, then completed", () => {
+      const tasks = [
+        createTask({
+          id: createTaskId("11111111-1111-4111-8111-111111111111"),
+          completed: true,
+          title: "completed",
+        }),
+        createTask({
+          id: createTaskId("22222222-2222-4222-8222-222222222222"),
+          archived: true,
+          title: "archived",
+        }),
+        createTask({
+          id: createTaskId("33333333-3333-4333-8333-333333333333"),
+          completed: false,
+          archived: false,
+          title: "active",
+        }),
+      ];
+
+      const result = sortTasksByViewState([...tasks], baseViewState);
+
+      expect(result.map((t) => t.title)).toEqual([
+        "active",
+        "archived",
+        "completed",
+      ]);
+    });
+
     it("should maintain order within same completion status", () => {
       const tasks = [
         createTask({
@@ -352,64 +381,6 @@ describe("sortTasksByViewState", () => {
       expect(result[0]?.createdAt.getMonth()).toBe(2); // March
       expect(result[1]?.createdAt.getMonth()).toBe(1); // February
       expect(result[2]?.createdAt.getMonth()).toBe(0); // January
-    });
-  });
-
-  describe("status sort", () => {
-    it("should sort by completion status ascending", () => {
-      const tasks = [
-        createTask({
-          id: createTaskId("11111111-1111-4111-8111-111111111111"),
-          completed: true,
-        }),
-        createTask({
-          id: createTaskId("22222222-2222-4222-8222-222222222222"),
-          completed: false,
-        }),
-        createTask({
-          id: createTaskId("33333333-3333-4333-8333-333333333333"),
-          completed: true,
-        }),
-      ];
-
-      const viewState = {
-        ...baseViewState,
-        sortBy: "status",
-        sortDirection: "asc" as const,
-      };
-      const result = sortTasksByViewState([...tasks], viewState);
-
-      expect(result[0]?.completed).toBe(false);
-      expect(result[1]?.completed).toBe(true);
-      expect(result[2]?.completed).toBe(true);
-    });
-
-    it("should sort by completion status descending", () => {
-      const tasks = [
-        createTask({
-          id: createTaskId("11111111-1111-4111-8111-111111111111"),
-          completed: false,
-        }),
-        createTask({
-          id: createTaskId("22222222-2222-4222-8222-222222222222"),
-          completed: true,
-        }),
-        createTask({
-          id: createTaskId("33333333-3333-4333-8333-333333333333"),
-          completed: false,
-        }),
-      ];
-
-      const viewState = {
-        ...baseViewState,
-        sortBy: "status",
-        sortDirection: "desc" as const,
-      };
-      const result = sortTasksByViewState([...tasks], viewState);
-
-      expect(result[0]?.completed).toBe(true);
-      expect(result[1]?.completed).toBe(false);
-      expect(result[2]?.completed).toBe(false);
     });
   });
 

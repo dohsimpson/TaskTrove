@@ -17,7 +17,10 @@
       "pro": "./src/test-constants.pro.ts",
       "default": "./src/test-constants.ts"
     },
-    "./id": "./src/id.ts",
+    "./id": {
+      "pro": "./src/id.pro.ts",
+      "default": "./src/id.ts"
+    },
     "./constants": {
       "pro": "./src/constants.pro.ts",
       "default": "./src/constants.ts"

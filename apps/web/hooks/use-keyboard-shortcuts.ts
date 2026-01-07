@@ -13,7 +13,7 @@
  * - Type-safe shortcut definitions
  */
 
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useSetAtom } from "jotai"
 import { v4 as uuidv4 } from "uuid"
 import {
@@ -21,12 +21,11 @@ import {
   unregisterKeyboardHandlerAtom,
   setActiveComponentAtom,
 } from "@tasktrove/atoms/ui/keyboard-context"
-import type {
-  KeyboardHandler,
-  KeyboardHandlerContext,
-  KeyboardContext,
-} from "@tasktrove/atoms/ui/keyboard-context"
+import type { KeyboardHandler, KeyboardHandlerContext } from "@tasktrove/atoms/ui/keyboard-context"
 import { matchesShortcut } from "@/hooks/use-global-keyboard-manager"
+
+type ShortcutHandlerResult = boolean | undefined
+type ShortcutMap = Record<string, (event: KeyboardEvent) => ShortcutHandlerResult>
 
 interface ShortcutOptions extends Omit<KeyboardHandlerContext, "priority"> {
   /** Unique component identifier for context filtering */
@@ -58,13 +57,17 @@ interface ShortcutOptions extends Omit<KeyboardHandlerContext, "priority"> {
  * }
  * ```
  */
-export function useKeyboardShortcuts(
-  shortcuts: Record<string, (event: KeyboardEvent) => void | boolean>,
-  options: ShortcutOptions = {},
-) {
+export function useKeyboardShortcuts(shortcuts: ShortcutMap, options: ShortcutOptions = {}) {
   const registerHandler = useSetAtom(registerKeyboardHandlerAtom)
   const unregisterHandler = useSetAtom(unregisterKeyboardHandlerAtom)
   const setActiveComponent = useSetAtom(setActiveComponentAtom)
+  const shortcutsRef = useRef(shortcuts)
+  const enabledRef = useRef(options.enabled !== false)
+
+  useEffect(() => {
+    shortcutsRef.current = shortcuts
+    enabledRef.current = options.enabled !== false
+  }, [shortcuts, options.enabled])
 
   // Generate stable handler ID that only changes on componentId change
   const handlerId = useMemo(
@@ -73,10 +76,12 @@ export function useKeyboardShortcuts(
   )
 
   // Memoize base handler creation - always create but allow dynamic enabling
-  const baseHandler = useMemo(() => {
+  // Keep a stable handler object so registration doesn't thrash when callers
+  // pass inline shortcut maps (new object each render).
+  const baseHandler = useMemo<KeyboardHandler>(() => {
     return {
       id: handlerId,
-      shortcuts: Object.keys(shortcuts),
+      shortcuts: Object.keys(shortcutsRef.current),
       context: {
         requiresComponent: options.componentId,
         requiresView: options.requiresView,
@@ -88,26 +93,23 @@ export function useKeyboardShortcuts(
         requiresElement: options.requiresElement,
         priority: options.priority || 0,
       },
-      handler: (event: KeyboardEvent, context: KeyboardContext) => {
-        // Don't handle if disabled
-        if (options.enabled === false) {
+      handler: (event: KeyboardEvent) => {
+        if (enabledRef.current === false) {
           return false
         }
 
-        // Find matching shortcut
-        const matchingShortcut = Object.keys(shortcuts).find((shortcut) =>
+        const matchingShortcut = Object.keys(shortcutsRef.current).find((shortcut) =>
           matchesShortcut(shortcut, event),
         )
 
-        if (matchingShortcut && shortcuts[matchingShortcut]) {
-          const result = shortcuts[matchingShortcut](event)
-          // Return true if handler explicitly returns true, or if it doesn't return false
+        if (matchingShortcut) {
+          const result = shortcutsRef.current[matchingShortcut]?.(event)
           return result !== false
         }
 
         return false
       },
-    } as KeyboardHandler
+    }
   }, [
     handlerId,
     // Only include options that affect the handler registration context
@@ -120,7 +122,6 @@ export function useKeyboardShortcuts(
     options.requiresFocus,
     options.requiresElement,
     options.priority,
-    // Note: shortcuts and enabled are NOT in dependencies - they're handled separately below
   ])
 
   useEffect(() => {
@@ -152,29 +153,8 @@ export function useKeyboardShortcuts(
   // Update handler function when shortcuts change, without re-registering
   useEffect(() => {
     // Update shortcuts list
-    baseHandler.shortcuts = Object.keys(shortcuts)
-
-    // Update the handler function reference without re-registering
-    baseHandler.handler = (event: KeyboardEvent, context: KeyboardContext) => {
-      // Don't handle if disabled
-      if (options.enabled === false) {
-        return false
-      }
-
-      // Find matching shortcut
-      const matchingShortcut = Object.keys(shortcuts).find((shortcut) =>
-        matchesShortcut(shortcut, event),
-      )
-
-      if (matchingShortcut && shortcuts[matchingShortcut]) {
-        const result = shortcuts[matchingShortcut](event)
-        // Return true if handler explicitly returns true, or if it doesn't return false
-        return result !== false
-      }
-
-      return false
-    }
-  }, [shortcuts, baseHandler, options.enabled])
+    baseHandler.shortcuts = Object.keys(shortcutsRef.current)
+  }, [shortcutsRef, baseHandler])
 }
 
 /**
@@ -195,7 +175,7 @@ export function useKeyboardShortcuts(
  * ```
  */
 export function useGlobalShortcuts(
-  shortcuts: Record<string, () => void | boolean>,
+  shortcuts: Record<string, () => ShortcutHandlerResult>,
   options: Pick<ShortcutOptions, "enabled" | "priority"> = {},
 ) {
   // Convert void-returning functions to work with the main hook
@@ -204,7 +184,7 @@ export function useGlobalShortcuts(
       Object.fromEntries(
         Object.entries(shortcuts).map(([key, handler]) => [
           key,
-          (event: KeyboardEvent) => {
+          () => {
             const result = handler()
             return result !== false
           },
@@ -239,7 +219,7 @@ export function useGlobalShortcuts(
  * ```
  */
 export function useDialogShortcuts(
-  shortcuts: Record<string, () => void | boolean>,
+  shortcuts: Record<string, () => ShortcutHandlerResult>,
   dialogName: string,
   options: Pick<ShortcutOptions, "enabled" | "priority"> = {},
 ) {
@@ -248,7 +228,7 @@ export function useDialogShortcuts(
       Object.fromEntries(
         Object.entries(shortcuts).map(([key, handler]) => [
           key,
-          (event: KeyboardEvent) => {
+          () => {
             const result = handler()
             return result !== false
           },
@@ -282,7 +262,7 @@ export function useDialogShortcuts(
  * ```
  */
 export function useTaskShortcuts(
-  shortcuts: Record<string, () => void | boolean>,
+  shortcuts: Record<string, () => ShortcutHandlerResult>,
   options: Pick<ShortcutOptions, "enabled" | "priority"> = {},
 ) {
   const convertedShortcuts = useMemo(
@@ -290,7 +270,7 @@ export function useTaskShortcuts(
       Object.fromEntries(
         Object.entries(shortcuts).map(([key, handler]) => [
           key,
-          (event: KeyboardEvent) => {
+          () => {
             const result = handler()
             return result !== false
           },
@@ -325,7 +305,7 @@ export function useTaskShortcuts(
  * ```
  */
 export function useViewShortcuts(
-  shortcuts: Record<string, () => void | boolean>,
+  shortcuts: Record<string, () => ShortcutHandlerResult>,
   viewName: string,
   options: Pick<ShortcutOptions, "enabled" | "priority"> = {},
 ) {
@@ -334,7 +314,7 @@ export function useViewShortcuts(
       Object.fromEntries(
         Object.entries(shortcuts).map(([key, handler]) => [
           key,
-          (event: KeyboardEvent) => {
+          () => {
             const result = handler()
             return result !== false
           },
@@ -369,7 +349,7 @@ export function useViewShortcuts(
  * ```
  */
 export function useFocusShortcuts(
-  shortcuts: Record<string, () => void | boolean>,
+  shortcuts: Record<string, () => ShortcutHandlerResult>,
   elementSelector: string,
   options: Pick<ShortcutOptions, "enabled" | "priority"> = {},
 ) {
@@ -378,7 +358,7 @@ export function useFocusShortcuts(
       Object.fromEntries(
         Object.entries(shortcuts).map(([key, handler]) => [
           key,
-          (event: KeyboardEvent) => {
+          () => {
             const result = handler()
             return result !== false
           },

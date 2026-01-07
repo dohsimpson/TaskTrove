@@ -4,7 +4,7 @@
  */
 
 import { atom } from "jotai";
-import { isToday, isPast, isFuture } from "date-fns";
+import { isToday, isPast, isFuture, subDays } from "date-fns";
 import type { Task } from "@tasktrove/types/core";
 import { getEffectiveDueDate } from "@tasktrove/utils";
 import type { GroupId } from "@tasktrove/types/id";
@@ -18,17 +18,19 @@ import {
 } from "@tasktrove/atoms/utils/atom-helpers";
 import { tasksAtom } from "@tasktrove/atoms/data/base/atoms";
 import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation";
+import { globalViewOptionsAtom } from "@tasktrove/atoms/ui/views";
 import { allGroupsAtom } from "@tasktrove/atoms/core/groups";
 import { projectIdsAtom } from "@tasktrove/atoms/core/projects";
 import { appRefreshTriggerAtom } from "@tasktrove/atoms/ui/app-refresh";
+import { DEFAULT_GLOBAL_VIEW_OPTIONS } from "@tasktrove/types/defaults";
+import { getTaskRecentActivityTimestamp } from "@tasktrove/atoms/utils/task-recent";
 
 // =============================================================================
 // ACTIVE TASKS
 // =============================================================================
 
 /**
- * Active (non-archived) tasks
- * Filters out archived tasks for normal display
+ * Active tasks (includes archived so UI filters can control visibility)
  * History tracking enabled through tasksHistoryAtom for undo/redo support
  */
 export const activeTasksAtom = namedAtom(
@@ -189,6 +191,38 @@ export const completedTasksAtom = namedAtom(
 );
 
 /**
+ * Recently changed tasks
+ * Includes tasks created or completed within the recent view window
+ */
+export const recentTasksAtom = namedAtom(
+  "recentTasksAtom",
+  atom((get) =>
+    withErrorHandling(
+      () => {
+        const activeTasks = get(activeTasksAtom);
+        const globalViewOptions = get(globalViewOptionsAtom);
+        get(appRefreshTriggerAtom); // Subscribe to refresh events
+
+        const fallbackDays = DEFAULT_GLOBAL_VIEW_OPTIONS.recentViewDays;
+        const rawDays = globalViewOptions.recentViewDays;
+        const normalizedDays =
+          typeof rawDays === "number" && Number.isFinite(rawDays)
+            ? rawDays
+            : fallbackDays;
+        const recentViewDays = Math.max(1, Math.floor(normalizedDays));
+        const cutoff = subDays(new Date(), recentViewDays).getTime();
+
+        return activeTasks.filter(
+          (task: Task) => getTaskRecentActivityTimestamp(task) >= cutoff,
+        );
+      },
+      "recentTasksAtom",
+      [],
+    ),
+  ),
+);
+
+/**
  * Auto-rollover tasks (recurring tasks that never appear overdue)
  * Filters active tasks with recurringMode: "autoRollover" - tasks that never appear overdue
  * Perfect for tracking habits and routines
@@ -267,12 +301,14 @@ export const baseFilteredTasksAtom = namedAtom(
       // Switch on route type for clean, consistent filtering
       switch (routeContext.routeType) {
         case "standard": {
-          // Standard views: today, inbox, upcoming, completed, all, habits
+          // Standard views: today, inbox, upcoming, recent, completed, all, habits
           switch (routeContext.viewId) {
             case "today":
               return get(todayTasksAtom);
             case "upcoming":
               return get(upcomingTasksAtom);
+            case "recent":
+              return get(recentTasksAtom);
             case "inbox":
               return get(inboxTasksAtom);
             case "completed":

@@ -15,9 +15,15 @@ import {
   viewStatesAtom,
   getViewStateOrDefault,
 } from "@tasktrove/atoms/ui/views";
+import {
+  taskFocusVisibilityAtom,
+  includeFocusedTask,
+} from "@tasktrove/atoms/ui/task-focus";
+import { selectedTaskIdAtom } from "@tasktrove/atoms/ui/selection";
 import { handleAtomError } from "@tasktrove/atoms/utils/atom-helpers";
 import { applyViewStateFilters } from "@tasktrove/atoms/utils/view-filters";
 import { sortTasksByViewState } from "@tasktrove/atoms/utils/view-sorting";
+import { sortTasksByRecentActivity } from "@tasktrove/atoms/utils/task-recent";
 
 /**
  * UI-filtered tasks for a specific view
@@ -55,9 +61,22 @@ export const filteredTasksAtom = atom((get) => {
   try {
     const currentView = get(currentViewAtom);
     const viewState = get(currentViewStateAtom);
+    const focusVisibility = get(taskFocusVisibilityAtom);
+    const selectedTaskId = get(selectedTaskIdAtom);
 
     // Get UI-filtered tasks for current view
-    const result = get(uiFilteredTasksForViewAtom(currentView));
+    const baseTasks = get(baseFilteredTasksAtom);
+    const result = includeFocusedTask(
+      get(uiFilteredTasksForViewAtom(currentView)),
+      baseTasks,
+      focusVisibility,
+      selectedTaskId,
+      currentView,
+    );
+
+    if (currentView === "recent" && viewState.sortBy === "default") {
+      return sortTasksByRecentActivity([...result]);
+    }
 
     // Apply sorting based on viewState.sortBy
     // Note: sortTasksByViewState mutates the array, so we pass a copy

@@ -29,7 +29,7 @@ import {
   Flag,
   FolderPlus,
 } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 
 interface Task {
   id: string

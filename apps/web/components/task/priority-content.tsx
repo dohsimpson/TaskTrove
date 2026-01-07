@@ -4,7 +4,7 @@ import React from "react"
 import { useSetAtom } from "jotai"
 import { Flag } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
+import { updateTasksAtom } from "@tasktrove/atoms/core/tasks"
 import { isValidPriority } from "@tasktrove/types/validators"
 import { getPriorityTextColor } from "@/lib/color-utils"
 import { useTranslation } from "@tasktrove/i18n"
@@ -20,7 +20,7 @@ export function PriorityContent({ task, className, onPrioritySelect }: PriorityC
   // Translation setup
   const { t } = useTranslation("task")
 
-  const updateTasks = useSetAtom(tasksAtom)
+  const updateTasks = useSetAtom(updateTasksAtom)
 
   const isMultipleTasks = Array.isArray(task)
 

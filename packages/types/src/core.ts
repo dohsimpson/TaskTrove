@@ -92,12 +92,16 @@ export const ViewStateSchema = z.object({
   sortDirection: z.enum(["asc", "desc"]),
   /** Whether to show completed tasks */
   showCompleted: z.boolean(),
+  /** Whether to show archived tasks */
+  showArchived: z.boolean().optional(),
   /** Whether to show overdue tasks */
   showOverdue: z.boolean(),
   /** Current search query */
   searchQuery: z.string(),
   /** Whether to show the side panel */
   showSidePanel: z.boolean(),
+  /** Whether to show the planner side pane (calendar/today) */
+  showPlanner: z.boolean().optional(),
   /** Whether to use compact task item view */
   compactView: z.boolean(),
   /** Array of collapsed section IDs (for project views with sections) */
@@ -157,12 +161,18 @@ export const GlobalViewOptionsSchema = z.object({
   sideBarWidth: z.number().min(250).max(480),
   /** Whether to show the side panel globally */
   showSidePanel: z.boolean(),
+  /** Whether to show external calendar events */
+  showCalendarEvents: z.boolean(),
+  /** Auto-sync interval in minutes for calendar events (0 disables) */
+  calendarAutoSyncMinutes: z.number().int().nonnegative(),
   /** People panel owner section collapse state */
   peopleOwnerCollapsed: z.boolean(),
   /** People panel assignees section collapse state */
   peopleAssigneesCollapsed: z.boolean(),
   /** Map of dismissible UI elements by id */
   dismissedUi: z.record(z.string(), z.boolean()).default({}),
+  /** Recent view lookback window (days) */
+  recentViewDays: z.number().int().positive(),
 });
 
 /**
@@ -177,6 +187,8 @@ export const TaskSchema = z.object({
   description: z.string().optional(),
   /** Whether the task is completed */
   completed: z.boolean(),
+  /** Whether the task is archived */
+  archived: z.boolean().optional(),
   /** Task priority level (1=highest, 4=lowest) */
   priority: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]),
   /** Due date for the task */
@@ -217,8 +229,6 @@ export const ProjectSchema = z.object({
   id: ProjectIdSchema,
   /** Project name */
   name: z.string(),
-  /** Unique SEO friendly Slug */
-  slug: z.string(),
   /** Project color (hex code) */
   color: z.string(),
   /** Array of sections within this project */
@@ -233,8 +243,6 @@ export const LabelSchema = z.object({
   id: LabelIdSchema,
   /** Label name */
   name: z.string(),
-  /** Unique SEO friendly Slug */
-  slug: z.string(),
   /** Label color (hex code) */
   color: z.string(),
 });

@@ -3,10 +3,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { act } from "@testing-library/react"
 import { waitFor } from "@/test-utils"
 import { render } from "@/test-utils/render-with-providers"
+import { HydrateValues } from "@/test-utils/jotai-mocks"
 import { SectionContextMenu } from "./section-context-menu"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import { projectsAtom as baseProjectsAtom } from "@tasktrove/atoms/data/base/atoms"
-import { currentRouteContextAtom, pathnameAtom } from "@tasktrove/atoms/ui/navigation"
+import { pathnameAtom } from "@tasktrove/atoms/ui/navigation"
 import { useAtomValue } from "jotai"
 import { createGroupId } from "@tasktrove/types/id"
 import { TEST_PROJECT_ID_1 } from "@tasktrove/types/test-constants"
@@ -150,13 +151,11 @@ describe("SectionContextMenu", () => {
   const mockProject = {
     id: TEST_PROJECT_ID_1,
     name: "Test Project",
-    slug: "test-project",
     color: "#ff0000",
     sections: [
       {
         id: testSectionId,
         name: "Test Section",
-        slug: "test-section",
         type: "section" as const,
         items: [],
         color: "#blue",
@@ -164,7 +163,6 @@ describe("SectionContextMenu", () => {
       {
         id: defaultSectionId,
         name: "Default Section",
-        slug: "default-section",
         type: "section" as const,
         items: [],
         color: "#gray",
@@ -178,18 +176,10 @@ describe("SectionContextMenu", () => {
     isVisible: true,
   } satisfies Pick<SectionContextMenuTestProps, "sectionId" | "isVisible">
 
-  const defaultAtomValues: Array<[unknown, unknown]> = [
+  const defaultAtomValues: HydrateValues = [
     [projectAtoms.projects, [mockProject]],
     [baseProjectsAtom, [mockProject]],
     [pathnameAtom, `/projects/${TEST_PROJECT_ID_1}`],
-    [
-      currentRouteContextAtom,
-      {
-        routeType: "project",
-        view: "project",
-        viewId: TEST_PROJECT_ID_1,
-      },
-    ],
   ]
 
   beforeEach(() => {

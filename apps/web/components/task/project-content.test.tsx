@@ -12,13 +12,11 @@ const mockProjects: Project[] = [
   {
     id: createProjectId("550e8400-e29b-41d4-a716-446655440001"),
     name: "Work Project",
-    slug: "work-project",
     color: "#3b82f6",
     sections: [
       {
         id: createGroupId("550e8400-e29b-41d4-a716-446655440011"),
         name: "To Do",
-        slug: "to-do",
         type: "section",
         items: [createTaskId("550e8400-e29b-41d4-a716-446655440101")], // Contains mockTask
         color: "#ef4444",
@@ -26,7 +24,6 @@ const mockProjects: Project[] = [
       {
         id: createGroupId("550e8400-e29b-41d4-a716-446655440012"),
         name: "In Progress",
-        slug: "in-progress",
         type: "section",
         items: [],
         color: "#f59e0b",
@@ -36,20 +33,17 @@ const mockProjects: Project[] = [
   {
     id: createProjectId("550e8400-e29b-41d4-a716-446655440002"),
     name: "Personal Project",
-    slug: "personal-project",
     color: "#10b981",
     sections: [DEFAULT_PROJECT_SECTION],
   },
   {
     id: createProjectId("550e8400-e29b-41d4-a716-446655440003"),
     name: "Learning Project",
-    slug: "learning-project",
     color: "#8b5cf6",
     sections: [
       {
         id: createGroupId("550e8400-e29b-41d4-a716-446655440013"),
         name: "Research",
-        slug: "research",
         type: "section",
         items: [],
         color: "#06b6d4",
@@ -63,13 +57,11 @@ const mockProjectGroups = {
     type: "project",
     id: "root",
     name: "All Projects",
-    slug: "all-projects",
     items: [
       {
         type: "project",
         id: "group-1",
         name: "Work Group",
-        slug: "work-group",
         color: "#3b82f6",
         items: [createProjectId("550e8400-e29b-41d4-a716-446655440001")],
       },
@@ -77,7 +69,6 @@ const mockProjectGroups = {
         type: "project",
         id: "group-2",
         name: "Personal Group",
-        slug: "personal-group",
         color: "#10b981",
         items: [
           createProjectId("550e8400-e29b-41d4-a716-446655440002"),
@@ -88,7 +79,6 @@ const mockProjectGroups = {
         type: "project",
         id: "group-3",
         name: "Empty Group",
-        slug: "empty-group",
         color: "#6b7280",
         items: [],
       },
@@ -98,7 +88,6 @@ const mockProjectGroups = {
     type: "label",
     id: "root-labels",
     name: "All Labels",
-    slug: "all-labels",
     items: [],
   },
 }

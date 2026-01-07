@@ -1,12 +1,11 @@
 "use client"
 
 import { useCallback } from "react"
-import { DraggableWrapper } from "@/components/ui/draggable-wrapper"
+import { DraggableTaskElement } from "@/components/task/draggable-task-element"
 import { DropTargetWrapper } from "@/components/ui/drop-target-wrapper"
 import { TaskItem } from "@/components/task/task-item"
 import { format, isToday, isSameDay } from "date-fns"
 import type { Task } from "@tasktrove/types/core"
-import { CalendarAddButton } from "./calendar-add-button"
 
 interface TaskPosition {
   top: number
@@ -19,7 +18,6 @@ interface WeekTimeSlotRowProps {
   label: string
   weekDays: Date[]
   weekTasks: Array<{ date: Date; positionedTasks: TaskPosition[] }>
-  onAddTask: (date: Date, hour: number) => void
   onTaskDrop: (params: {
     source: { data: Record<string, unknown> }
     location: { current: { dropTargets: { data: Record<string, unknown> }[] } }
@@ -34,7 +32,6 @@ export function WeekTimeSlotRow({
   label,
   weekDays,
   weekTasks,
-  onAddTask,
   onTaskDrop,
   getSlotRef,
 }: WeekTimeSlotRowProps) {
@@ -69,7 +66,7 @@ export function WeekTimeSlotRow({
       </div>
 
       {/* Day columns with simplified time slot cells */}
-      <div className="flex-1 grid grid-cols-7 gap-0.5 lg:gap-1">
+      <div className="flex-1 grid grid-cols-7">
         {weekDays.map((day) => {
           const dayData = weekTasks.find((wd) => isSameDay(wd.date, day))
           const isTodayDate = isToday(day)
@@ -87,17 +84,13 @@ export function WeekTimeSlotRow({
                 ${isTodayDate ? "bg-primary/5" : ""}
               `}
             >
-              <CalendarAddButton
-                onClick={() => onAddTask(day, hour)}
-                title="Add task to this time slot"
-                placement="top-right"
-              />
-
               <DropTargetWrapper
                 dropTargetId={`time-slot-${format(day, "yyyy-MM-dd")}-${hour}`}
                 dropClassName="ring-2 ring-primary/50 bg-primary/5"
                 onDrop={handleDrop(day, hour * 60)}
-                canDrop={({ source }) => source.data.type === "draggable-item"}
+                canDrop={({ source }) =>
+                  source.data.type === "draggable-item" || source.data.type === "list-item"
+                }
                 getData={() => ({
                   type: "calendar-time-slot",
                   date: format(day, "yyyy-MM-dd"),
@@ -107,14 +100,11 @@ export function WeekTimeSlotRow({
               >
                 <div className="space-y-1">
                   {hourTasks.map((taskPos, taskIndex) => (
-                    <DraggableWrapper
+                    <DraggableTaskElement
                       key={`${taskPos.task.id}-${taskIndex}`}
-                      dragId={taskPos.task.id}
-                      index={taskIndex}
-                      getData={() => ({
-                        type: "draggable-item",
-                        dragId: taskPos.task.id,
-                        taskId: taskPos.task.id,
+                      taskId={taskPos.task.id}
+                      getDragData={() => ({
+                        sourceType: "calendar",
                         fromTimeSlot: {
                           date: format(day, "yyyy-MM-dd"),
                           time: hour * 60,
@@ -126,7 +116,7 @@ export function WeekTimeSlotRow({
                         variant="calendar"
                         showProjectBadge={false}
                       />
-                    </DraggableWrapper>
+                    </DraggableTaskElement>
                   ))}
                 </div>
               </DropTargetWrapper>

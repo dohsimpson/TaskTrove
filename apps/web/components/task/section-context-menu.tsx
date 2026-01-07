@@ -39,11 +39,16 @@ export function SectionContextMenu({
   const openSectionDialog = useSetAtom(openSectionDialogAtom)
 
   // Get projectId from route context (section must belong to current project)
-  // Check if we're in a project context
-  if (!isValidProjectId(routeContext.viewId)) {
+  // Check if we're in a project context; fall back to locating by section if route isn't project-scoped
+  const projectId =
+    (isValidProjectId(routeContext.viewId) ? routeContext.viewId : null) ??
+    projectsData.find((project: Project) =>
+      project.sections.some((s: ProjectSection) => s.id === sectionId),
+    )?.id
+
+  if (!projectId) {
     return null
   }
-  const projectId = routeContext.viewId
 
   // Find the project and section
   const project = projectsData.find((p: Project) => p.id === projectId)

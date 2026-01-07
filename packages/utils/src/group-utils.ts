@@ -6,6 +6,7 @@ import type { ProjectGroup } from "@tasktrove/types/group";
 import type { GroupId, ProjectId } from "@tasktrove/types/id";
 import { isGroup } from "@tasktrove/types/group";
 import { GroupIdSchema } from "@tasktrove/types/id";
+import { extractIdFromSlug } from "./routing";
 
 // Helper function to validate if a string is a valid GroupId
 function isValidGroupId(id: string): id is GroupId {
@@ -98,14 +99,9 @@ export function resolveGroup(
   idOrSlug: string,
   groups: { projectGroups: ProjectGroup; labelGroups: unknown },
 ): ProjectGroup | null {
-  // First try to find by ID (UUID format check)
-  if (isValidGroupId(idOrSlug)) {
-    const groupId = GroupIdSchema.parse(idOrSlug);
-    const group = findGroupById(groups.projectGroups, groupId);
-    if (group) return group;
-  }
+  const candidateId = extractIdFromSlug(idOrSlug) ?? idOrSlug;
+  if (!isValidGroupId(candidateId)) return null;
 
-  // Then try to find by slug
-  const allGroups = getAllGroupsFlat(groups.projectGroups);
-  return allGroups.find((g) => g.slug === idOrSlug) || null;
+  const groupId = GroupIdSchema.parse(candidateId);
+  return findGroupById(groups.projectGroups, groupId);
 }

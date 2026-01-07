@@ -26,13 +26,15 @@ interface UpdateInfo {
 export function useUpdateChecker(): UpdateInfo {
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo>({
     hasUpdate: false,
-    currentVersion: getAppVersion(),
+    currentVersion: "",
     loading: true,
   })
 
   useEffect(() => {
     const checkForUpdates = async () => {
       try {
+        const versionInfo = await getAppVersion()
+        const currentVersion = versionInfo.version
         const repository = isPro() ? "TaskTrovePro" : "TaskTrove"
         const response = await fetch(
           `https://api.github.com/repos/dohsimpson/${repository}/releases/latest`,
@@ -48,16 +50,17 @@ export function useUpdateChecker(): UpdateInfo {
         if (release.draft || release.prerelease) {
           setUpdateInfo((prev) => ({
             ...prev,
+            currentVersion,
             loading: false,
           }))
           return
         }
 
-        const hasUpdate = compareVersions(getAppVersion(), release.tag_name) < 0
+        const hasUpdate = compareVersions(currentVersion, release.tag_name) < 0
 
         setUpdateInfo({
           hasUpdate,
-          currentVersion: getAppVersion(),
+          currentVersion,
           latestVersion: release.tag_name,
           releaseUrl: release.html_url,
           loading: false,

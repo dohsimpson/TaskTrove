@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Copy, Trash2, Star, Users, Folder } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 
 const categoryIcons = {
   personal: "👤",

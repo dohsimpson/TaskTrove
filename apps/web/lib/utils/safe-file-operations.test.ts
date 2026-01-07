@@ -344,13 +344,11 @@ describe("safe-file-operations", () => {
         {
           id: TEST_PROJECT_ID_1,
           name: "Test Project",
-          slug: "test-project",
           color: "#FF0000",
           sections: [
             {
               id: TEST_GROUP_ID_1,
               name: "Test Section",
-              slug: "test-section",
               type: "section" as const,
               items: [],
               color: "#CCCCCC",
@@ -362,7 +360,6 @@ describe("safe-file-operations", () => {
         {
           id: TEST_LABEL_ID_1,
           name: "Test Label",
-          slug: "test-label",
           color: "#00FF00",
         },
       ],
@@ -539,7 +536,6 @@ describe("safe-file-operations", () => {
         {
           id: TEST_PROJECT_ID_1,
           name: "Existing Project",
-          slug: "existing-project",
           color: "#FF0000",
           sections: [],
         },
@@ -548,7 +544,6 @@ describe("safe-file-operations", () => {
         {
           id: TEST_LABEL_ID_1,
           name: "Existing Label",
-          slug: "existing-label",
           color: "#00FF00",
         },
       ],

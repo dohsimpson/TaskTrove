@@ -37,8 +37,11 @@ import {
   DEFAULT_PROJECT_GROUP,
   DEFAULT_LABEL_GROUP,
 } from "@tasktrove/types/defaults";
-import { GROUPS_QUERY_KEY } from "@tasktrove/constants";
-import { createSafeProjectGroupNameSlug } from "@tasktrove/utils/routing";
+import {
+  GROUPS_QUERY_KEY,
+  DEFAULT_PROJECT_COLORS,
+  getRandomPaletteColor,
+} from "@tasktrove/constants";
 import { createMutation } from "./factory";
 
 // Type for groups cache structure
@@ -85,13 +88,14 @@ export const createProjectGroupMutationAtom = createMutation<
         "Create project group mutation received non-project group request",
       );
     }
+    const color =
+      request.color ?? getRandomPaletteColor(DEFAULT_PROJECT_COLORS);
     return {
       type: "project",
       id: createGroupId(uuidv4()),
       name: request.name,
-      slug: createSafeProjectGroupNameSlug(request.name, undefined),
       description: request.description,
-      color: request.color,
+      color,
       items: [],
     };
   },
@@ -142,7 +146,6 @@ export const updateProjectGroupMutationAtom = createMutation<
           type: "project",
           id: request.id,
           name: request.name || "Updated Group",
-          slug: request.slug || "updated-group",
           description: request.description,
           color: request.color,
           items: request.items || [],

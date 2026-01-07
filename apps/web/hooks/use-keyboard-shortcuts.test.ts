@@ -47,12 +47,23 @@ describe("useKeyboardShortcuts", () => {
     mockUnregisterHandler = vi.fn()
     mockSetActiveComponent = vi.fn()
 
+    const hasDebugLabel = (
+      atom: unknown,
+    ): atom is {
+      debugLabel?: string
+    } => typeof atom === "object" && atom !== null && "debugLabel" in atom
+
     // @ts-expect-error - Mock implementation typing
-    mockJotai.useSetAtom.mockImplementation((_atom: unknown) => {
-      const atom = _atom as { debugLabel?: string }
-      if (atom.debugLabel === "registerKeyboardHandlerAtom") return mockRegisterHandler
-      if (atom.debugLabel === "unregisterKeyboardHandlerAtom") return mockUnregisterHandler
-      if (atom.debugLabel === "setActiveComponentAtom") return mockSetActiveComponent
+    mockJotai.useSetAtom.mockImplementation((atom: unknown) => {
+      if (hasDebugLabel(atom) && atom.debugLabel === "registerKeyboardHandlerAtom") {
+        return mockRegisterHandler
+      }
+      if (hasDebugLabel(atom) && atom.debugLabel === "unregisterKeyboardHandlerAtom") {
+        return mockUnregisterHandler
+      }
+      if (hasDebugLabel(atom) && atom.debugLabel === "setActiveComponentAtom") {
+        return mockSetActiveComponent
+      }
       return vi.fn()
     })
   })
@@ -140,8 +151,8 @@ describe("useKeyboardShortcuts", () => {
     })
 
     it("updates shortcuts without re-registering handler", () => {
-      const mockHandler = vi.fn()
-      let shortcuts: Record<string, (event: KeyboardEvent) => void> = { "Cmd+N": mockHandler }
+      const mockHandler = vi.fn(() => true)
+      let shortcuts: Record<string, (event: KeyboardEvent) => boolean> = { "Cmd+N": mockHandler }
 
       const { rerender, unmount } = renderHook(({ shortcuts }) => useKeyboardShortcuts(shortcuts), {
         initialProps: { shortcuts },
@@ -149,19 +160,19 @@ describe("useKeyboardShortcuts", () => {
 
       expect(mockRegisterHandler).toHaveBeenCalledTimes(1)
 
-      // Change shortcuts - should update handler function without re-registering
+      // Change shortcuts - handler should not re-register, but update in place
       shortcuts = { Escape: mockHandler }
       rerender({ shortcuts })
 
-      // Handler should still be registered only once
+      // Still only initial registration
       expect(mockRegisterHandler).toHaveBeenCalledTimes(1)
 
       // Verify shortcuts were updated by checking the handler
-      const firstCall = mockRegisterHandler.mock.calls[0]
-      if (!firstCall || !firstCall[0]) {
+      const latestCall = mockRegisterHandler.mock.calls.at(-1)
+      if (!latestCall || !latestCall[0]) {
         throw new Error("Expected mockRegisterHandler to have been called with handler")
       }
-      const registeredHandler = firstCall[0]
+      const registeredHandler = latestCall[0]
 
       // Should now handle Escape instead of Cmd+N
       const escapeEvent = new KeyboardEvent("keydown", { key: "Escape" })
@@ -171,7 +182,7 @@ describe("useKeyboardShortcuts", () => {
       expect(result).toBe(true)
       expect(mockHandler).toHaveBeenCalledWith(escapeEvent)
 
-      // Cleanup to verify unregistration
+      // Cleanup to verify unregistration happens once
       unmount()
       expect(mockUnregisterHandler).toHaveBeenCalledTimes(1)
     })

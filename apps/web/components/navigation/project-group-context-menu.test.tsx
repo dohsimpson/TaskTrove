@@ -2,6 +2,7 @@ import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { screen, fireEvent } from "@/test-utils"
 import { render } from "@/test-utils/render-with-providers"
+import { HydrateValues } from "@/test-utils/jotai-mocks"
 import { ProjectGroupContextMenu } from "./project-group-context-menu"
 import { groupsQueryAtom } from "@tasktrove/atoms/data/base/query"
 import { createGroupId, createProjectId } from "@tasktrove/types/id"
@@ -156,7 +157,7 @@ describe("ProjectGroupContextMenu", () => {
     isVisible: true,
   }
 
-  const defaultAtomValues: Array<[unknown, unknown]> = [
+  const defaultAtomValues: HydrateValues = [
     [
       groupsQueryAtom,
       {
@@ -327,7 +328,7 @@ describe("ProjectGroupContextMenu", () => {
       items: ["project-1", "project-2"], // Mock project IDs as strings
     }
 
-    const atomValuesWithProjects: Array<[unknown, unknown]> = [
+    const atomValuesWithProjects: HydrateValues = [
       [
         groupsQueryAtom,
         {
@@ -385,7 +386,7 @@ describe("ProjectGroupContextMenu", () => {
       items: ["project-1", "project-2"], // Mock project IDs as strings
     }
 
-    const atomValuesWithProjects: Array<[unknown, unknown]> = [
+    const atomValuesWithProjects: HydrateValues = [
       [
         groupsQueryAtom,
         {

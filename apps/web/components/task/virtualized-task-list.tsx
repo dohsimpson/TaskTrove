@@ -1,22 +1,43 @@
-import { useRef, useCallback, useEffect } from "react"
-import { useAtomValue, useSetAtom } from "jotai"
+import { useRef, useCallback, useEffect, useState } from "react"
+import { useAtomValue } from "jotai"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { motion, AnimatePresence } from "motion/react"
 import type { ElementDropTargetEventBasePayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
 import type { Task } from "@tasktrove/types/core"
-import type { TaskId } from "@tasktrove/types/id"
+import type { TaskId, GroupId } from "@tasktrove/types/id"
 import { TaskItem } from "./task-item"
 import { DropTargetElement } from "./project-sections-view-helper"
 import { DraggableTaskElement } from "./draggable-task-element"
 import { VirtualizationDebugBadge } from "@/components/debug/virtualization-debug-badge"
 import { scrollToTaskAtom } from "@tasktrove/atoms/ui/scroll-to-task"
+import { useScrollHighlightTask } from "@/hooks/use-scroll-highlight-task"
 
-interface VirtualizedTaskListProps {
+export interface VirtualizedTaskListProps {
   tasks: Task[]
   variant: "default" | "compact" | "kanban" | "calendar" | "subtask"
   sortedTaskIds: TaskId[]
   onDropTaskToListItem?: (args: ElementDropTargetEventBasePayload) => void
   enableDropTargets?: boolean
+  enableDragging?: boolean
+  compactTitleEditable?: boolean
+  showGaps?: boolean
+  itemClassName?: string
+  overscan?: number
+  /**
+   * When provided, marks all tasks in this list as belonging to the same section.
+   * Helps drag-and-drop logic identify origin section even though section membership
+   * is tracked via project.sections rather than task.sectionId.
+   */
+  listSectionId?: GroupId
+  renderTaskItem?: (
+    task: Task,
+    options: {
+      className?: string
+      variant: VirtualizedTaskListProps["variant"]
+      sortedTaskIds?: TaskId[]
+      compactTitleEditable?: boolean
+    },
+  ) => React.ReactNode
 }
 
 /**
@@ -50,12 +71,20 @@ export function VirtualizedTaskList({
   sortedTaskIds,
   onDropTaskToListItem,
   enableDropTargets = true,
+  enableDragging = true,
+  compactTitleEditable = false,
+  showGaps = true,
+  itemClassName,
+  overscan = 5,
+  listSectionId,
+  renderTaskItem,
 }: VirtualizedTaskListProps) {
   const parentRef = useRef<HTMLDivElement>(null)
+  const [enableMotion, setEnableMotion] = useState(false)
 
   // Scroll-to-task functionality
   const scrollToTaskId = useAtomValue(scrollToTaskAtom)
-  const setScrollToTaskId = useSetAtom(scrollToTaskAtom)
+  useScrollHighlightTask()
 
   // Check if we're in test environment
   const isTest = typeof process !== "undefined" && process.env.NODE_ENV === "test"
@@ -89,8 +118,9 @@ export function VirtualizedTaskList({
   const virtualizer = useVirtualizer({
     count: sortedTasks.length,
     getScrollElement,
+    getItemKey: (index) => sortedTasks[index]?.id ?? index,
     estimateSize: () => 50,
-    overscan: 5,
+    overscan,
   })
 
   // Scroll to task when requested
@@ -99,35 +129,18 @@ export function VirtualizedTaskList({
 
     const taskIndex = sortedTasks.findIndex((task) => task?.id === scrollToTaskId)
     if (taskIndex === -1) {
-      console.error(
-        `Task with ID ${scrollToTaskId} not found in current view. Available tasks: ${sortedTasks.length}`,
-      )
-      setScrollToTaskId(null)
+      // Let other lists (e.g., other project sections) handle this ID
       return
     }
 
     // Scroll to the task in virtual list
     virtualizer.scrollToIndex(taskIndex, {
       align: "center",
-      behavior: "smooth",
+      behavior: "auto",
     })
 
-    // Wait a bit for scroll to complete, then highlight
-    const timer = setTimeout(() => {
-      const taskElement = document.querySelector(`[data-task-id="${scrollToTaskId}"]`)
-      if (taskElement) {
-        // Add highlight effect
-        taskElement.classList.add("ring-2", "ring-primary", "animate-pulse")
-        setTimeout(() => {
-          taskElement.classList.remove("ring-2", "ring-primary", "animate-pulse")
-        }, 2000)
-      }
-      // Clear the scroll-to-task atom
-      setScrollToTaskId(null)
-    }, 300)
-
-    return () => clearTimeout(timer)
-  }, [scrollToTaskId, sortedTasks, virtualizer, setScrollToTaskId])
+    return
+  }, [scrollToTaskId, sortedTasks, virtualizer])
 
   // In test environment, render all items to make them available for queries
   const itemsToRender = isTest
@@ -135,6 +148,40 @@ export function VirtualizedTaskList({
     : virtualizer
         .getVirtualItems()
         .map((vi) => ({ task: sortedTasks[vi.index], index: vi.index, start: vi.start }))
+
+  // Enable motion animation after initial render
+  useEffect(() => {
+    if (enableMotion || isTest || itemsToRender.length === 0) return
+
+    let raf = 0
+    let raf2 = 0
+    raf = window.requestAnimationFrame(() => {
+      raf2 = window.requestAnimationFrame(() => setEnableMotion(true))
+    })
+    return () => {
+      window.cancelAnimationFrame(raf)
+      window.cancelAnimationFrame(raf2)
+    }
+  }, [enableMotion, isTest, itemsToRender.length])
+
+  const renderInnerTask = (task: Task) =>
+    renderTaskItem ? (
+      renderTaskItem(task, {
+        className: itemClassName ?? "cursor-pointer mx-2",
+        variant,
+        sortedTaskIds,
+        compactTitleEditable,
+      })
+    ) : (
+      <TaskItem
+        taskId={task.id}
+        variant={variant}
+        className={itemClassName ?? "cursor-pointer mx-2"}
+        showProjectBadge={true}
+        sortedTaskIds={sortedTaskIds}
+        compactTitleEditable={compactTitleEditable}
+      />
+    )
 
   return (
     <div
@@ -160,16 +207,12 @@ export function VirtualizedTaskList({
           itemsToRender.map(({ task, index }) => {
             if (!task) return null
 
-            const taskItem = (
-              <DraggableTaskElement key={task.id} taskId={task.id}>
-                <TaskItem
-                  taskId={task.id}
-                  variant={variant}
-                  className="cursor-pointer mx-2"
-                  showProjectBadge={true}
-                  sortedTaskIds={sortedTaskIds}
-                />
+            const taskItem = enableDragging ? (
+              <DraggableTaskElement key={task.id} taskId={task.id} sectionId={listSectionId}>
+                {renderInnerTask(task)}
               </DraggableTaskElement>
+            ) : (
+              <div key={task.id}>{renderInnerTask(task)}</div>
             )
 
             return (
@@ -183,7 +226,7 @@ export function VirtualizedTaskList({
                   width: "100%",
                 }}
               >
-                {enableDropTargets && onDropTaskToListItem ? (
+                {enableDropTargets && enableDragging && onDropTaskToListItem ? (
                   <DropTargetElement
                     key={task.id}
                     id={task.id}
@@ -195,45 +238,45 @@ export function VirtualizedTaskList({
                 ) : (
                   taskItem
                 )}
-                <div aria-hidden="true" className="h-2" />
+                {showGaps && <div aria-hidden="true" className="h-1" />}
               </div>
             )
           })
         ) : (
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="popLayout" initial={false}>
             {itemsToRender.map(({ task, index, start }) => {
               if (!task) return null
 
-              const taskItem = (
-                <DraggableTaskElement key={task.id} taskId={task.id}>
-                  <TaskItem
-                    taskId={task.id}
-                    variant={variant}
-                    className="cursor-pointer mx-2"
-                    showProjectBadge={true}
-                    sortedTaskIds={sortedTaskIds}
-                  />
+              const taskItem = enableDragging ? (
+                <DraggableTaskElement key={task.id} taskId={task.id} sectionId={listSectionId}>
+                  {renderInnerTask(task)}
                 </DraggableTaskElement>
+              ) : (
+                <div key={task.id}>{renderInnerTask(task)}</div>
               )
 
-              // Use unstable key (task.id + index) to force remeasurement when tasks reorder
-              // layoutId provides smooth animations even when components remount
               return (
                 <motion.div
+                  // IMPORTANT: Unstable key forces remount on reorder so the virtualizer re-measures by index.
                   key={`${task.id}-${index}`}
+                  // layoutId preserves smooth motion across remounts.
                   layoutId={task.id}
                   data-index={index}
-                  ref={virtualizer.measureElement}
-                  initial={{ opacity: 0, scale: 0.98 }}
+                  ref={(node) => {
+                    virtualizer.measureElement(node)
+                  }}
+                  initial={false}
                   animate={{
                     opacity: 1,
                     scale: 1,
                   }}
                   exit={{ opacity: 0, scale: 0.98 }}
                   transition={{
+                    layout: enableMotion
+                      ? { duration: 0.2, ease: [0.4, 0, 0.2, 1] }
+                      : { duration: 0 },
                     opacity: { duration: 0.08, ease: "easeInOut" },
                     scale: { duration: 0.08, ease: "easeInOut" },
-                    layout: { duration: 0.12, ease: [0.4, 0, 0.2, 1] },
                   }}
                   transformTemplate={(_transforms, generatedTransform) =>
                     `translateY(${start}px) ${generatedTransform}`
@@ -246,7 +289,7 @@ export function VirtualizedTaskList({
                     willChange: "transform",
                   }}
                 >
-                  {enableDropTargets && onDropTaskToListItem ? (
+                  {enableDropTargets && enableDragging && onDropTaskToListItem ? (
                     <DropTargetElement
                       key={task.id}
                       id={task.id}
@@ -258,7 +301,7 @@ export function VirtualizedTaskList({
                   ) : (
                     taskItem
                   )}
-                  <div aria-hidden="true" className="h-2" />
+                  {showGaps && <div aria-hidden="true" className="h-1" />}
                 </motion.div>
               )
             })}

@@ -8,7 +8,7 @@ import {
   updateFiltersAtom,
 } from "@tasktrove/atoms/ui/views"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
-import { labelsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { labelsAtom, settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { FALLBACK_COLOR } from "@tasktrove/constants"
 import { type Project, type Label } from "@tasktrove/types/core"
 import { type ProjectId } from "@tasktrove/types/id"
@@ -54,6 +54,8 @@ export function TaskFilterBadges({ className }: TaskFilterBadgesProps) {
   const activeFilters = useAtomValue(activeFiltersAtom)
   const hasActiveFilters = useAtomValue(hasActiveFiltersAtom)
   const updateFilters = useSetAtom(updateFiltersAtom)
+  const settings = useAtomValue(settingsAtom)
+  const preferDayMonthFormat = Boolean(settings.general.preferDayMonthFormat)
 
   // Data for lookups
   const allProjects = useAtomValue(projectAtoms.derived.allProjects)
@@ -183,7 +185,9 @@ export function TaskFilterBadges({ className }: TaskFilterBadgesProps) {
             activeFilters.dueDateFilter.preset
               ? getPresetLabel(activeFilters.dueDateFilter.preset, t)
               : activeFilters.dueDateFilter.customRange
-                ? getCustomRangeLabel(activeFilters.dueDateFilter.customRange, t)
+                ? getCustomRangeLabel(activeFilters.dueDateFilter.customRange, t, {
+                    preferDayMonthFormat,
+                  })
                 : t("filters.dueDate", "Due Date")
           }
           onRemove={removeDueDateFilter}

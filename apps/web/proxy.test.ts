@@ -1,7 +1,7 @@
 /**
- * Middleware Tests
+ * Proxy Tests
  *
- * Tests Next.js middleware functionality including i18n cookie handling
+ * Tests Next.js proxy functionality including i18n cookie handling
  * and authentication integration
  */
 
@@ -9,35 +9,34 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { NextRequest, NextResponse } from "next/server"
 
 // Mock environment variables with hoisted function
-const mockEnv = vi.hoisted(() => {
-  return {
-    AUTH_SECRET: undefined as string | undefined,
-    NODE_ENV: "test" as string,
-  }
-})
+type MockEnv = { AUTH_SECRET?: string; NODE_ENV: string }
+const mockEnv = vi.hoisted<MockEnv>(() => ({
+  AUTH_SECRET: undefined,
+  NODE_ENV: "test",
+}))
 
 // Mock process.env before any imports
 Object.defineProperty(process, "env", {
   value: new Proxy(process.env, {
-    get(target, prop) {
-      if (prop in mockEnv) {
-        return mockEnv[prop as keyof typeof mockEnv]
+    get(target, prop: string | symbol) {
+      if (prop === "AUTH_SECRET" || prop === "NODE_ENV") {
+        return mockEnv[prop]
       }
-      return target[prop as string]
+      return Reflect.get(target, prop)
     },
-    set(target, prop, value) {
-      if (prop in mockEnv) {
-        mockEnv[prop as keyof typeof mockEnv] = value
+    set(target, prop: string | symbol, value) {
+      if (prop === "AUTH_SECRET" || prop === "NODE_ENV") {
+        mockEnv[prop] = typeof value === "string" ? value : String(value)
         return true
       }
-      target[prop as string] = value
+      Reflect.set(target, prop, value)
       return true
     },
   }),
 })
 
 vi.mock("./auth", () => ({
-  auth: vi.fn((handler) => (req: any) => handler(req)), // Mock auth wrapper - pass through to our middleware
+  auth: vi.fn((handler: (req: NextRequest) => NextResponse) => (req: NextRequest) => handler(req)), // Mock auth wrapper - pass through to our proxy handler
 }))
 
 vi.mock("accept-language", () => ({
@@ -55,10 +54,12 @@ vi.mock("./lib/i18n/settings", () => ({
 
 // Import mocked accept-language
 import acceptLanguage from "accept-language"
-// Import middleware after mocks are set up
-import middleware from "./middleware"
+// Import proxy handler after mocks are set up
+import proxy from "./proxy"
 
 const mockAcceptLanguage = vi.mocked(acceptLanguage)
+
+const callProxy = (request: NextRequest) => proxy(request, { params: Promise.resolve({}) })
 
 function createTestRequest(
   pathname: string,
@@ -81,32 +82,28 @@ function createTestRequest(
   })
 
   // Mock cookies
-  if (options.cookies) {
-    const cookies = new Map()
-    Object.entries(options.cookies).forEach(([key, value]) => {
-      cookies.set(key, { value, name: key })
-    })
+  type Cookie = { name: string; value: string }
+  const cookieEntries = options.cookies
+    ? Object.entries(options.cookies).map<Cookie>(([name, value]) => ({ name, value }))
+    : []
+  const cookieMap = new Map(cookieEntries.map((cookie) => [cookie.name, cookie]))
 
-    vi.spyOn(request, "cookies", "get").mockReturnValue({
-      has: (name: string) => cookies.has(name),
-      get: (name: string) => cookies.get(name),
-    } as any)
-  } else {
-    vi.spyOn(request, "cookies", "get").mockReturnValue({
-      has: () => false,
-      get: () => undefined,
-    } as any)
-  }
+  Object.defineProperty(request, "cookies", {
+    value: {
+      get: (name: string) => cookieMap.get(name),
+      has: (name: string) => cookieMap.has(name),
+    },
+  })
 
   // Mock auth property for NextAuthRequest
   if (options.auth !== undefined) {
-    ;(request as any).auth = options.auth ? { user: { id: "test" } } : undefined
+    Reflect.set(request, "auth", options.auth ? { user: { id: "test" } } : undefined)
   }
 
   return request
 }
 
-describe("Middleware", () => {
+describe("Proxy", () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
@@ -139,9 +136,9 @@ describe("Middleware", () => {
         acceptLanguage: "zh-CN,zh;q=0.9,en;q=0.8",
       })
 
-      const response = (await middleware(request, {} as any)) as NextResponse
+      const response = await callProxy(request)
 
-      // This is the key regression test - before the fix, middleware would return undefined
+      // This is the key regression test - before the fix, proxy would return undefined
       // when AUTH_SECRET was not set, breaking i18n cookie persistence
       expect(response).toBeDefined()
       expect(response).toBeInstanceOf(NextResponse)
@@ -150,12 +147,12 @@ describe("Middleware", () => {
       expect(response?.status).toBe(200)
     })
 
-    it("should ensure middleware always returns a response (bug fix verification)", async () => {
+    it("should ensure proxy always returns a response (bug fix verification)", async () => {
       const request = createTestRequest("/dashboard")
 
-      const response = (await middleware(request, {} as any)) as NextResponse
+      const response = await callProxy(request)
 
-      // Core test: middleware MUST return a response when AUTH_SECRET is not set
+      // Core test: proxy MUST return a response when AUTH_SECRET is not set
       // This was the root cause of the i18n cookie persistence bug
       expect(response).not.toBeUndefined()
       expect(response).not.toBeNull()
@@ -167,7 +164,7 @@ describe("Middleware", () => {
         cookies: { i18next: "fr" },
       })
 
-      const response = (await middleware(request, {} as any)) as NextResponse
+      const response = await callProxy(request)
 
       expect(response).toBeDefined()
       expect(response).toBeInstanceOf(NextResponse)
@@ -179,7 +176,7 @@ describe("Middleware", () => {
         acceptLanguage: "zh-CN,zh;q=0.9",
       })
 
-      const response = (await middleware(request, {} as any)) as NextResponse
+      const response = await callProxy(request)
 
       expect(response).toBeDefined()
       expect(mockAcceptLanguage.get).toHaveBeenCalledWith("zh-CN,zh;q=0.9")
@@ -191,7 +188,7 @@ describe("Middleware", () => {
       // Mock accept-language to return null for both cookie and header
       mockAcceptLanguage.get.mockReturnValue(null)
 
-      const response = (await middleware(request, {} as any)) as NextResponse
+      const response = await callProxy(request)
 
       expect(response).toBeDefined()
       expect(response).toBeInstanceOf(NextResponse)
@@ -210,7 +207,7 @@ describe("Middleware", () => {
         acceptLanguage: "fr-FR,fr;q=0.9",
       })
 
-      const response = (await middleware(request, {} as any)) as NextResponse
+      const response = await callProxy(request)
 
       expect(response).toBeDefined()
       expect(response).toBeInstanceOf(NextResponse)
@@ -222,11 +219,11 @@ describe("Middleware", () => {
         acceptLanguage: "zh-CN,zh;q=0.9",
       })
 
-      const response = (await middleware(request, {} as any)) as NextResponse
+      const response = await callProxy(request)
 
       expect(response).toBeDefined()
       expect(response).toBeInstanceOf(NextResponse)
-      // With AUTH_SECRET set, middleware should either redirect or set i18n properly
+      // With AUTH_SECRET set, proxy should either redirect or set i18n properly
       // The exact status depends on auth wrapper behavior, but response should exist
       expect([200, 307].includes(response?.status || 0)).toBe(true)
     })
@@ -242,7 +239,7 @@ describe("Middleware", () => {
         acceptLanguage: "en-US,en;q=0.9",
       })
 
-      const response = (await middleware(request, {} as any)) as NextResponse
+      const response = await callProxy(request)
 
       expect(response).toBeDefined()
       expect(response?.status).toBe(200)
@@ -253,7 +250,7 @@ describe("Middleware", () => {
         acceptLanguage: "zh-CN,zh;q=0.9",
       })
 
-      const response = (await middleware(request, {} as any)) as NextResponse
+      const response = await callProxy(request)
 
       expect(response).toBeDefined()
       expect(response?.status).toBe(200)
@@ -264,7 +261,7 @@ describe("Middleware", () => {
         acceptLanguage: "fr-FR,fr;q=0.9",
       })
 
-      const response = (await middleware(request, {} as any)) as NextResponse
+      const response = await callProxy(request)
 
       expect(response).toBeDefined()
       expect(response?.status).toBe(200)
@@ -275,7 +272,7 @@ describe("Middleware", () => {
         acceptLanguage: "es-ES,es;q=0.9",
       })
 
-      const response = (await middleware(request, {} as any)) as NextResponse
+      const response = await callProxy(request)
 
       expect(response).toBeDefined()
       expect(response?.status).toBe(200)
@@ -293,7 +290,7 @@ describe("Middleware", () => {
         acceptLanguage: "fr-FR,fr;q=0.9",
       })
 
-      const response = (await middleware(request, {} as any)) as NextResponse
+      const response = await callProxy(request)
 
       expect(response).toBeDefined()
       // Should use cookie value (zh) over Accept-Language (fr)
@@ -305,7 +302,7 @@ describe("Middleware", () => {
         acceptLanguage: "de-DE,de;q=0.9,en;q=0.8",
       })
 
-      const response = (await middleware(request, {} as any)) as NextResponse
+      const response = await callProxy(request)
 
       expect(response).toBeDefined()
       expect(mockAcceptLanguage.get).toHaveBeenCalledWith("de-DE,de;q=0.9,en;q=0.8")

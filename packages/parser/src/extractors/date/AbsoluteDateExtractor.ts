@@ -9,7 +9,7 @@ import {
 
 interface DatePattern {
   pattern: RegExp;
-  getValue: (match: RegExpMatchArray, referenceDate: Date) => Date | null;
+  getValue: (match: RegExpMatchArray, context: ParserContext) => Date | null;
 }
 
 // Month name to number mapping
@@ -52,7 +52,7 @@ const DATE_PATTERNS: DatePattern[] = [
       `${START_BOUNDARY}([a-z]+)\\s+(\\d+)(?:st|nd|rd|th)?,?${END_BOUNDARY}`,
       ensureUnicodeFlag("gi"),
     ),
-    getValue: (match, ref) => {
+    getValue: (match, context) => {
       const monthName = match[1];
       const dayStr = match[2];
       if (!monthName || !dayStr) return null;
@@ -62,7 +62,7 @@ const DATE_PATTERNS: DatePattern[] = [
 
       if (month === undefined || isNaN(day) || day < 1 || day > 31) return null;
 
-      const date = new Date(ref.getFullYear(), month, day);
+      const date = new Date(context.referenceDate.getFullYear(), month, day);
       return startOfDay(date);
     },
   },
@@ -73,7 +73,7 @@ const DATE_PATTERNS: DatePattern[] = [
       `${START_BOUNDARY}(\\d+)(?:st|nd|rd|th)?\\s+([a-z]+)${END_BOUNDARY}`,
       ensureUnicodeFlag("gi"),
     ),
-    getValue: (match, ref) => {
+    getValue: (match, context) => {
       const dayStr = match[1];
       const monthName = match[2];
       if (!dayStr || !monthName) return null;
@@ -83,7 +83,7 @@ const DATE_PATTERNS: DatePattern[] = [
 
       if (month === undefined || isNaN(day) || day < 1 || day > 31) return null;
 
-      const date = new Date(ref.getFullYear(), month, day);
+      const date = new Date(context.referenceDate.getFullYear(), month, day);
       return startOfDay(date);
     },
   },
@@ -94,7 +94,7 @@ const DATE_PATTERNS: DatePattern[] = [
       `${START_BOUNDARY}([a-z]+)\\s+(\\d+)(?:st|nd|rd|th)?,?\\s+(\\d{4})${END_BOUNDARY}`,
       ensureUnicodeFlag("gi"),
     ),
-    getValue: (match) => {
+    getValue: (match, _context) => {
       const monthName = match[1];
       const dayStr = match[2];
       const yearStr = match[3];
@@ -124,7 +124,7 @@ const DATE_PATTERNS: DatePattern[] = [
       `${START_BOUNDARY}(\\d+)(?:st|nd|rd|th)?\\s+([a-z]+)\\s+(\\d{4})${END_BOUNDARY}`,
       ensureUnicodeFlag("gi"),
     ),
-    getValue: (match) => {
+    getValue: (match, _context) => {
       const dayStr = match[1];
       const monthName = match[2];
       const yearStr = match[3];
@@ -154,7 +154,7 @@ const DATE_PATTERNS: DatePattern[] = [
       `${START_BOUNDARY}(\\d{1,2})/(\\d{1,2})/?${END_BOUNDARY}`,
       ensureUnicodeFlag("gi"),
     ),
-    getValue: (match, ref) => {
+    getValue: (match, context) => {
       const monthStr = match[1];
       const dayStr = match[2];
       if (!monthStr || !dayStr) return null;
@@ -172,7 +172,16 @@ const DATE_PATTERNS: DatePattern[] = [
       )
         return null;
 
-      const date = new Date(ref.getFullYear(), month - 1, day);
+      const preferDayMonthFormat = Boolean(context.preferDayMonthFormat);
+      const isAmbiguous = month <= 12 && day <= 12;
+      const actualMonth = preferDayMonthFormat && isAmbiguous ? day : month;
+      const actualDay = preferDayMonthFormat && isAmbiguous ? month : day;
+
+      const date = new Date(
+        context.referenceDate.getFullYear(),
+        actualMonth - 1,
+        actualDay,
+      );
       return startOfDay(date);
     },
   },
@@ -183,7 +192,7 @@ const DATE_PATTERNS: DatePattern[] = [
       `${START_BOUNDARY}(\\d{1,2})/(\\d{1,2})/?${END_BOUNDARY}`,
       ensureUnicodeFlag("gi"),
     ),
-    getValue: (match, ref) => {
+    getValue: (match, context) => {
       const dayStr = match[1];
       const monthStr = match[2];
       if (!dayStr || !monthStr) return null;
@@ -206,7 +215,11 @@ const DATE_PATTERNS: DatePattern[] = [
       const actualMonth = isUSFormat ? day - 1 : month - 1;
       const actualDay = isUSFormat ? month : day;
 
-      const date = new Date(ref.getFullYear(), actualMonth, actualDay);
+      const date = new Date(
+        context.referenceDate.getFullYear(),
+        actualMonth,
+        actualDay,
+      );
       return startOfDay(date);
     },
   },
@@ -217,7 +230,7 @@ const DATE_PATTERNS: DatePattern[] = [
       `${START_BOUNDARY}(\\d{1,2})/(\\d{1,2})/(\\d{4})${END_BOUNDARY}`,
       ensureUnicodeFlag("gi"),
     ),
-    getValue: (match) => {
+    getValue: (match, context) => {
       const firstStr = match[1];
       const secondStr = match[2];
       const yearStr = match[3];
@@ -243,9 +256,14 @@ const DATE_PATTERNS: DatePattern[] = [
         month = first;
         day = second;
       } else {
-        // Both could be valid, assume US format
-        month = first;
-        day = second;
+        // Both could be valid, use preference if provided (default to US format)
+        if (context.preferDayMonthFormat) {
+          day = first;
+          month = second;
+        } else {
+          month = first;
+          day = second;
+        }
       }
 
       if (month < 1 || month > 12 || day < 1 || day > 31) return null;
@@ -292,7 +310,7 @@ export class AbsoluteDateExtractor implements Extractor {
         );
 
         if (!hasOverlap) {
-          const dateValue = getValue(match, context.referenceDate);
+          const dateValue = getValue(match, context);
 
           if (!dateValue || isNaN(dateValue.getTime())) continue;
 

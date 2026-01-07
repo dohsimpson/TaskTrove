@@ -121,7 +121,6 @@ export const TEST_PROJECT_GROUP_WORK: ProjectGroup = {
   type: "project",
   id: TEST_GROUP_ID_2,
   name: "Work Projects",
-  slug: "work-projects",
   description: "Projects related to work",
   color: "#3b82f6",
   items: [TEST_PROJECT_ID_3],
@@ -131,7 +130,6 @@ export const TEST_PROJECT_GROUP_DEVELOPMENT: ProjectGroup = {
   type: "project",
   id: TEST_GROUP_ID_3,
   name: "Development",
-  slug: "development",
   items: [TEST_PROJECT_ID_4],
 };
 
@@ -139,7 +137,6 @@ export const TEST_PROJECT_GROUP_ALL: ProjectGroup = {
   type: "project",
   id: TEST_GROUP_ID_1,
   name: "All Projects",
-  slug: "all-projects",
   items: [TEST_PROJECT_GROUP_WORK, TEST_PROJECT_GROUP_DEVELOPMENT],
 };
 
@@ -155,6 +152,7 @@ export const TEST_GROUPS_DATA: DataFileSerialization = {
       autoBackup: {
         enabled: true,
         backupTime: "09:00",
+        runOnInit: false,
         maxBackups: 7,
       },
     },

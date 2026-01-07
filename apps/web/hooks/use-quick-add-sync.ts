@@ -1,14 +1,26 @@
 import { useEffect, useRef } from "react"
-import type { SetStateAction } from "jotai"
 import { isValidPriority } from "@tasktrove/types/validators"
 import { convertTimeToHHMMSS, type ParsedTask } from "@/lib/utils/enhanced-natural-language-parser"
 import { calculateNextDueDate } from "@tasktrove/utils"
+import { createLabelId, createProjectId } from "@tasktrove/types/id"
+import type { LabelId } from "@tasktrove/types/id"
+import type { Task } from "@tasktrove/types/core"
 
-interface UseQuickAddSyncParams {
+type UpdateRequest<TAssignee = string> = Partial<
+  Omit<Task, "id"> & { assignees?: TAssignee[]; labels?: LabelId[] }
+>
+
+export type QuickAddDraft<TAssignee = string> = UpdateRequest<TAssignee>
+
+export type UpdateNewTaskFn<TAssignee = string> = (update: {
+  updateRequest: UpdateRequest<TAssignee>
+}) => void
+
+interface UseQuickAddSyncParams<TAssignee = string> {
   parsed: ParsedTask | null
   nlpEnabled: boolean
-  updateNewTask: (update: any) => void
-  newTask: any
+  updateNewTask: UpdateNewTaskFn<TAssignee>
+  newTask: QuickAddDraft<TAssignee>
   projects: Array<{ id: string; name: string }>
   labels: Array<{ id: string; name: string }>
   users?: Array<{ id: string; username: string }> // Optional, used by Pro
@@ -25,14 +37,14 @@ export interface QuickAddSyncRefs {
   estimationSetByParsingRef: React.MutableRefObject<boolean>
 }
 
-export function useQuickAddSync({
+export function useQuickAddSync<TAssignee = string>({
   parsed,
   nlpEnabled,
   updateNewTask,
   newTask,
   projects,
   labels,
-}: UseQuickAddSyncParams): QuickAddSyncRefs {
+}: UseQuickAddSyncParams<TAssignee>): QuickAddSyncRefs {
   // Track whether values were set by parsing
   const projectSetByParsingRef = useRef(false)
   const prioritySetByParsingRef = useRef(false)
@@ -162,7 +174,9 @@ export function useQuickAddSync({
       )
       if (foundProject) {
         projectSetByParsingRef.current = true
-        updateNewTask({ updateRequest: { projectId: foundProject.id } })
+        updateNewTask({
+          updateRequest: { projectId: createProjectId(foundProject.id) },
+        })
       }
     } else if (!parsed?.project && projectSetByParsingRef.current) {
       projectSetByParsingRef.current = false
@@ -173,13 +187,14 @@ export function useQuickAddSync({
   // Sync labels
   useEffect(() => {
     if (parsed?.labels && parsed.labels.length > 0) {
-      const parsedLabelIds: string[] = []
-      parsed.labels.forEach((labelName) => {
-        const existingLabel = labels.find((l) => l.name.toLowerCase() === labelName.toLowerCase())
-        if (existingLabel) {
-          parsedLabelIds.push(existingLabel.id)
-        }
-      })
+      const parsedLabelIds = parsed.labels
+        .map((labelName) => {
+          const existingLabel = labels.find((l) => l.name.toLowerCase() === labelName.toLowerCase())
+          if (!existingLabel) return null
+          return createLabelId(existingLabel.id)
+        })
+        .filter((id): id is LabelId => Boolean(id))
+
       if (parsedLabelIds.length > 0) {
         const currentLabels = newTask.labels || []
         const hasChanged =

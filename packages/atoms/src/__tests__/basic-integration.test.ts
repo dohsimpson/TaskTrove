@@ -293,7 +293,6 @@ describe("TaskTrove Jotai Atoms Integration Tests", () => {
       // Add a label and test basic functionality
       store.set(labelAtoms.addLabel, {
         name: "test-label",
-        slug: "test-label",
         color: "#ef4444",
       });
 

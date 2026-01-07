@@ -74,7 +74,7 @@ vi.mock("@/components/ui/custom/task-checkbox", () => ({
 vi.mock("@/components/ui/custom/task-due-date", () => ({
   TaskDueDate: ({ dueDate, className }: { dueDate?: Date | null; className?: string }) => (
     <span className={className} data-testid="task-due-date">
-      {dueDate ? "Jan 1" : ""}
+      {dueDate ? "1/1/2024" : ""}
     </span>
   ),
 }))
@@ -92,8 +92,8 @@ vi.mock("jotai", async () => {
 // Mock date-fns format function
 vi.mock("date-fns", () => ({
   format: vi.fn((date: Date, formatStr: string) => {
-    if (formatStr === "MMM d") {
-      return "Jan 1"
+    if (formatStr === "M/d/yyyy") {
+      return "1/1/2024"
     }
     return date.toISOString()
   }),
@@ -189,10 +189,74 @@ describe("PageFooter Popover Tests", () => {
     vi.clearAllMocks()
   })
 
-  const setupMocks = async () => {
+  const setupMocks = async ({
+    completedTasks = [],
+    dueTodayTasks = [],
+  }: {
+    completedTasks?: Task[]
+    dueTodayTasks?: Task[]
+  } = {}) => {
     const { useAtomValue, useSetAtom } = await import("jotai")
     const mockUseAtomValue = vi.mocked(useAtomValue)
     const mockUseSetAtom = vi.mocked(useSetAtom)
+
+    // Track call order for debugging
+    const callOrder: string[] = []
+
+    mockUseAtomValue.mockImplementation((atom: unknown) => {
+      const atomString = atom?.toString?.() || ""
+      callOrder.push(atomString)
+      // Return values based on atom string matching
+      if (atomString.includes("tasksAtom")) {
+        return [...completedTasks, ...dueTodayTasks]
+      }
+      if (atomString.includes("labelsAtom")) {
+        return []
+      }
+      if (atomString.includes("projectsAtom")) {
+        return []
+      }
+      if (atomString.includes("settingsAtom")) {
+        return { uiSettings: { use24HourTime: false }, general: { preferDayMonthFormat: false } }
+      }
+      if (atomString.includes("labelsFromIdsAtom")) {
+        return () => []
+      }
+      if (atomString.includes("selectedTasksAtom")) {
+        return []
+      }
+      if (atomString.includes("lastSelectedTaskAtom")) {
+        return null
+      }
+      if (atomString.includes("selectedTaskIdAtom")) {
+        return null
+      }
+      if (atomString.includes("quickAddTaskAtom")) {
+        return { subtasks: [] }
+      }
+      if (atomString.includes("completedTasksToday")) {
+        return completedTasks
+      }
+      if (atomString.includes("taskListForViewAtom(today)")) {
+        return dueTodayTasks
+      }
+      if (atomString.includes("getViewStateAtom(today)")) {
+        return { sortBy: "default", sortDirection: "asc" }
+      }
+      if (atomString.includes("activeFocusTimer")) {
+        return null
+      }
+      if (atomString.includes("focusTimerStatus")) {
+        return "stopped"
+      }
+      if (atomString.includes("activeFocusTask")) {
+        return null
+      }
+      if (atomString.includes("focusTimerDisplay")) {
+        return "0:00"
+      }
+      return null
+    })
 
     mockUseSetAtom.mockImplementation((atom: unknown) => {
       const atomString = atom?.toString?.() || ""
@@ -205,20 +269,11 @@ describe("PageFooter Popover Tests", () => {
       return vi.fn()
     })
 
-    return { mockUseAtomValue, mockUseSetAtom }
+    return { mockUseAtomValue, mockUseSetAtom, callOrder }
   }
 
   it("should show completed tasks popover with correct count when clicking completed today button", async () => {
-    const { mockUseAtomValue } = await setupMocks()
-    // Mock the atom values
-    mockUseAtomValue
-      .mockReturnValueOnce(mockCompletedTasks) // completedTasksTodayAtom
-      .mockReturnValueOnce([]) // todayTasksAtom
-      // Focus timer atoms
-      .mockReturnValueOnce(null) // activeFocusTimerAtom
-      .mockReturnValueOnce("stopped") // focusTimerStatusAtom
-      .mockReturnValueOnce(null) // activeFocusTaskAtom
-      .mockReturnValueOnce("0:00") // focusTimerDisplayAtom
+    await setupMocks({ completedTasks: mockCompletedTasks, dueTodayTasks: [] })
 
     render(<PageFooter />)
 
@@ -251,16 +306,7 @@ describe("PageFooter Popover Tests", () => {
   })
 
   it("should show due today tasks popover with correct count when clicking due today button", async () => {
-    const { mockUseAtomValue } = await setupMocks()
-    // Mock the atom values
-    mockUseAtomValue
-      .mockReturnValueOnce([]) // completedTasksTodayAtom
-      .mockReturnValueOnce(mockDueTodayTasks) // todayTasksAtom
-      // Focus timer atoms
-      .mockReturnValueOnce(null) // activeFocusTimerAtom
-      .mockReturnValueOnce("stopped") // focusTimerStatusAtom
-      .mockReturnValueOnce(null) // activeFocusTaskAtom
-      .mockReturnValueOnce("0:00") // focusTimerDisplayAtom
+    await setupMocks({ completedTasks: [], dueTodayTasks: mockDueTodayTasks })
 
     render(<PageFooter />)
 
@@ -269,7 +315,7 @@ describe("PageFooter Popover Tests", () => {
     expect(screen.getByText("due today")).toBeInTheDocument()
 
     // Find and click the due today button
-    const dueButton = screen.getByRole("button", { name: /due today/i })
+    const dueButton = screen.getByRole("button", { name: /^due today$/i })
     fireEvent.click(dueButton)
 
     // Wait for popover content to appear
@@ -297,22 +343,12 @@ describe("PageFooter Popover Tests", () => {
   })
 
   it("should toggle task panel when clicking on a task in the footer", async () => {
-    const { mockUseAtomValue } = await setupMocks()
-
-    // Mock the atom values
-    mockUseAtomValue
-      .mockReturnValueOnce([]) // completedTasksTodayAtom
-      .mockReturnValueOnce(mockDueTodayTasks) // todayTasksAtom
-      // Focus timer atoms
-      .mockReturnValueOnce(null) // activeFocusTimerAtom
-      .mockReturnValueOnce("stopped") // focusTimerStatusAtom
-      .mockReturnValueOnce(null) // activeFocusTaskAtom
-      .mockReturnValueOnce("0:00") // focusTimerDisplayAtom
+    await setupMocks({ completedTasks: [], dueTodayTasks: mockDueTodayTasks })
 
     render(<PageFooter />)
 
     // Open the due today popover
-    const dueButton = screen.getByRole("button", { name: /due today/i })
+    const dueButton = screen.getByRole("button", { name: /^due today$/i })
     fireEvent.click(dueButton)
 
     // Wait for popover content to appear
@@ -334,22 +370,12 @@ describe("PageFooter Popover Tests", () => {
   })
 
   it("should not toggle task panel when clicking on interactive elements in footer", async () => {
-    const { mockUseAtomValue } = await setupMocks()
-
-    // Mock the atom values
-    mockUseAtomValue
-      .mockReturnValueOnce([]) // completedTasksTodayAtom
-      .mockReturnValueOnce(mockDueTodayTasks) // todayTasksAtom
-      // Focus timer atoms
-      .mockReturnValueOnce(null) // activeFocusTimerAtom
-      .mockReturnValueOnce("stopped") // focusTimerStatusAtom
-      .mockReturnValueOnce(null) // activeFocusTaskAtom
-      .mockReturnValueOnce("0:00") // focusTimerDisplayAtom
+    await setupMocks({ completedTasks: [], dueTodayTasks: mockDueTodayTasks })
 
     render(<PageFooter />)
 
     // Open the due today popover
-    const dueButton = screen.getByRole("button", { name: /due today/i })
+    const dueButton = screen.getByRole("button", { name: /^due today$/i })
     fireEvent.click(dueButton)
 
     // Wait for popover content to appear

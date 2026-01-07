@@ -32,7 +32,11 @@ export function ProjectSectionDebugBadge({ project }: ProjectSectionDebugBadgePr
   const orphanedTaskCount = orphanedTasks.length
 
   // Only show in development
-  if (typeof window === "undefined" || process.env.NODE_ENV !== "development") {
+  if (
+    typeof window === "undefined" ||
+    process.env.NODE_ENV !== "development" ||
+    !process.env.SHOW_DEBUG_BADGE
+  ) {
     return null
   }
 

@@ -62,7 +62,6 @@ describe("PATCH /api/projects", () => {
         {
           id: TEST_PROJECT_ID_1,
           name: "Test Project",
-          slug: "test-project",
           color: "#3b82f6",
           taskOrder: [],
           sections: [DEFAULT_PROJECT_SECTION],
@@ -70,7 +69,6 @@ describe("PATCH /api/projects", () => {
         {
           id: TEST_PROJECT_ID_2,
           name: "Another Project",
-          slug: "another-project",
           color: "#ef4444",
           taskOrder: [],
           sections: [DEFAULT_PROJECT_SECTION],
@@ -140,87 +138,6 @@ describe("PATCH /api/projects", () => {
     expect(responseData.projects).toHaveLength(2)
     expect(responseData.count).toBe(2)
     expect(responseData.message).toBe("2 project(s) updated successfully")
-  })
-
-  it("should regenerate slug when name is updated without explicit slug", async () => {
-    const projectUpdate = {
-      id: TEST_PROJECT_ID_1,
-      name: "New Project Name",
-      color: "#10b981",
-    }
-
-    const request = new NextRequest("http://localhost:3000/api/projects", {
-      method: "PATCH",
-      body: JSON.stringify(projectUpdate),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-
-    const response = await PATCH(request)
-    const responseData = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(responseData.success).toBe(true)
-    expect(responseData.projects).toHaveLength(1)
-    expect(responseData.projects[0].name).toBe("New Project Name")
-
-    // Verify that the file was written with the regenerated slug
-    expect(mockSafeWriteDataFile).toHaveBeenCalled()
-    const writeCall = mockSafeWriteDataFile.mock.calls[0]
-    if (!writeCall || !writeCall[0]) {
-      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
-    }
-    const writtenData = writeCall[0].data
-    const updatedProject = writtenData.projects.find(
-      (p: { id: string }) => p.id === TEST_PROJECT_ID_1,
-    )
-
-    expect(updatedProject).toBeDefined()
-    if (updatedProject) {
-      expect(updatedProject.slug).toBe("new-project-name") // Should regenerate slug from new name
-      expect(updatedProject.slug).not.toBe("test-project-1") // Should not keep old slug
-    }
-  })
-
-  it("should preserve explicit slug when both name and slug are updated", async () => {
-    const projectUpdate = {
-      id: TEST_PROJECT_ID_1,
-      name: "New Project Name",
-      slug: "custom-slug",
-      color: "#10b981",
-    }
-
-    const request = new NextRequest("http://localhost:3000/api/projects", {
-      method: "PATCH",
-      body: JSON.stringify(projectUpdate),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-
-    const response = await PATCH(request)
-    const responseData = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(responseData.success).toBe(true)
-
-    // Verify that explicit slug is preserved
-    expect(mockSafeWriteDataFile).toHaveBeenCalled()
-    const writeCall = mockSafeWriteDataFile.mock.calls[0]
-    if (!writeCall || !writeCall[0]) {
-      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
-    }
-    const writtenData = writeCall[0].data
-    const updatedProject = writtenData.projects.find(
-      (p: { id: string }) => p.id === TEST_PROJECT_ID_1,
-    )
-
-    expect(updatedProject).toBeDefined()
-    if (updatedProject) {
-      expect(updatedProject.slug).toBe("custom-slug") // Should preserve explicit slug
-      expect(updatedProject.name).toBe("New Project Name")
-    }
   })
 
   it("should return 400 error for missing project ID", async () => {
@@ -324,7 +241,6 @@ describe("POST /api/projects", () => {
         {
           id: TEST_PROJECT_ID_1,
           name: "Existing Project",
-          slug: "existing-project",
           color: "#3b82f6",
           taskOrder: [TEST_TASK_ID_1],
           sections: [DEFAULT_PROJECT_SECTION],
@@ -504,7 +420,6 @@ describe("DELETE /api/projects", () => {
         {
           id: TEST_PROJECT_ID_1,
           name: "Test Project",
-          slug: "test-project",
           color: "#3b82f6",
           taskOrder: [TEST_TASK_ID_1, TEST_TASK_ID_2],
           sections: [DEFAULT_PROJECT_SECTION],
@@ -512,7 +427,6 @@ describe("DELETE /api/projects", () => {
         {
           id: TEST_PROJECT_ID_2,
           name: "Another Project",
-          slug: "another-project",
           color: "#ef4444",
           taskOrder: [],
           sections: [DEFAULT_PROJECT_SECTION],

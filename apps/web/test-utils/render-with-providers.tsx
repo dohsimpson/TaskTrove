@@ -1,6 +1,6 @@
 import React, { ReactElement } from "react"
 import { render, RenderOptions } from "@testing-library/react"
-import { TestJotaiProvider } from "./jotai-mocks"
+import { TestJotaiProvider, type HydrateValues } from "./jotai-mocks"
 import { MockRouter } from "./mock-router"
 import { LanguageProvider } from "@tasktrove/i18n"
 import { i18nConfig } from "@/lib/i18n/config"
@@ -18,11 +18,11 @@ interface RouterConfig {
 // Enhanced mock providers wrapper for testing
 const AllTheProviders = ({
   children,
-  initialAtomValues = [],
+  initialAtomValues,
   routerConfig = {},
 }: {
   children: React.ReactNode
-  initialAtomValues?: Array<[any, any]>
+  initialAtomValues?: HydrateValues
   routerConfig?: RouterConfig
 }) => {
   return (
@@ -38,7 +38,7 @@ const AllTheProviders = ({
 
 // Enhanced render options interface
 interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
-  initialAtomValues?: Array<[any, any]>
+  initialAtomValues?: HydrateValues
   routerConfig?: RouterConfig
   // Legacy support
   routerProps?: RouterConfig

@@ -41,6 +41,11 @@ import {
   resetCopyTaskAtom,
 } from "@tasktrove/atoms/ui/dialogs"
 import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
+import {
+  currentViewAtom,
+  isCalendarViewAtom,
+  selectedCalendarDateAtom,
+} from "@tasktrove/atoms/ui/views"
 import { DEFAULT_COLOR_PALETTE } from "@tasktrove/constants"
 import { TaskSchedulePopover } from "@/components/task/task-schedule-popover"
 import { TaskScheduleTrigger } from "@/components/task/task-schedule-trigger"
@@ -132,6 +137,9 @@ export function QuickAddDialog() {
 
   // Route context for current project and label
   const routeContext = useAtomValue(currentRouteContextAtom)
+  const currentView = useAtomValue(currentViewAtom)
+  const isCalendarView = useAtomValue(isCalendarViewAtom)
+  const selectedCalendarDate = useAtomValue(selectedCalendarDateAtom)
   const currentProject: ProjectId = (() => {
     if (routeContext.routeType === "project") {
       try {
@@ -222,8 +230,6 @@ export function QuickAddDialog() {
   const hasInitializedRef = useRef(false)
   const reinitializeTimeoutRef = useRef<number | null>(null)
 
-  const hasSchedule = Boolean(newTask.dueDate || newTask.recurring)
-
   const initializeQuickAddState = useCallback(() => {
     let updates: Partial<CreateTaskRequest> = {}
     let nextInput = ""
@@ -270,6 +276,15 @@ export function QuickAddDialog() {
         updates.recurringMode = "autoRollover"
       }
 
+      const isCalendarContext =
+        isCalendarView || currentView === "calendar" || routeContext.viewId === "calendar"
+
+      if (isCalendarContext && selectedCalendarDate && !updates.dueDate) {
+        const calendarDate = new Date(selectedCalendarDate)
+        calendarDate.setHours(0, 0, 0, 0)
+        updates.dueDate = calendarDate
+      }
+
       const proUpdates = getProViewUpdates(routeContext, users, currentUserId)
       Object.assign(updates, proUpdates)
     }
@@ -290,8 +305,11 @@ export function QuickAddDialog() {
     currentLabel,
     currentProject,
     currentUserId,
+    currentView,
+    isCalendarView,
     newTask,
     routeContext,
+    selectedCalendarDate,
     taskToCopy,
     updateNewTask,
     users,
@@ -552,7 +570,6 @@ export function QuickAddDialog() {
         // Use addLabelAndWaitForRealId to disable optimistic updates and get the real ID immediately
         labelId = await addLabelAndWaitForRealId({
           name: trimmedName,
-          slug: trimmedName.toLowerCase().replace(/\s+/g, "-"),
           color: randomColor,
         })
       } else {
@@ -614,6 +631,9 @@ export function QuickAddDialog() {
   const quickAddTitle = taskToCopy
     ? t("quickAdd.copyTitle", "Duplicate Task")
     : t("quickAdd.title", "New Task")
+
+  const pillBaseClass =
+    "h-8 rounded-full px-3 bg-background/40 hover:bg-background/60 ring-1 ring-border/50"
 
   const quickAddBody = (
     <div className="flex flex-col justify-between gap-1">
@@ -695,8 +715,9 @@ export function QuickAddDialog() {
                   showLabel={false}
                 />
               }
-              label={hasSchedule ? null : t("quickAdd.buttons.date", "Date")}
+              label={null}
               ariaLabel={t("quickAdd.buttons.date", "Date")}
+              className={pillBaseClass}
             />
           </TaskSchedulePopover>
 
@@ -708,11 +729,13 @@ export function QuickAddDialog() {
           >
             <PillActionButton
               icon={<Flag className="h-3 w-3 flex-shrink-0" />}
-              label={t("quickAdd.buttons.priority", "Priority")}
+              label={null}
               display={
                 newTask.priority && newTask.priority < 4 ? `P${newTask.priority}` : undefined
               }
+              ariaLabel={t("quickAdd.buttons.priority", "Priority")}
               className={cn(
+                pillBaseClass,
                 newTask.priority && newTask.priority < 4
                   ? getPriorityTextColor(newTask.priority)
                   : "text-muted-foreground",
@@ -724,11 +747,13 @@ export function QuickAddDialog() {
           <LabelManagementPopover onAddLabel={handleAddLabel} onRemoveLabel={handleRemoveLabel}>
             <PillActionButton
               icon={<Tag className="h-3 w-3 flex-shrink-0" />}
-              label={t("quickAdd.buttons.label", "Label")}
+              label={null}
               display={
                 newTask.labels && newTask.labels.length > 0 ? `${newTask.labels.length}` : undefined
               }
+              ariaLabel={t("quickAdd.buttons.label", "Label")}
               className={cn(
+                pillBaseClass,
                 newTask.labels && newTask.labels.length > 0
                   ? "text-foreground font-medium"
                   : "text-muted-foreground",
@@ -757,22 +782,47 @@ export function QuickAddDialog() {
                       style={{ color: project?.color || undefined }}
                     />
                   }
-                  label={t("quickAdd.buttons.project", "Project")}
+                  label={null}
                   display={valueText}
-                  className="text-muted-foreground"
+                  ariaLabel={t("quickAdd.buttons.project", "Project")}
+                  className={cn(pillBaseClass, "text-muted-foreground")}
                   maxLabelWidthClass="max-w-[12rem] sm:max-w-[16rem]"
                 />
               )
             })()}
           </ProjectPopover>
 
+          {/* Estimation */}
+          <TimeEstimationPopover
+            value={newTask.estimation || 0}
+            onChange={(seconds) => updateNewTask({ updateRequest: { estimation: seconds || 0 } })}
+          >
+            <PillActionButton
+              icon={<Clock className="h-3 w-3 flex-shrink-0" />}
+              label={null}
+              display={
+                newTask.estimation && newTask.estimation > 0
+                  ? formatTime(newTask.estimation)
+                  : undefined
+              }
+              ariaLabel={t("quickAdd.buttons.estimation", "Estimate")}
+              className={cn(
+                pillBaseClass,
+                newTask.estimation && newTask.estimation > 0
+                  ? "text-foreground"
+                  : "text-muted-foreground",
+              )}
+            />
+          </TimeEstimationPopover>
+
           {/* People */}
           <PeopleManagementPopover onOpenChange={() => {}}>
             <PillActionButton
               icon={<Users className="h-3 w-3 flex-shrink-0" />}
-              label={t("quickAdd.buttons.assign", "Assign")}
+              label={null}
               display={<AssigneeBadges />}
-              className="text-muted-foreground"
+              ariaLabel={t("quickAdd.buttons.assign", "Assign")}
+              className={cn(pillBaseClass, "text-muted-foreground")}
             />
           </PeopleManagementPopover>
 
@@ -780,13 +830,15 @@ export function QuickAddDialog() {
           <SubtaskPopover onOpenChange={() => {}}>
             <PillActionButton
               icon={<CheckSquare className="h-3 w-3 flex-shrink-0" />}
-              label={t("quickAdd.buttons.subtasks", "Subtasks")}
+              label={null}
               display={
                 newTask.subtasks && newTask.subtasks.length > 0
                   ? `${newTask.subtasks.length}`
                   : undefined
               }
+              ariaLabel={t("quickAdd.buttons.subtasks", "Subtasks")}
               className={cn(
+                pillBaseClass,
                 newTask.subtasks && newTask.subtasks.length > 0
                   ? "text-foreground font-medium"
                   : "text-muted-foreground",
@@ -798,41 +850,21 @@ export function QuickAddDialog() {
           <CommentManagementPopover onOpenChange={() => {}}>
             <PillActionButton
               icon={<MessageSquare className="h-3 w-3 flex-shrink-0" />}
-              label={t("quickAdd.buttons.comments", "Comments")}
+              label={null}
               display={
                 newTask.comments && newTask.comments.length > 0
                   ? `${newTask.comments.length}`
                   : undefined
               }
+              ariaLabel={t("quickAdd.buttons.comments", "Comments")}
               className={cn(
+                pillBaseClass,
                 newTask.comments && newTask.comments.length > 0
                   ? "text-foreground font-medium"
                   : "text-muted-foreground",
               )}
             />
           </CommentManagementPopover>
-
-          {/* Estimation */}
-          <TimeEstimationPopover
-            value={newTask.estimation || 0}
-            onChange={(seconds) => updateNewTask({ updateRequest: { estimation: seconds || 0 } })}
-          >
-            <PillActionButton
-              icon={<Clock className="h-3 w-3 flex-shrink-0" />}
-              label={t("quickAdd.buttons.estimation", "Estimate")}
-              display={
-                newTask.estimation && newTask.estimation > 0
-                  ? formatTime(newTask.estimation)
-                  : undefined
-              }
-              className={cn(
-                newTask.estimation && newTask.estimation > 0
-                  ? "text-foreground"
-                  : "text-muted-foreground",
-              )}
-              ariaLabel={t("quickAdd.buttons.estimation", "Estimate")}
-            />
-          </TimeEstimationPopover>
         </div>
 
         {/* NLP Toggle moved next to title input above */}
@@ -931,7 +963,7 @@ export function QuickAddDialog() {
         ) : (
           <Dialog open={open} onOpenChange={handleCloseDialog}>
             <DialogContentWithoutOverlay
-              className="w-full max-w-[420px] sm:max-w-[520px] md:max-w-[600px] p-1 border shadow-2xl"
+              className="w-full max-w-[420px] sm:max-w-[520px] md:max-w-[600px] p-1 border shadow-2xl top-[30%]"
               showCloseButton={false}
               onEscapeKeyDown={handleEscapeKeyDown}
             >

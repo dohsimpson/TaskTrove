@@ -120,7 +120,7 @@ export type StandardViewId =
   | "calendar";
 
 /**
- * View identifier - can be a standard view ID, project slug, label slug, or custom view
+ * View identifier - can be a standard view ID, entity slug, or custom view
  * This is a broader type that includes StandardViewId plus dynamic identifiers
  */
 export type ViewId = string;

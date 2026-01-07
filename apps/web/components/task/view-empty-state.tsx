@@ -3,13 +3,14 @@ import {
   Calendar,
   Clock,
   CheckSquare,
-  ListCheck,
+  ListTodo,
   Tag,
   FolderOpen,
   Archive,
   Repeat,
   UserRoundCheck,
   UserRoundPlus,
+  History,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTranslation } from "@tasktrove/i18n"
@@ -66,8 +67,16 @@ function getViewConfigs(t: (key: string, fallback: string) => string): Record<st
         "Tasks you've finished will appear here. Complete some tasks to see your progress and celebrate your wins!",
       ),
     },
+    recent: {
+      icon: History,
+      title: t("emptyStates.recent.title", "No recent activity"),
+      description: t(
+        "emptyStates.recent.description",
+        "Tasks created or completed in the last few days will appear here.",
+      ),
+    },
     all: {
-      icon: ListCheck,
+      icon: ListTodo,
       title: t("emptyStates.all.title", "No tasks found"),
       description: t(
         "emptyStates.all.description",

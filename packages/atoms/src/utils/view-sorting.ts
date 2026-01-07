@@ -21,17 +21,19 @@ export function sortTasksByViewState(
   tasks: Task[],
   viewState: ViewState,
 ): Task[] {
+  const statusRank = (task: Task) => {
+    if (task.completed) return 2;
+    if (task.archived) return 1;
+    return 0;
+  };
+
   return tasks.sort((a: Task, b: Task) => {
     const direction = viewState.sortDirection === "asc" ? 1 : -1;
 
     switch (viewState.sortBy) {
       case "default":
-        // Default sort: completed tasks at bottom, maintain existing order otherwise
-        if (a.completed !== b.completed) {
-          return (a.completed ? 1 : 0) - (b.completed ? 1 : 0);
-        }
-        // Within same completion status, maintain existing order (no additional sorting)
-        return 0;
+        // Default sort: active -> archived -> completed
+        return statusRank(a) - statusRank(b);
       case "priority":
         return direction * (a.priority - b.priority);
       case "dueDate":
@@ -44,12 +46,6 @@ export function sortTasksByViewState(
         return direction * a.title.localeCompare(b.title);
       case "createdAt":
         return direction * (a.createdAt.getTime() - b.createdAt.getTime());
-      case "status":
-        // Sort by completion status only
-        if (a.completed !== b.completed) {
-          return direction * ((a.completed ? 1 : 0) - (b.completed ? 1 : 0));
-        }
-        return 0;
       default:
         return 0;
     }

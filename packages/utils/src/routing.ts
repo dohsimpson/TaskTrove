@@ -8,7 +8,11 @@ import {
   GroupId,
   GroupIdSchema,
 } from "@tasktrove/types/id";
-import { ProjectGroup, LabelGroup } from "@tasktrove/types/group";
+import {
+  ProjectGroup,
+  LabelGroup,
+  ProjectSection,
+} from "@tasktrove/types/group";
 
 // Simple MurmurHash3 implementation for generating fixed-length hashes
 function murmurHash3(text: string): string {
@@ -24,7 +28,134 @@ function murmurHash3(text: string): string {
   return Math.abs(hash).toString(36).padStart(8, "0");
 }
 
-function createSafeSlug(text: string, existingSlugs: Set<string>): string {
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_SUFFIX_REGEX =
+  /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
+const BASE58_ALPHABET =
+  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+const BASE58_LOOKUP = new Map(
+  Array.from(BASE58_ALPHABET).map((char, index) => [char, index]),
+);
+const SHORT_ID_LENGTH = 22;
+const SHORT_ID_SUFFIX_REGEX = /([1-9A-HJ-NP-Za-km-z]{22})$/;
+
+function uuidToBytes(uuid: string): Uint8Array | null {
+  if (!UUID_REGEX.test(uuid)) return null;
+  const hex = uuid.replace(/-/g, "");
+  if (hex.length !== 32) return null;
+  const bytes = new Uint8Array(16);
+  for (let i = 0; i < 16; i += 1) {
+    const byte = Number.parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+    if (Number.isNaN(byte)) return null;
+    bytes[i] = byte;
+  }
+  return bytes;
+}
+
+function bytesToUuid(bytes: Uint8Array): string | null {
+  if (bytes.length !== 16) return null;
+  const hex = Array.from(bytes, (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
+  return [
+    hex.slice(0, 8),
+    hex.slice(8, 12),
+    hex.slice(12, 16),
+    hex.slice(16, 20),
+    hex.slice(20),
+  ].join("-");
+}
+
+function base58Encode(bytes: Uint8Array): string {
+  if (bytes.length === 0) return "";
+
+  const digits = [0];
+  for (const byte of bytes) {
+    let carry = byte;
+    for (let i = 0; i < digits.length; i += 1) {
+      const digit = digits[i] ?? 0;
+      const value = digit * 256 + carry;
+      digits[i] = value % 58;
+      carry = Math.floor(value / 58);
+    }
+    while (carry > 0) {
+      digits.push(carry % 58);
+      carry = Math.floor(carry / 58);
+    }
+  }
+
+  let result = "";
+  for (let i = 0; i < bytes.length && bytes[i] === 0; i += 1) {
+    result += "1";
+  }
+  for (let i = digits.length - 1; i >= 0; i -= 1) {
+    const digit = digits[i];
+    result += digit === undefined ? "" : (BASE58_ALPHABET[digit] ?? "");
+  }
+  return result;
+}
+
+function base58Decode(value: string): Uint8Array | null {
+  if (value.length === 0) return new Uint8Array();
+
+  const bytes = [0];
+  for (const char of value) {
+    const digit = BASE58_LOOKUP.get(char);
+    if (digit === undefined) return null;
+    let carry = digit;
+    for (let i = 0; i < bytes.length; i += 1) {
+      const byteValue = bytes[i] ?? 0;
+      const next = byteValue * 58 + carry;
+      bytes[i] = next & 0xff;
+      carry = next >> 8;
+    }
+    while (carry > 0) {
+      bytes.push(carry & 0xff);
+      carry >>= 8;
+    }
+  }
+
+  let leadingZeros = 0;
+  for (let i = 0; i < value.length && value[i] === "1"; i += 1) {
+    leadingZeros += 1;
+  }
+
+  const result = new Uint8Array(leadingZeros + bytes.length);
+  for (let i = 0; i < bytes.length; i += 1) {
+    result[result.length - 1 - i] = bytes[i] ?? 0;
+  }
+  return result;
+}
+
+function encodeUuidToShortId(uuid: string): string | null {
+  const bytes = uuidToBytes(uuid);
+  if (!bytes) return null;
+  const encoded = base58Encode(bytes);
+  if (encoded.length >= SHORT_ID_LENGTH) return encoded;
+  return encoded.padStart(SHORT_ID_LENGTH, "1");
+}
+
+function decodeShortIdToUuid(shortId: string): string | null {
+  const bytes = base58Decode(shortId);
+  if (!bytes) return null;
+  if (bytes.length > 16) {
+    let offset = 0;
+    while (offset < bytes.length - 16 && bytes[offset] === 0) {
+      offset += 1;
+    }
+    if (bytes.length - offset !== 16) return null;
+    return bytesToUuid(bytes.slice(offset));
+  }
+  if (bytes.length < 16) {
+    const padded = new Uint8Array(16);
+    padded.set(bytes, 16 - bytes.length);
+    return bytesToUuid(padded);
+  }
+  return bytesToUuid(bytes);
+}
+
+function createBaseSlug(text: string): string {
   // First remove characters that would get converted to confusing word names
   // Keep & (becomes "and") and < > (become "less"/"greater") as they're meaningful
   const preprocessed = text.replace(/[#$%¢£¤¥©®℠™♥∞€…₠₢₣₤₦₧₨₩₫₱]/g, "");
@@ -41,105 +172,56 @@ function createSafeSlug(text: string, existingSlugs: Set<string>): string {
     slug = murmurHash3(text);
   }
 
-  // If no collision, return the slug
-  if (!existingSlugs.has(slug)) {
-    return slug;
-  }
-
-  // Find next available slug with increment
-  let counter = 1;
-  let candidateSlug = `${slug}-${counter}`;
-
-  while (existingSlugs.has(candidateSlug) && counter <= 100) {
-    counter++;
-    candidateSlug = `${slug}-${counter}`;
-  }
-
-  // If we couldn't find a unique slug after 100 tries, fall back to hash
-  if (counter > 100) {
-    return murmurHash3(text);
-  }
-
-  return candidateSlug;
+  return slug;
 }
 
-export function createSafeProjectNameSlug(
-  text: string,
-  projects: Project[],
+export function createEntitySlug(name: string, id: string): string {
+  const base = createBaseSlug(name);
+  const shortId = encodeUuidToShortId(id);
+  const suffix = shortId ?? id;
+  return `${base}-${suffix}`;
+}
+
+export function createProjectSlug(
+  project: Pick<Project, "id" | "name">,
 ): string {
-  const existingSlugs = new Set(projects.map((p) => p.slug));
-  return createSafeSlug(text, existingSlugs);
+  return createEntitySlug(project.name, project.id);
 }
 
-export function createSafeLabelNameSlug(text: string, labels: Label[]): string {
-  const existingSlugs = new Set(labels.map((l) => l.slug));
-  return createSafeSlug(text, existingSlugs);
+export function createLabelSlug(label: Pick<Label, "id" | "name">): string {
+  return createEntitySlug(label.name, label.id);
 }
 
-/**
- * Helper function to collect all slugs from a project group tree recursively
- */
-function collectProjectGroupSlugs(group: ProjectGroup): string[] {
-  const slugs = [group.slug];
-
-  // Recursively collect slugs from nested groups
-  for (const item of group.items) {
-    if (typeof item === "object" && "slug" in item) {
-      const nestedGroup = item;
-      if ("type" in nestedGroup) {
-        slugs.push(...collectProjectGroupSlugs(nestedGroup));
-      }
-    }
-  }
-
-  return slugs;
-}
-
-/**
- * Helper function to collect all slugs from a label group tree recursively
- */
-function collectLabelGroupSlugs(group: LabelGroup): string[] {
-  const slugs = [group.slug];
-
-  // Recursively collect slugs from nested groups
-  for (const item of group.items) {
-    if (typeof item === "object" && "slug" in item) {
-      const nestedGroup = item;
-      if ("type" in nestedGroup) {
-        slugs.push(...collectLabelGroupSlugs(nestedGroup));
-      }
-    }
-  }
-
-  return slugs;
-}
-
-export function createSafeProjectGroupNameSlug(
-  text: string,
-  projectGroups?: ProjectGroup,
+export function createProjectGroupSlug(
+  group: Pick<ProjectGroup, "id" | "name">,
 ): string {
-  const existingSlugs = new Set<string>();
-
-  if (projectGroups) {
-    const allSlugs = collectProjectGroupSlugs(projectGroups);
-    allSlugs.forEach((slug) => existingSlugs.add(slug));
-  }
-
-  return createSafeSlug(text, existingSlugs);
+  return createEntitySlug(group.name, group.id);
 }
 
-export function createSafeLabelGroupNameSlug(
-  text: string,
-  labelGroups?: LabelGroup,
+export function createLabelGroupSlug(
+  group: Pick<LabelGroup, "id" | "name">,
 ): string {
-  const existingSlugs = new Set<string>();
+  return createEntitySlug(group.name, group.id);
+}
 
-  if (labelGroups) {
-    const allSlugs = collectLabelGroupSlugs(labelGroups);
-    allSlugs.forEach((slug) => existingSlugs.add(slug));
+export function createSectionSlug(
+  section: Pick<ProjectSection, "id" | "name">,
+): string {
+  return createEntitySlug(section.name, section.id);
+}
+
+export function extractIdFromSlug(slug: string): string | null {
+  const match = slug.match(UUID_SUFFIX_REGEX);
+  if (match?.[1]) return match[1];
+
+  const shortMatch = slug.match(SHORT_ID_SUFFIX_REGEX);
+  const shortId = shortMatch?.[1];
+  if (!shortId) return null;
+  const prefixIndex = slug.length - shortId.length - 1;
+  if (prefixIndex >= 0 && slug[prefixIndex] !== "-") {
+    return null;
   }
-
-  return createSafeSlug(text, existingSlugs);
+  return decodeShortIdToUuid(shortId);
 }
 
 // =============================================================================
@@ -202,14 +284,12 @@ export function resolveProject(
   idOrSlug: string,
   projects: Project[],
 ): Project | null {
-  // First try to find by ID (UUID format check)
-  if (isValidProjectId(idOrSlug)) {
-    const project = projects.find((p) => p.id === idOrSlug);
-    if (project) return project;
+  const candidateId = extractIdFromSlug(idOrSlug) ?? idOrSlug;
+  if (isValidProjectId(candidateId)) {
+    return projects.find((p) => p.id === candidateId) ?? null;
   }
 
-  // Then try to find by slug
-  return projects.find((p) => p.slug === idOrSlug) || null;
+  return null;
 }
 
 /**
@@ -222,14 +302,12 @@ export function resolveProject(
  * Priority: ID first, then slug
  */
 export function resolveLabel(idOrSlug: string, labels: Label[]): Label | null {
-  // First try to find by ID (UUID format check)
-  if (isValidLabelId(idOrSlug)) {
-    const label = labels.find((l) => l.id === idOrSlug);
-    if (label) return label;
+  const candidateId = extractIdFromSlug(idOrSlug) ?? idOrSlug;
+  if (isValidLabelId(candidateId)) {
+    return labels.find((l) => l.id === candidateId) ?? null;
   }
 
-  // Then try to find by slug
-  return labels.find((l) => l.slug === idOrSlug) || null;
+  return null;
 }
 
 /**
@@ -239,11 +317,9 @@ function searchProjectGroupInTree(
   group: ProjectGroup,
   idOrSlug: string,
 ): ProjectGroup | null {
-  // Check if this group matches
-  if (isValidGroupId(idOrSlug)) {
-    if (group.id === idOrSlug) return group;
-  } else {
-    if (group.slug === idOrSlug) return group;
+  const candidateId = extractIdFromSlug(idOrSlug) ?? idOrSlug;
+  if (isValidGroupId(candidateId) && group.id === candidateId) {
+    return group;
   }
 
   // Search in nested groups
@@ -264,11 +340,9 @@ function searchLabelGroupInTree(
   group: LabelGroup,
   idOrSlug: string,
 ): LabelGroup | null {
-  // Check if this group matches
-  if (isValidGroupId(idOrSlug)) {
-    if (group.id === idOrSlug) return group;
-  } else {
-    if (group.slug === idOrSlug) return group;
+  const candidateId = extractIdFromSlug(idOrSlug) ?? idOrSlug;
+  if (isValidGroupId(candidateId) && group.id === candidateId) {
+    return group;
   }
 
   // Search in nested groups

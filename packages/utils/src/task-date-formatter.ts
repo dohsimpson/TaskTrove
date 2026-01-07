@@ -8,18 +8,113 @@ import { format, isToday, isTomorrow, isPast } from "date-fns";
 import type { Locale } from "date-fns";
 
 export type TaskDateFormat =
-  | "full" // "Jan 15, 2024 at 9:00 AM" or "Today at 9:00 AM"
-  | "compact" // "Jan 15" or "Today"
-  | "badge" // "Aug 24 at 9AM" or "Today at 9AM"
-  | "short" // "9:00 AM" (time only) or "Jan 15" (date only)
-  | "relative"; // "Today", "Tomorrow", "Jan 15, 2024"
+  | "full" // "1/15/2024 9:00 AM" or "Today 9:00 AM"
+  | "compact" // "1/15" or "Today"
+  | "badge" // "8/24 9AM" or "Today 9AM"
+  | "short" // "9:00 AM" (time only) or "1/15" (date only)
+  | "relative"; // "Today", "Tomorrow", "1/15/2024"
 
 export interface TaskDateFormatOptions {
   format: TaskDateFormat;
   showTimeOnly?: boolean; // Show only time when no date is set
   includeYear?: boolean; // Include year in date formatting (defaults to current year only)
   use12Hour?: boolean; // Use 12-hour time format (defaults to true)
-  locale?: Locale; // Locale for date/time formatting (defaults to system locale)
+  /**
+   * Prefer 24-hour clock. When true, overrides use12Hour to false.
+   * When false/undefined, falls back to use12Hour (default true).
+   */
+  use24HourTime?: boolean;
+  /**
+   * Prefer day/month ordering for numeric dates (e.g., 11/12 -> 11 Dec).
+   * When false/undefined, defaults to month/day ordering.
+   */
+  preferDayMonthFormat?: boolean;
+  locale?: Locale; // Reserved for future localization support.
+}
+
+export interface DateDisplayOptions {
+  includeYear?: boolean;
+  preferDayMonthFormat?: boolean;
+  pad?: boolean;
+  locale?: Locale; // Reserved for future localization support.
+}
+
+export function formatDateDisplay(
+  date: Date,
+  options: DateDisplayOptions = {},
+): string {
+  const includeYear = options.includeYear ?? false;
+  const preferDayMonthFormat = Boolean(options.preferDayMonthFormat);
+  const pad = Boolean(options.pad);
+
+  const monthToken = pad ? "MM" : "M";
+  const dayToken = pad ? "dd" : "d";
+  const base = preferDayMonthFormat
+    ? `${dayToken}/${monthToken}`
+    : `${monthToken}/${dayToken}`;
+  const pattern = includeYear ? `${base}/yyyy` : base;
+
+  return format(date, pattern);
+}
+
+export function formatDateTimeDisplay(
+  date: Date,
+  options: DateDisplayOptions & { use24HourTime?: boolean } = {},
+): string {
+  const dateText = formatDateDisplay(date, options);
+  const timeText = formatTime(date, !options.use24HourTime, options.locale);
+  return `${dateText} ${timeText}`;
+}
+
+export function formatMonthLabel(
+  date: Date,
+  options?: { variant?: "short" | "long"; locale?: Locale },
+): string {
+  const variant = options?.variant ?? "short";
+  const formatOptions = options?.locale
+    ? { locale: options.locale }
+    : undefined;
+  return format(date, variant === "long" ? "MMMM" : "MMM", formatOptions);
+}
+
+export function formatMonthYearLabel(
+  date: Date,
+  options?: { variant?: "short" | "long"; locale?: Locale },
+): string {
+  const variant = options?.variant ?? "short";
+  const formatOptions = options?.locale
+    ? { locale: options.locale }
+    : undefined;
+  return format(
+    date,
+    variant === "long" ? "MMMM yyyy" : "MMM yyyy",
+    formatOptions,
+  );
+}
+
+export function formatWeekdayLabel(
+  date: Date,
+  options?: {
+    short?: boolean;
+    variant?: "short" | "long" | "compact";
+    locale?: Locale;
+  },
+): string {
+  const formatOptions = options?.locale
+    ? { locale: options.locale }
+    : undefined;
+  const variant = options?.variant ?? (options?.short ? "short" : "long");
+  const token =
+    variant === "compact" ? "EE" : variant === "short" ? "EEE" : "EEEE";
+  return format(date, token, formatOptions);
+}
+
+export function formatDayOfMonthLabel(
+  date: Date,
+  options?: { pad?: boolean },
+): string {
+  const day = date.getDate();
+  return options?.pad ? String(day).padStart(2, "0") : String(day);
 }
 
 /**
@@ -33,10 +128,10 @@ export interface TaskDateFormatOptions {
  * ```typescript
  * import { es } from 'date-fns/locale'
  *
- * // English (default): "Jan 15 9AM"
+ * // English (default): "1/15 9AM"
  * formatTaskDateTime(task, { format: "badge" })
  *
- * // Spanish: "15 ene 9AM"
+ * // Spanish: "15/1 9AM"
  * formatTaskDateTime(task, { format: "badge", locale: es })
  * ```
  */
@@ -49,12 +144,16 @@ export function formatTaskDateTime<
     showTimeOnly = true,
     includeYear,
     use12Hour = true,
+    use24HourTime,
+    preferDayMonthFormat,
     locale,
   } = options;
+  const prefers24Hour = use24HourTime === true;
+  const effectiveUse12Hour = prefers24Hour ? false : use12Hour;
 
   // Handle case where only time is set (no date)
   if (!dueDate && dueTime && showTimeOnly) {
-    return formatTime(dueTime, use12Hour, locale);
+    return formatTime(dueTime, effectiveUse12Hour, locale);
   }
 
   // Handle case where no date is set
@@ -63,11 +162,16 @@ export function formatTaskDateTime<
   }
 
   // Format the date part
-  const dateText = formatDatePart(dueDate, formatType, includeYear, locale);
+  const dateText = formatDatePart(
+    dueDate,
+    formatType,
+    includeYear,
+    preferDayMonthFormat,
+  );
 
   // Add time if available
   if (dueTime) {
-    const timeText = formatTime(dueTime, use12Hour, locale);
+    const timeText = formatTime(dueTime, effectiveUse12Hour, locale);
     // For "Today", just show the time. For other dates, show concise format without "at"
     if (isToday(dueDate)) {
       return timeText;
@@ -101,50 +205,54 @@ function formatDatePart(
   date: Date,
   formatType: TaskDateFormat,
   includeYear?: boolean,
-  locale?: Locale,
+  preferDayMonthFormat?: boolean,
 ): string {
   const now = new Date();
   const currentYear = now.getFullYear();
   const dateYear = date.getFullYear();
   const shouldIncludeYear = includeYear ?? dateYear !== currentYear;
-
-  const formatOptions = locale ? { locale } : undefined;
-  const relativeLabel = getRelativeDateLabel(date, locale);
+  const relativeLabel = getRelativeDateLabel(date);
 
   switch (formatType) {
     case "full":
       if (relativeLabel) return relativeLabel;
-      return shouldIncludeYear
-        ? format(date, "MMM d, yyyy", formatOptions)
-        : format(date, "MMM d", formatOptions);
+      return formatDateDisplay(date, {
+        includeYear: shouldIncludeYear,
+        preferDayMonthFormat,
+      });
 
     case "compact":
       if (relativeLabel) return relativeLabel;
-      return shouldIncludeYear
-        ? format(date, "MMM d, yyyy", formatOptions)
-        : format(date, "MMM d", formatOptions);
+      return formatDateDisplay(date, {
+        includeYear: shouldIncludeYear,
+        preferDayMonthFormat,
+      });
 
     case "badge":
       if (relativeLabel) return relativeLabel;
-      return shouldIncludeYear
-        ? format(date, "MMM d, yyyy", formatOptions)
-        : format(date, "MMM d", formatOptions);
+      return formatDateDisplay(date, {
+        includeYear: shouldIncludeYear,
+        preferDayMonthFormat,
+      });
 
     case "short":
-      return shouldIncludeYear
-        ? format(date, "MMM d, yyyy", formatOptions)
-        : format(date, "MMM d", formatOptions);
+      return formatDateDisplay(date, {
+        includeYear: shouldIncludeYear,
+        preferDayMonthFormat,
+      });
 
     case "relative":
       if (relativeLabel) return relativeLabel;
-      return shouldIncludeYear
-        ? format(date, "MMM d, yyyy", formatOptions)
-        : format(date, "MMM d", formatOptions);
+      return formatDateDisplay(date, {
+        includeYear: shouldIncludeYear,
+        preferDayMonthFormat,
+      });
 
     default:
-      return shouldIncludeYear
-        ? format(date, "MMM d, yyyy", formatOptions)
-        : format(date, "MMM d", formatOptions);
+      return formatDateDisplay(date, {
+        includeYear: shouldIncludeYear,
+        preferDayMonthFormat,
+      });
   }
 }
 
@@ -168,8 +276,16 @@ function formatTime(
 /**
  * Get a short time format for badges and compact displays
  */
-export function formatTimeShort(time: Date): string {
-  // For badges, use shorter format like "9AM" instead of "9:00 AM"
+export function formatTimeShort(
+  time: Date,
+  options?: { use24HourTime?: boolean },
+): string {
+  const prefer24 = options?.use24HourTime === true;
+  if (prefer24) {
+    return format(time, "HH:mm");
+  }
+
+  // 12-hour short style (e.g., 9AM)
   const hours = time.getHours();
   const minutes = time.getMinutes();
 
@@ -202,21 +318,34 @@ export function formatTimeShort(time: Date): string {
  */
 export function formatTaskDateTimeBadge<
   T extends { dueDate?: Date | null; dueTime?: Date | null },
->(task: T, locale?: Locale): string | null {
+>(
+  task: T,
+  locale?: Locale,
+  options?: { use24HourTime?: boolean; preferDayMonthFormat?: boolean },
+): string {
   const { dueDate, dueTime } = task;
 
   if (!dueDate && dueTime) {
-    return formatTimeShort(dueTime);
+    return (
+      formatTimeShort(dueTime, { use24HourTime: options?.use24HourTime }) || ""
+    );
   }
 
   if (!dueDate) {
-    return null;
+    return "";
   }
 
-  const dateText = formatDatePart(dueDate, "badge", undefined, locale);
+  const dateText = formatDatePart(
+    dueDate,
+    "badge",
+    undefined,
+    options?.preferDayMonthFormat,
+  );
 
   if (dueTime) {
-    const timeText = formatTimeShort(dueTime);
+    const timeText = formatTimeShort(dueTime, {
+      use24HourTime: options?.use24HourTime,
+    });
     // For "Today", just show the time. For other dates, show "Tomorrow 9AM" format
     if (isToday(dueDate)) {
       return timeText;
@@ -225,6 +354,23 @@ export function formatTaskDateTimeBadge<
   }
 
   return dateText;
+}
+
+/**
+ * Standalone helper to format a time of day according to preference.
+ * @param time Date object representing the time
+ * @param options.use24HourTime when true uses 24h, otherwise 12h with AM/PM
+ * @param options.short when true, uses compact style (e.g., 9AM or 09:00)
+ */
+export function formatTimeOfDay(
+  time: Date,
+  options?: { use24HourTime?: boolean; short?: boolean; locale?: Locale },
+): string {
+  if (options?.short) {
+    return formatTimeShort(time, { use24HourTime: options.use24HourTime });
+  }
+  const use12 = options?.use24HourTime ? false : true;
+  return formatTime(time, use12, options?.locale);
 }
 
 /**

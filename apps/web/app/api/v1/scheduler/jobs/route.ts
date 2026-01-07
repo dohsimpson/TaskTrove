@@ -14,6 +14,7 @@ async function listSchedulerJobs(): Promise<NextResponse<GetSchedulerJobsRespons
   const response: GetSchedulerJobsResponse = {
     jobs,
     running: scheduler.isRunning(),
+    serverTime: new Date().toISOString(),
   }
 
   return NextResponse.json(response, {

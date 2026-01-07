@@ -162,9 +162,34 @@ vi.mock("@tasktrove/atoms/ui/views", () => {
   )
   mockSetViewOptionsAtom.debugLabel = "setViewOptionsAtom"
 
+  // Create updateViewStateAtom - updates view state for a specific viewId
+  const mockUpdateViewStateAtom = atom(
+    null,
+    (
+      get,
+      set,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      { viewId, updates }: { viewId: string; updates: Partial<typeof defaultViewState> },
+    ) => {
+      // For tests, just update the shared mockViewStateAtom (viewId ignored)
+      const current = get(mockViewStateAtom)
+      set(mockViewStateAtom, { ...current, ...updates })
+    },
+  )
+  mockUpdateViewStateAtom.debugLabel = "updateViewStateAtom"
+
+  // Create getViewStateAtom - function that returns an atom for a specific viewId
+  const getViewStateAtom = (viewId: string) => {
+    const viewStateAtom = atom(defaultViewState)
+    viewStateAtom.debugLabel = `getViewStateAtom(${viewId})`
+    return viewStateAtom
+  }
+
   return {
     currentViewAtom: createMockAtom("currentViewAtom", "today"),
     currentViewStateAtom: mockViewStateAtom,
+    isCalendarViewAtom: createMockAtom("isCalendarViewAtom", false),
+    selectedCalendarDateAtom: createMockAtom("selectedCalendarDateAtom", null),
     setSearchQueryAtom: mockSetSearchQueryAtom,
     collapsedSectionsAtom: createMockAtom("collapsedSectionsAtom", []),
     toggleSectionCollapseAtom: createMockAtom("toggleSectionCollapseAtom"),
@@ -174,8 +199,12 @@ vi.mock("@tasktrove/atoms/ui/views", () => {
     updateGlobalViewOptionsAtom: createMockAtom("updateGlobalViewOptionsAtom"),
     activeFiltersAtom: createMockAtom("activeFiltersAtom", {}),
     hasActiveFiltersAtom: createMockAtom("hasActiveFiltersAtom", false),
+    activeFilterCountAtom: createMockAtom("activeFilterCountAtom", 0),
     updateFiltersAtom: createMockAtom("updateFiltersAtom"),
+    clearActiveFiltersAtom: createMockAtom("clearActiveFiltersAtom"),
     setViewOptionsAtom: mockSetViewOptionsAtom,
+    updateViewStateAtom: mockUpdateViewStateAtom,
+    getViewStateAtom,
   }
 })
 
@@ -187,7 +216,6 @@ vi.mock("@tasktrove/atoms/ui/selection", () => ({
   selectedTasksAtom: createMockAtom("selectedTasksAtom", []),
   selectedTaskAtom: createMockAtom("selectedTaskAtom"),
   selectedTaskRouteContextAtom: createMockAtom("selectedTaskRouteContextAtom"),
-  selectedTaskRouteContextOverrideAtom: createMockAtom("selectedTaskRouteContextOverrideAtom"),
   setSelectedTaskIdAtom: createMockAtom("setSelectedTaskIdAtom"),
   lastSelectedTaskAtom: createMockAtom("lastSelectedTaskAtom"),
   selectRangeAtom: createMockAtom("selectRangeAtom"),
@@ -201,10 +229,25 @@ vi.mock("@tasktrove/atoms/ui/selection", () => ({
  */
 vi.mock("@tasktrove/atoms/ui/drag", () => {
   const draggingTaskIdsAtom = createMockAtom("draggingTaskIdsAtom", [])
+  const resizingTaskIdAtom = createMockAtom("resizingTaskIdAtom", null)
+  const draggingEventIdAtom = createMockAtom("draggingEventIdAtom", null)
+  const resizingEventIdAtom = createMockAtom("resizingEventIdAtom", null)
+  const isAnyDragActiveAtom = createMockAtom("isAnyDragActiveAtom", false)
+  const isAnyResizeActiveAtom = createMockAtom("isAnyResizeActiveAtom", false)
   return {
     draggingTaskIdsAtom,
+    resizingTaskIdAtom,
+    draggingEventIdAtom,
+    resizingEventIdAtom,
+    isAnyDragActiveAtom,
+    isAnyResizeActiveAtom,
     dragAtoms: {
       draggingTaskIds: draggingTaskIdsAtom,
+      resizingTaskId: resizingTaskIdAtom,
+      draggingEventId: draggingEventIdAtom,
+      resizingEventId: resizingEventIdAtom,
+      isAnyDragActive: isAnyDragActiveAtom,
+      isAnyResizeActive: isAnyResizeActiveAtom,
     },
   }
 })
@@ -241,10 +284,16 @@ vi.mock("@tasktrove/atoms/data/base/atoms", () => ({
       theme: "system",
       language: "en",
       popoverHoverOpen: false,
+      preferDayMonthFormat: false,
     },
     data: {
       fileFormat: "json",
       autoSave: true,
+    },
+    uiSettings: {
+      use24HourTime: false,
+      weekStartsOn: 0,
+      showWeekNumber: false,
     },
   }),
   dataFileAtom: createMockAtom("dataFileAtom", {}),
@@ -376,14 +425,12 @@ vi.mock("@tasktrove/atoms/core/groups", () => ({
       type: "project",
       id: "root",
       name: "All Projects",
-      slug: "all-projects",
       items: [],
     },
     labelGroups: {
       type: "label",
       id: "root-labels",
       name: "All Labels",
-      slug: "all-labels",
       items: [],
     },
   }),

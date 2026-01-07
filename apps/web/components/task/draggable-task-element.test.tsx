@@ -4,8 +4,14 @@ import { Provider, createStore, useAtomValue, useSetAtom } from "jotai"
 import { vi, describe, it, expect, beforeEach } from "vitest"
 import { DraggableTaskElement } from "./draggable-task-element"
 import { draggingTaskIdsAtom } from "@tasktrove/atoms/ui/drag"
-import { currentViewStateAtom, setViewOptionsAtom } from "@tasktrove/atoms/ui/views"
-import { createTaskId } from "@tasktrove/types/id"
+import {
+  currentViewAtom,
+  currentViewStateAtom,
+  setViewOptionsAtom,
+} from "@tasktrove/atoms/ui/views"
+import { pathnameAtom, currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
+import type { RouteContext } from "@tasktrove/atoms/ui/navigation"
+import { createProjectId, createTaskId } from "@tasktrove/types/id"
 
 const mockHandlers: {
   onDragStart?: () => void
@@ -37,6 +43,16 @@ vi.mock("@/components/ui/drag-drop/draggable-item", () => ({
 describe("DraggableTaskElement", () => {
   const createWrapper = () => {
     const store = createStore()
+    const projectId = createProjectId("123e4567-e89b-12d3-a456-426614174002")
+    store.set(currentViewAtom, projectId)
+    store.set(pathnameAtom, `/projects/${projectId}`)
+    const routeContext: RouteContext = {
+      routeType: "project",
+      viewId: projectId,
+      pathname: `/projects/${projectId}`,
+    }
+    // @ts-expect-error - Override read-only atom for test setup
+    store.set(currentRouteContextAtom, routeContext)
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <Provider store={store}>{children}</Provider>
     )
@@ -105,6 +121,7 @@ describe("DraggableTaskElement", () => {
       setViewOptionsResult.current({
         sortBy: "title",
         sortDirection: "asc",
+        viewMode: "list",
       })
     })
 

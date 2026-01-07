@@ -11,7 +11,7 @@ describe("TaskScheduleTrigger", () => {
   it("renders due date text when provided", () => {
     const dueDate = new Date("2024-11-02T00:00:00")
     render(<TaskScheduleTrigger dueDate={dueDate} />)
-    expect(screen.getByText(/Nov 2/)).toBeInTheDocument()
+    expect(screen.getByText(/11\/2\/2024/)).toBeInTheDocument()
   })
 
   it("applies overdue styling when due date is past", () => {

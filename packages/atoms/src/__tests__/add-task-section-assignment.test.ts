@@ -25,7 +25,6 @@ describe("addTaskToSection - Section Assignment Logic", () => {
     {
       id: defaultSectionId,
       name: "Default",
-      slug: "",
       type: "section",
       color: "#6b7280",
       items: [],
@@ -33,7 +32,6 @@ describe("addTaskToSection - Section Assignment Logic", () => {
     {
       id: customSectionId,
       name: "Custom Section",
-      slug: "",
       type: "section",
       color: "#ff0000",
       items: [],
@@ -82,7 +80,6 @@ describe("addTaskToSection - Section Assignment Logic", () => {
       {
         id: defaultSectionId,
         name: "Default",
-        slug: "",
         type: "section",
         color: "#6b7280",
         items: [existingTaskId],
@@ -90,7 +87,6 @@ describe("addTaskToSection - Section Assignment Logic", () => {
       {
         id: customSectionId,
         name: "Custom Section",
-        slug: "",
         type: "section",
         color: "#ff0000",
         items: [],
@@ -121,7 +117,6 @@ describe("addTaskToSection - Section Assignment Logic", () => {
       {
         id: defaultSectionId,
         name: "Default",
-        slug: "",
         type: "section",
         color: "#6b7280",
         items: [existingTaskId1, existingTaskId2],
@@ -129,7 +124,6 @@ describe("addTaskToSection - Section Assignment Logic", () => {
       {
         id: customSectionId,
         name: "Custom Section",
-        slug: "",
         type: "section",
         color: "#ff0000",
         items: [],
@@ -158,7 +152,6 @@ describe("addTaskToSection - Section Assignment Logic", () => {
       {
         id: defaultSectionId,
         name: "Default",
-        slug: "",
         type: "section",
         color: "#6b7280",
         items: [taskId],
@@ -166,7 +159,6 @@ describe("addTaskToSection - Section Assignment Logic", () => {
       {
         id: customSectionId,
         name: "Custom Section",
-        slug: "",
         type: "section",
         color: "#ff0000",
         items: [],

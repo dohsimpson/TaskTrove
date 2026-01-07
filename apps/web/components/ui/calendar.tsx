@@ -7,6 +7,7 @@ import type { DayPickerProps, RootProps, ChevronProps, WeekNumberProps } from "r
 
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { formatDateDisplay, formatMonthLabel } from "@/lib/utils/task-date-formatter"
 
 function Calendar({
   className,
@@ -16,6 +17,7 @@ function Calendar({
   buttonVariant = "ghost",
   formatters,
   components,
+  showTodayDot = true,
   ...props
 }: DayPickerProps & {
   className?: string
@@ -25,8 +27,15 @@ function Calendar({
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
   formatters?: DayPickerProps["formatters"]
   components?: DayPickerProps["components"]
+  showTodayDot?: boolean
 }) {
   const defaultClassNames = getDefaultClassNames()
+  const todayClassName = showTodayDot
+    ? cn(
+        "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-primary after:rounded-full",
+        defaultClassNames.today,
+      )
+    : defaultClassNames.today
 
   return (
     <DayPicker
@@ -39,7 +48,7 @@ function Calendar({
       )}
       captionLayout={captionLayout}
       formatters={{
-        formatMonthDropdown: (date) => date.toLocaleString("default", { month: "short" }),
+        formatMonthDropdown: (date) => formatMonthLabel(date, { variant: "short" }),
         ...formatters,
       }}
       classNames={{
@@ -99,10 +108,7 @@ function Calendar({
         range_start: cn("rounded-l-md bg-accent", defaultClassNames.range_start),
         range_middle: cn("rounded-none", defaultClassNames.range_middle),
         range_end: cn("rounded-r-md bg-accent", defaultClassNames.range_end),
-        today: cn(
-          "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-primary after:rounded-full",
-          defaultClassNames.today,
-        ),
+        today: todayClassName,
         outside: cn(
           "text-muted-foreground aria-selected:text-muted-foreground",
           defaultClassNames.outside,
@@ -162,7 +168,7 @@ function CalendarDayButton({ className, day, modifiers, ...props }: CalendarDayB
       ref={ref}
       variant="ghost"
       size="icon"
-      data-day={day.date.toLocaleDateString()}
+      data-day={formatDateDisplay(day.date, { includeYear: true })}
       data-selected-single={
         modifiers.selected &&
         !modifiers.range_start &&

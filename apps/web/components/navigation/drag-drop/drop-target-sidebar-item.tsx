@@ -1,6 +1,9 @@
 "use client"
 
+import { useAtomValue } from "jotai"
 import { DropTargetItem } from "@/components/ui/drag-drop/drop-target-item"
+import { taskAtoms } from "@tasktrove/atoms/core/tasks"
+import { createTaskId } from "@tasktrove/types/id"
 import type { ProjectId, GroupId } from "@tasktrove/types/id"
 import type { DropEventData } from "@/hooks/use-sidebar-drag-drop"
 import { isValidSidebarOperation } from "@/lib/sidebar-drag-drop-logic"
@@ -32,6 +35,8 @@ export function DropTargetSidebarProject({
   onDrop,
 }: DropTargetSidebarProjectProps) {
   const currentLevel = groupId ? 1 : 0 // Projects in groups are at level 1
+  const taskById = useAtomValue(taskAtoms.derived.taskById)
+  const indicatorClassName = groupId ? "ml-6 w-[calc(100%-1.5rem)] flex-none" : "w-full flex-none"
 
   return (
     <DropTargetItem
@@ -47,20 +52,44 @@ export function DropTargetSidebarProject({
         groupId,
       })}
       canDrop={(sourceData) => {
-        // Accept sidebar projects/groups (for reordering)
-        if (sourceData.type === "sidebar-project" || sourceData.type === "sidebar-group") {
-          return true
-        }
-        // Accept tasks (for assignment to project)
-        if (sourceData.type === "list-item" && sourceData.ids) {
-          return true
-        }
-        return false
+        // Only accept sidebar projects/groups (for reordering)
+        return sourceData.type === "sidebar-project" || sourceData.type === "sidebar-group"
       }}
       validateInstruction={isValidSidebarOperation}
       onDrop={onDrop}
     >
-      {children}
+      <DropTargetItem
+        id={`${projectId}-task-drop`}
+        index={index}
+        mode="group"
+        getData={() => ({
+          type: "sidebar-project-drop-target",
+          projectId,
+          index,
+          groupId,
+        })}
+        indicatorClassName={indicatorClassName}
+        canDrop={(sourceData) => {
+          // Accept tasks (for assignment to project)
+          if (sourceData.type !== "list-item" || !Array.isArray(sourceData.ids)) {
+            return false
+          }
+
+          // Block drops when every task already belongs to this project
+          const hasMovableTask = sourceData.ids.some((id) => {
+            if (typeof id !== "string") {
+              return false
+            }
+            const task = taskById.get(createTaskId(id))
+            return !task || task.projectId !== projectId
+          })
+
+          return hasMovableTask
+        }}
+        onDrop={onDrop}
+      >
+        {children}
+      </DropTargetItem>
     </DropTargetItem>
   )
 }
@@ -99,6 +128,10 @@ export function DropTargetSidebarGroup({
         groupId,
         index,
       })}
+      canDrop={(sourceData) => {
+        // Only accept sidebar projects/groups (for reordering)
+        return sourceData.type === "sidebar-project" || sourceData.type === "sidebar-group"
+      }}
       validateInstruction={isValidSidebarOperation}
       onDrop={onDrop}
     >

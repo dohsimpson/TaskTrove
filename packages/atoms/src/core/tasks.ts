@@ -30,6 +30,8 @@ import {
   handleAtomError,
   namedAtom,
   withErrorHandling,
+  toast,
+  log,
 } from "@tasktrove/atoms/utils/atom-helpers";
 import { playSoundAtom } from "@tasktrove/atoms/ui/audio";
 import { notificationAtoms } from "@tasktrove/atoms/core/notifications";
@@ -55,7 +57,6 @@ import {
 } from "@tasktrove/atoms/mutations/tasks";
 import { updateProjectsMutationAtom } from "@tasktrove/atoms/mutations/projects";
 import { recordOperationAtom } from "@tasktrove/atoms/core/history";
-import { log } from "@tasktrove/atoms/utils/atom-helpers";
 import { getEffectiveDueDate } from "@tasktrove/utils";
 
 /**
@@ -194,7 +195,25 @@ export const updateTasksAtom = namedAtom(
   atom(null, async (get, set, updateRequests: UpdateTaskRequest[]) => {
     try {
       const taskById = get(taskByIdAtom);
-      const normalizedUpdates = updateRequests.map((updateRequest) => {
+      const allowedUpdates = updateRequests.filter((updateRequest) => {
+        const originalTask = taskById.get(updateRequest.id);
+        if (!originalTask?.archived) return true;
+
+        const isUnarchiving = updateRequest.archived === false;
+
+        return isUnarchiving;
+      });
+
+      const blockedUpdates = updateRequests.length - allowedUpdates.length;
+      if (blockedUpdates > 0) {
+        toast.info("Archived tasks must be unarchived before editing.");
+      }
+
+      if (allowedUpdates.length === 0) {
+        return;
+      }
+
+      const normalizedUpdates = allowedUpdates.map((updateRequest) => {
         const originalTask = taskById.get(updateRequest.id);
         if (
           !originalTask ||

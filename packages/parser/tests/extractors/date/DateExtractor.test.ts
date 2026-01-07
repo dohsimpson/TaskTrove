@@ -71,6 +71,44 @@ describe("DateExtractor", () => {
     expect(results[0]?.value).toEqual(new Date(2025, 1, 20)); // Feb 20, 2025
   });
 
+  it("should extract ISO dates (YYYY-MM-DD)", () => {
+    const context: ParserContext = {
+      locale: "en",
+      referenceDate: new Date(2025, 0, 15), // Jan 15, 2025
+    };
+
+    const results = extractor.extract("Task 2025-02-20", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.match).toBe("2025-02-20");
+    expect(results[0]?.value).toEqual(new Date(2025, 1, 20)); // Feb 20, 2025
+  });
+
+  it("should prefer month/day for ambiguous numeric dates by default", () => {
+    const context: ParserContext = {
+      locale: "en",
+      referenceDate: new Date(2025, 0, 15),
+    };
+
+    const results = extractor.extract("Task 11/12", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toEqual(new Date(2025, 10, 12)); // Nov 12, 2025
+  });
+
+  it("should prefer day/month for ambiguous numeric dates when enabled", () => {
+    const context: ParserContext = {
+      locale: "en",
+      referenceDate: new Date(2025, 0, 15),
+      preferDayMonthFormat: true,
+    };
+
+    const results = extractor.extract("Task 11/12", context);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.value).toEqual(new Date(2025, 11, 11)); // Dec 11, 2025
+  });
+
   it("should extract month day patterns", () => {
     const context: ParserContext = {
       locale: "en",

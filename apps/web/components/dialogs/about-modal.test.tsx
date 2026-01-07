@@ -1,12 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@/test-utils"
 import { AboutModal } from "./about-modal"
+import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "@/lib/constants/default"
 
-// Mock package.json
-vi.mock("@/package.json", () => ({
-  default: {
-    version: "0.1.0",
-  },
+vi.mock("@/lib/utils/version", () => ({
+  getAppVersion: async () => ({ version: "0.1.0", native: false }),
 }))
 
 // Mock window.open
@@ -26,11 +24,11 @@ describe("AboutModal", () => {
     vi.clearAllMocks()
   })
 
-  it("renders when open", () => {
+  it("renders when open", async () => {
     render(<AboutModal {...defaultProps} />)
 
     expect(screen.getByText("TaskTrove")).toBeInTheDocument()
-    expect(screen.getByText("v0.1.0")).toBeInTheDocument()
+    expect(await screen.findByText("v0.1.0")).toBeInTheDocument()
     expect(screen.getByText("made with")).toBeInTheDocument()
     expect(screen.getByText("@dohsimpson")).toBeInTheDocument()
   })
@@ -41,10 +39,10 @@ describe("AboutModal", () => {
     expect(screen.queryByText("TaskTrove")).not.toBeInTheDocument()
   })
 
-  it("displays version correctly", () => {
+  it("displays version correctly", async () => {
     render(<AboutModal {...defaultProps} />)
 
-    expect(screen.getByText("v0.1.0")).toBeInTheDocument()
+    expect(await screen.findByText("v0.1.0")).toBeInTheDocument()
   })
 
   it("renders action buttons", () => {
@@ -60,7 +58,10 @@ describe("AboutModal", () => {
     const starButton = screen.getByRole("button", { name: /star on github/i })
     fireEvent.click(starButton)
 
-    expect(mockWindowOpen).toHaveBeenCalledWith("https://github.com/dohsimpson/TaskTrove", "_blank")
+    expect(mockWindowOpen).toHaveBeenCalledWith(
+      `https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}`,
+      "_blank",
+    )
   })
 
   it("opens GitHub sponsors when Sponsor button is clicked", () => {
@@ -69,7 +70,10 @@ describe("AboutModal", () => {
     const sponsorButton = screen.getByRole("button", { name: /sponsor/i })
     fireEvent.click(sponsorButton)
 
-    expect(mockWindowOpen).toHaveBeenCalledWith("https://github.com/sponsors/dohsimpson", "_blank")
+    expect(mockWindowOpen).toHaveBeenCalledWith(
+      `https://github.com/sponsors/${GITHUB_REPO_OWNER}`,
+      "_blank",
+    )
   })
 
   it("renders author button that opens link", () => {

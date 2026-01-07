@@ -3,9 +3,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Flame, Calendar, Trophy, Target } from "lucide-react"
-import { format, subDays, isToday, startOfDay, endOfDay } from "date-fns"
+import { subDays, isToday, startOfDay, endOfDay } from "date-fns"
 import { useAtomValue } from "jotai"
-import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
+import { tasksAtom, settingsAtom } from "@tasktrove/atoms/data/base/atoms"
+import { formatDateDisplay } from "@/lib/utils/task-date-formatter"
 import type { Task } from "@tasktrove/types/core"
 
 interface StreakTrackerProps {
@@ -15,6 +16,8 @@ interface StreakTrackerProps {
 export function StreakTracker({ currentStreak }: StreakTrackerProps) {
   // Get tasks from atoms
   const tasks = useAtomValue(tasksAtom)
+  const settings = useAtomValue(settingsAtom)
+  const preferDayMonthFormat = Boolean(settings.general.preferDayMonthFormat)
   // Calculate streak calendar (last 30 days)
   const getStreakCalendar = () => {
     const calendar = []
@@ -142,12 +145,20 @@ export function StreakTracker({ currentStreak }: StreakTrackerProps) {
                       ? "bg-gray-200 border-orange-300 dark:bg-gray-700 dark:border-orange-600"
                       : "bg-gray-100 border-gray-200 dark:bg-gray-800 dark:border-gray-700"
                 }`}
-                title={`${format(day.date, "MMM d")}: ${day.taskCount} tasks completed`}
+                title={`${formatDateDisplay(day.date, {
+                  preferDayMonthFormat,
+                })}: ${day.taskCount} tasks completed`}
               />
             ))}
           </div>
           <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
-            <span>{streakCalendar[0] ? format(streakCalendar[0].date, "MMM d") : ""}</span>
+            <span>
+              {streakCalendar[0]
+                ? formatDateDisplay(streakCalendar[0].date, {
+                    preferDayMonthFormat,
+                  })
+                : ""}
+            </span>
             <span>Today</span>
           </div>
         </div>

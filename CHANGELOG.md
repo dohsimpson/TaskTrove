@@ -1,5 +1,83 @@
 # tasktrove
 
+## 0.12.0
+
+### Features
+
+🎉 Feature - Add recent view with configurable time range
+🎉 Feature - Add day view mode with resizable task sidebar in calendar
+🎉 Feature - Implement comprehensive archived task functionality with UI enhancements
+🎉 Feature - Add side pane system for calendar views
+🎉 Feature - Add expandable month view days for showing all tasks
+🎉 Feature - Make week numbers clickable to switch to week view
+🎉 Feature - Implement drag-to-create task functionality in calendar
+🎉 Feature - Add data management settings
+🎉 Feature - Add data file validation to health check
+🎉 Feature - Implement last viewed path start view preference
+🎉 Feature - Add visual feedback for task metadata changes
+🎉 Feature - Keep local date/time selections synced when task updates
+🎉 Feature - Enable drag-and-drop for moving tasks between project groups
+🎉 Feature - Refine drag-and-drop behavior for label reordering
+🎉 Feature - Implement sidebar view drop targets for task updates
+🎉 Feature - Add clickable task titles in footer with improved accessibility
+🎉 Feature - Add sort controls to due today popover and redesign sort dropdown
+🎉 Feature - Unify task focusing across lists with clean routing
+🎉 Feature - Add context menu and delete button for minimal variant
+🎉 Feature - Extract reusable LoadingScreen component
+🎉 Feature - Improve virtualized list initial render with deferred motion animation
+🎉 Feature - Add support for ISO date format (YYYY-MM-DD) in parser
+🎉 Feature - Add preferDayMonthFormat setting for ambiguous numeric dates
+🎉 Feature - Centralize drop helpers and harden same-section guards
+🎉 Feature - Prevent dropping tasks onto same section
+🎉 Feature - Add smooth scroll utility and auto-scroll to earliest event
+🎉 Feature - Add Escape shortcut to close planner side pane
+🎉 Feature - Add runOnInit config for scheduled jobs
+🎉 Feature - Add config column and refactor input handling
+🎉 Feature - Add Enter key confirm to time-picker and simplify state sync
+🎉 Feature - Refactor multi-select and time-slot drop into reusable utilities
+
+### Minor Changes
+
+🎉 Feature - Remove slug field from group and item schemas
+🎉 Feature - Introduce soft primary background theme across views
+🎉 Feature - Improve color palette management and randomization
+🎉 Feature - Centralize date formatting with user preference support
+🎉 Feature - Improve date formatting and UI consistency across components
+🎉 Feature - Centralize padding for task views
+🎉 Feature - Refactor calendar header layout and integrate ProjectViewToolbar
+🎉 Feature - Extract shared time block resize logic into useTimeBlockResize
+🎉 Feature - Extract shared side pane shell component
+🎉 Feature - Extract task update logic to dedicated updateTasksAtom
+🎉 Feature - Unify task display and simplify selection
+🎉 Feature - Remove unused task-detail-dialog and task-form components
+🎉 Feature - Remove isInGroup prop and adjust notification volumes
+🎉 Feature - Remove floating restore button from side pane layout
+🎉 Feature - Add showToolbar prop to control toolbar rendering
+🎉 Feature - Improve month view event ordering
+🎉 Feature - Use custom calendar wrapper that centers on selected date
+🎉 Feature - Improve task schedule component and test coverage
+🎉 Feature - Improve code formatting and consistency
+🎉 Feature - Change default view to inbox and reorder navigation
+
+### Patch Changes
+
+🐛 Bug - Upgrade to Next.js 16 for latest features and security patches
+🐛 Bug - Fix input text overflow when having very long word in quick add
+🐛 Bug - Clamp long task titles in Eisenhower matrix
+🐛 Bug - Prevent directory access and add test coverage for assets
+🐛 Bug - Handle undefined dismissedUi with nullish coalescing
+🐛 Bug - Prevent auto-link nesting and underscore italicization in markdown renderer
+🐛 Bug - Improve tooltip dark mode and legend overflow handling for charts
+🐛 Bug - Stabilize keyboard shortcuts handler lifecycle
+🐛 Bug - Fix calendar layout scrolling with flexbox
+🐛 Bug - Improve selection behavior and add project toolbar
+🐛 Bug - Improve title layout and card padding
+🐛 Bug - Change scroll behavior to instant for task highlighting
+🐛 Bug - Restrict sort reset to project list/kanban views only
+🐛 Bug - Update LabelContent component to use Command for label selection
+🐛 Bug - Remove duplicate px-2 padding from kanban column wrapper
+🐛 Bug - Improve backup error handling and validation
+
 ## 0.11.1
 
 ### Patch Changes

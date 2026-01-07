@@ -1,19 +1,26 @@
 "use client"
 
 import * as React from "react"
-import { ReactNode, Suspense, Component, ComponentType, useEffect, useState } from "react"
-import { Provider as JotaiProvider } from "jotai"
+import { ReactNode, Suspense, Component, useEffect, useState } from "react"
+import { Provider as JotaiProvider, type WritableAtom } from "jotai"
 import { useHydrateAtoms } from "jotai/react/utils"
-import dynamic from "next/dynamic"
-import type { DevToolsProps } from "jotai-devtools"
+import Link from "next/link"
 import { useTheme } from "next-themes"
 import { DevTools } from "./DevTools"
 import { log } from "@/lib/utils/logger"
+import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from "@/lib/constants/default"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { queryClientAtom } from "jotai-tanstack-query"
 
 export const queryClient = new QueryClient()
+const githubIssuesUrl = `https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}/issues`
+
+type UnsafeAny = ReturnType<typeof JSON.parse>
+type AnyWritableAtom = WritableAtom<UnsafeAny, UnsafeAny[], UnsafeAny>
+type HydrateTuple = readonly [AnyWritableAtom, ...unknown[]]
+type HydrateValues = ReadonlyArray<HydrateTuple>
+type InitialStateIterable = HydrateValues
 
 interface JotaiProviderWrapperProps {
   children: ReactNode
@@ -35,7 +42,7 @@ interface JotaiProviderWrapperProps {
    *   <YourApp />
    * </JotaiProvider>
    */
-  initialState?: Iterable<[any, any]>
+  initialState?: InitialStateIterable
 }
 
 interface ErrorBoundaryState {
@@ -123,12 +130,12 @@ class JotaiErrorBoundary extends Component<
                   >
                     Refresh Page
                   </button>
-                  <a
+                  <Link
                     href="/"
                     className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors inline-block"
                   >
                     Go to Home Page
-                  </a>
+                  </Link>
                 </div>
                 <div className="flex justify-center gap-4 text-sm mt-2">
                   <a
@@ -140,7 +147,7 @@ class JotaiErrorBoundary extends Component<
                     Troubleshooting Guide
                   </a>
                   <a
-                    href="https://github.com/dohsimpson/tasktrove/issues"
+                    href={githubIssuesUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-3 py-1 text-muted-foreground hover:text-foreground underline underline-offset-4"
@@ -185,7 +192,7 @@ function ThemedDevTools() {
   }, [])
 
   // Only render after hydration to prevent mismatch
-  if (!mounted || !DevTools) return null
+  if (!mounted) return null
 
   return <DevTools position="bottom-right" theme={theme === "dark" ? "dark" : "light"} />
 }
@@ -194,7 +201,6 @@ function ThemedDevTools() {
  * TanStack Query DevTools wrapper with theme support
  */
 function ThemedReactQueryDevtools() {
-  const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -216,17 +222,15 @@ function HydrateAtoms({
   initialState,
 }: {
   children: ReactNode
-  initialState?: Iterable<[any, any]>
+  initialState?: InitialStateIterable
 }) {
   // Always hydrate the queryClientAtom first
-  const atomsToHydrate: [any, any][] = [[queryClientAtom, queryClient]]
+  const hydrationValues = React.useMemo<HydrateValues>(
+    () => [[queryClientAtom, queryClient], ...(initialState ?? [])],
+    [initialState],
+  )
 
-  if (initialState) {
-    // Add the existing initialState atoms
-    atomsToHydrate.push(...Array.from(initialState))
-  }
-
-  useHydrateAtoms(atomsToHydrate)
+  useHydrateAtoms(hydrationValues)
   return children
 }
 

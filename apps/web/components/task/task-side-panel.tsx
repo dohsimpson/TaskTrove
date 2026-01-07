@@ -11,6 +11,7 @@ import { MarkdownEditableDiv } from "@/components/ui/custom/markdown-editable-di
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/custom/drawer"
 import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useTaskMetadataFlash } from "@/hooks/use-flash-on-change"
 import { isPro } from "@/lib/utils/env"
 import { TaskSchedulePopover } from "./task-schedule-popover"
 import { TaskScheduleTrigger } from "./task-schedule-trigger"
@@ -27,10 +28,9 @@ import { TaskDebugBadge } from "@/components/debug"
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback"
 import { updateTaskAtom, deleteTaskAtom, toggleTaskAtom } from "@tasktrove/atoms/core/tasks"
 import { projectsAtom } from "@tasktrove/atoms/data/base/atoms"
-import { selectedTaskAtom, selectedTaskRouteContextAtom } from "@tasktrove/atoms/ui/selection"
+import { selectedTaskAtom } from "@tasktrove/atoms/ui/selection"
 import { draggingTaskIdsAtom } from "@tasktrove/atoms/ui/drag"
-import { currentRouteContextAtom } from "@tasktrove/atoms/ui/navigation"
-import { scrollToTaskActionAtom } from "@tasktrove/atoms/ui/scroll-to-task"
+import { focusTaskActionAtom } from "@tasktrove/atoms/ui/task-focus"
 import { addCommentAtom } from "@tasktrove/atoms/core/tasks"
 import { log } from "@/lib/utils/logger"
 import { labelsAtom, settingsAtom } from "@tasktrove/atoms/data/base/atoms"
@@ -39,7 +39,8 @@ import type { Task } from "@tasktrove/types/core"
 import type { LabelId } from "@tasktrove/types/id"
 import { getPriorityTextColor } from "@/lib/color-utils"
 import { DEFAULT_COLOR_PALETTE } from "@tasktrove/constants"
-import { useRouter } from "next/navigation"
+import { CurrencyRewardPopover } from "@/components/task/currency-reward-popover"
+import { CurrencyRewardBadge } from "@/components/task/currency-reward-badge"
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter"
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview"
 import { useResetSortOnDrag } from "@/hooks/use-reset-sort-on-drag"
@@ -139,16 +140,16 @@ function TaskPanelContent({
   const isMobile = useIsMobile()
   const { t } = useTranslation("task")
 
+  // Visual flash when metadata changes
+  const getFlashClass = useTaskMetadataFlash(task)
+
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn("space-y-2", className)}>
       {/* Debug Badge */}
       <TaskDebugBadge task={task} />
 
       {/* Due Date & Assignment Section */}
       <div className="space-y-3">
-        <h3 className="text-sm text-foreground font-bold">
-          {t("sidePanel.scheduling.title", "Scheduling")}
-        </h3>
         <div className={cn(isPro() && "grid grid-cols-2 gap-2.5")}>
           {/* Due Date */}
           <TaskSchedulePopover taskId={task.id}>
@@ -159,7 +160,7 @@ function TaskPanelContent({
               recurringMode={task.recurringMode}
               completed={task.completed}
               variant="panel"
-              className="text-sm font-medium truncate"
+              className={cn("text-sm font-medium truncate", getFlashClass("schedule"))}
               fallbackLabel={t("sidePanel.dueDate.placeholder", "Due Date")}
             />
           </TaskSchedulePopover>
@@ -169,7 +170,10 @@ function TaskPanelContent({
             <AssigneeManagementPopover task={task}>
               <button
                 type="button"
-                className="flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/30 border border-transparent hover:border-border/50 text-muted-foreground w-full text-left"
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/30 border border-transparent hover:border-border/50 text-muted-foreground w-full text-left",
+                  getFlashClass("assignees"),
+                )}
               >
                 <Users className="h-4 w-4" />
                 <div className="flex-1 min-w-0">
@@ -183,9 +187,6 @@ function TaskPanelContent({
 
       {/* Organization Section - Priority & Project */}
       <div className="space-y-3">
-        <h3 className="text-sm text-foreground font-bold">
-          {t("sidePanel.category.title", "Category")}
-        </h3>
         <div className="grid grid-cols-2 gap-2.5">
           {/* Priority */}
           <PriorityPopover task={task}>
@@ -193,6 +194,7 @@ function TaskPanelContent({
               className={cn(
                 "flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/30 border border-transparent hover:border-border/50",
                 task.priority < 4 ? getPriorityTextColor(task.priority) : "text-muted-foreground",
+                getFlashClass("priority"),
               )}
             >
               <Flag className="h-4 w-4" />
@@ -206,7 +208,12 @@ function TaskPanelContent({
 
           {/* Project */}
           <ProjectPopover task={task}>
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/30 border border-transparent hover:border-border/50 text-muted-foreground">
+            <div
+              className={cn(
+                "flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 bg-muted/30 border border-transparent hover-border-border/50 text-muted-foreground",
+                getFlashClass("project"),
+              )}
+            >
               {(() => {
                 const project = getTaskProject()
                 return project ? (
@@ -225,6 +232,15 @@ function TaskPanelContent({
               })()}
             </div>
           </ProjectPopover>
+
+          {/* Task Reward (currency) */}
+          {isPro() && (
+            <div className="col-span-2">
+              <CurrencyRewardPopover task={task}>
+                <CurrencyRewardBadge task={task} />
+              </CurrencyRewardPopover>
+            </div>
+          )}
         </div>
       </div>
 
@@ -320,12 +336,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
   const addComment = useSetAtom(addCommentAtom)
   const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
   const deleteTask = useSetAtom(deleteTaskAtom)
-  const scrollToTask = useSetAtom(scrollToTaskActionAtom)
-
-  // Router and route context
-  const router = useRouter()
-  const selectedTaskRouteContext = useAtomValue(selectedTaskRouteContextAtom)
-  const currentRouteContext = useAtomValue(currentRouteContextAtom)
+  const focusTask = useSetAtom(focusTaskActionAtom)
 
   // Atom values
   const task = useAtomValue(selectedTaskAtom)
@@ -335,6 +346,14 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
 
   // Context menu - always visible in side panel
   const [actionsMenuOpen, setActionsMenuOpen] = useState(false)
+
+  const handleArchiveToggle = useCallback(
+    (archived: boolean) => {
+      if (!task) return
+      updateTask({ updateRequest: { id: task.id, archived } })
+    },
+    [task, updateTask],
+  )
 
   // clean up states when side panel is closed
   useEffect(() => {
@@ -383,7 +402,6 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
           // Wait for the real label ID from the server
           labelId = await addLabelAndWaitForRealId({
             name: labelToAdd,
-            slug: labelToAdd.toLowerCase().replace(/\s+/g, "-"),
             color: randomColor,
           })
         } else {
@@ -446,8 +464,9 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
             "focus:outline-none [&>div:first-child]:cursor-grab [&>div:first-child]:active:cursor-grabbing",
             isFullyExpanded ? "!max-h-[95vh]" : "!max-h-[70vh]",
           )}
+          thinHandle={isMobile}
         >
-          <DrawerHeader className="pb-2">
+          <DrawerHeader className={cn("pb-3 text-center", "pt-0")}>
             <DrawerTitle className="sr-only">
               {t("sidePanel.title", "Task Details: {{- title}}", { title: task.title })}
             </DrawerTitle>
@@ -474,20 +493,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => {
-                    // Navigate back to original route if needed
-                    if (
-                      selectedTaskRouteContext &&
-                      selectedTaskRouteContext.pathname !== currentRouteContext.pathname
-                    ) {
-                      router.push(selectedTaskRouteContext.pathname)
-                      // Wait for route to load and virtual list to render
-                      setTimeout(() => scrollToTask(task.id), 300)
-                    } else {
-                      // Same route, scroll immediately
-                      scrollToTask(task.id)
-                    }
-                  }}
+                  onClick={() => focusTask(task.id)}
                   className="h-8 w-8 flex-shrink-0"
                   title="Focus on task in list"
                 >
@@ -497,6 +503,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
                   task={task}
                   isVisible={true}
                   onDeleteClick={() => deleteTask(task.id)}
+                  onArchiveToggle={handleArchiveToggle}
                   isSubTask={false}
                   open={actionsMenuOpen}
                   onOpenChange={setActionsMenuOpen}
@@ -586,20 +593,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => {
-                  // Navigate back to original route if needed
-                  if (
-                    selectedTaskRouteContext &&
-                    selectedTaskRouteContext.pathname !== currentRouteContext.pathname
-                  ) {
-                    router.push(selectedTaskRouteContext.pathname)
-                    // Wait for route to load and virtual list to render
-                    setTimeout(() => scrollToTask(task.id), 300)
-                  } else {
-                    // Same route, scroll immediately
-                    scrollToTask(task.id)
-                  }
-                }}
+                onClick={() => focusTask(task.id)}
                 className="h-8 w-8 flex-shrink-0"
                 title="Focus on task in list"
               >
@@ -609,6 +603,7 @@ export function TaskSidePanel({ isOpen, onClose, variant = "overlay" }: TaskSide
                 task={task}
                 isVisible={true}
                 onDeleteClick={() => deleteTask(task.id)}
+                onArchiveToggle={handleArchiveToggle}
                 isSubTask={false}
                 open={actionsMenuOpen}
                 onOpenChange={setActionsMenuOpen}

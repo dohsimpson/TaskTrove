@@ -23,6 +23,8 @@
   --border: hsl(0 0% 89.8%);
   --input: hsl(0 0% 89.8%);
   --ring: hsl(0 0% 3.9%);
+  --primary-soft: color-mix(in srgb, var(--primary) 4%, var(--background));
+  --primary-soft-foreground: var(--primary);
   --chart-1: hsl(12 76% 61%);
   --chart-2: hsl(173 58% 39%);
   --chart-3: hsl(197 37% 24%);
@@ -59,6 +61,8 @@
   --border: hsl(0 0% 14.9%);
   --input: hsl(0 0% 14.9%);
   --ring: hsl(0 0% 83.1%);
+  --primary-soft: color-mix(in srgb, var(--primary) 4%, var(--background));
+  --primary-soft-foreground: var(--primary);
   --chart-1: hsl(220 70% 50%);
   --chart-2: hsl(160 60% 45%);
   --chart-3: hsl(30 80% 55%);
@@ -94,6 +98,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);

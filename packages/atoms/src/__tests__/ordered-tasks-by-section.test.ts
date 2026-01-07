@@ -133,13 +133,11 @@ describe("Ordered Tasks By Section Atom", () => {
   const testProject: Project = {
     id: TEST_PROJECT_ID_1,
     name: "Test Project",
-    slug: "test-project",
     color: "#3b82f6",
     sections: [
       {
         id: createGroupId(DEFAULT_UUID),
         name: "Default",
-        slug: "",
         type: "section",
         color: "#3b82f6",
         items: [TEST_TASK_ID_4], // Task 4 in default section
@@ -147,7 +145,6 @@ describe("Ordered Tasks By Section Atom", () => {
       {
         id: TEST_SECTION_ID_1,
         name: "Section 1",
-        slug: "",
         type: "section",
         color: "#3b82f6",
         items: [TEST_TASK_ID_1, TEST_TASK_ID_3], // Tasks 1 and 3 in section 1
@@ -155,7 +152,6 @@ describe("Ordered Tasks By Section Atom", () => {
       {
         id: TEST_SECTION_ID_2,
         name: "Section 2",
-        slug: "",
         type: "section",
         color: "#ef4444",
         items: [TEST_TASK_ID_2], // Task 2 in section 2
@@ -289,7 +285,6 @@ describe("Ordered Tasks By Section Atom", () => {
       const projectWithNoSections: Project = {
         id: createProjectId("77777777-7777-4777-8777-777777777777"),
         name: "Project No Sections",
-        slug: "project-no-sections",
         color: "#ef4444",
         sections: [DEFAULT_PROJECT_SECTION], // No sections
       };

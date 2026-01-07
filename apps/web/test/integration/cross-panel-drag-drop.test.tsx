@@ -2,8 +2,6 @@ import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { mockUseToast } from "@/test-utils"
 import { render, screen, fireEvent } from "@/test-utils"
-import userEvent from "@testing-library/user-event"
-import type { TaskId } from "@tasktrove/types/id"
 import { createTaskId } from "@tasktrove/types/id"
 
 // Mock Jotai
@@ -41,7 +39,7 @@ vi.mock("@/lib/utils/logger", () => ({
 
 // Mock utils
 vi.mock("@/lib/utils", () => ({
-  cn: (...classes: any[]) => classes.filter(Boolean).join(" "),
+  cn: (...classes: Array<string | false | null | undefined>) => classes.filter(Boolean).join(" "),
 }))
 
 // Mock context menu visibility hook
@@ -55,7 +53,19 @@ vi.mock("@/hooks/use-context-menu-visibility", () => ({
 
 // Mock DraggableWrapper and DropTargetWrapper with proper data attributes
 vi.mock("@/components/ui/draggable-wrapper", () => ({
-  DraggableWrapper: ({ children, dragId, index, className, getData }: any) => {
+  DraggableWrapper: ({
+    children,
+    dragId,
+    index,
+    className,
+    getData,
+  }: {
+    children: React.ReactNode
+    dragId: string
+    index?: number
+    className?: string
+    getData?: () => Record<string, unknown>
+  }) => {
     const data = getData ? getData() : {}
     return (
       <div
@@ -80,7 +90,22 @@ vi.mock("@/components/ui/draggable-wrapper", () => ({
 }))
 
 vi.mock("@/components/ui/drop-target-wrapper", () => ({
-  DropTargetWrapper: ({ children, dropTargetId, className, getData, onDrop }: any) => {
+  DropTargetWrapper: ({
+    children,
+    dropTargetId,
+    className,
+    getData,
+    onDrop,
+  }: {
+    children: React.ReactNode
+    dropTargetId: string
+    className?: string
+    getData?: () => Record<string, unknown>
+    onDrop?: (payload: {
+      source: { data: Record<string, unknown> }
+      location: { current: { dropTargets: Array<{ data: Record<string, unknown> }> } }
+    }) => void
+  }) => {
     const data = getData ? getData() : {}
     return (
       <div
@@ -91,9 +116,12 @@ vi.mock("@/components/ui/drop-target-wrapper", () => ({
         }
         className={className}
         // Simulate drop event
-        onMouseUp={(e) => {
-          // Check if there's an active drag operation
-          const dragData = (e.target as any).dataset.activeDrag
+        onMouseUp={(e: React.MouseEvent<HTMLDivElement>) => {
+          const target = e.target
+          const dragData =
+            target instanceof HTMLElement && target.dataset.activeDrag
+              ? target.dataset.activeDrag
+              : e.currentTarget.dataset.activeDrag
           if (dragData && onDrop) {
             const source = JSON.parse(dragData)
             onDrop({
@@ -115,7 +143,7 @@ vi.mock("@/components/ui/drop-target-wrapper", () => ({
 
 // Mock TaskItem component
 vi.mock("@/components/task/task-item", () => ({
-  TaskItem: ({ taskId, className }: any) => {
+  TaskItem: ({ taskId, className }: { taskId: string; className?: string }) => {
     // Mock finding task by ID - create a basic task object for testing
     const task = {
       id: taskId,
@@ -140,13 +168,13 @@ vi.mock("@/components/task/task-item", () => ({
 
 // Mock sidebar navigation components
 vi.mock("@/components/navigation/sidebar-nav", () => ({
-  SidebarNav: ({ sections }: any) => (
+  SidebarNav: () => (
     <div data-testid="sidebar-nav">
       {/* Mock projects from atoms - simulate the new atom-based approach */}
       {[
         { id: "1", name: "Work" },
         { id: "2", name: "Personal" },
-      ]?.map((project: any) => (
+      ].map((project) => (
         <div key={project.id} data-testid={`sidebar-project-${project.id}`}>
           <div data-testid={`droppable-sidebar-project-${project.id}`} data-droppable-type="TASK">
             <span>{project.name}</span>
@@ -157,7 +185,7 @@ vi.mock("@/components/navigation/sidebar-nav", () => ({
       {[
         { id: "1", name: "urgent" },
         { id: "2", name: "work" },
-      ]?.map((label: any) => (
+      ].map((label) => (
         <div key={label.id} data-testid={`sidebar-label-${label.id}`}>
           <div data-testid={`droppable-sidebar-label-${label.id}`} data-droppable-type="TASK">
             <span>{label.name}</span>
@@ -194,9 +222,9 @@ function CrossPanelTestComponent({
   projects = [],
   labels = [],
 }: {
-  tasks?: any[]
-  projects?: any[]
-  labels?: any[]
+  tasks?: Array<{ id: ReturnType<typeof createTaskId>; name?: string }>
+  projects?: Array<{ id: string; name: string }>
+  labels?: Array<{ id: string; name: string }>
 }) {
   const { handleTaskDropOnProject, handleTaskDropOnLabel } = useDragAndDrop()
 

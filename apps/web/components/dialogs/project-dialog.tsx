@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useAtomValue, useSetAtom } from "jotai"
 import {
   Dialog,
@@ -22,10 +22,11 @@ import { addProjectAtom } from "@tasktrove/atoms/core/projects"
 import { addProjectGroupAtom } from "@tasktrove/atoms/core/groups"
 import { useTranslation } from "@tasktrove/i18n"
 export function ProjectDialog() {
+  const defaultColor = COLOR_OPTIONS[0].value
   const [entityType, setEntityType] = useState<"project" | "projectGroup">("project")
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
-  const [selectedColor, setSelectedColor] = useState<string>(COLOR_OPTIONS[0].value)
+  const [selectedColor, setSelectedColor] = useState<string>(defaultColor)
 
   // Translation hooks
   const { t } = useTranslation("dialogs")
@@ -36,6 +37,13 @@ export function ProjectDialog() {
   const addProjectGroup = useSetAtom(addProjectGroupAtom)
 
   const isValid = !!name.trim()
+
+  // When dialog opens, reset to deterministic default for predictable UX/tests
+  useEffect(() => {
+    if (open) {
+      setSelectedColor(defaultColor)
+    }
+  }, [defaultColor, open])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,7 +66,7 @@ export function ProjectDialog() {
     // Reset form
     setName("")
     setDescription("")
-    setSelectedColor(COLOR_OPTIONS[0].value)
+    setSelectedColor(defaultColor)
     setEntityType("project")
     closeDialog()
   }
@@ -67,7 +75,7 @@ export function ProjectDialog() {
     // Reset form
     setName("")
     setDescription("")
-    setSelectedColor(COLOR_OPTIONS[0].value)
+    setSelectedColor(defaultColor)
     setEntityType("project")
     closeDialog()
   }

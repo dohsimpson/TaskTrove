@@ -71,6 +71,7 @@ const DEFAULT_SETTINGS: UserSettings = {
     linkifyEnabled: true,
     markdownEnabled: true,
     popoverHoverOpen: false,
+    preferDayMonthFormat: false,
   },
   uiSettings: {
     weekStartsOn: undefined,

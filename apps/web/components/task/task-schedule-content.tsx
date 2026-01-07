@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useCallback, useMemo, useEffect } from "react"
+import { useState, useCallback, useMemo, useEffect, useRef } from "react"
 import { useTranslation } from "@tasktrove/i18n"
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar } from "@/components/ui/custom/calendar"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -29,12 +29,18 @@ import {
   CalendarClock,
   CalendarDays,
 } from "lucide-react"
-import { format, addDays } from "date-fns"
+import { addDays } from "date-fns"
 import type { Task } from "@tasktrove/types/core"
 import type { CreateTaskRequest } from "@tasktrove/types/api-requests"
 import type { TaskId } from "@tasktrove/types/id"
 import type { WeekStartsOn } from "@tasktrove/types/settings"
-import { formatTaskDateTime } from "@/lib/utils/task-date-formatter"
+import {
+  formatTaskDateTime,
+  formatTimeOfDay,
+  formatDateDisplay,
+  formatMonthLabel,
+  formatWeekdayLabel,
+} from "@/lib/utils/task-date-formatter"
 import {
   CommonRRules,
   buildRRule,
@@ -45,6 +51,7 @@ import {
 import { calculateNextDueDate, getRecurringReferenceDate } from "@tasktrove/utils"
 import { useAtomValue, useSetAtom } from "jotai"
 import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
+import { updateTasksAtom } from "@tasktrove/atoms/core/tasks"
 import { quickAddTaskAtom, updateQuickAddTaskAtom } from "@tasktrove/atoms/ui/dialogs"
 import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { HelpPopover } from "@/components/ui/help-popover"
@@ -53,6 +60,8 @@ import {
   convertTimeToHHMMSS,
 } from "@/lib/utils/enhanced-natural-language-parser"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { TimePicker } from "@/components/task/time-picker"
+import { smoothScrollIntoView } from "@tasktrove/dom-utils"
 
 interface TaskScheduleContentProps {
   taskId?: TaskId | TaskId[]
@@ -68,21 +77,20 @@ export function TaskScheduleContent({
 }: TaskScheduleContentProps) {
   // Translation setup
   const { t } = useTranslation("task")
+  const settings = useAtomValue(settingsAtom)
+  const use24HourTime = Boolean(settings.uiSettings.use24HourTime)
+  const preferDayMonthFormat = Boolean(settings.general.preferDayMonthFormat)
 
   const allTasks = useAtomValue(tasksAtom)
-  const updateTasks = useSetAtom(tasksAtom)
+  const updateTasks = useSetAtom(updateTasksAtom)
   const updateQuickAddTask = useSetAtom(updateQuickAddTaskAtom)
   const newTask = useAtomValue(quickAddTaskAtom)
-  const settings = useAtomValue(settingsAtom)
   const isMobile = useIsMobile()
-  const [showSchedulePicker, setShowSchedulePicker] = useState(!isMobile)
-  const [showRecurringPicker, setShowRecurringPicker] = useState(!isMobile)
-
-  useEffect(() => {
-    // Default to collapsed on mobile to save vertical space
-    setShowSchedulePicker(!isMobile)
-    setShowRecurringPicker(!isMobile)
-  }, [isMobile])
+  const [showRecurringPicker, setShowRecurringPicker] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [showTimePicker, setShowTimePicker] = useState(false)
+  const datePickerRef = useRef<HTMLDivElement | null>(null)
+  const timePickerRef = useRef<HTMLDivElement | null>(null)
 
   const isMultipleTasks = Array.isArray(taskId)
   const isNewTask = !taskId
@@ -233,20 +241,24 @@ export function TaskScheduleContent({
   const [selectedHour, setSelectedHour] = useState<string>(() => {
     if (task?.dueTime) {
       const hours24 = task.dueTime.getHours()
+      if (use24HourTime) {
+        return hours24.toString().padStart(2, "0")
+      }
       // Convert 24-hour to 12-hour format
       if (hours24 === 0) return "12" // Midnight -> 12 AM
       if (hours24 <= 12) return hours24.toString()
       return (hours24 - 12).toString() // PM hours
     }
-    return ""
+    // Default to visible fallback so we always serialize valid time
+    return use24HourTime ? "00" : "12"
   })
   const [selectedMinute, setSelectedMinute] = useState<string>(() => {
     if (task?.dueTime) {
       return task.dueTime.getMinutes().toString().padStart(2, "0")
     }
-    return ""
+    return "00"
   })
-  const [selectedAmPm, setSelectedAmPm] = useState<string>(() => {
+  const [selectedAmPm, setSelectedAmPm] = useState<"AM" | "PM">(() => {
     if (task?.dueTime) {
       return task.dueTime.getHours() >= 12 ? "PM" : "AM"
     }
@@ -261,8 +273,10 @@ export function TaskScheduleContent({
   // Parse NLP input once and reuse the result
   const parsedNlInput = useMemo(() => {
     if (!nlInput.trim()) return null
-    return parseEnhancedNaturalLanguage(nlInput)
-  }, [nlInput])
+    return parseEnhancedNaturalLanguage(nlInput, new Set(), {
+      preferDayMonthFormat,
+    })
+  }, [nlInput, preferDayMonthFormat])
 
   // Check if the parsed result has valid values
   const isNlInputValid = useMemo(() => {
@@ -410,8 +424,20 @@ export function TaskScheduleContent({
   }, [parsedNlInput, isNlInputValid, taskId, handleUpdate])
 
   // Helper function to create time Date object
-  const createTimeFromHourMinute = (hour: string, minute: string, ampm: string): Date => {
+  const createTimeFromHourMinute = (
+    hour: string,
+    minute: string,
+    ampm: string,
+    prefer24Hour: boolean,
+  ): Date => {
     const time = new Date()
+    if (prefer24Hour) {
+      const hours24 = Math.min(23, Math.max(0, parseInt(hour) || 0))
+      const minutes = Math.min(59, Math.max(0, parseInt(minute) || 0))
+      time.setHours(hours24, minutes, 0, 0)
+      return time
+    }
+
     let hours = parseInt(hour)
     if (ampm === "PM" && hours !== 12) {
       hours += 12
@@ -424,13 +450,84 @@ export function TaskScheduleContent({
 
   // Handle time selection
   const handleTimeUpdate = () => {
-    const newTime = createTimeFromHourMinute(selectedHour, selectedMinute, selectedAmPm)
+    // Ensure we always pass concrete values to avoid Invalid Date serialization
+    const safeHour = selectedHour || (use24HourTime ? "00" : "12")
+    const safeMinute = selectedMinute || "00"
+    const newTime = createTimeFromHourMinute(safeHour, safeMinute, selectedAmPm, use24HourTime)
 
     // If no due date exists, set it to today when setting time
     const newDate = task?.dueDate || new Date()
 
     handleUpdate(taskId, newDate, newTime, "time")
   }
+
+  const formattedDateLabel = selectedDate
+    ? `${formatWeekdayLabel(selectedDate, { short: true })}, ${formatDateDisplay(selectedDate, {
+        includeYear: true,
+        preferDayMonthFormat,
+      })}`
+    : t("schedule.selectDate", "Select date")
+
+  const formattedTimeLabel = (() => {
+    if (selectedHour && selectedMinute) {
+      if (use24HourTime) {
+        return `${selectedHour.toString().padStart(2, "0")}:${selectedMinute
+          .toString()
+          .padStart(2, "0")}`
+      }
+      return `${selectedHour.toString().padStart(2, "0")}:${selectedMinute
+        .toString()
+        .padStart(2, "0")} ${selectedAmPm}`
+    }
+
+    if (task?.dueTime) {
+      return formatTimeOfDay(task.dueTime, { use24HourTime })
+    }
+
+    return t("schedule.selectTime", "Select time")
+  })()
+
+  // Auto-scroll to newly opened pickers for better visibility on small screens
+  useEffect(() => {
+    if (showDatePicker) {
+      smoothScrollIntoView(datePickerRef.current, { block: "nearest" })
+    }
+  }, [showDatePicker])
+
+  useEffect(() => {
+    if (showTimePicker) {
+      smoothScrollIntoView(timePickerRef.current, { block: "nearest" })
+    }
+  }, [showTimePicker])
+
+  // Keep local date/time selections in sync with task date/time updates
+  useEffect(() => {
+    if (task?.dueDate) {
+      const current = selectedDate?.getTime()
+      const incoming = task.dueDate.getTime()
+      if (current !== incoming) {
+        setSelectedDate(task.dueDate)
+      }
+    } else if (selectedDate) {
+      setSelectedDate(undefined)
+    }
+  }, [task?.dueDate, selectedDate])
+
+  useEffect(() => {
+    if (task?.dueTime) {
+      const hours24 = task.dueTime.getHours()
+      const minutes = task.dueTime.getMinutes()
+      const ampm = hours24 >= 12 ? "PM" : "AM"
+      const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12
+
+      const targetHour = use24HourTime ? hours24.toString().padStart(2, "0") : hours12.toString()
+      const targetMinute = minutes.toString().padStart(2, "0")
+
+      setSelectedHour(targetHour)
+      setSelectedMinute(targetMinute)
+      if (!use24HourTime) setSelectedAmPm(ampm)
+    }
+  }, [task?.dueTime, use24HourTime])
 
   // Helper function to add ordinal suffix to day numbers
   const getDayWithSuffix = (day: number): string => {
@@ -487,7 +584,7 @@ export function TaskScheduleContent({
         if (parsed.bymonth.length > 1 && parsed.bymonthday.length > 1) {
           // Cartesian product case - show warning
           const monthNames = parsed.bymonth.map((month) =>
-            new Date(2024, month - 1, 1).toLocaleDateString("en-US", { month: "long" }),
+            formatMonthLabel(new Date(2024, month - 1, 1), { variant: "long" }),
           )
           const dayNumbers = parsed.bymonthday.map((day) => getDayWithSuffix(day))
           return `Yearly in ${monthNames.join(", ")} on ${dayNumbers.join(", ")} (${parsed.bymonth.length * parsed.bymonthday.length} dates total)`
@@ -499,9 +596,7 @@ export function TaskScheduleContent({
             const monthValue = parsed.bymonth[0]
             if (monthValue === undefined) return "Invalid month data"
             const month = monthValue - 1
-            const monthName = new Date(2024, month, 1).toLocaleDateString("en-US", {
-              month: "long",
-            })
+            const monthName = formatMonthLabel(new Date(2024, month, 1), { variant: "long" })
             const dayList = parsed.bymonthday.map(getDayWithSuffix).join(", ")
             dateStrings.push(`${monthName} ${dayList}`)
           } else {
@@ -511,8 +606,8 @@ export function TaskScheduleContent({
             const day = dayValue
             const dayWithSuffix = getDayWithSuffix(day)
             for (const month of parsed.bymonth) {
-              const monthName = new Date(2024, month - 1, 1).toLocaleDateString("en-US", {
-                month: "long",
+              const monthName = formatMonthLabel(new Date(2024, month - 1, 1), {
+                variant: "long",
               })
               dateStrings.push(`${monthName} ${dayWithSuffix}`)
             }
@@ -999,27 +1094,10 @@ export function TaskScheduleContent({
             </Button>
           </div>
 
-          {isMobile && (
-            <Button
-              variant="outline"
-              className="w-full justify-between"
-              onClick={() => setShowSchedulePicker((prev) => !prev)}
-            >
-              <span>
-                {showSchedulePicker
-                  ? t("schedule.hidePicker", "Hide smart input & calendar")
-                  : t("schedule.showPicker", "Show smart input & calendar")}
-              </span>
-              <ChevronDown
-                className={`h-4 w-4 transition-transform ${showSchedulePicker ? "rotate-180" : ""}`}
-              />
-            </Button>
-          )}
-
-          {(!isMobile || showSchedulePicker) && (
-            <div className="space-y-3 mb-3">
+          {
+            <div className="space-y-1">
               {/* Natural Language Input */}
-              <div className="flex gap-2 mt-2">
+              <div className="flex gap-2 mt-2 pb-2">
                 <Input
                   // NOTE: Only translate "e.g.," - examples must remain in English since NLP parsing only supports English
                   placeholder={`${t("schedule.examplePrefix", "e.g.,")} tomorrow 3PM, next monday, daily`}
@@ -1038,115 +1116,142 @@ export function TaskScheduleContent({
                 </Button>
               </div>
 
-              <div className="border rounded-md">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={handleCustomDateSelect}
-                  weekStartsOn={weekStartsOn}
-                  fixedWeeks={false}
-                  showOutsideDays={false}
-                  captionLayout="dropdown"
-                  // Restrict year range to reasonable bounds for task scheduling
-                  // 2 years back (for overdue tasks) to 10 years forward (for long-term planning)
-                  startMonth={new Date(new Date().getFullYear() - 2, 0)}
-                  endMonth={new Date(new Date().getFullYear() + 10, 11)}
-                  className="rounded-md border-0 w-full"
-                  classNames={{
-                    week: "flex w-full mt-1",
+              {/* Date & Time toggle cards */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDatePicker((prev) => !prev)
+                    setShowTimePicker(false)
                   }}
-                  showWeekNumber={showWeekNumber}
-                />
+                  className={`flex-1 min-w-0 rounded-xl border px-4 py-3 text-left transition-all duration-200 bg-background shadow-sm ${
+                    showDatePicker
+                      ? "ring-2 ring-primary bg-primary/5"
+                      : "border-border hover:border-muted-foreground/40"
+                  }`}
+                  aria-expanded={showDatePicker}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-col gap-0.5">
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                        {t("schedule.date", "Date")}
+                      </p>
+                      <p
+                        className={`text-[13px] font-medium leading-tight truncate ${showDatePicker ? "text-primary" : "text-foreground"}`}
+                      >
+                        {formattedDateLabel}
+                      </p>
+                    </div>
+                    <ChevronDown
+                      className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
+                        showDatePicker ? "rotate-180" : ""
+                      }`}
+                    />
+                  </div>
+                </button>
 
-                {/* Time Selector */}
-                <div className="px-2 pb-3">
-                  <div className="flex gap-1.5 items-center justify-center text-sm">
-                    <Input
-                      type="number"
-                      min="1"
-                      max="12"
-                      value={selectedHour}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value)
-                        if (value >= 1 && value <= 12) {
-                          setSelectedHour(e.target.value)
-                          // Auto-fill minute to "00" if it's empty when hour is set
-                          if (!selectedMinute) {
-                            setSelectedMinute("00")
-                          }
-                        } else if (e.target.value === "") {
-                          setSelectedHour("")
-                        }
-                      }}
-                      onBlur={(e) => {
-                        if (e.target.value === "") return // Allow empty
-                        const value = parseInt(e.target.value)
-                        if (isNaN(value) || value < 1) {
-                          setSelectedHour("1")
-                        } else if (value > 12) {
-                          setSelectedHour("12")
-                        }
-                      }}
-                      className="w-10 h-8 text-center text-sm px-1 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowTimePicker((prev) => !prev)
+                    setShowDatePicker(false)
+                  }}
+                  className={`flex-1 min-w-0 rounded-xl border px-4 py-3 text-left transition-all duration-200 bg-background shadow-sm ${
+                    showTimePicker
+                      ? "ring-2 ring-primary bg-primary/5"
+                      : "border-border hover:border-muted-foreground/40"
+                  }`}
+                  aria-expanded={showTimePicker}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-col gap-0.5">
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                        {t("schedule.time", "Time")}
+                      </p>
+                      <p
+                        className={`text-[13px] font-medium leading-tight truncate ${showTimePicker ? "text-primary" : "text-foreground"}`}
+                      >
+                        {formattedTimeLabel}
+                      </p>
+                    </div>
+                    <ChevronDown
+                      className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
+                        showTimePicker ? "rotate-180" : ""
+                      }`}
                     />
-                    <span className="text-sm font-medium px-0.5">:</span>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="59"
-                      value={selectedMinute}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value)
-                        if (value >= 0 && value <= 59) {
-                          setSelectedMinute(e.target.value)
-                        } else if (e.target.value === "") {
-                          setSelectedMinute("")
-                        }
+                  </div>
+                </button>
+              </div>
+
+              {/* Calendar reveal */}
+              {showDatePicker && (
+                <div
+                  ref={datePickerRef}
+                  className="overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out max-h-[520px] opacity-100"
+                >
+                  <div className="mt-2 rounded-xl border bg-background/80 shadow-sm px-2 py-4">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={handleCustomDateSelect}
+                      weekStartsOn={weekStartsOn}
+                      fixedWeeks={false}
+                      showOutsideDays={false}
+                      captionLayout="dropdown"
+                      startMonth={new Date(new Date().getFullYear() - 2, 0)}
+                      endMonth={new Date(new Date().getFullYear() + 10, 11)}
+                      className="rounded-md border-0 w-full"
+                      classNames={{
+                        week: "flex w-full mt-1",
                       }}
-                      onBlur={(e) => {
-                        if (e.target.value === "") return // Allow empty
-                        const value = parseInt(e.target.value)
-                        let finalValue: string
-                        if (isNaN(value) || value < 0) {
-                          finalValue = "00"
-                        } else if (value > 59) {
-                          finalValue = "59"
-                        } else {
-                          finalValue = value.toString().padStart(2, "0")
-                        }
-                        setSelectedMinute(finalValue)
-                      }}
-                      className="w-10 h-8 text-center text-sm px-1 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      showWeekNumber={showWeekNumber}
                     />
-                    <Select value={selectedAmPm} onValueChange={setSelectedAmPm}>
-                      <SelectTrigger className="w-14 !h-8 text-sm px-2 [&>svg]:w-3 [&>svg]:h-3">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="AM">AM</SelectItem>
-                        <SelectItem value="PM">PM</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      onClick={handleTimeUpdate}
-                      disabled={!selectedHour || !selectedMinute}
-                      size="sm"
-                      className="h-8 px-3 text-sm max-w-20 truncate"
-                    >
-                      {t("schedule.set", "Set")}
-                    </Button>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Time picker reveal */}
+              {showTimePicker && (
+                <div
+                  ref={timePickerRef}
+                  className="overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out max-h-[260px] opacity-100"
+                >
+                  <div className="mt-2 rounded-xl border bg-background/80 shadow-sm p-4">
+                    <TimePicker
+                      hourLabel={t("schedule.hours", "Hours")}
+                      minuteLabel={t("schedule.minutes", "Minutes")}
+                      setLabel={t("schedule.set", "Set")}
+                      periodLabel={t("schedule.period", "Period")}
+                      selectedHour={selectedHour || (use24HourTime ? "00" : "12")}
+                      selectedMinute={selectedMinute || "00"}
+                      selectedAmPm={selectedAmPm}
+                      onHourChange={(value) => {
+                        setSelectedHour(value)
+                        if (!selectedMinute) {
+                          setSelectedMinute("00")
+                        }
+                      }}
+                      onMinuteChange={(value) => setSelectedMinute(value)}
+                      onAmPmChange={setSelectedAmPm}
+                      onConfirm={handleTimeUpdate}
+                      disableConfirm={false} // Always enabled since TimePicker provides default values
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          }
 
           {task?.dueDate && (
             <div className="pt-3 mt-3 border-t">
               <div className="text-xs text-gray-500 flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 {t("schedule.due", "Due:")}{" "}
-                {formatTaskDateTime(task, { format: "compact" }) || format(task.dueDate, "MMM d")}
+                {formatTaskDateTime(task, {
+                  format: "compact",
+                  use24HourTime,
+                  preferDayMonthFormat,
+                }) || formatDateDisplay(task.dueDate, { preferDayMonthFormat })}
               </div>
             </div>
           )}
@@ -1370,9 +1475,8 @@ export function TaskScheduleContent({
                       {t("recurring.selectedDates", "Selected dates:")}{" "}
                       {selectedYearlyDates
                         .map((date) =>
-                          date.toLocaleDateString("en-US", {
-                            month: "long",
-                            day: "numeric",
+                          formatDateDisplay(date, {
+                            preferDayMonthFormat,
                           }),
                         )
                         .join(", ")}
@@ -1399,7 +1503,7 @@ export function TaskScheduleContent({
                           : new Date(new Date().getFullYear(), 0, 1)
                       }
                       formatters={{
-                        formatCaption: (date) => date.toLocaleString("default", { month: "long" }), // Show only month name
+                        formatCaption: (date) => formatMonthLabel(date, { variant: "long" }), // Show only month name
                       }}
                       className="rounded-md border-0 w-full"
                       classNames={{
@@ -1773,7 +1877,13 @@ export function TaskScheduleContent({
                           // Format months for yearly patterns
                           const monthsText =
                             customFrequency === "YEARLY" && customMonths.length > 0
-                              ? ` of ${customMonths.map((month) => new Date(2024, month - 1, 1).toLocaleDateString("en-US", { month: "long" })).join(", ")}`
+                              ? ` of ${customMonths
+                                  .map((month) =>
+                                    formatMonthLabel(new Date(2024, month - 1, 1), {
+                                      variant: "long",
+                                    }),
+                                  )
+                                  .join(", ")}`
                               : ""
 
                           if (customPatternType === "day") {

@@ -74,6 +74,20 @@ vi.mock("@/components/ui/dropdown-menu", () => {
 
   const DropdownMenuSeparator = () => <hr data-testid="dropdown-separator" />
 
+  const DropdownMenuItem = ({
+    children,
+    onClick,
+    className,
+  }: {
+    children: React.ReactNode
+    onClick?: () => void
+    className?: string
+  }) => (
+    <button type="button" data-testid="dropdown-menu-item" className={className} onClick={onClick}>
+      {children}
+    </button>
+  )
+
   const RadioGroupContext = React.createContext<{ onSelect: (value: string) => void } | null>(null)
 
   const DropdownMenuRadioGroup = ({
@@ -117,6 +131,7 @@ vi.mock("@/components/ui/dropdown-menu", () => {
     DropdownMenuContent,
     DropdownMenuLabel,
     DropdownMenuSeparator,
+    DropdownMenuItem,
     DropdownMenuRadioGroup,
     DropdownMenuRadioItem,
   }
@@ -189,7 +204,11 @@ describe("TaskSortControls", () => {
     const user = userEvent.setup()
     render(<TaskSortControls />)
 
-    await user.click(screen.getByTestId("dropdown-radio-item-desc"))
+    // Find the direction toggle button (has aria-label "Sort Direction")
+    const directionButton = screen.getByLabelText("Sort Direction")
+    await user.click(directionButton)
+
+    // The toggle button should call setViewOptions with sortDirection: "desc"
     expect(mockSetViewOptions).toHaveBeenCalledWith({ sortDirection: "desc" })
   })
 })

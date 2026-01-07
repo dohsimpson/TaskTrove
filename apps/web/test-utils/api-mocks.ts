@@ -4,19 +4,18 @@
 
 /**
  * Creates a mock enhanced request for testing
- * @param request Base NextRequest object
+ * @param request Base request-like object
  * @param context Mock context properties
  * @returns Enhanced request with mock context
  */
-export function createMockEnhancedRequest<T extends Record<string, any>>(
-  request: any,
-  context: T,
-): any {
-  // Create a copy of the request with the context added
-  const enhancedRequest = Object.create(Object.getPrototypeOf(request))
-  Object.assign(enhancedRequest, request)
-  enhancedRequest.context = context
-  return enhancedRequest
+export function createMockEnhancedRequest<
+  TRequest extends object,
+  TContext extends Record<string, unknown>,
+>(request: TRequest, context: TContext): TRequest & { context: TContext } {
+  return {
+    ...request,
+    context,
+  }
 }
 
 /**
@@ -24,7 +23,12 @@ export function createMockEnhancedRequest<T extends Record<string, any>>(
  * @param value The value to mock
  * @returns Mock atom object
  */
-export function createMockAtomValue<T>(value: T): any {
+export function createMockAtomValue<T>(value: T): {
+  init: T
+  read: () => T
+  write: () => void
+  toString: () => string
+} {
   return {
     init: value,
     read: () => value,

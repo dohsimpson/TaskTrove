@@ -56,7 +56,6 @@ const createProject = (overrides: Partial<Project> = {}): Project => ({
       .padStart(12, "0")}`,
   ),
   name: "Test Project",
-  slug: "test-project",
   color: "#3b82f6",
   sections: [DEFAULT_PROJECT_SECTION],
   ...overrides,
@@ -69,7 +68,6 @@ const createLabel = (overrides: Partial<Label> = {}): Label => ({
       .padStart(12, "0")}`,
   ),
   name: "Test Label",
-  slug: "test-label",
   color: "#3b82f6",
   ...overrides,
 });

@@ -34,6 +34,7 @@ export const nextJsConfig = [
       "react/no-unescaped-entities": "off",
       // Enforce keys for lists in JSX
       "react/jsx-key": "error",
+      "react/prop-types": "off",
     },
   },
   {
@@ -53,5 +54,17 @@ export const nextJsConfig = [
     rules: {
       "@typescript-eslint/no-unnecessary-condition": "off",
     },
+  },
+  {
+    // Relax env-var linting for build/dev config surfaces that intentionally read from process.env.
+    // Capacitor configs stay strict because they feed native builds.
+    files: ["**/next.config.*", "**/scripts/**/*.{js,ts,mjs,cjs}"],
+    rules: {
+      "turbo/no-undeclared-env-vars": "off",
+    },
+  },
+  {
+    // Ignore tool/config entry points; they aren't part of the app bundle and often use Node APIs.
+    ignores: ["**/*config.{js,ts,mjs,cjs}"],
   },
 ];

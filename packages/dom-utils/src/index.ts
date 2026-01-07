@@ -10,6 +10,7 @@ export * from "./keyboard";
 export * from "./type-safe-dom";
 export * from "./pwa";
 export * from "./drag-and-drop";
+export * from "./drop-helpers";
 export * from "./browser";
 export * from "./visibility";
 export * from "./scheduled-timeout";

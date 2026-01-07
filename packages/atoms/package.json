@@ -46,6 +46,7 @@
     "./utils/view-filters": "./src/utils/view-filters.ts",
     "./utils/view-sorting": "./src/utils/view-sorting.ts",
     "./utils/test-helpers": "./src/utils/test-helpers.ts",
+    "./utils/task-recent": "./src/utils/task-recent.ts",
     "./core/tasks": {
       "pro": "./src/core/tasks.pro.ts",
       "default": "./src/core/tasks.ts"
@@ -57,6 +58,10 @@
     "./core/labels": "./src/core/labels.ts",
     "./core/settings": "./src/core/settings.ts",
     "./core/notifications": "./src/core/notifications.ts",
+    "./core/notification-scheduler": {
+      "pro": "./src/core/notification-scheduler.pro.ts",
+      "default": "./src/core/notification-scheduler.ts"
+    },
     "./core/history": "./src/core/history.ts",
     "./core/groups": "./src/core/groups.ts",
     "./ui/views": {
@@ -80,6 +85,10 @@
     "./ui/navigation": {
       "pro": "./src/ui/navigation.pro.ts",
       "default": "./src/ui/navigation.ts"
+    },
+    "./ui/task-focus": {
+      "pro": "./src/ui/task-focus.pro.ts",
+      "default": "./src/ui/task-focus.ts"
     },
     "./ui/selection": "./src/ui/selection.ts",
     "./ui/scroll-to-task": "./src/ui/scroll-to-task.ts",

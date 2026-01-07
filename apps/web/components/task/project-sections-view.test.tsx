@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, within, fireEvent, mockNextNavigation, mockNavigation } from "@/test-utils"
 import userEvent from "@testing-library/user-event"
 import { ProjectSectionsView } from "./project-sections-view"
+import { TaskViewSidePanelLayout } from "./task-view-side-panel-layout"
 import type { Task, Project } from "@tasktrove/types/core"
 import {
   TEST_TASK_ID_1,
@@ -17,6 +18,7 @@ import {
 import { DEFAULT_SECTION_COLORS, DEFAULT_UUID } from "@tasktrove/constants"
 import { ROOT_PROJECT_GROUP_ID, ROOT_LABEL_GROUP_ID } from "@tasktrove/types/defaults"
 import { createGroupId } from "@tasktrove/types/id"
+import { createProjectGroupSlug, createProjectSlug } from "@tasktrove/utils/routing"
 
 // Create hoisted mocks and data
 const mockJotai = vi.hoisted(() => ({
@@ -61,6 +63,26 @@ vi.mock("@/lib/atoms/core/base", () => ({
   updateOrderingMutationAtom: { debugLabel: "updateOrderingMutationAtom" },
 }))
 
+vi.mock("@tasktrove/atoms/ui/selection", () => ({
+  selectedTaskAtom: { debugLabel: "selectedTaskAtom" },
+  selectedTasksAtom: { debugLabel: "selectedTasksAtom" },
+  selectedTaskIdAtom: { debugLabel: "selectedTaskIdAtom" },
+  clearSelectedTasksAtom: { debugLabel: "clearSelectedTasksAtom" },
+  multiSelectDraggingAtom: { debugLabel: "multiSelectDraggingAtom" },
+}))
+
+vi.mock("@tasktrove/atoms/ui/views", () => ({
+  currentViewStateAtom: { debugLabel: "currentViewStateAtom" },
+  setViewOptionsAtom: { debugLabel: "setViewOptionsAtom" },
+  sidePanelWidthAtom: { debugLabel: "sidePanelWidthAtom" },
+  updateGlobalViewOptionsAtom: { debugLabel: "updateGlobalViewOptionsAtom" },
+  updateViewStateAtom: { debugLabel: "updateViewStateAtom" },
+  getViewStateAtom: () => ({ debugLabel: "currentViewStateAtom" }),
+  collapsedSectionsAtom: { debugLabel: "collapsedSectionsAtom" },
+  toggleSectionCollapseAtom: { debugLabel: "toggleSectionCollapseAtom" },
+  setSearchQueryAtom: { debugLabel: "setSearchQueryAtom" },
+}))
+
 // Note: Atom mocks are now centralized in test-utils/atoms-mocks.ts
 
 vi.mock("@/hooks/use-add-task-to-section", () => ({
@@ -74,6 +96,30 @@ vi.mock("@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge", () => ({
 
 vi.mock("@atlaskit/pragmatic-drag-and-drop-hitbox/util/get-reorder-destination-index", () => ({
   getReorderDestinationIndex: vi.fn(({ indexOfTarget }) => indexOfTarget),
+}))
+
+const mockDropTargets = new Map<
+  string,
+  (args: { source: { data: Record<string, unknown> } }) => void
+>()
+
+vi.mock("./project-sections-view-helper", () => ({
+  DropTargetElement: ({
+    id,
+    children,
+    onDrop,
+    options,
+  }: {
+    id: string
+    children: React.ReactNode
+    options?: { testId?: string }
+    onDrop?: (args: { source: { data: Record<string, unknown> } }) => void
+  }) => {
+    if (onDrop) {
+      mockDropTargets.set(id, onDrop)
+    }
+    return <div data-testid={options?.testId ?? `droppable-${id}`}>{children}</div>
+  },
 }))
 
 // Mock DraggableWrapper and DropTargetWrapper
@@ -303,6 +349,21 @@ vi.mock("./task-side-panel", () => ({
   ),
 }))
 
+vi.mock("@/components/task/task-side-panel", () => ({
+  TaskSidePanel: ({ isOpen, onClose }: MockTaskSidePanelProps) => (
+    <div
+      data-testid="task-side-panel"
+      data-open={isOpen}
+      style={{ display: isOpen ? "block" : "none" }}
+    >
+      <div>Side Panel Open</div>
+      <button data-testid="task-side-panel-close" onClick={onClose}>
+        Close Panel
+      </button>
+    </div>
+  ),
+}))
+
 vi.mock("./task-filter-controls", () => ({
   TaskFilterControls: ({ className }: { className?: string }) => (
     <div data-testid="task-filter-controls" className={className}>
@@ -500,13 +561,11 @@ describe("ProjectSectionsView", () => {
   const mockProject: Project = {
     id: TEST_PROJECT_ID_1,
     name: "Test Project",
-    slug: "test-project",
     color: "#3B82F6",
     sections: [
       {
         id: createGroupId(DEFAULT_UUID),
         name: "(no section)",
-        slug: "",
         type: "section",
         items: [],
         color: "#6b7280",
@@ -514,7 +573,6 @@ describe("ProjectSectionsView", () => {
       {
         id: TEST_GROUP_ID_1,
         name: "Planning",
-        slug: "planning",
         type: "section",
         items: [TEST_TASK_ID_1, TEST_TASK_ID_3],
         color: DEFAULT_SECTION_COLORS[0],
@@ -522,7 +580,6 @@ describe("ProjectSectionsView", () => {
       {
         id: TEST_GROUP_ID_2,
         name: "In Progress",
-        slug: "in-progress",
         type: "section",
         items: [TEST_TASK_ID_2],
         color: DEFAULT_SECTION_COLORS[1],
@@ -530,7 +587,6 @@ describe("ProjectSectionsView", () => {
       {
         id: TEST_GROUP_ID_3,
         name: "Review",
-        slug: "review",
         type: "section",
         items: [],
         color: DEFAULT_SECTION_COLORS[2],
@@ -608,7 +664,6 @@ describe("ProjectSectionsView", () => {
                 id: "label-1",
                 name: "Important",
                 color: "#ff0000",
-                slug: "important",
               },
             ]
           case "currentViewStateAtom":
@@ -629,6 +684,8 @@ describe("ProjectSectionsView", () => {
             return []
           case "selectedTaskAtom":
             return null
+          case "selectedTaskIdAtom":
+            return null
           case "sidePanelWidthAtom":
             return 25
           case "orderedTasksBySection":
@@ -647,10 +704,13 @@ describe("ProjectSectionsView", () => {
             // Return a Map of tasks by ID
             return new Map(mockTasks.map((task) => [task.id, task]))
           case "projectById":
-            // Return a function that gets a project by ID
-            return (projectId: string) => {
-              return projectId === TEST_PROJECT_ID_1 ? mockProject : undefined
-            }
+          case "projectByIdAtom": {
+            const overrideProjects = overrides.projectsAtom
+            const projects: Project[] = Array.isArray(overrideProjects)
+              ? overrideProjects
+              : [mockProject]
+            return (projectId: string) => projects.find((project) => project.id === projectId)
+          }
           case "editingSectionIdAtom":
             return null
           case "selectedTasksAtom":
@@ -661,14 +721,12 @@ describe("ProjectSectionsView", () => {
                 type: "project" as const,
                 id: ROOT_PROJECT_GROUP_ID,
                 name: "All Projects",
-                slug: "all-projects",
                 items: [],
               },
               labelGroups: {
                 type: "label" as const,
                 id: ROOT_LABEL_GROUP_ID,
                 name: "All Labels",
-                slug: "all-labels",
                 items: [],
               },
             }
@@ -699,6 +757,7 @@ describe("ProjectSectionsView", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockDropTargets.clear()
     mockNavigation.reset()
     mockJotai.useSetAtom.mockImplementation((atom) => {
       // Handle debugLabel-based atoms
@@ -748,7 +807,11 @@ describe("ProjectSectionsView", () => {
       }),
     )
 
-    render(<ProjectSectionsView droppableId="test-droppable" />)
+    render(
+      <TaskViewSidePanelLayout>
+        <ProjectSectionsView droppableId="test-droppable" />
+      </TaskViewSidePanelLayout>,
+    )
 
     // Check that sections are rendered
     expect(screen.getByText("Planning")).toBeInTheDocument()
@@ -775,7 +838,11 @@ describe("ProjectSectionsView", () => {
       }),
     )
 
-    render(<ProjectSectionsView droppableId="test-droppable" />)
+    render(
+      <TaskViewSidePanelLayout>
+        <ProjectSectionsView droppableId="test-droppable" />
+      </TaskViewSidePanelLayout>,
+    )
 
     const badges = screen.getAllByTestId("badge")
     expect(badges).toHaveLength(5) // 4 task count badges + 1 "Default" badge
@@ -789,7 +856,11 @@ describe("ProjectSectionsView", () => {
   })
 
   it("handles task click to open side panel", async () => {
-    render(<ProjectSectionsView droppableId="test-droppable" />)
+    render(
+      <TaskViewSidePanelLayout>
+        <ProjectSectionsView droppableId="test-droppable" />
+      </TaskViewSidePanelLayout>,
+    )
 
     const taskItem = screen.getByTestId(`task-item-${TEST_TASK_ID_1}`)
     await userEvent.click(taskItem)
@@ -813,7 +884,11 @@ describe("ProjectSectionsView", () => {
       }),
     )
 
-    render(<ProjectSectionsView droppableId="test-droppable" />)
+    render(
+      <TaskViewSidePanelLayout>
+        <ProjectSectionsView droppableId="test-droppable" />
+      </TaskViewSidePanelLayout>,
+    )
 
     // After opening, the task panel should be open (data-open="true")
     const sidePanelAfter = screen.getByTestId("task-side-panel")
@@ -848,7 +923,11 @@ describe("ProjectSectionsView", () => {
       }),
     )
 
-    render(<ProjectSectionsView droppableId="test-droppable" />)
+    render(
+      <TaskViewSidePanelLayout>
+        <ProjectSectionsView droppableId="test-droppable" />
+      </TaskViewSidePanelLayout>,
+    )
 
     // Click close button in side panel
     const closeButton = screen.getByTestId("task-side-panel-close")
@@ -977,7 +1056,6 @@ describe("ProjectSectionsView", () => {
       type: "project" as const,
       id: TEST_GROUP_ID_1,
       name: "Feature Group",
-      slug: "feature-group",
       items: [TEST_PROJECT_ID_2, TEST_PROJECT_ID_1],
       color: "#ff5500",
     }
@@ -987,6 +1065,10 @@ describe("ProjectSectionsView", () => {
         filteredTasksAtom: groupTasks,
         tasksAtom: groupTasks,
         projectsAtom: [primaryProject, secondaryProject],
+        projectById: (projectId: string) =>
+          [primaryProject, secondaryProject].find((project) => project.id === projectId),
+        projectByIdAtom: (projectId: string) =>
+          [primaryProject, secondaryProject].find((project) => project.id === projectId),
         currentRouteContextAtom: {
           pathname: `/projectgroups/${mockGroup.id}`,
           viewId: mockGroup.id,
@@ -997,14 +1079,12 @@ describe("ProjectSectionsView", () => {
             type: "project" as const,
             id: ROOT_PROJECT_GROUP_ID,
             name: "All Projects",
-            slug: "all-projects",
             items: [mockGroup],
           },
           labelGroups: {
             type: "label" as const,
             id: ROOT_LABEL_GROUP_ID,
             name: "All Labels",
-            slug: "all-labels",
             items: [],
           },
         },
@@ -1031,6 +1111,192 @@ describe("ProjectSectionsView", () => {
 
     const primarySection = screen.getByTestId(`project-section-${TEST_PROJECT_ID_1}`)
     expect(within(primarySection).getByText("Alpha Task")).toBeInTheDocument()
+  })
+
+  it("moves tasks between projects when dropping on a project group section", async () => {
+    const mockUpdateProjects = vi.fn()
+    const mockUpdateTasks = vi.fn()
+
+    const projectASectionId = createGroupId("11111111-1111-4111-8111-111111111111")
+    const projectBSectionId = createGroupId("22222222-2222-4222-8222-222222222222")
+
+    const taskA: Task = {
+      id: TEST_TASK_ID_1,
+      title: "Alpha Task",
+      description: "",
+      completed: false,
+      priority: 1,
+      projectId: TEST_PROJECT_ID_1,
+      labels: [],
+      subtasks: [],
+      comments: [],
+      recurringMode: "dueDate",
+      createdAt: new Date("2024-02-01"),
+    }
+
+    const taskB: Task = {
+      id: TEST_TASK_ID_2,
+      title: "Beta Task",
+      description: "",
+      completed: false,
+      priority: 2,
+      projectId: TEST_PROJECT_ID_2,
+      labels: [],
+      subtasks: [],
+      comments: [],
+      recurringMode: "dueDate",
+      createdAt: new Date("2024-02-02"),
+    }
+
+    const projectA: Project = {
+      id: TEST_PROJECT_ID_1,
+      name: "Project A",
+      color: "#123456",
+      sections: [
+        {
+          id: projectASectionId,
+          name: "Default",
+          type: "section",
+          items: [TEST_TASK_ID_1],
+          color: "#123456",
+          isDefault: true,
+        },
+      ],
+    }
+
+    const projectB: Project = {
+      id: TEST_PROJECT_ID_2,
+      name: "Project B",
+      color: "#654321",
+      sections: [
+        {
+          id: projectBSectionId,
+          name: "Default",
+          type: "section",
+          items: [TEST_TASK_ID_2],
+          color: "#654321",
+          isDefault: true,
+        },
+      ],
+    }
+
+    const mockGroup = {
+      type: "project" as const,
+      id: TEST_GROUP_ID_1,
+      name: "Feature Group",
+      items: [TEST_PROJECT_ID_1, TEST_PROJECT_ID_2],
+      color: "#ff5500",
+    }
+
+    mockJotai.useSetAtom.mockImplementation((atom) => {
+      if (typeof atom === "object" && atom && "debugLabel" in atom) {
+        const atomWithLabel: { debugLabel?: unknown } = atom
+        const label = String(atomWithLabel.debugLabel ?? "")
+        switch (label) {
+          case "addSection":
+            return mockAddSection
+          case "renameSection":
+            return mockRenameSection
+          case "removeSection":
+            return mockRemoveSection
+          case "openQuickAddAtom":
+            return mockOpenQuickAdd
+          case "updateProjectsAtom":
+            return mockUpdateProjects
+          case "updateTasksAtom":
+            return mockUpdateTasks
+          default:
+            return vi.fn()
+        }
+      }
+
+      return vi.fn()
+    })
+
+    mockJotai.useAtomValue.mockImplementation(
+      createMockUseAtomValue({
+        filteredTasksAtom: [taskA, taskB],
+        tasksAtom: [taskA, taskB],
+        projectsAtom: [projectA, projectB],
+        currentRouteContextAtom: {
+          pathname: `/projectgroups/${mockGroup.id}`,
+          viewId: mockGroup.id,
+          routeType: "projectgroup",
+        },
+        allGroupsAtom: {
+          projectGroups: {
+            type: "project" as const,
+            id: ROOT_PROJECT_GROUP_ID,
+            name: "All Projects",
+            items: [mockGroup],
+          },
+          labelGroups: {
+            type: "label" as const,
+            id: ROOT_LABEL_GROUP_ID,
+            name: "All Labels",
+            items: [],
+          },
+        },
+        projectById: (projectId: string) => {
+          if (projectId === projectA.id) return projectA
+          if (projectId === projectB.id) return projectB
+          return undefined
+        },
+        taskById: new Map([
+          [taskA.id, taskA],
+          [taskB.id, taskB],
+        ]),
+      }),
+    )
+
+    render(
+      <ProjectSectionsView
+        droppableId="group-droppable"
+        supportsSections={false}
+        showProjectsAsSections={true}
+      />,
+    )
+
+    const dropTargetId = `group-droppable-project-${projectB.id}`
+    const dropHandler = mockDropTargets.get(dropTargetId)
+    expect(dropHandler).toBeDefined()
+
+    dropHandler?.({
+      source: { data: { ids: [TEST_TASK_ID_1] } },
+    })
+
+    await Promise.resolve()
+
+    expect(mockUpdateTasks).toHaveBeenCalledWith([
+      {
+        id: TEST_TASK_ID_1,
+        projectId: TEST_PROJECT_ID_2,
+        sectionId: projectBSectionId,
+      },
+    ])
+
+    expect(mockUpdateProjects).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: TEST_PROJECT_ID_1,
+          sections: [
+            expect.objectContaining({
+              id: projectASectionId,
+              items: [],
+            }),
+          ],
+        }),
+        expect.objectContaining({
+          id: TEST_PROJECT_ID_2,
+          sections: [
+            expect.objectContaining({
+              id: projectBSectionId,
+              items: [TEST_TASK_ID_2, TEST_TASK_ID_1],
+            }),
+          ],
+        }),
+      ]),
+    )
   })
 
   it("fails gracefully when project group viewId is a slug (non-UUID)", () => {
@@ -1060,10 +1326,10 @@ describe("ProjectSectionsView", () => {
       type: "project" as const,
       id: TEST_GROUP_ID_1,
       name: "Appointments",
-      slug: "appointments",
       items: [TEST_PROJECT_ID_1],
       color: "#ff5500",
     }
+    const mockGroupSlug = createProjectGroupSlug(mockGroup)
 
     mockJotai.useAtomValue.mockImplementation(
       createMockUseAtomValue({
@@ -1071,9 +1337,9 @@ describe("ProjectSectionsView", () => {
         tasksAtom: groupTasks,
         projectsAtom: [primaryProject],
         currentRouteContextAtom: {
-          pathname: `/projectgroups/${mockGroup.slug}`,
+          pathname: `/projectgroups/${mockGroupSlug}`,
           // Simulate refresh path where viewId is the slug instead of UUID
-          viewId: mockGroup.slug,
+          viewId: mockGroupSlug,
           routeType: "projectgroup",
         },
         allGroupsAtom: {
@@ -1081,14 +1347,12 @@ describe("ProjectSectionsView", () => {
             type: "project" as const,
             id: ROOT_PROJECT_GROUP_ID,
             name: "All Projects",
-            slug: "all-projects",
             items: [mockGroup],
           },
           labelGroups: {
             type: "label" as const,
             id: ROOT_LABEL_GROUP_ID,
             name: "All Labels",
-            slug: "all-labels",
             items: [],
           },
         },
@@ -1141,7 +1405,6 @@ describe("ProjectSectionsView", () => {
       type: "project" as const,
       id: TEST_GROUP_ID_1,
       name: "Feature Group",
-      slug: "feature-group",
       items: [TEST_PROJECT_ID_2, TEST_PROJECT_ID_1],
       color: "#ff5500",
     }
@@ -1151,6 +1414,8 @@ describe("ProjectSectionsView", () => {
         filteredTasksAtom: groupTasks,
         tasksAtom: groupTasks,
         projectsAtom: [primaryProject, secondaryProject],
+        projectById: (projectId: string) =>
+          [primaryProject, secondaryProject].find((project) => project.id === projectId),
         currentRouteContextAtom: {
           pathname: `/projectgroups/${mockGroup.id}`,
           viewId: mockGroup.id,
@@ -1161,14 +1426,12 @@ describe("ProjectSectionsView", () => {
             type: "project" as const,
             id: ROOT_PROJECT_GROUP_ID,
             name: "All Projects",
-            slug: "all-projects",
             items: [mockGroup],
           },
           labelGroups: {
             type: "label" as const,
             id: ROOT_LABEL_GROUP_ID,
             name: "All Labels",
-            slug: "all-labels",
             items: [],
           },
         },
@@ -1229,7 +1492,6 @@ describe("ProjectSectionsView", () => {
       type: "project" as const,
       id: TEST_GROUP_ID_1,
       name: "Feature Group",
-      slug: "feature-group",
       items: [TEST_PROJECT_ID_2, TEST_PROJECT_ID_1],
       color: "#ff5500",
     }
@@ -1249,14 +1511,12 @@ describe("ProjectSectionsView", () => {
             type: "project" as const,
             id: ROOT_PROJECT_GROUP_ID,
             name: "All Projects",
-            slug: "all-projects",
             items: [mockGroup],
           },
           labelGroups: {
             type: "label" as const,
             id: ROOT_LABEL_GROUP_ID,
             name: "All Labels",
-            slug: "all-labels",
             items: [],
           },
         },
@@ -1277,7 +1537,11 @@ describe("ProjectSectionsView", () => {
     const button = screen.getByRole("button", { name: "Open Secondary Project" })
     fireEvent.click(button)
 
-    expect(router.push).toHaveBeenCalledWith(`/projects/${TEST_PROJECT_ID_2}`)
+    const expectedSlug = createProjectSlug({
+      id: TEST_PROJECT_ID_2,
+      name: "Secondary Project",
+    })
+    expect(router.push).toHaveBeenCalledWith(`/projects/${encodeURIComponent(expectedSlug)}`)
   })
 
   describe("when supportsSections is false", () => {
@@ -1567,13 +1831,11 @@ describe("ProjectSectionsView", () => {
     const mockProjectForSorting: Project = {
       id: TEST_PROJECT_ID_1,
       name: "Test Project",
-      slug: "test-project",
       color: "#3B82F6",
       sections: [
         {
           id: TEST_GROUP_ID_1,
           name: "Planning",
-          slug: "planning",
           type: "section",
           items: [TEST_TASK_ID_1, TEST_TASK_ID_2, TEST_TASK_ID_3],
           color: DEFAULT_SECTION_COLORS[0],
@@ -1581,7 +1843,6 @@ describe("ProjectSectionsView", () => {
         {
           id: TEST_GROUP_ID_2,
           name: "In Progress",
-          slug: "in-progress",
           type: "section",
           items: [],
           color: DEFAULT_SECTION_COLORS[1],
@@ -1589,7 +1850,6 @@ describe("ProjectSectionsView", () => {
         {
           id: TEST_GROUP_ID_3,
           name: "Review",
-          slug: "review",
           type: "section",
           items: [],
           color: DEFAULT_SECTION_COLORS[2],

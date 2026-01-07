@@ -82,6 +82,7 @@ describe("DropTargetElement", () => {
           options={{
             type: "group",
             indicator: { lineGap: "8px" },
+            groupSectionId: "section-1",
             testId: "test-drop-target",
           }}
         >
@@ -105,6 +106,7 @@ describe("DropTargetElement", () => {
           options={{
             type: "group",
             indicator: { lineGap: "8px" },
+            groupSectionId: "section-1",
             testId: "test-drop-target",
           }}
         >
@@ -145,6 +147,7 @@ describe("DropTargetElement", () => {
           options={{
             type: "group",
             indicator: { lineGap: "8px" },
+            groupSectionId: "section-1",
           }}
         >
           <div>Section Content</div>
@@ -165,6 +168,7 @@ describe("DropTargetElement", () => {
           options={{
             type: "group",
             indicator: { lineGap: "8px" },
+            groupSectionId: "section-1",
           }}
           onDrop={onDrop}
         >
@@ -196,6 +200,7 @@ describe("DropTargetElement", () => {
           options={{
             type: "group",
             indicator: { lineGap: "8px" },
+            groupSectionId: "section-1",
           }}
           onDrop={onDrop}
         >
@@ -226,6 +231,7 @@ describe("DropTargetElement", () => {
           options={{
             type: "group",
             indicator: { lineGap: "8px" },
+            groupSectionId: "section-1",
           }}
         >
           <div>Section Content</div>
@@ -243,6 +249,38 @@ describe("DropTargetElement", () => {
       expect(mockDropTargetConfig?.canDrop?.(validDrop)).toBe(true)
     })
 
+    it("blocks dropping onto the same section group drop zone", () => {
+      render(
+        <DropTargetElement
+          id="section-1"
+          options={{
+            type: "group",
+            indicator: { lineGap: "8px" },
+            groupSectionId: "section-1",
+          }}
+        >
+          <div>Section Content</div>
+        </DropTargetElement>,
+      )
+
+      expect(mockDropTargetConfig?.canDrop).toBeDefined()
+
+      const fromSameSection = { source: { data: { sectionId: "section-1" } } }
+      expect(mockDropTargetConfig?.canDrop?.(fromSameSection)).toBe(false)
+
+      const fromOtherSection = { source: { data: { sectionId: "section-3" } } }
+      expect(mockDropTargetConfig?.canDrop?.(fromOtherSection)).toBe(true)
+
+      const allFromTargetInList = { source: { data: { sectionIds: ["section-1", "section-1"] } } }
+      expect(mockDropTargetConfig?.canDrop?.(allFromTargetInList)).toBe(false)
+
+      const mixedSections = {
+        source: { data: { sectionId: "section-1", sectionIds: ["section-2", "section-1"] } },
+      }
+      // Mixed source sections should still allow drop
+      expect(mockDropTargetConfig?.canDrop?.(mixedSections)).toBe(true)
+    })
+
     it("handles non-array ids gracefully", () => {
       render(
         <DropTargetElement
@@ -250,6 +288,7 @@ describe("DropTargetElement", () => {
           options={{
             type: "group",
             indicator: { lineGap: "8px" },
+            groupSectionId: "section-1",
           }}
         >
           <div>Section Content</div>

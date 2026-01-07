@@ -1,41 +1,32 @@
 import { ReactNode, useEffect } from "react"
-import { vi } from "vitest"
-
-// Mock function type for better TypeScript compatibility
-type MockFn<T extends (...args: any[]) => any> = T & {
-  mockReturnValue: (value: ReturnType<T>) => MockFn<T>
-  mockImplementation: (impl: T) => MockFn<T>
-  mockClear: () => void
-  mockReset: () => void
-  mockRestore: () => void
-}
+import { vi, type Mock } from "vitest"
 
 // Enhanced mock navigation state interface
 interface MockNavigationState {
   pathname: string
   searchParams: URLSearchParams
   router: {
-    push: MockFn<(url: string, options?: { scroll?: boolean }) => void>
-    replace: MockFn<(url: string, options?: { scroll?: boolean }) => void>
-    back: MockFn<() => void>
-    forward: MockFn<() => void>
-    refresh: MockFn<() => void>
-    prefetch: MockFn<(href: string, options?: { kind?: string }) => void>
+    push: Mock
+    replace: Mock
+    back: Mock
+    forward: Mock
+    refresh: Mock
+    prefetch: Mock
     // Legacy router properties for backward compatibility
     pathname: string
     query: Record<string, string | string[] | undefined>
     asPath: string
     route: string
     events: {
-      on: MockFn<(event: string, handler: () => void) => void>
-      off: MockFn<(event: string, handler: () => void) => void>
-      emit: MockFn<(event: string) => void>
+      on: Mock
+      off: Mock
+      emit: Mock
     }
   }
 }
 
 // Global mock state - configurable for different test scenarios
-let mockState: MockNavigationState = {
+const mockState: MockNavigationState = {
   pathname: "/",
   searchParams: new URLSearchParams(),
   router: {

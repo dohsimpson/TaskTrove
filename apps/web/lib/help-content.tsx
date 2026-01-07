@@ -191,6 +191,25 @@ export function getHelpContent(routeContext: RouteContext): HelpContent | null {
         ),
       }
 
+    case "recent":
+      return {
+        title: "Recent Activity",
+        content: (
+          <HelpSection>
+            <HelpDescription>
+              Track tasks created, or completed in your recent activity window.
+            </HelpDescription>
+            <HelpList
+              items={[
+                "Shows activity from the last 7, 30, or 90 days",
+                "Includes tasks you created, or completed recently",
+                "By default, tasks are sorted by most recent activity first",
+              ]}
+            />
+          </HelpSection>
+        ),
+      }
+
     case "projects":
       return {
         title: "Projects",

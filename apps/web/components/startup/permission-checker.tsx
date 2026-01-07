@@ -8,7 +8,7 @@ import { useAtomValue } from "jotai"
 import { queryClientAtom } from "@tasktrove/atoms/data/base/query"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { toast } from "sonner"
+import { toast } from "@/lib/toast"
 
 interface HealthCheckResponse {
   status: "healthy" | "error" | "needs_initialization" | "needs_migration"
@@ -136,6 +136,9 @@ export function PermissionChecker({ showMigrationDialog = true }: PermissionChec
   useEffect(() => {
     checkHealth()
   }, [])
+
+  const isDataValidationError =
+    healthStatus?.status === "error" && healthStatus.message === "Data file validation failed"
 
   // Don't show anything if healthy
   if (healthStatus?.status === "healthy") {
@@ -284,6 +287,32 @@ export function PermissionChecker({ showMigrationDialog = true }: PermissionChec
           existing TaskTrove data. Back up your data first if you have any existing tasks, projects,
           or settings.
         </p>
+      </StartupAlert>
+    )
+  }
+
+  if (isDataValidationError) {
+    return (
+      <StartupAlert
+        icon={AlertTriangle}
+        title="Data File Validation Failed"
+        variant="destructive"
+        actions={{
+          recheck: {
+            onClick: checkHealth,
+            loading: isChecking,
+          },
+        }}
+        links={[
+          { href: "https://docs.tasktrove.io/troubleshooting", label: "Troubleshooting Guide" },
+          { href: "https://docs.tasktrove.io/backup", label: "Backup guide" },
+        ]}
+      >
+        <span className="text-sm">
+          TaskTrove could not validate your data file. It may be corrupted or from an incompatible
+          version (data file version: {healthStatus.migrationInfo?.currentVersion}). Restore from a
+          backup or review the troubleshooting guide.
+        </span>
       </StartupAlert>
     )
   }

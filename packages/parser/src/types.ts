@@ -28,6 +28,8 @@ export interface ParserContext {
   disabledSections?: Set<string>;
   projects?: Array<{ name: string }>;
   labels?: Array<{ name: string }>;
+  /** Prefer day/month interpretation for ambiguous numeric dates (e.g., 1/2). */
+  preferDayMonthFormat?: boolean;
 }
 
 export interface ParsedTask {

@@ -7,10 +7,14 @@ import { createTaskId } from "@tasktrove/types/id"
 // Mock date-fns
 vi.mock("date-fns", () => ({
   format: vi.fn((date, formatString) => {
-    if (formatString === "MMM d, yyyy") {
-      return "Jan 15, 2024"
+    const d = date instanceof Date ? date : new Date(date)
+    const month = d.getMonth() + 1
+    const day = d.getDate()
+    const year = d.getFullYear()
+    if (formatString === "M/d/yyyy") {
+      return `${month}/${day}/${year}`
     }
-    return "2024-01-15"
+    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
   }),
 }))
 
@@ -140,12 +144,15 @@ vi.mock("@/components/ui/dialog", () => ({
   ),
 }))
 
-vi.mock("@/components/ui/calendar", () => ({
+vi.mock("@/components/ui/custom/calendar", () => ({
   Calendar: ({ mode, selected, onSelect, className }: MockCalendarProps) => (
     <div data-testid="calendar" className={className} data-mode={mode}>
       <div data-testid="selected-date">{selected ? "Date selected" : "No date selected"}</div>
-      <button data-testid="select-date" onClick={() => onSelect?.(new Date("2024-01-15"))}>
-        Select Jan 15
+      <button
+        data-testid="select-date"
+        onClick={() => onSelect?.(new Date("2024-01-15T12:00:00Z"))}
+      >
+        Select 1/15
       </button>
       <button data-testid="clear-date" onClick={() => onSelect?.(undefined)}>
         Clear Date
@@ -158,7 +165,7 @@ vi.mock("@/components/ui/calendar", () => ({
 const mockTask = {
   id: createTaskId("12345678-1234-4234-8234-123456789ab1"),
   title: "Test Task",
-  dueDate: new Date("2024-01-10"),
+  dueDate: new Date("2024-01-15T12:00:00Z"),
 }
 
 const mockTaskWithoutDate = {
@@ -376,7 +383,7 @@ describe("TaskScheduleDropdown", () => {
     fireEvent.click(screen.getByText("Custom date..."))
 
     // Submit with the existing due date
-    fireEvent.click(screen.getByText("Schedule for Jan 15, 2024"))
+    fireEvent.click(screen.getByText("Schedule for 1/15/2024"))
 
     expect(mockOnSchedule).toHaveBeenCalledWith(mockTask.id, mockTask.dueDate, "custom")
   })
@@ -391,7 +398,7 @@ describe("TaskScheduleDropdown", () => {
     fireEvent.click(screen.getByText("Custom date..."))
     expect(screen.getByTestId("dialog")).toHaveAttribute("data-open", "true")
 
-    fireEvent.click(screen.getByText("Schedule for Jan 15, 2024"))
+    fireEvent.click(screen.getByText("Schedule for 1/15/2024"))
     expect(screen.getByTestId("dialog")).toHaveAttribute("data-open", "false")
   })
 

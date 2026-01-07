@@ -140,11 +140,14 @@ export function calculateProjectTaskCounts(
   tasks: Task[],
   config: CountConfig = { showCompleted: false },
 ): Record<ProjectId, number> {
+  const visibleTasks = tasks.filter((task) => !task.archived);
   const counts: Record<ProjectId, number> = {};
 
   for (const project of projects) {
     // Filter tasks by project ID
-    const projectTasks = tasks.filter((task) => task.projectId === project.id);
+    const projectTasks = visibleTasks.filter(
+      (task) => task.projectId === project.id,
+    );
 
     // Apply completion filter
     const filteredTasks = filterTasksByCompleted(
@@ -172,11 +175,14 @@ export function calculateLabelTaskCounts(
   tasks: Task[],
   config: CountConfig = { showCompleted: false },
 ): Record<LabelId, number> {
+  const visibleTasks = tasks.filter((task) => !task.archived);
   const counts: Record<LabelId, number> = {};
 
   for (const label of labels) {
     // Filter tasks that include this label
-    const labelTasks = tasks.filter((task) => task.labels.includes(label.id));
+    const labelTasks = visibleTasks.filter((task) =>
+      task.labels.includes(label.id),
+    );
 
     // Apply completion filter
     const filteredTasks = filterTasksByCompleted(
@@ -213,39 +219,42 @@ export function calculateViewCounts(
     showCompletedAll: boolean;
   }> = {},
 ): ViewCounts {
+  const visibleTasks = tasks.filter((task) => !task.archived);
+  const visibleCompletedTasks = completedTasks.filter((task) => !task.archived);
+
   // Filter for active (non-completed) tasks
-  const activeTasks = tasks.filter((task) => !task.completed);
+  const activeTasks = visibleTasks.filter((task) => !task.completed);
 
   // Calculate inbox count
-  const inboxTasks = filterInboxTasks(tasks, projectIds);
+  const inboxTasks = filterInboxTasks(visibleTasks, projectIds);
   const inboxFiltered = filterTasksByCompleted(
     inboxTasks,
     config.showCompletedInbox ?? false,
   );
 
   // Calculate today count
-  const todayTasks = filterTodayTasks(tasks);
+  const todayTasks = filterTodayTasks(visibleTasks);
   const todayFiltered = filterTasksByCompleted(
     todayTasks,
     config.showCompletedToday ?? false,
   );
 
   // Calculate upcoming count
-  const upcomingTasks = filterUpcomingTasks(tasks);
+  const upcomingTasks = filterUpcomingTasks(visibleTasks);
   const upcomingFiltered = filterTasksByCompleted(
     upcomingTasks,
     config.showCompletedUpcoming ?? false,
   );
 
   // Calculate calendar count
-  const calendarTasks = filterCalendarTasks(tasks);
+  const calendarTasks = filterCalendarTasks(visibleTasks);
   const calendarFiltered = filterTasksByCompleted(
     calendarTasks,
     config.showCompletedCalendar ?? false,
   );
 
   // Calculate overdue count
-  const overdueTasks = filterOverdueTasks(tasks);
+  const overdueTasks = filterOverdueTasks(visibleTasks);
   const overdueFiltered = filterTasksByCompleted(
     overdueTasks,
     config.showCompletedOverdue ?? false,
@@ -253,7 +262,7 @@ export function calculateViewCounts(
 
   // Calculate all count (respects showCompleted for 'all' view)
   const allFiltered = filterTasksByCompleted(
-    tasks,
+    visibleTasks,
     config.showCompletedAll ?? false,
   );
 
@@ -264,7 +273,7 @@ export function calculateViewCounts(
     upcoming: upcomingFiltered.length,
     calendar: calendarFiltered.length,
     overdue: overdueFiltered.length,
-    completed: completedTasks.length,
+    completed: visibleCompletedTasks.length,
     all: allFiltered.length,
     active: activeTasks.length,
   };

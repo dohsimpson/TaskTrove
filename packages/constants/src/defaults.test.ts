@@ -3,6 +3,7 @@ import {
   DEFAULT_TASK_PRIORITY,
   DEFAULT_TASK_TITLE,
   DEFAULT_TASK_COMPLETED,
+  DEFAULT_TASK_ARCHIVED,
   DEFAULT_TASK_STATUS,
   DEFAULT_UUID,
   DEFAULT_TASK_LABELS,
@@ -16,6 +17,7 @@ import {
   DEFAULT_SORT_BY,
   DEFAULT_SORT_DIRECTION,
   DEFAULT_SHOW_COMPLETED,
+  DEFAULT_SHOW_ARCHIVED,
   DEFAULT_SHOW_OVERDUE,
   DEFAULT_SEARCH_QUERY,
   DEFAULT_SHOW_SIDE_PANEL,
@@ -48,6 +50,7 @@ describe("TaskTrove Default Constants", () => {
 
     it("should have correct task status defaults", () => {
       expect(DEFAULT_TASK_COMPLETED).toBe(false);
+      expect(DEFAULT_TASK_ARCHIVED).toBe(false);
       expect(DEFAULT_TASK_STATUS).toBe("active");
     });
 
@@ -94,6 +97,7 @@ describe("TaskTrove Default Constants", () => {
 
     it("should have correct boolean view defaults", () => {
       expect(DEFAULT_SHOW_COMPLETED).toBe(false);
+      expect(DEFAULT_SHOW_ARCHIVED).toBe(false);
       expect(DEFAULT_SHOW_OVERDUE).toBe(true);
       expect(DEFAULT_SHOW_SIDE_PANEL).toBe(false);
       expect(DEFAULT_COMPACT_VIEW).toBe(false);
@@ -108,8 +112,8 @@ describe("TaskTrove Default Constants", () => {
   describe("Audio Defaults", () => {
     it("should have correct sound defaults", () => {
       expect(DEFAULT_SOUND_ENABLED).toBe(true);
-      expect(DEFAULT_SOUND_VOLUME).toBe(0.3);
-      expect(DEFAULT_NOTIFICATION_VOLUME).toBe(70);
+      expect(DEFAULT_SOUND_VOLUME).toBe(0.05);
+      expect(DEFAULT_NOTIFICATION_VOLUME).toBe(5);
     });
 
     it("should have valid volume ranges", () => {

@@ -153,7 +153,7 @@ export interface MutationConfig<
 
   /**
    * Optional factory for creating optimistic data with defaults.
-   * Useful when you need to generate IDs, slugs, colors, etc.
+   * Useful when you need to generate IDs, colors, etc.
    *
    * @param variables - Request payload
    * @param oldResource - Current resource (for context like ID generation)
@@ -171,6 +171,9 @@ export interface MutationConfig<
 
   /** API endpoint (defaults to "/api/v1/tasks") */
   apiEndpoint?: string;
+
+  /** Toggle success toast for this mutation (default: true). */
+  showSuccessToast?: boolean;
 }
 
 /**
@@ -206,6 +209,7 @@ export function createMutation<
     optimisticDataFactory,
     logModule = "tasks",
     apiEndpoint = API_ROUTES.V1_TASKS,
+    showSuccessToast = true,
   } = config;
 
   return atomWithMutation<
@@ -318,7 +322,7 @@ export function createMutation<
       logger({ count, module: logModule }, `${operationName} via API`);
 
       // Success toast notification (skipped when API reports success: false)
-      if (operationSucceeded) {
+      if (operationSucceeded && showSuccessToast) {
         toast.success(`${operationName} successfully`);
       }
 

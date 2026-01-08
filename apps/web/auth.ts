@@ -47,7 +47,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // Verify password using secure hash comparison
           if (verifyPassword(password, currentUser.password)) {
             return {
-              // id: "1", // Static ID for single user app
+              id: "1", // Static ID for single user app
               name: currentUser.username,
             }
           }
@@ -67,7 +67,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user.id) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- user is undefined on subsequent JWT callback invocations
+      if (user) {
         token.id = user.id
       }
       return token

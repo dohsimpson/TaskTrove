@@ -10,6 +10,7 @@ import { POST, PATCH, DELETE } from "./route"
 import { TEST_LABEL_ID_1, TEST_LABEL_ID_2 } from "@tasktrove/types/test-constants"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { DEFAULT_EMPTY_DATA_FILE } from "@tasktrove/types/defaults"
+import { createLabelId } from "@tasktrove/types/id"
 
 // Mock safe file operations
 vi.mock("@/lib/utils/safe-file-operations", () => ({
@@ -106,32 +107,6 @@ describe("PATCH /api/labels", () => {
     expect(responseData.message).toBe("2 label(s) updated successfully")
   })
 
-  it("should handle single label update", async () => {
-    const labelUpdate = {
-      id: TEST_LABEL_ID_1,
-      name: "Updated Label",
-      color: "#8b5cf6",
-    }
-
-    const request = new NextRequest("http://localhost:3000/api/labels", {
-      method: "PATCH",
-      body: JSON.stringify(labelUpdate),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-
-    const response = await PATCH(request)
-    const responseData = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(responseData.success).toBe(true)
-    expect(responseData.labels).toHaveLength(1)
-    expect(responseData.labels[0].name).toBe("Updated Label")
-    expect(responseData.labels[0].color).toBe("#8b5cf6")
-    expect(responseData.count).toBe(1)
-  })
-
   it("should return 400 error for missing label ID", async () => {
     const invalidUpdate = {
       name: "Label without ID",
@@ -156,10 +131,13 @@ describe("PATCH /api/labels", () => {
   it("should handle file system errors gracefully", async () => {
     mockSafeReadDataFile.mockResolvedValue(undefined) // Simulate read failure
 
-    const labelUpdate = {
-      id: TEST_LABEL_ID_1,
-      name: "Updated Label",
-    }
+    const labelUpdate = [
+      {
+        id: TEST_LABEL_ID_1,
+        name: "Updated Label",
+        color: "#8b5cf6",
+      },
+    ]
 
     const request = new NextRequest("http://localhost:3000/api/labels", {
       method: "PATCH",
@@ -313,7 +291,9 @@ describe("POST /api/labels", () => {
   })
 
   it("should create a new label successfully with all fields", async () => {
+    const newLabelId = createLabelId("12345678-1234-4123-8123-123456789012")
     const newLabelRequest = {
+      id: newLabelId,
       name: "New Label",
       color: "#10b981",
     }
@@ -332,7 +312,7 @@ describe("POST /api/labels", () => {
     expect(response.status).toBe(200)
     expect(responseData.success).toBe(true)
     expect(responseData.labelIds).toHaveLength(1)
-    expect(responseData.labelIds[0]).toBe("12345678-1234-4123-8123-123456789012") // Mocked UUID
+    expect(responseData.labelIds[0]).toBe(newLabelId)
     expect(responseData.message).toBe("Label created successfully")
 
     // Verify file operations were called
@@ -346,47 +326,12 @@ describe("POST /api/labels", () => {
     }
     const writeCall = writeArgs[0]
     expect(writeCall.data.labels).toHaveLength(2)
-    expect(writeCall.data.labels[1]).toEqual({
-      id: "12345678-1234-4123-8123-123456789012",
-      name: "New Label",
-      color: "#10b981",
-    })
-  })
-
-  it("should create a new label with default color when color is not provided", async () => {
-    const newLabelRequest = {
-      name: "Label Without Color",
-    }
-
-    const request = new NextRequest("http://localhost:3000/api/labels", {
-      method: "POST",
-      body: JSON.stringify(newLabelRequest),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-
-    const response = await POST(request)
-    const responseData = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(responseData.success).toBe(true)
-
-    // Verify the label was created with default color
-    const writeArgs = mockSafeWriteDataFile.mock.calls[0]
-    if (!writeArgs || !writeArgs[0]) {
-      throw new Error("Expected mockSafeWriteDataFile to have been called with arguments")
-    }
-    const writeCall = writeArgs[0]
-    expect(writeCall.data.labels[1]).toEqual({
-      id: "12345678-1234-4123-8123-123456789012",
-      name: "Label Without Color",
-      color: "#3b82f6", // Default blue color from DEFAULT_LABEL_COLORS[0]
-    })
+    expect(writeCall.data.labels[1]).toEqual(newLabelRequest)
   })
 
   it("should return 400 error when name is missing", async () => {
     const invalidRequest = {
+      id: createLabelId("99999999-1234-4123-8123-123456789012"),
       color: "#10b981",
       // Missing required name field
     }
@@ -410,6 +355,7 @@ describe("POST /api/labels", () => {
     mockSafeReadDataFile.mockResolvedValue(undefined) // Simulate read failure
 
     const newLabelRequest = {
+      id: createLabelId("bbbbbbbb-1234-4123-8123-123456789012"),
       name: "Test Label",
       color: "#10b981",
     }
@@ -434,6 +380,7 @@ describe("POST /api/labels", () => {
     mockSafeWriteDataFile.mockResolvedValue(false) // Simulate write failure
 
     const newLabelRequest = {
+      id: createLabelId("cccccccc-1234-4123-8123-123456789012"),
       name: "Test Label",
       color: "#10b981",
     }
@@ -456,6 +403,7 @@ describe("POST /api/labels", () => {
 
   it("should validate label name is a string", async () => {
     const invalidRequest = {
+      id: createLabelId("99999999-1234-4123-8123-123456789012"),
       name: 123, // Invalid type
       color: "#10b981",
     }
@@ -478,6 +426,7 @@ describe("POST /api/labels", () => {
   it("should validate color is a string when provided", async () => {
     const invalidRequest = {
       name: "Valid Name",
+      id: createLabelId("aaaaaaaa-1234-4123-8123-123456789012"),
       color: 123, // Invalid type
     }
 

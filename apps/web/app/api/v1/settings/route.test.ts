@@ -1,7 +1,7 @@
 /**
  * Tests for the /api/v1/settings endpoint
  *
- * Critical tests for the settings merge logic to ensure Pro fields are preserved.
+ * Tests for settings retrieval and full-payload updates.
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest"
@@ -145,193 +145,37 @@ describe("PATCH /api/v1/settings", () => {
     mockSafeWriteDataFile.mockResolvedValue(true)
   })
 
-  it("should update a single setting successfully", async () => {
-    const updateData = {
-      settings: {
-        general: {
-          soundEnabled: false,
-        },
-      },
-    }
-
-    const request = new NextRequest("http://localhost:3000/api/v1/settings", {
-      method: "PATCH",
-      body: JSON.stringify(updateData),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-
-    const response = await PATCH(request)
-    const responseData = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(responseData.success).toBe(true)
-    expect(responseData.settings.general.soundEnabled).toBe(false)
-    expect(responseData.message).toBe("Settings updated successfully")
-  })
-
-  it("should preserve untouched fields during partial update", async () => {
-    const updateData = {
-      settings: {
-        general: {
-          soundEnabled: false,
-        },
-      },
-    }
-
-    const request = new NextRequest("http://localhost:3000/api/v1/settings", {
-      method: "PATCH",
-      body: JSON.stringify(updateData),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-
-    const response = await PATCH(request)
-    const responseData = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(responseData.success).toBe(true)
-
-    // Verify untouched fields are preserved
-    expect(responseData.settings.general.startView).toBe(DEFAULT_SETTINGS.general.startView)
-    expect(responseData.settings.general.linkifyEnabled).toBe(
-      DEFAULT_SETTINGS.general.linkifyEnabled,
-    )
-    expect(responseData.settings.general.popoverHoverOpen).toBe(
-      DEFAULT_SETTINGS.general.popoverHoverOpen,
-    )
-    expect(responseData.settings.notifications).toEqual(DEFAULT_SETTINGS.notifications)
-    expect(responseData.settings.data).toEqual(DEFAULT_SETTINGS.data)
-  })
-
-  it("should deep merge nested autoBackup settings correctly", async () => {
-    const updateData = {
-      settings: {
-        data: {
-          autoBackup: {
-            enabled: false,
-            backupTime: "03:00",
-            maxBackups: 10,
-          },
-        },
-      },
-    }
-
-    const request = new NextRequest("http://localhost:3000/api/v1/settings", {
-      method: "PATCH",
-      body: JSON.stringify(updateData),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-
-    const response = await PATCH(request)
-    const responseData = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(responseData.settings.data.autoBackup.enabled).toBe(false)
-    expect(responseData.settings.data.autoBackup.backupTime).toBe("03:00")
-    expect(responseData.settings.data.autoBackup.maxBackups).toBe(10)
-    // Other top-level settings should be preserved
-    expect(responseData.settings.notifications).toEqual(DEFAULT_SETTINGS.notifications)
-    expect(responseData.settings.general).toEqual(DEFAULT_SETTINGS.general)
-  })
-
-  it("should update multiple settings categories at once", async () => {
-    const updateData = {
-      settings: {
-        general: {
-          soundEnabled: false,
-          startView: "today",
-        },
-        notifications: {
-          enabled: false,
-        },
-      },
-    }
-
-    const request = new NextRequest("http://localhost:3000/api/v1/settings", {
-      method: "PATCH",
-      body: JSON.stringify(updateData),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-
-    const response = await PATCH(request)
-    const responseData = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(responseData.success).toBe(true)
-    expect(responseData.settings.general.soundEnabled).toBe(false)
-    expect(responseData.settings.general.startView).toBe("today")
-    expect(responseData.settings.notifications.enabled).toBe(false)
-    // Untouched notification field should be preserved
-    expect(responseData.settings.notifications.requireInteraction).toBe(
-      DEFAULT_SETTINGS.notifications.requireInteraction,
-    )
-  })
-
-  it("should CRITICAL: preserve Pro productivity field during base field updates", async () => {
-    // Simulate Pro settings with productivity field
-    const proSettings = {
-      ...DEFAULT_SETTINGS,
-      productivity: {
-        rewardTheme: "space",
-        rewardsEnabled: true,
-      },
-    } as const
-
-    mockSafeReadDataFile.mockResolvedValue({
-      ...DEFAULT_EMPTY_DATA_FILE,
-      settings: proSettings,
-    })
-
-    const updateData = {
-      settings: {
-        general: {
-          soundEnabled: false,
-        },
-      },
-    }
-
-    const request = new NextRequest("http://localhost:3000/api/v1/settings", {
-      method: "PATCH",
-      body: JSON.stringify(updateData),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-
-    const response = await PATCH(request)
-    const responseData = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(responseData.success).toBe(true)
-
-    // CRITICAL: productivity field must be preserved
-    expect(responseData.settings.productivity).toBeDefined()
-    expect(responseData.settings.productivity.rewardTheme).toBe("space")
-    expect(responseData.settings.productivity.rewardsEnabled).toBe(true)
-  })
-
-  it("should CRITICAL: preserve Pro general.newTaskOwnership field", async () => {
-    // Simulate Pro settings with extended general field
-    const proSettings = {
+  it("should update settings successfully with a full payload", async () => {
+    const updatedSettings: UserSettings = {
       ...DEFAULT_SETTINGS,
       general: {
         ...DEFAULT_SETTINGS.general,
-        newTaskOwnership: "currentUser",
+        soundEnabled: false,
       },
-    } as const
+    }
 
-    mockSafeReadDataFile.mockResolvedValue({
-      ...DEFAULT_EMPTY_DATA_FILE,
-      settings: proSettings,
+    const updateData = {
+      settings: updatedSettings,
+    }
+
+    const request = new NextRequest("http://localhost:3000/api/v1/settings", {
+      method: "PATCH",
+      body: JSON.stringify(updateData),
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
 
+    const response = await PATCH(request)
+    const responseData = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(responseData.success).toBe(true)
+    expect(responseData.settings).toEqual(updatedSettings)
+    expect(responseData.message).toBe("Settings updated successfully")
+  })
+
+  it("should reject partial settings payloads", async () => {
     const updateData = {
       settings: {
         general: {
@@ -351,45 +195,23 @@ describe("PATCH /api/v1/settings", () => {
     const response = await PATCH(request)
     const responseData = await response.json()
 
-    expect(response.status).toBe(200)
-    expect(responseData.success).toBe(true)
-
-    // CRITICAL: newTaskOwnership field must be preserved
-    expect(responseData.settings.general.newTaskOwnership).toBe("currentUser")
-    expect(responseData.settings.general.soundEnabled).toBe(false)
-  })
-
-  it("should handle empty partial settings gracefully", async () => {
-    const updateData = {
-      settings: {},
-    }
-
-    const request = new NextRequest("http://localhost:3000/api/v1/settings", {
-      method: "PATCH",
-      body: JSON.stringify(updateData),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-
-    const response = await PATCH(request)
-    const responseData = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(responseData.success).toBe(true)
-    // Settings should remain unchanged
-    expect(responseData.settings).toEqual(DEFAULT_SETTINGS)
+    expect(response.status).toBe(400)
+    expect(responseData.error).toBeDefined()
   })
 
   it("should handle file write failure gracefully", async () => {
     mockSafeWriteDataFile.mockResolvedValue(false)
 
-    const updateData = {
-      settings: {
-        general: {
-          soundEnabled: false,
-        },
+    const updatedSettings: UserSettings = {
+      ...DEFAULT_SETTINGS,
+      general: {
+        ...DEFAULT_SETTINGS.general,
+        soundEnabled: false,
       },
+    }
+
+    const updateData = {
+      settings: updatedSettings,
     }
 
     const request = new NextRequest("http://localhost:3000/api/v1/settings", {
@@ -410,12 +232,16 @@ describe("PATCH /api/v1/settings", () => {
   it("should handle file read failure gracefully", async () => {
     mockSafeReadDataFile.mockResolvedValue(undefined)
 
-    const updateData = {
-      settings: {
-        general: {
-          soundEnabled: false,
-        },
+    const updatedSettings: UserSettings = {
+      ...DEFAULT_SETTINGS,
+      general: {
+        ...DEFAULT_SETTINGS.general,
+        soundEnabled: false,
       },
+    }
+
+    const updateData = {
+      settings: updatedSettings,
     }
 
     const request = new NextRequest("http://localhost:3000/api/v1/settings", {
@@ -433,13 +259,17 @@ describe("PATCH /api/v1/settings", () => {
     expect(responseData.error).toBeDefined()
   })
 
-  it("should verify merged data is persisted to file", async () => {
-    const updateData = {
-      settings: {
-        general: {
-          soundEnabled: false,
-        },
+  it("should verify provided settings are persisted to file", async () => {
+    const updatedSettings: UserSettings = {
+      ...DEFAULT_SETTINGS,
+      general: {
+        ...DEFAULT_SETTINGS.general,
+        soundEnabled: false,
       },
+    }
+
+    const updateData = {
+      settings: updatedSettings,
     }
 
     const request = new NextRequest("http://localhost:3000/api/v1/settings", {
@@ -463,10 +293,7 @@ describe("PATCH /api/v1/settings", () => {
 
     const writtenData = writeCall[0].data
 
-    // Verify all settings were written correctly
-    expect(writtenData.settings.general.soundEnabled).toBe(false)
-    expect(writtenData.settings.general.startView).toBe(DEFAULT_SETTINGS.general.startView)
-    expect(writtenData.settings.notifications).toEqual(DEFAULT_SETTINGS.notifications)
-    expect(writtenData.settings.data).toEqual(DEFAULT_SETTINGS.data)
+    // Verify settings were written exactly as provided
+    expect(writtenData.settings).toEqual(updatedSettings)
   })
 })

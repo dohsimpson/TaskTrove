@@ -1,4 +1,6 @@
 import { DEFAULT_PROJECT_SECTION } from "@tasktrove/types/defaults"
+import type { Project } from "@tasktrove/types/core"
+import { createProjectId } from "@tasktrove/types/id"
 /**
  * Tests for the /api/projects endpoint
  *
@@ -50,6 +52,14 @@ vi.mock("uuid", () => ({
 
 const mockSafeReadDataFile = vi.mocked(safeReadDataFile)
 const mockSafeWriteDataFile = vi.mocked(safeWriteDataFile)
+
+const buildProjectPayload = (overrides: Partial<Project> = {}): Project => ({
+  id: createProjectId("99999999-9999-4999-8999-999999999999"),
+  name: "New Test Project",
+  color: "#10b981",
+  sections: [DEFAULT_PROJECT_SECTION],
+  ...overrides,
+})
 
 describe("PATCH /api/projects", () => {
   beforeEach(() => {
@@ -253,10 +263,7 @@ describe("POST /api/projects", () => {
   })
 
   it("should create a project successfully with required fields", async () => {
-    const projectData = {
-      name: "New Test Project",
-      color: "#10b981",
-    }
+    const projectData = buildProjectPayload()
 
     const request = new NextRequest("http://localhost:3000/api/projects", {
       method: "POST",
@@ -272,7 +279,7 @@ describe("POST /api/projects", () => {
     expect(response.status).toBe(200)
     expect(responseData.success).toBe(true)
     expect(responseData.projectIds).toHaveLength(1)
-    expect(responseData.projectIds[0]).toBeDefined()
+    expect(responseData.projectIds[0]).toBe(projectData.id)
     expect(responseData.message).toBe("Project created successfully")
 
     // Verify that the file was written with the new project
@@ -288,18 +295,20 @@ describe("POST /api/projects", () => {
     if (!newProject) {
       throw new Error("Expected new project to exist")
     }
-    expect(newProject.name).toBe("New Test Project")
-    expect(newProject.color).toBe("#10b981")
+    expect(newProject.name).toBe(projectData.name)
+    expect(newProject.color).toBe(projectData.color)
+    expect(newProject.id).toBe(projectData.id)
   })
 
-  it("should create a project with default color when not provided", async () => {
-    const projectData = {
-      name: "Project Without Color",
+  it("should return 400 error when required fields are missing", async () => {
+    const incompletePayload = {
+      // Missing name, color, sections
+      id: createProjectId("12121212-1212-4121-8121-121212121212"),
     }
 
     const request = new NextRequest("http://localhost:3000/api/projects", {
       method: "POST",
-      body: JSON.stringify(projectData),
+      body: JSON.stringify(incompletePayload),
       headers: {
         "Content-Type": "application/json",
       },
@@ -308,17 +317,15 @@ describe("POST /api/projects", () => {
     const response = await POST(request)
     const responseData = await response.json()
 
-    expect(response.status).toBe(200)
-    expect(responseData.success).toBe(true)
-    expect(responseData.projectIds).toHaveLength(1)
-    expect(responseData.projectIds[0]).toBeDefined()
-    expect(responseData.message).toBe("Project created successfully")
+    expect(response.status).toBe(400)
+    expect(responseData.error).toBe("Validation failed")
   })
 
   it("should return 400 error for missing project name", async () => {
     const invalidData = {
+      id: createProjectId("55555555-5555-4555-8555-555555555555"),
       color: "#10b981",
-      // Missing required name field
+      sections: [DEFAULT_PROJECT_SECTION],
     }
 
     const request = new NextRequest("http://localhost:3000/api/projects", {
@@ -340,11 +347,11 @@ describe("POST /api/projects", () => {
   // Note: File system error test removed due to middleware mocking complexity.
   // Error handling is covered by the existing PATCH and DELETE tests.
 
-  it("should create project with optional shared field", async () => {
-    const projectData = {
+  it("should create project with a provided color", async () => {
+    const projectData = buildProjectPayload({
       name: "Shared Project",
       color: "#ef4444",
-    }
+    })
 
     const request = new NextRequest("http://localhost:3000/api/projects", {
       method: "POST",
@@ -364,11 +371,12 @@ describe("POST /api/projects", () => {
     expect(responseData.message).toBe("Project created successfully")
   })
 
-  it("should add new project to root project group so it appears in sidebar", async () => {
-    const projectData = {
+  it("should not modify project groups when creating a project", async () => {
+    const projectData = buildProjectPayload({
       name: "New Project for Sidebar",
       color: "#8b5cf6",
-    }
+      id: createProjectId("22222222-2222-4222-8222-222222222222"),
+    })
 
     const request = new NextRequest("http://localhost:3000/api/projects", {
       method: "POST",
@@ -402,10 +410,9 @@ describe("POST /api/projects", () => {
     expect(newProject.name).toBe("New Project for Sidebar")
     expect(newProject.color).toBe("#8b5cf6")
 
-    // Check that project ID was added to root project group's items array
+    // Project groups should remain unchanged by the projects API
     expect(writtenData.projectGroups).toBeDefined()
-    expect(writtenData.projectGroups.items).toContain(responseData.projectIds[0])
-    expect(writtenData.projectGroups.items).toContain(newProject.id)
+    expect(writtenData.projectGroups.items).toEqual(DEFAULT_EMPTY_DATA_FILE.projectGroups.items)
   })
 })
 

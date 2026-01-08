@@ -7,9 +7,11 @@ import mergeWith from "lodash.mergewith";
  */
 
 /**
- * Helper type to exclude null from a union type
+ * Helper type to remove null from all properties while preserving undefined
  */
-type ExcludeNull<T> = T extends null ? never : T;
+export type WithoutNull<T extends Record<string, unknown>> = {
+  [K in keyof T]: Exclude<T[K], null>;
+};
 
 /**
  * Deep partial type used for recursive merging.
@@ -46,7 +48,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
  */
 export function clearNullValues<T extends Record<string, unknown>>(
   obj: T,
-): { [K in keyof T]: ExcludeNull<T[K]> | Extract<T[K], undefined> } {
+): WithoutNull<T> {
   const result: Record<string, unknown> = {};
 
   for (const key in obj) {
@@ -57,9 +59,7 @@ export function clearNullValues<T extends Record<string, unknown>>(
   }
 
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  return result as {
-    [K in keyof T]: ExcludeNull<T[K]> | Extract<T[K], undefined>;
-  };
+  return result as WithoutNull<T>;
 }
 
 /**

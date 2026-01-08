@@ -24,8 +24,8 @@ import {
   GroupIdSchema,
 } from "./id";
 import { AvatarBase64Schema } from "./constants";
-import { ProjectGroupSchema, LabelGroupSchema } from "./group";
-import { PartialUserSettingsSchema } from "./settings";
+import { ProjectGroupSchema, LabelGroupSchema, GroupSchema } from "./group";
+import { UserSettingsSchema } from "./settings";
 
 // =============================================================================
 // CREATE REQUEST SCHEMAS
@@ -132,7 +132,6 @@ export const UpdateTaskRequestSchema = TaskSchema.partial()
   })
   .omit({
     createdAt: true,
-    completedAt: true,
   })
   .extend({
     dueDate: TaskSchema.shape.dueDate.nullable(),
@@ -150,7 +149,6 @@ export const TaskUpdateSerializationSchema = TaskSerializationSchema.partial()
   })
   .omit({
     createdAt: true,
-    completedAt: true,
   })
   .extend({
     dueDate: TaskSerializationSchema.shape.dueDate.nullable(),
@@ -203,14 +201,6 @@ export const UpdateLabelRequestSchema = LabelSchema.partial().required({
   id: true,
 });
 
-/**
- * Union schema that accepts either single label update or array of updates
- */
-export const LabelUpdateUnionSchema = z.union([
-  UpdateLabelRequestSchema,
-  UpdateLabelRequestSchema.array(),
-]);
-
 // Serialization schemas for UpdateLabel (colocated with request schema)
 export const LabelUpdateSerializationSchema =
   LabelSerializationSchema.partial().required({
@@ -251,7 +241,7 @@ export const DataInitializeRequestSchema = z.object({
  * Schema for updating user settings
  */
 export const UpdateSettingsRequestSchema = z.object({
-  settings: PartialUserSettingsSchema,
+  settings: UserSettingsSchema,
 });
 
 /**
@@ -321,6 +311,16 @@ export const CreateGroupRequestSchema = z.object({
   /** Group color (hex code) */
   color: z.string().optional(),
   /** Parent group ID - where to add this new group (optional for root level) */
+  parentId: GroupIdSchema.optional(),
+});
+
+/**
+ * Payload schema for creating a group with client-computed fields
+ */
+export const GroupCreatePayloadSchema = z.object({
+  /** Fully constructed group object (id/slug/color computed client-side) */
+  group: GroupSchema,
+  /** Optional parent group ID for insertion; omit for root level */
   parentId: GroupIdSchema.optional(),
 });
 
@@ -421,6 +421,7 @@ export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>;
 export type CreateProjectRequest = z.infer<typeof CreateProjectRequestSchema>;
 export type CreateLabelRequest = z.infer<typeof CreateLabelRequestSchema>;
 export type CreateGroupRequest = z.infer<typeof CreateGroupRequestSchema>;
+export type GroupCreatePayload = z.infer<typeof GroupCreatePayloadSchema>;
 
 // Update request types
 export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>;
@@ -428,7 +429,6 @@ export type TaskUpdateUnion = z.infer<typeof TaskUpdateUnionSchema>;
 export type UpdateProjectRequest = z.infer<typeof UpdateProjectRequestSchema>;
 export type ProjectUpdateUnion = z.infer<typeof ProjectUpdateUnionSchema>;
 export type UpdateLabelRequest = z.infer<typeof UpdateLabelRequestSchema>;
-export type LabelUpdateUnion = z.infer<typeof LabelUpdateUnionSchema>;
 export type UpdateUserRequest = z.infer<typeof UpdateUserRequestSchema>;
 export type UpdateSettingsRequest = z.infer<typeof UpdateSettingsRequestSchema>;
 export type InitialSetupRequest = z.infer<typeof InitialSetupRequestSchema>;

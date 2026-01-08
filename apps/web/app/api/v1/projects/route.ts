@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
-import { v4 as uuidv4 } from "uuid"
 import type { Project } from "@tasktrove/types/core"
+import { ProjectSchema } from "@tasktrove/types/core"
 import {
   DeleteProjectRequestSchema,
-  CreateProjectRequestSchema,
   ProjectUpdateUnionSchema,
   UpdateProjectRequest,
 } from "@tasktrove/types/api-requests"
@@ -17,14 +16,6 @@ import {
 import { ApiErrorCode } from "@tasktrove/types/api-errors"
 import { ErrorResponse } from "@tasktrove/types/api-responses"
 import { DataFileSerializationSchema } from "@tasktrove/types/data-file"
-import { createProjectId, createGroupId } from "@tasktrove/types/id"
-import {
-  DEFAULT_SECTION_NAME,
-  DEFAULT_PROJECT_COLORS,
-  DEFAULT_SECTION_COLORS,
-  DEFAULT_UUID,
-  getRandomPaletteColor,
-} from "@tasktrove/constants"
 import {
   withApiLogging,
   logBusinessEvent,
@@ -122,8 +113,8 @@ export const GET = withApiVersion(
 async function createProject(
   request: EnhancedRequest,
 ): Promise<NextResponse<CreateProjectResponse | ErrorResponse>> {
-  // Validate request body using partial schema to allow defaults
-  const validation = await validateRequestBody(request, CreateProjectRequestSchema)
+  // Validate request body - now expects a fully constructed Project payload
+  const validation = await validateRequestBody(request, ProjectSchema)
   if (!validation.success) {
     return validation.error
   }
@@ -143,29 +134,10 @@ async function createProject(
     )
   }
 
-  // Apply defaults for fields that weren't provided and generate required fields
-  const newProject: Project = {
-    ...validation.data,
-    id: createProjectId(uuidv4()),
-    name: validation.data.name, // Required field
-    color: validation.data.color ?? getRandomPaletteColor(DEFAULT_PROJECT_COLORS), // Random palette color if not provided
-    sections: validation.data.sections ?? [
-      {
-        id: createGroupId(DEFAULT_UUID),
-        name: DEFAULT_SECTION_NAME,
-        color: getRandomPaletteColor(DEFAULT_SECTION_COLORS),
-        type: "section" as const,
-        items: [],
-        isDefault: true,
-      },
-    ],
-  }
+  const newProject: Project = clearNullValues(validation.data)
 
   // Add the new project to the projects array
   fileData.projects.push(newProject)
-
-  // Ensure the project is added to the root project group so it appears in the sidebar
-  fileData.projectGroups.items.push(newProject.id)
 
   const writeSuccess = await withPerformanceLogging(
     () => safeWriteDataFile({ data: fileData }),
@@ -258,11 +230,8 @@ async function updateProjects(
     const update = updateMap.get(project.id)
     if (!update) return project
 
-    // Merge update into project
-    const updatedProject = { ...project, ...update }
-
-    // Clean null values using utility function
-    return clearNullValues(updatedProject)
+    // Merge update into project (all derived values should already be included)
+    return clearNullValues({ ...project, ...update })
   })
 
   // Update the file data with new projects

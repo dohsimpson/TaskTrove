@@ -21,12 +21,54 @@ vi.mock("uuid", () => ({
 
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import { DEFAULT_EMPTY_DATA_FILE } from "@tasktrove/types/defaults"
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants"
+import {
+  DEFAULT_TASK_PRIORITY,
+  DEFAULT_TASK_SUBTASKS,
+  DEFAULT_TASK_COMMENTS,
+  DEFAULT_TASK_LABELS,
+  DEFAULT_RECURRING_MODE,
+  DEFAULT_TASK_COMPLETED,
+} from "@tasktrove/constants"
 
 const mockReadDataFile = vi.mocked(safeReadDataFile)
 const mockWriteDataFile = vi.mocked(safeWriteDataFile)
 
 const mockDataFile = {
   ...DEFAULT_EMPTY_DATA_FILE,
+}
+
+const buildTaskPayload = (
+  overrides: Partial<{
+    title: string
+    dueDate: string
+    recurring: string
+    recurringMode: "dueDate" | "completedAt" | "autoRollover"
+    id: string
+    priority: number
+  }> = {},
+) => {
+  return {
+    id: overrides.id ?? "12345678-1234-4123-8123-123456789012",
+    title: overrides.title ?? "Test task",
+    description: undefined,
+    completed: DEFAULT_TASK_COMPLETED,
+    archived: false,
+    priority: overrides.priority ?? DEFAULT_TASK_PRIORITY,
+    dueDate: overrides.dueDate,
+    dueTime: undefined,
+    projectId: INBOX_PROJECT_ID,
+    labels: DEFAULT_TASK_LABELS,
+    subtasks: DEFAULT_TASK_SUBTASKS,
+    comments: DEFAULT_TASK_COMMENTS,
+    createdAt: new Date().toISOString(),
+    completedAt: undefined,
+    recurring: overrides.recurring,
+    recurringMode: overrides.recurringMode ?? DEFAULT_RECURRING_MODE,
+    estimation: undefined,
+    trackingId: undefined,
+    sectionId: undefined,
+  }
 }
 
 describe("POST /api/tasks - Task Creation", () => {
@@ -47,11 +89,13 @@ describe("POST /api/tasks - Task Creation", () => {
   it("should NOT automatically set due date for recurring tasks without due date (client-side logic)", async () => {
     const request = new NextRequest("http://localhost:3000/api/tasks", {
       method: "POST",
-      body: JSON.stringify({
-        title: "Daily standup",
-        recurring: "RRULE:FREQ=DAILY",
-        // Note: no dueDate provided - server should NOT calculate one
-      }),
+      body: JSON.stringify(
+        buildTaskPayload({
+          title: "Daily standup",
+          recurring: "RRULE:FREQ=DAILY",
+          // Note: no dueDate provided - server should NOT calculate one
+        }),
+      ),
       headers: {
         "Content-Type": "application/json",
       },
@@ -95,11 +139,13 @@ describe("POST /api/tasks - Task Creation", () => {
 
     const request = new NextRequest("http://localhost:3000/api/tasks", {
       method: "POST",
-      body: JSON.stringify({
-        title: "Weekly review",
-        recurring: "RRULE:FREQ=WEEKLY",
-        dueDate: dueDateString, // Client provides the due date
-      }),
+      body: JSON.stringify(
+        buildTaskPayload({
+          title: "Weekly review",
+          recurring: "RRULE:FREQ=WEEKLY",
+          dueDate: dueDateString, // Client provides the due date
+        }),
+      ),
       headers: {
         "Content-Type": "application/json",
       },
@@ -142,11 +188,13 @@ describe("POST /api/tasks - Task Creation", () => {
 
     const request = new NextRequest("http://localhost:3000/api/tasks", {
       method: "POST",
-      body: JSON.stringify({
-        title: "Christmas task",
-        dueDate: customDueDate,
-        recurring: "RRULE:FREQ=DAILY",
-      }),
+      body: JSON.stringify(
+        buildTaskPayload({
+          title: "Christmas task",
+          dueDate: customDueDate,
+          recurring: "RRULE:FREQ=DAILY",
+        }),
+      ),
       headers: {
         "Content-Type": "application/json",
       },
@@ -184,10 +232,12 @@ describe("POST /api/tasks - Task Creation", () => {
   it("should not set due date for non-recurring tasks without due date", async () => {
     const request = new NextRequest("http://localhost:3000/api/tasks", {
       method: "POST",
-      body: JSON.stringify({
-        title: "One-time task",
-        // No recurring, no dueDate
-      }),
+      body: JSON.stringify(
+        buildTaskPayload({
+          title: "One-time task",
+          // No recurring, no dueDate
+        }),
+      ),
       headers: {
         "Content-Type": "application/json",
       },
@@ -223,11 +273,13 @@ describe("POST /api/tasks - Task Creation", () => {
 
     const request = new NextRequest("http://localhost:3000/api/tasks", {
       method: "POST",
-      body: JSON.stringify({
-        title: "Client-calculated recurring task",
-        recurring: "RRULE:FREQ=MONTHLY",
-        dueDate: clientCalculatedDateString,
-      }),
+      body: JSON.stringify(
+        buildTaskPayload({
+          title: "Client-calculated recurring task",
+          recurring: "RRULE:FREQ=MONTHLY",
+          dueDate: clientCalculatedDateString,
+        }),
+      ),
       headers: {
         "Content-Type": "application/json",
       },
@@ -269,11 +321,13 @@ describe("POST /api/tasks - Task Creation", () => {
     // Test that server doesn't automatically generate due dates for recurring tasks anymore
     const request = new NextRequest("http://localhost:3000/api/tasks", {
       method: "POST",
-      body: JSON.stringify({
-        title: "Recurring task without due date",
-        recurring: "RRULE:FREQ=WEEKLY;INTERVAL=2",
-        // Deliberately no dueDate - client should handle this calculation
-      }),
+      body: JSON.stringify(
+        buildTaskPayload({
+          title: "Recurring task without due date",
+          recurring: "RRULE:FREQ=WEEKLY;INTERVAL=2",
+          // Deliberately no dueDate - client should handle this calculation
+        }),
+      ),
       headers: {
         "Content-Type": "application/json",
       },

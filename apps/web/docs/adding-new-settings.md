@@ -126,48 +126,23 @@ const EMPTY_CACHE_DATA: DataFile = {
 }
 ```
 
-### 3. Update API Route (app/api/settings/route.ts)
+### 3. Update Client Merge (packages/atoms/src/core/settings.ts)
 
-Add your settings to the merge logic in the `updateSettings` function:
+The server now expects a full settings payload, so partial updates must be merged on the client:
 
 ```typescript
-// Merge partial settings with current settings
-const updatedSettings: UserSettings = {
-  // ... existing categories
-  yourCategory: {
-    yourField:
-      partialSettings.yourCategory?.yourField ??
-      fileData.settings.yourCategory?.yourField ??
-      DEFAULT_YOUR_SETTINGS.yourField,
-    anotherField:
-      partialSettings.yourCategory?.anotherField ??
-      fileData.settings.yourCategory?.anotherField ??
-      DEFAULT_YOUR_SETTINGS.anotherField,
-    numericField:
-      partialSettings.yourCategory?.numericField ??
-      fileData.settings.yourCategory?.numericField ??
-      DEFAULT_YOUR_SETTINGS.numericField,
-  },
-}
+const currentSettings = get(settingsAtom)
+const updatedSettings = mergeDeep(currentSettings, partialSettings)
+await updateSettingsMutation.mutateAsync({ settings: updatedSettings })
 ```
 
 Also update the test response factory in the `updateSettingsMutationAtom`:
 
 ```typescript
 testResponseFactory: (variables: UpdateSettingsRequest) => {
-  const testUserSettings: UserSettings = {
-    // ... existing categories
-    yourCategory: {
-      yourField: variables.settings.yourCategory?.yourField ?? DEFAULT_YOUR_SETTINGS.yourField,
-      anotherField:
-        variables.settings.yourCategory?.anotherField ?? DEFAULT_YOUR_SETTINGS.anotherField,
-      numericField:
-        variables.settings.yourCategory?.numericField ?? DEFAULT_YOUR_SETTINGS.numericField,
-    },
-  }
   return {
     success: true,
-    settings: testUserSettings,
+    settings: variables.settings,
     message: "Settings updated successfully (test mode)",
   }
 }

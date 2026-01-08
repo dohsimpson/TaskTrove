@@ -30,13 +30,21 @@ import {
 import { INBOX_PROJECT_ID } from "@tasktrove/types/constants";
 import { createGroupId } from "@tasktrove/types/id";
 import { ProjectIdSchema } from "@tasktrove/types/id";
-import { getDefaultSectionId } from "@tasktrove/types/defaults";
+import {
+  getDefaultSectionId,
+  ROOT_PROJECT_GROUP_ID,
+} from "@tasktrove/types/defaults";
 import { projectsAtom } from "@tasktrove/atoms/data/base/atoms";
+import { groupsQueryAtom } from "@tasktrove/atoms/data/base/query";
 import {
   updateProjectsMutationAtom,
   createProjectMutationAtom,
   deleteProjectMutationAtom,
 } from "@tasktrove/atoms/mutations/projects";
+import {
+  addProjectToGroupAtom,
+  updateProjectGroupAtom,
+} from "@tasktrove/atoms/core/groups";
 import { deleteTasksAtom } from "@tasktrove/atoms/core/tasks";
 import { recordOperationAtom } from "@tasktrove/atoms/core/history";
 import { log } from "@tasktrove/atoms/utils/atom-helpers";
@@ -137,6 +145,34 @@ export const addProjectAtom = atom(
 
       // Get the first (and only) project ID from the response
       const newProjectId = result.projectIds[0];
+      if (!newProjectId) {
+        throw new Error("Project creation did not return a project ID");
+      }
+
+      const groupsQuery = get(groupsQueryAtom);
+      const groupsData = groupsQuery.data;
+
+      if (projectData.groupId) {
+        await set(addProjectToGroupAtom, {
+          projectId: newProjectId,
+          groupId: projectData.groupId,
+        });
+      } else if (groupsData) {
+        const rootItems = groupsData.projectGroups.items;
+        const updatedRootItems = rootItems.includes(newProjectId)
+          ? rootItems
+          : [...rootItems, newProjectId];
+
+        await set(updateProjectGroupAtom, {
+          id: ROOT_PROJECT_GROUP_ID,
+          items: updatedRootItems,
+        });
+      } else {
+        log.warn(
+          { projectId: newProjectId },
+          "Groups not loaded; skipping project insertion into root group",
+        );
+      }
 
       // Record the operation for undo/redo feedback
       set(recordOperationAtom, `Added project: "${projectData.name}"`);

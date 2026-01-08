@@ -26,8 +26,6 @@ import {
   DEFAULT_BACKUP_TIME,
   DEFAULT_MAX_BACKUPS,
 } from "@tasktrove/constants";
-import { playSoundAtom } from "../ui/audio";
-import { settingsAtom } from "../data/base/atoms";
 import { playSound } from "@tasktrove/dom-utils/audio";
 
 // Mock the audio utils with web-specific types
@@ -62,24 +60,6 @@ vi.mock("../../utils/logger", () => ({
 // Mock the audio utils
 vi.mock("@tasktrove/dom-utils/audio", () => ({
   playSound: vi.fn().mockResolvedValue(undefined),
-}));
-
-// Mock the settings atom to control it in our tests
-vi.mock("../data/base/atoms", () => ({
-  settingsAtom: atom({
-    data: {
-      autoBackup: {
-        enabled: DEFAULT_AUTO_BACKUP_ENABLED,
-        backupTime: DEFAULT_BACKUP_TIME,
-        maxBackups: DEFAULT_MAX_BACKUPS,
-      },
-    },
-    notifications: DEFAULT_NOTIFICATION_SETTINGS,
-    general: {
-      ...DEFAULT_GENERAL_SETTINGS,
-      soundEnabled: true, // Default to enabled
-    },
-  }),
 }));
 
 describe("playSoundAtom", () => {
@@ -340,57 +320,48 @@ describe("playSoundAtom", () => {
   });
 
   describe("settings integration", () => {
-    it("should respect soundEnabled setting from settingsAtom", async () => {
-      // Test the actual playSoundAtom from atom-helpers.ts
-      // This test will fail if the real playSoundAtom doesn't check soundEnabled
+    const buildSettings = (soundEnabled: boolean): UserSettings => ({
+      data: {
+        autoBackup: {
+          enabled: DEFAULT_AUTO_BACKUP_ENABLED,
+          backupTime: DEFAULT_BACKUP_TIME,
+          maxBackups: DEFAULT_MAX_BACKUPS,
+        },
+      },
+      notifications: DEFAULT_NOTIFICATION_SETTINGS,
+      general: {
+        ...DEFAULT_GENERAL_SETTINGS,
+        soundEnabled,
+      },
+      uiSettings: {
+        weekStartsOn: undefined,
+      },
+    });
 
-      // Create a fresh store to test with
+    const setupPlaySoundAtom = async (settings: UserSettings) => {
+      vi.resetModules();
+      vi.doMock("../data/base/atoms", () => ({
+        settingsAtom: atom(settings),
+      }));
+      const { playSoundAtom } = await import("../ui/audio");
+      return playSoundAtom;
+    };
+
+    it("should respect soundEnabled setting from settingsAtom (disabled)", async () => {
+      const playSoundAtom = await setupPlaySoundAtom(buildSettings(false));
       const testStore = createStore();
 
-      // Test 1: Override settings atom to have soundEnabled = false
-      const disabledSettings: UserSettings = {
-        data: {
-          autoBackup: {
-            enabled: DEFAULT_AUTO_BACKUP_ENABLED,
-            backupTime: DEFAULT_BACKUP_TIME,
-            maxBackups: DEFAULT_MAX_BACKUPS,
-          },
-        },
-        notifications: DEFAULT_NOTIFICATION_SETTINGS,
-        general: {
-          ...DEFAULT_GENERAL_SETTINGS,
-          soundEnabled: false, // Sound disabled
-        },
-        uiSettings: {
-          weekStartsOn: undefined,
-        },
-      };
-
-      // Set the disabled settings
-      testStore.set(settingsAtom, disabledSettings);
-
-      // Try to play sound - should NOT call playSound because soundEnabled is false
       await testStore.set(playSoundAtom, { soundType: "confirm" });
 
-      // Verify playSound was not called
       expect(mockPlaySound).not.toHaveBeenCalled();
+    });
 
-      // Test 2: Enable sound and try again
-      const enabledSettings: UserSettings = {
-        ...disabledSettings,
-        general: {
-          ...disabledSettings.general,
-          soundEnabled: true,
-        },
-      };
+    it("should respect soundEnabled setting from settingsAtom (enabled)", async () => {
+      const playSoundAtom = await setupPlaySoundAtom(buildSettings(true));
+      const testStore = createStore();
 
-      // Set the enabled settings
-      testStore.set(settingsAtom, enabledSettings);
-
-      // Try to play sound - should call playSound now
       await testStore.set(playSoundAtom, { soundType: "bell" });
 
-      // Verify playSound was called exactly once
       expect(mockPlaySound).toHaveBeenCalledTimes(1);
       expect(mockPlaySound).toHaveBeenCalledWith("bell", 1.0);
     });

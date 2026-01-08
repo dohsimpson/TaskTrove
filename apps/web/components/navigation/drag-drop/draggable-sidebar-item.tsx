@@ -25,6 +25,7 @@ export function DraggableSidebarProject({
       id={projectId}
       index={index}
       mode="tree"
+      className="w-full"
       getData={() => ({
         type: "sidebar-project",
         projectId,
@@ -32,7 +33,6 @@ export function DraggableSidebarProject({
         groupId,
         isInGroup: !!groupId,
       })}
-      className="flex-1 flex-col"
     >
       {children}
     </DraggableItem>
@@ -61,6 +61,7 @@ export function DraggableSidebarGroup({
       id={groupId}
       index={index}
       mode="tree"
+      className="w-full"
       getData={() => ({
         type: "sidebar-group",
         groupId,

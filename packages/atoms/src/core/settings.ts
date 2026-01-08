@@ -8,7 +8,6 @@
 
 import { atom } from "jotai";
 import { handleAtomError, log } from "@tasktrove/atoms/utils/atom-helpers";
-import { playSoundAtom } from "@tasktrove/atoms/ui/audio";
 import { recordOperationAtom } from "@tasktrove/atoms/core/history";
 import { settingsAtom } from "@tasktrove/atoms/data/base/atoms";
 import { settingsQueryAtom } from "@tasktrove/atoms/data/base/query";
@@ -23,6 +22,7 @@ import {
   DEFAULT_AUTO_BACKUP_RUN_ON_INIT,
   DEFAULT_MAX_BACKUPS,
 } from "@tasktrove/constants";
+import { mergeDeep } from "@tasktrove/utils";
 
 /**
  * Core settings management atoms for TaskTrove's Jotai migration
@@ -45,21 +45,20 @@ import {
 /**
  * Updates settings with new data
  * Uses the update settings mutation to persist to API
- * Plays confirmation sound when settings are updated
  * History tracking enabled and tracks operation for undo/redo
  */
 export const updateSettingsAtom = atom(
   null,
   async (get, set, partialSettings: PartialUserSettings) => {
     try {
+      const currentSettings = get(settingsAtom);
+      const updatedSettings = mergeDeep(currentSettings, partialSettings);
+
       // Get the update settings mutation
       const updateSettingsMutation = get(updateSettingsMutationAtom);
 
-      // Play settings update sound immediately for instant feedback
-      set(playSoundAtom, { soundType: "confirm" });
-
       // Execute the mutation - this will handle optimistic updates and API persistence
-      await updateSettingsMutation.mutateAsync({ settings: partialSettings });
+      await updateSettingsMutation.mutateAsync({ settings: updatedSettings });
 
       // Record the operation for undo/redo feedback
       const settingsKeys = Object.keys(partialSettings).join(", ");

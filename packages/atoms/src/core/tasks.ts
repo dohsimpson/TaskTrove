@@ -295,6 +295,42 @@ export const deleteTasksAtom = atom(
       // Execute the mutation - this will handle optimistic updates and API persistence
       await deleteTaskMutation.mutateAsync({ ids: taskIds });
 
+      // Remove deleted task IDs from project sections to keep ordering consistent
+      const projects = get(projectsAtom);
+      const taskIdSet = new Set(taskIds);
+      const projectUpdates = projects
+        .map((project) => {
+          const updatedSections = project.sections.map((section) => {
+            if (!section.items.some((id) => taskIdSet.has(id))) return section;
+            return {
+              ...section,
+              items: section.items.filter((id) => !taskIdSet.has(id)),
+            };
+          });
+
+          const hasChanges = updatedSections.some(
+            (section, index) => section !== project.sections[index],
+          );
+
+          return hasChanges
+            ? {
+                id: project.id,
+                sections: updatedSections,
+              }
+            : null;
+        })
+        .filter(
+          (
+            update,
+          ): update is { id: ProjectId; sections: Project["sections"] } =>
+            update !== null,
+        );
+
+      if (projectUpdates.length > 0) {
+        const updateProjectsMutation = get(updateProjectsMutationAtom);
+        await updateProjectsMutation.mutateAsync(projectUpdates);
+      }
+
       // Record the operation for undo/redo feedback
       const taskTitles = tasksToDelete
         .map((task) => `"${task.title}"`)

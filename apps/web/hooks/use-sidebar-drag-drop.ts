@@ -9,6 +9,7 @@ import { taskAtoms } from "@tasktrove/atoms/core/tasks"
 import { projectsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { updateProjectGroupAtom } from "@tasktrove/atoms/core/groups"
 import { updateTasksAtom } from "@tasktrove/atoms/core/tasks"
+import { updateProjectsAtom } from "@tasktrove/atoms/core/projects"
 import {
   createGroupId,
   createProjectId,
@@ -19,6 +20,7 @@ import {
 import type { UpdateTaskRequest } from "@tasktrove/types/api-requests"
 import { getDefaultSectionId } from "@tasktrove/types/defaults"
 import { toast } from "@/lib/toast"
+import { insertIdsAtSectionEnd, removeIdsFromProjects } from "@tasktrove/dom-utils"
 import {
   findContainingGroup,
   resolveTargetLocation,
@@ -45,6 +47,7 @@ export type DropEventData = ElementDropTargetEventBasePayload
 export function useSidebarDragDrop() {
   const updateGroup = useSetAtom(updateProjectGroupAtom)
   const updateTasks = useSetAtom(updateTasksAtom)
+  const updateProjects = useSetAtom(updateProjectsAtom)
   const allGroups = useAtomValue(allGroupsAtom)
   const projects = useAtomValue(projectsAtom)
   const taskById = useAtomValue(taskAtoms.derived.taskById)
@@ -143,6 +146,40 @@ export function useSidebarDragDrop() {
           // Update all tasks at once
           await updateTasks(updateRequests)
 
+          // Update project section membership for moved tasks
+          const movingTaskIds = updateRequests.map((request) => request.id)
+          const affectedProjectIds = new Set<ProjectId>([targetProjectId])
+          for (const taskId of movingTaskIds) {
+            const task = taskById.get(taskId)
+            if (task?.projectId) {
+              affectedProjectIds.add(task.projectId)
+            }
+          }
+
+          const affectedProjects = Array.from(affectedProjectIds)
+            .map((pid) => projects.find((p) => p.id === pid))
+            .filter((p): p is (typeof projects)[number] => Boolean(p))
+
+          if (affectedProjects.length > 0) {
+            const movingIds = movingTaskIds.map((id) => id.toString())
+            const cleaned = removeIdsFromProjects(affectedProjects, movingIds)
+            const cleanedTarget = cleaned.find((p) => p.id === targetProjectId)
+
+            if (cleanedTarget) {
+              const updatedTarget = insertIdsAtSectionEnd(cleanedTarget, targetSectionId, movingIds)
+              const merged = cleaned.map((proj) =>
+                proj.id === targetProjectId ? updatedTarget : proj,
+              )
+
+              await updateProjects(
+                merged.map((proj) => ({
+                  id: createProjectId(proj.id),
+                  sections: proj.sections,
+                })),
+              )
+            }
+          }
+
           const count = updateRequests.length
           toast.success(
             count === 1
@@ -224,7 +261,7 @@ export function useSidebarDragDrop() {
         console.error("Error executing sidebar drag-and-drop:", error)
       }
     },
-    [updateGroup, updateTasks, allGroups, projects, taskById],
+    [updateGroup, updateProjects, updateTasks, allGroups, projects, taskById],
   )
 
   return { handleDrop }

@@ -8,12 +8,12 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
+import { atom } from "jotai";
 import { type Label } from "@tasktrove/types/core";
 import {
   type CreateLabelRequest,
   type DeleteLabelRequest,
-  LabelCreateSerializationSchema,
-  LabelUpdateArraySerializationSchema,
   LabelDeleteSerializationSchema,
 } from "@tasktrove/types/api-requests";
 import {
@@ -25,73 +25,141 @@ import {
   DeleteLabelResponseSchema,
 } from "@tasktrove/types/api-responses";
 import { createLabelId } from "@tasktrove/types/id";
-import { DEFAULT_LABEL_COLORS } from "@tasktrove/constants";
+import { LabelSerializationSchema } from "@tasktrove/types/serialization";
+import {
+  DEFAULT_LABEL_COLORS,
+  GROUPS_QUERY_KEY,
+  LABELS_QUERY_KEY,
+} from "@tasktrove/constants";
+import { API_ROUTES } from "@tasktrove/types/constants";
+import { createMutation } from "./factory";
 import { createEntityMutation } from "./entity-factory";
+
+export type LabelCreatePayload = Label;
+
+export const LabelCreatePayloadSchema = LabelSerializationSchema;
+
+export const buildLabelCreatePayload = (
+  labelData: CreateLabelRequest,
+): LabelCreatePayload => {
+  return {
+    id: createLabelId(uuidv4()),
+    name: labelData.name,
+    color: labelData.color ?? DEFAULT_LABEL_COLORS[0],
+  };
+};
 
 // =============================================================================
 // LABEL MUTATION ATOMS
 // =============================================================================
 
 /**
- * Mutation atom for creating labels with optimistic updates
- *
- * Creates a new label and optimistically adds it to the label list.
- * The temporary ID will be replaced with the server-generated ID on success.
- * Use this for better UX when the caller doesn't need the real server ID immediately.
+ * Base mutation for creating labels.
+ * Accepts a fully-computed Label payload (id/color already set by the client).
  */
-export const createLabelMutationAtom = createEntityMutation<
-  Label,
-  CreateLabelRequest,
-  CreateLabelResponse
+const createLabelMutationAtomBase = createMutation<
+  CreateLabelResponse,
+  LabelCreatePayload,
+  Label[],
+  Label
 >({
-  entity: "label",
-  operation: "create",
-  schemas: {
-    request: LabelCreateSerializationSchema,
-    response: CreateLabelResponseSchema,
-  },
-  // Custom optimistic data factory for label-specific defaults (color)
-  optimisticDataFactory: (
-    labelData: CreateLabelRequest,
+  method: "POST",
+  operationName: "Created label",
+  resourceQueryKey: LABELS_QUERY_KEY,
+  defaultResourceValue: [],
+  responseSchema: CreateLabelResponseSchema,
+  serializationSchema: LabelCreatePayloadSchema,
+  apiEndpoint: API_ROUTES.V1_LABELS,
+  invalidateQueryKeys: [LABELS_QUERY_KEY, GROUPS_QUERY_KEY],
+  logModule: "labels",
+  testResponseFactory: () => ({
+    success: true,
+    labelIds: [createLabelId(uuidv4())],
+    message: "Label created successfully (test mode)",
+  }),
+  optimisticDataFactory: (payload) => payload,
+  optimisticUpdateFn: (
+    _payload: LabelCreatePayload,
     oldLabels: Label[],
+    optimisticLabel?: Label,
   ) => {
-    void oldLabels;
-    return {
-      id: createLabelId(uuidv4()), // Temporary ID that will be replaced by server response
-      name: labelData.name,
-      color: labelData.color || DEFAULT_LABEL_COLORS[0],
-    };
+    if (!optimisticLabel) {
+      throw new Error("Optimistic label missing for label creation");
+    }
+    return [...oldLabels, optimisticLabel];
   },
+});
+
+/**
+ * Public mutation atom that builds the full payload on the client
+ * (color, id) before hitting the API. Optimistic update is kept simple
+ * because the final object is already computed.
+ */
+export const createLabelMutationAtom = atom((get) => {
+  const baseMutation = get(createLabelMutationAtomBase);
+
+  return {
+    ...baseMutation,
+    mutateAsync: async (labelData: CreateLabelRequest) => {
+      const payload = buildLabelCreatePayload(labelData);
+      return baseMutation.mutateAsync(payload);
+    },
+    mutate: (
+      labelData: CreateLabelRequest,
+      options?: Parameters<typeof baseMutation.mutate>[1],
+    ) => {
+      const payload = buildLabelCreatePayload(labelData);
+      return baseMutation.mutate(payload, options);
+    },
+  };
 });
 createLabelMutationAtom.debugLabel = "createLabelMutationAtom";
 
 /**
  * Mutation atom for creating labels WITHOUT optimistic updates
- *
- * Creates a new label and waits for server response before updating cache.
- * Use this when you need the real server-generated ID immediately
- * (e.g., when adding a label to a task during task creation).
- *
- * This mutation provides an optimistic update function that doesn't modify the cache,
- * effectively disabling optimistic updates while still satisfying the mutation factory requirements.
+ * Useful when the caller needs to wait for server confirmation (e.g., chaining IDs).
  */
-export const createLabelWithoutOptimisticUpdateAtom = createEntityMutation<
-  Label,
-  CreateLabelRequest,
-  CreateLabelResponse
+const createLabelWithoutOptimisticUpdateAtomBase = createMutation<
+  CreateLabelResponse,
+  LabelCreatePayload,
+  Label[],
+  Label
 >({
-  entity: "label",
-  operation: "create",
-  schemas: {
-    request: LabelCreateSerializationSchema,
-    response: CreateLabelResponseSchema,
-  },
-  // No optimistic data factory - we don't create temporary labels
-  // Custom optimistic update function that returns unchanged labels
-  // This effectively disables optimistic updates while satisfying factory requirements
-  optimisticUpdateFn: (_variables: CreateLabelRequest, oldLabels: Label[]) => {
-    return oldLabels; // Return unchanged - no optimistic update
-  },
+  method: "POST",
+  operationName: "Created label",
+  resourceQueryKey: LABELS_QUERY_KEY,
+  defaultResourceValue: [],
+  responseSchema: CreateLabelResponseSchema,
+  serializationSchema: LabelCreatePayloadSchema,
+  apiEndpoint: API_ROUTES.V1_LABELS,
+  invalidateQueryKeys: [LABELS_QUERY_KEY, GROUPS_QUERY_KEY],
+  logModule: "labels",
+  testResponseFactory: () => ({
+    success: true,
+    labelIds: [createLabelId(uuidv4())],
+    message: "Label created successfully (test mode)",
+  }),
+  // No optimistic data; keep cache unchanged until server responds
+  optimisticUpdateFn: (_payload, oldLabels) => oldLabels,
+});
+
+export const createLabelWithoutOptimisticUpdateAtom = atom((get) => {
+  const baseMutation = get(createLabelWithoutOptimisticUpdateAtomBase);
+
+  return {
+    ...baseMutation,
+    mutateAsync: async (labelData: CreateLabelRequest) => {
+      const payload = buildLabelCreatePayload(labelData);
+      return baseMutation.mutateAsync(payload);
+    },
+    mutate: (
+      labelData: CreateLabelRequest,
+      options?: Parameters<typeof baseMutation.mutate>[1],
+    ) => {
+      const payload = buildLabelCreatePayload(labelData);
+      return baseMutation.mutate(payload, options);
+    },
+  };
 });
 
 /**
@@ -108,7 +176,7 @@ export const updateLabelsMutationAtom = createEntityMutation<
   entity: "label",
   operation: "update",
   schemas: {
-    request: LabelUpdateArraySerializationSchema,
+    request: z.array(LabelSerializationSchema),
     response: UpdateLabelResponseSchema,
   },
   // Custom optimistic update: replace entire array (not merge)

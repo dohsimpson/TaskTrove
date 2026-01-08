@@ -232,9 +232,9 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
       mockSafeReadDataFile.mockResolvedValue(mockDataFile)
       mockSafeWriteDataFile.mockResolvedValue(true)
     })
-    it("should set completedAt when task transitions from incomplete to complete", async () => {
+    it("does not auto-add completedAt when completing a task without timestamp", async () => {
       const taskUpdate = {
-        id: createTaskId("11111111-1111-4111-8111-111111111111"), // This task starts as incomplete
+        id: createTaskId("11111111-1111-4111-8111-111111111111"), // Starts incomplete
         completed: true,
       }
 
@@ -251,96 +251,16 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
       const updatedTask = writtenData.tasks.find((t) => t.id === taskUpdate.id)
 
       expect(updatedTask?.completed).toBe(true)
-      expect(updatedTask?.completedAt).toBeDefined()
-      expect(updatedTask?.completedAt).toBeInstanceOf(Date)
-      if (updatedTask?.completedAt) {
-        expect(updatedTask.completedAt).toBeInstanceOf(Date)
-      }
-    })
-
-    it("should clear completedAt when task transitions from complete to incomplete", async () => {
-      const taskUpdate = {
-        id: createTaskId("22222222-2222-4222-8222-222222222222"), // This task starts as complete
-        completed: false,
-      }
-
-      const request = new Request("http://localhost:3000/api/tasks", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(taskUpdate),
-      })
-
-      const response = await PATCH(createMockEnhancedRequest(request))
-      expect(response.ok).toBe(true)
-
-      const writtenData = getWrittenData()
-      const updatedTask = writtenData.tasks.find((t) => t.id === taskUpdate.id)
-
-      expect(updatedTask?.completed).toBe(false)
       expect(updatedTask?.completedAt).toBeUndefined()
     })
 
-    it("should preserve completedAt when updating completed task without changing completion status", async () => {
-      const originalCompletedAt = new Date("2023-01-01T10:00:00Z")
-
-      // Simple approach: modify existing task in place, clear all mocks first
-      vi.clearAllMocks()
-
-      const testMockData = {
-        ...mockDataFile,
-        tasks: mockDataFile.tasks.map((task) =>
-          task.id === createTaskId("22222222-2222-4222-8222-222222222222")
-            ? { ...task, completed: true, completedAt: originalCompletedAt }
-            : task,
-        ),
-      }
-
-      // Clean mock setup
-      mockSafeReadDataFile.mockResolvedValue(testMockData)
-      mockSafeWriteDataFile.mockResolvedValue(true)
+    it("persists provided completedAt when supplied in the payload", async () => {
+      const completionTimestamp = new Date("2024-04-01T12:00:00Z").toISOString()
 
       const taskUpdate = {
-        id: createTaskId("22222222-2222-4222-8222-222222222222"),
-        title: "Updated title without changing completion",
-      }
-
-      const request = new Request("http://localhost:3000/api/tasks", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(taskUpdate),
-      })
-
-      const response = await PATCH(createMockEnhancedRequest(request))
-      expect(response.ok).toBe(true)
-
-      const writtenData = getWrittenData()
-      const updatedTask = writtenData.tasks.find((t) => t.id === taskUpdate.id)
-
-      expect(updatedTask?.title).toBe("Updated title without changing completion")
-      expect(updatedTask?.completed).toBe(true) // Should remain completed
-      expect(updatedTask?.completedAt).toEqual(originalCompletedAt) // Should preserve original date
-    })
-
-    it("should not change completedAt when marking already completed task as completed", async () => {
-      const originalCompletedAt = new Date("2023-01-01T10:00:00Z")
-
-      // Update the mock data to have a specific completedAt date
-      const mockDataWithCompletedAt = {
-        ...mockDataFile,
-        tasks: mockDataFile.tasks.map((task) =>
-          task.id === createTaskId("22222222-2222-4222-8222-222222222222")
-            ? { ...task, completedAt: originalCompletedAt, completed: true }
-            : task,
-        ),
-      }
-
-      // Setup fresh mocks for this test
-      mockSafeReadDataFile.mockResolvedValue(mockDataWithCompletedAt)
-      mockSafeWriteDataFile.mockResolvedValue(true)
-
-      const taskUpdate = {
-        id: createTaskId("22222222-2222-4222-8222-222222222222"),
-        completed: true, // Already completed, should not change completedAt
+        id: createTaskId("11111111-1111-4111-8111-111111111111"),
+        completed: true,
+        completedAt: completionTimestamp,
       }
 
       const request = new Request("http://localhost:3000/api/tasks", {
@@ -356,12 +276,25 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
       const updatedTask = writtenData.tasks.find((t) => t.id === taskUpdate.id)
 
       expect(updatedTask?.completed).toBe(true)
-      expect(updatedTask?.completedAt).toEqual(originalCompletedAt) // Should preserve original date
+      expect(updatedTask?.completedAt).toBeInstanceOf(Date)
+      expect(updatedTask?.completedAt?.toISOString()).toBe(completionTimestamp)
     })
 
-    it("should not change completedAt when marking already incomplete task as incomplete", async () => {
+    it("does not clear completedAt automatically when marking complete task as incomplete", async () => {
+      const completedAt = new Date("2024-02-01T09:30:00Z")
+      const mockWithCompletedTask = {
+        ...mockDataFile,
+        tasks: mockDataFile.tasks.map((task) =>
+          task.id === createTaskId("22222222-2222-4222-8222-222222222222")
+            ? { ...task, completed: true, completedAt }
+            : task,
+        ),
+      }
+
+      mockSafeReadDataFile.mockResolvedValue(mockWithCompletedTask)
+
       const taskUpdate = {
-        id: createTaskId("11111111-1111-4111-8111-111111111111"), // Already incomplete
+        id: createTaskId("22222222-2222-4222-8222-222222222222"),
         completed: false,
       }
 
@@ -378,7 +311,7 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
       const updatedTask = writtenData.tasks.find((t) => t.id === taskUpdate.id)
 
       expect(updatedTask?.completed).toBe(false)
-      expect(updatedTask?.completedAt).toBeUndefined() // Should remain undefined
+      expect(updatedTask?.completedAt).toEqual(completedAt)
     })
   })
 
@@ -473,7 +406,7 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
       mockSafeWriteDataFile.mockResolvedValue(true)
     })
 
-    it("should move task to new project's default section when only projectId is updated", async () => {
+    it("should not move task between sections when only projectId is updated", async () => {
       const taskUpdate = {
         id: TASK_ID_1,
         projectId: PROJECT_ID_2, // Move from Project 1 to Project 2
@@ -490,28 +423,28 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
 
       const writtenData = getWrittenData()
 
-      // Task should be removed from Project 1's default section
+      // Sections should remain unchanged (server does not manage section membership)
       const project1 = writtenData.projects.find((p) => p.id === PROJECT_ID_1)
       const project1DefaultSectionId = project1 ? getDefaultSectionId(project1) : null
       const project1DefaultSection = project1?.sections.find(
         (s) => s.id === project1DefaultSectionId,
       )
-      expect(project1DefaultSection?.items).not.toContain(TASK_ID_1)
+      expect(project1DefaultSection?.items).toContain(TASK_ID_1)
 
-      // Task should be added to Project 2's default section
+      // Task should NOT be added to Project 2's default section
       const project2 = writtenData.projects.find((p) => p.id === PROJECT_ID_2)
       const project2DefaultSectionId = project2 ? getDefaultSectionId(project2) : null
       const project2DefaultSection = project2?.sections.find(
         (s) => s.id === project2DefaultSectionId,
       )
-      expect(project2DefaultSection?.items).toContain(TASK_ID_1)
+      expect(project2DefaultSection?.items).not.toContain(TASK_ID_1)
 
       // Task's projectId should be updated
       const updatedTask = writtenData.tasks.find((t) => t.id === TASK_ID_1)
       expect(updatedTask?.projectId).toBe(PROJECT_ID_2)
     })
 
-    it("should move task within same project when only sectionId is updated", async () => {
+    it("should ignore sectionId updates and keep section membership unchanged", async () => {
       const taskUpdate = {
         id: TASK_ID_1,
         sectionId: SECTION_ID_1, // Move from default section to Section 1 in same project
@@ -528,22 +461,22 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
 
       const writtenData = getWrittenData()
 
-      // Task should be removed from default section
+      // Sections should remain unchanged (server does not manage section membership)
       const project1 = writtenData.projects.find((p) => p.id === PROJECT_ID_1)
       const defaultSectionId = project1 ? getDefaultSectionId(project1) : null
       const defaultSection = project1?.sections.find((s) => s.id === defaultSectionId)
-      expect(defaultSection?.items).not.toContain(TASK_ID_1)
+      expect(defaultSection?.items).toContain(TASK_ID_1)
 
-      // Task should be added to Section 1
+      // Task should NOT be added to Section 1
       const section1 = project1?.sections.find((s) => s.id === SECTION_ID_1)
-      expect(section1?.items).toContain(TASK_ID_1)
+      expect(section1?.items).not.toContain(TASK_ID_1)
 
       // Task's projectId should remain unchanged
       const updatedTask = writtenData.tasks.find((t) => t.id === TASK_ID_1)
       expect(updatedTask?.projectId).toBe(PROJECT_ID_1)
     })
 
-    it("should move task to new project's specified section when both projectId and sectionId are updated", async () => {
+    it("should not move task between sections when projectId and sectionId are updated", async () => {
       const taskUpdate = {
         id: TASK_ID_1,
         projectId: PROJECT_ID_2, // Move from Project 1 to Project 2
@@ -561,13 +494,13 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
 
       const writtenData = getWrittenData()
 
-      // Task should be removed from Project 1's default section
+      // Sections should remain unchanged (server does not manage section membership)
       const project1 = writtenData.projects.find((p) => p.id === PROJECT_ID_1)
       const project1DefaultSectionId = project1 ? getDefaultSectionId(project1) : null
       const project1DefaultSection = project1?.sections.find(
         (s) => s.id === project1DefaultSectionId,
       )
-      expect(project1DefaultSection?.items).not.toContain(TASK_ID_1)
+      expect(project1DefaultSection?.items).toContain(TASK_ID_1)
 
       // Task should NOT be in Project 2's default section
       const project2 = writtenData.projects.find((p) => p.id === PROJECT_ID_2)
@@ -577,9 +510,9 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
       )
       expect(project2DefaultSection?.items).not.toContain(TASK_ID_1)
 
-      // Task should be added to Project 2's Section 2
+      // Task should NOT be added to Project 2's Section 2
       const section2 = project2?.sections.find((s) => s.id === SECTION_ID_2)
-      expect(section2?.items).toContain(TASK_ID_1)
+      expect(section2?.items).not.toContain(TASK_ID_1)
 
       // Task's projectId should be updated
       const updatedTask = writtenData.tasks.find((t) => t.id === TASK_ID_1)
@@ -729,7 +662,7 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
       expect(updatedTask?.title).toBe("Updated title")
     })
 
-    it("should handle multiple task updates with different project/section changes", async () => {
+    it("should not modify sections when project/section changes are requested", async () => {
       const taskUpdates = [
         {
           id: TASK_ID_1,
@@ -752,20 +685,20 @@ describe("PATCH /api/tasks - Task Updates Only", () => {
 
       const writtenData = getWrittenData()
 
-      // Task 1 should be in Project 2's default section
+      // Sections should remain unchanged (server does not manage section membership)
       const project2 = writtenData.projects.find((p) => p.id === PROJECT_ID_2)
       const project2DefaultSectionId = project2 ? getDefaultSectionId(project2) : null
       const project2DefaultSection = project2?.sections.find(
         (s) => s.id === project2DefaultSectionId,
       )
-      expect(project2DefaultSection?.items).toContain(TASK_ID_1)
+      expect(project2DefaultSection?.items).not.toContain(TASK_ID_1)
 
-      // Task 2 should be in Project 2's Section 2
+      // Task 2 should remain in its original section (default section)
       const section2 = project2?.sections.find((s) => s.id === SECTION_ID_2)
-      expect(section2?.items).toContain(TASK_ID_2)
+      expect(section2?.items).not.toContain(TASK_ID_2)
 
-      // Project 2's default section should NOT contain Task 2 (moved to Section 2)
-      expect(project2DefaultSection?.items).not.toContain(TASK_ID_2)
+      // Project 2's default section should still contain Task 2 (unchanged)
+      expect(project2DefaultSection?.items).toContain(TASK_ID_2)
 
       // Verify task projectIds
       const task1 = writtenData.tasks.find((t) => t.id === TASK_ID_1)

@@ -235,6 +235,20 @@ describe("DraggableProjectItem", () => {
 
       // Drop indicators should be at level 1 with indentation
     })
+
+    it("applies correct indentation for grouped projects", () => {
+      render(
+        <DraggableProjectItem
+          project={mockProject}
+          index={0}
+          groupId={createGroupId("44444444-4444-4444-8444-444444444444")}
+        />,
+      )
+
+      // Should keep full width while indenting content
+      const row = screen.getByRole("button").closest('[data-slot="sidebar-project-row"]')
+      expect(row).toHaveClass("w-full")
+    })
   })
 
   describe("Instruction transitions", () => {

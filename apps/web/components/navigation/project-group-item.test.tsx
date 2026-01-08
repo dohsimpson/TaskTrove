@@ -115,6 +115,17 @@ describe("ProjectGroupItem", () => {
     expect(screen.getByText("Project 2")).toBeInTheDocument()
   })
 
+  it("applies correct indentation for projects within groups", () => {
+    render(
+      <SidebarProvider>
+        <ProjectGroupItem {...defaultProps} />
+      </SidebarProvider>,
+    )
+
+    // Projects within groups should keep full width while indenting content
+    const projectRow = screen.getByText("Project 1").closest('[data-slot="sidebar-project-row"]')
+    expect(projectRow).toHaveClass("w-full")
+  })
   it("renders context menu when visible", () => {
     render(
       <SidebarProvider>

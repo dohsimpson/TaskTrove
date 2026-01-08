@@ -21,10 +21,7 @@ import {
 } from "@tasktrove/atoms/data/base/query";
 import type { Task, Project, Label, User } from "@tasktrove/types/core";
 import type { TaskId } from "@tasktrove/types/id";
-import type {
-  UserSettings,
-  PartialUserSettings,
-} from "@tasktrove/types/settings";
+import type { UserSettings } from "@tasktrove/types/settings";
 import type {
   UpdateTaskRequest,
   UpdateUserRequest,
@@ -40,7 +37,6 @@ import {
 import { updateTasksMutationAtom } from "@tasktrove/atoms/mutations/tasks";
 import { updateProjectsMutationAtom } from "@tasktrove/atoms/mutations/projects";
 import { updateLabelsMutationAtom } from "@tasktrove/atoms/mutations/labels";
-import { updateSettingsMutationAtom } from "@tasktrove/atoms/mutations/settings";
 import { updateUserMutationAtom } from "@tasktrove/atoms/mutations/user";
 
 // =============================================================================
@@ -175,37 +171,18 @@ export const labelsAtom = namedAtom(
 
 /**
  * Base settings atom - unwraps settings from settingsQueryAtom
- * Write: Updates settings via mutation atom
  *
  * @read Returns current user settings (defaults if loading/error)
- * @write Accepts partial settings and updates via API
  */
-export const settingsAtom = atom(
-  (get) => {
-    const query = get(settingsQueryAtom);
-    if (query.data) {
-      return query.data;
-    }
-    // Return default settings if loading or error
-    const defaultSettings: UserSettings = DEFAULT_USER_SETTINGS;
-    return defaultSettings;
-  },
-  async (get, set, partialSettings: PartialUserSettings) => {
-    try {
-      // Get the mutation function
-      const mutation = get(updateSettingsMutationAtom);
-
-      // Execute the mutation - this will handle optimistic updates and API persistence
-      await mutation.mutateAsync({ settings: partialSettings });
-    } catch (error) {
-      log.error(
-        { error, module: "settings" },
-        "Failed to update settings in settingsAtom",
-      );
-      throw error;
-    }
-  },
-);
+export const settingsAtom = atom((get) => {
+  const query = get(settingsQueryAtom);
+  if (query.data) {
+    return query.data;
+  }
+  // Return default settings if loading or error
+  const defaultSettings: UserSettings = DEFAULT_USER_SETTINGS;
+  return defaultSettings;
+});
 settingsAtom.debugLabel = "settingsAtom";
 
 // =============================================================================

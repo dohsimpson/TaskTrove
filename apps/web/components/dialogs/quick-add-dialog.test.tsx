@@ -532,6 +532,36 @@ vi.mock("@/components/task/label-management-popover", () => ({
   ),
 }))
 
+// Mock the ProjectPopover component
+vi.mock("@/components/task/project-popover", () => ({
+  ProjectPopover: ({
+    children,
+    onUpdate,
+  }: {
+    children: React.ReactNode
+    onUpdate?: (projectId: string, sectionId?: string) => void
+  }) => (
+    <div data-testid="project-popover">
+      {children}
+      <button data-testid="mock-select-work-project" onClick={() => onUpdate?.(TEST_PROJECT_ID_1)}>
+        Work
+      </button>
+      <button
+        data-testid="mock-select-personal-project"
+        onClick={() => onUpdate?.(TEST_PROJECT_ID_2)}
+      >
+        Personal
+      </button>
+      <button data-testid="mock-select-inbox-project" onClick={() => onUpdate?.("inbox")}>
+        Inbox
+      </button>
+      <button data-testid="mock-clear-project" onClick={() => onUpdate?.("inbox")}>
+        None
+      </button>
+    </div>
+  ),
+}))
+
 // Mock the enhanced natural language parser
 // Note: We're using the real enhanced-natural-language-parser implementation
 // Individual tests that need deterministic behavior will mock it locally
@@ -1138,16 +1168,10 @@ describe("QuickAddDialog", () => {
           fireEvent.change(input, { target: { value: "Buy groceries" } })
         })
 
-        // Manually select a project through UI
+        // Manually select Work project using the mock button
         await act(async () => {
-          const projectButton = screen.getByRole("button", { name: /project/i })
-          fireEvent.click(projectButton)
-        })
-
-        // Click on a specific project in the popover
-        await act(async () => {
-          const workProjectOption = screen.getByText("Work")
-          fireEvent.click(workProjectOption)
+          const workProjectButton = screen.getByTestId("mock-select-work-project")
+          fireEvent.click(workProjectButton)
         })
 
         // Verify project was set

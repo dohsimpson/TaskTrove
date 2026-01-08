@@ -17,6 +17,7 @@ import {
 } from "@tasktrove/constants";
 import { log } from "@tasktrove/atoms/utils/atom-helpers";
 import { groupsQueryAtom } from "@tasktrove/atoms/data/base/query";
+import { collectProjectIdsFromGroup } from "@tasktrove/utils/group-utils";
 import {
   createProjectGroupMutationAtom,
   updateProjectGroupMutationAtom,
@@ -96,7 +97,7 @@ export const labelGroupsAtom = atom((get) => {
   return flattenGroups(groups.labelGroups);
 });
 
-// CRUD Mutation atoms are now imported from base.ts
+// CRUD Mutation atoms are imported from mutations/groups
 
 // Action atoms for CRUD operations
 export const addProjectGroupAtom = atom(
@@ -160,6 +161,35 @@ export const deleteProjectGroupAtom = atom(
   null,
   async (get, set, groupId: GroupId) => {
     const mutation = get(deleteProjectGroupMutationAtom);
+
+    const groups = get(allGroupsAtom);
+    const rootGroup = groups.projectGroups;
+
+    if (groupId === ROOT_PROJECT_GROUP_ID) {
+      log.info({ groupId }, "Skipping delete for ROOT project group");
+      return;
+    }
+
+    const projectIdsToMove = collectProjectIdsFromGroup(groups, groupId);
+    if (projectIdsToMove.length > 0) {
+      const existingProjectIds = new Set(
+        rootGroup.items.filter(
+          (item): item is ProjectId => typeof item === "string",
+        ),
+      );
+
+      const updatedRootItems = [...rootGroup.items];
+      for (const projectId of projectIdsToMove) {
+        if (existingProjectIds.has(projectId)) continue;
+        existingProjectIds.add(projectId);
+        updatedRootItems.push(projectId);
+      }
+
+      await set(updateProjectGroupAtom, {
+        id: ROOT_PROJECT_GROUP_ID,
+        items: updatedRootItems,
+      });
+    }
 
     const request: DeleteGroupRequest = { id: groupId };
     return await mutation.mutateAsync(request);

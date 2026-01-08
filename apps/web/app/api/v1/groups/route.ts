@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server"
 import {
   DeleteGroupRequestSchema,
-  CreateGroupRequestSchema,
+  GroupCreatePayloadSchema,
   GroupUpdateUnionSchema,
   BulkGroupUpdateSchema,
 } from "@tasktrove/types/api-requests"
 import { DataFileSerializationSchema } from "@tasktrove/types/data-file"
-import { createGroupId } from "@tasktrove/types/id"
 import { ApiErrorCode } from "@tasktrove/types/api-errors"
 import type { ProjectGroup, LabelGroup, Group } from "@tasktrove/types/group"
 import type {
@@ -17,10 +16,9 @@ import type {
 } from "@tasktrove/types/api-responses"
 import type { GroupUpdateUnion, BulkGroupUpdate } from "@tasktrove/types/api-requests"
 import type { ErrorResponse } from "@tasktrove/types/api-responses"
-import type { GroupId, ProjectId } from "@tasktrove/types/id"
+import type { GroupId } from "@tasktrove/types/id"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
-import { v4 as uuidv4 } from "uuid"
 import {
   withApiLogging,
   logBusinessEvent,
@@ -31,11 +29,6 @@ import {
 import { withMutexProtection } from "@/lib/utils/api-mutex"
 import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
-import {
-  DEFAULT_LABEL_COLORS,
-  DEFAULT_PROJECT_COLORS,
-  getRandomPaletteColor,
-} from "@tasktrove/constants"
 import { isGroup } from "@tasktrove/types/group"
 
 /**
@@ -151,14 +144,14 @@ function findGroupInTrees(
 /**
  * POST /api/v1/groups
  *
- * Creates a new group with the provided data.
- * This endpoint adds the group to the appropriate tree based on parentId.
+ * Creates a new group using client-provided payload.
+ * This endpoint inserts the provided group into the appropriate tree based on parentId.
  */
 async function createGroup(
   request: EnhancedRequest,
 ): Promise<NextResponse<CreateGroupResponse | ErrorResponse>> {
-  // Validate request body using partial schema to allow defaults
-  const validation = await validateRequestBody(request, CreateGroupRequestSchema)
+  // Validate request body with fully constructed group payload
+  const validation = await validateRequestBody(request, GroupCreatePayloadSchema)
   if (!validation.success) {
     return validation.error
   }
@@ -178,38 +171,14 @@ async function createGroup(
     )
   }
 
-  const { type, name, description, color, parentId } = validation.data
+  const { group, parentId } = validation.data
 
   // Handle root-level groups (no parent)
   if (!parentId) {
-    // Create new group at root level
-    const newGroupId = createGroupId(uuidv4())
-    let newGroup: Group
-
-    if (type === "project") {
-      const newProjectGroup: ProjectGroup = {
-        type: "project",
-        id: newGroupId,
-        name,
-        description,
-        color: color ?? getRandomPaletteColor(DEFAULT_PROJECT_COLORS),
-        items: [],
-      }
-      // Add to root projectGroups items
-      fileData.projectGroups.items.push(newProjectGroup)
-      newGroup = newProjectGroup
+    if (group.type === "project") {
+      fileData.projectGroups.items.push(group)
     } else {
-      const newLabelGroup: LabelGroup = {
-        type: "label",
-        id: newGroupId,
-        name,
-        description,
-        color: color ?? getRandomPaletteColor(DEFAULT_LABEL_COLORS),
-        items: [],
-      }
-      // Add to root labelGroups items
-      fileData.labelGroups.items.push(newLabelGroup)
-      newGroup = newLabelGroup
+      fileData.labelGroups.items.push(group)
     }
 
     const writeSuccess = await withPerformanceLogging(
@@ -231,9 +200,9 @@ async function createGroup(
     logBusinessEvent(
       "group_created",
       {
-        groupId: newGroup.id,
-        name: newGroup.name,
-        type: newGroup.type,
+        groupId: group.id,
+        name: group.name,
+        type: group.type,
         parentId: null,
         totalGroups: {
           project: 1,
@@ -245,7 +214,7 @@ async function createGroup(
 
     const response: CreateGroupResponse = {
       success: true,
-      groupIds: [newGroup.id],
+      groupIds: [group.id],
       message: "Group created successfully",
     }
 
@@ -265,40 +234,25 @@ async function createGroup(
 
   // Ensure the parent group type matches the new group type
   const parentGroup = parentResult.group
-  if (parentGroup.type !== type) {
+  if (parentGroup.type !== group.type) {
     return createErrorResponse(
       "Type mismatch",
-      `Cannot add ${type} group to ${parentGroup.type} group`,
+      `Cannot add ${group.type} group to ${parentGroup.type} group`,
       400,
     )
   }
 
-  // Create new group with discriminated union narrowing
-  const newGroupId = createGroupId(uuidv4())
-  let newGroup: Group
-
-  if (parentGroup.type === "project") {
-    const newProjectGroup: ProjectGroup = {
-      type: "project",
-      id: newGroupId,
-      name,
-      description,
-      color: color ?? getRandomPaletteColor(DEFAULT_PROJECT_COLORS),
-      items: [],
-    }
-    parentGroup.items.push(newProjectGroup)
-    newGroup = newProjectGroup
+  // Insert provided group payload into the parent group
+  if (parentGroup.type === "project" && group.type === "project") {
+    parentGroup.items.push(group)
+  } else if (parentGroup.type === "label" && group.type === "label") {
+    parentGroup.items.push(group)
   } else {
-    const newLabelGroup: LabelGroup = {
-      type: "label",
-      id: newGroupId,
-      name,
-      description,
-      color: color ?? getRandomPaletteColor(DEFAULT_LABEL_COLORS),
-      items: [],
-    }
-    parentGroup.items.push(newLabelGroup)
-    newGroup = newLabelGroup
+    return createErrorResponse(
+      "Type mismatch",
+      `Cannot add ${group.type} group to ${parentGroup.type} group`,
+      400,
+    )
   }
 
   const writeSuccess = await withPerformanceLogging(
@@ -320,9 +274,9 @@ async function createGroup(
   logBusinessEvent(
     "group_created",
     {
-      groupId: newGroup.id,
-      name: newGroup.name,
-      type: newGroup.type,
+      groupId: group.id,
+      name: group.name,
+      type: group.type,
       parentId: parentId,
       totalGroups: {
         project: 1,
@@ -334,7 +288,7 @@ async function createGroup(
 
   const response: CreateGroupResponse = {
     success: true,
-    groupIds: [newGroup.id],
+    groupIds: [group.id],
     message: "Group created successfully",
   }
 
@@ -643,21 +597,6 @@ async function deleteGroup(
       500,
       ApiErrorCode.DATA_FILE_READ_ERROR,
     )
-  }
-
-  // Find the group to be deleted to extract contained projects
-  const groupResult = findGroupInTrees(fileData.projectGroups, fileData.labelGroups, groupId)
-
-  if (groupResult && groupResult.group.type === "project") {
-    // Extract any contained projects (ProjectId items) from the group being deleted
-    const containedProjects = groupResult.group.items.filter(
-      (item): item is ProjectId => typeof item === "string",
-    )
-
-    // Move contained projects to the root project group
-    if (containedProjects.length > 0) {
-      fileData.projectGroups.items.push(...containedProjects)
-    }
   }
 
   // Try to remove from each ROOT group

@@ -151,7 +151,18 @@ describe("Optimistic Updates", () => {
         status: 200,
         statusText: "OK",
       });
-      vi.mocked(global.fetch).mockResolvedValueOnce(mockFetchResponse);
+      const mockCreateResponse = new Response(
+        JSON.stringify({
+          success: true,
+          taskIds: [createTaskId("33333333-3333-4333-8333-333333333333")],
+          message: "Task created successfully",
+        }),
+        { status: 200, statusText: "OK" },
+      );
+
+      vi.mocked(global.fetch)
+        .mockResolvedValueOnce(mockFetchResponse) // PATCH
+        .mockResolvedValueOnce(mockCreateResponse); // POST history task
 
       await mutation.mutateAsync([
         {
@@ -367,7 +378,7 @@ describe("Optimistic Updates", () => {
     });
   });
 
-  it("should send client-calculated effective due date when completing auto-rollover tasks", async () => {
+  it("should send next occurrence due date when completing auto-rollover tasks", async () => {
     vi.useFakeTimers();
     try {
       const fixedNow = new Date("2024-02-10T12:00:00.000Z");
@@ -388,6 +399,8 @@ describe("Optimistic Updates", () => {
       if (!expectedEffectiveDueDate) {
         throw new Error("Expected effective due date to be calculated");
       }
+      const expectedNextDueDate = new Date(expectedEffectiveDueDate);
+      expectedNextDueDate.setDate(expectedNextDueDate.getDate() + 1);
 
       const mockResponse = {
         success: true,
@@ -399,7 +412,18 @@ describe("Optimistic Updates", () => {
         status: 200,
         statusText: "OK",
       });
-      vi.mocked(global.fetch).mockResolvedValueOnce(mockFetchResponse);
+      const mockCreateResponse = new Response(
+        JSON.stringify({
+          success: true,
+          taskIds: [createTaskId("44444444-4444-4444-8444-444444444444")],
+          message: "Task created successfully",
+        }),
+        { status: 200, statusText: "OK" },
+      );
+
+      vi.mocked(global.fetch)
+        .mockResolvedValueOnce(mockFetchResponse) // PATCH update
+        .mockResolvedValueOnce(mockCreateResponse); // POST history create
 
       await store.set(updateTasksAtom, [
         {
@@ -424,7 +448,7 @@ describe("Optimistic Updates", () => {
         : parsedBody;
       expect(updatePayload).toBeDefined();
       expect(updatePayload.dueDate).toBe(
-        expectedEffectiveDueDate.toISOString().slice(0, 10),
+        expectedNextDueDate.toISOString().slice(0, 10),
       );
     } finally {
       vi.useRealTimers();

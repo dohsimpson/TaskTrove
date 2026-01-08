@@ -153,6 +153,7 @@ export type {
   DateDisplayOptions,
 } from "./task-date-formatter";
 export { clearNullValues, mergeDeep } from "./object-utils";
+export type { WithoutNull } from "./object-utils";
 export {
   reorderInArray,
   removeFromArray,

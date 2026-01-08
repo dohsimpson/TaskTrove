@@ -53,12 +53,6 @@ vi.mock("@tasktrove/atoms/utils/atom-helpers", async (importOriginal) => {
   };
 });
 
-vi.mock("@tasktrove/atoms/ui/audio", () => ({
-  playSoundAtom: atom(null, (_get, _set, payload: { soundType: string }) => {
-    events.push(`sound:${payload.soundType}`);
-  }),
-}));
-
 vi.mock("@tasktrove/atoms/data/base/atoms", () => ({
   settingsAtom: atom({ general: { soundEnabled: true } }),
   tasksAtom: atom([]),
@@ -92,17 +86,17 @@ describe("settings/notifications sound timing", () => {
     showNotificationDeferred.resolve({ success: true });
   });
 
-  it("plays sound before settings mutation", async () => {
+  it("does not play sound on settings update", async () => {
     const testSettings: PartialUserSettings = {
       general: { soundEnabled: true },
     };
     const pending = store.set(updateSettingsAtom, testSettings);
-    expect(events).toEqual(["sound:confirm", "mutate:updateSettings"]);
+    expect(events).toEqual(["mutate:updateSettings"]);
     updateSettingsDeferred.resolve({});
     await pending;
   });
 
-  it("plays chime before service worker notification", async () => {
+  it("shows service worker notification", async () => {
     const notification: ScheduledNotification = {
       taskId: createTaskId("10000000-0000-4000-8000-000000000001"),
       taskTitle: "Task",
@@ -110,7 +104,7 @@ describe("settings/notifications sound timing", () => {
       type: "due",
     };
     const pending = store.set(showTaskDueNotificationAtom, notification);
-    expect(events).toEqual(["sound:chime", "notify:show"]);
+    expect(events).toEqual(["notify:show"]);
     showNotificationDeferred.resolve({ success: true });
     await pending;
   });

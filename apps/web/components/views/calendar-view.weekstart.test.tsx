@@ -2,9 +2,6 @@ import React from "react"
 import { describe, it, expect, vi } from "vitest"
 import { render } from "@/test-utils"
 import { CalendarView } from "./calendar-view"
-import type { UserSettings } from "@tasktrove/types/settings"
-import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
-import { DEFAULT_USER_SETTINGS } from "@tasktrove/types/defaults"
 
 vi.mock("@/components/ui/drop-target-wrapper", () => ({
   DropTargetWrapper: ({
@@ -22,10 +19,20 @@ vi.mock("@/components/ui/drop-target-wrapper", () => ({
   ),
 }))
 
-const mondaySettings: UserSettings = {
-  ...DEFAULT_USER_SETTINGS,
-  uiSettings: { weekStartsOn: 1 },
-}
+vi.mock("@tasktrove/atoms/data/base/atoms", async () => {
+  const actual = await vi.importActual<typeof import("@tasktrove/atoms/data/base/atoms")>(
+    "@tasktrove/atoms/data/base/atoms",
+  )
+  const { atom } = await import("jotai")
+  const { DEFAULT_USER_SETTINGS } = await import("@tasktrove/types/defaults")
+  return {
+    ...actual,
+    settingsAtom: atom({
+      ...DEFAULT_USER_SETTINGS,
+      uiSettings: { weekStartsOn: 1 },
+    }),
+  }
+})
 
 describe("CalendarView respects weekStartsOn", () => {
   const baseProps = {
@@ -36,9 +43,7 @@ describe("CalendarView respects weekStartsOn", () => {
   }
 
   it("uses weekStartsOn for month grid start", () => {
-    const { container } = render(<CalendarView {...baseProps} />, {
-      initialAtomValues: [[settingsAtom, mondaySettings]],
-    })
+    const { container } = render(<CalendarView {...baseProps} />, {})
 
     // First calendar cell should be Monday Jan 1 (not Sunday Dec 31)
     const firstCell = container.querySelectorAll('[data-testid^="droppable-calendar-day-"]')[0]
@@ -46,9 +51,7 @@ describe("CalendarView respects weekStartsOn", () => {
   })
 
   it("uses weekStartsOn for week view range", () => {
-    const { container } = render(<CalendarView {...baseProps} viewMode="week" />, {
-      initialAtomValues: [[settingsAtom, mondaySettings]],
-    })
+    const { container } = render(<CalendarView {...baseProps} viewMode="week" />, {})
 
     const headerGrid = container.querySelector(".grid.grid-cols-7")
     const firstHeader = headerGrid?.firstElementChild?.textContent?.toLowerCase()

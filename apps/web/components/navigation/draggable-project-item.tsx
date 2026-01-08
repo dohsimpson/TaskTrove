@@ -24,7 +24,6 @@ import { projectTaskCountsAtom } from "@tasktrove/atoms/ui/task-counts"
 import { projectAtoms } from "@tasktrove/atoms/core/projects"
 import type { Project } from "@tasktrove/types/core"
 import type { GroupId } from "@tasktrove/types/id"
-import { cn } from "@/lib/utils"
 import { createProjectSlug } from "@tasktrove/utils/routing"
 
 interface DraggableProjectItemProps {
@@ -82,7 +81,7 @@ export function DraggableProjectItem({
     <SidebarMenuItem>
       <div
         data-slot="sidebar-project-row"
-        className={cn("relative group", "w-full")}
+        className="relative group w-full"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >

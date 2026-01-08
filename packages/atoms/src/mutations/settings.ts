@@ -20,7 +20,6 @@ import { type UserSettings } from "@tasktrove/types/settings";
 import { API_ROUTES } from "@tasktrove/types/constants";
 import { DEFAULT_USER_SETTINGS } from "@tasktrove/types/defaults";
 import { SETTINGS_QUERY_KEY } from "@tasktrove/constants";
-import { mergeDeep } from "@tasktrove/utils";
 import { createMutation } from "./factory";
 
 // =============================================================================
@@ -30,8 +29,7 @@ import { createMutation } from "./factory";
 /**
  * Mutation atom for updating settings with optimistic updates
  *
- * Updates user settings and optimistically applies partial changes.
- * Merges partial settings with current settings, preserving existing values.
+ * Updates user settings and optimistically applies the full settings payload.
  */
 export const updateSettingsMutationAtom = createMutation<
   UpdateSettingsResponse,
@@ -47,14 +45,9 @@ export const updateSettingsMutationAtom = createMutation<
   serializationSchema: UpdateSettingsRequestSchema,
   logModule: "settings",
   testResponseFactory: (variables: UpdateSettingsRequest) => {
-    const testUserSettings = mergeDeep(
-      DEFAULT_USER_SETTINGS,
-      variables.settings,
-    );
-
     return {
       success: true,
-      settings: testUserSettings,
+      settings: variables.settings,
       message: "Settings updated successfully (test mode)",
     };
   },
@@ -62,7 +55,8 @@ export const updateSettingsMutationAtom = createMutation<
     variables: UpdateSettingsRequest,
     oldSettings: UserSettings,
   ): UserSettings => {
-    return mergeDeep(oldSettings, variables.settings);
+    void oldSettings;
+    return variables.settings;
   },
 });
 updateSettingsMutationAtom.debugLabel = "updateSettingsMutationAtom";

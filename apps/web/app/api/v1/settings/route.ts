@@ -4,7 +4,6 @@ import { UpdateSettingsRequestSchema } from "@tasktrove/types/api-requests"
 import { UpdateSettingsResponse, GetSettingsResponse } from "@tasktrove/types/api-responses"
 import { ApiErrorCode } from "@tasktrove/types/api-errors"
 import { ErrorResponse } from "@tasktrove/types/api-responses"
-import type { UserSettings } from "@tasktrove/types/settings"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import {
@@ -17,7 +16,6 @@ import {
 import { withMutexProtection } from "@/lib/utils/api-mutex"
 import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
-import { mergeDeep } from "@tasktrove/utils"
 import { refreshSchedulerJobs } from "@/lib/scheduler/bootstrap"
 
 /**
@@ -98,8 +96,8 @@ export const GET = withApiVersion(
 /**
  * PATCH /api/v1/settings
  *
- * Updates user settings by merging provided settings with existing ones.
- * Supports partial updates for any category of settings.
+ * Updates user settings by replacing the full settings payload.
+ * The client is responsible for merging partial updates.
  */
 async function updateSettings(
   request: EnhancedRequest,
@@ -110,7 +108,7 @@ async function updateSettings(
     return validation.error
   }
 
-  const { settings: partialSettings } = validation.data
+  const { settings: updatedSettings } = validation.data
 
   // Read current data file
   const fileData = await withFileOperationLogging(
@@ -127,10 +125,6 @@ async function updateSettings(
       ApiErrorCode.DATA_FILE_READ_ERROR,
     )
   }
-
-  // Merge partial settings with current settings via shared deep merge helper.
-  // Preserves existing fields (including Pro variants) without enumerating keys.
-  const updatedSettings: UserSettings = mergeDeep(fileData.settings, partialSettings)
 
   // Update the data file with new settings
   const updatedFileData = {
@@ -159,7 +153,7 @@ async function updateSettings(
     "settings_updated",
     {
       settingsVersion: updatedFileData.version,
-      categoriesUpdated: Object.keys(partialSettings),
+      categoriesUpdated: Object.keys(updatedSettings),
     },
     request.context,
   )

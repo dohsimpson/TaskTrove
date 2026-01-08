@@ -135,8 +135,13 @@ describe("POST /api/groups", () => {
 
   it("should create a new project group", async () => {
     const newProjectGroup = {
-      type: "project",
-      name: "New Project Group",
+      group: {
+        type: "project",
+        id: createGroupId("44444444-4444-4444-8444-444444444444"),
+        name: "New Project Group",
+        color: "#3b82f6",
+        items: [],
+      },
       parentId: TEST_GROUP_ID_3,
     }
 
@@ -161,8 +166,13 @@ describe("POST /api/groups", () => {
     mockSafeWriteDataFile.mockResolvedValue(false)
 
     const newGroup = {
-      type: "project",
-      name: "Test Group",
+      group: {
+        type: "project",
+        id: createGroupId("55555555-5555-4555-8555-555555555555"),
+        name: "Test Group",
+        color: "#ef4444",
+        items: [],
+      },
       parentId: TEST_GROUP_ID_3,
     }
 
@@ -339,40 +349,5 @@ describe("DELETE /api/groups", () => {
     expect(response.status).toBe(400)
     expect(data.error).toBe("Validation failed")
     expect(data.message).toBeDefined()
-  })
-
-  it("should move contained projects to root group when deleting a project group", async () => {
-    const deleteRequest = {
-      id: TEST_GROUP_ID_3,
-    }
-
-    const request = new NextRequest("http://localhost:3000/api/groups", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(deleteRequest),
-    })
-
-    const response = await DELETE(request)
-    const data = await response.json()
-
-    expect(response.status).toBe(200)
-    expect(data.success).toBe(true)
-    expect(data.groupIds).toEqual([TEST_GROUP_ID_3])
-    expect(data.message).toBe("1 group(s) deleted successfully")
-    expect(mockSafeWriteDataFile).toHaveBeenCalled()
-
-    // Verify that contained projects were moved to the root group
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const savedData = mockSafeWriteDataFile.mock.calls[0]?.[0]?.data as DataFile
-
-    // The deleted group should no longer exist in the projectGroups.items
-    const nestedGroups = savedData.projectGroups.items.filter((item) => typeof item !== "string")
-    expect(nestedGroups).toHaveLength(0)
-
-    // The project that was in the deleted group should now be in the root projectGroups.items
-    const projects: string[] = savedData.projectGroups.items.filter(
-      (item) => typeof item === "string",
-    )
-    expect(projects).toContain(TEST_PROJECT_ID_1)
   })
 })

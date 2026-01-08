@@ -2,10 +2,8 @@ import React from "react"
 import { describe, it, expect, vi } from "vitest"
 import { render } from "@/test-utils"
 import { waitFor } from "@testing-library/react"
-import { settingsAtom, tasksAtom } from "@tasktrove/atoms/data/base/atoms"
+import { tasksAtom } from "@tasktrove/atoms/data/base/atoms"
 import { quickAddTaskAtom } from "@tasktrove/atoms/ui/dialogs"
-import { DEFAULT_USER_SETTINGS } from "@tasktrove/types/defaults"
-import type { UserSettings } from "@tasktrove/types/settings"
 
 vi.mock("@/hooks/use-mobile", () => ({
   useIsMobile: vi.fn(() => false),
@@ -13,16 +11,25 @@ vi.mock("@/hooks/use-mobile", () => ({
 
 import { TaskScheduleContent } from "./task-schedule-content"
 
-const mondaySettings: UserSettings = {
-  ...DEFAULT_USER_SETTINGS,
-  uiSettings: { weekStartsOn: 1 },
-}
+vi.mock("@tasktrove/atoms/data/base/atoms", async () => {
+  const actual = await vi.importActual<typeof import("@tasktrove/atoms/data/base/atoms")>(
+    "@tasktrove/atoms/data/base/atoms",
+  )
+  const { atom } = await import("jotai")
+  const { DEFAULT_USER_SETTINGS } = await import("@tasktrove/types/defaults")
+  return {
+    ...actual,
+    settingsAtom: atom({
+      ...DEFAULT_USER_SETTINGS,
+      uiSettings: { weekStartsOn: 1 },
+    }),
+  }
+})
 
 describe("TaskScheduleContent respects weekStartsOn", () => {
   it("renders calendar starting on Monday when weekStartsOn=1", async () => {
     const { container, getByRole } = render(<TaskScheduleContent onClose={() => {}} />, {
       initialAtomValues: [
-        [settingsAtom, mondaySettings],
         [tasksAtom, []],
         [quickAddTaskAtom, {}],
       ],

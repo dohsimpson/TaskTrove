@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server"
 import type { Label } from "@tasktrove/types/core"
-import {
-  DeleteLabelRequestSchema,
-  CreateLabelRequestSchema,
-  LabelUpdateUnionSchema,
-} from "@tasktrove/types/api-requests"
+import { DeleteLabelRequestSchema } from "@tasktrove/types/api-requests"
 import {
   CreateLabelResponse,
   UpdateLabelResponse,
@@ -14,11 +10,8 @@ import {
 import { ApiErrorCode } from "@tasktrove/types/api-errors"
 import { ErrorResponse } from "@tasktrove/types/api-responses"
 import { DataFileSerializationSchema } from "@tasktrove/types/data-file"
-import type { LabelUpdateUnion } from "@tasktrove/types/api-requests"
-import { createLabelId, type LabelId } from "@tasktrove/types/id"
 import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
-import { v4 as uuidv4 } from "uuid"
 import {
   withApiLogging,
   logBusinessEvent,
@@ -29,7 +22,8 @@ import {
 import { withMutexProtection } from "@/lib/utils/api-mutex"
 import { withAuthentication } from "@/lib/middleware/auth"
 import { withApiVersion } from "@/lib/middleware/api-version"
-import { DEFAULT_LABEL_COLORS } from "@tasktrove/constants"
+import { LabelSerializationSchema } from "@tasktrove/types/serialization"
+import { z } from "zod"
 
 /**
  * GET /api/v1/labels
@@ -116,8 +110,8 @@ export const GET = withApiVersion(
 async function createLabel(
   request: EnhancedRequest,
 ): Promise<NextResponse<CreateLabelResponse | ErrorResponse>> {
-  // Validate request body using partial schema to allow defaults
-  const validation = await validateRequestBody(request, CreateLabelRequestSchema)
+  // Validate request body - expects fully constructed label payload
+  const validation = await validateRequestBody(request, LabelSerializationSchema)
   if (!validation.success) {
     return validation.error
   }
@@ -137,13 +131,7 @@ async function createLabel(
     )
   }
 
-  // Apply defaults for fields that weren't provided and generate required fields
-  const newLabel: Label = {
-    id: createLabelId(uuidv4()),
-    name: validation.data.name,
-    color: validation.data.color ?? DEFAULT_LABEL_COLORS[0],
-  }
-
+  const newLabel: Label = validation.data
   fileData.labels.push(newLabel)
 
   const writeSuccess = await withPerformanceLogging(
@@ -197,23 +185,20 @@ export const POST = withApiVersion(
 /**
  * PATCH /api/v1/labels
  *
- * Updates labels. Accepts an array of label updates or single update.
+ * Updates labels. Accepts an array of label updates.
  * Replaces the entire labels array (allows for deletions).
  * Uses typed responses for consistency.
  */
 async function updateLabels(
   request: EnhancedRequest,
 ): Promise<NextResponse<UpdateLabelResponse | ErrorResponse>> {
-  // Validate request body using the union schema
-  const validation = await validateRequestBody(request, LabelUpdateUnionSchema)
+  // Validate request body - expect full label objects array
+  const validation = await validateRequestBody(request, z.array(LabelSerializationSchema))
   if (!validation.success) {
     return validation.error
   }
 
-  // Normalize to array format
-  const updates: LabelUpdateUnion = Array.isArray(validation.data)
-    ? validation.data
-    : [validation.data]
+  const updates: Label[] = validation.data
 
   const fileData = await withFileOperationLogging(
     () => safeReadDataFile(),
@@ -230,57 +215,10 @@ async function updateLabels(
     )
   }
 
-  // Detect if this is a full array replacement (reordering) vs partial updates
-  // Full replacement: all labels present with all fields (name, color)
-  const isFullReplacement =
-    updates.length === fileData.labels.length &&
-    updates.every((u) => u.name !== undefined && u.color !== undefined)
-
-  let finalLabels: Label[]
-
-  if (isFullReplacement) {
-    // Full replacement - validate all IDs exist and use the new order
-    const existingIds = new Set(fileData.labels.map((l) => l.id))
-    const allIdsValid = updates.every((u) => existingIds.has(u.id))
-
-    if (!allIdsValid) {
-      return createErrorResponse(
-        "Invalid label IDs in update",
-        "Some label IDs do not exist",
-        400,
-        ApiErrorCode.VALIDATION_ERROR,
-      )
-    }
-
-    // Use the order from updates (for reordering operations)
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Validated above: all fields present
-    finalLabels = updates as Label[]
-  } else {
-    // Partial updates - create maps for efficient O(1) lookups (same pattern as projects)
-    const updateMap: Map<LabelId, (typeof updates)[0]> = new Map(
-      updates.map((update) => [update.id, update]),
-    )
-
-    // Update labels using merge logic (preserves original order)
-    finalLabels = fileData.labels.map((label: Label) => {
-      const update = updateMap.get(label.id)
-      if (!update) return label
-
-      // Merge update into label (partial update)
-      const updatedLabel: Label = {
-        ...label,
-        ...(update.name !== undefined && { name: update.name }),
-        ...(update.color !== undefined && { color: update.color }),
-      }
-
-      return updatedLabel
-    })
-  }
-
-  // Update the file data with final labels
+  // Client provides final label objects; replace existing labels in provided order
   const updatedFileData = {
     ...fileData,
-    labels: finalLabels,
+    labels: updates,
   }
 
   const writeSuccess = await withPerformanceLogging(
@@ -300,16 +238,14 @@ async function updateLabels(
   }
 
   // Get the actual updated labels from finalLabels (same pattern as projects)
-  const updatedLabels = finalLabels.filter((label: Label) =>
-    updates.some((update) => update.id === label.id),
-  )
+  const updatedLabels = updates
 
   logBusinessEvent(
     "labels_updated",
     {
       labelCount: updates.length,
       updatedLabels: updates.map((u) => ({ id: u.id })),
-      totalLabels: finalLabels.length,
+      totalLabels: updates.length,
     },
     request.context,
   )

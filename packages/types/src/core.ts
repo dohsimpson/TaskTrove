@@ -161,6 +161,8 @@ export const GlobalViewOptionsSchema = z.object({
   sideBarWidth: z.number().min(250).max(480),
   /** Whether to show the side panel globally */
   showSidePanel: z.boolean(),
+  /** Whether to hide scrollbars for overflow surfaces */
+  hideScrollBar: z.boolean(),
   /** Whether to show external calendar events */
   showCalendarEvents: z.boolean(),
   /** Auto-sync interval in minutes for calendar events (0 disables) */

@@ -1,21 +1,17 @@
 import { NextResponse } from "next/server"
 import { User } from "@tasktrove/types/core"
 import { InitialSetupResponse } from "@tasktrove/types/api-responses"
-import { InitialSetupRequestSchema } from "@tasktrove/types/api-requests"
 import { ErrorResponse } from "@tasktrove/types/api-responses"
-import { ApiErrorCode } from "@tasktrove/types/api-errors"
-import { validateRequestBody, createErrorResponse } from "@/lib/utils/validation"
 import { safeReadDataFile, safeWriteDataFile } from "@/lib/utils/safe-file-operations"
 import {
   withApiLogging,
-  logBusinessEvent,
   withFileOperationLogging,
   withPerformanceLogging,
   type EnhancedRequest,
 } from "@/lib/middleware/api-logger"
 import { withMutexProtection } from "@/lib/utils/api-mutex"
-import { saltAndHashPassword } from "@tasktrove/utils"
 import { initializeDataFileIfNeeded } from "@/lib/utils/data-initialization"
+import { runInitialSetup } from "@/lib/utils/initial-setup"
 
 /**
  * POST /api/(auth)/initial-setup
@@ -26,113 +22,44 @@ import { initializeDataFileIfNeeded } from "@/lib/utils/data-initialization"
 async function initialSetup(
   request: EnhancedRequest,
 ): Promise<NextResponse<InitialSetupResponse | ErrorResponse>> {
-  // Validate request body
-  const validation = await validateRequestBody(request, InitialSetupRequestSchema)
-  if (!validation.success) {
-    return validation.error
-  }
+  type SafeDataFile = NonNullable<Awaited<ReturnType<typeof safeReadDataFile>>>
 
-  const { password, username } = validation.data
+  return runInitialSetup<SafeDataFile>({
+    request,
+    readData: () =>
+      withFileOperationLogging(
+        async () => (await safeReadDataFile()) ?? null,
+        "read-data-file",
+        request.context,
+      ),
+    initializeIfNeeded: () => initializeDataFileIfNeeded(),
+    isPasswordSet: (fileData) => fileData.user.password !== "",
+    buildUpdatedData: (fileData, { passwordHash, username }) => {
+      const updatedUser: User = {
+        ...fileData.user,
+        ...(username && { username }),
+        password: passwordHash,
+      }
 
-  // Read current data file to check existing password
-  let fileData = await withFileOperationLogging(
-    () => safeReadDataFile(),
-    "read-data-file",
-    request.context,
-  )
-
-  // If data file read failed, try to initialize it and read again
-  if (!fileData) {
-    const initSuccess = await initializeDataFileIfNeeded()
-    if (!initSuccess) {
-      return createErrorResponse(
-        "Failed to initialize data file",
-        "Data file initialization failed",
-        500,
-      )
-    }
-
-    // Retry reading the data file after initialization
-    fileData = await withFileOperationLogging(
-      () => safeReadDataFile(),
-      "read-data-file-retry",
-      request.context,
-    )
-
-    if (!fileData) {
-      return createErrorResponse(
-        "Failed to read data file after initialization",
-        "File reading failed after initialization",
-        500,
-      )
-    }
-  }
-
-  // Check if password is already set - only allow initial setup if password is empty
-  if (fileData.user.password !== "") {
-    return createErrorResponse(
-      "Password already set",
-      "Initial setup is only allowed when no password is currently set",
-      409, // Conflict
-    )
-  }
-
-  // Hash the password
-  let hashedPassword: string
-  try {
-    hashedPassword = saltAndHashPassword(password)
-  } catch {
-    return createErrorResponse(
-      "Failed to hash password",
-      "Password hashing failed",
-      500,
-      ApiErrorCode.INTERNAL_SERVER_ERROR,
-    )
-  }
-
-  // Update user with the new password (keeping existing username and avatar unless username is provided)
-  const updatedUser: User = {
-    ...fileData.user,
-    ...(username && { username }),
-    password: hashedPassword,
-  }
-
-  // Update the data file with new user data
-  const updatedFileData = {
-    ...fileData,
-    user: updatedUser,
-  }
-
-  // Write updated data to file
-  const writeSuccess = await withPerformanceLogging(
-    () => safeWriteDataFile({ data: updatedFileData }),
-    "write-data-file",
-    request.context,
-    500, // 500ms threshold for slow file writes
-  )
-
-  if (!writeSuccess) {
-    return createErrorResponse(
-      "Failed to save data",
-      "File writing failed",
-      500,
-      ApiErrorCode.DATA_FILE_WRITE_ERROR,
-    )
-  }
-
-  logBusinessEvent(
-    "initial_setup_completed",
-    {
-      username: updatedUser.username,
+      return {
+        updatedData: {
+          ...fileData,
+          user: updatedUser,
+        },
+        logEvent: {
+          username: updatedUser.username,
+        },
+      }
     },
-    request.context,
-  )
-
-  const response: InitialSetupResponse = {
-    success: true,
-  }
-
-  return NextResponse.json(response)
+    writeData: (updatedFileData) =>
+      withPerformanceLogging(
+        () => safeWriteDataFile({ data: updatedFileData }),
+        "write-data-file",
+        request.context,
+        500,
+      ),
+    passwordAlreadySetMessage: "Initial setup is only allowed when no password is currently set",
+  })
 }
 
 export const POST = withMutexProtection(

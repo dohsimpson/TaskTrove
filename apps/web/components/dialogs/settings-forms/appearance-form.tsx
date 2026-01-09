@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { useAtom } from "jotai"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { useTheme } from "next-themes"
 import { Label } from "@/components/ui/label"
 import {
@@ -16,6 +16,7 @@ import { SettingsCard } from "@/components/ui/custom/settings-card"
 import { useTranslation } from "@tasktrove/i18n"
 import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { updateSettingsAtom } from "@tasktrove/atoms/core/settings"
+import { globalViewOptionsAtom, updateGlobalViewOptionsAtom } from "@tasktrove/atoms/ui/views"
 import type { WeekStartsOn } from "@tasktrove/types/settings"
 import { Sparkles, Moon, Sun, Clock4 } from "lucide-react"
 import { toast } from "@/lib/toast"
@@ -25,6 +26,8 @@ export function AppearanceForm() {
   const { theme: colorScheme, setTheme: setColorScheme } = useTheme()
   const [settings] = useAtom(settingsAtom)
   const [, updateSettings] = useAtom(updateSettingsAtom)
+  const globalViewOptions = useAtomValue(globalViewOptionsAtom)
+  const updateGlobalViewOptions = useSetAtom(updateGlobalViewOptionsAtom)
 
   const handleColorSchemeChange = (newColorScheme: "light" | "dark" | "system") => {
     setColorScheme(newColorScheme)
@@ -203,6 +206,33 @@ export function AppearanceForm() {
               )
             }}
             aria-label={t("appearance.time.use24Hour.label", "Use 24-hour clock")}
+          />
+        </div>
+      </SettingsCard>
+
+      <SettingsCard title={t("appearance.scrollbar.title", "Scrollbars")}>
+        <div className="flex items-start justify-between gap-4 rounded-md bg-background px-1 py-2">
+          <div className="space-y-0.5">
+            <Label>{t("appearance.scrollbar.label", "Hide scrollbars")}</Label>
+            <p className="text-sm text-muted-foreground">
+              {t(
+                "appearance.scrollbar.description",
+                "Hide scrollbars in scrollable areas for a cleaner look.",
+              )}
+            </p>
+          </div>
+
+          <Switch
+            checked={globalViewOptions.hideScrollBar}
+            onCheckedChange={(checked) => {
+              updateGlobalViewOptions({ hideScrollBar: checked })
+              toast.success(
+                checked
+                  ? t("appearance.scrollbar.enabled", "Scrollbars are now hidden")
+                  : t("appearance.scrollbar.disabled", "Scrollbars are now visible"),
+              )
+            }}
+            aria-label={t("appearance.scrollbar.label", "Hide scrollbars")}
           />
         </div>
       </SettingsCard>

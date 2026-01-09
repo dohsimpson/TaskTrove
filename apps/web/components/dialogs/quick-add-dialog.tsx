@@ -108,6 +108,48 @@ interface QuickAddShortcutRegistry {
 
 export const QuickAddShortcutContext = createContext<QuickAddShortcutRegistry | null>(null)
 
+// Use these helpers for quick-add prefills so we never overwrite values already set by other flows.
+type QuickAddPrefillUpdates = Partial<CreateTaskRequest>
+
+const createQuickAddPrefillHelpers = (
+  currentTask: CreateTaskRequest,
+  updates: QuickAddPrefillUpdates,
+) => {
+  const hasValue = <K extends keyof CreateTaskRequest>(key: K) => {
+    const value = updates[key] ?? currentTask[key]
+    return value !== undefined
+  }
+
+  const setDefault = <K extends keyof CreateTaskRequest>(key: K, value?: CreateTaskRequest[K]) => {
+    if (value === undefined) return
+    if (hasValue(key)) return
+    updates[key] = value
+  }
+
+  const mergeDefaultLabels = (values: LabelId[] | undefined | null) => {
+    if (!values || values.length === 0) return
+    const existing = updates.labels ?? currentTask.labels ?? []
+    const merged = [...existing]
+
+    for (const value of values) {
+      if (!merged.includes(value)) merged.push(value)
+    }
+
+    if (merged.length === existing.length && updates.labels !== undefined) return
+    updates.labels = merged
+  }
+
+  const applyDefaults = (defaults: QuickAddPrefillUpdates) => {
+    const isCreateTaskKey = (key: string): key is keyof CreateTaskRequest => key in currentTask
+    for (const [key, value] of Object.entries(defaults)) {
+      if (!isCreateTaskKey(key)) continue
+      setDefault(key, value)
+    }
+  }
+
+  return { setDefault, mergeDefaultLabels, applyDefaults }
+}
+
 export function QuickAddDialog() {
   const isMobile = useIsMobile()
   // Dialog state atoms
@@ -256,37 +298,39 @@ export function QuickAddDialog() {
       updates = copyData
       nextInput = taskToCopy.title
     } else {
+      const prefill = createQuickAddPrefillHelpers(newTask, updates)
+
       if (currentLabel) {
-        updates.labels = [...(newTask.labels || []), currentLabel]
+        prefill.mergeDefaultLabels([currentLabel])
       } else if (currentProject) {
-        updates.projectId = currentProject
+        prefill.setDefault("projectId", currentProject)
       }
 
       if (routeContext.viewId === "today") {
         const today = new Date()
         today.setHours(0, 0, 0, 0)
-        updates.dueDate = today
+        prefill.setDefault("dueDate", today)
       }
 
       if (routeContext.viewId === "habits") {
         const today = new Date()
         today.setHours(0, 0, 0, 0)
-        updates.dueDate = today
-        updates.recurring = "RRULE:FREQ=DAILY"
-        updates.recurringMode = "autoRollover"
+        prefill.setDefault("dueDate", today)
+        prefill.setDefault("recurring", "RRULE:FREQ=DAILY")
+        prefill.setDefault("recurringMode", "autoRollover")
       }
 
       const isCalendarContext =
         isCalendarView || currentView === "calendar" || routeContext.viewId === "calendar"
 
-      if (isCalendarContext && selectedCalendarDate && !updates.dueDate) {
+      if (isCalendarContext && selectedCalendarDate) {
         const calendarDate = new Date(selectedCalendarDate)
         calendarDate.setHours(0, 0, 0, 0)
-        updates.dueDate = calendarDate
+        prefill.setDefault("dueDate", calendarDate)
       }
 
       const proUpdates = getProViewUpdates(routeContext, users, currentUserId)
-      Object.assign(updates, proUpdates)
+      prefill.applyDefaults(proUpdates)
     }
 
     if (Object.keys(updates).length > 0) {

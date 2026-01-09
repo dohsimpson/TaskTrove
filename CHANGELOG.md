@@ -1,5 +1,22 @@
 # tasktrove
 
+## 0.12.3
+
+### Minor Changes
+
+- Add UI settings for hiding scrollbar
+- Hover over task item no longer shows all metadata placehoder
+
+### Patch Changes
+
+🐛 Bug - fix calendar week mode drag created task wrong due date
+
+## 0.12.1
+
+### Patch Changes
+
+🐛 Bug - fix auth bug preventing login (https://github.com/dohsimpson/TaskTrovePro/issues/238)
+
 ## 0.12.0
 
 ### Features

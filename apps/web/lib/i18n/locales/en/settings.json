@@ -4,6 +4,13 @@
       "description": "Select light, dark, or follow system preference",
       "label": "Choose your color scheme",
       "title": "Color Scheme"
+    },
+    "scrollbar": {
+      "description": "Hide scrollbars in scrollable areas for a cleaner look.",
+      "label": "Hide scrollbars",
+      "title": "Scrollbars",
+      "enabled": "Scrollbars are now hidden",
+      "disabled": "Scrollbars are now visible"
     }
   },
   "data": {

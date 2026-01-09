@@ -14,7 +14,7 @@ export function TruncatedMetadataText({
   showOnHover = false,
   maxWidth = "max-w-20",
 }: TruncatedMetadataTextProps) {
-  const hoverClasses = showOnHover ? "hidden group-hover:inline" : ""
+  const hoverClasses = showOnHover ? "hidden group-hover/metadata:inline" : ""
 
   const widthClass =
     showOnHover && maxWidth === "max-w-20"

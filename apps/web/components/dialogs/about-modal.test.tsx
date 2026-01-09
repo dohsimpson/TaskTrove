@@ -49,7 +49,6 @@ describe("AboutModal", () => {
     render(<AboutModal {...defaultProps} />)
 
     expect(screen.getByRole("button", { name: /star on github/i })).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: /sponsor/i })).toBeInTheDocument()
   })
 
   it("opens GitHub repository when Star on GitHub button is clicked", () => {
@@ -60,18 +59,6 @@ describe("AboutModal", () => {
 
     expect(mockWindowOpen).toHaveBeenCalledWith(
       `https://github.com/${GITHUB_REPO_OWNER}/${GITHUB_REPO_NAME}`,
-      "_blank",
-    )
-  })
-
-  it("opens GitHub sponsors when Sponsor button is clicked", () => {
-    render(<AboutModal {...defaultProps} />)
-
-    const sponsorButton = screen.getByRole("button", { name: /sponsor/i })
-    fireEvent.click(sponsorButton)
-
-    expect(mockWindowOpen).toHaveBeenCalledWith(
-      `https://github.com/sponsors/${GITHUB_REPO_OWNER}`,
       "_blank",
     )
   })

@@ -87,6 +87,7 @@ catalog:
   "@uidotdev/usehooks": ^2.4.1
   "@use-gesture/react": ^10.3.1
   "@vitest/coverage-v8": ^3.2.4
+  "@playwright/test": ^1.57.0
   accept-language: ^3.0.20
   animate.css: ^4.1.1
   archiver: ^7.0.1
@@ -177,7 +178,6 @@ catalog:
   zod: ^4.1.11
 
 catalogMode: strict
-
 
 patchedDependencies:
   "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": apps/web/patches/@atlaskit__pragmatic-drag-and-drop-react-drop-indicator.patch

@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { SessionProvider } from "next-auth/react"
 import { JotaiProvider } from "@/providers/index"
 import { MainLayoutWrapper } from "@/components/layout/main-layout-wrapper"
+import { GlobalUiApplier } from "@/components/layout/global-ui-applier"
 import { HydrateWrapper } from "@/providers/hydrate-wrapper"
 import { LanguageProviderWrapper } from "@/components/providers/language-provider-wrapper"
 import type { AppLanguage } from "@/lib/i18n/config"
@@ -42,6 +43,7 @@ export function ClientApp({ children, initialLanguage }: ClientAppProps) {
       <LanguageProviderWrapper initialLanguage={initialLanguage}>
         <JotaiProvider>
           <HydrateWrapper>
+            <GlobalUiApplier />
             <MainLayoutWrapper>{children}</MainLayoutWrapper>
           </HydrateWrapper>
         </JotaiProvider>

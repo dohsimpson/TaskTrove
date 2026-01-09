@@ -153,6 +153,7 @@ export const DEFAULT_GLOBAL_VIEW_OPTIONS: GlobalViewOptions = {
   sidePanelWidth: SIDE_PANEL_WIDTH_DEFAULT,
   sideBarWidth: SIDEBAR_WIDTH_PX_DEFAULT,
   showSidePanel: DEFAULT_SHOW_SIDE_PANEL,
+  hideScrollBar: false,
   showCalendarEvents: true,
   calendarAutoSyncMinutes: 0,
   peopleOwnerCollapsed: false,

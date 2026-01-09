@@ -41,6 +41,19 @@
   --radius: 0.5rem;
 }
 
+[data-hide-scrollbar="true"] {
+  scrollbar-width: none;
+}
+
+[data-hide-scrollbar="true"] * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+[data-hide-scrollbar="true"] *::-webkit-scrollbar {
+  display: none;
+}
+
 [data-theme="dark"] {
   --background: hsl(0 0% 3.9%);
   --foreground: hsl(0 0% 98%);

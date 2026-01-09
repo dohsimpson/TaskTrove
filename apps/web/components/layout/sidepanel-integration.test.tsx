@@ -158,6 +158,7 @@ describe("SidePanel Integration", () => {
       sidePanelWidth: 25,
       sideBarWidth: 240,
       showSidePanel: false,
+      hideScrollBar: false,
       showCalendarEvents: true,
       calendarAutoSyncMinutes: 0,
       peopleOwnerCollapsed: false,

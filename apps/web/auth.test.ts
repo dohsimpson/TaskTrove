@@ -152,6 +152,24 @@ describe("auth module", () => {
     expect(result).toEqual({ id: "1", name: "Test User" })
   })
 
+  it("always returns static id 1 for base auth", async () => {
+    const { verifyPassword, safeReadUserFile } = await loadAuthModule("test-secret")
+
+    safeReadUserFile.mockResolvedValue({
+      user: {
+        id: createUserId("f47ac10b-58cc-4372-a567-0e02b2c3d479"),
+        username: "Another User",
+        password: "hashed",
+      },
+    })
+    verifyPassword.mockReturnValue(true)
+
+    const authorize = getAuthorize()
+    const result = await authorize({ password: "correct" })
+
+    expect(result).toEqual({ id: "1", name: "Another User" })
+  })
+
   it("rejects when password is invalid", async () => {
     const { verifyPassword, safeReadUserFile } = await loadAuthModule("test-secret")
 

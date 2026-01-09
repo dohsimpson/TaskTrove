@@ -26,6 +26,8 @@ import {
   TEST_LABEL_ID_1,
   TEST_LABEL_ID_2,
 } from "@tasktrove/types/test-constants"
+import { INBOX_PROJECT_ID } from "@tasktrove/types/constants"
+import type { CreateTaskRequest } from "@tasktrove/types/api-requests"
 import type { ParsedTaskWithMatches } from "@tasktrove/utils/parser-adapter"
 
 const buildParsedResult = (overrides: Partial<ParsedTaskWithMatches>): ParsedTaskWithMatches => ({
@@ -371,6 +373,7 @@ vi.mock("date-fns", () => ({
   nextFriday: () => new Date("2022-01-07"),
   startOfDay: (date: Date) => date,
   isToday: () => false,
+  isTomorrow: () => false,
   isPast: (date: Date) => date.getTime() < Date.now(),
 }))
 
@@ -391,6 +394,7 @@ const mockAddLabel = vi.fn()
 const mockCloseDialog = vi.fn()
 const mockUpdateTask = vi.fn()
 const mockResetTask = vi.fn()
+let mockSelectedCalendarDate: Date | null = null
 const mockLabels = [
   { id: TEST_LABEL_ID_1, name: "urgent", color: "#ff0000", nextLabelId: null },
   { id: TEST_LABEL_ID_2, name: "important", color: "#00ff00", nextLabelId: null },
@@ -431,7 +435,7 @@ const mockRouteContext = {
   routeType: "standard",
   routeParams: {},
 }
-const mockTaskForm = { title: "" }
+let mockTaskForm: CreateTaskRequest = { title: "" }
 
 // Mock Jotai hooks - we'll override these in beforeEach with proper reactive behavior
 vi.mock("jotai", async () => {
@@ -664,6 +668,8 @@ describe("QuickAddDialog", () => {
     // Mock useAtomValue to return appropriate values for each atom
     vi.mocked(jotai.useAtomValue).mockImplementation((atom: unknown) => {
       const atomStr = String(atom)
+      if (atomStr.includes("quickAddTask")) return mockTaskForm
+      if (atomStr.includes("selectedCalendarDate")) return mockSelectedCalendarDate
       if (atomStr.includes("show") || atomStr.includes("quick") || atomStr.includes("add"))
         return true
       if (atomStr.includes("nlp") || atomStr.includes("Nlp")) {
@@ -701,6 +707,9 @@ describe("QuickAddDialog", () => {
       if (atomStr.includes("reset") || atomStr.includes("Reset")) return mockResetTask
       return vi.fn()
     })
+
+    mockSelectedCalendarDate = null
+    mockTaskForm = { title: "" }
   })
 
   afterEach(() => {
@@ -1097,21 +1106,19 @@ describe("QuickAddDialog", () => {
           "@/lib/utils/enhanced-natural-language-parser"
         )
 
-        // Mock parser to first return a project, then no project
-        vi.mocked(parseEnhancedNaturalLanguage)
-          .mockImplementationOnce(() =>
-            buildParsedResult({
-              title: "Buy groceries",
-              originalText: "Buy groceries #work",
-              project: "Work",
-            }),
-          )
-          .mockImplementationOnce(() =>
-            buildParsedResult({
-              title: "Buy groceries",
-              originalText: "Buy groceries",
-            }),
-          )
+        // Mock parser to match the current input (called twice per change)
+        vi.mocked(parseEnhancedNaturalLanguage).mockImplementation((text) =>
+          String(text).includes("#work")
+            ? buildParsedResult({
+                title: "Buy groceries",
+                originalText: "Buy groceries #work",
+                project: "Work",
+              })
+            : buildParsedResult({
+                title: "Buy groceries",
+                originalText: "Buy groceries",
+              }),
+        )
 
         render(<QuickAddDialog />)
 
@@ -2213,6 +2220,42 @@ describe("QuickAddDialog", () => {
         today.setHours(0, 0, 0, 0)
         // Allow for small time differences due to test execution time
         expect(Math.abs(dueDate.getTime() - today.getTime())).toBeLessThan(1000)
+      }
+    })
+
+    it("does not override existing due date when opening in calendar context", async () => {
+      const originalRouteContext = { ...mockRouteContext }
+      try {
+        mockRouteContext.pathname = "/calendar"
+        mockRouteContext.viewId = "calendar"
+        mockRouteContext.projectId = "calendar"
+        mockRouteContext.routeType = "standard"
+
+        mockSelectedCalendarDate = new Date("2025-01-10T00:00:00")
+        const existingDueDate = new Date("2025-01-12T09:00:00")
+        mockTaskForm = {
+          title: "Dragged task",
+          dueDate: existingDueDate,
+          dueTime: existingDueDate,
+          projectId: INBOX_PROJECT_ID,
+        }
+
+        renderDialog()
+
+        await waitFor(() => {
+          const callsWithDueDate = mockUpdateTask.mock.calls.filter(
+            (call) => call[0]?.updateRequest?.dueDate !== undefined,
+          )
+          expect(callsWithDueDate).toHaveLength(0)
+        })
+      } finally {
+        mockRouteContext.pathname = originalRouteContext.pathname
+        mockRouteContext.viewId = originalRouteContext.viewId
+        mockRouteContext.projectId = originalRouteContext.projectId
+        mockRouteContext.routeType = originalRouteContext.routeType
+        mockRouteContext.routeParams = originalRouteContext.routeParams
+        mockSelectedCalendarDate = null
+        mockTaskForm = { title: "" }
       }
     })
   })

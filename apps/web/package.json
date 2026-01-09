@@ -1,6 +1,6 @@
 {
   "name": "web",
-  "version": "0.12.2",
+  "version": "0.12.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,6 +15,8 @@
     "test": "node ../../scripts/run-vitest.mjs run --reporter=dot --no-coverage",
     "test:changed": "node ../../scripts/run-vitest.mjs run --run --changed --reporter=dot --no-coverage",
     "test:file": "node ../../scripts/run-vitest.mjs run --run",
+    "test:e2e": "node scripts/e2e-with-port.mjs",
+    "test:e2e:headed": "PW_HEADED=1 PW_SLOWMO=100 node scripts/e2e-with-port.mjs",
     "test:watch": "node ../../scripts/run-vitest.mjs --watch",
     "test:coverage": "node ../../scripts/run-vitest.mjs run --coverage",
     "check": "tsgo --noEmit && pnpm lint && pnpm test",
@@ -116,6 +118,7 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "catalog:",
+    "@playwright/test": "catalog:",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest-config": "workspace:*",

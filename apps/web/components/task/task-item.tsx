@@ -1563,7 +1563,7 @@ export function TaskItem({
                   recurring={task.recurring}
                   recurringMode={task.recurringMode}
                   completed={isCompleted}
-                  className={cn("group", METADATA_COLUMN_WIDTH, getFlashClass("schedule"))}
+                  className={cn("group/metadata", METADATA_COLUMN_WIDTH, getFlashClass("schedule"))}
                   fallbackLabel={
                     <TruncatedMetadataText showOnHover className="text-xs">
                       {t("actions.addDate", "Add date")}
@@ -1595,7 +1595,7 @@ export function TaskItem({
                 <PriorityPopover key="priority-hover" task={task}>
                   <span
                     className={cn(
-                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
+                      "group/metadata flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
                       getFlashClass("priority"),
                     )}
@@ -1627,7 +1627,7 @@ export function TaskItem({
                 ) : (
                   <span
                     className={cn(
-                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors whitespace-nowrap opacity-70 hover:opacity-100",
+                      "group/metadata flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors whitespace-nowrap opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
                       getFlashClass("subtasks"),
                     )}
@@ -1675,7 +1675,7 @@ export function TaskItem({
                 >
                   <span
                     className={cn(
-                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors whitespace-nowrap opacity-70 hover:opacity-100",
+                      "group/metadata flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors whitespace-nowrap opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
                       getFlashClass("comments"),
                     )}
@@ -1733,7 +1733,7 @@ export function TaskItem({
                 >
                   <span
                     className={cn(
-                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
+                      "group/metadata flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
                       getFlashClass("labels"),
                     )}
                   >
@@ -1772,7 +1772,7 @@ export function TaskItem({
                   <ProjectPopover key="project-hover" task={task}>
                     <span
                       className={cn(
-                        "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
+                        "group/metadata flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
                         METADATA_COLUMN_WIDTH,
                         getFlashClass("project"),
                       )}
@@ -1799,17 +1799,29 @@ export function TaskItem({
             }
 
             if (isPro()) {
+              const taskOwnerId =
+                "ownerId" in task && typeof task.ownerId === "string" ? task.ownerId : undefined
+              const taskAssignees =
+                "assignees" in task && Array.isArray(task.assignees) ? task.assignees : []
+              const hasAssignees = taskAssignees.length > 0
+              const hasOwner = Boolean(taskOwnerId)
+
               rightMetadataItems.push(
                 <AssigneeManagementPopover key="assignees" task={task}>
                   <span
                     className={cn(
-                      "group flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
+                      "group/metadata flex items-center gap-1 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-70 hover:opacity-100",
                       METADATA_COLUMN_WIDTH,
                       getFlashClass("assignees"),
                     )}
                   >
                     <span className="flex items-center gap-1">
                       <AssigneeBadges task={task} />
+                      {!hasAssignees && !hasOwner && (
+                        <TruncatedMetadataText showOnHover className="text-xs">
+                          {t("actions.addAssignee", "Add assignee")}
+                        </TruncatedMetadataText>
+                      )}
                     </span>
                   </span>
                 </AssigneeManagementPopover>,

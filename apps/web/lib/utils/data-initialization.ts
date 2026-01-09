@@ -4,6 +4,7 @@ import { checkDataFile } from "@/lib/startup-checks"
 import tutorialData from "@/lib/constants/tutorial-data.json"
 import { log } from "./logger"
 import { safeReadUserFile } from "@/lib/utils/safe-file-operations"
+import type { Json } from "@tasktrove/types/constants"
 
 /**
  * Low-level function to write tutorial data to the data file.
@@ -12,11 +13,18 @@ import { safeReadUserFile } from "@/lib/utils/safe-file-operations"
  * @param filePath - Optional custom file path (defaults to DEFAULT_DATA_FILE_PATH)
  * @returns Promise<void> - throws on error
  */
+export async function writeInitialDataFileWithData(
+  data: Json,
+  filePath: string = DEFAULT_DATA_FILE_PATH,
+): Promise<void> {
+  await fs.writeFile(filePath, JSON.stringify(data, null, 2))
+  log.info(`Data file initialized successfully at ${filePath}`)
+}
+
 export async function writeInitialDataFile(
   filePath: string = DEFAULT_DATA_FILE_PATH,
 ): Promise<void> {
-  await fs.writeFile(filePath, JSON.stringify(tutorialData, null, 2))
-  log.info(`Data file initialized successfully at ${filePath}`)
+  await writeInitialDataFileWithData(tutorialData, filePath)
 }
 
 /**
@@ -26,7 +34,8 @@ export async function writeInitialDataFile(
  * @param filePath - Optional custom file path (defaults to DEFAULT_DATA_FILE_PATH)
  * @returns Promise<boolean> - true if initialization was successful or file already exists, false on error
  */
-export async function initializeDataFileIfNeeded(
+export async function initializeDataFileIfNeededWithData(
+  data: Json,
   filePath: string = DEFAULT_DATA_FILE_PATH,
 ): Promise<boolean> {
   try {
@@ -39,13 +48,19 @@ export async function initializeDataFileIfNeeded(
     }
 
     // Initialize with tutorial data using the shared helper
-    await writeInitialDataFile(filePath)
+    await writeInitialDataFileWithData(data, filePath)
     return true
   } catch (error) {
     const errorMessage = `Failed to initialize data file: ${error instanceof Error ? error.message : String(error)}`
     log.error(errorMessage)
     return false
   }
+}
+
+export async function initializeDataFileIfNeeded(
+  filePath: string = DEFAULT_DATA_FILE_PATH,
+): Promise<boolean> {
+  return initializeDataFileIfNeededWithData(tutorialData, filePath)
 }
 
 function checkPasswordSetupNeededForUser(user: { password: string } | undefined) {

@@ -142,20 +142,54 @@ interface PreparedTaskUpdates {
   historyTasks: TaskCreatePayload[];
 }
 
+type NullableKeys<T> = {
+  [K in keyof T]-?: null extends T[K] ? K : never;
+}[keyof T];
+
+type NullableUpdateField = NullableKeys<UpdateTaskRequest>;
+
+export const DEFAULT_NULLABLE_UPDATE_FIELDS = [
+  "dueDate",
+  "dueTime",
+  "recurring",
+  "estimation",
+  "projectId",
+] as const satisfies readonly NullableUpdateField[];
+
+export const preserveExplicitNulls = (
+  update: UpdateTaskRequest,
+  cleaned: UpdateTaskRequest,
+  nullableFields: readonly NullableUpdateField[] = DEFAULT_NULLABLE_UPDATE_FIELDS,
+): UpdateTaskRequest => {
+  const result: UpdateTaskRequest = { ...cleaned };
+  for (const field of nullableFields) {
+    if (update[field] === null) {
+      result[field] = null;
+    }
+  }
+  return result;
+};
+
 export const buildTaskUpdatePayloads = (
   updates: TaskUpdateUnion,
   tasks: Task[],
   projects: Project[],
+  options?: { nullableFields?: readonly NullableUpdateField[] },
 ): PreparedTaskUpdates => {
   const updateArray = Array.isArray(updates) ? updates : [updates];
   const updatesForApi: UpdateTaskRequest[] = [];
   const historyTasks: TaskCreatePayload[] = [];
   const taskMap = new Map(tasks.map((task) => [task.id, task]));
+  const nullableFields =
+    options?.nullableFields ?? DEFAULT_NULLABLE_UPDATE_FIELDS;
 
   for (const update of updateArray) {
     const existingTask = taskMap.get(update.id);
     if (!existingTask) {
-      updatesForApi.push(clearNullValues(update));
+      const cleanedUpdate = clearNullValues(update);
+      updatesForApi.push(
+        preserveExplicitNulls(update, cleanedUpdate, nullableFields),
+      );
       continue;
     }
 
@@ -187,21 +221,31 @@ export const buildTaskUpdatePayloads = (
       }
     }
 
-    const baseUpdate = clearNullValues({
-      ...update,
-      projectId: targetProjectId,
-      sectionId: targetSectionId === null ? undefined : targetSectionId,
-      completedAt,
-      trackingId: existingTask.trackingId ?? existingTask.id,
-    });
+    const baseUpdate = preserveExplicitNulls(
+      update,
+      clearNullValues({
+        ...update,
+        projectId: targetProjectId,
+        sectionId: targetSectionId === null ? undefined : targetSectionId,
+        completedAt,
+        trackingId: existingTask.trackingId ?? existingTask.id,
+      }),
+      nullableFields,
+    );
 
     const shouldProcessRecurring =
       update.completed === true && !wasCompleted && !!existingTask.recurring;
 
     if (shouldProcessRecurring) {
+      const snapshotUpdate = clearNullValues(baseUpdate);
       const completedSnapshot = cloneTaskSnapshot({
         ...existingTask,
-        ...baseUpdate,
+        ...snapshotUpdate,
+        dueDate: snapshotUpdate.dueDate ?? existingTask.dueDate,
+        dueTime: snapshotUpdate.dueTime ?? existingTask.dueTime,
+        projectId: snapshotUpdate.projectId ?? existingTask.projectId,
+        recurring: snapshotUpdate.recurring ?? existingTask.recurring,
+        estimation: snapshotUpdate.estimation ?? existingTask.estimation,
         completed: true,
         completedAt,
       });
@@ -210,12 +254,16 @@ export const buildTaskUpdatePayloads = (
 
       if (!nextInstance) {
         updatesForApi.push(
-          clearNullValues({
-            ...baseUpdate,
-            completed: true,
-            completedAt,
-            recurring: undefined,
-          }),
+          preserveExplicitNulls(
+            update,
+            clearNullValues({
+              ...baseUpdate,
+              completed: true,
+              completedAt,
+              recurring: undefined,
+            }),
+            nullableFields,
+          ),
         );
         continue;
       }
@@ -233,14 +281,18 @@ export const buildTaskUpdatePayloads = (
       );
 
       updatesForApi.push(
-        clearNullValues({
-          ...baseUpdate,
-          completed: false,
-          completedAt: undefined,
-          subtasks: nextInstance.subtasks,
-          dueDate: nextInstance.dueDate,
-          recurring: nextInstance.recurring,
-        }),
+        preserveExplicitNulls(
+          update,
+          clearNullValues({
+            ...baseUpdate,
+            completed: false,
+            completedAt: undefined,
+            subtasks: nextInstance.subtasks,
+            dueDate: nextInstance.dueDate,
+            recurring: nextInstance.recurring,
+          }),
+          nullableFields,
+        ),
       );
       continue;
     }
@@ -484,80 +536,91 @@ const updateTasksMutationAtomBase = createEntityMutation<
   },
 });
 
-export const updateTasksMutationAtom = atom((get) => {
-  const baseMutation = get(updateTasksMutationAtomBase);
-  const createMutation = get(createTaskMutationAtomBase);
-  const queryClient = get(queryClientAtom);
-  const updateProjectsMutation = get(updateProjectsMutationAtom);
+export const createUpdateTasksMutationAtom = (options?: {
+  nullableFields?: readonly NullableUpdateField[];
+}) =>
+  atom((get) => {
+    const baseMutation = get(updateTasksMutationAtomBase);
+    const createMutation = get(createTaskMutationAtomBase);
+    const queryClient = get(queryClientAtom);
+    const updateProjectsMutation = get(updateProjectsMutationAtom);
 
-  const prepareUpdates = (updates: TaskUpdateUnion): PreparedTaskUpdates => {
-    const cachedTasks = queryClient.getQueryData<Task[]>(TASKS_QUERY_KEY) ?? [];
-    const cachedProjects =
-      queryClient.getQueryData<Project[]>(PROJECTS_QUERY_KEY) ?? [];
-    return buildTaskUpdatePayloads(updates, cachedTasks, cachedProjects);
-  };
-
-  return {
-    ...baseMutation,
-    mutateAsync: async (updates: TaskUpdateUnion) => {
-      const { updates: preparedUpdates, historyTasks } =
-        prepareUpdates(updates);
+    const prepareUpdates = (updates: TaskUpdateUnion): PreparedTaskUpdates => {
       const cachedTasks =
         queryClient.getQueryData<Task[]>(TASKS_QUERY_KEY) ?? [];
       const cachedProjects =
         queryClient.getQueryData<Project[]>(PROJECTS_QUERY_KEY) ?? [];
-      const projectUpdates = buildProjectSectionUpdates(
-        preparedUpdates,
-        historyTasks,
+      return buildTaskUpdatePayloads(
+        updates,
         cachedTasks,
         cachedProjects,
+        options,
       );
+    };
 
-      const result = await baseMutation.mutateAsync(preparedUpdates);
+    return {
+      ...baseMutation,
+      mutateAsync: async (updates: TaskUpdateUnion) => {
+        const { updates: preparedUpdates, historyTasks } =
+          prepareUpdates(updates);
+        const cachedTasks =
+          queryClient.getQueryData<Task[]>(TASKS_QUERY_KEY) ?? [];
+        const cachedProjects =
+          queryClient.getQueryData<Project[]>(PROJECTS_QUERY_KEY) ?? [];
+        const projectUpdates = buildProjectSectionUpdates(
+          preparedUpdates,
+          historyTasks,
+          cachedTasks,
+          cachedProjects,
+        );
 
-      if (historyTasks.length > 0) {
-        for (const historyTask of historyTasks) {
-          await createMutation.mutateAsync(historyTask);
+        const result = await baseMutation.mutateAsync(preparedUpdates);
+
+        if (historyTasks.length > 0) {
+          for (const historyTask of historyTasks) {
+            await createMutation.mutateAsync(historyTask);
+          }
         }
-      }
 
-      if (projectUpdates.length > 0) {
-        await updateProjectsMutation.mutateAsync(projectUpdates);
-      }
+        if (projectUpdates.length > 0) {
+          await updateProjectsMutation.mutateAsync(projectUpdates);
+        }
 
-      return result;
-    },
-    mutate: (
-      updates: TaskUpdateUnion,
-      options?: Parameters<typeof baseMutation.mutate>[1],
-    ) => {
-      const { updates: preparedUpdates, historyTasks } =
-        prepareUpdates(updates);
-      const cachedTasks =
-        queryClient.getQueryData<Task[]>(TASKS_QUERY_KEY) ?? [];
-      const cachedProjects =
-        queryClient.getQueryData<Project[]>(PROJECTS_QUERY_KEY) ?? [];
-      const projectUpdates = buildProjectSectionUpdates(
-        preparedUpdates,
-        historyTasks,
-        cachedTasks,
-        cachedProjects,
-      );
+        return result;
+      },
+      mutate: (
+        updates: TaskUpdateUnion,
+        options?: Parameters<typeof baseMutation.mutate>[1],
+      ) => {
+        const { updates: preparedUpdates, historyTasks } =
+          prepareUpdates(updates);
+        const cachedTasks =
+          queryClient.getQueryData<Task[]>(TASKS_QUERY_KEY) ?? [];
+        const cachedProjects =
+          queryClient.getQueryData<Project[]>(PROJECTS_QUERY_KEY) ?? [];
+        const projectUpdates = buildProjectSectionUpdates(
+          preparedUpdates,
+          historyTasks,
+          cachedTasks,
+          cachedProjects,
+        );
 
-      baseMutation.mutate(preparedUpdates, options);
+        baseMutation.mutate(preparedUpdates, options);
 
-      if (historyTasks.length > 0) {
-        historyTasks.forEach((historyTask) => {
-          createMutation.mutate(historyTask);
-        });
-      }
+        if (historyTasks.length > 0) {
+          historyTasks.forEach((historyTask) => {
+            createMutation.mutate(historyTask);
+          });
+        }
 
-      if (projectUpdates.length > 0) {
-        updateProjectsMutation.mutate(projectUpdates);
-      }
-    },
-  };
-});
+        if (projectUpdates.length > 0) {
+          updateProjectsMutation.mutate(projectUpdates);
+        }
+      },
+    };
+  });
+
+export const updateTasksMutationAtom = createUpdateTasksMutationAtom();
 updateTasksMutationAtom.debugLabel = "updateTasksMutationAtom";
 
 /**

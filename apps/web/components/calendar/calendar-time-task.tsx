@@ -5,7 +5,11 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { format } from "date-fns"
 import type { Task } from "@tasktrove/types/core"
 import { taskAtoms } from "@tasktrove/atoms/core/tasks"
-import { selectedTaskIdAtom, selectedTasksAtom } from "@tasktrove/atoms/ui/selection"
+import {
+  hoveredTaskIdAtom,
+  selectedTaskIdAtom,
+  selectedTasksAtom,
+} from "@tasktrove/atoms/ui/selection"
 import type { TaskId } from "@tasktrove/types/id"
 import { settingsAtom } from "@tasktrove/atoms/data/base/atoms"
 import { toggleTaskPanelWithViewStateAtom } from "@tasktrove/atoms/ui/views"
@@ -60,6 +64,8 @@ export function CalendarTimeTask({
   const settings = useAtomValue(settingsAtom)
   const selectedTaskId = useAtomValue(selectedTaskIdAtom)
   const selectedTasks = useAtomValue(selectedTasksAtom)
+  const hoveredTaskId = useAtomValue(hoveredTaskIdAtom)
+  const setHoveredTaskId = useSetAtom(hoveredTaskIdAtom)
   const setResizingTaskId = useSetAtom(resizingTaskIdAtom)
   const isAnyDragActive = useAtomValue(isAnyDragActiveAtom)
   const isAnyResizeActive = useAtomValue(isAnyResizeActiveAtom)
@@ -166,6 +172,15 @@ export function CalendarTimeTask({
 
   const isSelected = selectedTaskId === task.id
   const isInSelection = selectedTasks.includes(task.id)
+  const shouldShowHoverHighlight = hoveredTaskId === task.id && !(isSelected || isInSelection)
+
+  const handleTaskMouseEnter = () => {
+    setHoveredTaskId(task.id)
+  }
+
+  const handleTaskMouseLeave = () => {
+    setHoveredTaskId(null)
+  }
 
   return (
     <div
@@ -218,11 +233,14 @@ export function CalendarTimeTask({
             archived={task.archived}
             leftBorderColor={getPriorityColor(task.priority, "calendar")}
             onClick={handleTaskClick}
+            onMouseEnter={handleTaskMouseEnter}
+            onMouseLeave={handleTaskMouseLeave}
             className={cn(
               "h-full flex",
               isCompactTask
                 ? "items-center px-1 py-0 text-[10px] leading-3"
                 : "px-1 py-0.5 text-xs flex-col justify-between",
+              shouldShowHoverHighlight && "bg-accent/50",
               "ring-[0.5px] ring-primary/20",
               isResizing && "ring-1 ring-primary/40",
             )}

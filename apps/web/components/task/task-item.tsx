@@ -53,6 +53,7 @@ import {
   toggleTaskSelectionAtom,
   selectedTasksAtom,
   selectedTaskIdAtom,
+  hoveredTaskIdAtom,
 } from "@tasktrove/atoms/ui/selection"
 import { addCommentAtom } from "@tasktrove/atoms/core/tasks"
 import { focusTimerStatusAtom, activeFocusTimerAtom } from "@tasktrove/atoms/ui/focus-timer"
@@ -244,6 +245,7 @@ export function TaskItem({
   const getLabelsFromIds = useAtomValue(labelsFromIdsAtom)
   const allProjects = useAtomValue(projectsAtom)
   const selectedTaskId = useAtomValue(selectedTaskIdAtom)
+  const hoveredTaskId = useAtomValue(hoveredTaskIdAtom)
   const activeFocusTimer = useAtomValue(activeFocusTimerAtom)
   const settings = useAtomValue(settingsAtom)
 
@@ -254,6 +256,7 @@ export function TaskItem({
   const addComment = useSetAtom(addCommentAtom)
   const toggleTaskPanel = useSetAtom(toggleTaskPanelWithViewStateAtom)
   const toggleTaskSelection = useSetAtom(toggleTaskSelectionAtom)
+  const setHoveredTaskId = useSetAtom(hoveredTaskIdAtom)
   const handleMultiSelectClick = useTaskMultiSelectClick()
   const addLabelAndWaitForRealId = useSetAtom(addLabelAndWaitForRealIdAtom)
 
@@ -293,6 +296,7 @@ export function TaskItem({
   // Derived state from atoms
   const isSelected = selectedTaskId === taskId
   const isInSelection = selectedTasks.includes(taskId)
+  const shouldShowHoverHighlight = hoveredTaskId === taskId && !(isSelected || isInSelection)
 
   // Context menu visibility with flicker prevention
   const { isMenuOpen: actionsMenuOpen, handleMenuOpenChange: handleActionsMenuChange } =
@@ -305,6 +309,16 @@ export function TaskItem({
   if (!task) {
     console.warn(`TaskItem: Task with id ${taskId} not found`)
     return null
+  }
+
+  const handleTaskMouseEnter = () => {
+    setIsHovered(true)
+    setHoveredTaskId(task.id)
+  }
+
+  const handleTaskMouseLeave = () => {
+    setIsHovered(false)
+    setHoveredTaskId(null)
   }
 
   // Get project information for this task
@@ -527,11 +541,14 @@ export function TaskItem({
         className={cn(
           "flex items-center gap-2 py-2 rounded text-sm transition-all duration-200 cursor-pointer",
           "hover:bg-accent/50",
+          shouldShowHoverHighlight && "bg-accent/50",
           isCompleted && "opacity-60",
           className,
         )}
         onClick={handleTaskClick}
         onContextMenu={handleTaskContextMenu}
+        onMouseEnter={handleTaskMouseEnter}
+        onMouseLeave={handleTaskMouseLeave}
         data-task-id={task.id}
       >
         <TaskCheckbox
@@ -613,9 +630,9 @@ export function TaskItem({
         leftBorderColor={getPriorityColor(task.priority, "compact")}
         onClick={handleTaskClick}
         onContextMenu={handleTaskContextMenu}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className={cn("group/task", className)}
+        onMouseEnter={handleTaskMouseEnter}
+        onMouseLeave={handleTaskMouseLeave}
+        className={cn("group/task", shouldShowHoverHighlight && "bg-accent/50", className)}
         data-task-focused={isSelected}
         data-task-id={task.id}
       >
@@ -864,9 +881,9 @@ export function TaskItem({
         archived={isArchived}
         onClick={handleTaskClick}
         onContextMenu={handleTaskContextMenu}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className={cn("group/task", className)}
+        onMouseEnter={handleTaskMouseEnter}
+        onMouseLeave={handleTaskMouseLeave}
+        className={cn("group/task", shouldShowHoverHighlight && "bg-accent/50", className)}
         data-task-focused={isSelected}
         data-task-id={task.id}
       >
@@ -1033,9 +1050,9 @@ export function TaskItem({
         leftBorderColor={leftBorderColor}
         onClick={handleTaskClick}
         onContextMenu={handleTaskContextMenu}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className={cn("group/task", className)}
+        onMouseEnter={handleTaskMouseEnter}
+        onMouseLeave={handleTaskMouseLeave}
+        className={cn("group/task", shouldShowHoverHighlight && "bg-accent/50", className)}
         data-task-focused={isSelected}
         data-task-id={task.id}
       >
@@ -1305,9 +1322,13 @@ export function TaskItem({
         leftBorderColor={getPriorityColor(task.priority, "calendar")}
         onClick={handleTaskClick}
         onContextMenu={handleTaskContextMenu}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className={cn("group/task text-xs py-0 px-0.5", className)}
+        onMouseEnter={handleTaskMouseEnter}
+        onMouseLeave={handleTaskMouseLeave}
+        className={cn(
+          "group/task text-xs py-0 px-0.5",
+          shouldShowHoverHighlight && "bg-accent/50",
+          className,
+        )}
         data-task-id={task.id}
       >
         <div className="flex items-center gap-1 min-w-0">
@@ -1345,9 +1366,13 @@ export function TaskItem({
         completed={isCompleted}
         archived={isArchived}
         onContextMenu={handleTaskContextMenu}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className={cn("group/task flex items-center", className)}
+        onMouseEnter={handleTaskMouseEnter}
+        onMouseLeave={handleTaskMouseLeave}
+        className={cn(
+          "group/task flex items-center",
+          shouldShowHoverHighlight && "bg-accent/50",
+          className,
+        )}
         data-task-id={task.id}
       >
         {/* Drag handle for subtasks */}
@@ -1437,9 +1462,9 @@ export function TaskItem({
       leftBorderColor={getPriorityColor(task.priority, "default")}
       onClick={handleTaskClick}
       onContextMenu={handleTaskContextMenu}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className={className}
+      onMouseEnter={handleTaskMouseEnter}
+      onMouseLeave={handleTaskMouseLeave}
+      className={cn(shouldShowHoverHighlight && "bg-accent/50", className)}
       data-task-focused={isSelected}
       data-task-id={task.id}
     >

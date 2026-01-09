@@ -215,6 +215,7 @@ vi.mock("@tasktrove/atoms/ui/selection", () => ({
   selectedTaskIdAtom: createMockAtom("selectedTaskIdAtom"),
   selectedTasksAtom: createMockAtom("selectedTasksAtom", []),
   selectedTaskAtom: createMockAtom("selectedTaskAtom"),
+  hoveredTaskIdAtom: createMockAtom("hoveredTaskIdAtom"),
   selectedTaskRouteContextAtom: createMockAtom("selectedTaskRouteContextAtom"),
   setSelectedTaskIdAtom: createMockAtom("setSelectedTaskIdAtom"),
   lastSelectedTaskAtom: createMockAtom("lastSelectedTaskAtom"),

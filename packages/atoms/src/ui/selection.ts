@@ -75,6 +75,13 @@ export const selectedTasksAtom = atom<TaskId[]>([]);
 selectedTasksAtom.debugLabel = "selectedTasksAtom";
 
 /**
+ * Hovered Task ID - Tracks the task ID currently hovered in the UI
+ * Used to sync hover visuals across multiple renders of the same task.
+ */
+export const hoveredTaskIdAtom = atom<TaskId | null>(null);
+hoveredTaskIdAtom.debugLabel = "hoveredTaskIdAtom";
+
+/**
  * Last Selected Task - Tracks the most recently selected task for bulk selection
  * Used as anchor for potential range selection functionality
  * Cleared when removing tasks from selection
@@ -241,6 +248,7 @@ export const selectionAtoms = {
   selectedTaskId: selectedTaskIdAtom,
   selectedTask: selectedTaskAtom,
   selectedTasks: selectedTasksAtom,
+  hoveredTaskId: hoveredTaskIdAtom,
   lastSelectedTask: lastSelectedTaskAtom,
   selectedTaskRouteContext: selectedTaskRouteContextAtom,
   multiSelectDragging: multiSelectDraggingAtom,

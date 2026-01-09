@@ -226,4 +226,19 @@ describe("buildTaskUpdatePayloads (recurring tasks)", () => {
     expect(historyTasks).toHaveLength(0);
     expect(updates).toHaveLength(1);
   });
+
+  it("preserves explicit nulls for nullable update fields", () => {
+    const task = makeTask({
+      recurring: undefined,
+      dueTime: new Date("2024-01-15T14:30:00.000Z"),
+    });
+    const { updates } = buildTaskUpdatePayloads(
+      [{ id: task.id, dueTime: null }],
+      [task],
+      [baseProject],
+    );
+
+    expect(updates).toHaveLength(1);
+    expect(updates[0]?.dueTime).toBeNull();
+  });
 });
